@@ -1,20 +1,22 @@
 ---
 id: l06-values-references-and-python-names
 title: Values, references, and what a variable really is
-minutes: 17
+minutes: 19
 covers:
   - Values, references and the difference from Python names
 ---
 
-This is the lesson where Python experience actively works against you. Everything you know about what a variable is has to be replaced, and the replacement is simpler than what you have — but until you make the swap, C++ code will keep producing results that look like the language is broken. A struct you passed to a function comes back unchanged. A vector you assigned to another name turns out to be two vectors. A reference you returned points at nothing.
+Suppose you want a friend to read your science report. You can hand them a **photocopy**. They can scribble all over it and your original stays clean. Or you can send them a **link** to the shared document. Now there is one document, and anything they type, you see.
 
-All of it follows from one sentence. **In Python a variable is a name bound to an object; in C++ a variable is the object.** A Python name is a label you can move from one object to another, and two labels can sit on the same object. A C++ variable is a named region of storage with a type, created where you declare it and destroyed where its scope ends, and it never moves, never rebinds, and is never shared by two names — unless you ask for that explicitly, with a reference.
+Python hands out links. C++ hands out photocopies. That one difference explains most of the surprises a Python programmer meets in C++. A struct you passed to a function comes back unchanged. A vector you assigned to another name turns out to be two vectors. And a reference you returned from a function points at nothing.
 
-Get this one right and pointers, ownership, copies and lifetimes in the next module are straightforward consequences. Get it wrong and every one of them is a surprise.
+Here it is as one sentence. **In Python a variable is a name bound to an object; in C++ a variable is the object.** A Python name is a sticky label you can move from one object to another, and two labels can sit on the same object. A C++ variable is a named piece of memory with a type. It is created where you declare it and destroyed where its scope ends. It never moves, never gets relabelled, and is never shared by two names — unless you ask for that on purpose, with a **reference**.
+
+Get this right and pointers, ownership, copies and lifetimes in the next module follow from it. Get it wrong and every one of them is a surprise.
 
 ## What Python actually does
 
-Run this and read it carefully, because you already know what it will print and that is the point:
+Run this and read it carefully. You already know what it prints, and that is the point:
 
 ```python
 a = [6771000.0, 7670.0]
@@ -47,9 +49,17 @@ after zero_speed(s): [6771000.0, 0.0]
 after rebind(t): [6771000.0, 7670.0]
 ```
 
-Three facts about Python, stated the way C++ will contradict them. Assignment never copies an object; it binds a name. Passing an argument never copies an object; it binds the parameter name to the caller's object. And assigning *to* a parameter inside a function changes only which object that local name refers to, which is why `rebind` had no effect.
+(The two numbers are a spacecraft's distance from Earth's center, 6,771 km, and its speed, 7.67 km/s — a typical low orbit.)
+
+Here are three facts about Python, stated the way C++ will contradict them:
+
+1. Assignment never copies an object. It **[[binds a name|python-names]]** — sticks a label on the object.
+2. Passing an argument never copies an object. The parameter becomes another label on the caller's object.
+3. Assigning *to* a parameter inside a function moves only that local label. That is why `rebind` had no effect.
 
 ## What C++ does
+
+Now the same experiment in C++. `struct State` bundles two `double`s into one type:
 
 ```cpp
 #include <cstdio>
@@ -96,11 +106,18 @@ after by-ref      a.v = 0.0
 sizeof(State) = 16 bytes
 ```
 
-Line by line against the Python. `State b = a;` created a *second object*, sixteen bytes of its own, and copied the bytes of `a` into it; the two have different addresses and changing one does not touch the other. `State& r = a;` created no object at all — `r` is another name for `a`, and `&r == &a` proves it. `zero_speed_by_value` received a copy and modified the copy, which is discarded when the function returns, so the caller's `a` is untouched. `zero_speed_by_ref` received the caller's object itself.
+Two new symbols. `&a`, read "address of a", gives the object's **[[address|addresses]]** — its location in memory. `State&`, read "State ref" or "reference to State", is the type of a reference. Same character, two jobs: in front of a variable it takes an address; after a type it makes a reference type.
 
-C++ chose the opposite default from Python. In Python everything is shared unless you copy; in C++ everything is copied unless you ask for sharing. The C++ default is the one you can reason about locally: a function taking a parameter by value cannot possibly change anything the caller can see.
+Now go line by line against the Python.
 
-g++ even notices when you write the pointless version. Compiling the program above with `-Wall -Wextra`:
+- `State b = a;` made a *second object*, sixteen bytes of its own, and copied `a`'s bytes into it. The two have different addresses. Changing one leaves the other alone.
+- `State& r = a;` made no object at all. `r` is another name for `a`, and `&r == &a` proves it.
+- `zero_speed_by_value` received a photocopy and scribbled on the copy. The copy was thrown away when the function returned, so the caller's `a` is untouched.
+- `zero_speed_by_ref` received the caller's object itself.
+
+C++ chose the opposite default from Python. In Python everything is shared unless you copy. In C++ everything is copied unless you ask to share. The C++ default is one you can reason about locally: a function taking its parameter by value cannot change anything the caller can see.
+
+g++ even notices when you write the pointless version. Compiling the program with `-Wall -Wextra`:
 
 ```text
 values.cpp: In function 'void zero_speed_by_value(State)':
@@ -109,7 +126,7 @@ values.cpp:8:32: warning: parameter 's' set but not used [-Wunused-but-set-param
       |                          ~~~~~~^
 ```
 
-"Set but not used" is the compiler telling you that you wrote to something nobody will ever read. In Python that same function is the normal way to mutate a caller's object; in C++ it is a bug the compiler can see.
+"Set but not used" means you wrote to something nobody will ever read. In Python that function is the normal way to change a caller's object. In C++ it is a bug the compiler can see.
 
 ::: key
 A Python name is a label bound to an object; assignment rebinds the label. A C++ variable *is* an object: a named region of storage with a type. Assignment writes into that storage. `T& r = x;` makes a second name for the existing object `x`; it creates nothing and copies nothing.
@@ -117,9 +134,9 @@ A Python name is a label bound to an object; assignment rebinds the label. A C++
 
 ## A variable is storage, so it must be initialised
 
-Because a C++ variable *is* storage, it exists the moment it is declared, and if you did not give it a value, it holds whatever was there. There is no `None`, no unbound state, and no exception when you read it. Reading an uninitialised variable is undefined behaviour, as lesson 05 listed.
+Because a C++ variable *is* memory, it exists the moment it is declared. If you did not give it a value, it holds whatever was there before. There is no `None`, no "not yet bound" state, and no exception when you read it. Reading an uninitialised variable is undefined behaviour, as lesson 05 listed.
 
-C++ has several initialisation syntaxes; here is what each does:
+C++ has several ways to write an initial value. Here is what each does:
 
 ```cpp
 #include <cstdio>
@@ -147,25 +164,31 @@ g = {0.0, 0.0, 0.0}
 h = {1.50, 0.20, 0.05}
 ```
 
-Prefer the braces. `{}` with no value zero-initialises, which removes the uninitialised-read problem in one character. `{value}` rejects narrowing conversions at compile time, as lesson 05 showed. And `Gains h{1.5, 0.2, 0.05};` initialises an aggregate member by member, which is how you will write nearly every small struct.
+(`Gains` holds the three numbers of a PID controller: proportional, integral and derivative gains.)
+
+Prefer the braces, for three reasons.
+
+1. `{}` with nothing inside sets the value to zero. One pair of braces removes the uninitialised-read problem.
+2. `{value}` refuses a narrowing conversion at compile time, as lesson 05 showed.
+3. `Gains h{1.5, 0.2, 0.05};` fills an **[[aggregate|aggregate]]** — a simple struct — member by member, in order. That is how you will write nearly every small struct.
 
 ::: warning
-`double x();` at block scope does not declare a variable initialised to zero. It declares a *function* called `x` taking no arguments and returning `double`. This is the "most vexing parse", and it is one more reason to write `double x{};`.
+`double x();` inside a function does not declare a variable set to zero. It declares a *function* named `x` that takes no arguments and returns a `double`. This trap is called the **[[most vexing parse|vexing-parse]]**. It is one more reason to write `double x{};`.
 :::
 
 ## References
 
-A reference is an alias: another name for an object that already exists. `T&` binds to an object of type `T` and, from then on, every use of the reference is a use of that object.
+A **reference** is an alias: another name for an object that already exists. `T&` binds to an object of type `T`. From then on, every use of the reference is a use of that object. Think of a nickname. Calling your friend "Sam" or "Samantha" reaches the same person.
 
-Three properties follow, and they are what make references safe:
+Three rules follow, and they are what make references safe:
 
-- A reference **must be initialised** when it is declared. `State& r;` does not compile.
-- A reference **cannot be reseated**. After `State& r = a;`, writing `r = b;` does not make `r` refer to `b` — it copies `b` into `a`, because `r` *is* `a`.
-- There is **no null reference**. A reference that refers to nothing can only be produced by undefined behaviour, so a function taking a `T&` need not check for null, where one taking a `T*` must.
+- A reference **must be initialised** when it is declared. `State& r;` does not compile: g++ says "'r' declared as reference but not initialized".
+- A reference **cannot be reseated** — pointed at a different object later. After `State& r = a;`, writing `r = b;` does not make `r` name `b`. It copies `b` into `a`, because `r` *is* `a`.
+- There is **no null reference**. A reference to nothing can only come from undefined behaviour. So a function taking a `T&` need not check for null, where one taking a pointer, `T*`, must.
 
-That second property is the one that catches Python programmers. `r = b` looks like a rebinding and is an assignment to the referent.
+The second rule is the one that catches Python programmers. `r = b` looks like moving a label, and is really an assignment to the object `r` names.
 
-`const T&` is a reference through which you cannot modify. It is the workhorse parameter type in C++: the callee gets access to the caller's object without copying it and without permission to change it.
+`const T&`, read "const T ref", is a reference through which you cannot modify the object. It is the workhorse parameter type in C++. The function gets to read the caller's object without copying it, and without permission to change it:
 
 ```cpp
 double kinetic_energy(const State& s, double mass_kg) {
@@ -173,7 +196,7 @@ double kinetic_energy(const State& s, double mass_kg) {
 }
 ```
 
-Here is the whole mapping, which is worth memorising as a table rather than a rule:
+Here is the whole mapping. It is worth learning as a table:
 
 | You write | Python meaning | C++ meaning |
 | --- | --- | --- |
@@ -193,10 +216,10 @@ Here is the whole mapping, which is worth memorising as a table rather than a ru
 | `T&` | the function must modify the caller's object, and that is the point of the call |
 | return by value | the function produces a new value; do not return a reference to something you made inside |
 
-`State` is 16 bytes — two `double`s — so by value is fine and the copy costs nothing a register cannot absorb. A `std::vector<double>` of 5000 IMU samples is a different matter: passing it by value allocates a new buffer and copies 40 KB, every call, and lesson 09 shows exactly that trap. When in doubt, `const T&` is never badly wrong for a parameter you only read.
+`State` is 16 bytes, two `double`s, so by value is fine: the copy fits in a couple of processor registers and costs almost nothing. A `std::vector<double>` of 5000 samples is different. At 8 bytes each that is $5000 \times 8 = 40{,}000$ bytes, about 40 KB. Passing it by value grabs new memory and copies all 40 KB, on every call. Lesson 09 shows that trap. When in doubt, `const T&` is never badly wrong for a parameter you only read. The **[[C++ Core Guidelines|core-guidelines]]** give the same advice.
 
 ::: example A state vector by value and by reference
-A propagator takes the current state and returns the next one, and a logger takes the state to record it.
+A propagator takes the current state and returns the next one. Other functions read or adjust a state.
 
 ```cpp
 struct State {
@@ -220,30 +243,49 @@ void clamp_speed(State& s, double v_max) {
 }
 ```
 
-Note what `step` does with its by-value parameter: it *uses the copy as the working variable*. Because `s` is already a private copy, modifying it and returning it is both correct and efficient — no separate local is needed. That idiom is only available because parameters are copies, and it is one of the places where the C++ default is pleasanter than the Python one.
+Look at what `step` does with its by-value parameter. It *uses the copy as its working variable*. `s` is already a private copy, so changing it and returning it is correct and efficient; no extra local is needed. That trick exists only because parameters are copies. Here the C++ default is nicer than Python's.
 
-Checking `step` numerically, with $r = 6{,}771{,}000$ m, $v = 7670$ m/s, $\Delta t = 0.1$ s and $a = -8.7\,\mathrm{m/s^2}$:
+**Check `step` with numbers.** Take $r = 6{,}771{,}000$ m, $v = 7670$ m/s, a time step $\Delta t = 0.1$ s (read "delta t"), and an acceleration $a = -8.7\,\mathrm{m/s^2}$.
+
+The position moves by speed times time: $7670 \times 0.1 = 767$ m. So
 
 $$
-r' = 6{,}771{,}000 + 7670 \times 0.1 = 6{,}771{,}767\,\mathrm{m}, \qquad
-v' = 7670 - 8.7 \times 0.1 = 7669.13\,\mathrm{m/s}.
+r' = 6{,}771{,}000 + 767 = 6{,}771{,}767\,\mathrm{m}.
 $$
 
-That is forward Euler, which the numerical-methods module will tell you not to use for orbits. The point here is the parameter passing, not the integrator.
+The speed changes by acceleration times time: $-8.7 \times 0.1 = -0.87$ m/s. So
+
+$$
+v' = 7670 - 0.87 = 7669.13\,\mathrm{m/s}.
+$$
+
+A test program that calls `step` and prints the result shows `r=6771767.0 v=7669.13`, matching. Sanity check: in a tenth of a second at orbital speed you travel about three quarters of a kilometer, and the speed barely changes. That is right.
+
+This method is **[[forward Euler|forward-euler]]**, which the numerical-methods module will warn you not to use for orbits. The point here is how the parameters are passed, not the integrator.
 :::
 
 ## Dangling references
 
-A reference does not own anything and does not keep anything alive. If the object it names dies, the reference is left naming storage that is no longer an object, and using it is undefined behaviour. The classic instance:
+A reference does not own anything, and it does not keep anything alive. If the object it names dies, the reference is left naming memory that no longer holds an object. Using it is undefined behaviour. We call it a **dangling reference**. The classic case:
 
 ```cpp
+#include <cstdio>
+
+struct State { double r_m; double v_mps; };
+
 const State& make_state() {
     State s{6771000.0, 7670.0};
     return s;                     // s dies at the closing brace
 }
+
+int main() {
+    const State& st = make_state();
+    std::printf("%.1f\n", st.v_mps);
+    return 0;
+}
 ```
 
-`s` is an automatic object; its lifetime ends at the closing brace, and the reference returned names dead storage. Both compilers catch this particular case. g++ 13.3.0:
+`s` is an automatic object: it lives in the function's **[[stack frame|stack-frame]]** and dies at the closing brace. The returned reference names dead storage. Both compilers catch this simple case. g++ 13.3.0:
 
 ```text
 dangle.cpp:7:12: warning: reference to local variable 's' returned [-Wreturn-local-addr]
@@ -258,9 +300,9 @@ clang++ 18.1.3:
 dangle.cpp:7:12: warning: reference to stack memory associated with local variable 's' returned [-Wreturn-stack-address]
 ```
 
-Both are warnings, not errors, which is one more argument for `-Werror`. Built with `-fsanitize=address` and run, this program crashed on this machine with a SEGV reported by AddressSanitizer — but that is what one build did, not a guarantee; a different build could return a plausible-looking number instead, which is the failure mode that reaches a vehicle.
+Both are warnings, not errors — one more argument for `-Werror`. Now run the two builds. On this machine the g++ build crashed with a segmentation fault: g++ had quietly made the function return a null address. The clang++ build printed `7670.0`, a perfectly believable number. Neither result is a promise. The believable number is the dangerous one, because it is the failure that passes its tests and reaches a vehicle.
 
-The general rule: a reference is safe exactly as long as the object it names. Returning a reference to a parameter or to a member of a long-lived object is fine; returning one to a local is not. Lesson 11 makes "how long does this object live" precise, and the next module turns it into a discipline.
+The general rule: a reference is safe exactly as long as the object it names. Returning a reference to a parameter, or to a member of a long-lived object, is fine. Returning one to a local is not. Lesson 11 makes "how long does this object live" precise, and the next module turns it into a discipline.
 
 ::: example Where a Python habit produces a C++ bug
 A Python programmer writing a controller reaches for this:
@@ -281,19 +323,23 @@ State smoothed(const State& a, const State& b) {
 // }
 ```
 
-The first is safe because `latest` has static storage duration and lives for the whole program. The second is safe because it returns *by value*: `out` is copied — in practice moved or constructed in place — into the caller's storage before it is destroyed. The third, which differs from the second only in the return type, is the bug.
+Take the three in turn.
 
-The reflex to build: **returning a reference is a claim that the object outlives the call.** If you cannot name something that keeps it alive, return by value. Returning by value is cheap for small types, and for large ones the compiler elides the copy entirely, so the "optimisation" of returning a reference is usually not one.
+1. `current` is safe. `latest` is declared outside any function, so it has **static storage duration**: it lives for the whole run of the program.
+2. `smoothed` is safe because it returns *by value*. `out` is copied into the caller's storage before it is destroyed — and in practice the compiler builds it there directly, or moves it.
+3. `smoothed_bad` differs from the second only in its return type, and it is the bug.
+
+The reflex to build: **returning a reference is a claim that the object outlives the call.** If you cannot name something that keeps it alive, return by value. That is cheap for small types. For large ones the compiler usually builds the result straight into the caller's storage — **[[copy elision|copy-elision]]** — and if it cannot, it *moves* the object, which for a vector means handing over a pointer rather than copying the data. So "returning a reference to save a copy" rarely saves anything.
 :::
 
 ## Check yourself
 
 ::: check
-In Python, `b = a` then `b[0] = 9` changes `a`. In C++, `State b = a;` then `b.r_m = 9;` does not. State the one difference that explains both, in a sentence.
+In Python, `b = a` then `b[0] = 9` changes `a`. In C++, `State b = a;` then `b.r_m = 9;` does not. State the one difference that explains both, in a sentence, and name one more thing that follows from it.
 :::
 
 ::: answer
-A Python variable is a name bound to an object, so `b = a` produces two names for one object and any mutation through either is visible through the other. A C++ variable *is* an object, so `State b = a;` constructs a second object and copies `a`'s bytes into it, leaving two independent objects. The Python behaviour is sharing by default; the C++ behaviour is copying by default. Everything else in this lesson — why a by-value parameter cannot affect the caller, why a reference is needed to share, why `&a == &b` is the C++ spelling of `a is b` — follows from that one difference.
+A Python variable is a name bound to an object, so `b = a` makes two names for one object and a change through either shows through the other; a C++ variable *is* an object, so `State b = a;` builds a second object and copies `a`'s bytes into it, leaving two independent objects. Python shares by default; C++ copies by default. Much else follows: a by-value parameter cannot affect the caller, a reference is needed to share, and `&a == &b` is the C++ spelling of `a is b`.
 :::
 
 ::: check
@@ -301,7 +347,7 @@ A Python variable is a name bound to an object, so `b = a` produces two names fo
 :::
 
 ::: answer
-`a` now holds a copy of `b`'s value. `b` is unchanged. `r` still refers to `a`, because a reference cannot be reseated: once bound it names that object for the rest of its life, and every later use of `r` — including as the left-hand side of an assignment — is a use of `a`. So `r = b;` is exactly `a = b;`. This is the single most common surprise for someone arriving from Python, where the same line would point the name `r` at `b`'s object and leave `a` alone.
+`a` now holds a copy of `b`'s value. `b` is unchanged. `r` still refers to `a`, because a reference cannot be reseated: once bound, it names that object for its whole life, and every later use of `r` — including on the left of `=` — is a use of `a`. So `r = b;` means exactly `a = b;`. In Python the same line would move the label `r` onto `b`'s object and leave `a` alone, which is why this surprises people.
 :::
 
 ::: check
@@ -309,23 +355,23 @@ Why does a function taking `const State&` need no null check, while one taking `
 :::
 
 ::: answer
-A reference must be bound to an object when it is created and there is no way to create a null one without undefined behaviour first, so within a well-defined program a `const State&` parameter always names a real object. A pointer is a value like any other and `nullptr` is a perfectly ordinary value for it, so a caller can legitimately pass one and the callee must decide what that means. This is why the C++ Core Guidelines advise a reference for a required argument and a pointer only when "no object" is a meaningful input — the choice of parameter type documents the contract, and the compiler enforces half of it.
+A reference must be bound to an object when it is created, and there is no way to make a null one without first doing something undefined. So in a well-defined program a `const State&` parameter always names a real object. A pointer is an ordinary value, and `nullptr` is a perfectly legal value for it. A caller may pass one, and the function must decide what it means. That is why the C++ Core Guidelines suggest a reference for a required argument and a pointer only when "no object" is a meaningful input. The parameter type documents the contract, and the compiler enforces half of it.
 :::
 
 ::: check
-`step` takes `State s` by value, modifies `s`, and returns it. Rewrite the signature to take `const State&` instead, and say what else must change and why the original is not wasteful.
+`step` takes `State s` by value, changes `s`, and returns it. Rewrite it to take `const State&` instead. What else must change, and why is the original not wasteful?
 :::
 
 ::: answer
-With `const State& s` the function cannot modify `s`, so it needs its own local: `State out = s; out.r_m += ...; return out;`. That is one copy, exactly as before — the by-value parameter *was* that copy, made once, at the call, where the compiler can often construct it directly from the caller's temporary and elide even that. So the rewrite adds a line and saves nothing. The rule this illustrates: when a function needs its own modifiable copy of a small argument, take it by value and use it; take `const&` when you only read.
+With `const State& s` the function may not change `s`, so it needs its own local: `State out = s; out.r_m += ...; return out;`. That is one copy, exactly as before. The by-value parameter *was* that copy, made once at the call, where the compiler can often build it straight from the caller's value. So the rewrite adds a line and saves nothing. The rule: when a function needs its own changeable copy of a small argument, take it by value and use it; take `const&` when you only read.
 :::
 
 ::: check
-A colleague writes `const std::vector<double>& history() { std::vector<double> v = build(); return v; }` and says it avoids copying the vector. What does g++ say, what actually happens, and what should the signature be?
+A colleague writes `const std::vector<double>& history() { std::vector<double> v = build(); return v; }` and says it avoids copying the vector. What do the compilers say, what actually happens, and what should the signature be?
 :::
 
 ::: answer
-g++ warns `reference to local variable 'v' returned [-Wreturn-local-addr]`, and clang++ says `reference to stack memory associated with local variable 'v' returned`. The local vector is destroyed at the closing brace — which also frees its heap buffer — so the returned reference names storage that is no longer an object, and every use of it is undefined behaviour. The "optimisation" is not one: returning by value, `std::vector<double> history()`, lets the compiler construct the vector directly in the caller's storage under mandatory copy elision, so no copy happens either way. Return by value; return a reference only when you can name something else that keeps the object alive.
+g++ warns `reference to local variable 'v' returned [-Wreturn-local-addr]`, and clang++ warns `reference to stack memory associated with local variable 'v' returned`. The local vector is destroyed at the closing brace, which also frees the memory holding its numbers. The returned reference names an object that no longer exists, and every use of it is undefined behaviour. The "optimisation" saves nothing anyway. Write `std::vector<double> history()` and return by value: the compiler usually builds `v` directly in the caller's storage, and when it cannot, it moves the vector — a few pointer copies, never a copy of the data. Return a reference only when you can name something else that keeps the object alive.
 :::
 
 ## Summary
@@ -343,4 +389,79 @@ g++ warns `reference to local variable 'v' returned [-Wreturn-local-addr]`, and 
 | `T{}` | — | value initialisation: zero |
 | `-Wreturn-local-addr` | — | g++'s name for returning a reference to a local |
 
-Lesson 07 adds the qualifiers that say what may change and when it is known: `const`, `constexpr`, `consteval`, and the `auto` that lets the compiler write the type for you.
+Lesson 07 adds the words that say what may change and when a value is known: `const`, `constexpr`, `consteval`, and the `auto` that lets the compiler write the type for you.
+
+::: context python-names Labels and boxes
+In Python, a name is a label tied to an object that lives elsewhere; two names can point at one list. In C++, each variable is its own box of memory, and a reference is a second name painted on the same box.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
+  <text x="85" y="18" font-size="12" font-weight="700" fill="#1f2a44" text-anchor="middle">Python: b = a</text>
+  <rect x="20" y="40" width="30" height="22" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="35" y="56" font-size="12" fill="#1f2a44" text-anchor="middle">a</text>
+  <rect x="20" y="100" width="30" height="22" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="35" y="116" font-size="12" fill="#1f2a44" text-anchor="middle">b</text>
+  <rect x="95" y="62" width="60" height="40" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="125" y="86" font-size="11" fill="#1f2a44" text-anchor="middle">[r, v]</text>
+  <line x1="50" y1="51" x2="90" y2="72" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="95,75 85,74 89,66" fill="#1d6fd1"/>
+  <line x1="50" y1="111" x2="90" y2="92" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="95,89 89,98 85,90" fill="#1d6fd1"/>
+  <text x="85" y="148" font-size="11" fill="#6c7a93" text-anchor="middle">two labels, one object</text>
+  <line x1="180" y1="10" x2="180" y2="150" stroke="#6c7a93" stroke-width="1"/>
+  <text x="270" y="18" font-size="12" font-weight="700" fill="#1f2a44" text-anchor="middle">C++: State b = a;</text>
+  <rect x="200" y="40" width="60" height="40" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="230" y="64" font-size="11" fill="#1f2a44" text-anchor="middle">a / r</text>
+  <rect x="280" y="40" width="60" height="40" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="310" y="64" font-size="11" fill="#1f2a44" text-anchor="middle">b</text>
+  <text x="270" y="110" font-size="11" fill="#6c7a93" text-anchor="middle">two objects, 16 bytes each;</text>
+  <text x="270" y="126" font-size="11" fill="#6c7a93" text-anchor="middle">r is a second name for a</text>
+</svg>
+```
+:::
+
+::: context addresses Every object has an address
+Memory is one long row of numbered bytes, like mailboxes on a very long street. An object's **address** is the number of its first byte. Two objects that exist at the same time never share an address, so comparing addresses answers "is this the same object?" — exactly what Python's `is` does. Printing an address with `%p` shows a large hexadecimal number, which changes from run to run; only comparisons between addresses mean anything.
+:::
+
+::: context aggregate What counts as an aggregate
+An **aggregate** is a plain bundle of data: an array, or a struct with no constructors you wrote yourself, no private data, and no virtual functions. You can fill one with a braced list, and the values go into the members in the order they were declared. `Gains h{1.5, 0.2, 0.05}` sets `kp`, then `ki`, then `kd`. Leave some out and the rest are set to zero, so `Gains g{}` is all zeros. Lesson 10 shows how structs with private members and constructors differ.
+:::
+
+::: context vexing-parse Why C++ reads it as a function
+C++ inherited a rule from C: if something *can* be read as a declaration, it *is* one. `double x();` has the exact shape of a function declaration — a return type, a name, an empty argument list — so that is what it means. Scott Meyers named it the "most vexing parse". Modern g++ warns about it by default, with `-Wvexing-parse`: "empty parentheses were disambiguated as a function declaration". Braces, `double x{};`, can never be read as a function, which is one reason C++11 added them.
+:::
+
+::: context core-guidelines The C++ Core Guidelines
+The C++ Core Guidelines are a free, public set of rules for writing modern C++, led by Bjarne Stroustrup (who created C++) and Herb Sutter. Their rules on parameters say: pass cheap-to-copy types by value, pass other read-only inputs by `const&`, use `T&` for values the function changes, and use a pointer only when "no object" is a valid input. Many flight-software coding standards borrow from them, and tools like clang-tidy can check some of the rules automatically.
+:::
+
+::: context forward-euler The simplest way to step forward in time
+**Forward Euler** says: to guess where you will be a short time $\Delta t$ from now, assume your speed and acceleration stay the same for that step. New position is old position plus speed times $\Delta t$; new speed is old speed plus acceleration times $\Delta t$. It is easy, but for an orbit its small errors all push the same way, so a simulated satellite slowly spirals outward. The numerical-methods module shows the better integrators (such as Runge–Kutta) that flight software and simulators really use.
+:::
+
+::: context stack-frame Where local variables live
+Each time a function is called, it gets a **stack frame**: a block of memory for its local variables, piled on top of its caller's frame. When the function returns, its frame is popped and the space is reused by the next call.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <text x="90" y="18" font-size="12" font-weight="700" fill="#1f2a44" text-anchor="middle">during make_state()</text>
+  <rect x="30" y="30" width="120" height="40" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="90" y="54" font-size="11" fill="#1f2a44" text-anchor="middle">make_state: s</text>
+  <rect x="30" y="70" width="120" height="40" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="90" y="94" font-size="11" fill="#1f2a44" text-anchor="middle">main</text>
+  <text x="270" y="18" font-size="12" font-weight="700" fill="#1f2a44" text-anchor="middle">after it returns</text>
+  <rect x="210" y="30" width="120" height="40" fill="#fff" stroke="#b4232c" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <text x="270" y="54" font-size="11" fill="#b4232c" text-anchor="middle">dead, reused</text>
+  <rect x="210" y="70" width="120" height="40" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="270" y="94" font-size="11" fill="#1f2a44" text-anchor="middle">main: st</text>
+  <path d="M300,82 C345,82 345,50 332,50" fill="none" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="332,50 341,45 341,55" fill="#b4232c"/>
+  <text x="180" y="138" font-size="11" fill="#6c7a93" text-anchor="middle">the reference st still points at the popped frame</text>
+</svg>
+```
+:::
+
+::: context copy-elision When the compiler skips the copy
+**Copy elision** means the compiler builds a returned object directly in the caller's storage, so no copy is made at all. Since C++17 it is *guaranteed* when you return a temporary, as in `return State{...};`. When you return a named local, as in `return out;`, elision is allowed and usual but not guaranteed (it is called NRVO, "named return value optimisation"). If the compiler does not elide it, C++ still treats the local as something that can be *moved* rather than copied. Either way, returning by value is cheap.
+:::

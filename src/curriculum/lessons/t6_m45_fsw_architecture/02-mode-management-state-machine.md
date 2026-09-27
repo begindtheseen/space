@@ -1,26 +1,51 @@
 ---
 id: l02-mode-management-state-machine
 title: Mode management as an explicit state machine
-minutes: 20
+minutes: 22
 covers:
   - Mode management as an explicit state machine, with guard conditions and an exit to safe from every state
 ---
 
-Somewhere in every flight vehicle's software is a piece of code whose entire job is to know what the vehicle is currently doing and to decide what it is allowed to do next. Not the physics of doing it — that is the GNC application's job, one layer down — but the supervisory question: are we in prelaunch checkout, powered ascent, coasting, entry, landing, or safe mode, and is the requested transition actually legal from here. That piece of code is the mode manager, and how you write it is one of the more consequential design decisions in the whole stack, because a mode manager that can be talked into an illegal or unrecoverable state has thereby made every other safety argument about the vehicle conditional on it never happening.
+Think about a washing machine. It fills, then washes, then rinses, then spins, then stops. It never jumps from filling straight to spinning with a drum full of water. It will not start the spin while the lid is open. And one button always works, from any step: stop. Once you have pressed stop, the machine does not decide by itself, ten minutes later, that things look fine and start spinning again. You have to press start.
 
-The right way to build one is as an explicit state machine: an enumerated list of states, a table of which transitions between them are legal, and a guard condition attached to each transition that the software can evaluate from telemetry it already has. The wrong way — and the way it happens by default if nobody designs it on purpose — is a scatter of boolean flags and `if` statements spread across the codebase, each one a local, ad hoc decision about whether some action is currently allowed. This lesson builds the first way, on a small worked example you will reuse later in the module, and lesson 11 comes back to formally prove the property that matters most about it: that safe is reachable from every single state.
+That little machine has everything this lesson is about. A short list of steps. Rules about which step may follow which. Conditions that must be true before a step can begin. One way out that works from everywhere. And a rule that leaving that way out takes a deliberate human choice.
 
-## Why the scattered version is a bug generator
+Every flight vehicle has a piece of software doing this job. It is the **mode manager**: the code whose whole job is to know what the vehicle is doing right now — prelaunch checkout, powered ascent, coast, entry, landing, safe — and to decide whether a requested change is allowed from here. It does not fly the vehicle; the GNC application one layer down does that. It supervises. And because every other safety argument about the vehicle assumes the mode manager cannot be talked into a bad state, how you build it matters a great deal.
 
-Picture the alternative first, because you will recognize it from real codebases. A flag `in_ascent` is set here, checked there; a second flag `entry_started` gets set somewhere else, sometimes before `in_ascent` is cleared and sometimes after, depending on which code path executed that cycle; a third piece of code decides independently whether safing is currently allowed, using its own copy of "are we mid-burn" logic that drifted out of sync with the first two flags months ago. Nothing in this design enumerates the full set of reachable combinations of flags, so nobody can answer "is there a reachable state where safing is blocked" without reading every line that touches every flag. Illegal combinations are not rejected, because nothing is checking for them as a class — each check only knows about its own flag. And when a requested transition is silently ignored because some unrelated flag happened to be in the wrong state, nothing tells the ground; the vehicle keeps doing what it was doing regardless; and the operator, reading telemetry that still says the old mode, has no way to tell "we're still here because it's correct" from "we're still here because a request was silently dropped."
+The right way is an explicit **[[state machine|state-machine]]**: a list of modes, a table of which changes between them are legal, and a condition attached to each change that the software can check from data it already has. This lesson builds one on a small satellite, and lesson 11 comes back to prove its most important property: that safe can be reached from every single mode.
 
-An explicit state machine closes off all three failure modes by construction. The states are enumerated, so the questions "what is the full set of reachable states" and "from this state, what can happen next" have answers you can read off a table rather than infer from scattered code. Transitions are looked up in that one table, so an illegal one is rejected by the same mechanism every time, not by whichever of several ad hoc checks happened to be watching. And because the table-driven design returns an explicit accept-or-refuse result, a refusal can always be reported rather than silently swallowed.
+## Why scattered flags breed bugs
 
-## States, guards, and the transition table
+First, the wrong way, because you will meet it in real code. Nobody designs it; it grows.
 
-A **state** is one named condition the vehicle's supervisory logic can be in; at any instant it is in exactly one. A **guard condition** is a boolean function of telemetry the software already possesses — never a judgment call, never something requiring information outside what has already been measured or commanded — that must evaluate true for a specific transition to be permitted. A **transition** is a triple: the state it leaves from, the state it goes to, and the guard that must hold.
+A flag `in_ascent` is set in one file and checked in another. A second flag, `entry_started`, is set somewhere else — sometimes before `in_ascent` is cleared, sometimes after, depending on which code ran that cycle. A third piece of code decides on its own whether safing is allowed, using its own copy of "are we mid-burn" logic, which drifted out of step with the other two flags months ago.
 
-Take a small satellite bus as the running example for this lesson and the next several: six modes, `BOOT`, `STANDBY`, `SUN_POINT`, `SLEW`, `PAYLOAD_OPS`, and `SAFE`. The nominal flow checks out the bus (`BOOT`), parks it in a known idle state (`STANDBY`), points it at the sun for power (`SUN_POINT`), slews to a target (`SLEW`), operates a payload (`PAYLOAD_OPS`), and returns to sun-pointing when the operation finishes. `SAFE` sits outside that sequence entirely.
+Three things go wrong at once.
+
+1. **Nobody can list the states.** Each true-or-false flag doubles the number of **[[possible combinations|flag-combinations]]**. Nothing in the code lists which combinations can actually happen. To answer "is there a situation where safing is blocked?" you must read every line that touches every flag.
+2. **Illegal combinations slip through.** Each check knows only its own flag. Nothing checks the whole picture, so nothing rejects a nonsense combination.
+3. **Refusals are silent.** When a request is quietly ignored because some unrelated flag was in the wrong state, nothing tells the ground. The operator sees telemetry that still shows the old mode and cannot tell "we are here because that is correct" from "we are here because a request was dropped."
+
+An explicit state machine closes all three holes by its very shape. The modes are listed, so "what states exist, and what can follow each?" is answered by reading one table. Every change is looked up in that same table, so an illegal one is rejected the same way every time. And every lookup returns an explicit yes or no, so a refusal can always be reported.
+
+## States, guards and the transition table
+
+Three words carry the whole design.
+
+- A **state** (or mode) is one named condition the mode manager can be in. At any moment it is in exactly one.
+- A **guard condition** is a true-or-false test, computed from telemetry the software already has, that must be true for a particular change to be allowed. It is never a judgment call and never needs information the software does not have. The word comes from computer science's **[[guarded commands|guard-word]]**.
+- A **transition** is a triple: the state you leave, the state you enter, and the guard that must hold.
+
+Our running example is a small satellite with six modes:
+
+- `BOOT` — the computer has just started and is checking itself.
+- `STANDBY` — a known, quiet idle state.
+- `SUN_POINT` — the solar panels are aimed at the Sun to charge the batteries.
+- `SLEW` — the satellite is turning toward a target.
+- `PAYLOAD_OPS` — the payload (a camera, say) is working.
+- `SAFE` — the fallback: the **[[minimum needed to survive|safe-mode]]** until people on the ground decide what to do.
+
+The normal flow runs `BOOT` → `STANDBY` → `SUN_POINT` → `SLEW` → `PAYLOAD_OPS`, and then back to `SUN_POINT` when the payload is done. `SAFE` sits outside that loop. Here is the full table:
 
 | From | To | Guard |
 | --- | --- | --- |
@@ -30,18 +55,28 @@ Take a small satellite bus as the running example for this lesson and the next s
 | `SUN_POINT` | `STANDBY` | stand-down commanded |
 | `SLEW` | `PAYLOAD_OPS` | slew complete AND attitude valid |
 | `PAYLOAD_OPS` | `SUN_POINT` | payload operation complete |
-| any non-`SAFE` state | `SAFE` | — (unconditional) |
+| any non-`SAFE` state | `SAFE` | none — unconditional |
 | `SAFE` | `STANDBY` | explicit ground recovery command AND health nominal |
 
-Two rows deserve a second look before the code. Every non-`SAFE` state has an unconditional transition to `SAFE`: no guard beyond the request itself, because a vehicle that needs to reach safety cannot be made to wait on a condition that a fault might be the very thing preventing from becoming true. And `SAFE` has exactly one way out, gated by an *explicit* command — ground or crew authority, not a piece of onboard logic that decided on its own that things looked fine again. That single row is what "exitable only by an explicit decision" means in the module's own language, and it is worth committing to memory now, because lesson 11 is built entirely around proving that a table has this shape rather than trusting that it does.
+Look hard at the last two rows.
+
+**Every non-safe state has an unconditional transition to `SAFE`.** "Unconditional" means no guard at all beyond the request itself. Here is why. The moment you most need safe mode is the moment something has broken. If reaching safe required some condition to be true, the fault could be exactly what stops that condition from becoming true — and then the escape hatch is jammed when you need it.
+
+**`SAFE` has exactly one way out, and it needs an explicit command.** That command comes from ground or crew authority. No piece of onboard logic may decide on its own that things look fine again. This is the washing machine's rule: after stop, a person presses start. Lesson 11 is built around proving that a table really has this shape instead of trusting that it does.
 
 ::: key
-A mode table is states, guards, and transitions. Every state but safe carries an unconditional transition to safe. Safe carries exactly one transition out, gated by an explicit command, and no autonomous condition may take the vehicle out of it.
+The one non-negotiable property of a mode state machine: every mode has an unconditional transition to safe. No reachable state may exist from which the vehicle cannot be commanded somewhere survivable. Everything else in the table is mission logic; this is a safety property.
 :::
 
-## Implementing the table
+::: key
+A mode table is states, guards and transitions. Every state but safe carries an unconditional transition to safe. Safe carries exactly one transition out, gated by an explicit command, and no autonomous condition may take the vehicle out of it.
+:::
 
-The table above translates directly into code that looks up a request rather than branching on scattered flags. Each entry pairs a target state with a guard function over a telemetry dictionary; a missing key is read with a default of `False`, so telemetry the software has not yet received can never accidentally satisfy a guard.
+## Turning the table into code
+
+The table becomes code almost line for line. Instead of branching on scattered flags, the code *looks up* a request in the table.
+
+Each state maps to a list of entries. Each entry holds three things: the target state, the guard written as a small function of the telemetry, and a true-or-false tag saying whether the transition needs an explicit command. The guards are written as **[[lambdas|lambda]]**, Python's one-line functions. Telemetry arrives as a dictionary, and each guard reads it with `tm.get(key, False)`. That means: "look up this key, and if it is not there, use `False`." So telemetry the software has not received yet can never satisfy a guard by accident.
 
 ::: example A table-driven mode manager
 ```python
@@ -79,11 +114,11 @@ for target, tm in [("STANDBY", {"self_test_pass": True}),
                     ("SUN_POINT", {"payload_op_complete": True})]:
     state, reason = request_mode(state, target, tm)
     print(f"-> {state:11} reason='{reason}'")
-# -> STANDBY    reason=''
-# -> SUN_POINT  reason=''
-# -> SLEW       reason=''
+# -> STANDBY     reason=''
+# -> SUN_POINT   reason=''
+# -> SLEW        reason=''
 # -> PAYLOAD_OPS reason=''
-# -> SUN_POINT  reason=''
+# -> SUN_POINT   reason=''
 
 print(request_mode("STANDBY", "PAYLOAD_OPS", {"slew_complete": True, "attitude_valid": True}))
 # ('STANDBY', 'STANDBY -> PAYLOAD_OPS refused: not a legal transition or guard not satisfied')
@@ -91,10 +126,17 @@ print(request_mode("STANDBY", "PAYLOAD_OPS", {"slew_complete": True, "attitude_v
 print(request_mode("BOOT", "STANDBY", {}))
 # ('BOOT', 'BOOT -> STANDBY refused: not a legal transition or guard not satisfied')
 ```
-The nominal sequence advances one mode at a time, each transition reported with an empty reason string. Requesting `PAYLOAD_OPS` directly from `STANDBY` — skipping `SUN_POINT` and `SLEW` — is refused even though the telemetry offered would have satisfied the *later* guard, because `PAYLOAD_OPS` never appears as a legal target from `STANDBY` in the table at all: the lookup fails before any guard is even evaluated. And requesting `STANDBY` from `BOOT` with an empty telemetry dictionary is refused because `tm.get("self_test_pass", False)` defaults to `False` — a key the software has not yet received can never be silently read as permission.
+
+Read the first block from the top. The dictionary holds the six nominal rows and the recovery row. The loop then adds the five safing rows, one per non-safe state, each with a guard that always returns `True`. The function `request_mode` does three things in order: accept a request to stay put; search the current state's list for a matching target whose guard passes; and otherwise refuse, with a reason.
+
+Now the second block. The normal sequence advances one mode at a time, and each step reports an empty reason, which means "accepted."
+
+Then two refusals. Asking for `PAYLOAD_OPS` straight from `STANDBY` is refused, even though the telemetry offered would have satisfied that later guard. `PAYLOAD_OPS` is simply not a legal target from `STANDBY`, so the lookup fails before any guard is even checked. Skipping steps is impossible.
+
+Last, asking for `STANDBY` from `BOOT` with an empty dictionary is refused. `tm.get("self_test_pass", False)` found no key and used `False`. A missing report is never read as permission.
 :::
 
-::: example Safe is reachable from everywhere and leaves only by explicit command
+::: example Safe is reachable from everywhere and left only by command
 ```python
 for s in ALL_STATES:
     if s == "SAFE":
@@ -111,81 +153,246 @@ print(request_mode("SAFE", "SUN_POINT", {"attitude_valid": True}))
 print(request_mode("SAFE", "STANDBY", {"ground_recovery_cmd": True, "health_nominal": True}))
 # ('STANDBY', '')
 ```
-Every one of the five non-safe states accepts a request into `SAFE` with an empty telemetry dictionary — no condition has to be true, because the whole point of this row is that it must work even when everything else has failed. `SAFE` refuses a request into `SUN_POINT` outright, no matter what telemetry accompanies it, because no such row exists in its table entry; it accepts only the one row that requires both an explicit ground command and a nominal health flag together.
+
+All five non-safe states accept a request into `SAFE` with an *empty* telemetry dictionary. Nothing has to be true, which is the point: this row must work even when everything else has failed.
+
+From `SAFE`, a request for `SUN_POINT` is refused whatever telemetry comes with it, because no such row exists. Only one request succeeds: `STANDBY`, with both the ground recovery command and a healthy status. Sanity check: five modes in, one door out, and that door has a command on it — the same shape as the table.
 :::
 
-## What a guard is allowed to depend on
+## What a guard may depend on
 
-A guard function reads only telemetry the software already has: a flag set by a health check, a threshold comparison on a measured quantity, an explicit command flag set by an authenticated uplink. It never depends on something the software would have to guess, estimate outside its own model, or wait on indefinitely. This matters for the unconditional exit to safe specifically: if entering safe required, say, "attitude solution valid," then a navigation failure — one of the most likely reasons to want safe mode in the first place — could simultaneously be the reason the vehicle cannot reach it. The guard on the safing transition is `True` precisely because nothing about a well-designed escape hatch should be conditioned on the machinery that might itself be broken.
+A guard reads only telemetry the software already has: a flag set by a health check, a comparison of a measured value to a limit, a command flag set by an authenticated uplink. It never depends on something the software would have to guess or wait for without limit.
 
-Two smaller conventions are worth calling out because they are easy to get backwards. Requesting to stay in the current mode is always accepted — `request_mode(s, s, tm)` returns `(s, "")` unconditionally in the code above — because refusing a no-op transition would make "keep doing what you were already doing" a special case that has to be separately justified every cycle, and it needlessly complicates every caller. And a guard reading a telemetry key that has not arrived yet must treat it as unsatisfied, never as satisfied: the `.get(key, False)` pattern is the whole of that rule in code, but getting the default backwards — treating missing data as permission rather than its absence — is the single most common way a mode manager's guard logic quietly stops meaning what its author intended.
+That rule is exactly why the safing guard is `True`. Suppose instead that entering safe required "attitude solution valid." A navigation failure is one of the most likely reasons to *want* safe mode. That same failure would then make safe mode unreachable. Nothing about an escape hatch should depend on machinery that might be the thing that broke.
 
-::: warning
-A guard that silently defaults a missing or malformed telemetry field to `True` — because the author only tested the case where the field was present — will pass an actual pre-flight check by accident every time the field genuinely is present, and only fail in exactly the situation it exists to prevent: real telemetry loss, in flight, when the vehicle needs the check to work.
+Two smaller rules are easy to get backwards.
+
+**Staying put is always accepted.** `request_mode(s, s, tm)` returns `(s, "")` with no guard. "Keep doing what you are already doing" should not need fresh permission every cycle. If it did, a single cycle of odd telemetry could make the mode manager refuse to leave things as they are, and every caller would need special handling for that.
+
+**Missing means no.** A guard that reads a key that has not arrived must treat it as unsatisfied. In code, that whole rule is the `False` in `.get(key, False)`. Engineers call this **[[failing closed|fail-closed]]**. Getting the default backwards is the most common way a mode manager's guards quietly stop meaning what their author intended.
+
+::: warning Missing data is not permission
+Suppose a guard reads a missing telemetry field as `True`. Every ground test passes, because in testing the field is always present. The guard only misbehaves in the one situation it exists for: real telemetry loss, in flight. Then it waves the transition through on no data at all. Test every guard with the key absent, not only with it present and false.
 :::
 
 ## Refusals are telemetry, not silence
 
-`request_mode` never mutates state and returns no reason on a rejected transition without also saying why. That reason string is not a debugging convenience; it belongs in the vehicle's telemetry stream on every cycle it is non-empty, because a refused transition is exactly the kind of event a ground controller or an automated ground system needs to see in real time. A mode manager that refuses a request and says nothing produces telemetry indistinguishable from a mode manager that was never asked — and an operator staring at a vehicle stuck in `STANDBY`, wondering whether the slew command they sent five seconds ago was received, refused, or lost in transit, is now debugging blind at exactly the moment they most need the software to be legible.
+`request_mode` never changes state without saying so, and it never refuses without a reason. That reason string is not a debugging aid. Whenever it is not empty, it belongs in the vehicle's telemetry, because a refused request is exactly what a ground controller needs to see as it happens.
 
-## Testing beyond the nominal path
+Picture an operator watching a satellite sit in `STANDBY`. Five seconds ago she sent a slew command. Was it received and refused? Received and still pending? Lost on the way up? If the mode manager refuses silently, its telemetry looks identical to a mode manager that was never asked. She is debugging blind at the moment she most needs the software to explain itself. Pilots call a version of this problem **[[mode confusion|mode-confusion]]**.
 
-The examples above check the nominal sequence and a small number of hand-picked refusals, which is necessary but not sufficient: a mode manager with six states and a handful of transitions still has thirty non-trivial (current, requested) pairs, and eyeballing a table for "did I remember every illegal one" scales badly as states are added. The disciplined version of this testing asks, for every current state and every possible requested state, whether the transition table's decision matches what the table says it should be, across a range of telemetry values including the adversarial ones — a missing key, a requested self-transition, a request into safe with nothing else true. That systematic sweep is good engineering practice on its own, and it is also exactly the kind of check that generalizes into a formal proof once you stop asking "does this table look right" and start asking "can I search it." Lesson 11 does precisely that, once you have seen — over the next several lessons — the range of failures a mode manager's safing property has to survive.
+## Testing every pair, not only the nominal path
+
+The examples checked the normal sequence and a few hand-picked refusals. That is needed, but not enough. With six states there are $6 \times 5 = 30$ possible *changes* (each state to each of the five others). Of those, the table allows 12: six nominal rows, five safing rows and one recovery row. That leaves 18 that must always be refused. Checking all of that by eye does not scale as modes are added.
+
+The disciplined test tries **[[every pair|cross-product]]** — every current state against every requested state — under several kinds of hostile telemetry: an empty dictionary, every flag `True`, every flag `False`. It checks that nothing outside the table is ever accepted and that every refusal keeps the mode and gives a reason.
+
+::: example A cross-product test that looks for holes
+Continuing from the code above:
+
+```python
+LEGAL = {("BOOT", "STANDBY"), ("STANDBY", "SUN_POINT"), ("SUN_POINT", "SLEW"),
+         ("SUN_POINT", "STANDBY"), ("SLEW", "PAYLOAD_OPS"), ("PAYLOAD_OPS", "SUN_POINT"),
+         ("SAFE", "STANDBY")} | {(s, "SAFE") for s in ALL_STATES if s != "SAFE"}
+
+ALL_TRUE = {k: True for k in ["self_test_pass", "attitude_valid", "slew_cmd_valid",
+            "power_ok", "stand_down_cmd", "slew_complete", "payload_op_complete",
+            "ground_recovery_cmd", "health_nominal"]}
+ADVERSARIAL = [{}, ALL_TRUE, {k: False for k in ALL_TRUE}]
+
+refused = 0
+for src in ALL_STATES:
+    for dst in ALL_STATES:
+        if src == dst:
+            continue
+        for tm in ADVERSARIAL:
+            new, reason = request_mode(src, dst, tm)
+            if new == dst:
+                assert (src, dst) in LEGAL, f"hole: {src} -> {dst} accepted"
+            else:
+                assert new == src and reason, "a refusal must keep the mode and say why"
+        if request_mode(src, dst, ALL_TRUE)[0] == src:
+            refused += 1
+print("pairs tried:", 6 * 5, " legal:", len(LEGAL), " refused even with every flag true:", refused)
+# pairs tried: 30  legal: 12  refused even with every flag true: 18
+```
+
+Step by step: `LEGAL` writes down, independently of the code, the 12 changes the table allows. The three telemetry dictionaries are the hostile cases. The two loops try all 30 changes against each dictionary. Any accepted change must be in `LEGAL`; any refusal must keep the old mode and carry a reason.
+
+Sanity check: even with *every* flag set to `True` — the most permissive telemetry possible — exactly 18 changes are still refused, and $12 + 18 = 30$. The refusals come from the table's shape, not from lucky telemetry.
+:::
+
+A sweep like this is good practice on its own. It is also the first step toward a proof. Once you stop asking "does this table look right?" and start asking "can I search it?", you are one step from lesson 11's graph search, which proves that safe is reachable no matter how the table grows.
 
 ## Check yourself
 
 ::: check
-Why is "stay in the current mode" implemented as an unconditional accept rather than as a transition with its own guard in the table?
+Why is "stay in the current mode" an unconditional accept, rather than a row in the table with its own guard?
 :::
 
 ::: answer
-A self-transition means nothing about the vehicle's operational state is changing, so gating it behind a guard would make "continue doing what you are already validly doing" fail whenever that cycle's telemetry happened not to satisfy some condition — even though nothing about remaining in the current mode required that condition to begin with. Treating self-transitions as always legal keeps the guard table focused on genuine changes of state, which is the only place a guard's question ("is it now safe to move") actually applies.
+Staying put changes nothing about the vehicle. If it had a guard, "keep doing what you are validly doing" would fail on any cycle where that guard's telemetry happened to be false — even though remaining where you are never needed that condition. Making self-transitions always legal keeps the table focused on real changes of state, which is the only place a guard's question, "is it now safe to move?", makes sense.
 :::
 
 ::: check
-A colleague proposes adding a guard to the `SAFE -> STANDBY` recovery transition that also requires `time_since_safe_entry > 30` seconds, reasoning that this prevents "bouncing" out of safe mode too quickly after a fault. Does this violate the rule that safe is exited only by an explicit decision?
+A colleague wants the `SAFE` → `STANDBY` guard to also require `time_since_safe_entry > 30` seconds, to stop the vehicle bouncing out of safe too soon after a fault. Does that break the rule that safe is exited only by an explicit decision?
 :::
 
 ::: answer
-No. "Exitable only by an explicit decision" constrains *who* authorizes leaving safe — it must remain a ground or crew command, never an autonomous condition the software satisfies on its own — not how many conditions that command may be combined with. Adding `time_since_safe_entry > 30` still leaves the explicit `ground_recovery_cmd` flag as a required term in the guard's AND; the transition remains impossible without it. What *would* violate the rule is a guard that could become true from telemetry alone, with no command term present at all, because that would let the vehicle leave safe on its own judgment — the one thing this row of the table exists to prevent.
+No. The rule is about *who* authorizes leaving safe: it must stay a ground or crew command, never a condition the software satisfies alone. It does not limit how many other conditions the command is combined with. The new guard still requires `ground_recovery_cmd` as one of its AND terms, so the transition is still impossible without it.
+
+What *would* break the rule is a guard that could become true from telemetry alone, with no command term at all. That would let the vehicle leave safe on its own judgment — the one thing this row exists to prevent.
 :::
 
 ::: check
-Using the table in this lesson, trace what happens if the vehicle is in `SLEW` and receives two requests in the same telemetry cycle: first a request to `PAYLOAD_OPS` with `{"slew_complete": True, "attitude_valid": True}`, and — because a fault manager running in parallel also decided to act — a request to `SAFE`. If both are passed to `request_mode` in that order, what is the vehicle's final state, and what does this suggest about how a real mode manager should handle two requests arriving in one cycle?
+The vehicle is in `SLEW`. In one telemetry cycle, two requests arrive: first `PAYLOAD_OPS` with `{"slew_complete": True, "attitude_valid": True}`, then — because a fault manager running in parallel decided to act — `SAFE`. If both go to `request_mode` in that order, where does the vehicle end up? What does this say about handling two requests in one cycle?
 :::
 
 ::: answer
-Each call to `request_mode` is independent and mutates nothing but its return value, so processing them in order means the first call moves the state to `PAYLOAD_OPS` (the guard is satisfied), and the second call — now evaluated with `current = "PAYLOAD_OPS"` — moves it on to `SAFE`, since every non-safe state accepts an unconditional request into safe. The final state is `SAFE`, which is the outcome you want. But this only worked because the calls were applied strictly in sequence with each one's output feeding the next one's input; a real mode manager has to guarantee that ordering explicitly — for instance by giving a safing request priority and evaluating it first, or by processing exactly one request per cycle from a single authoritative source — rather than leaving the outcome dependent on incidental call order, which is precisely the kind of implicit, unexamined behavior this lesson's table-driven design is meant to replace.
+Each call is independent and only returns a result. The first call moves the state from `SLEW` to `PAYLOAD_OPS`, since its guard passes. The second call now starts from `PAYLOAD_OPS` and moves to `SAFE`, because every non-safe state accepts a request into safe. Final state: `SAFE`, which is what you want.
+
+But that only worked because the calls ran strictly in order, each feeding the next. A real mode manager must *guarantee* the ordering instead of relying on luck. For example, it can give a safing request priority and handle it first, or accept exactly one request per cycle from a single authoritative source. Leaving the outcome to accidental call order is the kind of hidden behavior a table-driven design is meant to remove.
 :::
 
 ::: check
-Suppose a ninth table row were added: `PAYLOAD_OPS -> SLEW`, guarded by `resume_slew_cmd`, to let an interrupted slew resume directly from payload operations without first returning to `SUN_POINT`. Does adding this row require re-examining anything else in the table, or is it a self-contained change?
+Someone adds a new row: `PAYLOAD_OPS` → `SLEW`, guarded by `resume_slew_cmd`, so an interrupted slew can resume without going back through `SUN_POINT`. Is that a self-contained change, or must anything else in the table be re-examined?
 :::
 
 ::: answer
-It is not self-contained. Adding any transition changes the graph of what is reachable from what, and the one property this module keeps returning to — that safe is reachable from every state — is a statement about the whole graph, not about any single row in isolation. In this particular case safe remains reachable, because `PAYLOAD_OPS` already had its own unconditional edge to `SAFE` before and after the change; but that has to be checked, not assumed, every time a row is added, and lesson 11 builds exactly the tool for checking it automatically rather than by rereading the table by eye after every edit.
+It is not self-contained. Any new transition changes what can reach what. The property this module cares most about — safe is reachable from every state — is a statement about the whole graph, not about one row.
+
+In this case safe stays reachable, because `PAYLOAD_OPS` already had its own unconditional edge to `SAFE`, before and after the change. But that must be *checked*, not assumed, after every edit. Lesson 11 builds the tool that checks it automatically.
 :::
 
 ::: check
-A junior engineer writes a guard as `lambda tm: tm["attitude_valid"]` instead of `lambda tm: tm.get("attitude_valid", False)`. What is the practical difference the first time this guard is evaluated against a telemetry sample that has not yet reported an attitude solution at all?
+A junior engineer writes a guard as `lambda tm: tm["attitude_valid"]` instead of `lambda tm: tm.get("attitude_valid", False)`. What actually happens the first time it runs on telemetry that has no attitude report yet?
 :::
 
 ::: answer
-`tm["attitude_valid"]` raises a `KeyError` when the key is absent, rather than evaluating to a boolean — the guard does not fail closed, it crashes. Whether that is better or worse than silently defaulting to `False` depends on what happens next: an uncaught exception in the mode manager's request-handling path could halt mode processing entirely, which is a far more dangerous failure than correctly refusing one transition. The `.get(key, False)` form makes "telemetry not yet received" an ordinary, handled case with a well-defined outcome — the guard is not satisfied — instead of an exceptional one that depends on whatever the surrounding code does when an exception propagates out of a guard evaluation.
+`tm["attitude_valid"]` raises a `KeyError` when the key is missing. The guard does not return `False`; it crashes. What happens next depends on the code around it. An uncaught exception in the mode manager's request path could stop mode processing altogether, which is far more dangerous than correctly refusing one transition.
+
+The `.get(key, False)` form turns "not received yet" into an ordinary case with a clear result — the guard is not satisfied — instead of an exception whose effect depends on whatever surrounds the guard.
 :::
 
 ## Summary
 
 | Term | Meaning |
 | --- | --- |
-| State | One named condition the mode manager can be in; exactly one at a time |
-| Guard condition | A boolean function of telemetry already available to the software |
-| Transition | (from state, to state, guard) — legal only if the table contains it and the guard holds |
-| Unconditional exit to safe | Every non-safe state's guard to `SAFE` is `True`; a fault must never be able to block it |
-| Explicit-only recovery | `SAFE`'s one outgoing transition requires an authenticated command term, never telemetry alone |
-| Self-transition | Requesting the current state is always accepted, with no guard |
-| Missing telemetry | Read with a default that makes the guard unsatisfied, never satisfied |
-| Refusal reporting | A rejected request returns a non-empty reason string, which belongs in telemetry |
+| State (mode) | One named condition the mode manager can be in; exactly one at a time |
+| Guard condition | A true-or-false test on telemetry the software already has |
+| Transition | (from, to, guard) — legal only if the table has it and the guard holds |
+| Unconditional exit to safe | Every non-safe state's guard to `SAFE` is `True`; a fault must never block it |
+| Explicit-only recovery | `SAFE`'s one way out needs a ground or crew command term, never telemetry alone |
+| Self-transition | Asking for the current state is always accepted, with no guard |
+| Missing telemetry | Read so the guard is unsatisfied, never satisfied (fail closed) |
+| Refusal | Keeps the current mode and returns a non-empty reason, which goes into telemetry |
+| Cross-product test | All $6 \times 5 = 30$ changes tried under hostile telemetry: 12 legal, 18 refused |
 
-This lesson designed the table and asserted, by construction, that safe is reachable from everywhere. The next few lessons show the range of failures — common-mode errors, Byzantine faults, radiation upsets, slow drifts — that a mode manager's fault response has to survive, and lesson 11 returns to this exact table to replace "asserted by construction" with a proof: a graph search over the transitions that either confirms the property or names the state that breaks it.
+This lesson built the table and made safe reachable by construction. The next lessons move to the boundary with the ground — command and telemetry — and then to the ways things fail, and lesson 11 returns to this exact table to turn "reachable by construction" into a proof.
 
+::: context state-machine The six modes as a picture
+A **finite state machine** is a set of states plus arrows saying which state may follow which. Here are this lesson's six modes. Blue arrows are the nominal flow, red arrows are the unconditional safing edges (one from every other mode), and the dashed arrow is the single way out of safe, which needs a ground command.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="ab" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#1d6fd1"/></marker>
+    <marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#b4232c"/></marker>
+  </defs>
+  <g stroke="#b4232c" stroke-width="1.3" marker-end="url(#ar)">
+    <line x1="37" y1="39" x2="58" y2="148"/>
+    <line x1="112" y1="39" x2="80" y2="148"/>
+    <line x1="195" y1="39" x2="96" y2="150"/>
+    <line x1="170" y1="104" x2="100" y2="156"/>
+    <line x1="300" y1="104" x2="101" y2="168"/>
+  </g>
+  <line x1="98" y1="150" x2="138" y2="41" stroke="#1d6fd1" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#ab)"/>
+  <g stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#ab)">
+    <line x1="64" y1="27" x2="88" y2="27"/>
+    <line x1="160" y1="22" x2="188" y2="22"/>
+    <line x1="190" y1="33" x2="162" y2="33"/>
+    <line x1="262" y1="39" x2="298" y2="78"/>
+    <line x1="282" y1="92" x2="258" y2="92"/>
+    <line x1="214" y1="80" x2="224" y2="41"/>
+  </g>
+  <g fill="#fff" stroke="#1f2a44" stroke-width="1.5">
+    <rect x="10" y="15" width="54" height="24" rx="5"/>
+    <rect x="90" y="15" width="70" height="24" rx="5"/>
+    <rect x="190" y="15" width="80" height="24" rx="5"/>
+    <rect x="160" y="80" width="96" height="24" rx="5"/>
+    <rect x="282" y="80" width="60" height="24" rx="5"/>
+    <rect x="40" y="150" width="60" height="24" rx="5" fill="#f2b880"/>
+  </g>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="37" y="31">BOOT</text>
+    <text x="125" y="31">STANDBY</text>
+    <text x="230" y="31">SUN_POINT</text>
+    <text x="208" y="96">PAYLOAD_OPS</text>
+    <text x="312" y="96">SLEW</text>
+    <text x="70" y="166">SAFE</text>
+  </g>
+  <text x="250" y="170" font-size="11" fill="#6c7a93" text-anchor="middle">dashed: ground command only</text>
+</svg>
+```
+:::
+
+::: context flag-combinations How fast flags multiply
+Each true-or-false flag can be in 2 positions, so $n$ independent flags can be in $2^n$ combinations. Three flags give 8. Ten flags give 1,024. Twenty give more than a million. Most of those combinations should never happen, but with scattered flags nothing says which ones are impossible, so nobody can check them all. A state machine with six named states has exactly six situations to think about.
+:::
+
+::: context guard-word Where "guard" comes from
+In 1975 the computer scientist Edsger Dijkstra described **guarded commands**: a statement that may run only when a true-or-false test, its guard, is true. The picture is a guard at a gate who lets you through only if you meet the condition. Mode tables borrow the word directly: the guard on a transition is the test that must pass before the gate opens.
+:::
+
+::: context safe-mode What a satellite does in safe mode
+For a typical satellite, safe mode means: turn off everything that is not needed to survive, point the solar panels at the Sun so the batteries stay charged, keep the radio listening, and wait. It uses the fewest, simplest parts possible, so it does not depend on whatever just failed. There is a twist: for a rocket booster in the middle of a landing burn, doing nothing is not survivable. There, "safe" may mean keep flying the burn. What safe means depends on the flight phase.
+:::
+
+::: context lambda A function in one line
+In Python, `lambda tm: tm.get("power_ok", False)` makes a tiny unnamed function. It takes one input, called `tm`, and returns the value after the colon. It does the same job as a normal `def guard(tm):` function whose only line is `return tm.get("power_ok", False)`. Storing guards as lambdas lets each row of the table carry its own test right next to its target state.
+:::
+
+::: context fail-closed Failing closed
+A door lock that stays locked when its power fails is said to **fail closed**. A guard that says "no" when its data is missing does the same. The opposite, failing open, sometimes makes sense — a fire door should open when the power fails — so the choice must be made on purpose. For a guard that permits a mode change, a missing input means "not proven," and not proven means no. The unconditional path to safe is the deliberate exception, because safe is where you want to end up when data goes missing.
+:::
+
+::: context mode-confusion Mode confusion
+Aviation safety researchers use **mode confusion** for the situation where the people operating a system believe it is in one mode while it is actually in another, or do not understand why it changed. It has been a factor in real aircraft accidents involving autopilots. The cure is the same in a cockpit and a control room: the software must always say clearly what mode it is in, what it was asked to do, and why it did or did not do it.
+:::
+
+::: context cross-product Thirty changes on one grid
+Rows are the mode you are in; columns are the mode requested. Blue cells are the nominal transitions, red the safing edges, orange the one commanded recovery, grey the always-allowed "stay put." Every blank cell is one of the 18 changes the test must see refused.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <g font-size="11" fill="#1f2a44" text-anchor="end">
+    <text x="88" y="48">BOOT</text><text x="88" y="72">STANDBY</text><text x="88" y="96">SUN_POINT</text>
+    <text x="88" y="120">SLEW</text><text x="88" y="144">PAYLOAD_OPS</text><text x="88" y="168">SAFE</text>
+  </g>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="107" y="28">BT</text><text x="131" y="28">SB</text><text x="155" y="28">SP</text>
+    <text x="179" y="28">SL</text><text x="203" y="28">PO</text><text x="227" y="28">SF</text>
+  </g>
+  <g stroke="#1f2a44" stroke-width="1" fill="#fff">
+    <rect x="95" y="35" width="144" height="144"/>
+  </g>
+  <g fill="#6c7a93">
+    <rect x="96" y="36" width="22" height="22"/><rect x="120" y="60" width="22" height="22"/><rect x="144" y="84" width="22" height="22"/>
+    <rect x="168" y="108" width="22" height="22"/><rect x="192" y="132" width="22" height="22"/><rect x="216" y="156" width="22" height="22"/>
+  </g>
+  <g fill="#1d6fd1">
+    <rect x="120" y="36" width="22" height="22"/><rect x="144" y="60" width="22" height="22"/><rect x="168" y="84" width="22" height="22"/>
+    <rect x="120" y="84" width="22" height="22"/><rect x="192" y="108" width="22" height="22"/><rect x="144" y="132" width="22" height="22"/>
+  </g>
+  <g fill="#b4232c">
+    <rect x="216" y="36" width="22" height="22"/><rect x="216" y="60" width="22" height="22"/><rect x="216" y="84" width="22" height="22"/>
+    <rect x="216" y="108" width="22" height="22"/><rect x="216" y="132" width="22" height="22"/>
+  </g>
+  <rect x="120" y="156" width="22" height="22" fill="#f2b880"/>
+  <g font-size="11" fill="#1f2a44">
+    <text x="252" y="60">from: rows</text><text x="252" y="76">to: columns</text>
+    <text x="252" y="100">12 legal</text><text x="252" y="116">18 refused</text>
+  </g>
+</svg>
+```
+:::

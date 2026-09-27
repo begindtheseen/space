@@ -6,13 +6,24 @@ covers:
   - applying directly at spacex.com/careers and what happens next
 ---
 
-Everything so far in this module has been about building the document. This lesson is about the narrower, more mechanical act of actually submitting it: finding the specific posting worth applying to, using the version of your resume this module has built for that posting, and knowing what a realistic understanding of the aftermath looks like. Applications are submitted at spacex.com/careers directly, and the site's own listing is the primary source for what postings currently exist — this lesson does not try to describe a specific interface that will inevitably change, but the underlying judgment calls involved stay the same regardless of how the page is laid out at any given moment.
+Think about mailing a letter. You pick the right address, you put the right letter in the envelope, and you drop it in the box. After that, the letter is out of your hands. Staring at the mailbox will not make it arrive faster.
+
+Applying for a job works the same way. Every lesson so far in this module has been about writing the letter — your resume. This lesson is about the mailing: picking the one opening worth applying to, putting the right version of your resume in the envelope, and knowing what really happens after you press "submit".
+
+At SpaceX, you apply directly at spacex.com/careers. That site's own list is the true source for which openings exist right now. Websites get redesigned, so this lesson will not describe buttons or menus that may have moved by the time you read it. The judgment calls stay the same however the page looks: which opening, which resume, and how to read what comes back.
 
 ## Finding the right requisition
 
-A careers listing organizes open requisitions by team and location, and it is worth being precise about what a requisition actually is: one specific, currently open position, with its own posting text, not a general description of a job category that happens to be reused across teams. Two postings can carry an identical or near-identical title and describe meaningfully different work, because job titles get reused across teams for organizational reasons that have nothing to do with what a specific team is actually doing day to day. Reading a title and assuming you know what the role involves skips the one step that actually matters.
+A careers site lists its openings by team and by location. Each one is a **[[requisition|requisition-word]]** — one specific, currently open position, with its own written description, called the **posting**. People in hiring shorten it to "req".
 
-Read the specific posting's full text before applying to it — not the title alone, and not the first paragraph alone. The posting's own basic-qualifications and preferred-qualifications lists are the actual filter a reader is checking your resume against, and they are also the clearest signal available for which of your tailored resume versions from the previous lesson to submit. A posting emphasizing atmospheric flight and vehicle dynamics calls for your landing-and-descent version; a posting emphasizing filtering and sensor fusion calls for your navigation version. Submitting the wrong version — the generic one, or the one tailored for a different family — wastes the tailoring work this module has already had you do.
+A requisition is not a job title in general. It is one seat on one team. Here is the catch: two postings can carry the same title, or nearly the same, and describe quite different work. Companies reuse titles across teams for reasons of organization — pay bands, reporting lines — that have nothing to do with what a team does all day. So reading the title and assuming you know the job skips the one step that matters most.
+
+Read the whole posting before you apply. Not the title alone, and not the first paragraph alone. The posting has two lists that matter most:
+
+- the **basic qualifications** — the must-haves, the checklist a reader holds your resume against;
+- the **preferred qualifications** — the nice-to-haves that make one qualified candidate stand out from another.
+
+Those [[two lists|two-lists]] are the real filter. They are also the clearest clue to which of your tailored resume versions from the last lesson to send. A posting that stresses atmospheric flight and vehicle dynamics calls for your landing-and-descent version. A posting that stresses filtering and sensor fusion calls for your navigation version. Sending the wrong one — the generic resume, or the version built for a different family — throws away the tailoring work you have already done.
 
 ::: key
 A requisition is one specific open posting, not a job title in general. Read its full text, including both qualifications lists, before applying, and submit whichever tailored resume version actually matches what that specific posting emphasizes.
@@ -20,29 +31,57 @@ A requisition is one specific open posting, not a job title in general. Read its
 
 ## What the application form actually asks
 
-Application systems differ in their specifics, and this module cannot describe every implementation choice a given system makes. What is stable across nearly all of them is the shape: a place to upload your resume, a handful of contact and logistics fields, and often a small number of yes-or-no or short-answer questions establishing basic eligibility and logistics. This is exactly why the formatting work from an earlier lesson in this module matters here concretely — the resume you upload at this step is the file a person, and possibly software before her, will actually read, so the plain-text, single-column, standard-heading version you built and tested is the one that belongs here.
+Every company's application system is a little different, and this module cannot describe them all. But the shape is nearly always the same:
 
-Some of a posting's stated requirements — including any eligibility-related requirement specific to that role — may appear as a direct written question on the application form itself, and some may not be asked in writing at this stage at all. An application form that does not ask about a particular requirement in writing has not necessarily waived it; it may instead be a question that gets confirmed later, in a live conversation with a recruiter, rather than on the form. Read the posting's full text for what it states directly, and do not treat the absence of a written question on the form as the absence of the requirement itself.
+1. a place to upload your resume;
+2. a handful of contact and logistics fields — name, email, location, start date;
+3. often, a few yes-or-no or short-answer questions about basic eligibility and logistics.
+
+Step 1 is where the formatting work from the lesson on the **[[applicant tracking system|ats-bridge]]** pays off. The file you upload here is the one a person will read — and software may read it first. So upload the version you built and tested: plain text, single column, standard headings, exported as a PDF whose text stays text.
+
+Now a subtle point about step 3. Some of the posting's requirements may show up as written questions on the form. Others — including some [[eligibility requirements|export-eligibility]] specific to that role — may not be asked in writing at this stage at all.
+
+A form that does not ask about a requirement has not waived it. The question may instead be confirmed later, out loud, in a conversation with a recruiter. So read the posting for what it says directly, and never treat a missing question on the form as a missing requirement.
+
+::: warning The form is not the whole rulebook
+If the posting states a requirement and the form never asks about it, the requirement still applies. The posting's own text is the authority on what the role needs. The form only shows which questions happen to be collected at this step.
+:::
 
 ## One well-matched requisition beats several loose ones
 
-It can feel productive to apply to many requisitions in a short span, on the reasoning that more applications submitted means more chances of a response. This reasoning undersells what actually drives a strong outcome: a posting's basic qualifications are a real filter, and applying to a requisition your evidence does not clearly match does not become more likely to succeed by volume — it remains the same weak match, submitted more times, to more requisitions that were never a strong fit to begin with. An hour spent finding one requisition that genuinely matches your strongest evidence, reading its posting text closely, and submitting the correctly tailored resume version is a better use of that hour than the same time spent submitting the generic version to eight loosely related postings.
+Picture a key and a row of locks. Trying the same wrong key in eight locks does not make it fit any of them. You have not raised your odds eight times; you have tried a key that does not fit, eight times.
+
+Applying in bulk works like that. It feels productive: more applications, more chances. But a posting's basic qualifications are a real filter. If your evidence does not plainly match a requisition, sending it again and again — to more postings that were never a strong fit — does not turn a weak match into a strong one.
+
+So compare two ways to spend one hour. In the first, you find one requisition that truly matches your strongest evidence, read its posting closely, and send the correctly tailored resume. In the second, you send your generic resume to eight loosely related postings. The first hour is better spent.
 
 ::: example An evening spent two different ways
-One candidate spends an evening identifying a single requisition whose posting text closely matches her landing-and-descent anchor projects, reads the full posting twice, confirms her tailored resume's identity line and leading project match what the posting emphasizes, and submits it.
+**Candidate A.** She spends an evening finding one requisition whose posting closely matches her landing-and-descent anchor projects. She reads the full posting twice. She checks that her tailored resume's identity line and leading project match what the posting stresses. Then she submits.
 
-A second candidate, in the same evening, submits her one generic resume to eight different requisitions across several unrelated GNC role families, without reading any posting's full text closely enough to notice whether her strongest evidence actually matches what each one is checking for.
+**Candidate B.** In the same evening, he sends his one generic resume to eight different requisitions across several unrelated GNC role families. He never reads any posting closely enough to notice whether his strongest evidence matches what it checks for.
 
-The first candidate has produced one submission that clearly demonstrates fit for a specific, real opening. The second has produced eight submissions, most of which pair a generic document against a posting it was never shaped to match — more attempts, but not a stronger case in any one of them. Volume does not substitute for a match the underlying evidence has to actually support.
+**Count what each produced.** A has 1 submission. B has 8.
+
+**Count the strong cases.** A's one submission plainly shows fit for a specific, real opening. B's eight pair a generic document with postings it was never shaped to match — so most of them, maybe all, are weak.
+
+**Sanity check.** More attempts, yet no stronger case in any single one of them. Volume cannot stand in for a match that the evidence itself has to support. A's evening wins.
 :::
 
 ## What happens next, realistically
 
-Once you submit, expect some form of automated acknowledgment that your application was received — the specific confirmation flow is an implementation detail of whichever system handled the submission, not something this module can promise in exact form. Beyond that acknowledgment, a period without further contact is common, and it is worth being precise about what that silence does and does not tell you.
+Once you submit, expect some kind of automated message saying your application was received. The exact form of that message depends on the software that handled it, so this module cannot promise what it will look like.
 
-A requisition can close — be filled, paused, or withdrawn — without individual notice to every applicant who submitted to it, because a posting reflects one team's staffing need on that team's own timeline, not a standing commitment to respond to everyone who applied. From outside, a closed requisition, a still-open requisition buried under high application volume, and a requisition where your specific application has not yet been reached all look identical: silence. Because these causes are indistinguishable from where you sit, silence by itself is not evidence about the quality of your application, and reading it as a verdict is reading information into a signal that does not actually carry it.
+After that, a stretch of silence is common. It is worth being exact about what that silence tells you — and what it does not.
 
-If and when a live conversation does happen, it begins with a conversation with a recruiter — a first checkpoint covering background, fit, and logistics before any deeper technical evaluation takes place. This module does not cover that conversation's specifics here; the point for this lesson is narrower: the application step itself is complete once you have submitted a well-matched, correctly tailored, correctly formatted resume to a specific requisition, and everything past that point is a separate stage with its own separate timeline that a single submission does not let you predict.
+A requisition can **close** — be filled, paused, or withdrawn — without every applicant being told. A posting reflects one team's need, on that team's own timeline. It is not a promise to answer everyone who applied.
+
+Now look at it from where you sit. Three very different situations all look exactly the same from outside:
+
+- the requisition has closed;
+- the requisition is still open, but buried under a pile of applications;
+- the requisition is open and moving, but nobody has reached your application yet.
+
+Each one produces the same thing: no reply. Because you [[cannot tell them apart|silence-causes]], silence on its own is not evidence about how good your application was. Reading it as a verdict means reading meaning into a signal that does not carry any.
 
 ::: key
 A requisition closing, a queue moving slowly, and an application not yet reached all produce identical silence from outside. Silence alone is not evidence about an application's quality, because these causes cannot be told apart without more information than silence provides.
@@ -52,14 +91,27 @@ A requisition closing, a queue moving slowly, and an application not yet reached
 A closed requisition, a slow-moving queue, and an application that has not yet been reached all produce the same outward sign: no response. Treating silence as a rejection assumes information you do not actually have.
 :::
 
+If a live conversation does happen, it starts with a **[[recruiter|recruiter]]** — a person on the company's hiring staff whose job is to find and move candidates through the process. That first call is a checkpoint on background, fit and logistics, before any deep technical testing. A later module walks through that call and [[every stage after it|pipeline-stages]].
+
+For this lesson the point is narrower. Your part of the application step is finished once you have sent a well-matched, correctly tailored, correctly formatted resume to one specific requisition. Everything after that is a separate stage, on a separate clock, and a single submission gives you no way to predict it.
+
 ## A reasonable posture while you wait
 
-The productive response to submitting an application is not to monitor it. Once a well-matched, correctly tailored, correctly formatted resume has gone to a specific requisition, that submission is complete, and checking for updates repeatedly changes nothing about its outcome. The better use of the time between submissions is applying the same care to the next well-matched requisition you find — and, as the next few lessons in this module cover, building the kind of visible technical presence and relationships that make a referral, rather than a cold application alone, possible for the requisitions that matter most to you.
+The useful response to submitting is not to watch the application. The submission is complete. Checking for updates again and again changes nothing about how it turns out — like staring at the mailbox.
+
+A better use of the waiting time has two parts:
+
+1. give the same care to the next well-matched requisition you find;
+2. build the things the next lessons cover — a visible technical presence, and real relationships — that make a referral possible for the openings you care about most. A referral is a second way in, alongside the cold application.
 
 ::: example A realistic timeline, and an anxious misreading of the same one
-A candidate submits a well-matched, tailored application on a Monday and receives an automated confirmation email the same day. Three weeks pass with no further contact. In week four, a recruiter calls to schedule a first conversation.
+**What happened.** A candidate submits a well-matched, tailored application on a Monday. That same day she gets an automated confirmation email. Then three weeks pass with no contact. In week four, a recruiter calls to schedule a first conversation. [[Laid out on a calendar|timeline-picture]], that is 1 message on day 0, then about 21 days of nothing, then the call.
 
-An anxious reading of the same three weeks treats each day of silence as accumulating evidence of rejection, checks the application portal daily for a status change, and begins mentally rehearsing reasons the application failed. Nothing about the actual three weeks supports that reading over the alternative — a requisition moving through its own internal process on its own timeline, arriving at the same fourth-week phone call regardless of how those three weeks were spent by the applicant. The productive use of that same window is applying to the next well-matched requisition and working on the community and referral activities the next lessons cover, not monitoring a channel that carries no reliable signal either way.
+**The anxious reading.** Suppose she had read those same three weeks anxiously. Each quiet day counts as more proof of rejection. She checks the application portal every day — roughly 21 checks — and rehearses reasons her application failed.
+
+**Test the reading against the facts.** Nothing in those three weeks favored "rejected" over the other explanation: a requisition moving through its own internal process on its own schedule. And the ending is the same week-four call either way. All 21 checks changed nothing.
+
+**The better use of the window.** Apply to the next well-matched requisition, and work on the community and referral activities in the next lessons. Those are things she can actually move. The portal is a channel that carries no reliable signal in either direction.
 :::
 
 ## Check yourself
@@ -69,7 +121,7 @@ Two requisitions share the exact same job title. Explain why reading only the ti
 :::
 
 ::: answer
-Job titles are frequently reused across different teams for organizational reasons unrelated to what a specific team actually does day to day, so two postings with an identical title can describe meaningfully different work. The posting's full text — specifically its basic-qualifications and preferred-qualifications lists — is the actual filter being applied and the clearest signal of what that specific team is checking for, so it should be read in full before deciding to apply or which resume version to submit.
+Companies often reuse job titles across different teams for organizational reasons that have nothing to do with the team's day-to-day work. So two postings with an identical title can describe quite different jobs. What you should read is the posting's full text — especially its basic-qualifications and preferred-qualifications lists. Those lists are the actual filter being applied, and the clearest signal of what that specific team is checking for. Read them in full before deciding whether to apply and which resume version to send.
 :::
 
 ::: check
@@ -77,7 +129,7 @@ An application form does not ask, in writing, about a requirement that the posti
 :::
 
 ::: answer
-No. An application form not asking about a stated requirement in writing does not remove that requirement — it may instead mean that particular question gets confirmed later, in a live conversation, rather than captured on the form itself. The posting's own stated text is the authoritative source for what the role requires, regardless of which specific questions happen to appear on any given application form.
+No. A form that does not ask about a stated requirement has not removed it. The question may instead be confirmed later, in a live conversation such as the recruiter call, rather than on the form. The posting's own text is the authority on what the role requires, no matter which questions happen to appear on the form.
 :::
 
 ::: check
@@ -85,7 +137,7 @@ Why does applying to many loosely matched requisitions in a short window not mea
 :::
 
 ::: answer
-A posting's basic qualifications act as a real filter regardless of how many times a similar, poorly matched application is submitted against them — volume does not change whether the underlying evidence actually fits what a specific posting is checking for. Time spent finding a genuinely well-matched requisition and submitting a correctly tailored, carefully checked application produces one submission with a real chance of matching what that reader needs to see, which the same time spread across many loosely matched submissions does not.
+A posting's basic qualifications are a real filter, and they apply no matter how many times a poorly matched application is sent. Volume does not change whether the evidence fits what a specific posting checks for — the weak match stays weak, only repeated. Spending the time on one genuinely well-matched requisition, with a correctly tailored and carefully checked resume, produces one submission with a real chance of showing the reader what she needs to see. The same time spread across many loose submissions does not produce that.
 :::
 
 ::: check
@@ -93,7 +145,7 @@ A candidate has heard nothing for five weeks after submitting a well-matched app
 :::
 
 ::: answer
-This reasoning treats silence as if it carries a specific meaning, but a closed requisition, a slow-moving queue at high volume, and an application that has not yet been reached all produce identical silence from the applicant's side, and these causes cannot be told apart from outside. Because the signal is genuinely ambiguous, silence by itself is not evidence about application quality, and concluding the application was weak reads a specific meaning into a signal that does not actually distinguish between these very different underlying causes.
+The reasoning treats silence as if it had one specific meaning. It does not. A closed requisition, a slow queue under high volume, and an application nobody has reached yet all produce the same silence from the applicant's side, and she cannot tell them apart from outside. Since the signal is ambiguous, silence by itself is not evidence about quality. Concluding "my application was weak" reads a particular meaning into a signal that does not tell those very different causes apart.
 :::
 
 ::: check
@@ -101,7 +153,7 @@ What is the most productive way for a candidate to spend the weeks after submitt
 :::
 
 ::: answer
-The most productive use of that time is applying the same care to the next well-matched requisition and investing in the community, contribution, and relationship-building activities later lessons in this module cover, since those are activities a candidate can actually influence. Checking a submitted application's status repeatedly changes nothing about its outcome — the application is already complete and its timeline is now controlled by a separate process the candidate cannot accelerate by watching it.
+The most productive use of the time is to give the same care to the next well-matched requisition, and to invest in the community, contribution and relationship-building work the later lessons in this module cover. Those are things the candidate can actually influence. Checking a submitted application's status over and over changes nothing about its outcome: the application is already complete, and its timeline now belongs to a separate process that watching cannot speed up.
 :::
 
 ## Summary
@@ -114,4 +166,112 @@ The most productive use of that time is applying the same care to the next well-
 | After submitting | Expect an automated confirmation; a live conversation, if it happens, starts with a recruiter | Reading silence as a verdict on the application's quality |
 | While waiting | Apply to the next well-matched requisition; build community and referral groundwork | Repeatedly checking application status |
 
-The rest of this module is about the second path into a company this size: not the cold application alone, but the people already inside it. The next lesson takes up what a referral actually does, what it does not do, and how to earn one without an existing network to draw on.
+The rest of this module is about the second way into a company this size: not the cold application alone, but the people already inside it. The next lesson takes up what a referral actually does, what it does not do, and how to earn one without an existing network to draw on.
+
+::: context requisition-word Where "req" comes from
+To **requisition** something is to make a formal, written request for it — an army requisitions supplies, a school requisitions new desks. Inside a company, a manager who needs a new person files a requisition: a request, approved by the budget holders, to fill one seat. The job posting you read is the public face of that internal request. That is why each posting usually carries a requisition number or ID, and why recruiters talk about "opening a req" and "closing a req". Naming the exact req, by its ID, is how you point to one seat and not a whole category of jobs.
+:::
+
+::: context two-lists Why a posting has two lists
+The two lists do different jobs. **Basic qualifications** are a gate: miss one and the answer is usually no, however good the rest is. **Preferred qualifications** are a ranking: they sort the people who already passed the gate. So a resume must show every basic qualification plainly, and then as many preferred ones as are honestly true.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="50" width="70" height="44" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="45" y="77" font-size="12" text-anchor="middle" fill="#1f2a44">resumes</text>
+  <line x1="80" y1="72" x2="118" y2="72" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="118,67 128,72 118,77" fill="#1f2a44"/>
+  <rect x="130" y="40" width="90" height="64" rx="6" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="175" y="66" font-size="12" text-anchor="middle" fill="#1f2a44">basic quals</text>
+  <text x="175" y="84" font-size="11" text-anchor="middle" fill="#1f2a44">gate: yes / no</text>
+  <line x1="175" y1="104" x2="175" y2="126" stroke="#b4232c" stroke-width="2"/>
+  <text x="175" y="142" font-size="11" text-anchor="middle" fill="#b4232c">missing one: stops here</text>
+  <line x1="220" y1="72" x2="248" y2="72" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="248,67 258,72 248,77" fill="#1f2a44"/>
+  <rect x="260" y="40" width="92" height="64" rx="6" fill="#f2b880" stroke="#1f2a44" stroke-width="2"/>
+  <text x="306" y="66" font-size="12" text-anchor="middle" fill="#1f2a44">preferred</text>
+  <text x="306" y="84" font-size="11" text-anchor="middle" fill="#1f2a44">ranks the rest</text>
+</svg>
+```
+:::
+
+::: context ats-bridge The software reader, again
+An **applicant tracking system** — **ATS**, said "A-T-S" — is the software a company uses to collect applications and turn each resume file into searchable fields. Lesson five of this module covered why it can scramble a two-column layout, lose a table's alignment, and read nothing from an image. The upload box on the application form is exactly where that lesson becomes real: whatever you upload here is what the ATS parses and what a recruiter then sees. Upload the version you tested by copying its text out and reading it plain.
+:::
+
+::: context export-eligibility The requirement the form may not ask about
+For GNC work on launch vehicles, the biggest eligibility requirement is usually export control. SpaceX postings have carried a paragraph saying that, to follow U.S. export regulations (the rules called **ITAR**, said "eye-tar"), the applicant must be a U.S. citizen or national, a lawful permanent resident (a **green card** holder), a refugee or an asylee — or be eligible to get the required authorizations from the State Department. That paragraph sits in the posting text. Whether the form also asks about it in writing varies, and the career module on the ITAR gate explains that eligibility is confirmed in the first recruiter call. Either way, it applies.
+:::
+
+::: context silence-causes Three causes, one signal
+From inside the company, these three situations are completely different. From your side, every one of them arrives as the same empty inbox. A signal that looks identical for every cause cannot tell you which cause you are in.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="12" width="150" height="36" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="85" y="35" font-size="12" text-anchor="middle" fill="#1f2a44">req closed</text>
+  <rect x="10" y="67" width="150" height="36" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="85" y="90" font-size="12" text-anchor="middle" fill="#1f2a44">big, slow queue</text>
+  <rect x="10" y="122" width="150" height="36" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="85" y="145" font-size="12" text-anchor="middle" fill="#1f2a44">not reached yet</text>
+  <line x1="160" y1="30" x2="240" y2="80" stroke="#6c7a93" stroke-width="2"/>
+  <line x1="160" y1="85" x2="240" y2="85" stroke="#6c7a93" stroke-width="2"/>
+  <line x1="160" y1="140" x2="240" y2="90" stroke="#6c7a93" stroke-width="2"/>
+  <rect x="240" y="62" width="110" height="46" rx="6" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="295" y="82" font-size="12" text-anchor="middle" fill="#1f2a44">what you see:</text>
+  <text x="295" y="99" font-size="12" text-anchor="middle" font-weight="700" fill="#1f2a44">no reply</text>
+</svg>
+```
+:::
+
+::: context recruiter Who the recruiter works for
+A **recruiter** works for the company, not for you. Their job is to fill the company's open requisitions with people who will pass the process — so they spend their day matching candidates to reqs, checking basic qualifications and eligibility, and scheduling the next steps. That makes a recruiter useful to you, but not your agent. Some companies split the job: a **sourcer** searches for candidates, and a recruiter then runs them through the stages. Treat every recruiter conversation as part of the evaluation, because it is.
+:::
+
+::: context pipeline-stages The road after the recruiter call
+The hiring-pipeline module maps the whole process. As this course describes it, the SpaceX process runs roughly five to eight weeks across up to about nine touchpoints. Very roughly, in order: a short recruiter screen, a technical phone screen with an engineer or the hiring manager, a take-home exercise for some software and firmware roles, then a full onsite day, and finally a debrief and decision. Not every candidate sees every stage.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <line x1="20" y1="45" x2="340" y2="45" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="20" cy="45" r="8" fill="#1d6fd1"/>
+  <circle cx="84" cy="45" r="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <circle cx="148" cy="45" r="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <circle cx="212" cy="45" r="8" fill="#ffffff" stroke="#6c7a93" stroke-width="2" stroke-dasharray="3 2"/>
+  <circle cx="276" cy="45" r="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <circle cx="340" cy="45" r="8" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="20" y="25">apply</text>
+    <text x="84" y="25">recruiter</text>
+    <text x="148" y="25">tech screen</text>
+    <text x="212" y="25">take-home</text>
+    <text x="276" y="25">onsite</text>
+    <text x="330" y="25">decision</text>
+  </g>
+  <text x="212" y="72" font-size="11" text-anchor="middle" fill="#6c7a93">some roles</text>
+  <text x="180" y="100" font-size="12" text-anchor="middle" fill="#1f2a44">roughly 5 to 8 weeks end to end</text>
+</svg>
+```
+:::
+
+::: context timeline-picture The four weeks, drawn to scale
+Here is the example's timeline, with each week the same width. The confirmation lands on day 0; the call comes in week four, between day 21 and day 28. Everything between is the same flat line — and nothing on that line tells you what the end will be.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <line x1="30" y1="60" x2="330" y2="60" stroke="#1f2a44" stroke-width="2"/>
+  <g stroke="#1f2a44" stroke-width="1.5">
+    <line x1="30" y1="54" x2="30" y2="66"/><line x1="105" y1="54" x2="105" y2="66"/><line x1="180" y1="54" x2="180" y2="66"/><line x1="255" y1="54" x2="255" y2="66"/><line x1="330" y1="54" x2="330" y2="66"/>
+  </g>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="30" y="82">day 0</text><text x="105" y="82">day 7</text><text x="180" y="82">day 14</text><text x="255" y="82">day 21</text><text x="330" y="82">day 28</text>
+  </g>
+  <rect x="30" y="50" width="225" height="20" fill="#6c7a93" opacity="0.25"/>
+  <text x="142" y="104" font-size="12" text-anchor="middle" fill="#6c7a93">3 weeks of silence</text>
+  <circle cx="30" cy="60" r="6" fill="#1d6fd1"/>
+  <text x="34" y="36" font-size="11" fill="#1d6fd1">submit + auto email</text>
+  <circle cx="292" cy="60" r="6" fill="#b4232c"/>
+  <text x="330" y="36" font-size="11" text-anchor="end" fill="#b4232c">recruiter calls</text>
+</svg>
+```
+:::

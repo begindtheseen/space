@@ -3,18 +3,43 @@
 @title Git · Intermediate
 @name Git, intermediate: reading history, undoing mistakes and resolving conflicts
 @blurb Keep junk and secrets out of your repository, read and compare history, fix and undo commits the right way for each situation, set work aside, tag releases, and resolve merge conflicts yourself.
+@plainvoice true
 
 === git2-01 | Ignoring files: .gitignore
 --- teach
-The basics course gave you the everyday local loop: status, add, commit, diff, branches and merges. This course is about the moments that loop does not cover: keeping files out, reading and comparing history, undoing mistakes the right way for each situation, and resolving a conflict yourself.
+The last course ended with a merge where both branches had moved: git joined them with a merge commit, and you met the word *conflict* for a clash on the same lines. That course gave you the everyday local loop: status, add, commit, diff, branches and merges.
+
+This course is about the moments that loop does not cover: keeping files out, reading and comparing history, undoing mistakes the right way for each situation, and resolving a conflict yourself.
+
+It starts with keeping files out. By the end of this lesson you can tell git, once, "never save these files", and it will remember.
+
+Think of packing for a trip with a note taped inside the suitcase lid: *do not pack*. Whatever is on that note stays home, no matter how fast you throw things in. Git gets a note like that too.
+
+**Step 1: files that should stay out**
 
 Some files must never be committed:
 
-- **secrets** — `.env` files full of passwords and API keys;
-- **dependencies** — `node_modules/`, thousands of files anyone can reinstall;
-- **generated files** — build output, logs, caches, editor settings.
+- **secrets** — `.env` files full of passwords and **API keys** (an API key is a password a program uses to log in to an online service). Committing one is a [[real security leak|leaked-secrets]];
+- **dependencies** — `node_modules/`, a folder of thousands of files written by other people, which [[anyone can reinstall|reinstall]];
+- **generated files** — build output, logs, caches, editor settings. A program made them, so a program can make them again.
 
-A file called `.gitignore` at the top of the repository lists them, one pattern per line:
+**Step 2: the .gitignore file**
+
+The note is a file called `.gitignore`, at the top of the repository (the main project folder, the one that holds `.git`). Its name starts with a dot, so it is a hidden file, like `.git` itself.
+
+It is a plain text file with one **pattern** per line. A pattern is a name, or a name with wildcards in it, that says which files a rule is about. The simplest pattern is a plain name:
+
+```
+~/project $ echo ".env" > .gitignore
+~/project $ cat .gitignore
+.env
+```
+
+That one line tells git to ignore any file called `.env`.
+
+**Step 3: the pattern rules**
+
+A few characters change what a pattern means. Here is a `.gitignore` that uses each of them, with a comment above every rule:
 
 ```
 # this name, in any folder
@@ -29,13 +54,106 @@ node_modules/
 !keep.log
 ```
 
-A line that starts with `#` is a comment. A `#` later in a line is not, so keep comments on lines of their own.
+Rule by rule:
 
-Ignored files disappear from `git status`, and `git add .` skips them. When you are not sure why a file is (or is not) ignored, `git check-ignore -v file` names the rule that matched.
+- `.env` — a plain name matches that name in any folder.
+- `node_modules/` — a slash at the end ("trailing") means folders only. Everything inside the folder is ignored with it.
+- `*.log` — the star is a [[wildcard, as in the Terminal course|patterns]]: every name that ends in `.log`.
+- `/build` — a slash at the front ("leading") means only at the top of the repository, not in folders further in.
+- `!keep.log` — the exclamation mark, read "not", makes an exception to an earlier rule. `*.log` ignores every log; `!keep.log` brings that one back.
 
-Commit the `.gitignore` itself, so everyone on the project ignores the same things. And know its limit: it only affects files git is **not yet tracking**. A file that was committed before it was ignored stays tracked — that is a debugging lesson of its own, later in this course.
+A line that starts with `#` (the hash sign) is a **comment**: a note for people, which git skips. A `#` later in a line is not a comment. It becomes part of the pattern, so keep comments on lines of their own.
+
+**Step 4: what git stops showing**
+
+Ignored files disappear from `git status`. Before the `.gitignore`, this project lists five untracked files:
+
+```
+~/project $ git status
+On branch main
+
+No commits yet
+
+Untracked files:
+        .env
+        app.js
+        debug.log
+        node_modules/lodash/index.js
+```
+
+After a `.gitignore` with `.env`, `node_modules/` and `*.log` in it:
+
+```
+~/project $ git status
+On branch main
+
+No commits yet
+
+Untracked files:
+        .gitignore
+        app.js
+```
+
+The `.gitignore` itself shows up, because it is a new file too. And `git add .` now skips the ignored files, so "add everything" is safe again.
+
+**Step 5: asking git why**
+
+When you are not sure why a file is (or is not) ignored, ask git. `git check-ignore -v file` names the rule that matched. `-v` is short for "verbose": say more than yes or no.
+
+```
+~/project $ git check-ignore -v debug.log
+.gitignore:3:*.log	debug.log
+```
+
+Read it left to right: in `.gitignore`, on line `3`, the pattern `*.log` matched `debug.log`. If no rule matches, it prints nothing.
+
+**Step 6: commit the .gitignore**
+
+Commit the `.gitignore` itself, like any other file. Then [[everyone on the project|shared-rules]] ignores the same things.
+
+**Watch out:** a `.gitignore` only affects files git is **not yet tracking**. A file that was committed before it was ignored [[stays tracked|already-tracked]], and its changes keep showing up. That is a debugging lesson of its own, later in this course. The habit that avoids it: write the `.gitignore` first, before your first `git add .`.
+
+::: context leaked-secrets Why a secret must never be committed
+Everything you commit is copied to everyone who gets the repository. It also stays in the history, even if you delete the file in a later commit. On a public project anyone in the world can read it, and automated programs search public code for keys and passwords all day long. GitHub runs its own secret scanning to warn people when this happens. If a key does leak, deleting the file is not enough: the fix is to cancel that key and make a new one, because the old one is out there for good.
+:::
+
+::: context reinstall Why node_modules can be rebuilt
+A JavaScript project lists the packages it needs in a small file called `package.json`. The command `npm install` reads that list and downloads every package into `node_modules/`. So the list is worth committing, and the downloaded folder is not: anyone can rebuild it with one command, and it is often many thousands of files. Python projects do the same with a `requirements.txt` list and a folder of installed packages. The rule of thumb: commit the recipe, ignore what it cooks.
+:::
+
+::: context patterns Checking names against the rules
+In the Terminal course, `ls *.txt` found every name ending in `.txt`. A `.gitignore` line uses the same idea, but git reads the pattern, not the shell. Git checks each file name against the lines from top to bottom, and the last line that matches decides. That is why `!keep.log` has to come after `*.log`. One catch: when a whole folder is ignored, git does not look inside it, so `!` cannot bring back a file within it.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <text x="20" y="20" font-size="12" font-weight="bold" fill="#1f2a44">file</text>
+  <text x="170" y="20" font-size="12" font-weight="bold" fill="#1f2a44">last matching line</text>
+  <line x1="20" y1="28" x2="340" y2="28" stroke="#6c7a93" stroke-width="1"/>
+  <g font-size="12">
+    <text x="20" y="50" fill="#b4232c">.env</text>
+    <text x="170" y="50" fill="#b4232c">.env: ignored</text>
+    <text x="20" y="76" fill="#b4232c">node_modules/</text>
+    <text x="170" y="76" fill="#b4232c">node_modules/: ignored</text>
+    <text x="20" y="102" fill="#b4232c">debug.log</text>
+    <text x="170" y="102" fill="#b4232c">*.log: ignored</text>
+    <text x="20" y="128" fill="#1d6fd1">keep.log</text>
+    <text x="170" y="128" fill="#1d6fd1">!keep.log: kept</text>
+    <text x="20" y="154" fill="#1d6fd1">app.js</text>
+    <text x="170" y="154" fill="#1d6fd1">no match: kept</text>
+  </g>
+</svg>
+```
+:::
+
+::: context shared-rules One list for the whole team
+Because the `.gitignore` is committed, it travels with the project. Everyone who copies the repository gets the same rules, so nobody commits their logs or secrets by accident. GitHub keeps a public collection of ready-made `.gitignore` files for many languages, in its `github/gitignore` repository, and offers one when you create a new project. For clutter that only your own computer makes, like your editor's settings, git also lets you keep a personal ignore file that applies to every repository on your machine and is never shared.
+:::
+
+::: context already-tracked Ignoring is only about new files
+Git sorts files into two kinds. **Tracked** files are ones git already has in a commit, or staged. **Untracked** files are new to git. The `.gitignore` only filters the untracked ones: it stops new files from being listed and from being added. A tracked file stays tracked whatever the `.gitignore` says, and git keeps showing its changes. Near the end of this course a debugging lesson hands you exactly that mess, a `.env` committed before anyone ignored it, and shows the command that makes git let go of it.
+:::
 --- task
-This new project has a secrets file `.env`, a `node_modules` folder and a `debug.log`. Create a `.gitignore` so that `git status` shows **only** `.gitignore` and `app.js` as untracked, then commit both with `git add .` and a message of your choice.
+This new project has a secrets file `.env`, a `node_modules` folder and a `debug.log`. Create a `.gitignore` with one pattern per line: one for `.env`, one for the `node_modules` folder, and one for every `.log` file. Check that `git status` shows **only** `.gitignore` and `app.js` as untracked, then commit both with `git add .` and a message of your choice.
 --- starter
 git init
 echo "API_KEY=secret" > .env
@@ -51,9 +169,11 @@ git status
 git add .
 git commit -m "Add the app and ignore rules"
 --- hint
-One pattern per line: `echo ".env" > .gitignore`, then add `node_modules/` and `*.log` with `>>`.
+Make the file with `echo ".env" > .gitignore`. For each next line, use `>>`, which adds to the end of a file instead of replacing it.
 --- hint
-Run `git status` — only `.gitignore` and `app.js` should be listed. Then `git add .` and commit.
+The other two lines are `node_modules/` (a folder, so a trailing slash) and `*.log` (every log). `cat .gitignore` shows your three lines; then run `git status`.
+--- hint
+When `git status` lists only `.gitignore` and `app.js`, run `git add .` and then `git commit -m "Add the app and ignore rules"`.
 --- check shell | The secrets, dependencies and logs are ignored
 git . ignored .env
 git . ignored node_modules/lodash/index.js
@@ -66,24 +186,125 @@ git . at HEAD missing .env
 
 === git2-02 | Reading history: log --graph
 --- teach
-`git log --oneline` lists commits. Add `--graph` and it **draws** how they connect, and `--all` shows every branch, not just the one you are on:
+Last lesson you kept junk and secrets out of the repository. This lesson is about reading what *is* in it. You will draw the history as a picture, see every branch at once, and then tidy up the branches you have finished with, safely.
+
+At the end of the last course, `git log --oneline` put commits from two branches into one flat list, which hid the fork. Think of a subway map instead: you can see where the lines split and where they join again. Git can draw its history like that.
+
+**Step 1: drawing the history**
+
+`git log --oneline` lists commits. Add `--graph` and it [[draws how they connect|graph-picture]]:
 
 ```
-*   9f2c1ab (HEAD -> main) Merge branch 'docs'
+~/project $ git log --oneline --graph
+*   67e4820 (HEAD -> main) Merge branch 'docs'
 |\
-| * 51d0e3c Write the guide
-* | 7ac44b2 Fix the start-up crash
+* | d1de340 (fix) Fix the start-up crash
+| * 7938076 (docs) Write the guide
 |/
-* 03be9f1 Start the app
+* 0e13d9b Start the app
 ```
 
-- Each `*` is a commit; newest at the top.
-- Lines lead from each commit down to its parent. `|\` is where a merge commit's second parent joins in; `|/` is where two lines of work split.
-- The names in brackets are where branches and tags point. `HEAD -> main` means you are on `main` (`HEAD` is git's name for the commit you are on).
+Your ids will be different; the shape is what matters. Here is how to read it:
 
-A branch whose tip already appears in `main`'s history is **merged**: deleting it loses nothing. `git branch -d name` deletes a branch only if it is merged, and refuses otherwise, which makes it the safe way to clean up. (`-D` deletes anyway — for work you really want to throw away.) `git branch --merged` lists the branches that are safe to delete.
+- Each `*` is a commit. The newest is at the top, as in a plain `git log`.
+- The lines lead from each commit down to its [[parent|parent-lines]], the commit that came before it.
+- `|/` is where two lines of work split. Read from the bottom: after *Start the app*, the history forks into two lines.
+- `|\` is where a merge commit's second parent joins in. The merge commit at the top has two parents: *Fix the start-up crash* and *Write the guide*.
+- The names in brackets show where branches and [[tags|tags-preview]] point. `HEAD -> main` means you are on `main`. (HEAD is git's name for the commit you are on.)
+
+**Step 2: every branch, not only yours**
+
+A plain `git log` shows only the history that leads to where you are. A branch with commits that `main` does not have is left out. Add `--all` and git shows every branch:
+
+```
+~/project $ git log --oneline --graph --all
+* 6d956c4 (experiment) Try a wild idea
+*   67e4820 (HEAD -> main) Merge branch 'docs'
+|\
+* | d1de340 (fix) Fix the start-up crash
+| * 7938076 (docs) Write the guide
+|/
+* 0e13d9b Start the app
+```
+
+Now *Try a wild idea*, on the `experiment` branch, shows up at the top. Its line leads down to the merge commit, which is where `experiment` was made. But no line leads from `main` up to it: `main` does not have that work.
+
+**Step 3: merged branches**
+
+Look at `fix` and `docs`. The **tip** of a branch is its newest commit. Both tips sit inside `main`'s history, below the merge commit. A branch whose tip already appears in `main`'s history is **merged**: all of its work is in `main`, so [[deleting it loses nothing|label-only]].
+
+`experiment` is different. Its tip is above `main`, on a line of its own. Its work exists nowhere else.
+
+`git branch --merged` lists the branches that are merged into the branch you are on, so they are safe to delete:
+
+```
+~/project $ git branch --merged
+  docs
+  fix
+* main
+```
+
+The `*` marks `main` because you are on it, not because you should delete it.
+
+**Step 4: deleting a branch safely**
+
+`git branch -d name` deletes a branch. `-d` is short for "delete". It only deletes a branch that is merged, and refuses otherwise:
+
+```
+~/project $ git branch -d docs
+Deleted branch docs (was 7938076).
+~/project $ git branch -d experiment
+error: the branch 'experiment' is not fully merged.
+If you are sure you want to delete it, run 'git branch -D experiment'.
+```
+
+That refusal makes `-d` the safe way to [[clean up|cleanup-habit]]. The capital `-D` [[deletes anyway|capital-d]], merged or not. Keep it for work you really want to throw away.
+
+**Watch out:** when `-d` refuses, git is protecting work that exists nowhere else. The mistake is to copy the `-D` command from the message without thinking. Stop and look at the graph first: if you still need those commits, keep the branch.
+
+::: context graph-picture The same history, drawn as dots
+Here is the history from Step 1 drawn as a picture. Each dot is a commit, and each line joins a commit to its parent. The history forks after *Start the app*, each side adds one commit, and the merge commit joins them again. The text graph in your terminal is this same picture, turned on its side and drawn with the characters `*`, `|`, `/` and `\`.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <line x1="40" y1="90" x2="140" y2="45" stroke="#1d6fd1" stroke-width="3"/>
+  <line x1="40" y1="90" x2="140" y2="135" stroke="#f2b880" stroke-width="3"/>
+  <line x1="140" y1="45" x2="240" y2="90" stroke="#1d6fd1" stroke-width="3"/>
+  <line x1="140" y1="135" x2="240" y2="90" stroke="#f2b880" stroke-width="3"/>
+  <circle cx="40" cy="90" r="10" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="140" cy="45" r="10" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="140" cy="135" r="10" fill="#f2b880" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="240" cy="90" r="12" fill="#ffffff" stroke="#b4232c" stroke-width="3"/>
+  <text x="40" y="116" font-size="11" text-anchor="middle" fill="#1f2a44">Start the app</text>
+  <text x="140" y="26" font-size="11" text-anchor="middle" fill="#1f2a44">fix: Fix the crash</text>
+  <text x="140" y="162" font-size="11" text-anchor="middle" fill="#1f2a44">docs: Write the guide</text>
+  <text x="262" y="87" font-size="12" font-weight="bold" fill="#b4232c">main:</text>
+  <text x="262" y="102" font-size="12" font-weight="bold" fill="#b4232c">the merge</text>
+</svg>
+```
+:::
+
+::: context parent-lines Why the lines point down
+Every commit stores the id of the commit that came right before it, its **parent**. It does not store what comes after, because that did not exist yet when it was made. So git always walks history backwards, from the newest commit down through the parents. A merge commit stores two parents. The first is the branch you were on when you merged (here `main`, with *Fix the start-up crash*). The second is the branch you merged in (`docs`). That second one is the line that joins at `|\`.
+:::
+
+::: context tags-preview Names that stay put
+A **tag** is a name for one commit, like `v1.0`, that never moves. A branch name moves forward every time you commit on it; a tag stays on the commit you gave it. Teams tag the exact commit they released, so they can always find it again. Tags appear in the same brackets in `git log`, next to branch names. You will make your own later in this course.
+:::
+
+::: context label-only Deleting a label, not the work
+Inside the hidden `.git` folder, a branch is a tiny file holding one commit id: its tip. Deleting a branch deletes only that label, never the commits. For a merged branch, every commit can still be reached by walking back from `main`, so nothing is lost. For an unmerged branch, the label was the only way to its newest commits. Without it they are hidden, and git eventually clears away commits that no name leads to. The last lesson of this course shows a way to find such commits again, if you act soon.
+:::
+
+::: context cleanup-habit Tidying up on a real team
+On a busy project, branches pile up fast: one for every feature and every fix. Once a branch is merged, it is only clutter. On GitHub, a merged pull request shows a button to delete its branch, and a project can turn on a setting that deletes merged branches automatically. On your own computer, `git branch --merged` followed by `git branch -d` does the same job. Because `-d` refuses anything unmerged, you can tidy up without worrying.
+:::
+
+::: context capital-d Small d, big D
+In git, a capital letter is often the forceful version of a flag. `-D` is short for two long flags together, `--delete --force`: delete, and skip the safety check. Git spells the dangerous version with a capital so that it is harder to type by accident. You will meet more commands later in this course that can throw work away, and each one asks you to say so on purpose.
+:::
 --- task
-This repository has three branches besides `main`. Draw the history with `git log --oneline --graph --all`. Two of the branches are merged into `main`; one is not. Delete the **two merged** branches with `git branch -d`, and keep the unmerged one.
+This repository has three branches besides `main`. Draw the whole history with `git log --oneline --graph --all`. Two of the branches are merged into `main`; one is not. Delete the **two merged** branches with `git branch -d`, and keep the unmerged one.
 --- starter
 git init
 echo "v1" > app.txt
@@ -110,9 +331,11 @@ git log --oneline --graph --all
 git branch -d docs
 git branch -d fix
 --- hint
-In the graph, find each branch name and follow its line: does it lead into `main`'s history?
+In the graph, find each branch name and follow its line down: does its commit sit inside `main`'s history, below `HEAD -> main`? `git branch --merged` gives you the same answer as a list.
 --- hint
 `docs` and `fix` are part of `main`. `git branch -d experiment` would refuse, because that work exists nowhere else.
+--- hint
+Run `git branch -d docs`, then `git branch -d fix`. Leave `experiment` alone.
 --- check shell | You drew the whole history
 ran git log
 used --graph
@@ -126,31 +349,145 @@ git . branch main
 
 === git2-03 | Looking inside a commit: git show
 --- teach
-`git show` prints a commit: its id, author and message, then the diff of what it changed.
+Last lesson you drew the history, one line per commit. This lesson opens one of those commits to see exactly what it changed. Then you will pull an old version of a file out of the history and bring it back.
+
+Think of `git log` as the table of contents of a book: one line per chapter. `git show` turns to one page and lets you read it.
+
+**Step 1: show the commit you are on**
+
+`git show` prints a commit: its id, [[its author|author-line]] and its message, then the diff of what it changed.
+
+```
+~/project $ git show
+commit 83860dd (HEAD -> main)
+Author: you
+
+    Retry forever
+
+diff --git a/config.txt b/config.txt
+--- a/config.txt
++++ b/config.txt
+-retries = 5
++retries = 50
+```
+
+The diff reads like the ones from `git diff` in the last course: a line starting `-` was taken out, a line starting `+` was put in. This commit changed `retries = 5` to `retries = 50`.
+
+With nothing after it, `git show` shows the commit you are on, HEAD.
+
+**Step 2: naming other commits**
+
+To look at a different commit, name it. One way is its id, as `git log --oneline` shows it:
+
+```
+~/project $ git log --oneline
+83860dd (HEAD -> main) Retry forever
+4e87491 Try more retries
+c05d82e Add config
+~/project $ git show 4e87491
+```
+
+The other way is to count back from where you are. `HEAD~1`, read "HEAD tilde one", means [[one commit before HEAD|counting-back]]. `HEAD~2` is two before, and so on:
 
 ```
 git show            # the commit you are on (HEAD)
-git show 7ac44b2    # a commit by its id, as git log shows it
+git show 4e87491    # a commit by its id, as git log shows it
 git show HEAD~1     # one before HEAD; HEAD~2 is two before, and so on
 ```
 
+The `~` here is [[not your home folder|tilde-sign]]. It only means "go back".
+
 `HEAD~n` works anywhere git wants a commit, and so do branch names: `main~3` is three commits before the tip of `main`.
 
-With a colon, `git show` prints **a file as it was** in that commit:
+**Step 3: a file as it was**
+
+With a colon, `git show` prints **a file as it was** in that commit. Put the commit on the left of the colon and the file name on the right:
 
 ```
-git show HEAD~2:config.txt
+~/project $ git show HEAD~2:config.txt
+retries = 3
 ```
 
-To bring that old version back into your working folder, restore it from that commit:
+Read it as "[[config.txt, as it was at HEAD~2|commit-colon]]". It only prints. Nothing in your folder changes.
+
+**Step 4: bringing the old version back**
+
+You met `git restore config.txt` in the last course: it puts a file back the way it was in the last commit. Give it `--source` and it takes the file from any commit you name instead:
 
 ```
-git restore --source=HEAD~2 config.txt
+~/project $ git restore --source=HEAD~2 config.txt
+~/project $ cat config.txt
+retries = 3
 ```
 
-That only changes the file in your folder; commit it like any other change. A shortcut you will see from here on: `git commit -am "…"` stages every change to files git already tracks and commits them in one step (`-a` skips new, untracked files, so those still need `git add`). The history keeps every version, so you have undone a change without losing the record of it.
+`--source` is a flag that takes a value, the commit to copy from. The `=` joins the flag and its value into one word.
+
+That only changes the file in your folder. `git status` now lists `config.txt` as modified, like any change you make by hand. Commit it like any other change.
+
+**Step 5: a shortcut for committing**
+
+A shortcut you will see from here on:
+
+```
+~/project $ git commit -am "Restore the stable config"
+```
+
+`git commit -am "…"` stages every change to files git already tracks and commits them, in one step. It is two flags [[squeezed together|combined-flags]]: `-a` for "all" and `-m` for "message". `-a` skips new, untracked files, so those still need `git add`.
+
+The history keeps every version, so you have undone a change [[without losing the record of it|keep-the-record]].
+
+**Watch out:** counting back is easy to get wrong by one. HEAD is the top line of `git log --oneline`, so `HEAD~1` is the second line and `HEAD~2` is the third. Before you restore, print the file with `git show` and check it is the version you want.
+
+::: context author-line Who made the commit
+On a real computer, git stamps every commit with a name and an email, which you set once with `git config --global user.name` and `git config --global user.email`. It also records the date and time, so a real `git show` has a `Date:` line too. This practice terminal writes `you` and leaves the date out. On a team, the author line is how you know who to ask about a change.
+:::
+
+::: context counting-back Counting back from HEAD
+Each step of `~` moves one commit back, from a commit to its parent. In this lesson's project, HEAD is *Retry forever*, `HEAD~1` is *Try more retries*, and `HEAD~2` is *Add config*. The names move as you commit: after one more commit, *Add config* becomes `HEAD~3`. When a commit has two parents, as a merge commit does, `~` follows the first parent: the branch you were on when you merged.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <line x1="70" y1="55" x2="170" y2="55" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="190" y1="55" x2="290" y2="55" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="60" cy="55" r="12" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="180" cy="55" r="12" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="300" cy="55" r="12" fill="#ffffff" stroke="#b4232c" stroke-width="3"/>
+  <g font-size="12" font-weight="bold" text-anchor="middle">
+    <text x="60" y="28" fill="#1d6fd1">HEAD~2</text>
+    <text x="180" y="28" fill="#1d6fd1">HEAD~1</text>
+    <text x="300" y="28" fill="#b4232c">HEAD</text>
+  </g>
+  <g font-size="11" text-anchor="middle" fill="#1f2a44">
+    <text x="60" y="88">Add config</text>
+    <text x="180" y="88">Try more retries</text>
+    <text x="300" y="88">Retry forever</text>
+  </g>
+  <g font-size="11" text-anchor="middle" fill="#6c7a93">
+    <text x="60" y="108">retries = 3</text>
+    <text x="180" y="108">retries = 5</text>
+    <text x="300" y="108">retries = 50</text>
+  </g>
+</svg>
+```
+:::
+
+::: context tilde-sign Not your home folder
+In the Terminal course, `~` meant your home folder, as in `cd ~`. The shell only swaps `~` for your home folder when it starts a word. In `HEAD~2` the `~` sits in the middle of a word, so the shell leaves it alone and git receives it as typed. Git reads it as "go back along the parents". You may also see `HEAD^`, read "HEAD caret", which means "the parent of HEAD", the same commit as `HEAD~1`.
+:::
+
+::: context commit-colon Any file, from any commit
+The part before the colon can be any way of naming a commit: an id like `c05d82e`, a branch name like `main`, or `HEAD~2`. The part after it is the file's path from the top of the repository, not from the folder you are standing in. Because `git show` only prints, you can also keep an old copy next to the new one with a redirect from the Terminal course: `git show HEAD~2:config.txt > old-config.txt`. Git never loses the old versions; this is how you read them.
+:::
+
+::: context combined-flags Two flags in one
+Single-letter flags after one dash can often be squeezed together: `ls -la` is the same as `ls -l -a`. `git commit -am "…"` is `-a` and then `-m`. Order matters here, because `-m` takes a value. The message has to come straight after the `m`, so the `m` goes last. Type `-ma "…"` instead and git takes the letter `a` as your message. `-a` skips untracked files on purpose, so that a stray new file never sneaks into a commit.
+:::
+
+::: context keep-the-record Undoing by moving forward
+You did not erase the bad commit. You added a new one on top that puts the old value back. So the log still tells the whole story: what was tried, when, and when it was undone. In aerospace this matters a great deal. Flight software is kept under strict configuration management, where every change must be traceable, and standards for airborne software such as DO-178C require it. Later in this course `git revert` does this kind of undo for a whole commit at once, and `git reset` shows the other kind, which rewrites history instead.
+:::
 --- task
-`config.txt` was changed in each of the last three commits, and the newest value is wrong. Look at the version from **two commits ago** with `git show HEAD~2:config.txt`, bring that version back into your working folder, and commit it with the message `Restore the stable config`.
+`config.txt` was changed in each of the last three commits, and the newest value is wrong. Look at the version from **two commits ago** with `git show HEAD~2:config.txt`. Bring that version back into your working folder with `git restore --source=HEAD~2`, and commit it with the message `Restore the stable config`.
 --- starter
 git init
 echo "retries = 3" > config.txt
@@ -165,9 +502,11 @@ git show HEAD~2:config.txt
 git restore --source=HEAD~2 config.txt
 git commit -am "Restore the stable config"
 --- hint
-`git show HEAD~2:config.txt` prints the old file. `git log --oneline` helps you count back.
+`git show HEAD~2:config.txt` prints the old file. `git log --oneline` helps you count back: HEAD~2 is the third line.
 --- hint
-`git restore --source=HEAD~2 config.txt` puts that version in your folder; then `git commit -am "Restore the stable config"`.
+`git restore --source=HEAD~2 config.txt` puts that version in your folder. `cat config.txt` should now say `retries = 3`.
+--- hint
+Commit the change with `git commit -am "Restore the stable config"`.
 --- check shell | You looked at the old version
 used HEAD~2
 printed-line retries = 3
@@ -178,23 +517,149 @@ git . at HEAD file config.txt == retries = 3
 
 === git2-04 | Before you merge: comparing branches
 --- teach
-Before merging a branch, look at what it would bring in. Two ranges answer the two questions:
+Last lesson you looked inside one commit with `git show`, and named older commits by counting back, like `HEAD~2`. This lesson puts two whole branches side by side, so you can see exactly what a merge would bring into `main` **before** you run it.
+
+Think of a delivery arriving at a shop. Before anyone unpacks the boxes onto the shelves, someone reads the packing list and opens a box or two, to check it is what was ordered. Here the shelves are `main`, the delivery is a branch called `feature`, and you are the one who checks.
+
+There are two questions to ask. Which commits are new? And how do the files differ? Each one gets its own command.
+
+**Step 1: which commits are new.** Put two dots between two branch names:
 
 ```
-git log --oneline main..feature   # commits on feature that main does not have
-git diff main feature             # how the files differ between the two tips
-git diff --stat main feature      # just which files, and how much
+~/project $ git log --oneline main..feature
+dfa4663 (feature) Link the about page
+4a1db69 Add the about page
 ```
 
-`A..B` reads as "reachable from B, but not from A" — the new work on B. It is the list a reviewer reads in a pull request.
+Two names with two dots between them make a **range**: a set of commits picked out by two end points. Read `main..feature` as "commits you can [[reach|reachable]] from `feature`, but not from `main`". In plain words: the new work on `feature` that `main` does not have yet.
 
-`git diff` compares any two commits: `git diff HEAD~1 HEAD` is what the last commit changed, and `git diff HEAD~3` compares your working folder with three commits ago. Add `--name-only` for just the file names.
+The order matters. Swap the names and you ask the opposite question:
 
-To take a file out of the project, `git rm file` deletes it and stages the deletion in one step; commit it like any other change.
+```
+~/project $ git log --oneline feature..main
+~/project $
+```
 
-Reviewing first is how you catch the debug file, the stray print statement or the accidental deletion **before** it lands in `main`, instead of after.
+`feature..main` means "what does `main` have that `feature` does not?" Here the answer is nothing, so git prints nothing.
+
+The list of new commits is exactly what a teammate reads first when you ask for your branch to be merged, in a [[pull request|pr-review]].
+
+**Step 2: how the files differ.** Give `git diff` two branch names, and it compares the newest commit on each one, the branch's **tip**:
+
+```
+~/project $ git diff main feature
+diff --git a/about.html b/about.html
+--- /dev/null
++++ b/about.html
++about
+diff --git a/debug.txt b/debug.txt
+--- /dev/null
++++ b/debug.txt
++x = 1
+diff --git a/index.html b/index.html
+--- a/index.html
++++ b/index.html
+-home
++home, about
+```
+
+It reads the same way as the diffs you know. The first name, `main`, is the old side: its lines get a `-` (minus). The second name, `feature`, is the new side: its lines get a `+` (plus). `/dev/null` is git's way of saying "no file here", so a file with `--- /dev/null` above it is brand new on `feature`.
+
+**Step 3: a shorter summary.** On a big branch the full diff runs for pages. Add `--stat`, short for "statistics", and you get one line per file instead:
+
+```
+~/project $ git diff --stat main feature
+ about.html | 1 +
+ debug.txt  | 1 +
+ index.html | 2 +-
+ 3 files changed, 3 insertions(+), 1 deletion(-)
+```
+
+Each line names a file and counts its changed lines, with a little bar of pluses and minuses. `index.html | 2 +-` means two lines touched: one removed and one added, because a [[changed line counts twice|changed-lines]].
+
+Want only the names? `--name-only` prints just those:
+
+```
+~/project $ git diff --name-only main feature
+about.html
+debug.txt
+index.html
+```
+
+**Step 4: any two commits.** `git diff` is not only for branches. It compares any two commits you name, old one first:
+
+```
+git diff HEAD~1 HEAD     # what the last commit changed
+```
+
+With only one name, it compares that commit with the files in your folder right now:
+
+```
+git diff HEAD~3          # your folder, compared with three commits ago
+```
+
+`--stat` and `--name-only` work with all of these.
+
+**Step 5: taking a file out.** Say the review turned up a file that should not be there. `git rm` ("remove") takes a file out of the project. It [[deletes the file and stages the deletion|git-rm]] in one step:
+
+```
+~/project $ git rm debug.txt
+rm 'debug.txt'
+~/project $ git status
+On branch feature
+
+Changes to be committed:
+        deleted:    debug.txt
+```
+
+The deletion now sits in the staging box. Commit it like any other change, and the file is gone from that branch from then on.
+
+Reviewing first is how you catch the debug file, the stray print line or the file deleted by accident **before** it lands in `main`, [[instead of after|before-not-after]].
+
+**Watch out:** get the order of the range right. The branch you want to merge in goes on the **right**: `main..feature`. Written the other way round, `git log` prints nothing, and it is easy to think the branch has no new work. And remove the stray file on the branch that has it. On `main`, `git rm debug.txt` fails with `fatal: pathspec 'debug.txt' did not match any files`, because `main` never had it.
+
+::: context reachable What "reachable" means
+Every commit remembers its parent, the commit it was built on. Start at a branch's tip and follow those parent links back, one by one: every commit you pass is **reachable** from that branch. `main..feature` keeps the commits reachable from `feature` and throws away any that are also reachable from `main`.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <line x1="152" y1="60" x2="68" y2="60" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="252" y1="60" x2="168" y2="60" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="60" cy="60" r="12" fill="#ffffff" stroke="#6c7a93" stroke-width="2"/>
+  <circle cx="160" cy="60" r="12" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <circle cx="260" cy="60" r="12" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <text x="60" y="96">Add the</text><text x="60" y="110">home page</text>
+    <text x="160" y="96">Add the</text><text x="160" y="110">about page</text>
+    <text x="260" y="96">Link the</text><text x="260" y="110">about page</text>
+  </g>
+  <text x="60" y="30" font-size="12" fill="#b4232c" text-anchor="middle">main</text>
+  <text x="260" y="30" font-size="12" fill="#b4232c" text-anchor="middle">feature</text>
+  <rect x="136" y="38" width="148" height="44" rx="10" fill="none" stroke="#1d6fd1" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="210" y="138" font-size="12" fill="#1d6fd1" text-anchor="middle">main..feature: the two blue commits</text>
+</svg>
+```
+:::
+
+::: context pr-review What a reviewer sees first
+On GitHub, a pull request page has a tab listing the branch's commits and another showing every changed file as a diff. Those are the same two answers you get from `git log main..feature` and `git diff main feature`. Running them yourself first means you see what your reviewer will see, and can tidy up before anyone else has to point out the stray file. Many teams do exactly this as a habit before they open a pull request.
+:::
+
+::: context changed-lines Why a changed line counts twice
+Git does not store "this line was edited". It compares the old file and the new one line by line, and a line whose text changed simply does not match any more. So git reports it as the old line removed and the new line added. That is why `index.html`, where one line went from `home` to `home, about`, shows `2 +-` and adds to both totals: 1 insertion and 1 deletion.
+:::
+
+::: context git-rm Plain rm or git rm?
+The `rm` you know from the Terminal courses deletes the file from your folder, and that is all. Git notices the file is missing, but the deletion is not staged: you would still need `git add debug.txt` (yes, `add`, to stage a deletion) before committing. `git rm debug.txt` does both jobs at once. Either way the file stays in the older commits, so `git show` can still print it if you ever need it.
+:::
+
+::: context before-not-after Why before is cheaper than after
+Once a commit is merged into `main` and your teammates have copies of it, it is part of everyone's history. You can still delete the file with a new commit, but the old commits keep it, and anyone can read it there. For a scratch file that is only untidy. For a password or an API key it is a leak, as a debugging lesson later in this course shows. A minute of reviewing costs far less than cleaning up.
+:::
 --- task
-Review the `feature` branch before merging it: list the commits `main` does not have with `git log --oneline main..feature`, and see which files differ with `git diff --stat main feature`. One of feature's commits added a scratch file, `debug.txt`, by mistake. Remove it on `feature` (with `git rm` and a commit), then merge `feature` into `main`.
+Review the `feature` branch before merging it. First list the commits `main` does not have with `git log --oneline main..feature`. Then see which files differ with `git diff --stat main feature`.
+
+One of feature's commits added a scratch file, `debug.txt`, by mistake. Switch to `feature`, remove `debug.txt` with `git rm`, and commit that with a message of your choice. Then switch back to `main` and merge `feature` into it.
 --- starter
 git init
 echo "home" > index.html
@@ -218,9 +683,11 @@ git commit -m "Remove the scratch file"
 git switch main
 git merge feature
 --- hint
-The two review commands are in the task. `debug.txt` shows up in the `--stat` list.
+Start with the two review commands from the task. `debug.txt` shows up in the `--stat` list, as a new file on `feature`.
 --- hint
-`git switch feature`, `git rm debug.txt`, `git commit -m "…"`, then back to `main` and `git merge feature`.
+The file lives on `feature`, so go there first: `git switch feature`, then `git rm debug.txt`, then commit.
+--- hint
+`git commit -m "Remove the scratch file"`, then `git switch main` and `git merge feature`.
 --- check shell | You reviewed the branch first
 used main..feature
 used git diff
@@ -233,19 +700,83 @@ git . log contains Link the about page
 
 === git2-05 | Fixing the last commit: --amend
 --- teach
-Just committed and immediately spotted a forgotten file or a typo in the message? `--amend` **replaces** the last commit with a corrected one:
+Last lesson you reviewed a branch and removed a stray file with a fresh commit. Sometimes the mistake is smaller and more recent: you commit, and one second later you spot a file you forgot, or a typo in the message. This lesson shows how to fix the commit you just made, instead of adding another one.
+
+Think of a letter you have sealed but not yet posted. If you forgot to put the photo in, you do not send a second envelope saying "here is the photo". You open a fresh envelope, put in the letter and the photo together, and throw the first envelope away.
+
+In git that is `--amend`. To **[[amend|amend-word]]** means to correct. `git commit --amend` replaces the last commit with a corrected one.
+
+**Adding a forgotten file.** Stage the file first, the usual way. Then commit with `--amend`:
 
 ```
-git add forgotten.css
-git commit --amend --no-edit              # same message, now with the file
-git commit --amend -m "Better message"    # new message
+~/project $ git add login.css
+~/project $ git commit --amend --no-edit
+[main f5558b8] Add the login page
+ 2 files changed
 ```
 
-`--no-edit` keeps the message as it was. (In a real terminal, `--amend` without `-m` opens an editor with the old message; this practice terminal simply keeps it.)
+`--no-edit` means "do not change the message": the corrected commit keeps the old one. The history still has the same number of commits, and the last one now holds both files.
 
-Amending does not edit the old commit — commits never change. It makes a **new** commit, with a new id, and moves the branch to it. That is harmless for a commit only you have, and a problem for a commit you have already pushed and others have built on: their history would no longer match yours. The rule: **amend only what you have not shared**. For shared commits, make a new commit on top.
+**Fixing the message.** Give `-m` ("message") a new one instead:
+
+```
+~/project $ git commit --amend -m "Add the login page and its styles"
+[main 3601d6e] Add the login page and its styles
+ 2 files changed
+```
+
+If nothing is staged, only the message changes.
+
+In a [[real terminal|real-editor]], `--amend` with neither `--no-edit` nor `-m` opens a text editor with the old message in it, for you to change. This practice terminal has no editor, so it keeps the old message.
+
+**What really happens.** Look at the ids above: `f5558b8`, then `3601d6e`. Amending does not edit the old commit. Commits never change. Git makes a **new** commit, with a [[new id|new-id]], and moves the branch label to it. The old commit is left behind, no longer on any branch.
+
+That is harmless for a commit only you have. It is a problem for a commit you have already [[shared|shared-commits]]: other people's copies still hold the old commit, and their history would no longer match yours.
+
+So the rule is: **amend only what you have not shared.** For a commit other people already have, fix the mistake with a new commit on top, the way you removed `debug.txt` last lesson.
+
+You will [[use amend again|amend-later]] before this course is over.
+
+**Watch out:** `--amend` only ever changes the **last** commit, the one you are on. If the forgotten file belongs to an older commit, amending puts it in the wrong place. And do not forget to `git add` the file first: amend saves what is in the staging box, so an unstaged file stays left out again.
+
+::: context amend-word Where "amend" comes from
+To amend something is to correct or improve it. Laws are changed by amendments, and the First Amendment to the US Constitution is a famous example. The word fits: you are not writing a new piece of history, you are correcting the piece you just wrote. Git's own help describes `--amend` as a way to "replace the tip of the current branch by creating a new commit", which is exactly what happens.
+:::
+
+::: context real-editor The editor, once more
+You met this in the basics course with merges: on a real computer, git opens a text editor when it wants you to write or check a message. With `git commit --amend`, the editor opens with the old message already in it. Change it, save, and close, and the corrected commit is made. The editor is often Vim; there, `:wq` then Enter saves and quits. Passing `--no-edit` or `-m` skips the editor completely, which is why people use them.
+:::
+
+::: context new-id Why the id has to change
+A commit's id, its hash, is worked out from everything in it: the files, the message, the author, the time and its parent. Amend changes at least one of those, so the new commit gets a new id. Both commits point back to the same parent; only the branch label moves.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <circle cx="60" cy="90" r="13" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <circle cx="250" cy="45" r="13" fill="#ffffff" stroke="#6c7a93" stroke-width="2" stroke-dasharray="4 3"/>
+  <circle cx="250" cy="135" r="13" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <line x1="237" y1="50" x2="80" y2="84" stroke="#6c7a93" stroke-width="2" stroke-dasharray="4 3"/>
+  <line x1="237" y1="130" x2="80" y2="96" stroke="#1f2a44" stroke-width="2"/>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <text x="60" y="124">687486b</text>
+    <text x="250" y="20">f543eaa</text>
+    <text x="250" y="163">f5558b8</text>
+  </g>
+  <text x="272" y="49" font-size="12" fill="#6c7a93">left behind</text>
+  <text x="272" y="139" font-size="12" fill="#b4232c">main</text>
+</svg>
+```
+:::
+
+::: context shared-commits What "shared" means
+Right now your repository lives only on your computer. On a real project, you also send your commits to a copy on a server such as GitHub. That is called **pushing**, and your teammates **pull** from there. Once a commit is pushed, other people may have it and may have built new commits on top of it. If you then amend it, your branch and theirs disagree about what the last commit even is. The advanced course covers pushing and pulling.
+:::
+
+::: context amend-later Where amend comes back
+You will use `--amend` again at the end of this course. After rescuing some lost commits, the last one turns out to be called `wip asdf`, and `git commit --amend -m` gives it a proper name. The next lesson meets another command that, like amend, rewrites history: `git reset`. The same rule applies to it. Rewrite only what you have not shared.
+:::
 --- task
-You just committed the login page, but forgot `login.css`. Put it into **that same commit**: the history must still have two commits, and the message stays `Add the login page`.
+You just committed the login page, but forgot `login.css`. Put it into **that same commit** with `--amend`. The history must still have two commits, and the message must stay `Add the login page`.
 --- starter
 git init
 echo "home" > index.html
@@ -259,9 +790,11 @@ git commit -m "Add the login page"
 git add login.css
 git commit --amend --no-edit
 --- hint
-`git status` shows `login.css` is still untracked. Stage it first.
+`git status` shows that `login.css` is still untracked. Amend saves what is in the staging box, so stage it first.
 --- hint
-Then `git commit --amend --no-edit` folds it into the last commit.
+`git add login.css`, then amend the last commit without changing its message.
+--- hint
+`git commit --amend --no-edit` folds the file into the last commit and keeps `Add the login page`.
 --- check shell | Still two commits, with the same message
 git . commits == 2
 git . at HEAD message == Add the login page
@@ -272,26 +805,104 @@ git . clean
 
 === git2-06 | Putting work aside: git stash
 --- teach
-You are halfway through a change when something urgent comes up on another branch. Git will not let you switch while your changes would be lost:
+Last lesson you fixed the commit you had just made. This lesson is about work you are not ready to commit at all. You are halfway through a change when something urgent comes up on another branch. You will learn to put the half-done work aside, deal with the urgent thing, and pick your work up again exactly where you left it.
+
+Picture doing a jigsaw puzzle on the dining table when someone says dinner is in five minutes. You do not glue the half-finished puzzle together. You slide it carefully onto a tray, put the tray on a shelf, and bring it back after dinner.
+
+**The problem.** You have changed `app.js` on `main`, and you need to switch to another branch. If that branch has a different version of `app.js`, switching would wipe out your change, so git refuses:
 
 ```
+~/project $ git switch hotfix
 error: Your local changes to the following files would be overwritten by checkout:
 	app.js
+Commit them, or stash them (git stash), before you switch branches.
+Aborting
 ```
 
-You do not want to commit half-finished work. `git stash` puts it aside instead: it saves your uncommitted changes and returns your files to the last commit, clean.
+Even when git does let you switch, because the other branch has the same version of the file, your half-done change comes along with you and gets mixed into the urgent work. And committing half-finished work would put a broken step in your history. There is a better way.
+
+**Step 1: put the work aside.** `git stash` saves your uncommitted changes in a safe place, then puts your files back the way they were at the [[last commit|clean-tree]]:
 
 ```
-git stash            # save and clean up
-git stash list       # see what is stashed: stash@{0}: WIP on main: …
-git stash pop        # bring the newest stash back, and remove it from the list
-git stash apply      # bring it back, but keep it in the list too
-git stash -u         # include untracked (new) files as well
+~/project $ git stash
+Saved working directory and index state WIP on main: 7bdad31 Start
+~/project $ git status
+On branch main
+
+nothing to commit, working tree clean
 ```
 
-Stashes are a stack: the newest is `stash@{0}`. The common mistakes are forgetting you stashed something (check `git stash list` when work seems to be missing) and popping onto a different branch than you meant — pop applies to whichever branch you are on.
+A **[[stash|stash-word]]** is a saved bundle of uncommitted changes. (The **index** in that message is git's own name for the staging box.) Your change to `app.js` is not gone. It is in the stash, and `app.js` in your folder is back to the committed version. Now git lets you switch, and you can make the [[urgent fix|hotfix]] on the other branch.
+
+**Step 2: see what is stashed.**
+
+```
+~/project $ git stash list
+stash@{0}: WIP on main: 7bdad31 Start
+```
+
+Each line is one stash. `WIP` stands for "work in progress". The line also says which branch you were on and which commit you started from.
+
+**Step 3: bring it back.** Back on `main`, `git stash pop` puts the newest stash back into your files, and removes it from the list:
+
+```
+~/project $ git stash pop
+On branch main
+
+Changes not staged for commit:
+        modified:   app.js
+Dropped stash@{0}
+```
+
+Your change to `app.js` is back, not staged, exactly as you left it. `Dropped` means the stash was taken off the list.
+
+`git stash apply` also brings the stash back, but keeps it in the list too. That is handy if you want the same changes on two branches. Delete a stash you no longer need with `git stash drop`.
+
+**Stashes pile up like a stack.** Stash twice and you have two. The newest is always on top, called `stash@{0}`, and the older one moves down to `stash@{1}`. `pop` and `apply` take the [[top one|stack]] unless you name another.
+
+**New files need `-u`.** Plain `git stash` saves changes to files git already tracks. A brand-new, [[untracked file|untracked-u]] is left where it is. Add `-u`, short for "untracked", to stash those as well:
+
+```
+git stash -u
+```
+
+**Watch out:** two mistakes are common. The first is forgetting you stashed anything. When work seems to have vanished, run `git stash list` before you panic. The second is popping on the wrong branch: `pop` puts the changes into whichever branch you are on now. Check with `git status` or `git branch` that you are back where you started before you pop.
+
+::: context clean-tree What "working tree clean" means
+The **working tree** is the ordinary files in your folder. "Clean" means they match the last commit exactly: nothing modified, nothing staged, no new files waiting. After `git stash`, `git status` says `nothing to commit, working tree clean`. That is how you know the stash took everything, and that switching branches is now safe.
+:::
+
+::: context stash-word Where "stash" comes from
+To stash something is to hide it away safely for later, like a squirrel burying acorns for the winter or a snack kept at the back of a drawer. Git's stash is a private hiding place on your computer. It is not on any branch. That is why a stash never shows up in a plain `git log`, and why it is easy to forget it is there.
+:::
+
+::: context hotfix What a hotfix is
+A **hotfix** is a small, urgent fix, usually for a bug that people are already running into. Teams often make a short-lived branch for it, fix just that one thing, and merge it quickly, while bigger work carries on elsewhere. Being able to drop what you are doing, make the fix on a clean branch and come back is exactly why stash exists: the urgent fix goes out on its own, without your half-finished work mixed in.
+:::
+
+::: context stack A stack, like a pile of plates
+A **stack** is a pile where you add to the top and take from the top, like plates in a kitchen cupboard. The last one put on is the first one taken off. Programmers use stacks everywhere, and you will meet the word again in programming languages.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <rect x="60" y="30" width="170" height="30" rx="6" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <rect x="60" y="66" width="170" height="30" rx="6" fill="#ffffff" stroke="#1d6fd1" stroke-width="2"/>
+  <rect x="60" y="102" width="170" height="30" rx="6" fill="#ffffff" stroke="#1d6fd1" stroke-width="2"/>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <text x="145" y="50">stash@{0}  newest</text>
+    <text x="145" y="86">stash@{1}</text>
+    <text x="145" y="122">stash@{2}  oldest</text>
+  </g>
+  <text x="248" y="50" font-size="12" fill="#b4232c">pop takes this one</text>
+</svg>
+```
+:::
+
+::: context untracked-u Why new files are left out
+A file is **untracked** until you `git add` it for the first time: git can see it, but has never saved it. Plain `git stash` only looks after tracked files, so a new file stays in your folder and comes along when you switch branches. If a stash seems to have "missed" your new file, that is why. With `git stash -u`, the new file goes into the stash too, and leaves your folder until you pop it.
+:::
 --- task
-You are halfway through a change to `app.js` on `main` when a typo report arrives. Put your work aside with `git stash`, switch to the existing `hotfix` branch, fix the typo in `README.md` so it says `Rocket launcher`, commit that, then come back to `main` and bring your work back with `git stash pop`.
+You are halfway through a change to `app.js` on `main` when a typo report arrives. Put your work aside with `git stash`, then switch to the existing `hotfix` branch. There, fix the typo in `README.md` so it says `Rocket launcher`, and commit that. Then switch back to `main` and bring your work back with `git stash pop`.
 --- starter
 git init
 echo "Rocket lanucher" > README.md
@@ -308,11 +919,11 @@ git commit -am "Fix the typo in the README"
 git switch main
 git stash pop
 --- hint
-`git stash` first; `git status` should then say the working tree is clean.
+Run `git stash` first. `git status` should then say `working tree clean`.
 --- hint
-`git switch hotfix`, fix the file with `echo … > README.md`, commit, and `git switch main`.
+`git switch hotfix`, fix the file with `echo "Rocket launcher" > README.md`, commit it with `git commit -am` and a message, then `git switch main`.
 --- hint
-`git stash pop` brings `start(); fly()` back.
+Back on `main`, `git stash pop` brings `start(); fly()` back into `app.js`.
 --- check shell | The typo is fixed, on hotfix
 git . commits-on hotfix == 2
 git . at hotfix file README.md == Rocket launcher
@@ -324,7 +935,65 @@ git . stashes == 0
 
 === git2-07 | Undoing commits: git reset
 --- teach
-`git reset <commit>` moves your branch back to an earlier commit, as if the later ones had not been made. What happens to their **changes** depends on the mode:
+Two lessons ago, `--amend` fixed the last commit. This lesson goes further: it undoes whole commits, one or several at once, and lets you choose what happens to the work inside them.
+
+Picture a bookmark in a diary. You wrote three entries, then decide the last two were written too soon. You slide the bookmark back two pages, and as far as the diary is concerned, the bookmarked page is the latest entry again. And the words on those two pages? You choose: keep them ready to hand in again, keep them as loose notes on your desk, or tear them out.
+
+In git, the bookmark is your branch. A branch is a [[label that points at one commit|branch-label]], its newest one. **`git reset`** means "move my branch back to an earlier commit":
+
+```
+git reset HEAD~2
+```
+
+`HEAD~2` is the name you met with `git show`: two commits before the one you are on. A commit id from `git log --oneline` works too.
+
+The commits after that point drop out of your branch's history, as if they had never been made. What happens to the **changes** they made depends on the **mode**, which you pick with a flag. There are three modes. Here they are one at a time, each starting from the same three commits.
+
+**Mode 1: mixed, the default.** Plain `git reset` is the same as `git reset --mixed` ("mixed"). It undoes the commits and leaves their changes in your files, but not staged. Nothing is lost:
+
+```
+~/project $ git log --oneline
+bf896b1 (HEAD -> main) Add the countdown
+1359ee3 Add the timer
+86cbb10 Start
+~/project $ git reset HEAD~1
+~/project $ git log --oneline
+1359ee3 (HEAD -> main) Add the timer
+86cbb10 Start
+~/project $ git status
+On branch main
+
+Untracked files:
+        countdown.txt
+```
+
+`Add the countdown` is gone from the log, but `countdown.txt` is still in your folder. Git lists it as untracked because no commit has it any more. (Your ids will be different.)
+
+This is the mode for "I committed too early, let me [[redo that properly|tidy-commits]]". You can now stage and commit the pieces the way they should have been.
+
+**Mode 2: soft.** `git reset --soft` ("soft") undoes the commits and leaves their changes **staged**, ready to commit again:
+
+```
+~/project $ git reset --soft HEAD~1
+~/project $ git status
+On branch main
+
+Changes to be committed:
+        new file:   countdown.txt
+```
+
+**Mode 3: hard.** `git reset --hard` ("hard") undoes the commits and **throws their changes away**. Your files go back to exactly how they were in that earlier commit:
+
+```
+~/project $ git reset --hard HEAD~1
+HEAD is now at 1359ee3 Add the timer
+~/project $ ls
+app.txt  timer.txt
+```
+
+This time `countdown.txt` has gone from your folder too.
+
+All three side by side. The only difference is how far the undo reaches into [[the three places your work lives|three-places]]:
 
 | Command | The commits | Their changes |
 | --- | --- | --- |
@@ -332,13 +1001,58 @@ git . stashes == 0
 | `git reset HEAD~2` (same as `--mixed`) | undone | kept in your files, not staged |
 | `git reset --hard HEAD~2` | undone | **thrown away** |
 
-`--mixed`, the default, is the one for "I committed too early, let me redo that properly": nothing is lost, and you can stage and commit the pieces the way they should have been.
+**Watch out:** `--hard` also wipes every change you have not committed yet, not only the changes from the commits it undoes. If you edited `app.txt` and never committed it, `git reset --hard` puts `app.txt` back too. Those edits were never in any commit, so git [[cannot get them back|hard-lost]]. Run `git status` before a hard reset. `--hard` is useful and dangerous; the last lesson of this course shows how to recover commits from one used by mistake.
 
-`--hard` also wipes uncommitted changes in your files. It is useful and dangerous; a later lesson shows how to recover from one used by mistake.
+Like `--amend`, reset rewrites history. Use it only on commits you have not [[pushed|pushed]] yet. For commits other people already have, there is `git revert`, the next lesson.
 
-Like `--amend`, reset rewrites history. Use it on commits you have **not pushed** yet. For commits other people already have, there is `git revert` — the next lesson.
+::: context branch-label A branch is only a label
+A commit never changes and never moves. A branch is much lighter than it sounds: it is a name that points at one commit, the newest one on that branch. Committing moves the label forward. `git reset` moves it backward.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <line x1="168" y1="80" x2="84" y2="80" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="82,80 92,75 92,85" fill="#1f2a44"/>
+  <line x1="278" y1="80" x2="194" y2="80" stroke="#6c7a93" stroke-width="2" stroke-dasharray="4 3"/>
+  <polygon points="192,80 202,75 202,85" fill="#6c7a93"/>
+  <circle cx="70" cy="80" r="12" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <circle cx="180" cy="80" r="12" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <circle cx="290" cy="80" r="12" fill="#ffffff" stroke="#6c7a93" stroke-width="2" stroke-dasharray="4 3"/>
+  <rect x="150" y="18" width="60" height="24" rx="4" fill="#1d6fd1"/>
+  <text x="180" y="35" font-size="12" fill="#ffffff" text-anchor="middle">main</text>
+  <line x1="180" y1="42" x2="180" y2="66" stroke="#1d6fd1" stroke-width="2"/>
+  <rect x="250" y="18" width="80" height="24" rx="4" fill="#ffffff" stroke="#6c7a93" stroke-dasharray="4 3"/>
+  <text x="290" y="35" font-size="11" fill="#6c7a93" text-anchor="middle">main was here</text>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="70" y="112">Start</text>
+    <text x="180" y="112">Add the timer</text>
+    <text x="290" y="112" fill="#6c7a93">Add the countdown</text>
+  </g>
+  <text x="180" y="140" font-size="11" fill="#1f2a44" text-anchor="middle">git reset HEAD~1 moves the label back one commit</text>
+</svg>
+```
+
+The commit the label left behind is not deleted straight away. It is only no longer part of the branch.
+:::
+
+::: context tidy-commits Save points first, tidy commits later
+Engineers often commit while they work, as cheap save points with messages like `WIP`, short for "work in progress". Before they share the work for review, they tidy up: undo the save points with a reset, then commit again as a few clear commits, one per idea. A reviewer then reads "Add the feature" instead of "WIP", "More WIP", "fix". The advanced Git course uses `git reset --soft` for exactly this, and calls it squashing.
+:::
+
+::: context three-places Three places your work can be
+Your work can sit in three places. The **commits** are the saved history. The **staging area** is the box of changes waiting for the next commit. Your **working folder** holds the files you see and edit. A reset always moves the branch, which changes the commits. `--soft` stops there. `--mixed` also makes the staging area match the earlier commit, so the changes drop out of the box but stay in your files. `--hard` goes one step further and makes your working folder match too, so the changes are gone from your files as well.
+:::
+
+::: context hard-lost Why uncommitted work is gone for good
+Git can only bring back what it has saved. A commit that a reset left behind still exists for a while, and git keeps a record of where your branch pointed before, so the commit can be found again. An edit you never committed was never saved anywhere in git: it lived only in your file. When `--hard` overwrites that file, there is no copy to go back to. That is why careful engineers commit, or stash, before any command that throws changes away.
+:::
+
+::: context pushed What "pushed" means
+Your repository lives on your computer. Teams also keep a shared copy on a server, for example on GitHub. **Pushing** means sending your new commits to that shared copy, where your teammates pick them up. You will learn to push in the advanced Git course. Once others have a commit, you should not rewrite it: your history and theirs would no longer match, and git refuses a plain push of history that drops commits the shared copy already has.
+:::
 --- task
-The last two commits were made too early: they mix a finished feature (`feature.js`) with half-done notes (`notes.txt`). Undo both commits with `git reset` so that their changes stay in your files, but nothing is committed or staged. Then commit **only** `feature.js`, with the message `Add the feature`.
+The last two commits, `WIP` and `More WIP` ("WIP" is short for "work in progress"), were made too early. Together they mix a finished feature, `feature.js`, with half-done notes, `notes.txt`.
+
+Undo both commits with `git reset` in its default mode, so their changes stay in your files but nothing is committed or staged. Then stage and commit **only** `feature.js`, with the message `Add the feature`. Leave `notes.txt` uncommitted.
 --- starter
 git init
 echo "# App" > README.md
@@ -355,9 +1069,11 @@ git reset HEAD~2
 git add feature.js
 git commit -m "Add the feature"
 --- hint
-`git reset HEAD~2` goes back two commits and leaves both files in your folder, untracked.
+You want the mode that keeps the changes in your files but not staged: the default one, with no flag. You are going back two commits, so the name is `HEAD~2`.
 --- hint
-Then `git add feature.js` and `git commit -m "Add the feature"`. Leave `notes.txt` out.
+`git reset HEAD~2`, then `git status`: both `feature.js` and `notes.txt` are listed as untracked.
+--- hint
+Now `git add feature.js` and `git commit -m "Add the feature"`. Leave `notes.txt` out.
 --- check shell | The WIP commits are gone, replaced by one real commit
 git . commits == 2
 git . at HEAD message == Add the feature
@@ -369,24 +1085,130 @@ git . untracked notes.txt
 
 === git2-08 | Undoing a shared commit: git revert
 --- teach
-Once a commit is shared — pushed, pulled by teammates, maybe deployed — rewriting history with `reset` would pull the floor from under everyone else. The safe undo is `git revert`:
+Last lesson, `git reset` undid commits by moving your branch back, as if they had never happened. That is fine for commits only you have. This lesson undoes a commit that other people already have, without rewriting any history.
+
+Picture a shop's record book of payments. If the shopkeeper wrote down a wrong payment yesterday, they do not rub it out. They write a new line today that cancels it. Both lines stay in the book, so anyone reading it later sees what went wrong and when it was fixed. That is how [[bookkeepers|ledger]] work, and it is how git undoes a shared commit.
+
+Why not reset? Once a commit is [[shared|shared-commit]] (pushed, pulled by teammates, maybe already running in the real product), rewriting history with `reset` would pull the floor from under everyone else. Their copies would still have the commit; yours would not.
+
+The safe undo is **`git revert`**, which means "make a new commit that cancels an old one".
+
+First, find the commit you want to cancel:
 
 ```
-git revert HEAD~2
+~/project $ git log --oneline
+1d44bba (HEAD -> main) Add the countdown
+257235d Double the thrust
+4b2fa52 Add the engine
 ```
 
-Revert makes a **new** commit that does the exact opposite of the one you name: lines it added are removed, lines it removed come back. The history keeps both, which is a feature: anyone reading the log can see what happened and when it was undone.
+`Double the thrust` was a mistake. It is one commit before HEAD, so its name is `HEAD~1` (its id, `257235d`, works too). Revert it:
 
-- You can revert any commit, not just the last one. Later commits stay as they are.
-- The new commit's message is `Revert "…original message…"`.
-- If later commits changed the same lines, the revert can conflict; you resolve it like a merge conflict (coming up in this course).
+```
+~/project $ git revert HEAD~1
+[main 591c204] Revert "Double the thrust"
+ 1 file changed
+```
+
+The history now has one more commit. Nothing was removed:
+
+```
+~/project $ git log --oneline
+591c204 (HEAD -> main) Revert "Double the thrust"
+1d44bba Add the countdown
+257235d Double the thrust
+4b2fa52 Add the engine
+```
+
+The new commit [[does the exact opposite|opposite-commit]] of the one you named: lines it added are removed, and lines it removed come back. `git show` lets you see it:
+
+```
+~/project $ git show
+commit 591c204 (HEAD -> main)
+Author: you
+
+    Revert "Double the thrust"
+
+    This reverts commit 257235d.
+
+diff --git a/engine.txt b/engine.txt
+--- a/engine.txt
++++ b/engine.txt
+-thrust = 200
++thrust = 100
+```
+
+Three things to notice:
+
+- You can revert any commit, not only the last one. Later commits stay as they are: `Add the countdown` is still there, and so is `countdown.txt`.
+- The new commit's message is `Revert "…original message…"`, and git adds a line saying [[which commit it reverts|revert-trail]].
+- If later commits changed the same lines, the revert can hit a [[conflict|revert-conflict]]. You resolve it like a merge conflict, which is coming up in this course.
+
+Which undo to use comes down to one question: does anyone else have the commit?
 
 | Situation | Use |
 | --- | --- |
 | Commit only you have | `reset` or `--amend` |
 | Commit others have | `revert` |
+
+**Watch out:** you name the commit you want to **cancel**, not the one you want to go back to. `git revert HEAD~1` does not take the project back to how it was one commit ago. It cancels the one change that `HEAD~1` made, and keeps everything after it. Before you revert, run `git show` on that name, for example `git show HEAD~1`, and check it is the change you mean.
+
+::: context ledger Never rub out, always add a line
+Bookkeepers keep the money records of a shop or company in a **ledger**. Their rule is that a written entry is never erased. A mistake is fixed with a new entry that reverses it, so the book shows both the mistake and its fix. Nobody can quietly change the past, and anyone checking the book can follow every step. Git's shared history works on the same idea: the past stays as it was, and every fix is a new commit on top.
+:::
+
+::: context shared-commit When a commit is "shared"
+A commit is shared as soon as it has left your computer. Maybe you pushed it to the team's shared copy, maybe a teammate pulled it into their own repository, maybe it was **deployed**, which means put into use in the real product. From then on, other copies of the history contain it. If you reset it away on your side, the copies disagree, and the next time you share your work git refuses or makes a mess to untangle. A revert is only a new commit, so everyone can take it in the normal way.
+:::
+
+::: context opposite-commit A revert is a mirror image
+A revert does not delete the bad commit. It adds a new commit whose change is the mirror image of the bad one.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 140" font-family="Inter, Arial, sans-serif">
+  <path d="M303,50 Q225,4 142,50" fill="none" stroke="#1d6fd1" stroke-width="2" stroke-dasharray="5 3"/>
+  <polygon points="140,51 150,49 146,41" fill="#1d6fd1"/>
+  <text x="225" y="18" font-size="11" fill="#1d6fd1" text-anchor="middle">cancels</text>
+  <g stroke="#1f2a44" stroke-width="2">
+    <line x1="123" y1="64" x2="59" y2="64"/>
+    <line x1="213" y1="64" x2="149" y2="64"/>
+    <line x1="303" y1="64" x2="239" y2="64"/>
+  </g>
+  <g fill="#1f2a44">
+    <polygon points="57,64 66,60 66,68"/>
+    <polygon points="147,64 156,60 156,68"/>
+    <polygon points="237,64 246,60 246,68"/>
+  </g>
+  <circle cx="45" cy="64" r="12" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <circle cx="135" cy="64" r="12" fill="#f2b880" stroke="#b4232c" stroke-width="2"/>
+  <circle cx="225" cy="64" r="12" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <circle cx="315" cy="64" r="12" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="45" y="96">Add engine</text>
+    <text x="135" y="96">Double thrust</text>
+    <text x="225" y="96">Add countdown</text>
+    <text x="315" y="96">Revert</text>
+    <text x="45" y="114">thrust = 100</text>
+    <text x="135" y="114" fill="#b4232c">100 to 200</text>
+    <text x="225" y="114">new file</text>
+    <text x="315" y="114" fill="#1d6fd1">200 to 100</text>
+  </g>
+  <text x="180" y="134" font-size="11" fill="#6c7a93" text-anchor="middle">each arrow points back to the commit before</text>
+</svg>
+```
+
+After the revert, `engine.txt` says `thrust = 100` again, and `countdown.txt` is untouched.
+:::
+
+::: context revert-trail Revert first, investigate later
+The line `This reverts commit 257235d.` is a trail: anyone reading the history can jump straight to the change that was cancelled. Many software teams have a habit built on this. When a change breaks the product, they revert it at once to get back to a working state, then work out calmly what went wrong. Because the original commit is still in the history, it can be fixed and brought back later. Reverting the revert re-applies the change, and git names that commit `Revert "Revert "…""`.
+:::
+
+::: context revert-conflict When a revert collides
+Git makes the mirror-image change line by line. If a later commit edited the same lines, git no longer finds the lines it expects to change back, so it cannot tell which version you want. It stops and asks you to decide, exactly like a merge conflict. You will learn to read and fix conflicts in the lesson on resolving a merge conflict, later in this course.
+:::
 --- task
-The commit `Make the button red` is two commits before the latest, and everyone already has it. Undo just that change with `git revert`, keeping the two newer commits.
+The commit `Make the button red` is two commits before the newest one, and everyone on the team already has it. Undo only that change with `git revert`, keeping the two newer commits, `Add a footer` and `Add a header`. Look at the history with `git log --oneline` first to find the commit.
 --- starter
 git init
 echo "colour: blue" > style.css
@@ -404,9 +1226,11 @@ git commit -m "Add a header"
 git log --oneline
 git revert HEAD~2
 --- hint
-`git log --oneline` shows the commit; `HEAD~2` names it (or use its id).
+Everyone has the commit, so this is a job for `git revert`, not `reset`. Start with `git log --oneline` and count down from the top.
 --- hint
-`git revert HEAD~2`.
+`Make the button red` is two commits before HEAD, so its name is `HEAD~2`. Its id from the log works too.
+--- hint
+`git revert HEAD~2`. Then `cat style.css` should say `colour: blue`.
 --- check shell | A new commit undoes the red button
 git . commits == 5
 git . at HEAD message contains Revert "Make the button red"
@@ -418,23 +1242,133 @@ file header.html
 
 === git2-09 | Marking releases: tags
 --- teach
-A **tag** is a name stuck to one commit forever. Branches move every time you commit; a tag never does, which makes it the way to mark releases: `v1.0` always means exactly the code you shipped.
+The last two lessons undid commits. This one does something different: it marks a commit so you can always find it again.
+
+Go back to the diary bookmark from the reset lesson. A branch is a bookmark that moves: every commit carries it forward to the newest page. Sometimes you want the opposite, a name written in ink on one page that stays there forever: "the day we launched".
+
+That is a **tag**: a name stuck to one commit for good. Branches move every time you commit; a tag never does. That makes a tag the way to mark [[releases|release]]: `v1.0` always means exactly the code you shipped. (`v` is short for "version".)
+
+**Step 1: a lightweight tag.** `git tag` followed by a name tags the commit you are on:
 
 ```
-git tag v1.0                                  # lightweight: just a name
-git tag -a v1.0 -m "First public release"     # annotated: name, message, who, when
-git tag v0.9 7ac44b2                          # tag an older commit
-git tag                                       # list tags
-git show v1.0                                 # the tag's message and its commit
+~/project $ git tag v0.2
+~/project $ git log --oneline
+bf896b1 (HEAD -> main, tag: v0.2) Add the countdown
+1359ee3 Add the timer
+86cbb10 Start
 ```
 
-Use **annotated** tags for releases: they record a message and who made the tag. Lightweight tags are fine for private bookmarks.
+The log now shows `tag: v0.2` next to that commit. This kind is called **lightweight**: it is only a name.
 
-Most projects name releases with **semantic versioning**, `MAJOR.MINOR.PATCH`: bump PATCH for fixes, MINOR for new features, MAJOR for changes that break existing users.
+**Step 2: an annotated tag.** `-a` means "annotated", and `-m` means "message", the same as in `git commit -m`. An **annotated** tag stores a message, who made the tag, and when:
 
-Tags are not sent by a plain `git push`; you push them on purpose (`git push origin v1.0`) — the advanced course covers that.
+```
+~/project $ git tag -a v1.0 -m "First flight"
+~/project $ git show v1.0
+tag v1.0
+Tagger: you
+
+First flight
+
+commit bf896b1 (HEAD -> main, tag: v0.2, tag: v1.0)
+Author: you
+
+    Add the countdown
+...
+```
+
+`git show` with a tag's name prints the tag's own details first, then the commit it marks. (A real terminal also prints the tagger's email and the date.) Use [[annotated tags for releases|annotated-object]]. Lightweight tags are fine for private bookmarks.
+
+**Step 3: tag an older commit.** Put the commit after the name, as `HEAD~2` or as an id from `git log --oneline`:
+
+```
+~/project $ git tag v0.1 HEAD~2
+~/project $ git log --oneline
+bf896b1 (HEAD -> main, tag: v0.2, tag: v1.0) Add the countdown
+1359ee3 Add the timer
+86cbb10 (tag: v0.1) Start
+```
+
+`git tag v0.1 86cbb10` would do the same.
+
+**Step 4: list your tags.** `git tag` on its own lists them:
+
+```
+~/project $ git tag
+v0.1
+v0.2
+v1.0
+```
+
+**Step 5: a tag stays put.** Make another commit, here one called `Add the abort button`. The branch moves on to it, while the tags [[stay where they were|tag-stays]]:
+
+```
+~/project $ git log --oneline
+c3d03c4 (HEAD -> main) Add the abort button
+bf896b1 (tag: v0.2, tag: v1.0) Add the countdown
+...
+```
+
+Most projects name releases with **[[semantic versioning|semver]]**: three numbers, `MAJOR.MINOR.PATCH`. Bump PATCH for fixes, MINOR for new features, and MAJOR for changes that break things for existing users.
+
+Tags are not sent by a plain `git push`. You [[push them on purpose|push-tags]], for example `git push origin v1.0`; the advanced course covers that.
+
+**Watch out:** a tag name can be used only once in a repository. Try to reuse it and git refuses:
+
+```
+~/project $ git tag v1.0
+fatal: tag 'v1.0' already exists
+```
+
+Do not try to move a release tag to a different commit. If the code changed, it is a new release, so give it a new number, such as `v1.0.1`.
+
+::: context release What a release is
+A **release** is a version of your software that you hand to other people: users, customers, or a test team. Whoever uses it needs to know exactly which code they have. For flight software this matters a lot: teams keep careful records of exactly which version is loaded on a vehicle, so that any problem can be traced to the precise code that ran. A tag gives that exact commit a name, so months later anyone can look at `v1.0` and see the same files, line for line.
+:::
+
+::: context annotated-object Why annotated tags for releases
+A lightweight tag is only a name pointing at a commit, stored much like a branch name that never moves. An annotated tag is a small record of its own in git's database, with its own id. It holds the tag name, your message, who made it, when, and which commit it marks. That extra record is why releases use annotated tags: the message can say what the release is for, and the "who and when" is kept for good. Some git commands, such as `git describe`, look only at annotated tags unless you tell them otherwise.
+:::
+
+::: context tag-stays A branch moves, a tag stays
+When you commit, your branch label moves forward to the new commit. A tag stays on the commit you gave it.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <line x1="168" y1="70" x2="84" y2="70" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="82,70 92,65 92,75" fill="#1f2a44"/>
+  <line x1="278" y1="70" x2="194" y2="70" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="192,70 202,65 202,75" fill="#1f2a44"/>
+  <circle cx="70" cy="70" r="12" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <circle cx="180" cy="70" r="12" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <circle cx="290" cy="70" r="12" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <rect x="150" y="14" width="60" height="24" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="180" y="31" font-size="12" fill="#1f2a44" text-anchor="middle">v1.0</text>
+  <line x1="180" y1="38" x2="180" y2="56" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="260" y="14" width="60" height="24" rx="4" fill="#1d6fd1"/>
+  <text x="290" y="31" font-size="12" fill="#ffffff" text-anchor="middle">main</text>
+  <line x1="290" y1="38" x2="290" y2="56" stroke="#1d6fd1" stroke-width="2"/>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="70" y="102">Add the timer</text>
+    <text x="180" y="102">Add the countdown</text>
+    <text x="290" y="102">Add the abort button</text>
+  </g>
+  <text x="180" y="124" font-size="11" fill="#6c7a93" text-anchor="middle">main moved on to the new commit; v1.0 did not</text>
+</svg>
+```
+:::
+
+::: context semver Reading a version number
+Take version `2.4.1`. The 2 is MAJOR, the 4 is MINOR, the 1 is PATCH. A bug fix makes it `2.4.2`. A new feature makes it `2.5.0`. A change that breaks things for existing users makes it `3.0.0`. When you bump one number, every number to its right goes back to zero. The rules are written up at semver.org. Versions that start with `0.`, like `0.9`, mean "still in early development, anything may change", which is why a project's first stable release is often `1.0.0`.
+:::
+
+::: context push-tags Sharing a tag
+Pushing sends your commits to the team's shared copy of the repository. A plain `git push` sends your branch's commits but leaves your tags behind, so a private bookmark never escapes by accident. To share a release tag, name it: `git push origin v1.0`, where `origin` is the usual name of the shared copy. `git push --tags` sends all of them. The advanced Git course ends with a whole team workflow: branch, share, merge, tag the release, and push the tag.
+:::
 --- task
-Mark the current commit as release `v1.0` with an **annotated** tag whose message is `First public release`, and check it with `git show v1.0`. Then tag the older commit `Add login` as `v0.9` (a lightweight tag is fine).
+Mark the current commit, `Polish the login page`, as release `v1.0` with an **annotated** tag whose message is `First public release`. Look at it with `git show v1.0`.
+
+Then tag the older commit `Add login`, one commit before the current one, as `v0.9`. A lightweight tag is fine for that one.
 --- starter
 git init
 echo "app" > app.txt
@@ -451,9 +1385,11 @@ git show v1.0
 git log --oneline
 git tag v0.9 HEAD~1
 --- hint
-`git tag -a v1.0 -m "First public release"`, then `git show v1.0`.
+An annotated tag needs two flags: `-a` for "annotated" and `-m` for its message.
 --- hint
-`Add login` is one commit before HEAD: `git tag v0.9 HEAD~1` (or use its id from `git log --oneline`).
+`git tag -a v1.0 -m "First public release"`, then `git show v1.0` to see it.
+--- hint
+`Add login` is one commit before HEAD, so it is `HEAD~1`: `git tag v0.9 HEAD~1` (or use its id from `git log --oneline`).
 --- check shell | v1.0 marks the current commit, with its message
 git . tag v1.0
 git . same v1.0 HEAD
@@ -463,16 +1399,47 @@ git . at v0.9 message == Add login
 
 === git2-10 | Resolving a merge conflict
 --- teach
-When both branches changed **the same lines**, git cannot know which version you want. The merge stops half-way and tells you:
+Last lesson you stuck a permanent name on a commit with a tag. This lesson goes back to something the basics course only showed you from a distance: a **conflict**. This time you resolve one yourself, from start to finish.
+
+Picture a shopping list on the fridge. You cross out "2 eggs" and write "3 eggs". Your brother, at the same time, changes the same line to "6 eggs". Nobody can merge those two edits by rule. Someone has to decide. Git is in the same spot when two branches changed **the same lines** of a file. It will not guess, so it hands the decision to you.
+
+**Step 1: the merge stops**
+
+You are on `main` and merge a branch called `tuning`. Both branches changed the thrust line of `engine.txt`:
 
 ```
+~/project $ git merge tuning
+Auto-merging engine.txt
 CONFLICT (content): Merge conflict in engine.txt
 Automatic merge failed; fix conflicts and then commit the result.
 ```
 
-`git status` lists the file under **Unmerged paths**, and the file itself now contains both versions between **conflict markers**:
+Read it line by line. *Auto-merging* means git tried to join the file by itself. *CONFLICT* names the file where it could not. The last line says the merge is now [[waiting for you|merge-in-progress]]: no merge commit has been made yet.
+
+**Step 2: ask git what it sees**
+
+`git status` shows the conflicted file under a new heading:
 
 ```
+~/project $ git status
+On branch main
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+        both modified:   engine.txt
+```
+
+**Unmerged paths** are files with a conflict nobody has settled yet. *both modified* means both branches changed this file.
+
+**Step 3: look inside the file**
+
+Git has written both versions into the file, fenced off by three **[[conflict markers|conflict-markers]]** — lines git adds to show where the two versions start and end:
+
+```
+~/project $ cat engine.txt
 <<<<<<< HEAD
 thrust = 120
 =======
@@ -481,24 +1448,113 @@ thrust = 150
 fuel = full
 ```
 
-- Between `<<<<<<< HEAD` and `=======` is your side — the branch you are on.
-- Between `=======` and `>>>>>>> tuning` is the side being merged in.
-- Everything outside the markers merged cleanly.
+- `<<<<<<< HEAD` starts **your side**. HEAD is the branch you are on, here `main`.
+- `=======` is the divider between the two sides.
+- `>>>>>>> tuning` ends **their side**, the branch being merged in.
+- Everything outside the markers, like `fuel = full`, merged cleanly. Leave it as it is.
 
-To resolve it:
+**Step 4: write the version you want**
 
-1. **Edit the file** into the version you actually want: one side, the other, or a mix. Delete all three marker lines.
-2. **`git add` the file** — that marks the conflict as resolved.
-3. **`git commit`** to finish the merge. Without `-m`, git uses its prepared message, `Merge branch 'tuning'`.
+Now you decide. The file should end up exactly as you want it: your side, their side, or a mix of both. All three marker lines must go.
 
-Before committing, search for leftovers: `grep -n "<<<<<<<" engine.txt` should find nothing. And if you get lost, `git merge --abort` puts everything back to how it was before the merge. This practice terminal has no editor, so you write the resolved file yourself. For one line, `echo "…" > file` does it (add more lines with `echo "…" >> file`). For several lines at once, use `printf`: it prints its text as given, turns each `\n` into a line break, and adds no line break of its own. So `printf "one\ntwo\n" > file` writes two lines. Then `cat` the file to check it.
+On a real computer you would open the file in an editor. This practice terminal has no editor, so you write the whole file again yourself. For one line, `echo "…" > file` does it. For several lines at once, use **[[printf|printf-name]]** — a command that prints its text as given. Inside its quotes, `\n` (backslash, then n) means "new line". Unlike `echo`, printf adds no line break of its own, so end the text with `\n`:
+
+```
+~/project $ printf "one\ntwo\n" > list.txt
+~/project $ cat list.txt
+one
+two
+```
+
+For the engine, that is `printf "thrust = 150\nfuel = full\n" > engine.txt`. Then `cat engine.txt` to check it.
+
+**Step 5: search for leftover markers**
+
+A single forgotten marker line breaks the file. Search for one with `grep` (from the Terminal course; `-n` means "show line numbers"). Before you fix the file, it finds one:
+
+```
+~/project $ grep -n "<<<<<<<" engine.txt
+1:<<<<<<< HEAD
+```
+
+Keep the quotes around the marker: without them, the shell would read `<` as a redirect, the way it reads `>`. After you fix it, the same command prints nothing. Nothing is the answer you want.
+
+**Step 6: mark it resolved**
+
+`git add engine.txt` tells git "this file is settled". `git status` agrees:
+
+```
+~/project $ git status
+On branch main
+All conflicts fixed but you are still merging.
+  (use "git commit" to conclude merge)
+```
+
+**Step 7: finish the merge**
+
+Run `git commit`, this time without `-m` (message). Git already has [[a message ready|merge-message]] for a merge, so it uses that:
+
+```
+~/project $ git commit
+[main 61cbc56] Merge branch 'tuning'
+ 1 file changed
+```
+
+That is the merge commit, the same kind you met at the end of the basics course. The conflict is over.
+
+**Watch out:** `git add` does not look inside the file. If a marker line is still in it, git accepts it anyway and you commit a broken file. So always run the `grep` check from Step 5 before `git add`. And remember that a merge with no markers left is not always a merge that [[works|resolved-vs-right]].
+
+If you ever get lost half-way through, there is a way to call the whole merge off. That is the next lesson.
+
+::: context merge-in-progress A merge that is waiting for you
+Between the conflict and your final `git commit`, git is in the middle of a merge. It remembers this with a small file inside the hidden `.git` folder called `MERGE_HEAD`, which holds the id of the commit being merged in. While it is there, `git status` keeps reminding you, and `git commit` refuses to run until every conflicted file has been added:
+
+```
+error: Committing is not possible because you have unmerged files.
+```
+
+Nothing is broken. Git is holding the door open until you finish, or until you cancel.
+:::
+
+::: context conflict-markers Which side is which
+Each marker is seven characters long, so it cannot be mistaken for normal text. The top half, after `<<<<<<<`, is always the branch you are standing on. The bottom half, before `>>>>>>>`, is always the branch you named in `git merge`. The label after each arrow tells you which is which, so read it instead of guessing.
+
+```svg
+<svg viewBox="0 0 360 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="10" width="200" height="150" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="11" y="40" width="198" height="24" fill="#8fb8f0"/>
+  <rect x="11" y="88" width="198" height="24" fill="#f2b880"/>
+  <text x="20" y="32" font-size="12" fill="#6c7a93">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</text>
+  <text x="20" y="57" font-size="12" fill="#1f2a44">thrust = 120</text>
+  <text x="20" y="81" font-size="12" fill="#6c7a93">=======</text>
+  <text x="20" y="105" font-size="12" fill="#1f2a44">thrust = 150</text>
+  <text x="20" y="129" font-size="12" fill="#6c7a93">&gt;&gt;&gt;&gt;&gt;&gt;&gt; tuning</text>
+  <text x="20" y="151" font-size="12" fill="#1f2a44">fuel = full</text>
+  <text x="222" y="57" font-size="12" font-weight="bold" fill="#1d6fd1">your side (main)</text>
+  <text x="222" y="105" font-size="12" font-weight="bold" fill="#1f2a44">their side (tuning)</text>
+  <text x="222" y="151" font-size="12" fill="#6c7a93">merged cleanly</text>
+</svg>
+```
+:::
+
+::: context printf-name Where printf comes from
+The name means "print formatted". It began as a function in the C programming language in the 1970s, and a command version became standard in Unix shells, so it works the same in the Terminal on Mac and Linux. The `\n` inside the quotes is an **escape sequence**: a backslash followed by a letter that stands for a character you cannot type directly. `\n` is a new line and `\t` is a tab. You will meet printf again whenever a program needs to print text in an exact shape.
+:::
+
+::: context merge-message The editor that opens on a real computer
+In this practice terminal, `git commit` during a merge finishes at once with the message *Merge branch 'tuning'*. On a real computer it usually opens a text editor with that message already written, so you can add a note, such as which side you kept and why. Save and close the editor, and the commit is made. If the editor is Vim, type `:wq` and press Enter. To keep git's message and skip the editor, use `git commit --no-edit`.
+:::
+
+::: context resolved-vs-right Resolved is not the same as right
+Git only checks that the markers are gone. It cannot tell whether the result makes sense. Say one branch renamed a variable and the other added a new line that still uses the old name. Git may merge that with no conflict at all, and the program still breaks. That is why teams build and test the code again after every merge, and why a merge is usually checked in code review before it lands. For software that flies, a test run after a merge is never optional.
+:::
 --- task
-Merge `tuning` into `main`. Both branches changed the thrust line of `engine.txt`, so the merge stops with a conflict. The team agreed on `thrust = 150`, tuning's value. Resolve the conflict so that `engine.txt` reads exactly:
+Merge `tuning` into `main`. Both branches changed the thrust line of `engine.txt`, so the merge stops with a conflict. The team agreed on `thrust = 150`, the value from `tuning`. Resolve the conflict so that `engine.txt` reads exactly:
 ```
 thrust = 150
 fuel = full
 ```
-and finish the merge.
+Then mark it resolved with `git add` and finish the merge with `git commit`.
 --- starter
 git init
 printf "thrust = 100\nfuel = full\n" > engine.txt
@@ -517,11 +1573,11 @@ printf "thrust = 150\nfuel = full\n" > engine.txt
 git add engine.txt
 git commit
 --- hint
-Run `git merge tuning`, then `cat engine.txt` to see the markers.
+Start with `git merge tuning`, then `cat engine.txt` to see the two sides between the markers.
 --- hint
-Write the resolved file in one go: `printf "thrust = 150\nfuel = full\n" > engine.txt`.
+Write the whole resolved file in one go, with no marker lines: `printf "thrust = 150\nfuel = full\n" > engine.txt`. Check it with `cat engine.txt`.
 --- hint
-Then `git add engine.txt` and `git commit`.
+Then `git add engine.txt` to mark it resolved, and `git commit` (no `-m` needed) to finish the merge.
 --- check shell | You met the conflict
 printed CONFLICT (content): Merge conflict in engine.txt
 --- check shell | The merge is finished
@@ -532,27 +1588,277 @@ file engine.txt ~= thrust = 150\nfuel = full
 git . at HEAD file engine.txt contains thrust = 150
 git . at HEAD file engine.txt excludes <<<<<<<
 
+=== git2-10b | Backing out of a merge: git merge --abort
+--- teach
+Last lesson you took a conflicted merge all the way to the finish. Sometimes you should not. Maybe you merged the wrong branch. Maybe the conflict is in code [[a teammate wrote|ask-the-author]], and you need to ask them which side is right. This lesson shows the way out: calling the whole merge off.
+
+Think of a board game you set up on the table, then realise you are missing a piece. You do not play half a game. You put everything back in the box, exactly as it was, and try again later.
+
+**Step 1: a merge you are not ready for**
+
+You are on `main` and merge a branch called `survey`. Both changed the same line of `orbit.txt`:
+
+```
+~/project $ git merge survey
+Auto-merging orbit.txt
+CONFLICT (content): Merge conflict in orbit.txt
+Automatic merge failed; fix conflicts and then commit the result.
+```
+
+`cat orbit.txt` shows `main` wants 380 km and `survey` wants 420 km. You do not know which is right.
+
+**Step 2: git already tells you the way out**
+
+Look at `git status` again. Its third line is the hint:
+
+```
+~/project $ git status
+On branch main
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+```
+
+**`git merge --abort`** cancels a merge that stopped half-way. `--abort` means "call it off".
+
+**Step 3: call it off**
+
+```
+~/project $ git merge --abort
+~/project $ git status
+On branch main
+
+nothing to commit, working tree clean
+~/project $ cat orbit.txt
+altitude = 380 km
+```
+
+The abort prints nothing, and that means it worked. The markers are gone. `orbit.txt` is back to `main`'s version. No merge commit was made, and `git log --oneline` looks the same as before you typed `git merge`. It is as if you [[never started|merge-head-file]].
+
+**Step 4: come back later**
+
+Nothing is lost. The `survey` branch still has its commit. Once you know which altitude is right, run `git merge survey` again and resolve it the way last lesson showed.
+
+If you run the abort when no merge is going on, git tells you so, and nothing changes:
+
+```
+~/project $ git merge --abort
+fatal: There is no merge to abort (MERGE_HEAD missing).
+```
+
+**Watch out:** an abort also throws away any resolving you already did. If you fixed ten conflicts in a big file and then abort, those ten fixes are gone too. And it works best when you [[started from a clean status|clean-before-merge]]: commit or stash your changes before you merge, so the abort has one clear "before" to go back to.
+
+This "call it off" switch is not only for merges. Several other git commands that can stop half-way [[have one too|abort-family]].
+
+::: context ask-the-author Who settles a conflict
+On a team, the person who resolves a conflict is often not the person who understands both sides. So people ask. `git log --oneline survey` shows the commits on the other branch, and their messages usually say who changed the line and why. In the advanced course, `git blame` answers it line by line. Flight software teams take this seriously: a wrong value picked in a hurry can pass every check git makes and still be wrong. Pausing to ask is part of the job.
+:::
+
+::: context merge-head-file How git knows what to undo
+When a merge stops on a conflict, git writes a small file inside the hidden `.git` folder called `MERGE_HEAD`. It holds the id of the commit being merged in. That file is how `git status` knows you are mid-merge. `git merge --abort` puts your files back to match your last commit, clears the conflict, and deletes `MERGE_HEAD`. That is why, with no merge going on, the error says *MERGE_HEAD missing*: there is nothing to undo.
+:::
+
+::: context clean-before-merge Why start from a clean status
+The abort puts your files back to your last commit. Changes you had not committed before the merge are not part of that commit. Real git tries to keep them, but if the merge touched the same files, it may not be able to rebuild them exactly. The git manual itself warns about this. The safe habit is one command before every merge: `git status`. If it is not clean, commit your work or put it aside with `git stash`, from earlier in this course.
+
+```svg
+<svg viewBox="0 0 360 120" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="40" width="90" height="40" rx="6" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
+  <text x="55" y="58" font-size="12" text-anchor="middle" fill="#1f2a44">clean</text>
+  <text x="55" y="72" font-size="12" text-anchor="middle" fill="#1f2a44">status</text>
+  <rect x="140" y="40" width="90" height="40" rx="6" fill="#f2b880" stroke="#1f2a44" stroke-width="2"/>
+  <text x="185" y="58" font-size="12" text-anchor="middle" fill="#1f2a44">merge hits</text>
+  <text x="185" y="72" font-size="12" text-anchor="middle" fill="#1f2a44">a conflict</text>
+  <line x1="100" y1="60" x2="134" y2="60" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="134,55 140,60 134,65" fill="#1f2a44"/>
+  <path d="M185 80 C185 110, 55 110, 55 86" fill="none" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="50,88 55,80 60,88" fill="#b4232c"/>
+  <text x="120" y="116" font-size="12" text-anchor="middle" font-weight="bold" fill="#b4232c">git merge --abort</text>
+  <rect x="270" y="40" width="80" height="40" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="310" y="58" font-size="12" text-anchor="middle" fill="#1f2a44">merge</text>
+  <text x="310" y="72" font-size="12" text-anchor="middle" fill="#1f2a44">commit</text>
+  <line x1="230" y1="60" x2="264" y2="60" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="264,55 270,60 264,65" fill="#1f2a44"/>
+  <text x="250" y="30" font-size="11" text-anchor="middle" fill="#6c7a93">resolve, add, commit</text>
+</svg>
+```
+:::
+
+::: context abort-family The same escape hatch, elsewhere
+Any git command that can stop in the middle to ask for your help has its own `--abort`. The advanced course meets three of them: `git cherry-pick --abort`, `git rebase --abort` and `git revert --abort`. Each one puts things back to how they were before that command started. So whenever git stops and you feel lost, `git status` names the command in progress, and adding `--abort` to that command is almost always the safe way out.
+:::
+--- task
+You are on `main`. Merge `survey` into `main`. It stops with a conflict in `orbit.txt`, and you are not sure which altitude is right. Call the merge off with `git merge --abort`. Afterwards `git status` should be clean, no merge commit should have been made, and `orbit.txt` should read `altitude = 380 km` again.
+--- starter
+git init
+echo "altitude = 400 km" > orbit.txt
+git add .
+git commit -m "Set the orbit"
+git switch -c survey
+echo "altitude = 420 km" > orbit.txt
+git commit -am "Raise the orbit to 420 km"
+git switch main
+echo "altitude = 380 km" > orbit.txt
+git commit -am "Lower the orbit to 380 km"
+--- solution
+git merge survey
+cat orbit.txt
+git merge --abort
+git status
+--- hint
+Start the merge with `git merge survey`. You can look at the markers with `cat orbit.txt`.
+--- hint
+`git status` shows the way out in its third line.
+--- hint
+`git merge --abort`, then `git status` and `cat orbit.txt` to see that everything is back.
+--- check shell | You met the conflict
+printed CONFLICT (content): Merge conflict in orbit.txt
+--- check shell | The merge was called off
+ran git merge --abort
+git . idle
+git . conflicts == 0
+git . merges == 0
+--- check shell | orbit.txt is back to main's version
+file orbit.txt == altitude = 380 km
+git . commits == 2
+
 === git2-11 | Debugging: ignored, but still tracked
 --- teach
+The last two lessons were about merges. This one is a debugging lesson, like the ones at the end of the Terminal courses: a bug report, and a step-by-step hunt for the cause. It picks up a warning from the very first lesson of this course, about what `.gitignore` can and cannot do.
+
 The bug report:
 
 > I added `.env` to `.gitignore`, but `git status` still shows it as modified. Isn't it supposed to be ignored?
 
-Work it through:
+Picture a guard at the door of a club, holding a list of people not to let in. The list works on people arriving at the door. It does nothing about someone who was already inside before the list was written. `.gitignore` is that list, and `.env` got inside first.
 
-1. **Reproduce**: `git status` shows `modified: .env`. Git is comparing it with a committed version — so git is **tracking** it.
-2. **Check the assumption.** `.gitignore` only stops git from picking up **untracked** files. `git ls-files` lists what git tracks, and `.env` is in it. `git check-ignore -v .env` prints nothing, because tracked files are never treated as ignored.
-3. **Fix the cause**: tell git to stop tracking the file, without deleting your copy:
-   ```
-   git rm --cached .env
-   git commit -m "Stop tracking .env"
-   ```
-   `--cached` removes it from what git tracks and leaves the file on your disk. From then on, `.gitignore` applies to it.
-4. **Verify**: `git status` is clean, and `git check-ignore -v .env` now names the rule.
+**Step 1: reproduce the problem**
 
-One more real-world step: the secret is still in the **old** commits. Anyone with the repository can read it there, so a leaked key must be treated as leaked — revoke it and make a new one.
+See it for yourself before you change anything:
+
+```
+~/project $ git status
+On branch main
+
+Changes not staged for commit:
+        modified:   .env
+```
+
+*modified* means git is comparing `.env` with a copy in a commit. Git only does that for a file it is **[[tracking|tracked-files]]**: a file that is in the last commit, so git watches it for changes.
+
+**Step 2: check the assumption**
+
+The person who wrote the report assumed `.gitignore` works on every file. It does not. It only stops git from picking up **untracked** files — files git has never committed. So the question is: is `.env` tracked?
+
+`git ls-files` (list files) prints every file git tracks:
+
+```
+~/project $ git ls-files
+.env
+.gitignore
+app.js
+```
+
+There it is. `.env` was committed in the very first commit, before anyone ignored it. And `git check-ignore -v .env`, from the first lesson of this course, prints nothing at all. Git never treats a tracked file as ignored.
+
+**Step 3: fix the cause**
+
+Tell git to stop tracking the file, but keep your copy on disk:
+
+```
+~/project $ git rm --cached .env
+rm '.env'
+```
+
+`rm` means "remove". `--cached` means "only from git's list of tracked files, not from the disk". The [[name is old|cached-word]], but the meaning is simple. `git status` now shows the change, waiting to be committed:
+
+```
+~/project $ git status
+On branch main
+
+Changes to be committed:
+        deleted:    .env
+```
+
+*deleted* sounds scary. It means "deleted from what git tracks". Check with `ls -a` (the `-a` shows hidden files): `.env` is still in your folder. Commit the change:
+
+```
+~/project $ git commit -m "Stop tracking .env"
+[main 7c1f1ed] Stop tracking .env
+ 1 file changed
+```
+
+**Step 4: verify**
+
+From now on, `.gitignore` applies to `.env`. Two checks prove it:
+
+```
+~/project $ git status
+On branch main
+
+nothing to commit, working tree clean
+~/project $ git check-ignore -v .env
+.gitignore:1:.env	.env
+```
+
+That second line [[names the rule|check-ignore-output]] that matched: line 1 of `.gitignore`.
+
+**One more real-world step.** The old secret is still in the **old** commits. `git show`, from earlier in this course, can print the file from any commit:
+
+```
+~/project $ git show HEAD~1:.env
+API_KEY=abc123
+```
+
+Anyone with a copy of the repository can do that too. So a secret that was ever committed must be treated as [[leaked|leaked-secret]]: revoke that key and make a new one.
+
+**Watch out:** do not leave out `--cached`. Plain `git rm .env` stops tracking the file **and** deletes it from your folder, so your real key is gone from your disk too.
+
+That was [[four steps|debug-loop]]: reproduce, check the assumption, fix the cause, verify.
+
+::: context tracked-files Tracked, untracked, ignored
+Every file in your project folder is in one of three states. **Tracked**: git has it in a commit and compares it with that copy, so `git status` reports its changes. **Untracked**: git sees it but has never committed it. **Ignored**: untracked, and matched by a rule in `.gitignore`, so git stays quiet about it. The ignore list is only asked about untracked files. A tracked file never gets that far.
+
+```svg
+<svg viewBox="0 0 360 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="20" width="110" height="36" rx="6" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
+  <text x="65" y="43" font-size="12" text-anchor="middle" fill="#1f2a44">tracked file</text>
+  <line x1="120" y1="38" x2="214" y2="38" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="214,33 220,38 214,43" fill="#1f2a44"/>
+  <text x="290" y="35" font-size="12" text-anchor="middle" fill="#1f2a44">compared with</text>
+  <text x="290" y="50" font-size="12" text-anchor="middle" fill="#1f2a44">its commit</text>
+  <rect x="10" y="94" width="110" height="36" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="65" y="117" font-size="12" text-anchor="middle" fill="#1f2a44">untracked file</text>
+  <line x1="120" y1="112" x2="144" y2="112" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="144,107 150,112 144,117" fill="#1f2a44"/>
+  <rect x="150" y="94" width="90" height="36" rx="6" fill="#f2b880" stroke="#1f2a44" stroke-width="2"/>
+  <text x="195" y="117" font-size="12" text-anchor="middle" fill="#1f2a44">.gitignore?</text>
+  <line x1="240" y1="112" x2="264" y2="112" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="264,107 270,112 264,117" fill="#1f2a44"/>
+  <text x="312" y="108" font-size="12" text-anchor="middle" fill="#1f2a44">match:</text>
+  <text x="312" y="123" font-size="12" text-anchor="middle" font-weight="bold" fill="#b4232c">ignored</text>
+  <text x="180" y="76" font-size="11" text-anchor="middle" fill="#6c7a93">the ignore list is never asked about tracked files</text>
+</svg>
+```
+:::
+
+::: context cached-word Why the flag says "cached"
+In git's early days, the staging area was called the **cache**, and later also the **index**. Both old names survive in commands. `--cached` on `git rm` means "work on the staging area only". So `git rm --cached .env` removes `.env` from what will go into the next commit, and never touches the file in your folder. You will also see `git diff --cached`, which is the same as `git diff --staged`: it shows what is staged.
+:::
+
+::: context check-ignore-output Reading check-ignore's answer
+`git check-ignore -v` answers in one line with four parts. `.gitignore` is the file the rule lives in. `1` is its line number. `.env` after the second colon is the pattern on that line. Then, after a tab, comes the file you asked about. Here the pattern and the file happen to be the same text. For a pattern like `*.log`, you would see something like `.gitignore:3:*.log` followed by `debug.log`, which tells you exactly which line to edit if the rule is wrong.
+:::
+
+::: context leaked-secret What teams do after a leak
+A key that was ever committed has to be treated as public, even if you delete it in the next commit. Old commits are copied to every clone, fork and backup. So the first job is to **revoke** the key with whoever issued it and make a new one. Tools such as `git filter-repo` can rewrite history to remove the file, but they cannot reach copies already made. GitHub scans public repositories for many known key formats and alerts the providers, because leaked keys are found and misused quickly.
+:::
+
+::: context debug-loop The debugging loop, again
+These are the same four steps as the debugging lessons in the Terminal courses: reproduce the problem, check the assumption, fix the cause, verify. The step people skip is checking the assumption. Here the assumption was "`.gitignore` works on every file", and it was wrong. Once you find the false belief, the fix is usually short. The next lesson uses the same loop on a scarier problem, and the advanced course adds `git bisect`, a tool for finding which commit broke something.
+:::
 --- task
-`git status` keeps reporting `.env` as modified even though `.gitignore` lists it. Make git stop tracking `.env` — **without** deleting your local file — and commit that as `Stop tracking .env`. Afterwards `git status` must be clean, and `.env` must count as ignored.
+`git status` keeps reporting `.env` as modified, even though `.gitignore` lists it. Make git stop tracking `.env` — **without** deleting your local file — using `git rm --cached`. Commit that with the message `Stop tracking .env`. Afterwards `git status` must say the working tree is clean, and `.env` must count as ignored.
 --- starter
 git init
 echo "console.log('app')" > app.js
@@ -570,9 +1876,11 @@ git rm --cached .env
 git commit -m "Stop tracking .env"
 git status
 --- hint
-`git ls-files` lists the files git tracks. Is `.env` among them?
+Reproduce and check first: `git status`, then `git ls-files`. Is `.env` among the tracked files?
 --- hint
-`git rm --cached .env` stops tracking it and keeps your file. Then commit.
+`git rm --cached .env` stops tracking it and keeps your file. Then commit with `git commit -m "Stop tracking .env"`.
+--- hint
+Finish with `git status`. It should say *nothing to commit, working tree clean*.
 --- check shell | .env is ignored now, and still on your disk
 git . ignored .env
 file .env == API_KEY=new456
@@ -585,34 +1893,122 @@ printed nothing to commit, working tree clean
 
 === git2-12 | Debugging: recovering from a bad reset
 --- teach
+Last lesson you debugged a file that `.gitignore` could not catch. This last lesson of the course is a scarier bug, and the one that makes people panic most: commits that seem to have vanished. You will get them back.
+
 The bug report, from you, late at night:
 
 > I ran `git reset --hard HEAD~2` and two commits of work vanished. Also, one of them was called `wip asdf`.
 
-First: **stop, and do not run anything else destructive**. The commits are almost certainly still there.
+**Step 1: stop**
 
-A reset does not delete commits; it only moves the branch away from them. Git keeps a diary of everywhere `HEAD` has been, the **reflog**:
+First: **stop, and do not run anything else destructive**. No more resets, no deleting folders. The commits are almost certainly still there.
+
+**Step 2: understand what reset did**
+
+Picture a bookmark in a book. `git reset` moves the bookmark back two chapters. It does not tear the chapters out. They are still in the book; nothing points at them any more. In git terms, a reset [[moves the branch label|reset-moves-label]] back. It does not delete commits.
+
+So the work is somewhere. You only need to find where the branch used to point.
+
+**Step 3: read git's diary**
+
+Git keeps a diary of everywhere `HEAD` has been, newest entry first. It is called the **[[reflog|reflog-word]]** — the log of every move HEAD made on your machine:
 
 ```
 ~/project $ git reflog
-03be9f1 (HEAD -> main) HEAD@{0}: reset: moving to HEAD~2
-c41d2a0 HEAD@{1}: commit: wip asdf
-7ac44b2 HEAD@{2}: commit: Add the parser
+872612c (HEAD -> main) HEAD@{0}: reset: moving to HEAD~2
+176baa3 HEAD@{1}: commit: wip asdf
+b29cef0 HEAD@{2}: commit: Add the parser
+872612c HEAD@{3}: commit (initial): Start
 ```
 
-Read it from the top: the reset is the newest entry, and the line just below it is where you were before — with all your work. `HEAD@{1}` means "where HEAD was one move ago". Put the branch back there:
+Read it from the top. The reset is the newest entry. The line just below it is where you were **before** the reset, with all your work: the commit `wip asdf`.
+
+**Step 4: name that spot**
+
+Each entry has a name like `HEAD@{1}`. Read it aloud as "HEAD at one". It means [[where HEAD was one move ago|head-at-vs-tilde]]. `HEAD@{0}` is now, `HEAD@{2}` is two moves ago, and so on. You can also use the id at the start of the line, `176baa3`.
+
+**Step 5: put the branch back**
+
+Reset again, this time forward, to that spot:
 
 ```
-git reset --hard HEAD@{1}      # or the id: git reset --hard c41d2a0
+~/project $ git reset --hard HEAD@{1}
+HEAD is now at 176baa3 wip asdf
+~/project $ git log --oneline
+176baa3 (HEAD -> main) wip asdf
+b29cef0 Add the parser
+872612c Start
 ```
 
-(If you would rather not move the branch, `git branch rescue HEAD@{1}` puts the lost commits on a new branch instead.)
+Both commits are back on `main`, and `ls` shows `parser.js` and `parser.test.js` again. (`git reset --hard 176baa3`, with the id, does the same.)
 
-Then fix the other problem. `wip asdf` is the last commit and has not been shared, so `git commit --amend -m "…"` gives it a proper message.
+If you would rather not move the branch, there is a gentler way: `git branch rescue HEAD@{1}` puts the lost commits on a [[new branch|rescue-branch]] called `rescue`, and `main` stays where it is.
 
-The reflog lives only on your machine and forgets entries after about 90 days — but for "I just did something terrible", it is almost always the way back.
+**Step 6: fix the other problem**
+
+`wip asdf` is not a real message. It is the last commit, and you have not shared it, so `--amend` (from earlier in this course) can rename it:
+
+```
+~/project $ git commit --amend -m "Add parser tests"
+[main fc0a4aa] Add parser tests
+ 1 file changed
+```
+
+**Watch out:** `HEAD@{1}` changes meaning every time HEAD moves. After the reset in Step 5, `HEAD@{1}` points somewhere new. So run `git reflog` again right before you use one of these names, or copy the id instead, which never changes.
+
+The reflog [[lives only on your machine|reflog-limits]], and git slowly forgets old entries. But for "I just did something terrible", it is almost always the way back.
+
+**What comes next**
+
+That finishes *Git, intermediate*. You can now keep files out of a repository, read and compare history, fix and undo commits the right way for each situation, put work aside, tag releases, resolve a conflict or back out of one, and debug the two scary problems you just met.
+
+The next course, *Git, advanced*, goes further. You will copy one commit to another branch (`cherry-pick`), replay a branch on top of another (`rebase`), squash messy commits into one, find the commit that broke something (`bisect`), see who last changed each line (`blame`), and share work with a team through a remote with `push`. It ends with how teams work together, and with a state you glimpsed here: a [[detached HEAD|detached-head]].
+
+::: context reset-moves-label Reset moves a label, not the commits
+A branch is only a label that points at one commit. Before the reset, `main` pointed at `wip asdf`. `git reset --hard HEAD~2` moved the label two commits back, to `Start`, and changed your files to match. The two later commits did not go anywhere. They are still stored in the `.git` folder, with no label pointing at them, so `git log` no longer shows them.
+
+```svg
+<svg viewBox="0 0 360 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <line x1="60" y1="80" x2="180" y2="80" stroke="#6c7a93" stroke-width="3"/>
+  <line x1="180" y1="80" x2="300" y2="80" stroke="#6c7a93" stroke-width="3" stroke-dasharray="6 4"/>
+  <circle cx="60" cy="80" r="11" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="180" cy="80" r="11" fill="#ffffff" stroke="#6c7a93" stroke-width="2" stroke-dasharray="4 3"/>
+  <circle cx="300" cy="80" r="11" fill="#ffffff" stroke="#6c7a93" stroke-width="2" stroke-dasharray="4 3"/>
+  <text x="60" y="110" font-size="11" text-anchor="middle" fill="#1f2a44">Start</text>
+  <text x="180" y="110" font-size="11" text-anchor="middle" fill="#1f2a44">Add the parser</text>
+  <text x="300" y="110" font-size="11" text-anchor="middle" fill="#1f2a44">wip asdf</text>
+  <text x="60" y="30" font-size="12" text-anchor="middle" font-weight="bold" fill="#1d6fd1">main now</text>
+  <line x1="60" y1="36" x2="60" y2="62" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="55,60 60,67 65,60" fill="#1d6fd1"/>
+  <text x="300" y="30" font-size="12" text-anchor="middle" fill="#6c7a93">main before reset</text>
+  <line x1="300" y1="36" x2="300" y2="62" stroke="#6c7a93" stroke-width="2" stroke-dasharray="4 3"/>
+  <polygon points="295,60 300,67 305,60" fill="#6c7a93"/>
+  <text x="240" y="138" font-size="11" text-anchor="middle" fill="#b4232c">still stored, no label points here</text>
+</svg>
+```
+:::
+
+::: context reflog-word What "reflog" means
+The name is short for **reference log**. In git, a **reference** is a name that points at a commit: `HEAD`, `main`, a tag. Every time HEAD moves, by a commit, a switch, a reset, a merge or an amend, git writes one line in a diary file inside `.git/logs/`. `git reflog` prints that diary, newest first. Each branch has a diary of its own too: `git reflog main` shows every place `main` has pointed.
+:::
+
+::: context head-at-vs-tilde HEAD@{1} is not HEAD~1
+The two look alike but ask different questions. `HEAD~1` means "the commit before this one in the history": follow the parent link one step. `HEAD@{1}` means "where HEAD was one move ago, according to your diary". Right after the bad reset, `HEAD~1` does not exist at all, because `Start` has no parent. `HEAD@{1}` is `wip asdf`, the spot you just left. One walks the history. The other walks your own moves.
+:::
+
+::: context rescue-branch The gentler rescue
+`git branch rescue HEAD@{1}` makes a new branch at the lost commit without touching `main` or your files. That is useful when you are not sure yet: you can switch to `rescue`, look around with `git log` and `git show`, and decide calmly. If it is the right work, merge `rescue` into `main`, or reset `main` to it. If it is not, delete the branch with `git branch -d rescue` (a capital `-D` if git warns it is not merged). Nothing on `main` changed in the meantime.
+:::
+
+::: context reflog-limits What the reflog cannot do
+The reflog is written on your machine only. It is never pushed, and a fresh clone starts with an empty one, so it cannot recover work that was never committed on this computer. It also forgets. When git tidies up, it drops entries older than 90 days by default, and entries for commits no branch reaches, like the ones a bad reset leaves behind, after 30 days. Those commits are then deleted for good. So rescue lost work soon, not next season.
+:::
+
+::: context detached-head A glimpse of detached HEAD
+Usually HEAD points at a branch, and the branch points at a commit. You can also point HEAD straight at a commit, for example with `git switch --detach 176baa3`. Then HEAD is **detached**: you are on no branch at all. It is a normal state for looking at old code, but new commits made there have no branch label, so they are easy to lose. The advanced course explains it properly, and the reflog is the tool that finds such lost commits.
+:::
 --- task
-Get both lost commits back onto `main` using the reflog. Then rename the last of them from `wip asdf` to `Add parser tests`.
+Get both lost commits back onto `main` using the reflog: find the entry just below the reset, and reset `main` back to it. Then rename the last commit from `wip asdf` to `Add parser tests`.
 --- starter
 git init
 echo "v0" > app.txt
@@ -630,11 +2026,11 @@ git reflog
 git reset --hard HEAD@{1}
 git commit --amend -m "Add parser tests"
 --- hint
-`git reflog`: the entry just below the reset is where your work was.
+Start with `git reflog`. The entry just below the reset is where your work was.
 --- hint
-`git reset --hard HEAD@{1}` brings it back. Check with `git log --oneline`.
+That entry is `HEAD@{1}`, so `git reset --hard HEAD@{1}` brings it back. Check with `git log --oneline`.
 --- hint
-`git commit --amend -m "Add parser tests"` renames the last commit.
+Then `git commit --amend -m "Add parser tests"` renames the last commit.
 --- check shell | You found your work in the reflog
 ran git reflog
 --- check shell | The lost work is back on main

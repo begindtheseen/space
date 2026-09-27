@@ -48,15 +48,63 @@ INSERT INTO categories (id, name, parent_id) VALUES
 
 === sql3-01 | CTEs: a query in named steps
 --- teach
+You finished the intermediate course by planning a report's joins before writing a line. This course starts where reports get long. First, a way to write a long query as a list of short, named steps, where each step can use the ones before it.
+
+### The tables in this course
+
 Most lessons in this course share three tables:
 
-- `employees` — `id`, `name`, `title`, `manager_id` (another employee, NULL for the CEO), `dept`, `salary`, `hired`
-- `daily_sales` — `day`, `region` (`north` or `south`), `amount`; some days have no row
-- `categories` — `id`, `name`, `parent_id` (NULL for the root): a tree
+- `employees`: `id`, `name`, `title`, `manager_id` (the `id` of this person's manager; NULL for the CEO, who has none), `dept`, `salary`, `hired`
+- `daily_sales`: `day`, `region` (`north` or `south`), `amount`. A day with no sales in a region has no row at all.
+- `categories`: `id`, `name`, `parent_id` (the `id` of the category this one sits inside; NULL for the top one). Together they form a tree, like folders inside folders.
 
-The intermediate course answered business questions with joins, subqueries and `CASE`. This course adds what analysts reach for next — recursion and window functions — and then turns to design: a database that protects its own data.
+The intermediate course answered business questions with joins, subqueries and `CASE`. This course adds the two tools analysts reach for next, [[recursion and window functions|course-map]]. Then it turns to design: a database that protects its own data.
 
-You have already chained two `WITH` steps to fix a fan-out. Each step can also use the ones defined **before** it, which turns a long question into a pipeline:
+### The picture
+
+Think of working out a long sum on paper. You do one part, write the answer down with a label ("total pay = 1,505,000"), and use that label on the next line. Nobody has to read the whole calculation at once. Each line is short, and you can check each one.
+
+### Named steps, again
+
+You met this in the lesson "WITH: naming the steps". A **CTE** (common table expression) is a query with a name, written at the top of a statement after `WITH`. The rest of the statement can use it like a table. In "Debugging: the join that double-counts" you wrote two of them, separated by a comma.
+
+Here is one step on its own. It adds up the pay in each department:
+
+```sql
+WITH dept_pay AS (
+  SELECT dept, COUNT(*) AS headcount, SUM(salary) AS payroll
+  FROM employees
+  GROUP BY dept
+)
+SELECT * FROM dept_pay;
+```
+
+| dept | headcount | payroll |
+| --- | --- | --- |
+| eng | 7 | 885000 |
+| exec | 1 | 250000 |
+| finance | 3 | 370000 |
+
+### A step can read the step before it
+
+Here is the new idea: a later step can read an earlier one, as if it were a table. Add a second step after a comma. `company` reads from `dept_pay`, not from `employees`:
+
+```sql
+WITH dept_pay AS (
+  SELECT dept, COUNT(*) AS headcount, SUM(salary) AS payroll
+  FROM employees
+  GROUP BY dept
+), company AS (
+  SELECT SUM(payroll) AS total FROM dept_pay
+)
+SELECT * FROM company;
+```
+
+That gives one row with one value: `total` = 1505000, the pay of the whole company. The steps now form a [[pipeline|pipeline]]: `employees` feeds `dept_pay`, and `dept_pay` feeds `company`. The order matters. A step can only read the steps written above it.
+
+### Putting the total on every row
+
+To compare each department with the whole company, the final `SELECT` needs both steps. Pair them with a **CROSS JOIN**: a join with no `ON`, which pairs every row on the left with every row on the right.
 
 ```sql
 WITH dept_pay AS (
@@ -70,13 +118,99 @@ SELECT d.dept, d.payroll, c.total
 FROM dept_pay d CROSS JOIN company c;
 ```
 
-`company` is built from `dept_pay`, and the final `SELECT` uses both. `CROSS JOIN` with a one-row result simply puts that value on every row.
+`company` has only one row, so each department is paired with that one row. The effect is that [[the total is copied onto every department's row|cross-join]]:
 
-Why bother, when subqueries can do the same? Because each step has a **name** that says what it means, and you can debug a step by selecting from it on its own. Long reports written as nested subqueries are read inside-out; CTEs are read top to bottom, in the order you thought of them.
+| dept | payroll | total |
+| --- | --- | --- |
+| eng | 885000 | 1505000 |
+| exec | 250000 | 1505000 |
+| finance | 370000 | 1505000 |
 
-One precision trap: dividing two integers in SQLite gives an integer (`7 / 2` is `3`). Multiply by `100.0` first to get a real percentage.
+### Why steps instead of subqueries?
+
+A subquery in brackets could do the same job. On a long report, steps win for two reasons:
+
+- Each step has a **name** that says what it means: `dept_pay`, `company`.
+- You can [[check one step at a time|debug-a-step]]. Change the last line to `SELECT * FROM company;` and run it.
+
+Nested subqueries are read inside-out, starting from the innermost bracket. CTEs are read top to bottom, in the order you thought of them.
+
+### Dividing whole numbers
+
+A percentage is part ÷ whole × 100. There is one trap. When SQLite divides one whole number (an **integer**) by another, the answer is a whole number too. The part after the decimal point is thrown away:
+
+```sql
+SELECT 7 / 2;          -- 3, not 3.5
+SELECT 100.0 * 7 / 2;  -- 350.0
+```
+
+`100.0` has a decimal point, so it is a **real** number: one that can have decimals. SQLite works from left to right. `100.0 * 7` is a real number, so the division after it keeps its decimals. [[Salaries are integers|integer-division]], so write `100.0 * d.payroll / c.total`. Then `ROUND(…, 1)`, from the lesson "Aggregates", rounds to one decimal place.
+
+**Watch out:** `d.payroll / c.total * 100.0` gives 0.0 for every department. The division runs first, between two integers, and 885000 / 1505000 is 0 in whole numbers. The 100.0 arrives too late. Put `100.0 *` at the front.
+
+::: context course-map What the rest of this course covers
+**Recursion** means a query that reads its own results to make more rows. It is how SQL counts, fills in missing days, and walks down an org chart without knowing how deep it goes. The next few lessons build it up one small step at a time. **Window functions** work across neighbouring rows without squashing them into groups: rankings, running totals, the change since yesterday. The last part of the course is design: constraints, foreign keys, indexes, transactions, views and triggers, the rules a database enforces on its own.
+:::
+
+::: context pipeline The pipeline, drawn
+Each box is a table or a step, and each arrow means "is read by". `employees` is a real table, saved in the database. `dept_pay` and `company` exist only while this one statement runs. The final `SELECT` reads two steps at once, which is why it needs a join.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1f2a44"/>
+    </marker>
+  </defs>
+  <rect x="8" y="70" width="80" height="32" rx="4" fill="#fff" stroke="#6c7a93"/>
+  <text x="48" y="90" font-size="12" fill="#1f2a44" text-anchor="middle">employees</text>
+  <rect x="112" y="70" width="80" height="32" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="152" y="90" font-size="12" fill="#1f2a44" text-anchor="middle">dept_pay</text>
+  <rect x="196" y="10" width="80" height="32" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="236" y="30" font-size="12" fill="#1f2a44" text-anchor="middle">company</text>
+  <rect x="272" y="70" width="80" height="32" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="312" y="90" font-size="11" fill="#1f2a44" text-anchor="middle">final SELECT</text>
+  <line x1="88" y1="86" x2="110" y2="86" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="192" y1="86" x2="270" y2="86" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="172" y1="70" x2="208" y2="44" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="262" y1="42" x2="294" y2="68" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="180" y="122" font-size="11" fill="#6c7a93" text-anchor="middle">each arrow means: is read by</text>
+</svg>
+```
+:::
+
+::: context cross-join Every possible pair
+A CROSS JOIN makes every possible pair of rows. 3 rows × 1 row gives 3 rows, which is why it is a safe way to attach one total. 3 rows × 2 rows gives 6: `(SELECT DISTINCT dept FROM employees) d CROSS JOIN (SELECT DISTINCT region FROM daily_sales) r` pairs all three departments with both sales regions. Grids and calendars are built this way. The danger is size: two tables of 1,000 rows cross-joined make 1,000,000 rows. Use it when one side is small and you know how big.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 144" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="16" width="110" height="28" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="75" y="35" font-size="12" fill="#1f2a44" text-anchor="middle">eng 885000</text>
+  <rect x="20" y="56" width="110" height="28" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="75" y="75" font-size="12" fill="#1f2a44" text-anchor="middle">exec 250000</text>
+  <rect x="20" y="96" width="110" height="28" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="75" y="115" font-size="12" fill="#1f2a44" text-anchor="middle">finance 370000</text>
+  <rect x="230" y="56" width="110" height="28" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="285" y="75" font-size="12" fill="#1f2a44" text-anchor="middle">total 1505000</text>
+  <line x1="130" y1="30" x2="230" y2="70" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="130" y1="70" x2="230" y2="70" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="130" y1="110" x2="230" y2="70" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="180" y="138" font-size="11" fill="#6c7a93" text-anchor="middle">3 rows × 1 row = 3 pairs</text>
+</svg>
+```
+:::
+
+::: context debug-a-step How engineers find a wrong number
+When a report's number looks wrong, nobody stares at the whole query. They run the first step on its own and check it against something they already know, then the next step, until one step's output is wrong. The bug is in that step. With CTEs this takes one change: point the final `SELECT *` at the step you want to see. A flight-data query might have steps called `raw_readings`, `cleaned`, `per_minute` and `out_of_range`. If an alarm fires by mistake, you look at `cleaned` first.
+:::
+
+::: context integer-division Why 7 / 2 is 3
+The `salary` column was created as `INTEGER`, so it holds whole numbers, and SQLite divides them as whole numbers: it keeps the whole part and drops the rest, rounding towards zero (so `-7 / 2` is `-3`). C++ does the same with its integers. Python's `/` gives 3.5 and has a separate `//` for whole-number division. The fix is always the same: get one real number into the calculation before the division, with `100.0 *` or `1.0 *`. In a report, this mistake shows up as percentages that are all 0.
+:::
 --- task
-Return one row per department with `dept`, `headcount`, `payroll` (total salary) and `share` — the department's payroll as a percentage of the whole company's payroll, rounded to 1 decimal. Use at least two CTEs. Sort by payroll, largest first.
+Return one row per department with four columns: `dept`, `headcount` (the number of people), `payroll` (their total salary) and `share`: the department's payroll as a percentage of the whole company's payroll, rounded to 1 decimal place.
+
+Use at least two CTEs: one for each department's pay, and one for the company total that reads from the first. Sort by `payroll`, largest first.
 --- starter
 SELECT dept, COUNT(*) AS headcount, SUM(salary) AS payroll
 FROM employees
@@ -95,31 +229,214 @@ FROM dept_pay d
 CROSS JOIN company c
 ORDER BY d.payroll DESC;
 --- hint
-First CTE: payroll per department. Second CTE: the sum of those payrolls.
+The lesson's two steps are most of it: `dept_pay` with `dept`, `headcount` and `payroll` for each department, then `company` with `SUM(payroll) AS total`, read from `dept_pay`.
 --- hint
-Join the two with `CROSS JOIN` and compute `ROUND(100.0 * d.payroll / c.total, 1)`.
+In the final `SELECT`, use `FROM dept_pay d CROSS JOIN company c`, so every department row has the total beside it. Pick `d.dept`, `d.headcount` and `d.payroll`.
+--- hint
+The share is `ROUND(100.0 * d.payroll / c.total, 1) AS share`, with `100.0` at the front. End with `ORDER BY d.payroll DESC`.
 --- check result | eng, finance, exec with their shares
 ordered
 [["eng", 7, 885000, 58.8], ["finance", 3, 370000, 24.6], ["exec", 1, 250000, 16.6]]
 --- check source | Uses more than one CTE
 \)\s*,\s*\w+\s+[Aa][Ss]\s*\(
 
-=== sql3-02 | Recursive CTEs: generating a series
+=== sql3-01b | Recursive CTEs: a query that counts
 --- teach
-`daily_sales` has no row for a day with no sales in a region. A chart built straight from it would silently skip those days — and a "per day" average would be wrong. You need a row for **every** day, with 0 where nothing happened. SQL has no loop, but it has **recursive CTEs**:
+Last lesson each step in a `WITH` read the steps written above it. This lesson meets a step that reads **itself**. That lets a query count, with no table to count from. The next lessons use the same trick to fill in missing days and to walk down an org chart.
+
+### The picture
+
+Think of a launch countdown. The controller says "ten". Then, again and again, they take the number they said last and say one less: "nine", "eight", and so on. At "zero" they stop. Three rules make the whole countdown:
+
+1. where to start (ten);
+2. how to get the next number from the last one (one less);
+3. when to stop (after zero).
+
+### SQL has no loop
+
+Many programming languages have a **loop**: a command that repeats a job until something is true. SQL [[has no loop command|no-loop]]. It has **recursive CTEs** instead: a CTE whose query reads its own rows to make new ones. **[[Recursive|recursive-word]]** means "defined in terms of itself".
+
+Here is one that counts from 1 to 5:
 
 ```sql
 WITH RECURSIVE n(x) AS (
-  SELECT 1                           -- the anchor: the first row
+  SELECT 1
   UNION ALL
-  SELECT x + 1 FROM n WHERE x < 5    -- the step: builds the next row from the last
+  SELECT x + 1 FROM n WHERE x < 5
 )
-SELECT x FROM n;                     -- 1, 2, 3, 4, 5
+SELECT x FROM n;
 ```
 
-How it runs: the anchor produces the first rows. Then the step runs on the rows produced last time, and its output becomes the input to the next round. When a round produces nothing — here, when `x < 5` is false — it stops. **Always write the stopping condition first**; without it the query runs forever.
+| x |
+| --- |
+| 1 |
+| 2 |
+| 3 |
+| 4 |
+| 5 |
 
-A calendar is the same idea with dates:
+### The parts, one at a time
+
+- `WITH RECURSIVE` says "this CTE is allowed to read itself".
+- `n(x)` names the CTE `n` and gives it one column, `x`. The names in brackets are the column names for every row it makes.
+- `SELECT 1` is the **anchor**: the starting row. It runs once. It is the countdown's "start at ten".
+- `UNION ALL` stacks rows on top of each other, as in the lesson "DISTINCT, UNION and UNION ALL". Here it stacks each new batch of rows under the ones before.
+- `SELECT x + 1 FROM n WHERE x < 5` is the **step**, also called the recursive part. It reads rows of `n` and makes the next ones: "one more".
+- `WHERE x < 5` inside the step is the **stopping condition**: it says when the step may still make a row.
+
+### Round by round
+
+The step does not see all of `n` at once. It runs in **rounds**, and each round reads only [[the rows made in the round before|rounds]]:
+
+| Round | The step reads | It makes |
+| --- | --- | --- |
+| anchor | (nothing) | 1 |
+| 1 | 1 | 2 |
+| 2 | 2 | 3 |
+| 3 | 3 | 4 |
+| 4 | 4 | 5 |
+| 5 | 5 | nothing, because 5 < 5 is false |
+
+When a round makes nothing, the recursion stops. `n` then holds every row made along the way: 1, 2, 3, 4, 5. The final `SELECT x FROM n` reads them like any table.
+
+### The stopping condition comes first
+
+Without `WHERE x < 5`, every round makes a new row, and the query [[never ends|runaway]]. So when you write a step, write the stopping condition before anything else.
+
+The condition tests the row the step **reads**, not the row it makes. When the step reads 4, 4 < 5 is true, so it makes 5. When it reads 5, the condition is false, and nothing more is made.
+
+### Other steps
+
+The step can do any arithmetic. Here it counts in twos, from 2 to 10:
+
+```sql
+WITH RECURSIVE n(x) AS (
+  SELECT 2
+  UNION ALL
+  SELECT x + 2 FROM n WHERE x < 10
+)
+SELECT x FROM n;    -- 2, 4, 6, 8, 10
+```
+
+To count down, start high and subtract. The rows usually come out in the order they were made, but only `ORDER BY` [[promises an order|row-order]], so add one whenever the order matters.
+
+**Watch out:** `WHERE x <= 5` looks as if it stops at 5, but it makes a 6. The step reads 5, 5 <= 5 is true, so it makes 5 + 1. Test your condition on the last row you want: "when the step reads this, should it make another?"
+
+::: context no-loop Why SQL has no loop
+SQL is a **declarative** language: you describe the result you want, and the database works out the steps to get it. Python and C++ are the other kind: you write the steps yourself, loops included. For years this made some questions, like "everyone under this manager, at any depth", impossible to ask in one query. The SQL standard added recursive queries in 1999, and SQLite has had them since version 3.8.3, in 2014. Postgres, MySQL 8 and SQL Server have them too; SQL Server leaves out the word `RECURSIVE`.
+:::
+
+::: context recursive-word Where the word comes from
+"Recursive" comes from the Latin *recurrere*, "to run back". In maths, a list of numbers is defined recursively when each one is built from the one before: start at 1, and each next number is the last one plus 1. That is exactly an anchor and a step. Recursion turns up all over programming: a function that calls itself, a folder that holds folders. The idea is always the same three parts: a starting case, a rule for the next case, and a point where it stops.
+:::
+
+::: context rounds Each round reads only the last one
+Picture a relay race. Each runner takes the baton only from the runner right before, never from the whole team. The anchor makes the first row. Round 1 reads it and makes 2. Round 2 reads only 2, not 1 and 2, and so on. The round that makes nothing ends the race.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 125" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1d6fd1"/>
+    </marker>
+  </defs>
+  <text x="35" y="30" font-size="11" fill="#6c7a93" text-anchor="middle">anchor</text>
+  <text x="93" y="30" font-size="11" fill="#6c7a93" text-anchor="middle">round 1</text>
+  <text x="151" y="30" font-size="11" fill="#6c7a93" text-anchor="middle">round 2</text>
+  <text x="209" y="30" font-size="11" fill="#6c7a93" text-anchor="middle">round 3</text>
+  <text x="267" y="30" font-size="11" fill="#6c7a93" text-anchor="middle">round 4</text>
+  <text x="325" y="30" font-size="11" fill="#6c7a93" text-anchor="middle">round 5</text>
+  <rect x="12" y="40" width="46" height="36" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="35" y="63" font-size="14" fill="#1f2a44" text-anchor="middle">1</text>
+  <rect x="70" y="40" width="46" height="36" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="93" y="63" font-size="14" fill="#1f2a44" text-anchor="middle">2</text>
+  <rect x="128" y="40" width="46" height="36" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="151" y="63" font-size="14" fill="#1f2a44" text-anchor="middle">3</text>
+  <rect x="186" y="40" width="46" height="36" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="209" y="63" font-size="14" fill="#1f2a44" text-anchor="middle">4</text>
+  <rect x="244" y="40" width="46" height="36" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="267" y="63" font-size="14" fill="#1f2a44" text-anchor="middle">5</text>
+  <rect x="302" y="40" width="46" height="36" rx="4" fill="#fff" stroke="#b4232c" stroke-dasharray="4 3"/>
+  <text x="325" y="62" font-size="12" fill="#b4232c" text-anchor="middle">stop</text>
+  <line x1="58" y1="58" x2="69" y2="58" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#head)"/>
+  <line x1="116" y1="58" x2="127" y2="58" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#head)"/>
+  <line x1="174" y1="58" x2="185" y2="58" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#head)"/>
+  <line x1="232" y1="58" x2="243" y2="58" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#head)"/>
+  <line x1="290" y1="58" x2="301" y2="58" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#head)"/>
+  <text x="180" y="98" font-size="11" fill="#1f2a44" text-anchor="middle">each round reads only the box before it</text>
+  <text x="180" y="116" font-size="11" fill="#b4232c" text-anchor="middle">round 5 reads 5; 5 &lt; 5 is false, so it makes nothing</text>
+</svg>
+```
+:::
+
+::: context runaway What "never ends" looks like
+SQLite keeps making rows until it runs out of memory or you stop it, and the editor seems to hang. SQLite offers a safety net: a `LIMIT` at the end of the step, and the recursion stops after that many rows.
+
+```sql
+WITH RECURSIVE n(x) AS (
+  SELECT 1 UNION ALL SELECT x + 1 FROM n LIMIT 10
+)
+SELECT x FROM n;
+```
+
+That gives 1 to 10. SQL Server has a built-in limit instead: by default it stops a recursive query with an error after 100 rounds. Neither replaces a correct stopping condition. They only stop a mistake from running away.
+:::
+
+::: context row-order Which order the rows come out in
+SQLite keeps the rows it has made in a queue, like people waiting in line. It takes the oldest waiting row, runs the step on that one row, and puts whatever it makes at the back of the line. For a counter, that gives 1, 2, 3 in order, the same rows as the rounds picture. Other databases may work differently, and the SQL standard promises no order for a query without `ORDER BY`. So the habit is: when the order is part of the answer, say it with `ORDER BY`.
+:::
+--- task
+It is launch day. Return a countdown as one column named `t`: eleven rows, from 10 down to 0.
+
+Use a recursive CTE called `countdown` with one column, `t`. The anchor starts at 10. The step makes one less than the row it reads, and stops after 0. Sort with `ORDER BY t DESC`, so 10 comes first.
+--- starter
+SELECT 10 AS t;
+--- solution
+WITH RECURSIVE countdown(t) AS (
+  SELECT 10
+  UNION ALL
+  SELECT t - 1 FROM countdown WHERE t > 0
+)
+SELECT t FROM countdown
+ORDER BY t DESC;
+--- hint
+Same shape as the lesson's counter. The anchor is `SELECT 10`. The step is `SELECT t - 1 FROM countdown`, plus a stopping condition.
+--- hint
+The last row you want is 0. So the step must still run when it reads 1 (to make 0), and must stop when it reads 0. Which condition is true for 1 but false for 0?
+--- hint
+`WITH RECURSIVE countdown(t) AS (SELECT 10 UNION ALL SELECT t - 1 FROM countdown WHERE t > 0)`, then `SELECT t FROM countdown ORDER BY t DESC;`.
+--- check result | Eleven numbers, 10 down to 0
+ordered
+[[10], [9], [8], [7], [6], [5], [4], [3], [2], [1], [0]]
+--- check source | Uses a recursive CTE
+[Rr][Ee][Cc][Uu][Rr][Ss][Ii][Vv][Ee]
+
+=== sql3-02 | Recursive CTEs: generating a series
+--- teach
+Last lesson a recursive CTE counted: an anchor to start, a step to make the next row, and a stopping condition. This lesson counts in days instead of numbers. That gives you a calendar, and a calendar lets you show the days when nothing happened.
+
+### The problem: days that are not there
+
+Picture a class register where a student's absent days have no line at all. Reading it, you would never notice the absences. To spot them, you need a second list, every school day, and you compare the two.
+
+`daily_sales` is like that register. Here are the north region's rows:
+
+| day | amount |
+| --- | --- |
+| 2024-07-01 | 120 |
+| 2024-07-02 | 80 |
+| 2024-07-03 | 150 |
+| 2024-07-05 | 90 |
+| 2024-07-06 | 200 |
+| 2024-07-07 | 110 |
+
+There is no row for 4 July, because nothing was sold. A chart drawn from these rows would jump from the 3rd to the 5th without showing the empty day. An average "per day" would be wrong too: `AVG(amount)` gives 750 ÷ 6 = 125, but the week had 7 days, so the true figure is 750 ÷ 7, about 107.1.
+
+You need a row for **every** day, with 0 where nothing happened. That is called [[filling the gaps|gaps]].
+
+### Step 1: a calendar
+
+A **calendar** here means a list of every day in a range, one row per day. Build it with the same shape as last lesson's counter. The step uses `date(day, '+1 day')`, from the lesson "Dates and times", which gives [[the day after|date-steps]] `day`:
 
 ```sql
 WITH RECURSIVE days(day) AS (
@@ -130,9 +447,144 @@ WITH RECURSIVE days(day) AS (
 SELECT day FROM days;
 ```
 
-Then `LEFT JOIN` the real data onto the calendar. The calendar supplies every day; the data fills in what it has; `COALESCE(amount, 0)` fills the gaps. Remember the LEFT JOIN rule from the intermediate course: a filter on the right-hand table — here, the region — belongs in the `ON`.
+- Anchor: `'2024-07-01'`, the first day.
+- Step: the day after the one read last round.
+- Stopping condition: `day < '2024-07-07'`. When the step reads the 6th, it makes the 7th. When it reads the 7th, it stops.
+
+The result is seven rows, from `2024-07-01` to `2024-07-07`, with 4 July included. The condition compares text, and that works because [[dates written year-month-day sort in time order|iso-dates]].
+
+### Step 2: join the data onto the calendar
+
+Now `LEFT JOIN` the sales onto the calendar. The calendar is on the left, so every day survives, and [[the sales fill in what they have|calendar-picture]]:
+
+```sql
+WITH RECURSIVE days(day) AS (
+  SELECT '2024-07-01'
+  UNION ALL
+  SELECT date(day, '+1 day') FROM days WHERE day < '2024-07-07'
+)
+SELECT d.day, s.amount
+FROM days d
+LEFT JOIN daily_sales s ON s.day = d.day AND s.region = 'north'
+ORDER BY d.day;
+```
+
+| day | amount |
+| --- | --- |
+| 2024-07-01 | 120 |
+| 2024-07-02 | 80 |
+| 2024-07-03 | 150 |
+| 2024-07-04 | NULL |
+| 2024-07-05 | 90 |
+| 2024-07-06 | 200 |
+| 2024-07-07 | 110 |
+
+4 July is back, with NULL: the calendar had the day, and no sales row matched it.
+
+### Step 3: turn NULL into 0
+
+`COALESCE(x, 0)`, from the lesson "Testing for NULL", gives back `x`, or 0 when `x` is NULL. So `COALESCE(s.amount, 0)` shows 0 on 4 July and the real amount on every other day.
+
+### Where the region filter goes
+
+The lesson "LEFT JOIN: where the filter goes" gave the rule: a filter on the right-hand table of a LEFT JOIN belongs in its `ON`. Here the region is a column of the right-hand table, `daily_sales`, so `s.region = 'north'` goes in the `ON`.
+
+**Watch out:** moving `s.region = 'north'` into a `WHERE` gives back only six rows. On 4 July's row, `s.region` is NULL, and `NULL = 'north'` is never true, so `WHERE` throws away the very row the calendar added. Keep the region in the `ON`.
+
+The same calendar can serve [[both regions at once|both-regions]], with one more join.
+
+::: context gaps Zero, or unknown?
+Filling gaps is everyday work with anything measured over time. Flight telemetry, the stream of sensor readings a spacecraft sends down, is stored second by second, and a chart of it must show a missing second as missing. There the right fill is often NULL, not 0: no reading does not mean the sensor read zero. Sales are different. No row means nothing was sold, so 0 is the true answer. Before you fill a gap, ask what the gap means.
+:::
+
+::: context date-steps Other step sizes
+The step can move by any amount SQLite's date functions understand. `date(day, '+7 days')` makes a calendar of weeks. For hours, use `datetime`, which keeps the time of day:
+
+```sql
+WITH RECURSIVE t(ts) AS (
+  SELECT '2024-07-01 00:00:00'
+  UNION ALL
+  SELECT datetime(ts, '+1 hour') FROM t
+  WHERE ts < '2024-07-01 03:00:00'
+)
+SELECT ts FROM t;
+```
+
+That gives four rows, from midnight to 3 a.m.
+:::
+
+::: context iso-dates Why comparing dates as text works
+`'2024-07-06' < '2024-07-07'` compares the text one character at a time, from the left, like words in a dictionary. The year comes first, then the month, then the day, and each always has the same number of digits. So dictionary order is time order. Drop the leading zeros and it breaks: in SQLite, `'2024-7-10' < '2024-7-4'` is true, because the character `1` comes before `4`. This is why dates are stored as `'YYYY-MM-DD'` text, as the lesson "Dates and times" said.
+:::
+
+::: context calendar-picture The calendar holds the days, the data fills them in
+Every day on the left comes from the calendar. Each day looks for a matching north sales row on the right. 4 July finds none, so the LEFT JOIN gives NULL, and `COALESCE` turns that into 0.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 195" font-family="Inter, Arial, sans-serif">
+  <text x="75" y="18" font-size="12" fill="#1f2a44" text-anchor="middle">calendar</text>
+  <text x="265" y="18" font-size="12" fill="#1f2a44" text-anchor="middle">north sales</text>
+  <rect x="20" y="28" width="110" height="19" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="75" y="42" font-size="12" fill="#1f2a44" text-anchor="middle">2024-07-01</text>
+  <rect x="20" y="51" width="110" height="19" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="75" y="65" font-size="12" fill="#1f2a44" text-anchor="middle">2024-07-02</text>
+  <rect x="20" y="74" width="110" height="19" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="75" y="88" font-size="12" fill="#1f2a44" text-anchor="middle">2024-07-03</text>
+  <rect x="20" y="97" width="110" height="19" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="75" y="111" font-size="12" fill="#1f2a44" text-anchor="middle">2024-07-04</text>
+  <rect x="20" y="120" width="110" height="19" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="75" y="134" font-size="12" fill="#1f2a44" text-anchor="middle">2024-07-05</text>
+  <rect x="20" y="143" width="110" height="19" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="75" y="157" font-size="12" fill="#1f2a44" text-anchor="middle">2024-07-06</text>
+  <rect x="20" y="166" width="110" height="19" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="75" y="180" font-size="12" fill="#1f2a44" text-anchor="middle">2024-07-07</text>
+  <rect x="210" y="28" width="110" height="19" fill="#fff" stroke="#1f2a44"/>
+  <text x="265" y="42" font-size="12" fill="#1f2a44" text-anchor="middle">120</text>
+  <rect x="210" y="51" width="110" height="19" fill="#fff" stroke="#1f2a44"/>
+  <text x="265" y="65" font-size="12" fill="#1f2a44" text-anchor="middle">80</text>
+  <rect x="210" y="74" width="110" height="19" fill="#fff" stroke="#1f2a44"/>
+  <text x="265" y="88" font-size="12" fill="#1f2a44" text-anchor="middle">150</text>
+  <rect x="210" y="97" width="110" height="19" fill="#f2b880" stroke="#b4232c" stroke-dasharray="4 3"/>
+  <text x="265" y="111" font-size="12" fill="#1f2a44" text-anchor="middle">no row, so 0</text>
+  <rect x="210" y="120" width="110" height="19" fill="#fff" stroke="#1f2a44"/>
+  <text x="265" y="134" font-size="12" fill="#1f2a44" text-anchor="middle">90</text>
+  <rect x="210" y="143" width="110" height="19" fill="#fff" stroke="#1f2a44"/>
+  <text x="265" y="157" font-size="12" fill="#1f2a44" text-anchor="middle">200</text>
+  <rect x="210" y="166" width="110" height="19" fill="#fff" stroke="#1f2a44"/>
+  <text x="265" y="180" font-size="12" fill="#1f2a44" text-anchor="middle">110</text>
+  <line x1="130" y1="37" x2="210" y2="37" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="130" y1="60" x2="210" y2="60" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="130" y1="83" x2="210" y2="83" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="130" y1="106" x2="210" y2="106" stroke="#b4232c" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="130" y1="129" x2="210" y2="129" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="130" y1="152" x2="210" y2="152" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="130" y1="175" x2="210" y2="175" stroke="#1d6fd1" stroke-width="1.5"/>
+</svg>
+```
+:::
+
+::: context both-regions Every day for every region
+To fill the gaps for both regions, you need every pair of a day and a region. That is a CROSS JOIN, from the lesson "CTEs: a query in named steps". The region filter in the `ON` then matches each pair's own region:
+
+```sql
+WITH RECURSIVE days(day) AS (
+  SELECT '2024-07-01'
+  UNION ALL
+  SELECT date(day, '+1 day') FROM days WHERE day < '2024-07-07'
+)
+SELECT d.day, r.region, COALESCE(s.amount, 0) AS amount
+FROM days d
+CROSS JOIN (SELECT DISTINCT region FROM daily_sales) r
+LEFT JOIN daily_sales s ON s.day = d.day AND s.region = r.region
+ORDER BY d.day, r.region;
+```
+
+That is 7 days × 2 regions = 14 rows. South shows 0 on 2 and 6 July.
+:::
 --- task
-Return one row for every day from `2024-07-01` to `2024-07-07` with the `north` region's sales: columns `day` and `amount`, where a day with no row shows `0`. Sort by day.
+Return one row for every day from `2024-07-01` to `2024-07-07` with the `north` region's sales. Use two columns: `day`, and `amount`, which shows `0` on a day with no sales row.
+
+Build the days with a recursive CTE, `LEFT JOIN` `daily_sales` onto them, and sort by `day`.
 --- starter
 SELECT day, amount
 FROM daily_sales
@@ -149,37 +601,168 @@ FROM days d
 LEFT JOIN daily_sales s ON s.day = d.day AND s.region = 'north'
 ORDER BY d.day;
 --- hint
-Build the calendar with `WITH RECURSIVE days(day) AS (SELECT '2024-07-01' UNION ALL SELECT date(day, '+1 day') FROM days WHERE day < '2024-07-07')`.
+Start with the calendar: `WITH RECURSIVE days(day) AS (SELECT '2024-07-01' UNION ALL SELECT date(day, '+1 day') FROM days WHERE day < '2024-07-07')`.
 --- hint
-`LEFT JOIN daily_sales s ON s.day = d.day AND s.region = 'north'`, and `COALESCE(s.amount, 0)`.
+After it, read `FROM days d LEFT JOIN daily_sales s ON s.day = d.day AND s.region = 'north'`. The region goes in the `ON`, not in a `WHERE`.
+--- hint
+Select `d.day, COALESCE(s.amount, 0) AS amount` and end with `ORDER BY d.day`.
 --- check result | Seven days; 4 July is 0
 ordered
 [["2024-07-01", 120.0], ["2024-07-02", 80.0], ["2024-07-03", 150.0], ["2024-07-04", 0], ["2024-07-05", 90.0], ["2024-07-06", 200.0], ["2024-07-07", 110.0]]
 
 === sql3-03 | Recursive CTEs: walking an org chart
 --- teach
-A self-join finds someone's *direct* reports. "Everyone under Omar, at any depth" needs as many joins as the tree is deep — and you do not know the depth in advance. A recursive CTE walks it for you:
+Last lesson each round of the step made one new date. This time the step joins to a table, so each round can find several rows at once. That lets you walk down an org chart, through as many levels as it has.
+
+### The picture
+
+Think of a phone tree for a snow day. The head teacher phones the heads of year. Each of them phones their teachers. Each teacher phones the families in their class. Nobody needs to know how many levels there are. The calls stop on their own when the people called have nobody to phone.
+
+### The tree in the table
+
+In `employees`, `manager_id` holds the `id` of each person's manager. Drawn out, it looks like this:
+
+```
+Maya (CEO)
+├── Omar (CTO)
+│   ├── Raj
+│   │   ├── Ivan
+│   │   │   └── Leo
+│   │   ├── Nora
+│   │   └── Paul
+│   └── Tess
+└── Lena (CFO)
+    ├── Zara
+    └── Amy
+```
+
+This shape is a **[[tree|tree-words]]**: every row points to one parent (here, its manager). One row at the top has no parent: the **root**, Maya. Rows with nobody below them are **leaves**: Leo, Nora, Paul, Tess, Zara and Amy. Org charts, folders inside folders and [[the parts list of a rocket|parts-lists]] are all trees.
+
+### One level is a self-join
+
+In the lesson "Self-joins" you found the rows that point at one row. Raj's `id` is 4, so Raj's direct reports are:
+
+```sql
+SELECT name FROM employees WHERE manager_id = 4;   -- Ivan, Nora, Paul
+```
+
+That is one level. Leo reports to Ivan, one level further down, so reaching Leo needs another join, and each level after that needs one more. You [[do not know the depth in advance|unknown-depth]], so you cannot know how many joins to write.
+
+### The step is a join
+
+A recursive CTE makes those joins for you. The anchor finds the first level. The step joins `employees` to the rows found in the round before:
 
 ```sql
 WITH RECURSIVE chain(id, name, depth) AS (
-  SELECT id, name, 1 FROM employees WHERE manager_id = 4    -- Raj's direct reports
+  SELECT id, name, 1 FROM employees WHERE manager_id = 4
   UNION ALL
   SELECT e.id, e.name, c.depth + 1
   FROM employees e
-  JOIN chain c ON e.manager_id = c.id                       -- their reports, and so on
+  JOIN chain c ON e.manager_id = c.id
 )
 SELECT * FROM chain;
 ```
 
-Round one finds the people whose manager is Raj. Each later round joins `employees` to the rows found in the round before: people managed by *those* people. When a round finds nobody, it stops — the leaves of the tree end the recursion on their own.
+Read the `ON` aloud: "an employee whose manager is someone found last round". Round by round:
 
-Carry along whatever you need as you go: a `depth` counter, the manager's name, a path string. The anchor sets the starting value; the step updates it.
+| Round | The step reads | It finds |
+| --- | --- | --- |
+| anchor | (nothing) | Ivan, Nora, Paul, at depth 1 |
+| 1 | Ivan, Nora, Paul | Leo (who reports to Ivan), at depth 2 |
+| 2 | Leo | nobody |
 
-Walking **up** is the same with the join flipped: start from one person and join `e.id = c.manager_id` to climb to the CEO.
+A round that finds nobody ends the recursion. There is no `WHERE` stopping condition this time: [[the leaves stop it|leaves-stop]]. The result:
 
-Real data can contain a cycle (A manages B, B manages A), and then the recursion never ends. Guarding with `WHERE c.depth < 20` in the step is cheap insurance.
+| id | name | depth |
+| --- | --- | --- |
+| 6 | Ivan | 1 |
+| 7 | Nora | 1 |
+| 8 | Paul | 1 |
+| 10 | Leo | 2 |
+
+Raj is not in it. The anchor starts at Raj's reports, not at Raj.
+
+### Carrying values along
+
+`depth` is a value carried from round to round. The anchor sets it to 1. The step updates it: `c.depth + 1` is one more than the row it came from. You can carry anything you need this way: a counter, a manager's name, or a path of names, as the next lesson does.
+
+### Starting from a name
+
+`manager_id = 4` meant looking up Raj's `id` first. To start from a name instead, put a subquery, from the lesson "Subqueries: a query inside a query", in the anchor:
+
+```sql
+WHERE manager_id = (SELECT id FROM employees WHERE name = 'Raj')
+```
+
+### Walking up
+
+Walking **up**, from one person to the CEO, is the same with the join flipped. The anchor is one person. The step finds "the employee who is the manager of the one found last round". For that, the CTE must carry `manager_id`:
+
+```sql
+WITH RECURSIVE up(id, name, manager_id) AS (
+  SELECT id, name, manager_id FROM employees WHERE name = 'Leo'
+  UNION ALL
+  SELECT e.id, e.name, e.manager_id
+  FROM employees e
+  JOIN up u ON e.id = u.manager_id
+)
+SELECT name FROM up;    -- Leo, Ivan, Raj, Omar, Maya
+```
+
+It stops at Maya. Maya's `manager_id` is NULL, and NULL matches no `id`.
+
+### When the data has a loop
+
+Real data can contain a **cycle**: by mistake, A manages B and B manages A. Then every round finds someone, and [[the recursion never ends|cycles]]. A cheap guard is a limit on depth inside the step: add `WHERE c.depth < 20`.
+
+**Watch out:** the direction of the `ON`. `e.manager_id = c.id` walks down, to the reports. `e.id = c.manager_id` walks up, to the boss. Swap them by accident and you get the wrong people, with no error. Say the `ON` in words before you run it.
+
+::: context tree-words Why it is called a tree
+Draw it with the root at the bottom and the branches spreading upwards, and it looks like a tree. Computer scientists draw it upside down, root at the top, but they kept the words. A **parent** is the row one level up: Raj is Ivan's parent. A **child** is one level down. A proper tree has no loops: follow the parents up from anyone and you always reach the root. Storing each row's parent `id` in a column, as `manager_id` does, is the most common way to keep a tree in a database.
+:::
+
+::: context parts-lists Trees in engineering
+A launch vehicle is built as a tree of parts. The vehicle has stages, a stage has engines and tanks, an engine has turbopumps and valves, and so on down to single bolts. Engineers call this list a **bill of materials**. Questions such as "which parts are inside the second stage?" or "how many of this valve does the whole vehicle use?" are answered with recursive queries over a parts table, walking down the tree the way this lesson walks an org chart.
+:::
+
+::: context unknown-depth Why not write the joins by hand?
+For this table you could: the deepest chain, Maya to Omar to Raj to Ivan to Leo, is only four steps. But that depth is a fact about today's data, not about the query. Hire an intern under Leo, and a query with a fixed number of joins quietly misses them. A large company's chart can be a dozen levels deep, and different in every department. The recursive CTE keeps going for as many levels as there are, today and after the next reorganisation.
+:::
+
+::: context leaves-stop How the walk under Raj ends
+The anchor finds Raj's three reports. Round 1 reads all three and finds Leo, who reports to Ivan. Nora and Paul are leaves, so they add nobody. Round 2 reads Leo, finds no employee whose `manager_id` is 10, and makes nothing, so the recursion ends.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 166" font-family="Inter, Arial, sans-serif">
+  <text x="8" y="27" font-size="11" fill="#6c7a93">start</text>
+  <text x="8" y="79" font-size="11" fill="#6c7a93">depth 1</text>
+  <text x="8" y="125" font-size="11" fill="#6c7a93">depth 2</text>
+  <line x1="200" y1="36" x2="120" y2="62" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="200" y1="36" x2="200" y2="62" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="200" y1="36" x2="280" y2="62" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="120" y1="88" x2="120" y2="108" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="170" y="10" width="60" height="26" rx="5" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="200" y="28" font-size="12" fill="#1f2a44" text-anchor="middle">Raj</text>
+  <rect x="90" y="62" width="60" height="26" rx="5" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="120" y="80" font-size="12" fill="#1f2a44" text-anchor="middle">Ivan</text>
+  <rect x="170" y="62" width="60" height="26" rx="5" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="200" y="80" font-size="12" fill="#1f2a44" text-anchor="middle">Nora</text>
+  <rect x="250" y="62" width="60" height="26" rx="5" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="280" y="80" font-size="12" fill="#1f2a44" text-anchor="middle">Paul</text>
+  <rect x="90" y="108" width="60" height="26" rx="5" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="120" y="126" font-size="12" fill="#1f2a44" text-anchor="middle">Leo</text>
+  <text x="120" y="156" font-size="11" fill="#b4232c" text-anchor="middle">round 2: nobody below Leo</text>
+</svg>
+```
+:::
+
+::: context cycles How a cycle sneaks in, and the guard
+A cycle usually comes from a data-entry slip: someone sets Raj's manager to Ivan while Ivan still reports to Raj. Walking down from Raj then finds Ivan, then Raj again, then Ivan, forever. `WHERE c.depth < 20` in the step stops any walk after 20 levels, far deeper than any real chart here. Some databases can spot repeats themselves: Postgres 14 added a `CYCLE` clause for exactly this. SQLite has no such clause, so the depth guard is the usual habit.
+:::
 --- task
-Return everyone who reports to **Omar**, directly or indirectly: their `name` and `depth` (1 for Omar's direct reports, 2 for theirs, and so on). Sort by depth, then name. Find Omar by name, not by id.
+Return everyone who reports to **Omar**, directly or through someone else: their `name`, and their `depth` (1 for Omar's direct reports, 2 for the people who report to those, and so on).
+
+Find Omar with a subquery on the name `'Omar'`, not by typing Omar's id. Sort by `depth`, then by `name`.
 --- starter
 SELECT name, 1 AS depth
 FROM employees
@@ -199,16 +782,46 @@ SELECT name, depth
 FROM reports
 ORDER BY depth, name;
 --- hint
-The starter is the anchor: Omar's direct reports at depth 1. Put it inside `WITH RECURSIVE reports(id, name, depth) AS ( … )`.
+The starter is already the anchor: Omar's direct reports, at depth 1. Put it inside `WITH RECURSIVE reports(id, name, depth) AS ( … )`, and select `id` too, so the step can join on it. Leave its `ORDER BY` for the end.
 --- hint
 The step: `SELECT e.id, e.name, r.depth + 1 FROM employees e JOIN reports r ON e.manager_id = r.id`, joined to the anchor with `UNION ALL`.
+--- hint
+After the closing bracket: `SELECT name, depth FROM reports ORDER BY depth, name;`.
 --- check result | Raj and Tess, then Ivan, Nora and Paul, then Leo
 ordered
 [["Raj", 1], ["Tess", 1], ["Ivan", 2], ["Nora", 2], ["Paul", 2], ["Leo", 3]]
 
 === sql3-04 | Recursive CTEs: paths through a tree
 --- teach
-Category trees are everywhere: shops, file systems, comment threads. A recursive CTE can build each node's **path** from the root, by carrying a string along and appending to it at each step:
+Last lesson you carried a number, `depth`, from round to round. This lesson carries a piece of text instead: each category's full **path** from the top of the tree, like `All/Electronics/Audio`.
+
+### The picture
+
+A file on a computer has an address made of every folder you pass through to reach it, starting from the top: `Documents/School/Maths/homework.txt`. One line tells you where it lives. And the path of any folder is its parent folder's path plus its own name.
+
+### The categories tree
+
+`categories` is [[a tree like the org chart|category-picture]]. `parent_id` holds the `id` of the category a row sits inside:
+
+```
+All
+├── Electronics
+│   ├── Audio
+│   │   ├── Headphones
+│   │   │   └── Earbuds
+│   │   └── Speakers
+│   └── Cables
+└── Home
+    └── Kitchen
+```
+
+[[Trees like this are everywhere|everyday-trees]]: shop menus, folders, comment threads where replies have replies.
+
+### Joining text, round by round
+
+You met `||` in the lesson "Working with text": it joins two pieces of text into one. `'All' || '/' || 'Electronics'` gives `'All/Electronics'`.
+
+Now carry a `path` column through the recursion:
 
 ```sql
 WITH RECURSIVE tree(id, path) AS (
@@ -221,13 +834,119 @@ WITH RECURSIVE tree(id, path) AS (
 SELECT path FROM tree;
 ```
 
-This walks **down** from the root, so every node is reached through its parent, and its path is its parent's path plus its own name.
+- The anchor is the **root**, the category with no parent (`parent_id IS NULL`). Its path is its own name, `All`.
+- The step finds the children of the rows found last round (`c.parent_id = t.id`). It builds each child's path from three pieces: the parent's path, a `/`, and the child's name.
 
-The path is useful beyond display. Sorting by it lists the tree in reading order, each parent directly above its children. And "everything under Electronics" becomes `WHERE path LIKE 'All/Electronics/%'`.
+This walks **down** from the root. Every category is reached through its parent, one round after it, so the parent's path is always ready when the child needs it. The rows come out level by level:
 
-Count as you go, too: a `level` column starting at 0 and growing by 1 per step tells you how deep each node is — handy for indenting.
+| path |
+| --- |
+| All |
+| All/Electronics |
+| All/Home |
+| All/Electronics/Audio |
+| All/Electronics/Cables |
+| All/Home/Kitchen |
+| All/Electronics/Audio/Headphones |
+| All/Electronics/Audio/Speakers |
+| All/Electronics/Audio/Headphones/Earbuds |
+
+### Sorting by the path
+
+Add `ORDER BY path` at the end, and the tree comes out in reading order, each parent directly above its children:
+
+| path |
+| --- |
+| All |
+| All/Electronics |
+| All/Electronics/Audio |
+| All/Electronics/Audio/Headphones |
+| All/Electronics/Audio/Headphones/Earbuds |
+| All/Electronics/Audio/Speakers |
+| All/Electronics/Cables |
+| All/Home |
+| All/Home/Kitchen |
+
+This works because a parent's path is the start of each child's path, and [[a shorter text that starts a longer one sorts first|prefix-sort]], the way "car" comes before "cart" in a dictionary.
+
+### Finding a whole branch
+
+The path also makes [["everything under Electronics" easy|stored-paths]]. `LIKE`, from the basics course, matches a pattern, and `%` in a pattern means "any run of characters":
+
+```sql
+WHERE path LIKE 'All/Electronics/%'
+```
+
+Added to the query above, that keeps Audio, Headphones, Earbuds, Speakers and Cables: the five categories below Electronics. Electronics itself is left out, because its own path has no `/` after its name.
+
+### Counting levels
+
+You can carry a number as well. A `level` column that is 0 for the root and grows by 1 each round says how deep each category is. It is the same idea as `depth` last lesson, but it starts at 0: the anchor gives `0`, and the step gives `t.level + 1`. [[Apps use it to indent|level-indent]] each name under its parent.
+
+**Watch out:** the order inside the step. `t.path || '/' || c.name` puts the parent first. Write `c.name || '/' || t.path` and you build the path backwards, like `Audio/Electronics/All`, and sorting by it no longer gives the tree.
+
+::: context category-picture The tree, with its levels
+Each box is a row of `categories`, and each line joins a category to its parent. The level on the left is the number the `level` column gives: 0 for the root, one more for each step down. Earbuds, at level 4, is the deepest.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 212" font-family="Inter, Arial, sans-serif">
+  <text x="6" y="25" font-size="11" fill="#6c7a93">level 0</text>
+  <text x="6" y="67" font-size="11" fill="#6c7a93">level 1</text>
+  <text x="6" y="109" font-size="11" fill="#6c7a93">level 2</text>
+  <text x="6" y="151" font-size="11" fill="#6c7a93">level 3</text>
+  <text x="6" y="193" font-size="11" fill="#6c7a93">level 4</text>
+  <line x1="210" y1="34" x2="150" y2="50" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="210" y1="34" x2="290" y2="50" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="150" y1="76" x2="105" y2="92" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="150" y1="76" x2="195" y2="92" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="290" y1="76" x2="290" y2="92" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="105" y1="118" x2="100" y2="134" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="105" y1="118" x2="190" y2="134" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="100" y1="160" x2="100" y2="176" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="170" y="8" width="80" height="26" rx="5" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="210" y="25" font-size="11" fill="#1f2a44" text-anchor="middle">All</text>
+  <rect x="110" y="50" width="80" height="26" rx="5" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="150" y="67" font-size="11" fill="#1f2a44" text-anchor="middle">Electronics</text>
+  <rect x="250" y="50" width="80" height="26" rx="5" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="290" y="67" font-size="11" fill="#1f2a44" text-anchor="middle">Home</text>
+  <rect x="65" y="92" width="80" height="26" rx="5" fill="#fff" stroke="#1f2a44"/>
+  <text x="105" y="109" font-size="11" fill="#1f2a44" text-anchor="middle">Audio</text>
+  <rect x="155" y="92" width="80" height="26" rx="5" fill="#fff" stroke="#1f2a44"/>
+  <text x="195" y="109" font-size="11" fill="#1f2a44" text-anchor="middle">Cables</text>
+  <rect x="250" y="92" width="80" height="26" rx="5" fill="#fff" stroke="#1f2a44"/>
+  <text x="290" y="109" font-size="11" fill="#1f2a44" text-anchor="middle">Kitchen</text>
+  <rect x="60" y="134" width="80" height="26" rx="5" fill="#fff" stroke="#1f2a44"/>
+  <text x="100" y="151" font-size="11" fill="#1f2a44" text-anchor="middle">Headphones</text>
+  <rect x="150" y="134" width="80" height="26" rx="5" fill="#fff" stroke="#1f2a44"/>
+  <text x="190" y="151" font-size="11" fill="#1f2a44" text-anchor="middle">Speakers</text>
+  <rect x="60" y="176" width="80" height="26" rx="5" fill="#fff" stroke="#1f2a44"/>
+  <text x="100" y="193" font-size="11" fill="#1f2a44" text-anchor="middle">Earbuds</text>
+</svg>
+```
+:::
+
+::: context everyday-trees Trees in the apps you use
+A shop's menu (Electronics, then Audio, then Headphones) is a category tree. So are the folders on your computer, the replies to replies under a video, and a book's chapters and sections. Each is usually stored the way `categories` is: one table, one row per item, and a column holding the `id` of its parent. The lesson "Problem solving: everyone under every manager" goes one step further and walks the tree below every row at once.
+:::
+
+::: context prefix-sort Why sorting by path lists the tree
+Text is sorted one character at a time, from the left. `All/Electronics` and `All/Electronics/Audio` agree all the way to the end of the shorter one, and when one text runs out first, it sorts first. So every parent lands directly above its children, and all of a child's own children come before that child's next sibling. One catch: characters that sort before `/`, such as a space, can spoil it. A sibling named "Audio Pro" would sort between `All/Audio` and `All/Audio/Cable`. The names in this table have no such characters.
+:::
+
+::: context stored-paths Storing the path instead
+Some databases save each row's path in a column, instead of working it out with recursion every time. Then "everything under Electronics" is one quick `LIKE`, with no CTE at all. The cost comes when the tree changes: move Audio under Home, and the stored path of Audio and of every category below it must be rewritten. Keeping only `parent_id`, as this table does, makes moves cheap but needs recursion to read. Designers choose by asking which happens more often: reading the tree, or changing it.
+:::
+
+::: context level-indent What the level is for
+A shop's sidebar shows categories indented, each child a little to the right of its parent. The app reads `level` and indents by that many steps: none for All, four for Earbuds. The level answers questions on its own too. `WHERE level = 1` gives the top-level departments, Electronics and Home, and `MAX(level)` says how deep the tree goes: 4 here.
+:::
 --- task
-Return every category with its `path` from the root, names joined by `' > '` (for example `All > Electronics > Audio`), and its `level` (0 for `All`, 1 for its children, and so on). Sort by path.
+Return every category with two columns:
+
+- `path`: its names from the root, joined by `' > '` (a space, a greater-than sign, a space), for example `All > Electronics > Audio`;
+- `level`: 0 for `All`, 1 for its children, and so on.
+
+Sort by `path`.
 --- starter
 SELECT name AS path, 0 AS level
 FROM categories
@@ -244,9 +963,11 @@ SELECT path, level
 FROM tree
 ORDER BY path;
 --- hint
-Anchor: the root, `SELECT id, name, 0 FROM categories WHERE parent_id IS NULL`.
+Start from the lesson's query and add a third column. The anchor is the root, with its name as the path and level 0: `SELECT id, name, 0 FROM categories WHERE parent_id IS NULL`, inside `WITH RECURSIVE tree(id, path, level) AS ( … )`.
 --- hint
-Step: join `categories c` to the tree on `c.parent_id = t.id`, building `t.path || ' > ' || c.name` and `t.level + 1`.
+The step joins `categories c` to the tree `ON c.parent_id = t.id` and builds `t.path || ' > ' || c.name` and `t.level + 1`.
+--- hint
+After the closing bracket: `SELECT path, level FROM tree ORDER BY path;`.
 --- check result | Nine categories in tree order, Earbuds four levels down
 ordered
 [["All", 0], ["All > Electronics", 1], ["All > Electronics > Audio", 2], ["All > Electronics > Audio > Headphones", 3], ["All > Electronics > Audio > Headphones > Earbuds", 4], ["All > Electronics > Audio > Speakers", 3], ["All > Electronics > Cables", 2], ["All > Home", 1], ["All > Home > Kitchen", 2]]

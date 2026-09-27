@@ -123,8 +123,8 @@ describe('the tracks', () => {
   it('continue goes to the first lesson not yet passed', () => {
     const py = TRACKS.find((t) => t.lang === 'python')!
     expect(nextLesson(py, {}).id).toBe('py-01')
-    expect(nextLesson(py, { 'py-01': 'x', 'py-02': 'x' }).id).toBe('py-03')
-    expect(findLesson('py-03')?.index).toBe(2)
+    expect(nextLesson(py, { 'py-01': 'x' }).id).toBe('py-02')
+    expect(findLesson('py-02')?.index).toBe(1)
   })
 })
 
@@ -416,10 +416,9 @@ describe('the streak', () => {
  * course included, is held to the rule from the start.
  */
 const WRITTEN_BEFORE_NOTES = new Set([
-  'bash', 'bash-intermediate', 'bash-advanced',
-  'git', 'git-intermediate', 'git-advanced',
-  'python', 'python-intermediate', 'python-advanced', 'python-expert', 'python-projects',
-  'sql', 'sql-intermediate', 'sql-advanced', 'sql-expert', 'sql-projects',
+  'bash-advanced',
+  'python-advanced', 'python-expert', 'python-projects',
+  'sql-intermediate', 'sql-advanced', 'sql-expert', 'sql-projects',
   'cpp', 'cpp-intermediate', 'cpp-advanced', 'cpp-expert', 'cpp-projects',
 ])
 const LEARN_NOTES_MIN = 3

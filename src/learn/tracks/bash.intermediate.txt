@@ -3,32 +3,87 @@
 @title Terminal · Intermediate
 @name The command line, intermediate: pipes, patterns and finding things
 @blurb Match many files with one pattern, chain small tools into pipelines that answer real questions, search whole projects, and work out why a command gave the wrong answer.
+@plainvoice true
 
 === term2-01 | Wildcards: many files, one pattern
 --- teach
-The basics course had you handling files one at a time and reading them with `head`, `tail`, `wc` and `grep`. This course is about many files and lots of text at once: patterns that match many names, pipes that chain small tools together, and ways to search a whole project.
+In the basics course you handled files one at a time: one `cp`, one `mv`, one `rm`. That works for three files. For three hundred it is slow, and one typo can ruin it. This course is about many files and lots of text at once, and it starts with a way to name many files with one short pattern.
 
-Typing every file name gets old fast. Instead, you can describe the names you mean with a **pattern**, using **wildcards**:
+Think of asking a librarian for books. You could read out every title: "Beach, Boat, Sunset". Or you could say "every book whose title ends in *Cookbook*" and let the librarian find them. The second way is a description, not a list.
 
-- `*` matches any run of characters, even none: `*.txt` is every name ending in `.txt`.
-- `?` matches exactly one character: `day?.log` matches `day1.log` and `day9.log`, but not `day10.log`.
-- `[abc]` matches one character from the set: `report-[12].pdf` is `report-1.pdf` and `report-2.pdf`.
+The terminal can do the same. A **pattern** is a description of file names. It is built from **wildcards**: special characters that stand in for other characters, the way a joker in a card game can stand in for any card.
 
-The shell turns the pattern into the list of matching names **before** the command runs. `mv` never sees the `*`: it receives `beach.jpg boat.jpg sunset.jpg`, exactly as if you had typed them. That is why `echo` is the safe way to test a pattern — it just prints what the pattern turned into:
+**Step 1: the star.** The `*` character (say "star") matches any run of characters, even none at all. So `*.txt` means "any name that ends in `.txt`", and `*` on its own means "every name".
 
 ```
+~/project $ ls
+notes.txt  photo.jpg  todo.txt
 ~/project $ echo *.txt
 notes.txt todo.txt
-~/project $ mv *.txt archive/
 ```
 
-Three things catch people out:
+`photo.jpg` is left out, because it does not end in `.txt`.
 
-- Names starting with a dot are skipped: `*` does not match `.env`.
-- A pattern that matches nothing is passed along unchanged, so with no logs around, `ls *.log` complains `cannot access '*.log'`.
-- One stray space changes everything. `rm * .txt` is not "remove the .txt files": it is `rm *` (every file) plus a file called `.txt`. Run `echo` with the same pattern first.
+**Step 2: who does the matching.** The program that reads what you type and runs your commands is called the [[shell|shell]]. When the shell sees a wildcard, it [[swaps the pattern for the list of matching names|glob-expansion]] **before** the command runs. The command never sees the `*`. It receives the names, one by one, exactly as if you had typed them yourself.
+
+```
+~/project $ echo *.jpg
+beach.jpg boat.jpg sunset.jpg
+~/project $ mv *.jpg archive/
+```
+
+Here `mv` receives `beach.jpg boat.jpg sunset.jpg archive/`: four [[arguments|argument]], the last one being the folder to move them into.
+
+That is why `echo` is [[the safe way to test a pattern|dry-run]]. `echo` only prints whatever it is given, so `echo *.jpg` shows you what the pattern turned into, without moving or deleting anything.
+
+**Step 3: the question mark.** The `?` character (say "question mark") matches **exactly one** character, no more and no fewer.
+
+```
+~/project $ ls
+day1.log  day9.log  day10.log
+~/project $ echo day?.log
+day1.log day9.log
+```
+
+`day10.log` is left out. Between `day` and `.log` it has two characters, `1` and `0`, and `?` stands for only one.
+
+A pattern can start with a folder name, and then it looks inside that folder. `logs/day?.log` means "the names in `logs` that match `day?.log`", and the shell gives them back with the folder in front, like `logs/day1.log`.
+
+**Watch out:** one stray space changes everything. `rm * .txt` is not "remove the .txt files". The space splits it into two separate things: `*`, which is every file, and a file called `.txt`. So `rm` deletes every file in the folder. Before any `rm` or `mv` with a wildcard, run `echo` with the exact same pattern and read the list it prints.
+
+::: context shell The program behind the prompt
+The **shell** is the program that shows the prompt. It reads the line you type, works out which command you mean and what to hand it, starts that command, and shows you what it prints. The terminal in this course behaves like **bash**, the most common shell on Linux. The name stands for "Bourne Again SHell", a pun on an older shell written by Stephen Bourne. "Shell" itself comes from a picture: the shell is the outer layer you talk to, wrapped around the core of the operating system.
+:::
+
+::: context glob-expansion The pattern is gone before the command starts
+Swapping a pattern for the names it matches is called **expansion**, or **globbing**. The odd word comes from the first versions of Unix, where a separate small program called `glob` (short for "global") did the matching. Today the shell does it itself, but the name stuck, and you will see patterns like `*.txt` called "globs" in documentation.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+<rect x="10" y="10" width="340" height="34" rx="6" fill="#ffffff" stroke="#1f2a44"/>
+<text x="22" y="32" font-size="13" fill="#1f2a44">You type:   mv *.jpg photos</text>
+<text x="180" y="62" font-size="12" fill="#1d6fd1" text-anchor="middle">the shell swaps *.jpg for the matching names</text>
+<path d="M180 68 V88" stroke="#1d6fd1" stroke-width="2"/>
+<path d="M174 82 L180 90 L186 82" fill="none" stroke="#1d6fd1" stroke-width="2"/>
+<rect x="10" y="96" width="340" height="34" rx="6" fill="#ffffff" stroke="#1f2a44"/>
+<text x="22" y="118" font-size="13" fill="#1f2a44">mv receives:   beach.jpg boat.jpg photos</text>
+</svg>
+```
+:::
+
+::: context argument One piece of information for a command
+An **argument** is one piece of information handed to a command, written after its name. The shell splits the line at spaces, and each piece becomes one argument. In `mv notes.txt archive/`, `mv` gets two arguments: what to move, and where. That splitting is why the quotes from the basics course matter: `"Launch at dawn"` stays one argument instead of three. It is also why the stray space in `rm * .txt` is so dangerous.
+:::
+
+::: context dry-run Rehearse before you act
+Trying a command in a way that changes nothing is called a **dry run**. Engineers do it everywhere a mistake is expensive. Many tools have one built in: `rsync --dry-run` lists what a file copy would do, and `make -n` prints the steps of a build without running them. Rocket teams hold a "wet dress rehearsal": they fuel the vehicle and run the countdown, then stop before ignition. Putting `echo` in front of a pattern is your own small dry run.
+:::
 --- task
-This folder is a mix of photos and notes. Make a folder called `photos` and move **all** the `.jpg` files into it with a single `mv` and a wildcard. Then list only the single-digit photos (`trip-1.jpg`, `trip-2.jpg`, but not `trip-10.jpg`) with `ls photos/trip-?.jpg`.
+This folder is a mix of photos and notes: `trip-1.jpg`, `trip-2.jpg`, `trip-10.jpg`, `notes.txt` and `todo.txt`.
+
+1. Make a folder called `photos`.
+2. Move **all** the `.jpg` files into it with a single `mv` and the `*` wildcard.
+3. List only the single-digit photos (`trip-1.jpg` and `trip-2.jpg`, but not `trip-10.jpg`) with `ls photos/trip-?.jpg`.
 --- starter
 touch trip-1.jpg trip-2.jpg trip-10.jpg notes.txt todo.txt
 --- solution
@@ -38,7 +93,7 @@ ls photos/trip-?.jpg
 --- hint
 `echo *.jpg` shows which names the pattern matches, without moving anything.
 --- hint
-`mv *.jpg photos` moves every match into the folder in one go.
+`mkdir photos` makes the folder. Then `mv *.jpg photos` moves every match into it in one go.
 --- hint
 `?` stands for exactly one character, so `photos/trip-?.jpg` leaves out `trip-10.jpg`.
 --- check shell | Every photo moved, with one wildcard
@@ -53,24 +108,177 @@ ran ls photos/trip-?.jpg
 printed photos/trip-1.jpg
 printed photos/trip-2.jpg
 
+=== term2-01b | More wildcards: sets, and two surprises
+--- teach
+Last lesson you met two wildcards: `*` for any run of characters, and `?` for exactly one character. This lesson adds a third. Then it shows two things the shell does with patterns that surprise almost everyone the first time.
+
+Think of a multiple-choice question that says "circle one: 1 or 2". Only one answer fits in the space, and it has to be one of the choices printed.
+
+**Step 1: a set in square brackets.** `[12]` (say "one or two, in square brackets") matches exactly **one** character, and that character must be one of the ones listed inside. It is like `?`, but choosier. Letters work too: `[abc]` matches one `a`, one `b` or one `c`.
+
+```
+~/project $ ls
+report-1.pdf  report-2.pdf  report-3.pdf
+~/project $ echo report-[12].pdf
+report-1.pdf report-2.pdf
+```
+
+`report-3.pdf` is left out, because `3` is not in the [[set|char-set]].
+
+**Step 2: names that start with a dot are skipped.** From the basics course you know that a name starting with a dot is [[hidden|dot-files]], and plain `ls` does not show it. Wildcards follow the same rule: `*` does not match `.env`.
+
+```
+~/project $ ls -a
+.  ..  .env  main.py  notes.txt
+~/project $ echo *
+main.py notes.txt
+```
+
+To match a hidden name, the pattern itself must start with a dot: `echo .e*` prints `.env`.
+
+**Step 3: a pattern that matches nothing is passed along unchanged.** If no name fits, the shell does not turn the pattern into an empty list. It hands the command the pattern itself, star and all.
+
+```
+~/project $ echo *.log
+*.log
+~/project $ ls *.log
+ls: cannot access '*.log': No such file or directory
+```
+
+`ls` went looking for a file literally called `*.log`, and there is none. When an error message shows your wildcard with the star still in it, that is the sign that [[nothing matched|no-match]].
+
+**Watch out:** a set stands for **one** character, not a whole number or word. `report-[12].pdf` does not match `report-12.pdf`. It means "`report-`, then one character that is `1` or `2`, then `.pdf`". Test with `echo` first, and read the list before you move anything.
+
+::: context char-set One slot, a few allowed characters
+Square brackets make a **character set** (also called a character class). However many characters are inside, the whole bracket fills one slot in the name. A dash inside gives a range: `[0-9]` is any one digit, and `[a-z]` is any one lowercase letter. You will meet square brackets again in `grep`'s patterns, where they mean the same thing: one character from this set.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+<text x="20" y="30" font-size="14" fill="#1f2a44">report-</text>
+<rect x="76" y="12" width="40" height="26" rx="4" fill="#ffffff" stroke="#1d6fd1" stroke-width="2"/>
+<text x="96" y="30" font-size="14" fill="#1d6fd1" text-anchor="middle">[12]</text>
+<text x="120" y="30" font-size="14" fill="#1f2a44">.pdf</text>
+<text x="180" y="30" font-size="12" fill="#6c7a93">one slot: 1 or 2</text>
+<text x="20" y="66" font-size="13" fill="#1d6fd1">report-1.pdf   matches</text>
+<text x="20" y="88" font-size="13" fill="#1d6fd1">report-2.pdf   matches</text>
+<text x="20" y="110" font-size="13" fill="#b4232c">report-3.pdf   no: 3 is not in the set</text>
+</svg>
+```
+:::
+
+::: context dot-files Why names with a dot are hidden
+The rule began almost by accident. Every folder holds two special entries, `.` (this folder) and `..` (the folder above). Early versions of `ls` were meant to skip those two. Rob Pike, who worked on Unix at Bell Labs, has told how the check was written the short way, skipping every name that starts with a dot. Programmers soon used the side effect on purpose, naming settings files with a leading dot so they stayed out of sight. That is why `.env`, `.gitignore` and `.bashrc` look the way they do.
+:::
+
+::: context no-match Different shells, different answers
+Passing an unmatched pattern along unchanged is what bash does by default. Other shells choose differently. zsh, the default shell on newer Macs, stops with `no matches found` and runs nothing at all. Bash itself has a setting called `nullglob` that turns an unmatched pattern into nothing. The practice terminal behaves like bash's default, so a star inside an error message is your clue.
+:::
+--- task
+This folder holds four reports, `report-1.pdf` to `report-4.pdf`. Reports 1 and 2 belong to the first half of the year.
+
+1. Test the pattern `report-[12].pdf` with `echo`, and check that it lists only reports 1 and 2.
+2. Make a folder called `firsthalf`.
+3. Move reports 1 and 2 into it with one `mv` and that same pattern. Reports 3 and 4 stay where they are.
+--- starter
+touch report-1.pdf report-2.pdf report-3.pdf report-4.pdf
+--- solution
+echo report-[12].pdf
+mkdir firsthalf
+mv report-[12].pdf firsthalf
+--- hint
+The square brackets hold the characters allowed in one slot: `[12]` means one character that is `1` or `2`.
+--- hint
+`echo report-[12].pdf` should print `report-1.pdf report-2.pdf`.
+--- hint
+Then `mkdir firsthalf`, and `mv report-[12].pdf firsthalf` moves both in one go.
+--- check shell | You tested the pattern with echo first
+ran echo report-[12].pdf
+printed report-1.pdf report-2.pdf
+--- check shell | Reports 1 and 2 moved, with one set pattern
+ran mv report-[12].pdf
+file firsthalf/report-1.pdf
+file firsthalf/report-2.pdf
+--- check shell | Reports 3 and 4 stayed where they were
+file report-3.pdf
+file report-4.pdf
+
 === term2-02 | Pipes: plugging commands together
 --- teach
-The **pipe**, `|`, sends everything one command prints straight into the next command, instead of to the screen. Each tool does one small job well, and pipes let you chain them into something bigger:
+The last two lessons were about naming many files at once. Now the other half of this course: [[lots of text|big-logs]]. In the basics course, `grep ERROR launch.log` kept only the error lines of a file, and `wc -l` counted the lines of a file. What if you want to count the error lines?
+
+One way uses what you already know: save the error lines in a file with `>`, then count that file.
 
 ```
-grep ERROR server.log | wc -l
+~/project $ grep ERROR launch.log > errors.txt
+~/project $ wc -l errors.txt
+2 errors.txt
 ```
 
-`grep` keeps only the error lines; `wc -l` counts whatever lines it is given. When a command like `wc`, `head`, `sort` or `grep` gets no file name, it reads from the pipe instead.
+It works, but it takes two steps and leaves a spare file behind.
 
-Build a pipeline **one stage at a time**. Run the first command on its own and look at what it prints, then add `| next-command` and look again. It is the fastest way to write one, and later, when an answer looks wrong, it is how you find which stage is wrong.
+Picture two machines in a factory. The first one picks out the parts you want. A conveyor belt carries whatever comes out of it straight into the second machine, which counts them. Nobody carries boxes in between.
 
-Two classic mistakes:
+**Step 1: the pipe.** The **pipe** is the `|` character (say "pipe"; on most keyboards it is Shift and the backslash key). Put it between two commands, and [[everything the left command prints goes into the right command|pipe-flow]], instead of to the screen. A line of commands joined by pipes is called a **pipeline**.
 
-- Giving the later command a file name as well: `grep ERROR server.log | wc -l server.log` counts every line of the file and ignores the pipe completely.
-- Piping into a command that does not read input: `ls | echo` prints an empty line, because `echo` only ever prints its own arguments.
+```
+~/project $ grep ERROR launch.log | wc -l
+2
+```
+
+`grep` keeps the two error lines. They never reach the screen: the pipe hands them to `wc -l`, which counts them and prints `2`.
+
+**Step 2: where the right-hand command reads from.** Notice that `wc -l` has no file name this time. A command such as `wc`, `head`, `sort` or `grep`, given no file name, reads the text arriving through the pipe instead. That incoming text is called its [[standard input|standard-input]].
+
+**Step 3: any reader can go on the right.** `head -n 2` shows the first two lines of whatever it is given, so it works on the right of a pipe too:
+
+```
+~/project $ grep INFO launch.log | head -n 2
+09:00 INFO systems check
+09:01 INFO fuel loaded
+```
+
+Each tool does one small job well, and pipes let you [[chain them into something bigger|unix-philosophy]].
+
+**Watch out:** do not give the later command a file name as well. `grep ERROR server.log | wc -l server.log` counts every line of `server.log` and ignores the pipe completely. A command that is given a file name reads that file, not the pipe.
+
+::: context big-logs Why engineers want this
+Real systems write a lot of text. A web server can log a line for every visit. A rocket engine on a test stand can have hundreds of sensors, each recording many readings every second. Nobody reads that by eye. Engineers ask it questions instead: how many errors, which one came first, which sensor complained most. Pipes let you answer those questions in one line, without writing a program.
+:::
+
+::: context pipe-flow The picture of a pipe
+The pipe connects the output of one command to the input of the next. The text flows left to right, and only the last command in the line prints to your screen.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+<rect x="10" y="30" width="120" height="44" rx="6" fill="#ffffff" stroke="#1f2a44"/>
+<text x="70" y="50" font-size="12" fill="#1f2a44" text-anchor="middle">grep ERROR</text>
+<text x="70" y="66" font-size="12" fill="#1f2a44" text-anchor="middle">launch.log</text>
+<path d="M130 52 H190" stroke="#1d6fd1" stroke-width="3"/>
+<path d="M182 45 L192 52 L182 59" fill="none" stroke="#1d6fd1" stroke-width="3"/>
+<text x="160" y="40" font-size="12" fill="#1d6fd1" text-anchor="middle">|</text>
+<text x="160" y="90" font-size="11" fill="#6c7a93" text-anchor="middle">2 error lines</text>
+<rect x="194" y="30" width="80" height="44" rx="6" fill="#ffffff" stroke="#1f2a44"/>
+<text x="234" y="57" font-size="12" fill="#1f2a44" text-anchor="middle">wc -l</text>
+<path d="M274 52 H310" stroke="#1f2a44" stroke-width="2"/>
+<path d="M302 46 L312 52 L302 58" fill="none" stroke="#1f2a44" stroke-width="2"/>
+<text x="330" y="57" font-size="14" fill="#1f2a44" text-anchor="middle">2</text>
+<text x="330" y="90" font-size="11" fill="#6c7a93" text-anchor="middle">screen</text>
+</svg>
+```
+:::
+
+::: context standard-input Three connections every program has
+Every running program has three standard connections. **Standard input** is where text comes in. **Standard output** is where results go out. **Standard error** is a separate exit for problem messages. With nothing else set up, input comes from the keyboard and both outputs go to the screen. The pipe reconnects them: the left command's standard output becomes the right command's standard input. Standard error comes back later in this course, in a lesson of its own.
+:::
+
+::: context unix-philosophy Small tools that work together
+Pipes were proposed by Doug McIlroy at Bell Labs and added to Unix in 1973. He summed up the idea behind them: write programs that do one thing and do it well, write programs that work together, and use text as the common language between them. That is why `wc` does not search and `grep` does not count. Each stays small, and a pipe combines them in ways their authors never had to plan.
+:::
 --- task
-`server.log` holds a morning of messages. With **one pipeline**, count how many lines contain `ERROR`, using `grep` and `wc -l`. Then, with a second pipeline, show only the **first two** error lines, using `grep` and `head`.
+`server.log` holds a morning of messages from a web server.
+
+1. With **one pipeline**, count how many lines contain `ERROR`, using `grep` and `wc -l`.
+2. With a second pipeline, show only the **first two** error lines, using `grep` and `head`.
 --- starter
 echo "08:00 INFO server started" > server.log
 echo "08:01 INFO user ada logged in" >> server.log
@@ -86,7 +294,9 @@ grep ERROR server.log | head -n 2
 --- hint
 First run `grep ERROR server.log` on its own and look at the lines it keeps.
 --- hint
-Add `| wc -l` to count them. For the second job, `| head -n 2` keeps the first two.
+Add `| wc -l` to count them: `grep ERROR server.log | wc -l`.
+--- hint
+For the second job, end with `| head -n 2` instead: it keeps the first two lines.
 --- check shell | You counted the errors with a pipeline
 ran grep ERROR server.log
 ran wc -l
@@ -95,15 +305,168 @@ printed-exactly 4
 ran head
 printed-exactly 08:02 ERROR disk almost full\n08:05 ERROR payment timeout
 
+=== term2-02b | Building a pipeline one stage at a time
+--- teach
+Last lesson you joined two commands with a pipe. A pipeline can be longer: three, four, five commands, each one working on what the one before it passed along. Each command in a pipeline is called a **stage**.
+
+Think of building a tower of blocks. If you stack ten blocks without looking and the tower falls, you cannot tell which block was crooked. If you look after each block, you spot the crooked one the moment you place it.
+
+**Step 1: a third stage.** `grep` can sit in the middle of a pipeline too. Given no file name, it [[filters|filter]] its standard input. Here the first `grep` keeps the INFO lines, the second keeps only those that mention `valve`, and `wc -l` counts what is left:
+
+```
+~/project $ grep INFO launch.log | grep valve | wc -l
+1
+```
+
+**Step 2: the method.** Build a pipeline one stage at a time, and look at the output after each stage:
+
+```
+~/project $ grep INFO launch.log
+09:00 INFO systems check
+09:01 INFO fuel loaded
+09:03 INFO valve 3 reset
+09:05 INFO liftoff
+~/project $ grep INFO launch.log | grep valve
+09:03 INFO valve 3 reset
+~/project $ grep INFO launch.log | grep valve | wc -l
+1
+```
+
+You do not have to retype the pipeline each time. Press the up arrow key and your last command comes back. Add `| next-command` to its end and press Enter.
+
+This is the fastest way to write a pipeline. Later, when an answer looks wrong, it is also how you [[find which stage is wrong|stage-debugging]]: the first stage whose output stops making sense is where the bug lives.
+
+**Step 3: only readers belong on the right.** A pipe can only feed a command that reads its standard input. `echo` is not one of those: it only ever prints its own [[arguments|args-vs-input]]. So `ls | echo` prints an empty line. The file names flow towards `echo`, and `echo` ignores them.
+
+```
+~/project $ ls | echo
+
+~/project $ ls | wc -l
+3
+```
+
+`wc -l` does read its standard input, so it counts the three names `ls` sent it.
+
+**Watch out:** the mistake from last lesson hides well in a long pipeline. If a later stage names a file, as in `grep ERROR server.log | grep disk server.log`, the second `grep` reads the whole file again, and everything before it is thrown away. In pipelines like these, only the first stage names a file.
+
+::: context filter Commands that let some text through
+A command that reads text in, changes it or picks from it, and writes text out is called a **filter**, like a coffee filter that lets the coffee through and holds the grounds back. `grep`, `head`, `tail`, `sort`, `uniq`, `wc` and `cut` are all filters, and most of this course is about them. Because a filter's output is plain text again, you can put another filter after it, as many times as you like.
+:::
+
+::: context stage-debugging Divide and conquer
+Cutting a long pipeline back and adding stages one at a time is a small case of a big debugging idea: **divide and conquer**. Instead of wondering about the whole thing at once, you test one part, and every test rules out part of the search. Engineers use the same idea on hardware: when a signal goes missing along a long chain of cables and boxes, they measure it halfway along, then halfway again, until the fault is found. You will use it on a broken pipeline in a debugging lesson at the end of this course.
+:::
+
+::: context args-vs-input Two ways into a command
+A command can get information in two ways. **Arguments** are written after its name on the command line. **Standard input** is text streaming in, for example through a pipe. Each command decides which it uses. `echo` uses only its arguments. `wc`, `head` and `grep` read a file if you name one as an argument, and their standard input if you do not. A tool called `xargs`, in the advanced course, turns standard input into arguments.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+<rect x="150" y="60" width="90" height="40" rx="6" fill="#ffffff" stroke="#1f2a44"/>
+<text x="195" y="85" font-size="13" fill="#1f2a44" text-anchor="middle">command</text>
+<path d="M195 26 V56" stroke="#1d6fd1" stroke-width="2"/>
+<path d="M189 49 L195 58 L201 49" fill="none" stroke="#1d6fd1" stroke-width="2"/>
+<text x="195" y="18" font-size="12" fill="#1d6fd1" text-anchor="middle">arguments: typed after its name</text>
+<path d="M60 80 H146" stroke="#f2b880" stroke-width="3"/>
+<path d="M138 74 L148 80 L138 86" fill="none" stroke="#f2b880" stroke-width="3"/>
+<text x="16" y="72" font-size="12" fill="#1f2a44">standard input</text>
+<text x="16" y="100" font-size="11" fill="#6c7a93">(through a pipe)</text>
+<text x="20" y="130" font-size="12" fill="#1f2a44">echo reads only arguments.</text>
+<text x="20" y="146" font-size="12" fill="#1f2a44">wc, head, grep: a named file, or else standard input.</text>
+</svg>
+```
+:::
+--- task
+`server.log` holds the same morning of messages as last lesson. How many **ERROR** lines are about a **payment**? Build the answer one stage at a time:
+
+1. Run `grep ERROR server.log` on its own and look at the error lines.
+2. Add a second `grep` stage that keeps only the lines containing `payment`, and look at the result.
+3. Add `wc -l` as a third stage to count them.
+--- starter
+echo "08:00 INFO server started" > server.log
+echo "08:01 INFO user ada logged in" >> server.log
+echo "08:02 ERROR disk almost full" >> server.log
+echo "08:03 WARN slow response" >> server.log
+echo "08:05 ERROR payment timeout" >> server.log
+echo "08:06 INFO user lin logged in" >> server.log
+echo "08:09 ERROR payment timeout" >> server.log
+echo "08:12 ERROR disk full" >> server.log
+--- solution
+grep ERROR server.log
+grep ERROR server.log | grep payment
+grep ERROR server.log | grep payment | wc -l
+--- hint
+After each stage, press the up arrow key to bring your last command back, then add the next stage to its end.
+--- hint
+The second stage is `| grep payment`. With no file name, it filters what the first `grep` passes along.
+--- hint
+The whole pipeline is `grep ERROR server.log | grep payment | wc -l`.
+--- check shell | You looked at the first stage on its own
+printed-exactly 08:02 ERROR disk almost full\n08:05 ERROR payment timeout\n08:09 ERROR payment timeout\n08:12 ERROR disk full
+--- check shell | You looked at the second stage before counting
+printed-exactly 08:05 ERROR payment timeout\n08:09 ERROR payment timeout
+--- check shell | You counted the payment errors with three stages
+ran grep ERROR server.log
+ran wc -l
+printed-exactly 2
+
 === term2-03 | Sorting and counting: sort and uniq
 --- teach
-`sort` puts lines in order. Three flags you will reach for constantly:
+Last lesson you built pipelines one stage at a time. This lesson adds two tools that let a pipeline answer one of the most useful questions there is: "how many of each?"
 
-- `-n` sorts **numbers** as numbers. Without it, `10` sorts before `9`, because text is compared one character at a time and `1` comes before `9`.
-- `-r` reverses the order, biggest (or last) first. Flags combine: `sort -rn`.
-- `-u` keeps a single copy of each line.
+Picture counting the votes for class president. First you sort the ballots into piles, one pile per name. Then you count each pile. Then you line the piles up, biggest first. The terminal does exactly those three things.
 
-`uniq` squeezes repeated lines into one, and `uniq -c` writes how many there were in front:
+**Step 1: `sort` puts lines in order.** Given a file, or text through a pipe, `sort` prints the lines in [[alphabetical order|text-dates]].
+
+```
+~/project $ cat colours.txt
+red
+blue
+red
+red
+blue
+~/project $ sort colours.txt
+blue
+blue
+red
+red
+red
+```
+
+**Step 2: `-r` reverses.** The `-r` flag means **reverse**: last first, or biggest first. `sort -r colours.txt` prints the three `red` lines, then the two `blue` lines.
+
+**Step 3: `-n` sorts numbers as numbers.** Without it, `sort` compares text [[one character at a time|text-order]], so `10` comes before `9`: their first characters are `1` and `9`, and `1` comes first. With `-n` (for **numeric**), `sort` reads each line as a number and compares the numbers.
+
+```
+~/project $ sort n.txt
+10
+100
+2
+9
+~/project $ sort -n n.txt
+2
+9
+10
+100
+```
+
+[[Flags combine|combined-flags]]: `sort -rn` sorts numbers, biggest first.
+
+**Step 4: `-u` keeps one of each.** The `-u` flag means **unique**: `sort -u colours.txt` prints `blue` and `red`, once each.
+
+**Step 5: `uniq` squeezes repeats that sit together.** `uniq` (say "unique") turns a run of identical lines into one line. The catch: it only compares each line with **the line directly above it**. Repeats that are not next to each other are not merged.
+
+```
+~/project $ uniq colours.txt
+red
+blue
+red
+blue
+```
+
+Only the two `red` lines that sat together were merged. That is why `uniq` nearly always comes straight after `sort`: sorting puts every repeat next to its twins.
+
+**Step 6: `uniq -c` counts.** The `-c` flag means **count**: `uniq -c` writes how many lines were in each run, in front of the line.
 
 ```
 ~/project $ sort colours.txt | uniq -c
@@ -111,17 +474,48 @@ printed-exactly 08:02 ERROR disk almost full\n08:05 ERROR payment timeout
       3 red
 ```
 
-The catch: `uniq` only compares each line with **the one just above it**. Repeats that are not next to each other are not merged — which is why `uniq` nearly always comes straight after `sort`.
-
-Remember this line, because it answers "what is the most common thing in here?" for almost any list:
+**Step 7: biggest first.** Each line now starts with a number, so `sort -rn` can put the biggest count at the top. Remember this pipeline, because it answers "[[what is the most common thing in here?|frequency-idiom]]" for almost any list:
 
 ```
 sort | uniq -c | sort -rn
 ```
 
-Sort so that repeats sit together, count each run, then sort by the counts, biggest first.
+Sort so that repeats sit together, count each run, then sort by the counts, biggest first. When you use it, put the file name after the first `sort`.
+
+**Watch out:** `uniq` without `sort` in front of it gives wrong counts, and no error message. If the same thing shows up on two different lines of a count, a missing `sort` is the first suspect.
+
+::: context text-dates Why log times sort correctly
+Alphabetical order works on anything written with letters and digits. It even puts times in the right order, as long as every time has the same width: `08:05` comes before `08:12`, because the text is compared from the left. That is why logs write `08:05` and not `8:05`, and why engineers write dates as `2026-09-25`, year first. Written that way, sorting the text sorts by time, with no special flag.
+:::
+
+::: context text-order Comparing text, one character at a time
+Text sorting works like a dictionary. It compares the first characters. Only if they are the same does it look at the second characters, and so on. So `10` and `9` are decided by `1` against `9`, and `1` wins. The length of the number never comes into it.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+<rect x="30" y="20" width="30" height="30" fill="#8fb8f0" stroke="#1f2a44"/>
+<text x="45" y="41" font-size="15" fill="#1f2a44" text-anchor="middle">1</text>
+<rect x="60" y="20" width="30" height="30" fill="#ffffff" stroke="#1f2a44"/>
+<text x="75" y="41" font-size="15" fill="#1f2a44" text-anchor="middle">0</text>
+<rect x="30" y="64" width="30" height="30" fill="#8fb8f0" stroke="#1f2a44"/>
+<text x="45" y="85" font-size="15" fill="#1f2a44" text-anchor="middle">9</text>
+<text x="45" y="112" font-size="11" fill="#1d6fd1" text-anchor="middle">first characters decide</text>
+<text x="130" y="41" font-size="12" fill="#1f2a44">as text: 1 is before 9,</text>
+<text x="130" y="57" font-size="12" fill="#1f2a44">so "10" sorts first</text>
+<text x="130" y="85" font-size="12" fill="#b4232c">as numbers (-n): 9 is less than 10</text>
+</svg>
+```
+:::
+
+::: context combined-flags Several flags behind one dash
+One-letter flags can share a single dash: `sort -rn` is the same as `sort -r -n`, the same way `ls -la` in the basics course was `ls -l -a`. The order of the letters does not matter here, so `sort -nr` does the same thing. You will see flags squeezed together like this all through real scripts.
+:::
+
+::: context frequency-idiom A famous six-stage answer
+In 1986, Jon Bentley's column *Programming Pearls* featured Donald Knuth writing a careful, many-page program to print the most common words in a text. Doug McIlroy, who had invented the pipe, reviewed it and answered with a pipeline of six stages. It split the text into one word per line, made it lowercase, then ran `sort | uniq -c | sort -rn` and kept the top lines. The same pattern counts error types in a log, visits per city, or which sensor reported a fault most often.
+:::
 --- task
-`visitors.txt` has one city per line, one line per visit. Print each city **once**, with its number of visits, **most visits first** — `4 lagos` on the first line — using `sort`, `uniq -c` and `sort -rn` in one pipeline.
+`visitors.txt` has one city per line, one line per visit. Print each city **once**, with its number of visits, **most visits first** (`4 lagos` on the first line), using `sort`, `uniq -c` and `sort -rn` in one pipeline.
 --- starter
 echo "lima" > visitors.txt
 echo "lagos" >> visitors.txt
@@ -136,9 +530,11 @@ echo "lagos" >> visitors.txt
 --- solution
 sort visitors.txt | uniq -c | sort -rn
 --- hint
-Start with `sort visitors.txt` and notice the repeats now sit together.
+Start with `sort visitors.txt` and notice that the repeats now sit together.
 --- hint
-Add `| uniq -c` to count each run of repeats, then `| sort -rn` to put the biggest count first.
+Add `| uniq -c` to count each run of repeats, and look at the counts.
+--- hint
+Then add `| sort -rn` to put the biggest count first: `sort visitors.txt | uniq -c | sort -rn`.
 --- check shell | Each city once, with its count, most visits first
 printed-exactly 4 lagos\n3 oslo\n2 lima\n1 pune
 --- check shell | Counted with uniq -c
@@ -146,22 +542,88 @@ used uniq -c
 
 === term2-04 | The top and the bottom: head, tail and numeric sorts
 --- teach
-`head` and `tail` are at their best at the end of a pipeline: sort, then keep the first few lines.
+Last lesson, `sort -rn` put the biggest count at the top of a list. Often you only want the top few lines, or only the very first one. `head` and `tail` from the basics course do that, and they are at their best at the end of a pipeline.
+
+Picture the results board after a race. Sort the times, and the winner is on the first line. Keep the first three lines, and you have the podium.
+
+**Step 1: sort, then keep the top.** `head -n 3` keeps the first three lines of whatever it is given. Here `laps.txt` holds five lap times in seconds:
 
 ```
-sort -rn sizes.txt | head -n 3     # the three biggest
-sort -n sizes.txt | head -n 1      # the smallest
+~/project $ sort -rn laps.txt | head -n 3
+80
+75
+71
+~/project $ sort -n laps.txt | head -n 1
+64
 ```
 
-Real data often starts with a **header line** naming the column. `tail -n +2` means "start from line 2", which drops the header:
+`sort -rn` then `head -n 3` gives the three biggest. `sort -n` then `head -n 1` gives the smallest.
+
+**Step 2: header lines.** Real data often starts with a [[header line|header-line]]: a first line that names what the column holds, instead of holding a value. `timing.txt` holds the same five lap times, exported by a stopwatch program that put a header on top:
 
 ```
-tail -n +2 sizes.txt | sort -n | head -n 1
+~/project $ head -n 3 timing.txt
+seconds
+71
+68
 ```
 
-Why bother? Because `sort -n` treats a line that is not a number as `0`. A header like `bytes` then sorts as the smallest "number" of all, and `head -n 1` hands you the word `bytes` instead of an answer. Whenever a result looks odd, look at the first lines of your data with `head` — headers, blank lines and stray text are the usual suspects.
+**Step 3: `tail -n +2` drops the header.** In the basics course, `tail -n 3` meant "the last three lines". A plus sign in front of the number changes the meaning: `tail -n +2` means "[[start from line 2|tail-plus]] and keep going to the end". That is every line except the first, so the header is gone.
+
+```
+~/project $ tail -n +2 timing.txt | sort -n | head -n 1
+64
+```
+
+**Step 4: why the header matters.** `sort -n` treats a line that is [[not a number as 0|text-as-zero]]. So a header like `seconds` sorts as the smallest "number" of all, and `head -n 1` hands you the word instead of an answer:
+
+```
+~/project $ sort -n timing.txt | head -n 1
+seconds
+```
+
+Biggest first, with `sort -rn`, the header sinks to the bottom and does no harm to the top three. Smallest first, it jumps to the top. Dropping it with `tail -n +2` is safe either way.
+
+**Watch out:** whenever a result looks odd, [[look at the first lines of your data|look-first]] with `head`. Headers, blank lines and stray text are the usual suspects.
+
+::: context header-line Where headers come from
+Spreadsheets and data loggers usually write a first line naming each column, so a person opening the file knows what the numbers mean. A test-stand log might start with a line such as `time,chamber_pressure,thrust`. That line is useful for people and a nuisance for tools that expect only values. You will meet many more header lines in the next lesson, which is about columns.
+:::
+
+::: context tail-plus Counting from the top instead of the bottom
+Without a plus sign, `tail -n 2` counts from the bottom: the last two lines. With a plus sign, `tail -n +2` counts from the top: start at line 2, and print everything from there to the end. `tail -n +1` would print the whole file, and `tail -n +3` would skip two lines.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+<text x="20" y="22" font-size="12" fill="#6c7a93">line 1</text>
+<text x="80" y="22" font-size="13" fill="#b4232c">seconds</text>
+<path d="M78 18 H140" stroke="#b4232c" stroke-width="1.5"/>
+<text x="20" y="44" font-size="12" fill="#6c7a93">line 2</text>
+<text x="80" y="44" font-size="13" fill="#1f2a44">71</text>
+<text x="20" y="66" font-size="12" fill="#6c7a93">line 3</text>
+<text x="80" y="66" font-size="13" fill="#1f2a44">68</text>
+<text x="20" y="88" font-size="12" fill="#6c7a93">...</text>
+<text x="20" y="110" font-size="12" fill="#6c7a93">last line</text>
+<text x="80" y="110" font-size="13" fill="#1f2a44">80</text>
+<path d="M160 34 H172 V114 H160" fill="none" stroke="#1d6fd1" stroke-width="2"/>
+<text x="182" y="70" font-size="12" fill="#1d6fd1">tail -n +2 keeps</text>
+<text x="182" y="86" font-size="12" fill="#1d6fd1">line 2 to the end</text>
+</svg>
+```
+:::
+
+::: context text-as-zero Why a word counts as zero
+`sort -n` reads the number at the start of each line and ignores whatever comes after it. A line that does not start with a number has no number to read, so it is treated as 0. Every real lap time is bigger than 0, so the header word lands at the very top of a smallest-first sort. This is not a bug in `sort`. It is doing what it was designed to do, and many pipeline bugs look like this: a tool behaving exactly as documented, which is not what you expected.
+:::
+
+::: context look-first Look before you compute
+People who work with data have a habit: before any analysis, print the first few lines and the last few. `head -n 5 file` and `tail -n 5 file` take a second and catch most surprises: a header, a blank line at the end, a value in the wrong column, a comma where a dot was expected. One unexpected line can move a minimum or an average a long way, so a glance first is much cheaper than a wrong answer later.
+:::
 --- task
-`sizes.txt` lists file sizes in bytes, under a header line `bytes`. Print the **three largest** sizes, largest first. Then print the **smallest** size — without the header sneaking in.
+`sizes.txt` lists file sizes in bytes, one per line, under a header line `bytes`.
+
+1. Print the **three largest** sizes, largest first.
+2. Then print the **smallest** size, without the header sneaking in.
 --- starter
 echo "bytes" > sizes.txt
 echo "640" >> sizes.txt
@@ -176,7 +638,9 @@ tail -n +2 sizes.txt | sort -n | head -n 1
 --- hint
 Sort as numbers, biggest first, with `sort -rn`, and keep three lines with `head -n 3`.
 --- hint
-For the smallest, `sort -n` puts `bytes` first. `tail -n +2 sizes.txt` hands the pipeline everything except the header.
+For the smallest, `sort -n` would put `bytes` first. `tail -n +2 sizes.txt` hands the pipeline everything except the header.
+--- hint
+The second one is `tail -n +2 sizes.txt | sort -n | head -n 1`.
 --- check shell | The three largest sizes, largest first
 printed-exactly 9200\n870\n640
 --- check shell | The smallest size, not the header
@@ -187,10 +651,23 @@ ran head
 
 === term2-05 | Columns: cut
 --- teach
-A lot of data comes as **columns**: CSV files, logs, exports from spreadsheets. `cut` picks columns out of every line.
+Last lesson you dropped a header line with `tail -n +2`. That header named a **column**. Most data has several columns side by side, and this lesson shows how to pick out the one you want.
 
-- `-d ,` says what separates the columns (here a comma).
-- `-f 2` says which column (**f**ield) to keep, counting from 1. Several at once: `-f 1,3`. A range: `-f 2-4`.
+Picture a spreadsheet of people, one row per person: an id, a name, a city. Saved as plain text, each row becomes one line, with a comma between the values:
+
+```
+~/project $ cat people.csv
+id,name,city
+1,ada,oslo
+2,lin,lima
+```
+
+This way of storing a table is called [[CSV|csv]]. Each value on a line is a **field**. The character that separates the fields is the **[[delimiter|delimiter]]**; here it is a comma.
+
+**Step 1: `cut` keeps some fields.** `cut` keeps only the fields you ask for, from every line. It needs two flags:
+
+- `-d ,` (say "dash d, comma") means "the delimiter is a comma". `-d` is for **d**elimiter.
+- `-f 2` means "keep field 2". `-f` is for **f**ield. Fields are counted from 1, starting at the left.
 
 ```
 ~/project $ cut -d , -f 2 people.csv
@@ -199,15 +676,67 @@ ada
 lin
 ```
 
-The usual mistake is leaving out `-d`. Then `cut` splits on the **tab** character, finds none, and prints every line whole — it looks as if `cut` did nothing.
-
-`cut` shines inside a pipeline. To list the distinct values of one column, drop the header, cut the column, then sort and de-duplicate:
+**Step 2: more than one field.** A comma between numbers keeps several: `-f 1,3` keeps fields 1 and 3. A dash keeps a range: `-f 2-4` keeps fields 2, 3 and 4.
 
 ```
-tail -n +2 people.csv | cut -d , -f 3 | sort -u
+~/project $ cut -d , -f 1,3 people.csv
+id,city
+1,oslo
+2,lima
 ```
+
+**Step 3: `cut` inside a pipeline.** `cut` shines in the middle of a pipeline. To list the [[distinct values|distinct]] of one column, drop the header, cut out the column, then sort and keep one of each with `sort -u`:
+
+```
+~/project $ tail -n +2 people.csv | cut -d , -f 3 | sort -u
+lima
+oslo
+```
+
+**Watch out:** do not leave out `-d`. Without it, `cut` splits on the [[tab character|tab]], finds none, and prints every line whole. It looks as if `cut` did nothing at all:
+
+```
+~/project $ cut -f 2 people.csv
+id,name,city
+1,ada,oslo
+2,lin,lima
+```
+
+::: context csv Comma-separated values
+CSV stands for **comma-separated values**. It is one of the oldest and plainest ways to store a table, and nearly every program can read and write it: spreadsheets, databases, and the tools that record test data. A test-stand run, for example, is often exported as a CSV file with one line per reading and one column per sensor. Because it is plain text, every tool in this course works on it.
+:::
+
+::: context delimiter Fields and the separator between them
+A **delimiter** is a marker that shows where one piece ends and the next begins, the way commas separate items in a written list. `cut` counts fields by counting delimiters: the text before the first comma is field 1, the text between the first and second commas is field 2, and so on.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 100" font-family="Inter, Arial, sans-serif">
+<rect x="20" y="30" width="40" height="30" fill="#ffffff" stroke="#1f2a44"/>
+<text x="40" y="50" font-size="14" fill="#1f2a44" text-anchor="middle">1</text>
+<text x="70" y="50" font-size="16" fill="#b4232c" text-anchor="middle">,</text>
+<rect x="80" y="30" width="60" height="30" fill="#8fb8f0" stroke="#1f2a44"/>
+<text x="110" y="50" font-size="14" fill="#1f2a44" text-anchor="middle">ada</text>
+<text x="150" y="50" font-size="16" fill="#b4232c" text-anchor="middle">,</text>
+<rect x="160" y="30" width="60" height="30" fill="#ffffff" stroke="#1f2a44"/>
+<text x="190" y="50" font-size="14" fill="#1f2a44" text-anchor="middle">oslo</text>
+<text x="40" y="22" font-size="11" fill="#6c7a93" text-anchor="middle">field 1</text>
+<text x="110" y="22" font-size="11" fill="#1d6fd1" text-anchor="middle">field 2</text>
+<text x="190" y="22" font-size="11" fill="#6c7a93" text-anchor="middle">field 3</text>
+<text x="20" y="84" font-size="12" fill="#b4232c">red: the delimiter, a comma</text>
+<text x="236" y="50" font-size="12" fill="#1d6fd1">-f 2 keeps ada</text>
+</svg>
+```
+:::
+
+::: context distinct Every different value, once
+The **distinct** values of a column are all the different values in it, each listed once. "Which cities appear?" is a question about distinct values, and so is "which items were ordered?". Databases have the same idea built in: in SQL, the language for asking databases questions, it is written `SELECT DISTINCT`.
+:::
+
+::: context tab An invisible separator
+A **tab** is a single character, typed with the Tab key, that shows up as a wide gap. Many programs use it as the delimiter between columns, because a tab rarely appears inside a value, while commas and spaces often do. That is why `cut` uses the tab when you do not say otherwise, and why you have to tell it about the comma with `-d ,`.
+:::
 --- task
-`orders.csv` has a header and then one order per line: `id,customer,item,qty`. Print the **distinct items** that were ordered, alphabetically, one per line, without the header.
+`orders.csv` has a header line and then one order per line, with the fields `id,customer,item,qty`. Print the **distinct items** that were ordered (each item once), in alphabetical order, one per line, without the header.
 --- starter
 echo "id,customer,item,qty" > orders.csv
 echo "1,ada,keyboard,1" >> orders.csv
@@ -219,9 +748,11 @@ echo "6,kai,cable,4" >> orders.csv
 --- solution
 tail -n +2 orders.csv | cut -d , -f 3 | sort -u
 --- hint
-The item is the third column: `cut -d , -f 3 orders.csv`.
+The item is the third field: `cut -d , -f 3 orders.csv` shows it, header included.
 --- hint
-Put `tail -n +2` in front to drop the header, and `sort -u` after to sort and keep one of each.
+Put `tail -n +2 orders.csv` in front to drop the header, and `sort -u` after to sort and keep one of each.
+--- hint
+The whole pipeline is `tail -n +2 orders.csv | cut -d , -f 3 | sort -u`.
 --- check shell | The distinct items, alphabetically, without the header
 printed-exactly cable\nkeyboard\nmonitor\nmouse
 --- check shell | You cut the column with -d
@@ -229,20 +760,78 @@ used cut -d
 
 === term2-06 | Finding files: find
 --- teach
-`ls` shows one folder. `find` searches a folder **and everything inside it**:
+Last lesson you picked columns out of a file. Now a different question: where *is* a file? `ls` shows what is in one folder. In a big project, the file you want might be five folders deep.
+
+Picture looking for your keys. `ls` is opening one drawer. `find` is searching the whole house: every room, every drawer, and every box inside every drawer.
+
+**Step 1: `find` searches a folder and everything inside it.** You tell it where to start. It goes into every folder below that, and every folder below those. Searching all the way down like this is called a [[recursive|recursive]] search.
 
 ```
-find . -name "*.md"            # every .md file below here
-find src -name config.json     # every config.json below src
-find . -type d -name tests     # only folders called tests
-find . -type f -iname "*.JPG"  # files, ignoring upper/lower case
+~/project $ find src
+src
+src/app.js
+src/lib
+src/lib/util.js
 ```
 
-The first argument is where to start (`.` is "here"); the rest describe what you want. Tests combine: `-type d -name tests` means both.
+**Step 2: where to start.** The first argument is the folder to start in. `.` (say "dot") means [[this folder, the one you are in|dot-folder]], so `find .` searches the whole project from here. Its results start with `./`, which means "from here".
 
-**Quote the pattern.** Without quotes, the shell expands `*.md` itself before `find` runs. If this folder happens to contain `a.md` and `b.md`, `find` receives `-name a.md b.md` and stops with `paths must precede expression`. With quotes, the pattern reaches `find` intact and it matches at every depth.
+**Step 3: `-name` says what you want.** After the starting folder come **tests**: conditions something must pass to be printed. `-name config.json` passes only things called exactly `config.json`.
+
+```
+~/project $ find . -name config.json
+./config.json
+./api/config.json
+```
+
+**Step 4: `-type` picks folders or files.** `-type d` passes only **d**irectories (folders). `-type f` passes only ordinary **f**iles.
+
+```
+~/project $ find . -type d -name tests
+./api/tests
+```
+
+**Step 5: tests combine.** When you give several tests, something must pass [[all of them|find-tests]]. `-type d -name tests` means "a folder, and called `tests`". A *file* called `tests` fails the first test, so it is left out. (The folders here happen to be named `tests` too; that is a coincidence, not part of `find`.)
+
+**Watch out:** `-name` matches the **whole** name, not part of it. `find . -name config` prints nothing here, because no file is called exactly `config`; the files are called `config.json`. To match part of a name you need a wildcard, and wildcards in `find` need quotes. That is the next lesson.
+
+::: context recursive Going all the way down
+**Recursive** means "doing the same thing again, one level further in". `find` looks in a folder; for each folder it finds there, it does the same again, and so on until there are no folders left. You met the same word in the basics course: `cp -r` and `rm -r` copy or remove a folder recursively, with everything inside it.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+<text x="20" y="24" font-size="13" fill="#1d6fd1">. (start here)</text>
+<path d="M30 30 V122" stroke="#6c7a93" stroke-width="1.5"/>
+<path d="M30 50 H46" stroke="#6c7a93" stroke-width="1.5"/>
+<text x="50" y="54" font-size="13" fill="#1f2a44">config.json</text>
+<path d="M30 76 H46" stroke="#6c7a93" stroke-width="1.5"/>
+<text x="50" y="80" font-size="13" fill="#1d6fd1">api/</text>
+<path d="M60 86 V122" stroke="#6c7a93" stroke-width="1.5"/>
+<path d="M60 100 H76" stroke="#6c7a93" stroke-width="1.5"/>
+<text x="80" y="104" font-size="13" fill="#1f2a44">config.json</text>
+<path d="M60 122 H76" stroke="#6c7a93" stroke-width="1.5"/>
+<text x="80" y="126" font-size="13" fill="#1d6fd1">v1/</text>
+<text x="118" y="126" font-size="13" fill="#1f2a44">config.json</text>
+<path d="M30 122 H46" stroke="#6c7a93" stroke-width="1.5"/>
+<text x="220" y="54" font-size="12" fill="#1f2a44">ls sees level 1 only</text>
+<text x="220" y="104" font-size="12" fill="#1d6fd1">find goes into</text>
+<text x="220" y="120" font-size="12" fill="#1d6fd1">every level</text>
+</svg>
+```
+:::
+
+::: context dot-folder The folder called dot
+Every folder contains an entry named `.` that points to itself, and one named `..` that points to the folder above; you saw both in `ls -a`. So `.` is a short way to say "right here" wherever a command wants a folder. `find .` searches from here, and later you will see `./script.sh`, which means "the file `script.sh` in this folder".
+:::
+
+::: context find-tests A tiny language of conditions
+Everything after the starting folder is a small language of tests. Written one after another, tests all have to pass. `find` has more: `-o` means "or" (pass either test), and `!` means "not" (for example, `! -name "*.log"`). You can go a long way with `-name`, `-type` and the case-blind `-iname` from the next lesson, but it is worth knowing the language is there.
+:::
 --- task
-Somewhere in this project there are three files called `config.json`, at different depths. List them all with `find`. Then list every **folder** called `tests` — there is also a *file* called `tests`, which must not appear.
+Somewhere in this project there are three files called `config.json`, at different depths.
+
+1. List them all with `find`.
+2. Then list every **folder** called `tests`. There is also a *file* called `tests`, which must not appear.
 --- starter
 mkdir -p api/v1/tests web/tests docs
 touch config.json api/config.json api/v1/config.json web/app.js docs/tests
@@ -252,7 +841,9 @@ find . -type d -name tests
 --- hint
 `find . -name config.json` starts here and looks in every folder below.
 --- hint
-Add `-type d` so that only folders count.
+For the folders, add the test `-type d`, so that only folders pass.
+--- hint
+The second command is `find . -type d -name tests`.
 --- check shell | You found all three config files
 ran find
 printed ./config.json
@@ -262,24 +853,211 @@ printed ./api/v1/config.json
 printed-exactly ./api/v1/tests\n./web/tests
 used -type d
 
+=== term2-06b | find with wildcards: quotes and -iname
+--- teach
+Last lesson `find . -name config.json` found every file with that exact name. Often you do not know the exact name, only how it ends: "every photo", "every `.md` file". That needs a wildcard, and a wildcard you give to `find` needs quotes.
+
+Picture writing a note for a friend: "fetch every photo in the house". A helper at the door reads the note first and, trying to be useful, rewrites it using only what they can see from the doorway: "fetch cover.jpg". Your friend brings back one photo. Quotes are like a sealed envelope: the helper cannot rewrite what is inside.
+
+**Step 1: a wildcard with `-name`.** `-name` understands the same wildcards as the shell: `*`, `?` and `[ ]`. The difference is that `find` checks the pattern in every folder it visits, at every depth.
+
+```
+~/project $ find . -name "*.md"
+./a.md
+./b.md
+./trip/x.md
+```
+
+**Step 2: why the quotes.** Remember from the wildcards lesson: the shell expands a pattern **before** the command runs, using the names in the folder you are in. [[Quotes switch that off|quoting]]. The shell passes the text inside them along untouched, so the pattern reaches `find` with its star, and `find` does the matching everywhere. Single quotes, `'*.md'`, work the same way here.
+
+Without quotes, what happens depends on the files in this folder:
+
+- No `.md` files here: the pattern is passed along unchanged, as you learned, and it works, by luck.
+- Two of them, `a.md` and `b.md`: `find` receives `-name a.md b.md` and stops with an error.
+- Exactly one, `a.md`: the [[worst case|silent-failure]]. `find` receives `-name a.md`, searches without complaint, and finds only files called `a.md`.
+
+```
+~/project $ find . -name *.md
+find: paths must precede expression: `b.md'
+```
+
+**Step 3: `-iname` ignores case.** File names on Linux are [[case-sensitive|case-sensitive]]: `Beach.JPG` and `beach.jpg` are different names, and `-name "*.jpg"` does not match `Beach.JPG`. `-iname` is `-name` that **i**gnores the difference between upper and lower case:
+
+```
+~/project $ find . -iname "*.jpg"
+./cover.jpg
+./trip/day1/Beach.JPG
+./trip/day2/boat.jpg
+```
+
+It combines with other tests like any test does: `find . -type f -iname "*.jpg"` passes only files.
+
+**Watch out:** missing quotes do not always cause an error. When exactly one name in this folder matches, `find` runs happily and quietly returns too few results. Quote every pattern you give to `find`, every time.
+
+::: context quoting What the shell sees, with and without quotes
+The shell expands wildcards it finds in the open, but leaves text inside quotes alone. So the same pattern reaches `find` in two very different shapes.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+<text x="12" y="20" font-size="12" fill="#6c7a93">you type</text>
+<text x="200" y="20" font-size="12" fill="#6c7a93">find receives</text>
+<text x="12" y="50" font-size="13" fill="#1f2a44">-name *.md</text>
+<path d="M120 46 H186" stroke="#b4232c" stroke-width="2"/>
+<path d="M178 40 L188 46 L178 52" fill="none" stroke="#b4232c" stroke-width="2"/>
+<text x="200" y="50" font-size="13" fill="#b4232c">-name a.md b.md</text>
+<text x="200" y="68" font-size="11" fill="#b4232c">error, or a wrong answer</text>
+<text x="12" y="110" font-size="13" fill="#1f2a44">-name "*.md"</text>
+<path d="M120 106 H186" stroke="#1d6fd1" stroke-width="2"/>
+<path d="M178 100 L188 106 L178 112" fill="none" stroke="#1d6fd1" stroke-width="2"/>
+<text x="200" y="110" font-size="13" fill="#1d6fd1">-name *.md</text>
+<text x="200" y="128" font-size="11" fill="#1d6fd1">find matches at every depth</text>
+</svg>
+```
+:::
+
+::: context silent-failure Loud errors are the friendly kind
+An error message is annoying, but it tells you something went wrong, and where. A command that runs without complaint and gives a wrong answer is far more dangerous, because nothing makes you look again. Engineers who write flight software try hard to make failures loud: a check that stops with a clear message beats a program that carries on with bad data. When you choose between two ways of doing something, prefer the one that fails loudly.
+:::
+
+::: context case-sensitive Capital letters count
+**Case-sensitive** means upper-case and lower-case letters are treated as different. Linux file names are case-sensitive, so `Beach.JPG`, `beach.jpg` and `BEACH.JPG` could sit side by side in one folder. The usual settings on Windows and macOS treat them as the same name. Many digital cameras save photos with capital endings such as `DSC_0001.JPG`, which is why `-iname` is so handy for photos.
+:::
+--- task
+Photos are scattered around this project, and one camera wrote its name ending in capitals (`.JPG`). There is also a photo right here, `cover.jpg`, so an unquoted pattern would go wrong.
+
+With **one** `find`, list every photo in the project whose name ends in `.jpg`, in any mix of upper and lower case. Use `-iname`, and put the pattern in quotes.
+--- starter
+mkdir -p trip/day1 trip/day2
+touch cover.jpg notes.txt trip/day1/Beach.JPG trip/day2/boat.jpg trip/day2/map.png
+--- solution
+find . -iname "*.jpg"
+--- hint
+`-iname` is `-name` that ignores upper and lower case.
+--- hint
+Put the pattern in quotes, `"*.jpg"`, so the shell leaves the star alone and `find` gets it.
+--- hint
+The whole command is `find . -iname "*.jpg"`.
+--- check shell | Every photo, in any case, at every depth
+printed-exactly ./cover.jpg\n./trip/day1/Beach.JPG\n./trip/day2/boat.jpg
+--- check shell | You ignored case with -iname
+ran find
+used -iname
+
 === term2-07 | Searching inside files: grep's everyday flags
 --- teach
-You have used `grep PATTERN file`. A handful of flags turns it into the tool you use to find your way around any codebase:
+Last lesson, `find` searched for files by their **names**. This lesson is about searching **inside** files, with a tool you met in the basics course: `grep`.
 
-- `-r` searches a folder and everything in it. Each hit starts with the file it is in.
-- `-n` adds the line number: `src/api.js:3:// TODO`.
-- `-i` ignores upper and lower case.
-- `-v` inverts: keep the lines that do **not** match.
-- `-c` prints how many lines matched instead of the lines themselves.
-- `-l` prints only the names of files that match.
+Think of `grep` as a highlighter pen that throws away every line it does not highlight. You give it a word to look for and a file, and it prints only the lines that contain that word:
 
-Flags combine: `grep -rn TODO src` lists every TODO in `src` with its file and line.
+```
+~/project $ grep ERROR app.log
+ERROR crash
+```
 
-The pattern is a **regular expression**, so a few characters are special: `.` matches any character, `^` means "start of line" and `$` "end of line". `grep "^ERROR" app.log` finds lines that begin with ERROR, not lines that mention it.
+The word you look for is called the **pattern**. `grep` has many **flags** (the little options that start with a dash). Four of them turn it into the tool programmers use to find their way around a whole [[codebase|codebase]]. This lesson takes them one at a time.
 
-Two mistakes: forgetting `-r` on a folder (grep answers `Is a directory`), and expecting `-c` to count words — it counts **lines**.
+**Step 1: `-r`, search a whole folder.** On its own, `grep` reads files, not folders. Hand it a folder and it refuses:
+
+```
+~/project $ grep TODO src
+grep: src: Is a directory
+```
+
+`-r` means **recursive**: go into the folder, then into every [[folder inside it, and every folder inside those|recursive]], and search every file on the way. Because the hits can now come from many files, each line starts with the name of the file it was found in, then a colon (`:`):
+
+```
+~/project $ grep -r TODO src
+src/api.js:// TODO: retry on failure
+src/lib/util.js:// TODO: cache results
+```
+
+Programmers leave [[TODO notes|todo-comments]] like these in their code for work they still have to do, and `grep -r` is how they round them up.
+
+**Step 2: `-n`, show line numbers.** `-n` puts the **n**umber of the line in front of each hit, so you know exactly where to look:
+
+```
+~/project $ grep -n TODO src/api.js
+3:// TODO: retry on failure
+```
+
+`TODO` is on line 3 of `src/api.js`.
+
+**Step 3: combine flags.** Flags can be written together after one dash. `-rn` means `-r` and `-n` at once. Now every hit tells you the file, then the line number, then the line itself, with a colon between each part:
+
+```
+~/project $ grep -rn TODO src
+src/api.js:3:// TODO: retry on failure
+src/lib/util.js:2:// TODO: cache results
+```
+
+Read the first line as: "in `src/api.js`, on line 3, the line says `// TODO: retry on failure`."
+
+**Step 4: `-v`, keep the lines that do *not* match.** `-v` flips `grep` around (it stands for "in**v**ert"). Instead of keeping the lines that contain the pattern, it keeps all the others. That is how you clear away [[noise|log-levels]] in a log. Here `app.log` has three `DEBUG` lines, and `-v DEBUG` hides them:
+
+```
+~/project $ grep -v DEBUG app.log
+INFO ready
+WARN slow
+ERROR crash
+INFO restart
+```
+
+**Step 5: `-c`, count instead of print.** `-c` makes `grep` print **how many** lines it would have shown, instead of the lines themselves:
+
+```
+~/project $ grep -c DEBUG app.log
+3
+```
+
+`-c` works together with `-v` too. `grep -vc DEBUG app.log` counts the lines that are **not** DEBUG lines. You could also get the same number with a pipe, `grep -v DEBUG app.log | wc -l`, the way you counted with pipes earlier in this course.
+
+**Watch out:** two mistakes catch everyone.
+
+- Forgetting `-r` when you search a folder. `grep` answers `Is a directory` and finds nothing. Add `-r`.
+- Expecting `-c` to count **words**. It counts matching **lines**. A line with the word three times still counts as 1.
+
+::: context codebase All the code of one project
+A **codebase** is every file of source code that makes up one program or project. A small app might have ten files; the flight software for a spacecraft can have hundreds of thousands of lines spread over thousands of files in many folders. Nobody remembers where everything is. When an engineer needs to know "where do we set the engine timeout?", the first move is usually a recursive search like `grep -rn timeout src`, not clicking through folders.
+:::
+
+::: context recursive Folders inside folders
+**Recursive** means "the same step, repeated inside itself". A folder can hold folders, which can hold more folders, like boxes packed inside boxes. `grep -r` opens the top box, searches every file, and then does the very same thing to each box it finds inside, however deep they go.
+
+```svg
+<svg viewBox="0 0 360 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="12" width="90" height="28" rx="5" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="55" y="31" font-size="13" text-anchor="middle" fill="#1f2a44">src/</text>
+  <line x1="30" y1="40" x2="30" y2="128" stroke="#1f2a44"/>
+  <line x1="30" y1="64" x2="130" y2="64" stroke="#1f2a44"/>
+  <rect x="130" y="52" width="90" height="24" rx="5" fill="white" stroke="#1f2a44"/>
+  <text x="175" y="68" font-size="12" text-anchor="middle" fill="#1f2a44">api.js</text>
+  <line x1="30" y1="96" x2="130" y2="96" stroke="#1f2a44"/>
+  <rect x="130" y="84" width="90" height="24" rx="5" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="175" y="100" font-size="12" text-anchor="middle" fill="#1f2a44">lib/</text>
+  <line x1="220" y1="96" x2="250" y2="96" stroke="#1f2a44"/>
+  <rect x="250" y="84" width="96" height="24" rx="5" fill="white" stroke="#1f2a44"/>
+  <text x="298" y="100" font-size="12" text-anchor="middle" fill="#1f2a44">util.js</text>
+  <line x1="30" y1="128" x2="130" y2="128" stroke="#1f2a44"/>
+  <rect x="130" y="116" width="90" height="24" rx="5" fill="white" stroke="#1f2a44"/>
+  <text x="175" y="132" font-size="12" text-anchor="middle" fill="#1f2a44">main.js</text>
+  <text x="250" y="60" font-size="11" fill="#6c7a93">-r searches all three</text>
+  <text x="250" y="74" font-size="11" fill="#6c7a93">files, even inside lib/</text>
+</svg>
+```
+:::
+
+::: context todo-comments Notes to your future self
+A **comment** is a line in a program that the computer ignores; it is there for people to read. In JavaScript a comment starts with `//`. Many programmers write `TODO` in a comment to mark something unfinished, and `FIXME` for something known to be broken. Because the words are always spelled the same way, one `grep -rn TODO` lists every loose end in the project, with the exact place to go and fix it.
+:::
+
+::: context log-levels DEBUG, INFO, WARN, ERROR
+Programs label each log line with a **level** that says how important it is. **DEBUG** lines are tiny details that only help while hunting a bug. **INFO** says normal things happened. **WARN** means something looks wrong but the program carried on. **ERROR** means something failed. A busy program can write thousands of DEBUG lines a minute, so the first thing an engineer often does is hide them with `grep -v DEBUG` and read what is left. Ground software that watches a spacecraft's telemetry labels its messages in much the same way.
+:::
 --- task
-Two jobs. First, find every `TODO` in the `src` folder, showing file names and line numbers, with one `grep`. Second, `app.log` is full of `DEBUG` noise: count the lines that are **not** DEBUG lines.
+Two jobs.
+
+1. Find every `TODO` in the `src` folder (and the folders inside it) with **one** `grep`, showing the file name **and** the line number of each one.
+2. `app.log` is full of `DEBUG` noise. Count the lines that are **not** DEBUG lines.
 --- starter
 mkdir -p src/lib
 echo "import db" > src/api.js
@@ -300,9 +1078,11 @@ echo "INFO restart" >> app.log
 grep -rn TODO src
 grep -vc DEBUG app.log
 --- hint
-`-r` searches the whole folder and `-n` adds line numbers: `grep -rn TODO src`.
+For the first job you need two flags: `-r` to go into every folder, and `-n` to show line numbers. They can go together after one dash.
 --- hint
-`-v` keeps the lines that do not match; add `-c` to count them (or pipe into `wc -l`).
+`grep -rn TODO src` does the first job. For the second, `-v` keeps the lines that do **not** match, and `-c` counts them.
+--- hint
+`grep -vc DEBUG app.log` prints the count. (`grep -v DEBUG app.log | wc -l` gives the same number.)
 --- check shell | Every TODO, with its file and line number
 printed-line src/api.js:3:// TODO: retry on failure
 printed-line src/lib/util.js:2:// TODO: cache results
@@ -310,29 +1090,281 @@ printed-line src/lib/util.js:2:// TODO: cache results
 used -v
 printed-exactly 4
 
+=== term2-07b | grep: any capitals, and only the file names
+--- teach
+Last lesson, `grep -r` searched a whole folder and `-n` showed line numbers. Two more flags answer a different kind of question: not "which lines?" but "**which files** talk about this?"
+
+Picture a pile of notebooks. Sometimes you do not want every sentence that mentions fuel. You want to know which notebooks to pick up.
+
+**Step 1: `-i`, ignore capitals.** You met `-i` in the basics course. To `grep`, `Fuel`, `FUEL` and `fuel` are three [[different words|upper-lower-case]], so a plain search misses two of them:
+
+```
+~/project $ grep fuel notes/engine.txt
+~/project $ grep -i fuel notes/engine.txt
+Fuel pump checked
+```
+
+The first search printed nothing, because the file says `Fuel` with a capital F. `-i` means "**i**gnore case": upper and lower case letters count as the same. (**Case** is the word for whether a letter is a capital or not.)
+
+**Step 2: `-l`, list only the file names.** `-l` (a small letter L, for "**l**ist") makes `grep` print the **name** of each file that has at least one match, once, and not the lines themselves:
+
+```
+~/project $ grep -rl fuel notes
+notes/tank.txt
+```
+
+That is a short, [[tidy list|why-list-files]] you can read at a glance, however many times the word appears inside each file.
+
+**Step 3: put them together.** Flags [[combine|combining-flags]] after one dash, as `-rn` did last lesson. `-ril` means: search every folder (`-r`), ignore capitals (`-i`), and list only file names (`-l`):
+
+```
+~/project $ grep -ril fuel notes
+notes/engine.txt
+notes/pad.txt
+notes/tank.txt
+```
+
+Now all three files show up, whichever way they spell `fuel`.
+
+**Watch out:** `-l` is a small letter L, not the number 1 and not a capital I. And `-l` is not `-c`: `-c` prints a count of lines, `-l` prints file names.
+
+::: context upper-lower-case Why F and f are different to a computer
+Inside a computer every letter is stored as a number. In the common code called ASCII, a capital `F` is the number 70 and a small `f` is 102. To `grep` those are two different numbers, so they are two different letters, and a search for `fuel` skips `Fuel`. The `-i` flag tells it to treat each capital and its small letter as a match. Many other tools have a similar switch; `find` has `-iname`, which you met two lessons ago.
+:::
+
+::: context why-list-files Why only the names?
+Real projects can mention a word hundreds of times. When the question is "which files do I need to open?", a wall of matching lines hides the answer. `-l` gives one line per file. Engineers use it to see how far a change will reach, for example "which files use the old sensor name?", before they start editing. Later you will see how a list of file names can be handed straight to another command.
+:::
+
+::: context combining-flags Order does not matter here
+For these one-letter flags, `-ril`, `-lir`, `-r -i -l` and `-i -l -r` all mean the same thing: each letter switches one option on. What must come after the flags is the pattern (`fuel`) and then where to look (`notes`). A few flags take a value of their own, like `-n 3` for `head`, and those need the value right after them, so do not mix those into a bundle without care.
+:::
+--- task
+The `notes` folder has four files. Some mention fuel, written in different capitals: `Fuel`, `FUEL` or `fuel`. With **one** `grep`, list **only the names** of the files in `notes` that mention fuel, in **any** capitals.
+--- starter
+mkdir notes
+echo "Fuel pump checked" > notes/engine.txt
+echo "lunch at noon" > notes/crew.txt
+echo "FUEL line cleared" > notes/pad.txt
+echo "fuel at 98 percent" > notes/tank.txt
+--- solution
+grep -ril fuel notes
+--- hint
+You need three flags: one to search the whole folder, one to ignore capitals, one to print only file names.
+--- hint
+`-r` searches the folder, `-i` ignores case and `-l` lists file names. They can go together after one dash.
+--- hint
+`grep -ril fuel notes`
+--- check shell | All three fuel files, whatever their capitals
+printed-line notes/engine.txt
+printed-line notes/pad.txt
+printed-line notes/tank.txt
+--- check shell | crew.txt, which never mentions fuel, was left out
+not-printed notes/crew.txt
+
+=== term2-07c | Patterns: the start and end of a line
+--- teach
+So far every `grep` pattern has been a plain word, like `TODO` or `fuel`. This lesson shows that a few characters in a pattern have special jobs.
+
+Think of the difference between "a word that appears somewhere in the sentence" and "the word the sentence **starts** with". A plain `grep ERROR` finds ERROR anywhere in a line. Sometimes that is too much:
+
+```
+~/project $ grep ERROR events.log
+ERROR disk full
+INFO retry after ERROR
+ERROR pump stalled
+WARN ERROR count rising
+```
+
+Only the first and third lines are real errors. The other two only mention the word.
+
+A `grep` pattern is really a **[[regular expression|regular-expression]]**: a small language for describing text, where most characters mean themselves but a few are special. Three of them are worth knowing now.
+
+**Step 1: `^`, the start of a line.** The caret `^` (the little roof above the 6 on most keyboards) means "the line starts here". It [[pins|anchors]] the pattern to the start of the line:
+
+```
+~/project $ grep "^ERROR" events.log
+ERROR disk full
+ERROR pump stalled
+```
+
+Read `"^ERROR"` as "lines that **begin** with ERROR".
+
+**Step 2: `$`, the end of a line.** The dollar sign `$` means "the line ends here". So `"ok$"` means "lines that **end** with ok":
+
+```
+~/project $ grep "ok$" events.log
+INFO pump ok
+INFO valve ok
+```
+
+A line like `INFO ok signal from pad` has `ok` in the middle, so `"ok$"` skips it.
+
+Put the pattern in double quotes, as above. The [[quotes|quote-patterns]] hand the special characters to `grep` untouched.
+
+**Step 3: `.`, any one character.** A dot `.` in a pattern matches **any single character**: a letter, a digit, a space, anything. `"p..p"` means a `p`, any two characters, then another `p`:
+
+```
+~/project $ grep "p..p" events.log
+ERROR pump stalled
+INFO pump ok
+```
+
+**Watch out:** because `.` means "any character", a pattern with a real dot in it matches more than you meant. `grep "1.5" v.txt` finds `v1.5`, but it also finds `v105`, because the dot happily matches the `0`. To mean a real dot, put a [[backslash before it|escaping]]: `"1\.5"`.
+
+::: context regular-expression Where regular expressions come from
+A **regular expression** (often shortened to *regex*) is a pattern that describes a set of pieces of text. The idea came from mathematics in the 1950s. In the late 1960s Ken Thompson built regular expressions into the text editors he wrote (QED, and then ed), and `grep` got its name from an editor command, `g/re/p`: **g**lobally search for a **r**egular **e**xpression and **p**rint the matching lines. Regular expressions now turn up almost everywhere: in text editors, in every major programming language, and in tools that sift through telemetry and log data.
+:::
+
+::: context anchors Anchors pin the pattern down
+`^` and `$` are called **anchors**, because they tie the pattern to a fixed spot, like an anchor holding a boat in place. They do not match a character. They match a *position*: the gap before the first character, or the gap after the last.
+
+```svg
+<svg viewBox="0 0 360 110" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="40" y="36" width="280" height="32" rx="4" fill="white" stroke="#1f2a44"/>
+  <text x="180" y="57" font-size="14" text-anchor="middle" fill="#1f2a44">ERROR pump stalled</text>
+  <line x1="40" y1="24" x2="40" y2="80" stroke="#1d6fd1" stroke-width="3"/>
+  <line x1="320" y1="24" x2="320" y2="80" stroke="#b4232c" stroke-width="3"/>
+  <text x="40" y="18" font-size="13" text-anchor="middle" fill="#1d6fd1">^</text>
+  <text x="320" y="18" font-size="13" text-anchor="middle" fill="#b4232c">$</text>
+  <text x="40" y="98" font-size="11" text-anchor="middle" fill="#1d6fd1">start of line</text>
+  <text x="320" y="98" font-size="11" text-anchor="middle" fill="#b4232c">end of line</text>
+</svg>
+```
+
+So `"^ERROR"` means "the gap at the start, then E, R, R, O, R".
+:::
+
+::: context quote-patterns Why the quotes
+The shell reads your line before `grep` ever sees it, and some characters mean something to the shell too. `$` starts a variable name, `*` is a wildcard, and a space splits one argument into two. Wrapping the pattern in double quotes keeps it together as one piece and stops the shell from changing `*` or a space. Single quotes are even stricter: inside them, even `$` means nothing to the shell. It is a good habit to quote every `grep` pattern that is more than a plain word.
+:::
+
+::: context escaping Turning a special character off
+Putting a backslash `\` in front of a special character is called **escaping** it: it tells `grep` "this one is only itself". `\.` is a real dot, `\$` a real dollar sign, `\^` a real caret. You will meet the same backslash trick again in many languages, for example to put a quote mark inside a quoted string.
+:::
+--- task
+`events.log` is a list of messages from a test run. Two jobs.
+
+1. Show only the lines that **begin** with `ERROR`, using `^`.
+2. Count the lines that **end** with `ok`, using `$` and `grep -c`.
+--- starter
+echo "ERROR disk full" > events.log
+echo "INFO retry after ERROR" >> events.log
+echo "ERROR pump stalled" >> events.log
+echo "WARN ERROR count rising" >> events.log
+echo "INFO pump ok" >> events.log
+echo "INFO ok signal from pad" >> events.log
+echo "INFO valve ok" >> events.log
+--- solution
+grep "^ERROR" events.log
+grep -c "ok$" events.log
+--- hint
+`^` means the start of a line and `$` the end. Put the pattern in double quotes.
+--- hint
+`grep "^ERROR" events.log` does the first job. For the second, `"ok$"` means "ends with ok", and `-c` counts.
+--- hint
+`grep -c "ok$" events.log` should print 2.
+--- check shell | Only the lines that begin with ERROR
+used ^ERROR
+printed-exactly ERROR disk full\nERROR pump stalled
+--- check shell | You counted the lines that end with ok
+used ok$
+printed-exactly 2
+
 === term2-08 | Two kinds of output: redirecting errors
 --- teach
-Every command has two separate outputs:
+The last three lessons were about finding things: files with `find`, and lines inside files with `grep`. Now back to saving what a command prints. In the basics course, `>` sent a command's output into a file instead of onto the screen. This lesson shows that a command actually has **two** outputs, and `>` only catches one of them.
 
-- **standard output** (number 1) for results,
-- **standard error** (number 2) for problems.
+Picture a kitchen with two hatches. Finished plates go out of one hatch to the diners. Complaints ("we are out of eggs") go out of a different hatch to the manager. In a terminal both hatches open onto the same screen, so they look like one. They are not.
 
-Both appear on your screen, so they look the same — until you redirect. `>` only catches standard output. Errors still land on the screen, and the file does not get them:
+**Step 1: the two outputs.** Every command has two separate [[streams|stream]] of text going out:
+
+- **standard output**, number **1**, for the results;
+- **standard error**, number **2**, for the problems and warnings.
+
+Those numbers are called [[file descriptors|file-descriptor]]. You will use them in a moment.
+
+**Step 2: `>` catches only standard output.** Here `ls` is asked to list a real folder, `reports`, and one that does not exist, `missing`. The listing goes into the file. The error does not: it still lands on your screen.
 
 ```
 ~/project $ ls reports missing > out.txt
 ls: cannot access 'missing': No such file or directory
+~/project $ cat out.txt
+reports:
+q1.txt
+q2.txt
 ```
 
-To send the errors somewhere, name stream 2:
+That is [[on purpose|why-two-outputs]]: the file gets clean results, and you still see that something went wrong.
 
-- `2> errors.txt` — errors to a file.
-- `2> /dev/null` — throw errors away (`/dev/null` swallows whatever is written to it).
-- `> all.txt 2>&1` — results to the file, then "send 2 wherever 1 is going", so both end up in `all.txt`. The order matters: `2>&1 > all.txt` points errors at the screen first, then moves only the results. `&> all.txt` is a shorter spelling of the right version.
+**Step 3: `2>`, send the errors to a file.** Put the stream number in front of the `>`. `2>` means "send stream 2, the errors, here":
 
-Pipes carry only standard output too, which is why `broken-command | grep x` still shows the error on screen.
+```
+~/project $ ls reports missing 2> errors.txt
+reports:
+q1.txt  q2.txt
+~/project $ cat errors.txt
+ls: cannot access 'missing': No such file or directory
+```
+
+Now the listing is on the screen and the error is in the file. You can do both in one command, each stream to its own file:
+
+```
+~/project $ ls reports missing > found.txt 2> errors.txt
+```
+
+Nothing is printed: the listing went into `found.txt` and the error into `errors.txt`.
+
+**Step 4: `2>&1`, both into the same file.** Say it out loud as "send 2 to wherever 1 is going". The `&` tells the shell that `1` is a stream number, not a file called `1`:
+
+```
+~/project $ ls reports missing > all.txt 2>&1
+~/project $ cat all.txt
+ls: cannot access 'missing': No such file or directory
+reports:
+q1.txt
+q2.txt
+```
+
+First `> all.txt` points stream 1 at the file. Then `2>&1` points stream 2 at the same place.
+
+**Watch out:** the order matters. The shell sets up redirections [[from left to right|left-to-right]]. `2>&1 > all.txt` does the wrong thing: at the moment `2>&1` runs, stream 1 still goes to the screen, so errors are sent to the screen. Only afterwards is stream 1 moved to the file. Always write the file first, then `2>&1`.
+
+::: context stream A stream of text
+A **stream** is text that flows out of (or into) a program a piece at a time, like water through a hose, instead of arriving all at once. A program does not need to know where its streams end up. The shell decides: the screen, a file, or another program through a pipe.
+
+```svg
+<svg viewBox="0 0 360 140" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="45" width="100" height="50" rx="8" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="70" y="75" font-size="14" text-anchor="middle" fill="#1f2a44">ls</text>
+  <line x1="120" y1="58" x2="230" y2="38" stroke="#1d6fd1" stroke-width="3"/>
+  <line x1="120" y1="82" x2="230" y2="102" stroke="#b4232c" stroke-width="3"/>
+  <text x="150" y="36" font-size="12" fill="#1d6fd1">1: results</text>
+  <text x="150" y="118" font-size="12" fill="#b4232c">2: errors</text>
+  <rect x="232" y="22" width="110" height="30" rx="5" fill="white" stroke="#1f2a44"/>
+  <text x="287" y="42" font-size="12" text-anchor="middle" fill="#1f2a44">&gt; found.txt</text>
+  <rect x="232" y="88" width="110" height="30" rx="5" fill="white" stroke="#1f2a44"/>
+  <text x="287" y="108" font-size="12" text-anchor="middle" fill="#1f2a44">2&gt; errors.txt</text>
+</svg>
+```
+:::
+
+::: context file-descriptor Numbers for the streams
+A **file descriptor** is the number a program uses to name one of its open streams or files. Every program starts with three: **0** is standard input, where it reads from (the keyboard, or a pipe); **1** is standard output; **2** is standard error. That is why the error redirection is written `2>`. Plain `>` is really short for `1>`, and you could type `1>` if you wanted to.
+:::
+
+::: context why-two-outputs Why keep errors separate?
+Imagine saving a list of sensor readings into a file, and a warning line sneaks in among the numbers. The next program that reads the file might choke on it, or treat the warning as data. Keeping errors on their own stream means results stay clean for the next tool, while a person watching still sees the problems. Automated systems, from build servers to ground stations, often save the two streams in separate log files for exactly this reason.
+:::
+
+::: context left-to-right The shell reads redirections in order
+Before a command runs, the shell goes through its redirections one at a time, from left to right. Each one changes where a stream points *at that moment*. `2>&1` copies wherever stream 1 points right then; it does not follow stream 1 if it moves later. So in `> all.txt 2>&1`, stream 1 already points at the file when stream 2 copies it. In `2>&1 > all.txt`, stream 2 copies "the screen", and then only stream 1 moves.
+:::
 --- task
-`ls reports missing` lists a real folder and a folder that does not exist, so it prints a listing **and** an error. In one command, save the listing in `found.txt` and the error in `errors.txt`. Then, in a second command, save **both** into `all.txt`.
+`ls reports missing` lists a real folder and a folder that does not exist, so it prints a listing **and** an error.
+
+1. In **one** command, save the listing in `found.txt` and the error in `errors.txt`.
+2. In a second command, save **both** the listing and the error into `all.txt`.
 --- starter
 mkdir reports
 touch reports/q1.txt reports/q2.txt
@@ -340,9 +1372,11 @@ touch reports/q1.txt reports/q2.txt
 ls reports missing > found.txt 2> errors.txt
 ls reports missing > all.txt 2>&1
 --- hint
-`>` sends the listing to a file and `2>` sends the error to another, in the same command.
+`>` sends the listing (stream 1) to a file, and `2>` sends the error (stream 2) to another file. Both can go in the same command.
 --- hint
-For both at once, add `2>&1` after `> all.txt`.
+`ls reports missing > found.txt 2> errors.txt` does the first job.
+--- hint
+For both at once, send stream 1 to `all.txt`, then add `2>&1` after it: `ls reports missing > all.txt 2>&1`.
 --- check shell | The listing went to found.txt, and the error did not
 file found.txt contains q1.txt
 file found.txt excludes cannot access
@@ -353,21 +1387,181 @@ used 2>
 file all.txt contains q2.txt
 file all.txt contains No such file or directory
 
+=== term2-08b | Throwing errors away, and saving both at once
+--- teach
+Last lesson you split a command's output into its two streams: `>` for the results (stream 1) and `2>` for the errors (stream 2), and `> file 2>&1` to put both in one file. This lesson adds three more things you can do with them.
+
+**Step 1: `/dev/null`, a bin with no bottom.** Sometimes you already know an error will appear, and you do not care about it. You want it gone. For that there is a special file called [[/dev/null|dev-null]]. Anything written to it disappears. So `2> /dev/null` means "send the errors nowhere":
+
+```
+~/project $ cat mon.log tue.log wed.log
+cat: tue.log: No such file or directory
+08:00 radio ok
+08:30 power ok
+11:00 heater ok
+~/project $ cat mon.log tue.log wed.log 2> /dev/null
+08:00 radio ok
+08:30 power ok
+11:00 heater ok
+```
+
+The second time, the error about the missing `tue.log` is gone and only the results are left.
+
+**Watch out:** throwing errors away also [[hides real problems|careful-discarding]]. Only send an error to `/dev/null` when you have seen it and know it does not matter.
+
+**Step 2: pipes carry only standard output.** A pipe `|` works like `>`: it takes stream 1 and leaves stream 2 alone. So the error still reaches your screen, even though the results went into the next command:
+
+```
+~/project $ cat mon.log tue.log wed.log | wc -l
+cat: tue.log: No such file or directory
+3
+```
+
+`wc -l` counted the 3 good lines. The error never went through the [[pipe|pipe-streams]], so it did not get counted. It went straight to the screen.
+
+**Step 3: `&>`, both streams in one go.** Last lesson, `> all.txt 2>&1` sent both streams into `all.txt`. [[A shorter spelling|ampersand-shorthand]] does the same thing: `&>` followed by the file name.
+
+```
+~/project $ cat mon.log tue.log wed.log &> both.txt
+~/project $ cat both.txt
+cat: tue.log: No such file or directory
+08:00 radio ok
+08:30 power ok
+11:00 heater ok
+```
+
+Read `&>` as "both streams to this file".
+
+::: context dev-null The bottomless file
+`/dev/null` is a special file that every Linux and Mac computer has. Whatever you write to it is thrown away, and reading from it gives nothing at all. Programmers sometimes call it the *bit bucket*. It lives in `/dev`, a folder of **device files**: files that stand for pieces of the machine, such as disks and terminals, rather than holding text. `/dev/null` stands for a device that does nothing.
+:::
+
+::: context careful-discarding Do not hide what you have not read
+An error message is the computer telling you something went wrong. `2> /dev/null` silences it for good; there is no way to get it back afterwards. The safe habit is: run the command once and read its errors, decide which ones you expect, and only then throw them away. If you are not sure, send them to a file with `2> errors.txt` instead, so you can still look later. In flight software, a failure that is quietly ignored can be more dangerous than one that is reported, which is why engineers are strict about this.
+:::
+
+::: context pipe-streams What goes through the pipe
+A pipe connects the first command's stream 1 to the second command's standard input (stream 0). Stream 2 is not connected to anything new, so it keeps going where it was already going: your screen.
+
+```svg
+<svg viewBox="0 0 360 130" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="15" y="40" width="80" height="40" rx="6" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="55" y="65" font-size="13" text-anchor="middle" fill="#1f2a44">cat</text>
+  <rect x="245" y="40" width="80" height="40" rx="6" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="285" y="65" font-size="13" text-anchor="middle" fill="#1f2a44">wc -l</text>
+  <line x1="95" y1="60" x2="245" y2="60" stroke="#1d6fd1" stroke-width="3"/>
+  <text x="170" y="52" font-size="12" text-anchor="middle" fill="#1d6fd1">1 through the pipe</text>
+  <line x1="55" y1="80" x2="55" y2="110" stroke="#b4232c" stroke-width="3"/>
+  <text x="70" y="114" font-size="12" fill="#b4232c">2 straight to the screen</text>
+</svg>
+```
+:::
+
+::: context ampersand-shorthand A bash shortcut
+`&>` is a feature of **bash**, the shell this terminal imitates, and of a few other modern shells. The long form, `> file 2>&1`, works in every Unix shell, including the plain `sh` that many scripts are written for. So you will see both. When a script must run anywhere, engineers usually write the long form.
+:::
+--- task
+There should be three daily logs, but `day2.log` is missing, so `cat day1.log day2.log day3.log` prints the other two logs **and** an error.
+
+1. Show the logs on screen with the error **thrown away**, using `/dev/null`.
+2. Save **both** the logs and the error into `check.txt`, using `&>`.
+--- starter
+echo "09:00 fuel ok" > day1.log
+echo "09:05 pump ok" >> day1.log
+echo "10:00 valve ok" > day3.log
+--- solution
+cat day1.log day2.log day3.log 2> /dev/null
+cat day1.log day2.log day3.log &> check.txt
+--- hint
+Errors are stream 2. `2>` followed by a file name sends them to that file, and `/dev/null` is the file that throws everything away.
+--- hint
+`cat day1.log day2.log day3.log 2> /dev/null` does the first job.
+--- hint
+For the second, put `&> check.txt` at the end of the same `cat` command.
+--- check shell | The logs, with the error thrown away
+used /dev/null
+printed-exactly 09:00 fuel ok\n09:05 pump ok\n10:00 valve ok
+--- check shell | check.txt holds the logs and the error
+used &>
+file check.txt contains 10:00 valve ok
+file check.txt contains No such file or directory
+
 === term2-09 | Keeping results: >>, and tee
 --- teach
-You already know the two ways to save output: `>` replaces a file, `>>` adds to its end. Picking the wrong one is how logs lose their history — each `>` throws away everything that was there.
+The last two lessons sent output into files. This one is about choosing *how* to save, and about seeing a result and saving it at the same time.
 
-Sometimes you want to **see** a result and **save** it. `tee` does both: it writes what it receives into a file and passes the same text on, to the screen or the next command.
+**Step 1: `>` or `>>`?** You already know both from the basics course:
+
+- `>` **replaces** a file: whatever was in it is thrown away first.
+- `>>` **adds to the end** of a file (appends) and keeps what was there.
 
 ```
-sort -u names.txt | tee unique.txt          # see the list and save it
-sort -u names.txt | tee unique.txt | wc -l  # save it, and count it
-echo "run finished" >> run.log              # add a line, keep the rest
+~/project $ echo "run finished" >> run.log
 ```
 
-`tee -a file` appends instead of replacing, just like `>>`.
+That adds one line to `run.log` and keeps every line before it. Picking the wrong one is how [[logs lose their history|log-history]]: each `>` wipes out everything that was already saved.
+
+**Step 2: `tee`, see it and save it.** When you send output into a file with `>`, you no longer see it on screen. Sometimes you want both. `tee` does that. It takes the text coming through a pipe, writes a copy into a file, and passes the same text on to the screen. It is named after a [[T-shaped pipe joint|tee-name]]:
+
+```
+~/project $ sort -u logins.txt | tee users.txt
+ada
+sam
+~/project $ cat users.txt
+ada
+sam
+```
+
+You saw the names, and they were saved in `users.txt` too.
+
+**Step 3: `tee` in the middle of a pipeline.** `tee` passes the text on, so another command can [[come after it|tee-middle]]. Here the list is saved and counted in one line:
+
+```
+~/project $ sort -u logins.txt | tee users.txt | wc -l
+2
+```
+
+`users.txt` gets the names; the screen shows only the count, because `wc -l` got the names next.
+
+**Step 4: `tee -a`, append.** Plain `tee` replaces the file, like `>`. `tee -a` (**a** for **a**ppend) adds to the end instead, like `>>`:
+
+```
+~/project $ echo "run 1" | tee -a runs.txt
+run 1
+~/project $ echo "run 2" | tee -a runs.txt
+run 2
+~/project $ cat runs.txt
+run 1
+run 2
+```
+
+**Watch out:** to add one more line to a file that already holds results, use `>>`. A `>` there would leave only the new line.
+
+::: context log-history Logs that keep everything
+A **log** is a file a program keeps adding lines to, as a diary of what happened. Its value is its history: when something breaks at 3 a.m., engineers read back through the hours before. That is why programs open log files for appending and never overwrite them. In mission control, telemetry and command logs are kept for the whole mission and archived afterwards, because an investigation months later may depend on one line.
+:::
+
+::: context tee-name Named after plumbing
+In plumbing, a **tee** is a T-shaped joint: water comes in one side and leaves by two. The `tee` command does the same with text. One copy flows into the file, the other flows on down the pipe.
+
+```svg
+<svg viewBox="0 0 360 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="50" width="320" height="30" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="160" y="80" width="40" height="45" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="161" y="78" width="38" height="4" fill="#8fb8f0"/>
+  <text x="30" y="40" font-size="12" fill="#1f2a44">text in</text>
+  <text x="330" y="40" font-size="12" text-anchor="end" fill="#1f2a44">on to the screen</text>
+  <text x="180" y="142" font-size="12" text-anchor="middle" fill="#1f2a44">a copy into users.txt</text>
+  <text x="180" y="70" font-size="13" text-anchor="middle" fill="#1f2a44">tee</text>
+</svg>
+```
+:::
+
+::: context tee-middle Watching a long job
+`tee` is handy in the middle of a long pipeline when you want to keep a stage's result for checking later, without stopping the pipeline. Engineers also use it to watch a slow job, such as a build or a test run, on screen while a full copy goes into a file they can search afterwards with `grep`.
+:::
 --- task
-Put each name from `logins.txt` once, sorted, into `users.txt` — and see the list on screen at the same time, using `tee`. Then add the line `checked by you` to the **end** of `users.txt` without losing the names.
+Put each name from `logins.txt` **once**, sorted, into `users.txt`, and see the list on screen at the same time, using `tee`. Then add the line `checked by you` to the **end** of `users.txt` without losing the names.
 --- starter
 echo "sam" > logins.txt
 echo "ada" >> logins.txt
@@ -378,9 +1572,11 @@ echo "ada" >> logins.txt
 sort -u logins.txt | tee users.txt
 echo "checked by you" >> users.txt
 --- hint
-`sort -u logins.txt` gives each name once. Pipe it into `tee users.txt` to save it and see it.
+`sort -u logins.txt` gives each name once, sorted. Pipe it into `tee users.txt` to save it and see it.
 --- hint
-`>>` adds a line to the end; `>` would wipe the names.
+To add the last line, `echo` it with `>>`. A `>` would wipe the names.
+--- hint
+`echo "checked by you" >> users.txt`
 --- check shell | users.txt has each name once, sorted, then your line
 file users.txt ~= ada\nlin\nsam\nchecked by you
 --- check shell | You saw the names as they were saved
@@ -389,24 +1585,85 @@ printed-exactly ada\nlin\nsam
 
 === term2-10 | Problem solving: the busiest visitors
 --- teach
-Here is a real question from a real job: *which addresses are hammering our server?* You have every tool you need. What matters is the approach.
+You now have a full toolbox: `cut`, `sort`, `uniq -c`, `head`, `grep` and `>`. This lesson is about using them on a real problem, the way you would at a job, one step at a time.
 
-1. **Restate the problem.** "Count requests per IP address; show the three biggest counts."
-2. **Look at the data** before writing anything: `head -n 3 access.log`. Every line starts with the address, then a space:
-   ```
-   10.0.0.7 - - [25/Sep/2026:09:10:00] "GET /home" 200
-   ```
-3. **Solve it stage by stage**, checking the output each time:
-   - get just the addresses: `cut -d ' ' -f 1 access.log` (**single quotes** keep text together just as double quotes do, so `' '` is one space character given to `-d`)
-   - bring equal ones together: `| sort`
-   - count each: `| uniq -c`
-   - biggest first: `| sort -rn`
-   - keep three: `| head -n 3`
-4. **Check the answer** against something you can verify another way, like `grep -c "^10.0.0.7 " access.log`.
+The question: *which addresses are sending our server the most requests?* Every computer on a network has an [[IP address|ip-address]], and a web server writes one line to its [[access log|access-log]] for every request it gets. One address making far more requests than the rest might be a broken program, or someone trying to break in.
 
-Think about edge cases too. What if the same address appears in different places in the file — does your pipeline still merge them? (Only if you sort before `uniq`.) What if two addresses tie? Then `sort -rn` puts them next to each other and `head` takes whichever comes first, so say so if it matters.
+**Stage 1: say the problem in your own words.** "Count how many requests came from each address. Show the three biggest counts." Saying it plainly tells you what the answer must look like: three lines, each a count and an address.
+
+**Stage 2: look at the data before writing anything.** Print the first few lines:
+
+```
+~/project $ head -n 3 access.log
+192.168.1.9 - - [25/Sep/2026:09:00:01] "GET /login" 401
+10.0.0.7 - - [25/Sep/2026:09:10:00] "GET /home" 200
+10.0.0.3 - - [25/Sep/2026:09:11:00] "GET /api" 200
+```
+
+Every line starts with the address, then a space. So the address is column 1, and the columns are separated by spaces.
+
+**Stage 3: build the pipeline one command at a time.** Run each version and look at the output before adding the next piece.
+
+1. Get only the addresses:
+
+   ```
+   ~/project $ cut -d ' ' -f 1 access.log | head -n 3
+   192.168.1.9
+   10.0.0.7
+   10.0.0.3
+   ```
+
+   `-d ' '` says the columns are split by a space. [[Single quotes|single-quotes]] keep text together the same way double quotes do, so `' '` hands `-d` one space character. (The `| head -n 3` is only there so you see a few lines while testing.)
+2. Bring equal addresses together: add `| sort`.
+3. Count each run of equal lines: add `| uniq -c`.
+4. Biggest count first: add `| sort -rn`.
+5. Keep three: add `| head -n 3`.
+
+Put together:
+
+```
+cut -d ' ' -f 1 access.log | sort | uniq -c | sort -rn | head -n 3
+```
+
+**Stage 4: check the answer another way.** Pick the top address and count its lines with a different tool:
+
+```
+~/project $ grep -c "^10.0.0.7 " access.log
+```
+
+`^` pins the address to the start of the line, and the space after it stops `10.0.0.7` from also matching an address like `10.0.0.70`. If the number matches the pipeline's count, you can [[trust the answer|verify]].
+
+**Stage 5: think about the [[edge cases|edge-cases]].**
+
+- The same address shows up in many places in the file. Does the pipeline still add them all together? Only because `sort` comes before `uniq`.
+- Two addresses might tie. Then `sort -rn` puts them next to each other and `head` takes whichever comes first. If that matters, say so with your answer.
+
+**Watch out:** do not type the whole pipeline in one go and hope. If the answer is wrong, you will not know which of the five commands broke it. Build it stage by stage.
+
+::: context ip-address Addresses for computers
+An **IP address** is the number that identifies a computer on a network, so messages can find it, like a street address for letters. The common kind is four numbers from 0 to 255 with dots between them, such as `10.0.0.7`. Addresses starting with `10.`, `172.16.` to `172.31.`, and `192.168.` are reserved for private networks inside a home, school or company. Ground stations and spacecraft networks use addresses too.
+:::
+
+::: context access-log One line per request
+A web server's **access log** gets one line for every request: who asked (the IP address), when, what they asked for (`GET /home` means "send me the home page"), and a **status code** saying how it went. `200` means OK, `401` means "you are not allowed in", and `500` means the server itself failed. Lots of `401`s from one address, as in this file, often means a program is guessing passwords.
+:::
+
+::: context single-quotes Single or double quotes?
+Both kinds of quotes keep text together as one argument, which is why `' '` and `" "` both give `cut` a single space. The difference is that inside double quotes the shell still swaps in things like `$HOME`, while inside single quotes nothing is changed at all. For a plain space either works.
+:::
+
+::: context verify Check it a second way
+Checking an answer with a different method is one of the strongest habits in engineering. If two independent routes give the same number, a mistake in one would have to be copied exactly by the other, which is unlikely. Spacecraft navigation teams work this way: important trajectory numbers are often computed by more than one team or program and compared before they are trusted.
+:::
+
+::: context edge-cases The unusual inputs
+An **edge case** is an input at the edge of what you planned for: an empty file, a tie, a line with a missing column, the same value spread all over. Most bugs hide there, because the everyday case is the one you tested. Asking "what could make this go wrong?" before you trust a result is a habit that carries straight into writing software for spacecraft.
+:::
 --- task
-`access.log` has one line per request, a few hundred of them. Print the **three addresses with the most requests**, with their counts, busiest first. Then save the same three lines into `top3.txt`.
+`access.log` has one line per request, a few hundred of them.
+
+1. Print the **three addresses with the most requests**, with their counts, busiest first.
+2. Then save the same three lines into `top3.txt`.
 --- starter
 for i in $(seq 1 12); do echo "192.168.1.9 - - [25/Sep/2026:09:00:0$((i % 10))] \"GET /login\" 401" >> access.log; echo "10.0.0.7 - - [25/Sep/2026:09:10:00] \"GET /home\" 200" >> access.log; echo "10.0.0.3 - - [25/Sep/2026:09:11:00] \"GET /api\" 200" >> access.log; done
 for i in $(seq 1 5); do echo "172.16.0.2 - - [25/Sep/2026:09:20:00] \"GET /about\" 200" >> access.log; done
@@ -419,9 +1676,9 @@ cut -d ' ' -f 1 access.log | sort | uniq -c | sort -rn | head -n 3 > top3.txt
 --- hint
 Start with `cut -d ' ' -f 1 access.log`: the address is the first column, and columns are separated by spaces.
 --- hint
-Then the counting pattern from before: `| sort | uniq -c | sort -rn`.
+Then add the counting pattern from before, one piece at a time: `| sort | uniq -c | sort -rn`.
 --- hint
-Finish with `| head -n 3`, and run the same pipeline again ending in `> top3.txt`.
+Finish with `| head -n 3`. Then run the same pipeline again with `> top3.txt` on the end.
 --- check shell | The three busiest addresses, busiest first
 printed-exactly 40 10.0.0.7\n25 10.0.0.3\n12 192.168.1.9
 --- check shell | Saved in top3.txt
@@ -432,19 +1689,61 @@ used |
 
 === term2-11 | Debugging: the count that lied
 --- teach
-When a pipeline gives a wrong answer, do not stare at the whole line hoping to spot it. Debug it the way you would any program:
+Last lesson you built a pipeline stage by stage and checked the answer. This lesson turns that around: someone else's pipeline gives a **wrong** answer, and you find out why.
 
-1. **Reproduce** it: run the exact command and look at the output.
-2. **Inspect each stage.** Cut the pipeline back to its first command, then add one stage at a time. The stage where the output stops making sense is the stage with the bug.
-3. **Check your assumptions** about what each tool does. Most pipeline bugs are a tool doing exactly what it was designed to do, which is not what you thought.
-4. **Fix the cause, not the symptom.** Adding up the duplicate lines by hand makes this answer right and leaves the pipeline broken for next time.
-5. **Verify** with a number you can check another way, such as `grep -c north sales.csv`.
+When that happens, do not stare at the whole line hoping to spot the problem. A mechanic with a car that will not start does not guess; they test one part at a time. You debug a pipeline the same way, in five steps.
+
+**Step 1: [[reproduce|reproduce]] it.** Run the exact command yourself and look at what it prints. You cannot fix what you have not seen.
+
+**Step 2: inspect each stage.** Cut the pipeline back to its first command. Run it. Then add one stage at a time and run again. The first stage where the output stops making sense is the stage with the bug.
+
+**Step 3: check your [[assumptions|assumptions]].** Ask what each tool really does. Most pipeline bugs are a tool doing exactly what it was built to do, which turns out not to be what you thought.
+
+**Step 4: fix the [[cause, not the symptom|cause-not-symptom]].** Adding up the numbers by hand might make today's answer right, but the pipeline stays broken for next time. Change the pipeline itself.
+
+**Step 5: verify.** Check the fixed answer with a number you can get another way, for example:
+
+```
+~/project $ grep -c north sales.csv
+4
+```
 
 Here is the report from a colleague:
 
 > I count sales per region with `cut -d , -f 2 sales.csv | uniq -c`. It says `north` 1 time, then `north` 1 time again, then 2 times… and there is a line for a region called `region`. There are only three regions.
+
+Running it shows exactly that:
+
+```
+~/project $ cut -d , -f 2 sales.csv | uniq -c
+      1 region
+      1 north
+      1 south
+      1 north
+      1 east
+      1 south
+      2 north
+      1 east
+      1 south
+```
+
+Now run it one stage at a time, starting with `cut -d , -f 2 sales.csv` on its own, and ask of each line: is this what I expected?
+
+**Watch out:** there are two separate bugs here, not one. Fixing the first and stopping is the mistake to avoid; keep checking until the output is right.
+
+::: context reproduce See it happen yourself
+To **reproduce** a bug means to make it happen again on purpose. A bug report is someone's memory of what they saw; running the command yourself shows what really happens, with nothing left out. It also gives you a test: once you have a fix, you run the same command again and check the bug is gone. Space agencies take this so seriously that when something odd happens on a spacecraft, engineers often try to reproduce it on an identical copy of the hardware on the ground before sending any fix.
+:::
+
+::: context assumptions A wrong idea about the tools
+An **assumption** is something you believe without having checked. Here the hidden assumption is about what one of the tools compares each line with; the `sort` and `uniq` lesson earlier in this course has the answer. Wrong assumptions have caused real disasters: NASA's Mars Climate Orbiter was lost in 1999 because one piece of software produced numbers in pound-force seconds while another piece assumed they were in newton seconds.
+:::
+
+::: context cause-not-symptom Symptom versus cause
+A **symptom** is what you notice, like "north appears three times". The **cause** is the reason it happens. Patching the symptom, say by adding up the three north lines in your head, hides the problem until next time, when the data is different and you get a new wrong answer. Fixing the cause means the pipeline is right for any data you feed it.
+:::
 --- task
-Run the broken pipeline to see the problem for yourself. Then write a correct one that saves each region **once**, with its number of sales, **most sales first**, and **without** the header's `region` line, into `region-counts.txt`.
+Run the broken pipeline, `cut -d , -f 2 sales.csv | uniq -c`, to see the problem for yourself. Then write a correct pipeline that saves each region **once**, with its number of sales, **most sales first**, and **without** the header's `region` line, into `region-counts.txt`.
 --- starter
 echo "id,region,amount" > sales.csv
 echo "1,north,20" >> sales.csv
@@ -462,9 +1761,9 @@ tail -n +2 sales.csv | cut -d , -f 2 | sort | uniq -c | sort -rn > region-counts
 --- hint
 Run `cut -d , -f 2 sales.csv` alone. Are all the `north` lines next to each other? What does `uniq` compare each line with?
 --- hint
-`uniq` only merges neighbours, so it needs `sort` in front of it. The `region` line is the header: drop it with `tail -n +2`.
+`uniq` only merges lines that sit next to each other, so it needs `sort` in front of it. The `region` line is the header: drop it with `tail -n +2`.
 --- hint
-Finish with `| sort -rn > region-counts.txt`.
+The fixed pipeline starts `tail -n +2 sales.csv | cut -d , -f 2 | sort | uniq -c` and finishes with `| sort -rn > region-counts.txt`.
 --- check shell | You reproduced the bug first
 printed 1 region
 --- check shell | Each region once, with its total, most sales first
@@ -472,25 +1771,78 @@ file region-counts.txt ~= 4 north\n3 south\n2 east
 
 === term2-12 | Debugging: the file that emptied itself
 --- teach
-Here is a bug report you will one day write yourself:
+Last lesson the bug was in a pipeline. This one is a bug report you will one day write yourself:
 
 > I sorted my list with `sort names.txt > names.txt`. Now `names.txt` is empty.
 
-Nothing is wrong with `sort`. The cause is the **order** things happen in. Before running a command, the shell sets up its redirections, and `>` means "empty this file, then send the output here". So the file is already empty by the time `sort` opens it to read. Sorting nothing gives nothing, and nothing is what gets saved.
-
-The same rule is behind a cousin of this bug: a log written with `>` in each step keeps only its last line, because every `>` wipes what the previous one wrote. That is a job for `>>`.
-
-The safe pattern for changing a file with a command: write the result to a **new** file, check it, then move it into place:
+It really happens:
 
 ```
-sort names.txt > names.sorted
-cat names.sorted
-mv names.sorted names.txt
+~/project $ sort names.txt > names.txt
+~/project $ cat names.txt
+~/project $
 ```
 
-And a debugging habit worth keeping: when you are not sure what a command will do to your data, try it on a **copy** first.
+**Step 1: what went wrong.** Nothing is wrong with `sort`. The cause is the **order** in which things happen. Before the shell starts a command, it [[sets up the redirections first|redirections-first]]. And `>` means "empty this file, then send the output into it". So:
+
+1. The shell empties `names.txt`, getting it ready for the output.
+2. Only then does `sort` start, and it opens `names.txt` to read it. It is already empty.
+3. Sorting nothing gives nothing, and nothing is what gets saved.
+
+**Step 2: the same bug in disguise.** Imagine a script that writes a log with `>` at every step. The log ends up holding only its last line, because every `>` wipes out what the step before it wrote. That is a job for `>>`, which adds to the end.
+
+**Step 3: the safe pattern.** To change a file with a command, write the result to a **new** file, look at it, and only then move it into place with `mv`:
+
+```
+~/project $ sort names.txt > names.sorted
+~/project $ cat names.sorted
+ada
+bo
+cy
+~/project $ mv names.sorted names.txt
+```
+
+(This is on a fresh `names.txt` that still holds its three names.) The `cat` is the "look at it" step: the names are there and in order, so the `mv` is safe.
+
+The new file is sometimes called a [[temporary file|temp-file]]: it exists only for a moment. Until the `mv`, the original is untouched, so if the result looks wrong you have lost nothing.
+
+**Step 4: a habit worth keeping.** When you are not sure what a command will do to your data, try it on a **copy** first. Better still, keep a [[backup|backups]] before you start.
+
+**Watch out:** the input file and the `>` file must never be the same file in one command. If you see the same name on both sides of `>`, stop.
+
+::: context redirections-first Setting up before the command runs
+When you press Enter, the shell does its preparation first: it finds the command, sets up every redirection from left to right, and only then starts the program. `>` is part of that preparation, and it empties its file straight away.
+
+```svg
+<svg viewBox="0 0 360 120" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <line x1="20" y1="60" x2="340" y2="60" stroke="#6c7a93" stroke-width="2"/>
+  <circle cx="60" cy="60" r="8" fill="#b4232c"/>
+  <circle cx="180" cy="60" r="8" fill="#1d6fd1"/>
+  <circle cx="300" cy="60" r="8" fill="#1d6fd1"/>
+  <text x="60" y="36" font-size="12" text-anchor="middle" fill="#b4232c">1. &gt; empties</text>
+  <text x="60" y="90" font-size="12" text-anchor="middle" fill="#1f2a44">names.txt</text>
+  <text x="180" y="36" font-size="12" text-anchor="middle" fill="#1d6fd1">2. sort reads</text>
+  <text x="180" y="90" font-size="12" text-anchor="middle" fill="#1f2a44">an empty file</text>
+  <text x="300" y="36" font-size="12" text-anchor="middle" fill="#1d6fd1">3. saves nothing</text>
+  <text x="300" y="90" font-size="12" text-anchor="middle" fill="#1f2a44">names.txt empty</text>
+</svg>
+```
+
+By the time `sort` reads, the data is already gone.
+:::
+
+::: context temp-file Why go through a temporary file
+Writing to a new file keeps the original safe while the work happens. `mv` then swaps the finished file into place. Within the same folder, `mv` only changes the name, so it happens in one step: there is never a moment when `names.txt` is half-written. Careful software often saves a new version beside the old one and switches over only once the new one is complete and checked. Spacecraft often keep two copies of their flight software for a similar reason: if the new one fails, the old one is still there to fall back on.
+:::
+
+::: context backups A copy you can go back to
+A **backup** is a copy of your data kept somewhere safe, so a mistake is not the end of it. Here `names.bak` saved the day. A common habit before changing an important file is `cp file file.bak`. Missions protect their data the same way: important files are kept in more than one place, so losing one copy does not lose the data.
+:::
 --- task
-`names.txt` has just been emptied by that exact command, but there is a backup in `names.bak`. Put the names back into `names.txt`, **sorted**, safely: through a temporary file and `mv`. Then add the name `zara` to the **end** of `names.txt` without losing the others.
+`names.txt` has been emptied by that exact command, but there is a backup in `names.bak`.
+
+1. Put the names back into `names.txt`, **sorted**, the safe way: sort into a temporary file, then `mv` it into place.
+2. Add the name `zara` to the **end** of `names.txt` without losing the others.
 --- starter
 echo "cy" > names.bak
 echo "ada" >> names.bak
@@ -502,11 +1854,11 @@ sort names.bak > sorted.tmp
 mv sorted.tmp names.txt
 echo "zara" >> names.txt
 --- hint
-`cat names.txt` shows it is empty and `cat names.bak` shows what you can recover.
+`cat names.txt` shows it is empty, and `cat names.bak` shows what you can recover.
 --- hint
 Sort the backup into a new file, `sort names.bak > sorted.tmp`, then `mv sorted.tmp names.txt`.
 --- hint
-Use `>>` for `zara`: `>` would empty the file again.
+Use `>>` for `zara`: `echo "zara" >> names.txt`. A `>` would empty the file again.
 --- check shell | names.txt is sorted and complete, with zara at the end
 file names.txt ~= ada\nbo\ncy\nzara
 --- check shell | You moved a finished file into place and appended with >>
