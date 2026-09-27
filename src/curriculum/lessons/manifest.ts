@@ -3862,6 +3862,35 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_py_07_integration/11-fixed-step-real-time.md"
     }
   ],
+  "cod_py_08_performance": [
+    {
+      "id": "l01-measure-first",
+      "title": "Measure first, then change the code",
+      "minutes": 24,
+      "covers": [
+        "Measure first: timeit, cProfile, pstats, snakeviz, line_profiler, memory_profiler"
+      ],
+      "file": "cod_py_08_performance/01-measure-first.md"
+    },
+    {
+      "id": "l02-complexity-first",
+      "title": "Fix the algorithm before the details",
+      "minutes": 24,
+      "covers": [
+        "Algorithmic complexity before micro-optimisation"
+      ],
+      "file": "cod_py_08_performance/02-complexity-first.md"
+    },
+    {
+      "id": "l03-vectorisation-and-memory",
+      "title": "Vectorise by default, but watch the memory",
+      "minutes": 22,
+      "covers": [
+        "Vectorisation as the default; when it costs more memory than it saves time"
+      ],
+      "file": "cod_py_08_performance/03-vectorisation-and-memory.md"
+    }
+  ],
   "cod_rs_01_basics": [
     {
       "id": "l01-rustup-and-cargo",
@@ -10395,13 +10424,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_08_performance": {
-    "covered": 0,
+    "covered": 3,
     "total": 13,
     "complete": false,
     "missing": [
-      "Measure first: timeit, cProfile, pstats, snakeviz, line_profiler, memory_profiler",
-      "Algorithmic complexity before micro-optimisation",
-      "Vectorisation as the default; when it costs more memory than it saves time",
       "Numba njit: nopython mode, supported subset, cache=True, parallel and prange",
       "Why an njit function can be slower: compile time, object mode fallback, unsupported types",
       "Cython and pybind11; calling a C++ simulation core from a Python harness",
