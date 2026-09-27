@@ -1,7 +1,7 @@
 ---
 id: l10-orbit-accuracy-ric-frame
 title: "Orbit accuracy metrics and covariance in the RIC frame"
-minutes: 20
+minutes: 19
 covers:
   - "Orbit accuracy metrics and covariance in the RIC (radial, in-track, cross-track) frame"
 ---
