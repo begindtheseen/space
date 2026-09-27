@@ -3760,6 +3760,35 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_py_06_testing/12-docstrings-and-doctest.md"
     }
   ],
+  "cod_py_07_integration": [
+    {
+      "id": "l01-initial-value-problem",
+      "title": "The initial value problem and how integration errors pile up",
+      "minutes": 22,
+      "covers": [
+        "The initial value problem and local versus global truncation error"
+      ],
+      "file": "cod_py_07_integration/01-initial-value-problem.md"
+    },
+    {
+      "id": "l02-euler-rk2-rk4",
+      "title": "Euler, RK2 and RK4 by hand, and how to prove their order",
+      "minutes": 17,
+      "covers": [
+        "Euler, RK2, classic RK4 implemented by hand; order verification by step halving"
+      ],
+      "file": "cod_py_07_integration/02-euler-rk2-rk4.md"
+    },
+    {
+      "id": "l03-adaptive-step-size",
+      "title": "Embedded pairs and step sizes that choose themselves",
+      "minutes": 19,
+      "covers": [
+        "Embedded pairs and adaptive step size control"
+      ],
+      "file": "cod_py_07_integration/03-adaptive-step-size.md"
+    }
+  ],
   "cod_rs_01_basics": [
     {
       "id": "l01-rustup-and-cargo",
@@ -10287,13 +10316,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_07_integration": {
-    "covered": 0,
+    "covered": 3,
     "total": 12,
     "complete": false,
     "missing": [
-      "The initial value problem and local versus global truncation error",
-      "Euler, RK2, classic RK4 implemented by hand; order verification by step halving",
-      "Embedded pairs and adaptive step size control",
       "solve_ivp methods: RK45, RK23, DOP853, Radau, BDF, LSODA",
       "rtol and atol: what each controls and how to choose them from the state magnitudes",
       "t_eval versus dense_output",
