@@ -2659,6 +2659,232 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_lnx_02_scripting/14-when-to-stop-writing-bash.md"
     }
   ],
+  "cod_mat_01_core": [
+    {
+      "id": "l01-the-matlab-desktop",
+      "title": "The MATLAB desktop",
+      "minutes": 21,
+      "covers": [
+        "The desktop, Command Window, Workspace, Editor and Live Editor"
+      ],
+      "file": "cod_mat_01_core/01-the-matlab-desktop.md"
+    },
+    {
+      "id": "l02-everything-is-a-matrix",
+      "title": "Everything is a matrix",
+      "minutes": 22,
+      "covers": [
+        "Everything is a matrix; the colon operator, linspace, zeros, ones, eye",
+        "Concatenation, reshape, size, length, numel"
+      ],
+      "file": "cod_mat_01_core/02-everything-is-a-matrix.md"
+    },
+    {
+      "id": "l03-indexing",
+      "title": "Reaching inside a matrix",
+      "minutes": 19,
+      "covers": [
+        "One-based indexing, end, logical indexing, find"
+      ],
+      "file": "cod_mat_01_core/03-indexing.md"
+    },
+    {
+      "id": "l04-element-wise-versus-matrix",
+      "title": "Element-wise versus matrix operations",
+      "minutes": 21,
+      "covers": [
+        "Element-wise .* ./ .^ versus matrix * / ^ (the single most common beginner error)"
+      ],
+      "file": "cod_mat_01_core/04-element-wise-versus-matrix.md"
+    },
+    {
+      "id": "l05-backslash-and-linear-systems",
+      "title": "Backslash and linear systems",
+      "minutes": 21,
+      "covers": [
+        "Backslash mldivide and why A\\b beats inv(A)*b"
+      ],
+      "file": "cod_mat_01_core/05-backslash-and-linear-systems.md"
+    },
+    {
+      "id": "l06-control-flow-and-preallocation",
+      "title": "Control flow and preallocation",
+      "minutes": 20,
+      "covers": [
+        "Control flow: if, switch, for, while, break, continue",
+        "Preallocation and why growing an array in a loop is fatal"
+      ],
+      "file": "cod_mat_01_core/06-control-flow-and-preallocation.md"
+    },
+    {
+      "id": "l07-structs-cells-tables-strings",
+      "title": "Structs, cells, tables and text",
+      "minutes": 20,
+      "covers": [
+        "struct, cell, table, categorical, string versus char"
+      ],
+      "file": "cod_mat_01_core/07-structs-cells-tables-strings.md"
+    },
+    {
+      "id": "l08-printing-and-files",
+      "title": "Printing, saving and loading",
+      "minutes": 21,
+      "covers": [
+        "fprintf, sprintf, disp; save/load and .mat files; readtable and writetable"
+      ],
+      "file": "cod_mat_01_core/08-printing-and-files.md"
+    },
+    {
+      "id": "l09-scripts-functions-workspaces",
+      "title": "Scripts, functions and workspaces",
+      "minutes": 18,
+      "covers": [
+        "Scripts versus functions and the base workspace: a classic interview question"
+      ],
+      "file": "cod_mat_01_core/09-scripts-functions-workspaces.md"
+    },
+    {
+      "id": "l10-function-handles-and-closures",
+      "title": "Local, nested and anonymous functions, and function handles",
+      "minutes": 21,
+      "covers": [
+        "Local, nested and anonymous functions; function handles; closures"
+      ],
+      "file": "cod_mat_01_core/10-function-handles-and-closures.md"
+    },
+    {
+      "id": "l11-validating-inputs",
+      "title": "Checking what goes into a function",
+      "minutes": 23,
+      "covers": [
+        "nargin, nargout, varargin; arguments blocks and validateattributes"
+      ],
+      "file": "cod_mat_01_core/11-validating-inputs.md"
+    },
+    {
+      "id": "l12-classdef-handle-and-value",
+      "title": "Classes in MATLAB, and handle versus value",
+      "minutes": 20,
+      "covers": [
+        "MATLAB OOP: classdef, handle versus value semantics"
+      ],
+      "file": "cod_mat_01_core/12-classdef-handle-and-value.md"
+    },
+    {
+      "id": "l13-profiling-and-speed",
+      "title": "Profiling and making code fast",
+      "minutes": 22,
+      "covers": [
+        "The Profiler, tic/toc, vectorisation, parfor",
+        "Preallocation and why growing an array in a loop is fatal"
+      ],
+      "file": "cod_mat_01_core/13-profiling-and-speed.md"
+    },
+    {
+      "id": "l14-plotting-and-timetables",
+      "title": "Plotting flight data and lining up time",
+      "minutes": 24,
+      "covers": [
+        "Plotting: plot, tiledlayout, yyaxis, semilogx, exportgraphics",
+        "timetable, synchronize and retime as the merge_asof equivalent"
+      ],
+      "file": "cod_mat_01_core/14-plotting-and-timetables.md"
+    }
+  ],
+  "cod_mat_02_gnc_toolboxes": [
+    {
+      "id": "l01-lti-models",
+      "title": "Describing a system to MATLAB with tf, zpk, ss and frd",
+      "minutes": 22,
+      "covers": [
+        "tf, zpk, ss, frd; series, parallel, feedback, connect, sumblk"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/01-lti-models.md"
+    },
+    {
+      "id": "l02-time-responses",
+      "title": "Watching a system respond with step, impulse, lsim, initial and stepinfo",
+      "minutes": 19,
+      "covers": [
+        "step, impulse, lsim, initial, stepinfo"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/02-time-responses.md"
+    },
+    {
+      "id": "l03-poles-zeros-root-locus",
+      "title": "Poles, zeros and the root locus with pole, zero, damp, pzmap and rlocus",
+      "minutes": 22,
+      "covers": [
+        "rlocus, pzmap, damp, pole, zero"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/03-poles-zeros-root-locus.md"
+    },
+    {
+      "id": "l04-frequency-response-and-margins",
+      "title": "Frequency response, Bode plots and stability margins",
+      "minutes": 24,
+      "covers": [
+        "bode, nyquist, nichols, margin, allmargin, sigma"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/04-frequency-response-and-margins.md"
+    },
+    {
+      "id": "l05-discretisation",
+      "title": "Discretisation: c2d, d2c, zoh and tustin",
+      "minutes": 16,
+      "covers": [
+        "c2d and d2c with zoh, tustin and prewarp; c2dOptions"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/05-discretisation.md"
+    },
+    {
+      "id": "l06-state-space-design",
+      "title": "State-space design: place, lqr and kalman",
+      "minutes": 20,
+      "covers": [
+        "ctrb, obsv, gram; place, acker; lqr, dlqr, lqi; kalman, lqg"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/06-state-space-design.md"
+    },
+    {
+      "id": "l07-model-reduction-and-pid-tuning",
+      "title": "Shrinking models and tuning PID controllers",
+      "minutes": 23,
+      "covers": [
+        "minreal, balred, modred for model reduction",
+        "Control System Designer and PID Tuner; pidtune"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/07-model-reduction-and-pid-tuning.md"
+    },
+    {
+      "id": "l08-gain-scheduling",
+      "title": "Gain scheduling across a flight envelope",
+      "minutes": 24,
+      "covers": [
+        "Gain scheduling across a flight envelope; arrays of LTI models"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/08-gain-scheduling.md"
+    },
+    {
+      "id": "l09-aerospace-frames",
+      "title": "Aerospace frames: ECI, ECEF, NED, ENU, body, wind, stability",
+      "minutes": 25,
+      "covers": [
+        "Aerospace frames: ECI, ECEF, NED, ENU, body, wind, stability"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/09-aerospace-frames.md"
+    },
+    {
+      "id": "l10-rotations-and-quaternion-convention",
+      "title": "Rotations, quaternions and the scalar-first trap",
+      "minutes": 22,
+      "covers": [
+        "dcm2angle, angle2dcm, dcm2quat, quat2dcm, quatmultiply, quatrotate",
+        "The scalar-first quaternion convention in MathWorks Aerospace products"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/10-rotations-and-quaternion-convention.md"
+    }
+  ],
   "cod_py_01_basics": [
     {
       "id": "l01-interpreter-repl-and-scripts",
@@ -3108,6 +3334,17 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Downsampling for plotting without hiding transients (min/max decimation)"
       ],
       "file": "cod_py_05_plotting/12-decimation-for-plotting.md"
+    }
+  ],
+  "cod_slk_01_models": [
+    {
+      "id": "l01-the-simulink-editor",
+      "title": "The Simulink Editor, the Library Browser and block search",
+      "minutes": 18,
+      "covers": [
+        "The Simulink Editor, Library Browser and block search"
+      ],
+      "file": "cod_slk_01_models/01-the-simulink-editor.md"
     }
   ],
   "cod_sql_01_select": [
@@ -9613,46 +9850,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_mat_01_core": {
-    "covered": 0,
+    "covered": 17,
     "total": 17,
-    "complete": false,
-    "missing": [
-      "The desktop, Command Window, Workspace, Editor and Live Editor",
-      "Everything is a matrix; the colon operator, linspace, zeros, ones, eye",
-      "One-based indexing, end, logical indexing, find",
-      "Element-wise .* ./ .^ versus matrix * / ^ (the single most common beginner error)",
-      "Backslash mldivide and why A\\b beats inv(A)*b",
-      "Concatenation, reshape, size, length, numel",
-      "struct, cell, table, categorical, string versus char",
-      "Control flow: if, switch, for, while, break, continue",
-      "Preallocation and why growing an array in a loop is fatal",
-      "fprintf, sprintf, disp; save/load and .mat files; readtable and writetable",
-      "Scripts versus functions and the base workspace: a classic interview question",
-      "Local, nested and anonymous functions; function handles; closures",
-      "nargin, nargout, varargin; arguments blocks and validateattributes",
-      "MATLAB OOP: classdef, handle versus value semantics",
-      "The Profiler, tic/toc, vectorisation, parfor",
-      "Plotting: plot, tiledlayout, yyaxis, semilogx, exportgraphics",
-      "timetable, synchronize and retime as the merge_asof equivalent"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_mat_02_gnc_toolboxes": {
-    "covered": 0,
+    "covered": 12,
     "total": 17,
     "complete": false,
     "missing": [
-      "tf, zpk, ss, frd; series, parallel, feedback, connect, sumblk",
-      "step, impulse, lsim, initial, stepinfo",
-      "bode, nyquist, nichols, margin, allmargin, sigma",
-      "rlocus, pzmap, damp, pole, zero",
-      "c2d and d2c with zoh, tustin and prewarp; c2dOptions",
-      "ctrb, obsv, gram; place, acker; lqr, dlqr, lqi; kalman, lqg",
-      "minreal, balred, modred for model reduction",
-      "Control System Designer and PID Tuner; pidtune",
-      "Gain scheduling across a flight envelope; arrays of LTI models",
-      "Aerospace frames: ECI, ECEF, NED, ENU, body, wind, stability",
-      "dcm2angle, angle2dcm, dcm2quat, quat2dcm, quatmultiply, quatrotate",
-      "The scalar-first quaternion convention in MathWorks Aerospace products",
       "Atmosphere models: atmosisa, atmoscoesa (valid to 86 km), atmosnrlmsise00",
       "Gravity and magnetic models: gravitywgs84, gravitysphericalharmonic, wrldmagm",
       "Dryden and von Karman turbulence; wind shear",
@@ -9661,11 +9868,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_slk_01_models": {
-    "covered": 0,
+    "covered": 1,
     "total": 14,
     "complete": false,
     "missing": [
-      "The Simulink Editor, Library Browser and block search",
       "Signals and lines; Constant, Gain, Sum, Product, Integrator",
       "Why the Derivative block is a trap in a feedback loop",
       "Transfer Fcn and State-Space blocks",
