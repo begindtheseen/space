@@ -1443,32 +1443,177 @@ CREATE TABLE members (
 );
 INSERT INTO members (id, name, email) VALUES (1, 'Ana', 'ana@mail.com'), (2, 'Bo', 'bo@mail.com'), (3, 'Cy', 'cy@mail.com');
 --- teach
-**Project three: a library.** Four lessons: the schema, availability, overdue fines, and returns that charge fines by themselves. The town's membership list already exists as `members` (`id`, `name`, `email`). You design the rest.
+Last lesson you finished the analytics project by measuring who comes back. **Project three is a library.** It has four lessons: the schema, what can be borrowed right now, overdue fines, and returns that charge fines by themselves. Like "Store 1: the schema", this first lesson designs the tables and writes the library's rules into them.
 
-The first modelling decision is the classic one: a **book** is not a **copy**. "Dune" is one book with an ISBN, a title and an author; the library owns three physical copies of it, each with its own barcode. You lend copies, not books. Get this wrong — a `books` table with a `quantity` column — and you cannot say *which* copy is overdue or damaged.
+### The table you start with
+
+The town's membership list already exists as `members`:
+
+| id | name | email |
+| --- | --- | --- |
+| 1 | Ana | ana@mail.com |
+| 2 | Bo | bo@mail.com |
+| 3 | Cy | cy@mail.com |
+
+You design everything else.
+
+### A book is not a copy
+
+Walk into a library and ask for *Dune*. The catalogue has one entry for it: the title, the author, the [[ISBN|isbn]]. On the shelf there may be three physical *Dune*s, each with its own barcode sticker. One is out with a member, one is on the shelf, one has coffee spilled on page 40.
+
+So there are two different things here:
+
+- A **book** is the title as a whole: one row for *Dune*, however many copies there are.
+- A **copy** is one physical item you can hold, with its own barcode.
+
+You lend copies, not books. This is the first [[modelling decision|type-and-instance]] of the project, and a classic one. Get it wrong, with a single `books` table and a `quantity` column, and you cannot say *which* copy is overdue or damaged. "Two of three are out" does not tell you who has which.
+
+### Three new tables
 
 - `books` — the title: ISBN (unique), title, author
-- `copies` — a physical item: which book, its barcode (unique)
-- `loans` — one lending: which copy, which member, when lent, when due, when returned (NULL while out)
+- `copies` — one physical item: which book it is, and its barcode (unique)
+- `loans` — one lending: which copy, which member, when it was lent, when it is due, when it came back
 
-Now the rules, as constraints wherever the database can hold them:
+A copy points at its book. A loan points at a copy and at a member. Those pointers are foreign keys, from the lesson "Foreign keys", so remember that SQLite only checks them after `PRAGMA foreign_keys = ON;`.
 
-- A loan is due **after** it starts: `CHECK (due_on > loaned_on)`.
-- It cannot be returned before it was lent: `CHECK (returned_on IS NULL OR returned_on >= loaned_on)`.
-- **A copy can be out on only one loan at a time.** This is the interesting one. A plain `UNIQUE (copy_id)` would allow only one loan per copy *ever*. What you want is "unique among the loans that are still open" — a **partial index**:
+A loan that is still out has no return date yet. So `returned_on` is **NULL while the copy is out**, and gets a date when it comes back. That one NULL is what the rest of this project leans on.
+
+### Dates stored as text
+
+The three dates are text like `'2024-07-15'`: year, month, day. As you saw in "Date arithmetic and date ranges", text in this shape sorts in time order. So `>` ("greater than") between two of these dates means "later than", and a rule can compare them.
+
+### Rule 1: due after it starts
+
+A loan must be due *after* the day it was lent:
+
+```sql
+CHECK (due_on > loaned_on)
+```
+
+This rule looks at two columns of the same row, so it goes at the end of the table, after the last column, as in "Constraints: rules the database enforces". A loan lent on 10 July and due on 1 July is refused with `CHECK constraint failed: due_on > loaned_on`.
+
+### Rule 2: not returned before it was lent
+
+```sql
+CHECK (returned_on IS NULL OR returned_on >= loaned_on)
+```
+
+Read it in words: "either it has not come back yet, or it came back on or after the day it was lent". `OR` means at least one side must be true, and `>=` means "on or after". A loan lent on 10 July and returned on 9 July is refused. An open loan, with `returned_on` NULL, passes by the first half. [[The IS NULL half|is-null-or]] says that out loud.
+
+### Rule 3: one open loan per copy
+
+This is the interesting one. A copy cannot be in two people's bags at once, so it can be out on only one loan at a time.
+
+A first try is `UNIQUE (copy_id)` at the end of `loans`. But that allows one loan per copy *ever*. The second time anybody borrows copy D-1, even long after it came back, the insert is refused. The library needs every old loan kept as [[history|loan-history]].
+
+What you want is "unique among the loans that are still out".
+
+### A partial index
+
+In "Deduplicating: keep the latest row" you met a **unique index**: `CREATE UNIQUE INDEX` builds an index and refuses two rows with the same value in it. Add a `WHERE` to it and you get a **partial index**: an index that holds only the rows matching its condition.
 
 ```sql
 CREATE UNIQUE INDEX one_open_loan_per_copy ON loans(copy_id) WHERE returned_on IS NULL;
 ```
 
-Only rows matching the `WHERE` go into the index, so uniqueness applies to open loans alone. Closed loans pile up freely as history.
---- task
-Turn foreign keys on and create:
+- `CREATE UNIQUE INDEX one_open_loan_per_copy` makes a unique index with that name.
+- `ON loans(copy_id)` says it indexes the `copy_id` column of `loans`.
+- `WHERE returned_on IS NULL` says only open loans go into it.
 
-- `books` — `id` integer primary key; `isbn` text, required, unique; `title` and `author` text, required
-- `copies` — `id` integer primary key; `book_id` required, referencing `books(id)`; `barcode` text, required, unique
-- `loans` — `id` integer primary key; `copy_id` required, referencing `copies(id)`; `member_id` required, referencing `members(id)`; `loaned_on` and `due_on` text, required, with the due date after the loan date; `returned_on` text, NULL while out, never before the loan date
-- a unique partial index named `one_open_loan_per_copy` so a copy can have only one open loan at a time
+Only [[the rows inside the index are compared|partial-picture]], so the uniqueness applies to open loans alone. Closed loans pile up freely as history.
+
+### The rules at work
+
+Say the library has *Dune* with copies 1 (D-1) and 2 (D-2), and copy 1 goes out to Ana: loan 1, lent on 1 July, due on 15 July. Now try these, one after another:
+
+| you try | what happens |
+| --- | --- |
+| lend copy 1 to Bo on 2 July | refused: `UNIQUE constraint failed: loans.copy_id` |
+| set loan 1's `returned_on` to 5 July | accepted, and loan 1 leaves the index |
+| lend copy 1 to Bo on 6 July | accepted: it is now copy 1's only open loan |
+| lend copy 9, which does not exist | refused: `FOREIGN KEY constraint failed` |
+| a second book with Dune's ISBN | refused: `UNIQUE constraint failed: books.isbn` |
+
+**Watch out:** write `WHERE returned_on IS NULL`, never `WHERE returned_on = NULL`. Anything compared with `= NULL` is unknown, not true, so that index holds no rows at all. SQLite creates it without an error, and then it refuses nothing: two open loans for the same copy go straight in.
+
+::: context isbn The number on the back of a book
+An **ISBN**, International Standard Book Number, names one edition of a book. Since 2007 it has 13 digits, and it is printed as the barcode on the back cover. Every copy of the same paperback *Dune* carries the same ISBN, 9780441013593, so it belongs on `books`. The library's own barcode sticker is different: the library prints one per copy, so it belongs on `copies`. Store the ISBN as text, not as a number. You never do arithmetic with it, and the older 10-digit form can start with a 0 or end in the letter X.
+:::
+
+::: context type-and-instance Part numbers and serial numbers
+Engineers call this **type** versus **instance**: the design of a thing versus one real thing built to it. Aerospace lives by it. A *part number* names a design, such as a valve, and every identical valve shares it. A *serial number* names one physical valve, with its own test records and hours of use. If one valve fails an inspection, you ground that serial number, not every valve ever made. Books and copies are the same split.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1d6fd1"/>
+    </marker>
+  </defs>
+  <text x="85" y="40" font-size="11" fill="#6c7a93" text-anchor="middle">books: one row</text>
+  <rect x="20" y="52" width="130" height="46" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="85" y="71" font-size="12" fill="#1f2a44" text-anchor="middle">book 1: Dune</text>
+  <text x="85" y="88" font-size="11" fill="#1f2a44" text-anchor="middle">one ISBN</text>
+  <text x="280" y="14" font-size="11" fill="#6c7a93" text-anchor="middle">copies: three rows</text>
+  <rect x="220" y="22" width="120" height="26" fill="#fff" stroke="#1f2a44"/>
+  <text x="280" y="39" font-size="12" fill="#1f2a44" text-anchor="middle">copy 1 · D-1</text>
+  <rect x="220" y="62" width="120" height="26" fill="#fff" stroke="#1f2a44"/>
+  <text x="280" y="79" font-size="12" fill="#1f2a44" text-anchor="middle">copy 2 · D-2</text>
+  <rect x="220" y="102" width="120" height="26" fill="#fff" stroke="#1f2a44"/>
+  <text x="280" y="119" font-size="12" fill="#1f2a44" text-anchor="middle">copy 3 · D-3</text>
+  <line x1="220" y1="35" x2="152" y2="68" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#ar)"/>
+  <line x1="220" y1="75" x2="152" y2="75" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#ar)"/>
+  <line x1="220" y1="115" x2="152" y2="82" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="180" y="152" font-size="11" fill="#6c7a93" text-anchor="middle">each copy's book_id points back to the one book</text>
+</svg>
+```
+:::
+
+::: context is-null-or Saying the NULL case out loud
+Strictly, `CHECK (returned_on >= loaned_on)` alone would behave the same. In "Constraints: rules the database enforces" you saw that a `CHECK` only refuses a row when its condition is false. With `returned_on` NULL the comparison gives NULL, not false, so the open loan gets in anyway. Writing `returned_on IS NULL OR` spells out that an open loan is fine on purpose. The next person who reads the table does not have to remember how NULL behaves inside a `CHECK` to trust the rule.
+:::
+
+::: context loan-history Why old loans are kept
+When a copy comes back, the loan is not deleted: it gets a `returned_on` date and stays. Those old rows answer real questions. Who had this copy before the page was torn? Which books are borrowed most, so the library buys more copies? How many loans ran late last year? Deleting them would throw that away. Some libraries do strip the member's name from old loans after a while, to protect readers' privacy, but they keep the loan itself for the counts. Mission logs work the same way: you add new rows and never overwrite the old ones.
+:::
+
+::: context partial-picture Only open loans go in
+Here copy 1 has two loans: loan 1, already back, and loan 3, still out. Only loan 3 and loan 2 are inside the index, so copy 1 appears there once. A new open loan for copy 1 would be a second copy 1 inside the index, and the index refuses it. A partial index is also smaller than a full one, and a query whose `WHERE` repeats the condition, such as `WHERE returned_on IS NULL`, can use it to find the open loans fast.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="pi" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1d6fd1"/>
+    </marker>
+  </defs>
+  <text x="105" y="26" font-size="11" fill="#6c7a93" text-anchor="middle">loans (every row)</text>
+  <text x="295" y="26" font-size="11" fill="#6c7a93" text-anchor="middle">index: open only</text>
+  <rect x="10" y="36" width="190" height="24" fill="#fff" stroke="#6c7a93"/>
+  <text x="105" y="52" font-size="11" fill="#6c7a93" text-anchor="middle">loan 1 · copy 1 · back 5 July</text>
+  <rect x="10" y="66" width="190" height="24" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="105" y="82" font-size="11" fill="#1f2a44" text-anchor="middle">loan 3 · copy 1 · out</text>
+  <rect x="10" y="96" width="190" height="24" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="105" y="112" font-size="11" fill="#1f2a44" text-anchor="middle">loan 2 · copy 2 · out</text>
+  <rect x="240" y="66" width="110" height="24" fill="#fff" stroke="#1f2a44"/>
+  <text x="295" y="82" font-size="11" fill="#1f2a44" text-anchor="middle">copy 1 → loan 3</text>
+  <rect x="240" y="96" width="110" height="24" fill="#fff" stroke="#1f2a44"/>
+  <text x="295" y="112" font-size="11" fill="#1f2a44" text-anchor="middle">copy 2 → loan 2</text>
+  <line x1="200" y1="78" x2="238" y2="78" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#pi)"/>
+  <line x1="200" y1="108" x2="238" y2="108" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#pi)"/>
+  <text x="295" y="52" font-size="11" fill="#b4232c" text-anchor="middle">loan 1: left out</text>
+  <text x="180" y="148" font-size="11" fill="#6c7a93" text-anchor="middle">a second open loan for copy 1 would clash inside the index</text>
+</svg>
+```
+:::
+--- task
+Build the library's schema. The starter already does steps 1 and 2.
+
+1. Turn foreign key enforcement on with `PRAGMA foreign_keys = ON;`.
+2. Create `books`: `id` integer primary key; `isbn` text, required, unique; `title` and `author` text, required.
+3. Create `copies`: `id` integer primary key; `book_id` required, referencing `books(id)`; `barcode` text, required, unique.
+4. Create `loans`: `id` integer primary key; `copy_id` required, referencing `copies(id)`; `member_id` required, referencing `members(id)`; `loaned_on` and `due_on` text, required; `returned_on` text, left NULL while the copy is out. Add two rules at the end: the due date is after the loan date, and `returned_on` is either NULL or on or after the loan date.
+5. Create a unique partial index named `one_open_loan_per_copy` on `loans(copy_id)`, holding only the loans that are still out, so a copy can have only one open loan at a time.
 --- starter
 PRAGMA foreign_keys = ON;
 
@@ -1504,9 +1649,11 @@ CREATE TABLE loans (
 );
 CREATE UNIQUE INDEX one_open_loan_per_copy ON loans(copy_id) WHERE returned_on IS NULL;
 --- hint
-Two `CHECK`s at the end of `loans`: `CHECK (due_on > loaned_on)` and `CHECK (returned_on IS NULL OR returned_on >= loaned_on)`.
+`copies` is built like `books`: an `id INTEGER PRIMARY KEY`, then `book_id INTEGER NOT NULL REFERENCES books(id)` and `barcode TEXT NOT NULL UNIQUE`. `loans` follows the same pattern, with two foreign keys.
 --- hint
-The one-open-loan rule is `CREATE UNIQUE INDEX one_open_loan_per_copy ON loans(copy_id) WHERE returned_on IS NULL;`
+Two `CHECK`s go at the end of `loans`, after `returned_on TEXT`: `CHECK (due_on > loaned_on)` and `CHECK (returned_on IS NULL OR returned_on >= loaned_on)`.
+--- hint
+The one-open-loan rule is its own statement after the tables: `CREATE UNIQUE INDEX one_open_loan_per_copy ON loans(copy_id) WHERE returned_on IS NULL;`
 --- check query | Books, copies and a loan can be stored
 INSERT INTO books (id, isbn, title, author) VALUES (1, '9780441013593', 'Dune', 'Frank Herbert');
 INSERT INTO copies (id, book_id, barcode) VALUES (1, 1, 'D-1'), (2, 1, 'D-2');
@@ -1574,19 +1721,186 @@ INSERT INTO loans (id, copy_id, member_id, loaned_on, due_on, returned_on) VALUE
   (5, 5, 2, '2024-05-01', '2024-05-15', '2024-05-30'),
   (6, 6, 1, '2024-04-01', '2024-04-15', NULL);
 --- teach
-The library's tables are here with real data: four books, six copies, three members and six loans. *Kindred* has just been catalogued and has no copies yet.
+Last lesson you designed the library's tables and wrote its rules into them. Now those tables hold real data, and you answer the question everyone at a library asks: can I borrow this book?
 
-The question the front desk and the website both ask: **for each book, how many copies are there, how many are out, and how many can be borrowed right now?** Put it in a view, `book_availability`, so the desk, the website and the weekly report all share one definition of "available".
+### The tables
 
-A copy is **out** when it has a loan with `returned_on IS NULL` — thanks to last lesson's partial index, at most one. Build it in the order of the tables:
+These are the four tables from "Library 1: the schema": `members`, `books`, `copies` and `loans`. There are three members, four books, six copies and six loans. Here are the books with their copies:
 
-- start **from `books`**, so a book with no copies still appears (with 0 everywhere, not missing);
-- LEFT JOIN `copies`;
-- LEFT JOIN `loans` **on the copy and `returned_on IS NULL`** — the open-loan condition belongs in the `ON`, or every copy that was ever returned would be counted in odd ways, and copies with no loans would drop out.
+| book id | title | copies (id and barcode) |
+| --- | --- | --- |
+| 1 | Dune | 1 D-1, 2 D-2, 3 D-3 |
+| 2 | Emma | 4 E-1 |
+| 3 | Ubik | 5 U-1, 6 U-2 |
+| 4 | Kindred | none yet |
 
-Then count: `COUNT(c.id)` copies, `COUNT(l.id)` open loans, and available is the difference. Because each copy has at most one open loan, this join cannot fan out — the constraint you designed is what makes this query correct.
+*Kindred* has only now been [[catalogued|catalogue]] and has no copies yet. And here are the loans:
+
+| id | copy_id | member_id | loaned_on | due_on | returned_on |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 1 | 1 | 2024-06-01 | 2024-06-15 | 2024-06-14 |
+| 2 | 2 | 2 | 2024-06-20 | 2024-07-04 | NULL |
+| 3 | 1 | 3 | 2024-06-25 | 2024-07-09 | NULL |
+| 4 | 4 | 1 | 2024-07-01 | 2024-07-15 | NULL |
+| 5 | 5 | 2 | 2024-05-01 | 2024-05-15 | 2024-05-30 |
+| 6 | 6 | 1 | 2024-04-01 | 2024-04-15 | NULL |
+
+### The question
+
+The front desk and the website both ask the same thing: **for each book, how many copies are there, how many are out, and how many can be borrowed right now?**
+
+Put the answer in a view named `book_availability`, as in "Views: saved queries". Then the desk, the website and the weekly report all use [[one definition of "available"|one-definition]].
+
+### When is a copy out?
+
+A copy is **out** when it has an **open loan**: a loan with `returned_on IS NULL`. Thanks to last lesson's partial index, a copy has at most one.
+
+```sql
+SELECT id, copy_id FROM loans WHERE returned_on IS NULL ORDER BY id;
+```
+
+| id | copy_id |
+| --- | --- |
+| 2 | 2 |
+| 3 | 1 |
+| 4 | 4 |
+| 6 | 6 |
+
+Copy 1 (D-1) has been lent twice. Loan 1 is closed, and loan 3 is the open one.
+
+### Step 1: start from books
+
+Build the query in the order of the tables. Start **from `books`**, then `LEFT JOIN` copies. As in "LEFT JOIN and NULL", every book stays, and a book with no copies gets NULLs on the copy side instead of disappearing:
+
+```sql
+SELECT b.title, c.barcode
+FROM books b
+LEFT JOIN copies c ON c.book_id = b.id;
+```
+
+| title | barcode |
+| --- | --- |
+| Dune | D-1 |
+| Dune | D-2 |
+| Dune | D-3 |
+| Emma | E-1 |
+| Ubik | U-1 |
+| Ubik | U-2 |
+| Kindred | NULL |
+
+### Step 2: join only the open loans
+
+Next, `LEFT JOIN` loans, with the open-loan condition **inside the `ON`**, joined with `AND`:
+
+```sql
+SELECT b.title, c.barcode, l.id AS loan_id
+FROM books b
+LEFT JOIN copies c ON c.book_id = b.id
+LEFT JOIN loans l  ON l.copy_id = c.id AND l.returned_on IS NULL;
+```
+
+| title | barcode | loan_id |
+| --- | --- | --- |
+| Dune | D-1 | 3 |
+| Dune | D-2 | 2 |
+| Dune | D-3 | NULL |
+| Emma | E-1 | 4 |
+| Ubik | U-1 | NULL |
+| Ubik | U-2 | 6 |
+| Kindred | NULL | NULL |
+
+Still one row per copy. Each copy shows its open loan, or NULL when it is on the shelf.
+
+### Why the condition belongs in ON
+
+This is the rule from "LEFT JOIN: where the filter goes": a condition about the right-hand table goes in its `ON`. Here are the counts you get the other two ways:
+
+| where `l.returned_on IS NULL` goes | Dune: copies, on loan | Ubik: copies, on loan |
+| --- | --- | --- |
+| in the `ON` (right) | 3, 2 | 2, 1 |
+| in the `WHERE` | 3, 2 | 1, 1 |
+| left out | 4, 3 | 2, 2 |
+
+Put it in `WHERE` instead, and U-1 disappears. Its only loan came back, so its joined row has a date in `returned_on`, and the `WHERE` throws the whole row away. Ubik then shows 1 copy instead of 2.
+
+Leave the condition out, and D-1 matches both of its loans, the closed one and the open one. It becomes two rows. Dune then shows 4 copies and 3 on loan. That is [[fan-out|at-most-one]], from "Debugging: the join that double-counts".
+
+### Step 3: count
+
+Now group by book and count:
+
+- `COUNT(c.id)` counts the copies. `COUNT(column)` skips NULLs, so Kindred gets 0.
+- `COUNT(l.id)` counts the open loans.
+- `available` is the difference: `COUNT(c.id) - COUNT(l.id)`.
+
+The finished view gives:
+
+| book_id | title | copies | on_loan | available |
+| --- | --- | --- | --- | --- |
+| 1 | Dune | 3 | 2 | 1 |
+| 2 | Emma | 1 | 1 | 0 |
+| 3 | Ubik | 2 | 1 | 1 |
+| 4 | Kindred | 0 | 0 | 0 |
+
+### The rule that makes it correct
+
+Because each copy has at most one open loan, this join cannot fan out: one copy never turns into two rows. The partial index you designed last lesson is what makes this query correct. And because a view runs again every time you use it, the numbers are [[always up to date|always-fresh]]: the moment a copy comes back, it counts as available.
+
+**Watch out:** do not count with `COUNT(*)`. Kindred has no copies, but it still has one joined row full of NULLs, and `COUNT(*)` counts that row, so Kindred would show 1 copy. Count `c.id` and `l.id`.
+
+::: context catalogue What "catalogued" means
+A library's **catalogue** is its list of every title it holds, with the author, ISBN and subject, so people can search it. To **catalogue** a book is to add its entry to that list. That often happens before the physical copies arrive, or while they are still being labelled, which is exactly why *Kindred* has a row in `books` and none in `copies`. A good report shows it with 0 copies rather than leaving it out. A missing row reads as "we have never heard of this book", which is a different answer.
+:::
+
+::: context one-definition Why one shared definition matters
+"Available" sounds obvious until you ask around. Does a copy waiting to be repaired count? A copy someone has reserved? If the desk, the website and the weekly report each write their own query, sooner or later they disagree, and a member is told online that a book is on the shelf when the desk says it is not. With one view, the rule lives in one place. When the library decides that copies in repair are not available, you change the view, and every screen and report changes with it.
+:::
+
+::: context at-most-one Why the join stays one row per copy
+A join pairs each copy with every loan that matches its `ON`. With the open-loan condition in the `ON`, only open loans match, and the partial index allows at most one per copy. So each copy meets one loan, or none and gets NULLs. Without the condition, D-1 would meet its closed loan too.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 185" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1d6fd1"/>
+    </marker>
+  </defs>
+  <text x="70" y="16" font-size="11" fill="#6c7a93" text-anchor="middle">copies</text>
+  <text x="265" y="16" font-size="11" fill="#6c7a93" text-anchor="middle">open loans</text>
+  <rect x="20" y="26" width="100" height="26" fill="#fff" stroke="#1f2a44"/>
+  <text x="70" y="43" font-size="12" fill="#1f2a44" text-anchor="middle">D-1</text>
+  <rect x="20" y="62" width="100" height="26" fill="#fff" stroke="#1f2a44"/>
+  <text x="70" y="79" font-size="12" fill="#1f2a44" text-anchor="middle">D-2</text>
+  <rect x="20" y="98" width="100" height="26" fill="#fff" stroke="#1f2a44"/>
+  <text x="70" y="115" font-size="12" fill="#1f2a44" text-anchor="middle">D-3</text>
+  <rect x="200" y="26" width="130" height="26" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="265" y="43" font-size="12" fill="#1f2a44" text-anchor="middle">loan 3 (out)</text>
+  <rect x="200" y="62" width="130" height="26" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="265" y="79" font-size="12" fill="#1f2a44" text-anchor="middle">loan 2 (out)</text>
+  <text x="265" y="115" font-size="12" fill="#6c7a93" text-anchor="middle">none: NULL</text>
+  <rect x="200" y="134" width="130" height="26" fill="#fff" stroke="#6c7a93" stroke-dasharray="4 3"/>
+  <text x="265" y="151" font-size="11" fill="#6c7a93" text-anchor="middle">loan 1 (returned)</text>
+  <line x1="120" y1="39" x2="198" y2="39" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#am)"/>
+  <line x1="120" y1="75" x2="198" y2="75" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#am)"/>
+  <line x1="120" y1="111" x2="210" y2="111" stroke="#6c7a93" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="120" y1="45" x2="198" y2="145" stroke="#b4232c" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="180" y="178" font-size="11" fill="#b4232c" text-anchor="middle">red: the extra match if the ON drops the condition</text>
+</svg>
+```
+:::
+
+::: context always-fresh Counting instead of storing a number
+Another design would give `books` an `available` column and add or subtract 1 at every loan and return. Every program that lends or returns a copy would then have to remember to update it, and one missed update leaves the number wrong for good. The view never drifts, because it counts the loans themselves each time it runs. The second check of this lesson does exactly that: it marks Emma's copy as returned, and `book_availability` shows Emma as available straight away.
+:::
 --- task
-Create a view `book_availability` with one row per book (including books with no copies): `book_id`, `title`, `copies`, `on_loan` (copies currently out) and `available` (copies minus on loan).
+Create a view named `book_availability` with one row per book, including books that have no copies. Its columns, in this order:
+
+1. `book_id`: the book's `id`.
+2. `title`: the book's title.
+3. `copies`: how many copies the book has.
+4. `on_loan`: how many of those copies are out right now (they have a loan with `returned_on` NULL).
+5. `available`: `copies` minus `on_loan`.
 --- starter
 CREATE VIEW book_availability AS
 SELECT b.id AS book_id, b.title, COUNT(*) AS copies
@@ -1604,9 +1918,11 @@ LEFT JOIN copies c ON c.book_id = b.id
 LEFT JOIN loans l  ON l.copy_id = c.id AND l.returned_on IS NULL
 GROUP BY b.id;
 --- hint
-Start from `books` and LEFT JOIN both `copies` and `loans`.
+Start `FROM books b`, then `LEFT JOIN copies c` and `LEFT JOIN loans l`, and `GROUP BY b.id`. The starter's plain `JOIN` drops Kindred.
 --- hint
-The loans join is `ON l.copy_id = c.id AND l.returned_on IS NULL`; count `c.id` and `l.id`, not `*`.
+The loans join is `ON l.copy_id = c.id AND l.returned_on IS NULL`, so only open loans match.
+--- hint
+Count columns, not rows: `COUNT(c.id) AS copies`, `COUNT(l.id) AS on_loan` and `COUNT(c.id) - COUNT(l.id) AS available`.
 --- check query | Every book, with copies, loans and availability
 SELECT book_id, title, copies, on_loan, available FROM book_availability ORDER BY book_id
 => [[1, "Dune", 3, 2, 1], [2, "Emma", 1, 1, 0], [3, "Ubik", 2, 1, 1], [4, "Kindred", 0, 0, 0]]
@@ -1660,18 +1976,144 @@ INSERT INTO loans (id, copy_id, member_id, loaned_on, due_on, returned_on) VALUE
   (5, 5, 2, '2024-05-01', '2024-05-15', '2024-05-30'),
   (6, 6, 1, '2024-04-01', '2024-04-15', NULL);
 --- teach
-Every Monday the library emails members with overdue books. The rules:
+Last lesson a view told the front desk which books can be borrowed. This lesson looks at the loans that should already have come back: the overdue report, with the fine each late loan has built up.
+
+### The tables
+
+The data is the same as last lesson. These are the four loans still out, with the member's name and the book's title filled in:
+
+| loan | member | title | due_on |
+| --- | --- | --- | --- |
+| 2 | Bo | Dune | 2024-07-04 |
+| 3 | Cy | Dune | 2024-07-09 |
+| 4 | Ana | Emma | 2024-07-15 |
+| 6 | Ana | Ubik | 2024-04-15 |
+
+### The rules
+
+Every Monday the library emails members who have overdue books. Its rules:
 
 - A loan is **overdue** when it is still out and its due date has passed.
-- The fine is **25 cents per day** overdue, **capped at 10 dollars** (1000 cents) per loan — nobody should owe more than a book is worth.
+- The fine is **25 cents per day** overdue, **capped at 10 dollars** (1000 cents) per loan. A **cap** is an upper limit: the fine grows each day until it reaches 1000, then [[stops growing|fine-cap]]. Nobody should owe more than a book is worth.
 
-Dates: `julianday(a) - julianday(b)` is the number of days between two dates. For whole dates like `'2024-07-15'` the difference is a whole number, but it is still a REAL; `CAST(… AS INTEGER)` makes it an integer for display and arithmetic.
+The fine is counted in whole cents, as in "Store 1: the schema", so every sum stays exact.
 
-The cap is `MIN(days * 25, 1000)` — in SQLite, `MIN` with two or more arguments is the ordinary "smaller of these values" function, not the aggregate.
+### Pick the report date
 
-Choose the reporting date carefully. `date('now')` makes the report correct today and untestable forever: tomorrow it gives different numbers. Reports that people check, compare and reproduce take the date as an input. Here it is fixed: **as of 2024-07-15**. A book due on the 15th is not overdue on the 15th.
+Think of a teacher marking homework late. "Late" only makes sense once you say *as of when*.
+
+`date('now')`, from "Date arithmetic and date ranges", gives today's date. A report built on it is correct today and untestable forever: tomorrow it gives different numbers, and nobody can check yesterday's email. Reports that people check, compare and reproduce take the date as an [[input|report-date]]. Here the date is fixed: **as of 2024-07-15**.
+
+### Which loans are overdue?
+
+Two conditions, joined with `AND`: the loan is still out, and it was due **before** the report date. `<` means "less than", and for these dates that is "earlier than":
+
+```sql
+SELECT id, due_on FROM loans
+WHERE returned_on IS NULL AND due_on < '2024-07-15'
+ORDER BY id;
+```
+
+| id | due_on |
+| --- | --- |
+| 2 | 2024-07-04 |
+| 3 | 2024-07-09 |
+| 6 | 2024-04-15 |
+
+Emma's loan 4 is not there. A book due on the 15th is not overdue on the 15th: the member has until the end of that day.
+
+### Counting the days late
+
+In "Date arithmetic and date ranges" you learned that `julianday(a) - julianday(b)` is the number of days between two dates:
+
+```sql
+SELECT julianday('2024-07-15') - julianday('2024-07-04') AS days,
+       CAST(julianday('2024-07-15') - julianday('2024-07-04') AS INTEGER) AS whole_days;
+```
+
+| days | whole_days |
+| --- | --- |
+| 11.0 | 11 |
+
+For whole dates like `'2024-07-15'` the difference is a whole number, but it is still a [[REAL|real-number]], a number with a decimal point. `CAST(… AS INTEGER)`, from "Problem solving: cohort retention", turns it into the integer 11 for display and arithmetic. Bo's loan is [[11 days overdue|overdue-timeline]].
+
+### Capping the fine with MIN
+
+Bo owes 11 × 25 = 275 cents. Ana's *Ubik* is 91 days late: 91 × 25 = 2275 cents, which is over the cap. The fine is the smaller of "days × 25" and 1000:
+
+```sql
+SELECT MIN(275, 1000) AS bo, MIN(2275, 1000) AS ana;
+```
+
+| bo | ana |
+| --- | --- |
+| 275 | 1000 |
+
+In SQLite, `MIN` with two or more values inside the brackets is the ordinary "smaller of these values" function. It works on one row at a time. It is not the aggregate `MIN(x)` from the basics, which takes one column and finds the smallest value across many rows. The [[number of arguments|min-two-kinds]] decides which one you get. So the cap is `MIN(days * 25, 1000)`.
+
+### The title is two joins away
+
+A loan knows its `copy_id`, a copy knows its `book_id`, and the book knows its `title`. So the title is two joins away: loans → copies → books. The member's name is one more join, to `members`. This is the chain from "Joining three tables":
+
+```sql
+FROM loans l
+JOIN members m ON m.id = l.member_id
+JOIN copies c  ON c.id = l.copy_id
+JOIN books b   ON b.id = c.book_id
+```
+
+### Sorting
+
+The report lists the biggest fines first: `ORDER BY fine_cents DESC`. When two fines are equal, it sorts by member name, so the order is always the same: `ORDER BY fine_cents DESC, member`. You can sort by a column's `AS` name.
+
+**Watch out:** `due_on <= '2024-07-15'`, "on or before", looks close enough, but it pulls in Emma, due that very day. She would appear on an overdue email with 0 days and a fine of 0 cents. Use `<`.
+
+::: context fine-cap Why fines have a limit
+A fine is meant to nudge people to bring books back, not to punish them forever. Without a cap, a book forgotten for a year would cost 365 × 25 = 9125 cents, more than 90 dollars, far more than a new copy. Many libraries have gone further and dropped overdue fines altogether. Chicago Public Library did so in 2019, and found that many people who had stayed away because of old fines came back. The cap in this project is 1000 cents per loan.
+:::
+
+::: context report-date The date as an input
+When the date is an input, running the same report twice gives the same answer, and anyone can check it. In an app, the program passes the date in as a parameter, the `?` you met in "Indexes and EXPLAIN QUERY PLAN": `due_on < ?`. On Monday it passes that Monday's date. When a member phones to say an email was wrong, you rerun the report with the same date and see exactly what it saw. Engineers replay spacecraft telemetry the same way: every calculation takes the time as an input, so a past moment can be recomputed exactly.
+:::
+
+::: context real-number Why julianday gives a REAL
+A **REAL** is SQLite's type for numbers with a decimal point, stored as floating point. `julianday` returns one because a date can carry a time of day, and a time is a fraction of a day: 18:00 adds 0.75. That is why even whole dates give 11.0 rather than 11. `CAST(… AS INTEGER)` drops the part after the point: 11.75 becomes 11. For this project's whole dates that changes nothing. With times, `'2024-07-15 18:00:00'` against a due date of 4 July would count 11 whole days, not 12.
+:::
+
+::: context overdue-timeline Bo's loan on a timeline
+Bo borrowed a copy of *Dune* on 20 June, due 14 days later on 4 July. The report looks from 15 July. The days between the due date and the report date are the days overdue: 11, so the fine is 11 × 25 = 275 cents.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <line x1="20" y1="60" x2="340" y2="60" stroke="#6c7a93" stroke-width="1.5"/>
+  <line x1="40" y1="60" x2="180" y2="60" stroke="#1d6fd1" stroke-width="6"/>
+  <line x1="180" y1="60" x2="290" y2="60" stroke="#b4232c" stroke-width="6"/>
+  <circle cx="40" cy="60" r="5" fill="#1d6fd1" stroke="#1f2a44"/>
+  <circle cx="180" cy="60" r="5" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="290" y1="44" x2="290" y2="76" stroke="#1f2a44" stroke-width="2"/>
+  <text x="40" y="86" font-size="11" fill="#1f2a44" text-anchor="middle">lent 20 Jun</text>
+  <text x="180" y="86" font-size="11" fill="#1f2a44" text-anchor="middle">due 4 Jul</text>
+  <text x="290" y="86" font-size="11" fill="#1f2a44" text-anchor="middle">report 15 Jul</text>
+  <text x="110" y="44" font-size="11" fill="#1d6fd1" text-anchor="middle">14 days on loan</text>
+  <text x="235" y="44" font-size="11" fill="#b4232c" text-anchor="middle">11 days late</text>
+  <text x="180" y="116" font-size="11" fill="#6c7a93" text-anchor="middle">fine: 11 × 25 = 275 cents, under the 1000 cap</text>
+</svg>
+```
+:::
+
+::: context min-two-kinds Two MINs, and other databases
+SQLite looks at how many values you pass. One, as in `MIN(due_on)`, is the aggregate: it squeezes many rows into one answer, and in this report it would collapse all the overdue loans into a single row. Two or more, as in `MIN(2275, 1000)`, is the ordinary function, worked out row by row. `MAX` has the same two kinds. Other databases keep them apart by name: PostgreSQL and MySQL call the row-by-row versions `LEAST` and `GREATEST`, so there you would write `LEAST(days * 25, 1000)`.
+:::
 --- task
-Return every loan that is overdue as of `2024-07-15`: `member` (name), `title`, `due_on`, `days_overdue` (an integer) and `fine_cents` (25 per day, at most 1000). Sort by fine, largest first, then member.
+Write the overdue report as of `2024-07-15`: one row for every loan that is still out and was due before that date. Its columns, in this order:
+
+1. `member`: the member's name.
+2. `title`: the book's title.
+3. `due_on`: the loan's due date.
+4. `days_overdue`: the whole days from `due_on` to `2024-07-15`, as an integer.
+5. `fine_cents`: 25 cents per day overdue, at most 1000.
+
+Sort by `fine_cents`, largest first, then by `member`.
 --- starter
 SELECT m.name AS member, l.due_on
 FROM loans l
@@ -1689,9 +2131,11 @@ WHERE l.returned_on IS NULL
   AND l.due_on < '2024-07-15'
 ORDER BY fine_cents DESC, member;
 --- hint
-Overdue: `returned_on IS NULL AND due_on < '2024-07-15'`. The title is two joins away: loans → copies → books.
+Overdue means `returned_on IS NULL AND due_on < '2024-07-15'`. The title is two joins away: add `JOIN copies c ON c.id = l.copy_id` and `JOIN books b ON b.id = c.book_id`.
 --- hint
-Days: `CAST(julianday('2024-07-15') - julianday(l.due_on) AS INTEGER)`; fine: `MIN(days * 25, 1000)`.
+The days are `CAST(julianday('2024-07-15') - julianday(l.due_on) AS INTEGER)`. Give that the name `days_overdue`.
+--- hint
+The fine repeats the days expression inside the two-value `MIN`: `MIN(CAST(julianday('2024-07-15') - julianday(l.due_on) AS INTEGER) * 25, 1000) AS fine_cents`. End with `ORDER BY fine_cents DESC, member`.
 --- check result | Ana's 91-day loan is capped; Emma, due today, is not overdue
 ordered
 [["Ana", "Ubik", "2024-04-15", 91, 1000], ["Bo", "Dune", "2024-07-04", 11, 275], ["Cy", "Dune", "2024-07-09", 6, 150]]
@@ -1745,9 +2189,31 @@ CREATE TABLE fines (
   cents INTEGER NOT NULL CHECK (cents > 0)
 );
 --- teach
-Last lesson's report shows fines building up. When a late book comes back, the fine becomes **real**: it should be recorded in the new `fines` table (`loan_id`, `cents`) at the moment of return, whichever system recorded the return — the desk, the self-service kiosk, or a librarian fixing a typo.
+Last lesson's report showed fines building up while books are out. When a late book comes back, the fine becomes **real**: money the member now owes. This last library lesson records it by itself, at the moment of the return.
 
-"Whenever this column changes, do that" is a trigger:
+### The tables
+
+`members`, `books`, `copies` and `loans` hold the same data as last lesson. There is one new table, `fines`, and it starts empty:
+
+```sql
+CREATE TABLE fines (
+  loan_id INTEGER PRIMARY KEY REFERENCES loans(id),
+  cents INTEGER NOT NULL CHECK (cents > 0)
+);
+```
+
+- `loan_id` says which loan the fine is for. It is also the primary key, so each loan can have at most one fine.
+- `cents` is the amount, and it must be more than 0.
+
+### The picture
+
+Think of a car park with a ticket barrier. Whichever exit you drive out of, the machine reads your ticket and works out what you owe. Nobody at the exit has to remember to charge you, and every exit charges by the same rule.
+
+### Why a trigger
+
+Returns are recorded in several places: the front desk, the self-service kiosk, and a librarian fixing a typo. Each is a different program. The fine must be recorded whichever one sets the return date.
+
+"Whenever this column changes, do that" is a trigger, from "Triggers: reacting to changes". Here is its shape. The `…` is the amount, which comes a few steps below:
 
 ```sql
 CREATE TRIGGER loan_returned
@@ -1758,13 +2224,94 @@ BEGIN
 END;
 ```
 
-- `UPDATE OF returned_on` fires only when that column is assigned — not when someone edits the due date.
-- The `WHEN` makes it fire only on the actual return (`OLD.returned_on IS NULL`) and only when late. A book returned on time, or on its due date, owes nothing — and the table's `CHECK (cents > 0)` would refuse a zero fine anyway.
-- The fine uses the same rule as the report: 25 cents per day late, capped at 1000. Now `NEW.returned_on` replaces the fixed report date.
+Take it one line at a time.
 
-A fine is money owed, so keep it even if the loan record is later edited. The `loan_id` primary key also makes sure one loan can only be fined once.
+### Only when the return date is set
+
+`AFTER UPDATE OF returned_on ON loans` means: after an `UPDATE` on `loans` that [[sets the returned_on column|update-of]]. An update that edits only the due date does not fire it.
+
+### Only on the actual return
+
+`OLD.returned_on IS NULL` looks at the row *before* the change. It is true only when the loan was still out. So the trigger fires on the return itself, and not when someone later corrects the date of a loan that had already come back.
+
+### Only when late
+
+`AND NEW.returned_on > NEW.due_on` looks at the row *after* the change. It is true only when the copy came back after its due date. A copy returned early, or on its due date, owes nothing. And the table's `CHECK (cents > 0)` would [[refuse a zero fine|zero-fine]] anyway.
+
+### The amount
+
+The fine uses the same rule as the report: 25 cents per day late, capped at 1000. The only change is the date. `NEW.returned_on`, the day the copy came back, replaces the fixed report date:
+
+```sql
+MIN(CAST(julianday(NEW.returned_on) - julianday(NEW.due_on) AS INTEGER) * 25, 1000)
+```
+
+For Bo's loan 2, due on 4 July and returned on 15 July, that is 11 days, so MIN(11 × 25, 1000) = MIN(275, 1000) = 275 cents.
+
+### Watching it fire
+
+Return Bo's *Dune* (loan 2) and Ana's *Ubik* (loan 6), both on 15 July, in one statement:
+
+```sql
+UPDATE loans SET returned_on = '2024-07-15' WHERE id IN (2, 6);
+SELECT loan_id, cents FROM fines ORDER BY loan_id;
+```
+
+| loan_id | cents |
+| --- | --- |
+| 2 | 275 |
+| 6 | 1000 |
+
+The trigger fired once for each row. Ana's *Ubik* was 91 days late, so its fine is capped at 1000. Now return Ana's *Emma* (loan 4) on 15 July, its due date. It is on time, the `WHEN` is false, and `fines` still has two rows.
+
+### A fine stays
+
+A fine is money owed, so it is [[kept even if the loan record is edited later|ledger]]. Nothing in this design deletes a fine. And because `loan_id` is the primary key of `fines`, one loan can only ever be fined once.
+
+**Watch out:** leave out `OLD.returned_on IS NULL` and every edit of a return date fires the trigger again. Say a librarian corrects loan 2's return from 15 July to 14 July. The trigger tries to insert a second fine for loan 2, the primary key refuses it with `UNIQUE constraint failed: fines.loan_id`, and the librarian's correction fails with it. Worse, correcting an old loan that came back late before the trigger existed, such as loan 5, would suddenly charge a fine for it.
+
+::: context update-of What counts as setting a column
+`UPDATE OF returned_on` fires when `returned_on` is one of the columns an `UPDATE` assigns in its `SET`, even if the new value equals the old one. `UPDATE loans SET returned_on = returned_on` fires it, and changes nothing. `UPDATE loans SET due_on = '2024-07-20'` does not fire it at all. So `UPDATE OF` narrows *which statements* wake the trigger, and the `WHEN` then decides, row by row, whether it does anything.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1d6fd1"/>
+    </marker>
+  </defs>
+  <rect x="40" y="10" width="220" height="30" fill="#fff" stroke="#1f2a44"/>
+  <text x="150" y="30" font-size="12" fill="#1f2a44" text-anchor="middle">an UPDATE sets returned_on</text>
+  <rect x="40" y="60" width="220" height="30" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="150" y="80" font-size="12" fill="#1f2a44" text-anchor="middle">was it out? old value NULL</text>
+  <rect x="40" y="110" width="220" height="30" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="150" y="130" font-size="12" fill="#1f2a44" text-anchor="middle">late? new date after due_on</text>
+  <rect x="40" y="160" width="220" height="30" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="150" y="180" font-size="12" fill="#1f2a44" text-anchor="middle">INSERT the fine into fines</text>
+  <line x1="150" y1="40" x2="150" y2="58" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#fl)"/>
+  <line x1="150" y1="90" x2="150" y2="108" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#fl)"/>
+  <line x1="150" y1="140" x2="150" y2="158" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#fl)"/>
+  <text x="140" y="104" font-size="11" fill="#1d6fd1" text-anchor="end">yes</text>
+  <text x="140" y="154" font-size="11" fill="#1d6fd1" text-anchor="end">yes</text>
+  <text x="270" y="80" font-size="11" fill="#b4232c">no: stop</text>
+  <text x="270" y="130" font-size="11" fill="#b4232c">no: stop</text>
+</svg>
+```
+:::
+
+::: context zero-fine Why the late test matters twice
+Without `NEW.returned_on > NEW.due_on`, returning Emma on her due date would make the trigger insert a fine of 0 cents. The `CHECK (cents > 0)` refuses it, and because a trigger runs inside the same statement as the change, the error cancels the whole `UPDATE`. The return itself would fail, and the desk could never check an on-time book back in. So the `WHEN` is not only tidier: it keeps on-time returns working. The `CHECK` stays as a second line of defence.
+:::
+
+::: context ledger Money is never quietly rewritten
+Accountants keep a **ledger**: a list of every amount charged or paid, where old entries are never erased. A mistake is fixed by adding a new entry, such as a refund, so the history shows what happened and when. The `fines` table works the same way. The trigger only ever adds rows. And `fines.loan_id` references `loans(id)` with the default `ON DELETE` action, so with foreign keys switched on, a loan that has a fine cannot be deleted. The capstones that come next give you three more specifications to design this carefully, with no step-by-step lessons.
+:::
 --- task
-Create a trigger `loan_returned` that, when a loan's `returned_on` is set on a loan that was still out and the return is after `due_on`, inserts a row into `fines` with the loan's id and 25 cents per day late, at most 1000.
+Create a trigger named `loan_returned` on `loans` that records late-return fines:
+
+1. It runs after an update of the `returned_on` column.
+2. It acts only when the loan was still out before the change (the old `returned_on` was NULL) and the new `returned_on` is after `due_on`.
+3. It inserts one row into `fines`: `loan_id` is the loan's id, and `cents` is 25 per whole day from `due_on` to the new `returned_on`, at most 1000.
 --- starter
 CREATE TRIGGER loan_returned
 AFTER UPDATE OF returned_on ON loans
@@ -1780,9 +2327,11 @@ BEGIN
   VALUES (NEW.id, MIN(CAST(julianday(NEW.returned_on) - julianday(NEW.due_on) AS INTEGER) * 25, 1000));
 END;
 --- hint
-Fire only on a real, late return: `WHEN OLD.returned_on IS NULL AND NEW.returned_on > NEW.due_on`.
+Put a `WHEN` line between `AFTER UPDATE OF returned_on ON loans` and `BEGIN`, so the trigger fires only on a real, late return: `WHEN OLD.returned_on IS NULL AND NEW.returned_on > NEW.due_on`.
 --- hint
-The amount is `MIN(CAST(julianday(NEW.returned_on) - julianday(NEW.due_on) AS INTEGER) * 25, 1000)`.
+Replace the starter's `SELECT 1;` with an `INSERT INTO fines (loan_id, cents) VALUES (NEW.id, …);`.
+--- hint
+The amount is last lesson's formula with `NEW.returned_on` in place of the report date: `MIN(CAST(julianday(NEW.returned_on) - julianday(NEW.due_on) AS INTEGER) * 25, 1000)`.
 --- check query | A late return is fined per day; a very late one is capped
 UPDATE loans SET returned_on = '2024-07-15' WHERE id IN (2, 6);
 SELECT loan_id, cents FROM fines ORDER BY loan_id
