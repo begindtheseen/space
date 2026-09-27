@@ -1,45 +1,75 @@
 ---
 id: l10-version-control-and-code-review
 title: "Version control, code review, and what a reviewer is checking"
-minutes: 18
+minutes: 20
 covers:
   - version control, code review and what production-quality means at senior level
 ---
 
-Ownership, from the first lesson in this module, does not mean working alone. It means the same person carries an algorithm from derivation through a tested, deployable implementation — and the mechanism that puts a second, careful set of eyes on that work, without needing a second team to reimplement it, is code review, sitting on top of a shared version-controlled history. This lesson is about both halves: what changes about working in a shared history once a codebase is large and safety-relevant, and — the part with more daily consequence — what an actual reviewer of flight or simulation code is checking for, which is rarely limited to "does this compile and pass the tests the author happened to write."
+Think about a group of friends writing one story together in a shared notebook. If anyone can scribble anywhere at any time, the story turns to mush within a week. So the group makes rules. Each person writes on a separate sheet first. Someone else reads the sheet before it is glued in. And the notebook keeps a note of who added each page, and why.
 
-## Version control at scale: small, attributable, always-buildable
+Engineering teams do exactly this with code. The shared notebook is a **version-controlled history**: a complete, searchable record of every change to the code, who made it and why. The friend who reads each sheet before it goes in is doing **code review**: a second engineer reads a proposed change and must approve it before it joins the shared code.
 
-Version control's basic idea — a complete, searchable history of every change, who made it, and why — does not change between a solo project and a large shared codebase. What changes is which properties of that history actually matter once many engineers share it and its output is safety-relevant.
+The first lesson in this module said that GNC engineers own their work — one person carries an algorithm from derivation to tested, deployed flight code. Ownership does not mean working alone. Code review is how a second careful set of eyes checks that work without a second team rewriting it. This lesson covers both halves. First, what changes about a shared history once the codebase is large and safety-relevant. Then the part you will meet every day: what a real reviewer of flight or simulation code is checking. It is much more than "does it compile and pass the author's own tests."
 
-A change proposed against a shared history is easiest to review, and easiest to reason about later, when it is small and does one identifiable thing, described clearly enough to connect it back to the ticket or requirement that justified it — exactly the traceability the previous lesson described. A large, sprawling change that touches many unrelated things at once defeats review by simple volume, regardless of how careful the reviewer is, because a person can hold a few hundred lines of focused change in their head at once and cannot do the same for several thousand lines mixing three unrelated concerns. The shared main line of history is also expected to stay in a known-good, buildable, passing state — the direct consequence of the previous lesson's point about red builds — because the entire value of a searchable history is being able to find exactly when and why a specific line changed, which becomes far harder once "broken" states are mixed in with "working" ones and nobody can immediately tell which is which from the history alone.
+## Version control at scale: small, attributable, always buildable
+
+The basic idea of **[[version control|git-story]]** is the same for a one-person project and for a thousand-person one. Every change is saved as a **commit** — a snapshot of the code plus a short message saying what changed and why. The list of commits is the history, and you can search it, compare any two points in it, and go back to any earlier state.
+
+What changes at scale is which properties of that history matter. Three of them matter a lot.
+
+**Small.** A proposed change should do one identifiable thing. Picture checking a friend's homework. One page with ten lines on it, you can check carefully. Forty pages mixing math, spelling and history, you skim. Reviewers are the same: a person can hold a few hundred lines of focused change in their head, and cannot do that for several thousand lines mixing three unrelated concerns. A sprawling change defeats review by sheer volume, however careful the reviewer is.
+
+**Attributable.** Each change should say plainly what it does and point back to the **ticket** — the recorded request or problem report — or the requirement that justified it. This is the traceability from the previous lesson, working at the level of single commits.
+
+**Always buildable.** The shared **[[main line|main-line]]** of history — the version everyone builds on — is expected to stay in a known-good state: it builds, and its tests pass. This follows from the previous lesson's point about red builds. The whole value of a searchable history is finding exactly when and why a specific line changed. That gets far harder once broken states are mixed in with working ones and nobody can tell from the history which is which.
+
+::: key Version control at scale
+Good changes are small and do one thing, are described well enough to trace back to their ticket or requirement, and land on a main line that always builds and passes its tests.
+:::
 
 ## What a reviewer of flight or simulation code is actually checking
 
-A reviewer's job is not reading a diff to confirm it looks reasonable. It is checking several specific, separable things, most of which trace directly back to ideas from earlier in this module:
+A reviewer's job is not to read the change and decide it looks reasonable. The change is shown to the reviewer as a **[[diff|diff-reading]]** — only the lines that were added, removed or changed. The reviewer checks several specific, separate things about it. Almost all of them come straight from earlier lessons in this module.
 
-**Correctness against the actual requirement.** Not "does this code do something sensible," but "does this code do the specific thing the ticket or requirement says it should," which requires the reviewer to know what that requirement was — the traceability from the previous lesson, working as intended.
+**1. Correctness against the actual requirement.** The question is not "does this code do something sensible" but "does it do the specific thing the ticket or requirement asks for." To answer that, the reviewer has to know what the requirement was. This is traceability doing its job.
 
-**Whether the change includes the test that would have caught the problem it fixes.** This is one of the sharpest, most concrete questions a reviewer asks, and it is worth stating precisely: if a change fixes a bug, and the change does not also add a test that would have failed against the old, buggy code and now passes against the fix, there is no durable evidence the bug is actually fixed rather than merely no-longer-visible in whatever the author happened to try by hand. A fix without a regression test is a claim; a fix with one is evidence.
+**2. Whether the change includes the test that would have caught the problem it fixes.** This is one of the sharpest questions a reviewer asks, so here it is precisely. Suppose a change fixes a bug. Unless it also adds a test that *fails* on the old, buggy code and *passes* on the fixed code, there is no lasting evidence the bug is fixed. It might only be hidden in whatever case the author happened to try by hand. That kind of test is called a **[[regression test|regression-word]]**: it guards against the old bug coming back.
 
-**Resource bounds, for anything touching the control path.** New heap allocation, a loop whose bound is not a compile-time constant, an exception that can escape into a real-time boundary — every constraint from the lesson on the machine and the deadline is something a reviewer is specifically watching for, because none of those defects announce themselves in a quick read; they have to be checked deliberately.
+**3. Resource bounds, for anything touching the control path.** A new heap allocation, a loop whose limit is not a fixed constant known when the code is compiled, an exception that can escape into the real-time loop — every rule from the lesson on the machine and the deadline is on the reviewer's list. None of these defects announce themselves in a quick read. They have to be looked for on purpose.
 
-**Units and frames made explicit.** Whether a changed interface still names its units and frame unambiguously, and whether a boundary test exists for exactly the kind of silent, plausible-looking error the data-discipline lesson described.
+**4. Units and frames made explicit.** Does a changed interface still say plainly what units its numbers are in and what frame its vectors are measured in? Is there a boundary test for the kind of quiet, plausible-looking error the data-discipline lesson described?
 
-**Whether someone else could safely modify this later.** Not whether the code is clever, but whether a different engineer — or the same one, months later, during a live anomaly at an inconvenient hour — could read it, understand what it does and why, and change it without first having to reverse-engineer the author's original reasoning from scratch.
+**5. Whether someone else could safely change this later.** Not "is the code clever," but: could a different engineer — or the same one, months later, during a live problem at an awkward hour — read it, understand what it does and why, and change it without first reverse-engineering the author's thinking?
 
-::: key
+::: key What a reviewer checks
 A reviewer of flight or simulation code checks correctness against a traceable requirement, whether the change includes the test that would have caught the bug it fixes, resource bounds in anything touching the control path, explicit units and frames, and whether someone other than the author could safely modify the result later. None of these is optional, and none of them is visible from "it compiles and the diff looks reasonable."
 :::
 
-## What "production quality" means at senior level, stated concretely
+::: warning Passing tests only speak for the cases they test
+"All the tests pass" means the code is right *for the inputs those tests use*. It says nothing about an input nobody wrote a test for. Before approving, a reviewer asks which cases are missing — especially the edges: the first item, the last item, zero, a negative sign.
+:::
 
-"Production quality" is easy to nod along with and hard to pin down, so it is worth stating in a form specific enough to actually check against: code that has been reviewed by someone other than its author, that carries unit tests covering its boundary and sign cases, that behaves deterministically within a bounded execution time if it sits anywhere near the control path, that is documented well enough for a different engineer to modify correctly during a real anomaly at two in the morning without first tracking down the original author, and that runs somewhere a defect cannot be fixed by restarting the process and hoping for the best.
+## What "production quality" means at senior level
 
-That last clause is doing real work and is worth dwelling on. A huge amount of ordinary software tolerates a defect because the cost of failure is a restart — a web server that crashes gets relaunched by its supervisor process, a script that throws gets rerun. A vehicle in flight is not running anywhere you can restart it into a better state; whatever the code does in the moment a fault occurs is, for practical purposes, what actually happens. That single difference is why every constraint elsewhere in this module — bounded execution time, no dynamic allocation in the control path, explicit fault handling instead of exceptions, redundancy and voting — is not excess caution. It is the direct consequence of "we cannot restart our way out of a bad moment," applied consistently across the whole system.
+"Production quality" is easy to nod along to and hard to pin down. So here it is, specific enough to check against. Production-quality code is:
+
+- **reviewed** by someone other than its author;
+- **unit tested**, including its boundary and sign cases;
+- **deterministic** — same inputs, same outputs, every time — and **bounded in resource use**, finishing within a known time and memory budget if it sits anywhere near the control path;
+- **documented** well enough that a different engineer could change it correctly during a real problem at [[two in the morning|two-am-review]], without first tracking down the original author;
+- **deployed** somewhere a defect cannot be fixed by restarting the program and hoping for the best.
+
+::: key Production-quality code
+Code that is reviewed, unit tested, deterministic, bounded in resource use, documented well enough for someone else to modify at 2am, and deployed to a vehicle where a defect is not recoverable by a restart.
+:::
+
+That last point does the most work, so it is worth slowing down on. A huge amount of everyday software gets away with defects because the cost of failure is a restart. When a web server crashes, a **[[supervisor process|supervisor]]** — a small program whose only job is to watch another one — starts it again. When a script throws an error, someone runs it again.
+
+A vehicle in flight cannot be restarted into a better state. Whatever the code does in the moment a fault happens is, for practical purposes, what actually happens. That one difference explains every constraint elsewhere in this module: bounded execution time, no dynamic memory allocation in the control path, explicit fault handling instead of exceptions, redundancy and voting. They are not excess caution. They are what "we cannot restart our way out of a bad moment" looks like when it is applied to the whole system, consistently.
 
 ::: example An off-by-one a reviewer catches by asking about the edge
-A function selects which of three redundant sensors to trust, given a validity flag for each:
+A function picks which of three redundant sensors to trust. It gets the readings and a validity flag for each sensor, and returns the index of the first valid one — or $-1$ if none is valid. (Python counts positions from $0$, so three sensors are indices $0$, $1$ and $2$.)
 
 ```python
 def select_active_sensor(readings, valid):
@@ -49,7 +79,9 @@ def select_active_sensor(readings, valid):
     return -1
 ```
 
-The author's own tests pass: with all three sensors good, or only the first good, the function correctly returns index 0. A reviewer, having internalized the habit from earlier in this module of specifically checking boundary and sign cases rather than accepting whatever cases the author happened to try, asks one direct question: "what happens if only the last sensor is still good?" Run against exactly that case:
+**The author's tests.** With all three sensors valid, the loop checks index $0$, finds it valid, and returns $0$. Correct. With only the first sensor valid, same thing: it returns $0$. Correct. Both tests pass.
+
+**The reviewer's question.** The reviewer has the habit this module keeps building: check the edges, not only the cases the author tried. So the reviewer asks one thing: "What happens if only the *last* sensor is still good?"
 
 ```python
 readings = [12.1, 12.3, 12.0]
@@ -57,65 +89,189 @@ print(select_active_sensor(readings, [False, False, True]))
 # -1
 ```
 
-The function reports no valid sensor at all, despite one genuinely being available — because `range(len(readings) - 1)` never examines the last index. In a system built around redundancy specifically so that losing two of three sensors is survivable, this defect silently defeats exactly the scenario the redundancy exists to handle. The fix is one character, `range(len(readings))` instead of `range(len(readings) - 1)`, and the review comment that found it was not a close reading of every line — it was a single, specific, boundary-focused question, the same kind this module has been building as a habit since its first lesson.
+**Why it fails.** `len(readings)` is $3$, so `range(len(readings) - 1)` is `range(2)`, which gives only $0$ and $1$. The loop [[never looks at index 2|off-by-one]]. It finds nothing valid and reports "no good sensor" — while one is sitting right there.
+
+**Why it matters.** The whole point of three sensors is that losing two of them is survivable. This bug quietly defeats exactly the case the redundancy exists for.
+
+**The fix** is one small edit: `range(len(readings))`. With that, the same call returns $2$. Sanity check: the other two tests still return $0$, so the fix did not break what already worked. The fix should also add the reviewer's case as a new test, so the bug can never silently return.
+
+Notice what found the bug. Not a slow read of every line — one specific question about the edge.
 :::
 
 ::: example Two reviewers, one pull request
-A change adds a new sensor-fusion path and includes a short description, passing tests, and a diff of moderate size. One reviewer reads the diff top to bottom, confirms it compiles, confirms the included tests pass, and approves it within a few minutes. A second reviewer, looking at the same change, asks three specific questions before approving anything: which requirement does this satisfy, and is that stated in the ticket the change references; does the included test cover the case where the new sensor disagrees with the existing ones, not only the case where it agrees; and does anything in the new path allocate memory or use an unbounded loop, given that this function sits inside the same control loop discussed earlier in this module.
+A proposed change — on most teams called a **[[pull request|pull-request]]** — adds a new sensor-fusion path. It has a short description, passing tests, and a diff of moderate size.
 
-The first review is not worthless — a broken build or a clearly wrong diff would still be caught — but it checks only what is visible from reading the change as prose. The second review checks exactly the things that do not announce themselves on a casual read: traceability to a requirement, coverage of the case most likely to reveal a real defect, and the resource-bound constraints this field's flight code actually has to satisfy. The difference between the two is not effort in some vague sense; it is a specific, learnable list of questions, most of which this module has already given you by name.
+**Reviewer A** reads the diff top to bottom, confirms it builds, confirms the included tests pass, and approves it in a few minutes.
+
+**Reviewer B** asks three questions before approving anything:
+
+1. Which requirement does this satisfy, and does the ticket the change points to say so?
+2. Does the test cover the case where the new sensor *disagrees* with the existing ones — not only the case where they agree?
+3. Does anything in the new path allocate memory or use an unbounded loop? This function sits inside the control loop.
+
+Review A is not worthless. It would still catch a broken build or a plainly wrong change. But it checks only what you can see by reading the change like prose. Review B checks exactly the things that do not announce themselves: traceability to a requirement, a test of the case most likely to expose a real defect, and the resource limits flight code must meet.
+
+The difference is not "trying harder" in some vague way. It is a specific, learnable list of questions — and this module has already given you almost every one of them by name.
+:::
+
+::: note Why "small" is a review rule, not only tidiness
+Every check above needs the reviewer to truly understand the change. Understanding has a size limit. Past a few hundred lines of mixed concerns, a reviewer can no longer trace each line to a requirement, find each missing edge test, or spot each hidden allocation. So a sprawling change does not only take longer to review. Past a certain size, it cannot be reviewed carefully at all.
 :::
 
 ## Check yourself
 
 ::: check
-Name at least four specific things a reviewer of flight or simulation code checks for, beyond confirming the change compiles and its own tests pass.
+Name at least four specific things a reviewer of flight or simulation code checks, beyond confirming that the change compiles and its own tests pass.
 :::
 
 ::: answer
-Correctness against the actual, traceable requirement rather than a general impression of reasonableness; whether the change includes the test that would have caught the bug it fixes; resource bounds — no new heap allocation, no unbounded loop, no escaping exception — in anything touching the control path; explicit units and frames at any changed interface; and whether a different engineer could safely read and modify the result later without reconstructing the author's reasoning from scratch.
+Any four of these five:
+
+1. Correctness against the actual, traceable requirement — not a general sense that the code is reasonable.
+2. Whether the change includes the test that would have caught the bug it fixes.
+3. Resource bounds in anything touching the control path — no new heap allocation, no unbounded loop, no escaping exception.
+4. Explicit units and frames at any changed interface.
+5. Whether a different engineer could safely read and modify the result later, without rebuilding the author's reasoning from scratch.
 :::
 
 ::: check
-In the sensor-selection example, explain what specific question exposed the bug, and why the fact that the author's own tests passed was not sufficient evidence the function was correct.
+In the sensor-selection example, what question exposed the bug? Why were the author's own passing tests not enough evidence that the function was correct?
 :::
 
 ::: answer
-The exposing question was a direct boundary check: what happens if only the last sensor is still valid? The author's own tests covered "all three good" and "only the first good," both of which happen to return the correct answer even with the off-by-one bug present, because the loop only fails to examine the very last index — a case neither of the author's tests exercised. Passing tests only demonstrate correctness for the specific cases those tests cover; they say nothing about a case, like this one, that nobody thought to write a test for.
+The question was a boundary check: "What happens if only the last sensor is still valid?"
+
+The author's tests were "all three valid" and "only the first valid." Both return the right answer even with the bug, because the bug only skips the very last index, and neither test needed the last index. Passing tests show the code is correct for the cases those tests cover. They say nothing about a case nobody wrote a test for — like this one.
 :::
 
 ::: check
-State the concrete definition of "production quality at senior level" given in this lesson, and explain why "cannot be fixed by a restart" is the right property to contrast it against.
+State this lesson's definition of "production quality at senior level." Why is "cannot be fixed by a restart" the right thing to contrast it against?
 :::
 
 ::: answer
-Production quality means code that has been reviewed by someone other than its author, carries unit tests covering boundary and sign cases, behaves deterministically within a bounded execution time near the control path, is documented well enough for a different engineer to modify correctly during a real anomaly, and runs somewhere a defect cannot be resolved by restarting the process. "Cannot be fixed by a restart" is the right contrast because a great deal of ordinary software tolerates real defects precisely because a crash-and-relaunch is an acceptable recovery; a vehicle in flight has no equivalent fallback, so whatever the code actually does in the moment a fault occurs is, practically speaking, the entire outcome — which is why every resource-bound and fault-handling constraint elsewhere in this module exists.
+Production-quality code is reviewed by someone other than its author, unit tested including boundary and sign cases, deterministic and bounded in execution time and resources near the control path, documented well enough for a different engineer to modify it correctly during a real problem at 2 a.m., and deployed somewhere a defect cannot be cleared by restarting the process.
+
+"Cannot be fixed by a restart" is the right contrast because a lot of ordinary software tolerates real defects exactly because crash-and-relaunch is an acceptable recovery. A vehicle in flight has no such fallback. Whatever the code does at the moment of a fault is, practically, the whole outcome. That is why every resource-bound and fault-handling rule in this module exists.
 :::
 
 ::: check
-Explain specifically why a reviewer asks "does this change include the test that would have caught the bug it fixes," rather than only asking "does this fix the bug."
+Why does a reviewer ask "does this change include the test that would have caught the bug it fixes?" instead of only "does this fix the bug?"
 :::
 
 ::: answer
-"Does this fix the bug" can be answered by the author trying the specific case they noticed and confirming it now behaves correctly, which demonstrates the fix works for that one case but leaves no durable, checkable evidence and no protection against the same defect being silently reintroduced later. A test that fails against the old code and passes against the fix is evidence anyone can rerun at any point in the future, and it becomes a permanent part of the regression suite discussed in the previous lesson, turning a one-time claim into a standing, automatically enforced check.
+"Does this fix the bug?" can be answered by the author trying the one case they noticed and seeing it now works. That shows the fix works for that case, but leaves no lasting, checkable evidence, and nothing stops the same bug from being quietly reintroduced later.
+
+A test that fails on the old code and passes on the fixed code is evidence anyone can rerun at any time. It also joins the regression suite from the previous lesson, so a one-time claim becomes a standing check that runs automatically on every future change.
 :::
 
 ::: check
-Explain how the version-control practice of keeping changes small and focused connects to a reviewer's ability to actually perform the checks described in this lesson.
+How does the version-control habit of keeping changes small and focused connect to a reviewer's ability to perform the checks in this lesson?
 :::
 
 ::: answer
-Every check this lesson describes — tracing correctness to a requirement, confirming a fix's test actually covers the bug, checking resource bounds, checking units and frames, judging whether the result is maintainable — requires the reviewer to genuinely understand the change, and a person can hold a small, focused change in their head well enough to check all of that, but cannot do the same for a large change mixing several unrelated concerns at once. A sprawling change does not only take longer to review; past a certain size it defeats careful review entirely, regardless of the reviewer's diligence, which is why small, single-purpose changes are a review practice and not merely a version-control tidiness preference.
+Every check — tracing correctness to a requirement, confirming the fix's test covers the bug, checking resource bounds, checking units and frames, judging whether the code can be maintained — needs the reviewer to really understand the change.
+
+A person can hold a small, focused change in their head well enough to do all of that. They cannot do it for a large change that mixes several unrelated concerns. So a sprawling change does not only take longer; past a certain size it defeats careful review entirely, however diligent the reviewer. That makes "small, single-purpose changes" a review practice, not only a tidiness preference.
 :::
 
 ## Summary
 
-| Concept | What it means |
+| Idea | What it means |
 | --- | --- |
-| Small, focused change | A change a reviewer can actually hold in mind well enough to check thoroughly |
-| Always-buildable main line | A shared history where "broken" and "working" states are never ambiguous |
-| Fix without its test | A one-time claim, not durable evidence the defect is actually resolved |
-| Production quality (senior level) | Reviewed, tested at its boundaries, bounded in resource use, documented for 2 a.m., not recoverable by a restart |
-| "Not recoverable by a restart" | The property that makes every resource-bound and fault-handling constraint in this module non-negotiable |
+| Commit | A saved snapshot of the code, with a message saying what changed and why |
+| Small, focused change | A change a reviewer can hold in mind well enough to check thoroughly |
+| Always-buildable main line | A shared history where "broken" and "working" states are never confused |
+| Fix without its test | A one-time claim, not lasting evidence the defect is gone |
+| The reviewer's list | Requirement, regression test, resource bounds, units and frames, maintainability |
+| Production quality (senior level) | Reviewed, unit tested, deterministic, bounded in resources, documented for 2 a.m., deployed where a restart is not a fix |
+| "Not recoverable by a restart" | The fact that makes every resource-bound and fault-handling rule in this module non-negotiable |
 
-The next lesson turns to what you can actually practice now, alone, that carries directly into this kind of work: reading unfamiliar code, writing the test before the fix, and keeping a record good enough for someone else to trust.
+The next and final lesson of the module turns to what you can practice now, on your own, that carries straight into this kind of work: reading unfamiliar code, writing the test before the fix, and keeping a record good enough for someone else to trust.
+
+::: context git-story A tool built in a hurry
+The most widely used version-control tool today is **Git**. Linus Torvalds, who created Linux, wrote the first version in 2005, after the Linux project lost free use of the tool it had been using. He needed something fast that thousands of people could use at once, and Git was running within weeks. Almost every software team — including teams writing rocket software — now keeps its history in Git or something like it. Sites such as GitHub and GitLab host Git histories online and add the review tools this lesson describes.
+:::
+
+::: context main-line A trunk with branches
+Engineers picture the shared history as a line of commits, often called **main** (older projects say "master" or "trunk"). To make a change, you start a **branch** — your own side line — make your commits there, get them reviewed, and then **merge** them back. The main line only ever receives reviewed, tested work, so it stays buildable.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <line x1="20" y1="40" x2="340" y2="40" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="40" cy="40" r="8" fill="#1d6fd1"/>
+  <circle cx="100" cy="40" r="8" fill="#1d6fd1"/>
+  <circle cx="220" cy="40" r="8" fill="#1d6fd1"/>
+  <circle cx="300" cy="40" r="9" fill="#ffffff" stroke="#1d6fd1" stroke-width="3"/>
+  <path d="M100 40 L140 90 L240 90 L300 40" fill="none" stroke="#f2b880" stroke-width="2"/>
+  <circle cx="160" cy="90" r="8" fill="#f2b880"/>
+  <circle cx="220" cy="90" r="8" fill="#f2b880"/>
+  <text x="20" y="22" font-size="12" fill="#1f2a44">main (always builds)</text>
+  <text x="150" y="118" font-size="12" fill="#1f2a44">your branch: 2 commits</text>
+  <text x="312" y="74" font-size="12" fill="#1f2a44">merge</text>
+  <text x="300" y="22" font-size="11" fill="#6c7a93" text-anchor="middle">after review</text>
+</svg>
+```
+:::
+
+::: context diff-reading What a diff looks like
+A **diff** (short for "difference") shows two versions of a file side by side, or one above the other, and marks only what changed. Removed lines start with a minus sign and are usually shown in red. Added lines start with a plus sign and are shown in green. Unchanged lines nearby are shown plain, for context. For the sensor bug, the fix's diff would be two lines: the old `for` line with a minus, and the corrected one with a plus. Reviewers spend a large part of their week reading diffs.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="10" width="340" height="90" rx="6" fill="#ffffff" stroke="#6c7a93" stroke-width="1"/>
+  <text x="20" y="32" font-size="12" fill="#6c7a93">  def select_active_sensor(readings, valid):</text>
+  <rect x="12" y="41" width="336" height="20" fill="#b4232c" fill-opacity="0.12"/>
+  <text x="20" y="56" font-size="12" fill="#b4232c">-     for i in range(len(readings) - 1):</text>
+  <rect x="12" y="63" width="336" height="20" fill="#8fb8f0" fill-opacity="0.35"/>
+  <text x="20" y="78" font-size="12" fill="#1d6fd1">+     for i in range(len(readings)):</text>
+  <text x="20" y="96" font-size="12" fill="#6c7a93">          if valid[i]:</text>
+</svg>
+```
+
+Here the added line is drawn in blue rather than green.
+:::
+
+::: context regression-word Why "regression"
+To **regress** means to slip back to an earlier, worse state. A **regression** in software is a bug that was fixed, or a feature that worked, and then breaks again because of some later change. A regression test is a guard posted at the spot where something once went wrong. The previous lesson showed a whole suite of them running automatically on every change, so the same mistake cannot sneak back in unnoticed.
+:::
+
+::: context two-am-review The anomaly at 2 a.m.
+An **anomaly** is anything a vehicle does that nobody expected. When one shows up during a mission, the team works it right away, whatever the hour. The engineer on duty may be looking at code they have never read before. Clear names, a comment saying *why* a line exists, and a test showing what the code is supposed to do are what let that person act safely and fast. That is why "someone else could modify it at 2 a.m." sits inside the definition of production quality.
+:::
+
+::: context supervisor Why a restart is usually enough
+Servers are often run under a **supervisor**: a small program that notices when the main program has died and starts it again within a second or two. Users might see one failed page load and never know anything happened. Because of this, a lot of ordinary software is built to "fail fast and restart." Flight code cannot rely on that. Even if a flight computer could reboot, the vehicle keeps moving during those seconds, so the moment of the fault has already done its damage.
+:::
+
+::: context off-by-one The fencepost problem
+Off-by-one bugs are so common they have a nickname: **fencepost errors**. A fence 4 sections long needs 5 posts, not 4. Counting "sections" when you meant "posts" (or the reverse) puts you one out. In Python, `range(n)` gives the $n$ numbers $0, 1, \dots, n-1$. Writing `range(n - 1)` gives only $n - 1$ of them and silently drops the last.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <g stroke="#8fb8f0" stroke-width="4">
+    <line x1="40" y1="45" x2="320" y2="45"/>
+    <line x1="40" y1="65" x2="320" y2="65"/>
+  </g>
+  <g fill="#1f2a44">
+    <rect x="34" y="30" width="12" height="50"/>
+    <rect x="104" y="30" width="12" height="50"/>
+    <rect x="174" y="30" width="12" height="50"/>
+    <rect x="244" y="30" width="12" height="50"/>
+    <rect x="314" y="30" width="12" height="50"/>
+  </g>
+  <g font-size="12" fill="#1d6fd1" text-anchor="middle">
+    <text x="75" y="22">1</text><text x="145" y="22">2</text><text x="215" y="22">3</text><text x="285" y="22">4</text>
+  </g>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <text x="40" y="98">1</text><text x="110" y="98">2</text><text x="180" y="98">3</text><text x="250" y="98">4</text><text x="320" y="98">5</text>
+  </g>
+  <text x="352" y="22" font-size="11" fill="#1d6fd1" text-anchor="end">sections</text>
+</svg>
+```
+
+The blue numbers count the 4 sections; the dark numbers count the 5 posts.
+:::
+
+::: context pull-request Asking to be pulled in
+The name comes from Git: you ask the project to **pull** your branch's commits into its main line. GitHub made "pull request" (often shortened to PR) the everyday term; GitLab calls the same thing a "merge request". Either way it is a page holding the diff, the description, the test results and a comment thread where the reviewer and author discuss the change line by line until it is approved.
+:::

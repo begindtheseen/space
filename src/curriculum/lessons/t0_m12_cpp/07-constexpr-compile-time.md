@@ -1,47 +1,71 @@
 ---
 id: l07-constexpr-compile-time
 title: constexpr and compile-time computation
-minutes: 25
+minutes: 26
 covers:
   - constexpr and compile-time computation
 ---
 
-The best time to compute something for a flight computer is before launch. Better still is before the binary exists. A lookup table built while the compiler runs costs nothing at boot and cannot be corrupted by a bug in the initialisation code; a checksum implementation verified by the compiler cannot ship wrong; a unit mismatch caught at compile time never reaches the vehicle. C++ has grown, over three standards, a complete facility for this: `constexpr` marks variables and functions the compiler may evaluate itself, `static_assert` turns a compile-time value into a build-breaking test, and C++20's `consteval` and `constinit` let you *demand* compile-time evaluation rather than merely permit it.
+Think of the multiplication table printed on the back of an old school notebook. Somebody worked out every product once, before the notebook was even printed. When you need $7 \times 8$, you do not multiply. You look it up. The work was done ahead of time, it was checked once, and it can never come out different.
 
-This is a different use of the language from what a Python programmer expects. Python has no compile-time; everything happens when the script runs, including building tables and checking units, so a mistake in either shows up as an exception on the pad — or, worse, as a plausible number. In C++ the same code, marked `constexpr`, runs inside the compiler, and the result is baked into the executable as data. The run-time program does not compute the sine table; it reads it.
+C++ can do the same thing with a program. The **compiler** — the tool that turns your source code into a program the processor can run — can also *run parts of your code while it builds*. Whatever it works out gets stored inside the finished program as plain data. We call the moment of building **[[compile time|compile-vs-run]]**, and the moment the program actually runs on the flight computer **run time**. This lesson is about moving work from run time to compile time.
 
-Three flight-software idioms in this lesson rest on the mechanism: compile-time tables (a CRC table for telemetry, a sine table for a processor without fast transcendentals), *units as types* — a `Quantity` template whose dimensions the compiler adds and subtracts so that a length divided by a time *is* a velocity and a length plus a time is a compile error — and a fixed-point type whose scale is part of its type. All three run at compile time where they can, and at zero overhead where they cannot.
+Why a GNC engineer cares: the best time to compute something for a flight computer is before the program even exists. A lookup table built by the compiler costs nothing at boot, and no bug in start-up code can corrupt it. A checksum routine that the compiler has already tested cannot ship wrong. A units mistake caught while building never reaches the vehicle. Python has no compile time at all — everything happens when the script runs — so these mistakes show up as an error on the launch pad or, worse, as a believable wrong number.
+
+You will meet `constexpr`, which lets the compiler do the work; `static_assert`, which turns a compile-time fact into a test that stops the build; and C++20's `consteval` and `constinit`, which *demand* compile-time work. Then we use them for three flight-software habits: compiler-built tables, compiler-checked units, and fixed-point numbers whose scale is part of their type.
 
 ## const, constexpr and what "constant expression" means
 
-`const` means the value does not change after initialisation. `constexpr` means more: the value is known to the compiler, computed from a *constant expression*, and usable wherever the language demands a compile-time constant — an array bound, a template argument, a `static_assert`, a `case` label. `const int n = read_sensor();` is legal; `constexpr int n = read_sensor();` is not, because the compiler cannot evaluate a sensor read.
+Start with two promises. `const` is a promise that a value will not change after it is first set. It says nothing about *when* the value is worked out. `const int n = read_sensor();` is fine: the sensor is read while the program runs, and after that `n` stays put.
 
-A `constexpr` *function* is one the compiler is permitted to evaluate during compilation when its arguments are constants. The same function is an ordinary function when called with run-time arguments; the keyword grants an ability, it does not restrict use. Since C++14 such a function may contain loops, local variables and branches, and since C++20 nearly the whole language, with the exceptions of anything whose result the compiler could not reproduce: I/O, reading uninitialised memory, undefined behaviour of any kind (a compile-time evaluation that overflows a signed integer is a compile *error*, which makes `constexpr` evaluation a free UB checker for whatever it touches).
+`constexpr` (say "const-expr") is a bigger promise. It says the compiler itself can work out the value while building. The value must come from a **constant expression** — a calculation that uses only things the compiler already knows. So `constexpr int n = read_sensor();` will not build: the compiler cannot read a sensor that is bolted to a vehicle it has never seen.
+
+Why bother? Some places in C++ *require* a value known while building — a fixed array's size, a template argument, a `static_assert`, a `case` label — and a `constexpr` value fits all of them.
+
+A `constexpr` *function* is one the compiler is allowed to run while building, when all its inputs are known then. Call the same function with a value that only exists at run time, and it runs as an ordinary function. The keyword adds an ability; it does not take one away. Since C++14 such a function can have loops, local variables and `if` statements. Since C++20 nearly the whole language is allowed. What is still forbidden is anything whose result the compiler could not reproduce: reading or writing files, reading memory that was never set, and any **[[undefined behaviour|ub-at-compile-time]]** — the operations C++ refuses to give a meaning to, such as overflowing a signed integer. If a compile-time calculation tries one, the build fails. That makes compile-time evaluation a free checker for whatever code it touches.
 
 ```cpp
+#include <cstdio>
+
 constexpr double square(double x) { return x * x; }   // usable at compile time or run time
 
 constexpr double at_compile_time = square(3.0);       // evaluated by the compiler
 static_assert(at_compile_time == 9.0);
-const double at_run_time = square(argc + 0.5);        // same function, run-time argument
-// Output: square: 9.0 at compile time, 2.25 at run time  (for argc == 1)
+
+int main(int argc, char**) {
+  const double at_run_time = square(argc + 0.5);      // same function, run-time argument
+  std::printf("square: %.1f at compile time, %.2f at run time\n", at_compile_time, at_run_time);
+  return 0;
+}
+// Output (run with no arguments, so argc == 1):
+// square: 9.0 at compile time, 2.25 at run time
 ```
 
-`static_assert(condition, "message")` is evaluated by the compiler and fails the build if the condition is false. It is a unit test that runs on every compile, costs nothing at run time, and can check anything a constant expression can express: the size of a struct, the value of a table entry, the result of an algorithm on known input. The message is optional since C++17 but always worth writing.
+One function, two uses. The compiler worked out `square(3.0)`, and the program holds only the answer $9$. `argc` counts the words typed to launch the program, so `square(argc + 0.5)` can only run at run time.
+
+### static_assert: a test that runs every time you build
+
+`static_assert(condition, "message")` asks the compiler to check a condition while building. If the condition is false, the build stops and prints your message. It is a unit test that runs on every build, costs nothing at run time, and can check anything a constant expression can say: the size of a struct, a table entry, an algorithm's result on known input. Since C++17 the message is optional, but write it anyway: it is what the next engineer reads.
+
+```cpp
+#include <cstdint>
+struct Packet { std::int32_t id; double t; std::uint16_t seq; };
+static_assert(sizeof(Packet) == 14, "Packet must be 14 bytes for the telemetry link");
+```
 
 ```text
 sa.cpp:3:30: error: static assertion failed: Packet must be 14 bytes for the telemetry link
 sa.cpp:3:30: note: the comparison reduces to '(24 == 14)'
 ```
 
-That particular failure — a struct of a 4-byte, an 8-byte and a 2-byte field coming to 24 bytes rather than 14 — is padding, and lesson 9 explains it. The point here is that the `static_assert` caught the layout assumption before a single packet was sent.
+The fields add up to $4 + 8 + 2 = 14$ bytes, but the struct is really 24. The extra ten bytes are *padding* — gaps the compiler leaves so that each field sits at a tidy address — and lesson 9 explains exactly where they go. The point for now: the `static_assert` caught the wrong assumption before a single packet was sent.
 
 ## Tables built by the compiler
 
-A `constexpr` function that returns a `std::array` can fill a table with a loop, and assigning its result to a `constexpr` variable forces the whole computation to happen at compile time. The table lands in read-only memory as literal data; the function is never called at run time and may not even exist in the binary.
+Back to the notebook's times table. A `constexpr` function can fill a whole `std::array` with a loop and hand it back. If you store the result in a `constexpr` variable, the compiler *must* run that loop while building. The finished table lands in the program as literal numbers, in **[[read-only memory|read-only-data]]** — memory the running program is not allowed to write to. The function that built it is never called at run time, and may not even exist in the program.
 
 ::: example A CRC-32 table computed at compile time, and verified there
-Telemetry frames carry a CRC-32 so the ground can reject corrupted packets. The standard implementation uses a 256-entry table derived from the polynomial. Here the compiler derives it.
+Telemetry frames carry a **[[CRC-32|crc-idea]]** — a 32-bit fingerprint of the bytes — so the ground station can throw away packets that were damaged on the way down. The fast way to compute it uses a table of 256 numbers derived from a fixed bit pattern called the polynomial. Here the compiler derives the table.
 
 ```cpp
 #include <array>
@@ -89,11 +113,15 @@ int main() {
 // table[1] = 0x77073096, table size = 1024 bytes
 ```
 
-The three `static_assert` lines are the interesting part. `0xCBF43926` is the published check value of CRC-32 over the ASCII string `123456789`; if anyone edits the polynomial, the shift direction or the final inversion, the program stops compiling. The same `crc32` function then runs at run time on the packet — the output agrees with Python's `zlib.crc32` to the last digit — reading the table the compiler built. Nothing is computed twice, and nothing is trusted that the compiler did not check.
+Step by step. `make_crc32_table` loops over all 256 possible byte values and, for each one, shifts and mixes its bits eight times. Assigning its result to `constexpr auto kCrc32Table` forces the compiler to do all of that while building. The table is $256 \times 4 = 1024$ bytes, which is what the program prints.
+
+The three `static_assert` lines are the interesting part. `0xCBF43926` is the published check value of CRC-32 over the text `123456789`. If anyone edits the polynomial, the shift direction or the final flip of the bits, the program stops building. Then the very same `crc32` function runs at run time on the packet, reading the table the compiler built.
+
+Sanity check: Python's `zlib.crc32` gives `0x75F2B455` for the same packet.
 :::
 
 ::: example A sine table for a processor without a fast sine
-`std::sin` is not guaranteed to be usable in a constant expression, so the table below computes its own sine with a Taylor series and then checks itself. At run time a lookup with linear interpolation costs a handful of floating-point operations and no transcendental call — the trade a flight processor without a fast maths library, or an FPGA design, makes routinely.
+Some flight processors, and the programmable chips called FPGAs, have no quick way to compute a sine. A common trick is a table of sines plus **linear interpolation** — joining neighbouring table entries with straight lines and reading off the line. `std::sin` is not guaranteed to work at compile time, so the table below computes its own sine with a **[[Taylor series|taylor-sine]]** — a sum of ever-smaller terms — and then checks itself.
 
 ```cpp
 #include <array>
@@ -156,20 +184,34 @@ int main() {
 // table: 1024 entries, 8192 bytes, built before the program ran
 ```
 
-Two lessons hide in the assertions. The first version of the second `static_assert` demanded `kSine[256] <= 1.0` and failed to compile: twelve terms of the series at $\pi/2$ round to $1.0000000000000002$. Compile-time arithmetic is IEEE arithmetic, with the same rounding you met in the Python module, and a compile-time test of a floating-point result needs a tolerance like any other. The second lesson is the error figure: linear interpolation on 1024 points gives a worst case of $4.7 \times 10^{-6}$, which is $\tfrac{1}{8}\,(2\pi/1024)^2 = 4.7 \times 10^{-6}$ from the standard interpolation-error bound — adequate for a coarse attitude display, inadequate for navigation, and a design decision the table size makes explicit.
+How the lookup works. `fast_sin` turns the angle into a fraction of a full turn and throws away whole turns with `std::floor`. It multiplies by 1024 to find a position in the table. The whole-number part `i` picks a table entry, and the leftover `frac` says how far to go toward the next one. At run time that is a handful of multiplications and additions, and no sine call at all.
+
+Two lessons hide in the assertions. First, an earlier draft of the second `static_assert` demanded `kSine[256] <= 1.0`, and it would not build. Entry 256 is a quarter turn, where the sine is exactly $1$, but twelve rounded terms of the series add up to $1.0000000000000002$. Compile-time arithmetic rounds exactly like run-time arithmetic — both follow IEEE 754, the standard for computer decimals — so a compile-time test of a floating-point result needs a tolerance.
+
+Second, the error figure. The table spacing is $h = 2\pi/1024$ radians. For linear interpolation the **[[standard error bound|interpolation-picture]]** is $\tfrac{1}{8} h^2$ times the largest size of the curve's second derivative, which for sine is $1$:
+
+$$
+\tfrac{1}{8}\left(\frac{2\pi}{1024}\right)^2 = 4.7 \times 10^{-6} .
+$$
+
+That matches the measured $4.71 \times 10^{-6}$: fine for a coarse attitude display, not for navigation — a design decision the table size makes visible.
 :::
 
 ## Demanding compile time: consteval, constinit and if constexpr
 
-`constexpr` permits compile-time evaluation and the compiler decides. Three C++20 tools remove the discretion.
+`constexpr` *allows* compile-time work, and the compiler decides whether to do it. Three C++20 tools take the choice away.
 
-A `consteval` function — an *immediate* function — must be evaluated at compile time, and calling it with a run-time argument is a compile error. It is the right marking for anything that must never run on the vehicle: computing a timer reload value from a period, deriving a scale factor, checking a configuration constant.
+A **`consteval`** function (say "const-eval") — also called an *immediate* function — *must* be worked out while building. Call it with a run-time value and the build fails with an error such as `'c' is not a constant expression`. Use it for anything that must never run on the vehicle: a timer's reload value, a scale factor, a configuration check.
 
-`constinit` on a variable with static storage — a global or a `static` local — requires that its initialiser be a constant expression, so the variable is initialised at compile time and placed in the binary as data. This removes an entire class of embedded bug: the *static initialisation order* problem, where one global's constructor reads another global that has not been constructed yet, because the order of dynamic initialisation across translation units is unspecified. A `constinit` global has no dynamic initialisation to order.
+A **`constinit`** variable is a global (or a `static` local) whose starting value must be a constant expression. So it is filled in while building and sits in the program as data. This removes a whole family of embedded bugs, the **[[static initialisation order|static-init-order]]** problem: one global's set-up code reads another global that has not been set up yet, because C++ does not say which order globals in different source files get set up at start-up. A `constinit` global has no start-up code, so there is nothing to put in the wrong order.
 
-`if constexpr` is a branch evaluated at compile time. Inside a template, the branch not taken is not even compiled for that instantiation, so a generic function can do different things for `float` and `std::int16_t` without either path having to compile for the other type.
+**`if constexpr`** is an `if` decided while building. Inside a template, the branch not taken is not even compiled for that type. So one generic function can do different things for a `float` and a `std::int16_t`, and neither path has to make sense for the other type.
 
 ```cpp
+#include <cstdint>
+#include <cstdio>
+#include <type_traits>
+
 // consteval: must be evaluated at compile time; a run-time argument is a compile error.
 consteval std::uint32_t ticks_for(double period_s, double tick_s) {
   return static_cast<std::uint32_t>(period_s / tick_s + 0.5);
@@ -189,12 +231,18 @@ const char* describe(T value) {
     return "something else";
   }
 }
+
+int main() {
+  std::printf("control period = %u ticks\n", g_control_period_ticks);
+  std::printf("%s / %s / %s\n", describe(1.5), describe(std::int16_t{3}), describe("text"));
+  return 0;
+}
 // Output:
 // control period = 2500 ticks
-// floating point / small integer / something else      (for 1.5, int16_t{3}, "text")
+// floating point / small integer / something else
 ```
 
-`std::is_floating_point_v` and `std::is_integral_v` are *type traits* from the `type_traits` header: compile-time predicates on types, the older cousins of the concepts you met in lesson 5.
+Check the tick count: a $2.5\,\mathrm{ms}$ control period on a $1\,\mu\mathrm{s}$ timer is $0.0025 / 0.000001 = 2500$ ticks, and the `+ 0.5` rounds to the nearest whole tick. `std::is_floating_point_v` and `std::is_integral_v` are **type traits**: yes-or-no questions about a type, answered while building — older cousins of lesson 5's concepts.
 
 ::: key
 `constexpr` marks a variable or function the compiler *may* evaluate at compile time; `consteval` marks a function it *must*; `constinit` marks a static variable whose initialiser must be a constant expression, so it needs no run-time initialisation. `static_assert` fails the build when a compile-time condition is false. Compile-time evaluation follows IEEE rounding and refuses to perform undefined behaviour.
@@ -202,7 +250,17 @@ const char* describe(T value) {
 
 ## Units as types
 
-Lesson 2 wrapped a `double` in `struct Seconds` so that a function taking seconds could not be handed metres. That approach needs a new struct and a new set of operators for every unit, and it cannot express that metres divided by seconds gives metres per second. Templates over integer exponents can. A `Quantity<L, T, M>` carries the exponents of length, time and mass in its type; multiplying two quantities adds the exponents, dividing subtracts them, and adding requires them to match — all decided by the compiler from the types, with a plain `double` as the only run-time content.
+Think of a grocery receipt. You can add apples to apples, but "3 apples plus 2 dollars" is nonsense. Physics works the same way: you can add a length to a length, but never a length to a time. Dividing is different. A length divided by a time is a new kind of thing, a speed.
+
+Lesson 2 wrapped a `double` in `struct Seconds`. That needs a new struct for every unit, and cannot say that metres divided by seconds gives metres per second. A template can.
+
+The idea: every physical unit is lengths, times and masses raised to whole-number powers. Speed is $\mathrm{m^1\,s^{-1}}$. Force is $\mathrm{kg\,m\,s^{-2}}$. So a `Quantity<L, T, M>` stores those three powers — the **exponents** of length, time and mass — as part of its *type*. Then:
+
+- multiplying two quantities **adds** their exponents ($\mathrm{m} \times \mathrm{m} = \mathrm{m}^2$);
+- dividing **subtracts** them ($\mathrm{m} / \mathrm{s} = \mathrm{m^1\,s^{-1}}$);
+- adding requires the exponents to **match**, or there is no `+` to call.
+
+The compiler decides all of this from the types. The only thing left when the program runs is a plain `double`.
 
 ::: example Dimensions the compiler adds and subtracts
 ```cpp
@@ -262,7 +320,17 @@ int main() {
 // sizeof(Force) = 8 (same as a double)
 ```
 
-A 2500 m burn over 12.5 s is $200\,\mathrm{m/s}$; that velocity gained over the same 12.5 s is $16\,\mathrm{m/s^2}$; on a 25 000 kg stage that is $F = ma = 400\,\mathrm{kN}$ — and the compiler knows the result is a force, because `stage * a` has type `Quantity<1, -2, 1>`, which is `Force`. Uncomment either error line and the build stops: `no match for 'operator+' (operand types are 'Quantity<1, 0, 0>' and 'Quantity<0, 1, 0>')`. `operator""_m` defines a *user-defined literal*, so `2500.0_m` reads as a length in the source. Every object is one `double` wide and every operation compiles to the same instructions as unadorned arithmetic; all the checking happened in the type system and is gone by the time the code runs. This is what "zero-cost abstraction" means when the phrase is used honestly.
+Follow the numbers and the types together.
+
+1. Distance over time: $2500\,\mathrm{m} / 12.5\,\mathrm{s} = 200\,\mathrm{m/s}$. The exponents go $(1,0,0) - (0,1,0) = (1,-1,0)$, which is `Velocity`.
+2. That speed gained over the same $12.5\,\mathrm{s}$: $200 / 12.5 = 16\,\mathrm{m/s^2}$. Exponents $(1,-1,0) - (0,1,0) = (1,-2,0)$, which is `Acceleration`.
+3. On a $25\,000\,\mathrm{kg}$ stage, $F = ma = 25\,000 \times 16 = 400\,000\,\mathrm{N} = 400\,\mathrm{kN}$. Exponents $(0,0,1) + (1,-2,0) = (1,-2,1)$, which is `Force`.
+
+Sanity check: $16\,\mathrm{m/s^2}$ is about $1.6\,g$, a believable push for a rocket stage.
+
+Now uncomment either error line and the build stops: `no match for 'operator+' (operand types are 'Quantity<1, 0, 0>' and 'Quantity<0, 1, 0>')`. The `operator""_m` lines define **user-defined literals**, so `2500.0_m` reads as a length right in the source.
+
+Every object is one `double` wide — 8 bytes — and every operation compiles to the same instructions as bare arithmetic. All the checking happened in the types and is gone by run time. This is what **[[zero-cost abstraction|zero-cost]]** means when the phrase is used honestly.
 :::
 
 ::: key
@@ -271,7 +339,11 @@ Units as types: a `Quantity<L, T, M>` template carries dimension exponents in it
 
 ## Fixed point with a compile-time scale
 
-Lesson 1 described fixed point — an integer with an implied scale — as the representation at the sensor and actuator boundary. The danger of fixed point is that the scale is implied: nothing stops you adding a Q16.16 value to a Q8.24 one. Making the number of fractional bits a template parameter puts the scale in the type, and `constexpr` lets the conversions and the resolution be computed by the compiler.
+Picture a shop that keeps its prices in whole cents. It never stores $\$1.25$; it stores $125$ and remembers, somewhere, "divide by 100". That is **fixed point**: an ordinary integer with an agreed scale. Lesson 1 described it as the format numbers often arrive in from sensors and leave in toward actuators.
+
+The danger is the word "remembers". Nothing stops you adding a number scaled by $2^{16}$ to one scaled by $2^{24}$, and the sum is garbage that looks fine. The cure: make the number of fractional bits a template parameter. Then the scale is part of the **type**, the compiler can work out conversions and resolution with `constexpr`, and two different scales are two different types that cannot be mixed by accident.
+
+The usual name is a **[[Q format|q-format]]**. "Q15.16" means 15 bits for the whole-number part and 16 bits for the fraction, plus a sign bit: 32 bits in all. One count is worth $2^{-16}$.
 
 ::: example A Q16 fixed-point type
 ```cpp
@@ -339,7 +411,13 @@ int main() {
 // angle per step   = 0.000534058 rad (exact 0.000538434)
 ```
 
-Read the numbers as a fixed-point designer would. The resolution of Q16 is $2^{-16} = 1.526 \times 10^{-5}$, about $8.7 \times 10^{-4}\,^\circ/\mathrm{s}$: the 12.34°/s rate is stored as 14 115 counts and reproduced to within half a count. The last line is the warning. Multiplying the rate by a 2.5 ms step gives an angle of $5.4 \times 10^{-4}\,\mathrm{rad}$, only 35 counts of Q16, and the product's truncation from 35.3 to 35 counts is a 0.8 % error in the angle — far worse than the 0.002 % error in the rate. Fixed point demands that each signal have its own format: a small quantity like a per-step angle wants Q8.24 or a 64-bit accumulator, and the `Fixed<24>` instantiation is one line away. The type parameter makes that choice visible in every signature, and the compiler refuses to add a `Fixed<16>` to a `Fixed<24>` because they are different types.
+Read the numbers the way a fixed-point designer would.
+
+1. **Resolution.** One count is $2^{-16} = 1.526 \times 10^{-5}$ rad/s. Converting to degrees ($\times 180/\pi$) gives about $8.7 \times 10^{-4}$ degrees per second.
+2. **The rate.** The gyro says 1234 counts of $0.01$ °/s, so $12.34$ °/s. In radians that is $12.34 \times \pi/180 = 0.215374$ rad/s. Multiply by $65\,536$ to get $14\,114.7$ counts, which rounds to $14\,115$. The stored rate is within half a count of the truth — an error of only about $0.002\%$.
+3. **The angle per step.** Multiply by the $2.5\,\mathrm{ms}$ step. The true angle is $5.38 \times 10^{-4}$ rad, which is only about $35.3$ counts of Q16. The product is cut down to $35$ counts, and together with the rounding of `dt` that makes the stored angle $0.8\%$ too small. That is four hundred times worse than the rate's error.
+
+That last line is the warning: each signal needs its own format. A small per-step angle wants Q8.24 (resolution $2^{-24} \approx 6 \times 10^{-8}$, so the same angle is about 9033 counts) or a 64-bit accumulator, and `Fixed<24>` is one line away. The type parameter shows the choice in every signature, and the compiler refuses to add a `Fixed<16>` to a `Fixed<24>`.
 :::
 
 ::: warning
@@ -347,7 +425,7 @@ Compile-time floating-point arithmetic is still floating-point arithmetic. A `st
 :::
 
 ::: warning
-`constexpr` on a function does not make it run at compile time; only a context that requires a constant — initialising a `constexpr` variable, a `static_assert`, a template argument — guarantees that. `const auto table = make_table();` may well be evaluated at run time during start-up. Write `constexpr auto table = make_table();` when you mean the compiler to do the work, or use `consteval` on the function when it must never run on the target.
+`constexpr` on a function does not make it run at compile time. Only a place that *requires* a constant — initialising a `constexpr` variable, a `static_assert`, a template argument — guarantees that. `const auto table = make_table();` may well be computed at run time during start-up. Write `constexpr auto table = make_table();` when you mean the compiler to do the work, or mark the function `consteval` when it must never run on the target.
 :::
 
 ## Check yourself
@@ -357,7 +435,11 @@ What is the difference between `const double kMu = compute_mu();` and `constexpr
 :::
 
 ::: answer
-The `const` version promises only that `kMu` is not modified after initialisation; `compute_mu()` may run at start-up and do anything. The `constexpr` version requires the initialiser to be a constant expression evaluated by the compiler, so `compute_mu` must itself be declared `constexpr`, and the evaluation must involve no I/O, no reading of run-time state and no undefined behaviour. In return `kMu` can be used as an array bound or in a `static_assert`, and it exists in the binary as a literal rather than as code.
+The `const` version only promises that `kMu` is not changed after it is set. `compute_mu()` may run at start-up and do anything.
+
+The `constexpr` version requires the starting value to be a constant expression worked out by the compiler. So `compute_mu` must itself be declared `constexpr`, and running it must involve no file or device input and output, no reading of run-time state, and no undefined behaviour.
+
+In return, `kMu` can be used as an array size or inside a `static_assert`, and it sits in the program as a literal number rather than as code.
 :::
 
 ::: check
@@ -365,7 +447,9 @@ A colleague writes `const auto kCrcTable = make_crc32_table();` at global scope 
 :::
 
 ::: answer
-`constexpr` on `make_crc32_table` permits compile-time evaluation but does not require it, and a `const` variable is not a context that demands a constant expression, so the compiler is free to emit a call at dynamic initialisation time — and at low optimisation levels it will. Declaring the variable `constexpr auto kCrcTable = make_crc32_table();` (or `constinit`) requires the initialiser to be evaluated by the compiler, and the table becomes read-only data with no start-up cost. Adding a `static_assert` on one entry then proves it.
+`constexpr` on `make_crc32_table` *allows* compile-time evaluation but does not *require* it. A `const` variable is not a place that demands a constant expression, so the compiler is free to call the function during start-up — and at low optimisation levels it will.
+
+Declaring the variable `constexpr auto kCrcTable = make_crc32_table();` (or `constinit`) forces the compiler to evaluate it. The table then becomes read-only data with no start-up cost. Adding a `static_assert` on one entry proves it, because a `static_assert` can only read a value known while building.
 :::
 
 ::: check
@@ -373,7 +457,11 @@ In the `Quantity` example, what is the type of `stage * a / burn_time`, and what
 :::
 
 ::: answer
-`stage` is `Quantity<0, 0, 1>`, `a` is `Quantity<1, -2, 0>`, so `stage * a` adds exponents to give `Quantity<1, -2, 1>`, a force. Dividing by `burn_time`, `Quantity<0, 1, 0>`, subtracts exponents: `Quantity<1, -3, 1>`, which is force per time — the rate of change of thrust, in newtons per second. `thrust + burn_distance` does not compile: `operator+` is defined only for two quantities with identical exponents, and `Quantity<1, -2, 1>` plus `Quantity<1, 0, 0>` matches no overload. The check costs nothing at run time; it is decided entirely from the types.
+`stage` is `Quantity<0, 0, 1>` and `a` is `Quantity<1, -2, 0>`. Multiplying adds exponents, so `stage * a` is `Quantity<1, -2, 1>`, a force.
+
+Dividing by `burn_time`, which is `Quantity<0, 1, 0>`, subtracts exponents: `Quantity<1, -3, 1>`. That is force per unit time — how fast the thrust is changing, in newtons per second.
+
+`thrust + burn_distance` does not compile. `operator+` exists only for two quantities with identical exponents, and `Quantity<1, -2, 1>` plus `Quantity<1, 0, 0>` matches no version of it. The check costs nothing at run time; it is decided entirely from the types.
 :::
 
 ::: check
@@ -381,7 +469,11 @@ Why did `Q16::from_double(1.5) * Q16::from_double(2.0)` pass an exact-equality `
 :::
 
 ::: answer
-The fixed-point product is integer arithmetic. $1.5$ is exactly $98\,304$ counts and $2.0$ exactly $131\,072$; their 64-bit product shifted right by 16 is exactly $196\,608$ counts, which converts back to exactly $3.0$ because all the values are representable in binary. The sine table's entries come from a floating-point series with twelve rounded multiplications and additions, so the result at $\pi/2$ is $1.0000000000000002$ rather than $1$. Equality is exact for integer-valued results and for binary-representable floating values; anything computed through rounding needs a tolerance.
+The fixed-point product is integer arithmetic. $1.5$ is exactly $98\,304$ counts and $2.0$ is exactly $131\,072$. Their 64-bit product shifted right by 16 is exactly $196\,608$ counts, which converts back to exactly $3.0$, because every value involved can be written exactly in binary.
+
+The sine table's entries come from a floating-point series with a dozen rounded multiplications and additions, so the result at a quarter turn is $1.0000000000000002$ rather than $1$.
+
+Rule of thumb: equality is exact for integer-valued results and for values binary can represent exactly. Anything computed through rounding needs a tolerance.
 :::
 
 ::: check
@@ -389,7 +481,13 @@ The exercise asks for a `static_assert` that the propagator's state type is fixe
 :::
 
 ::: answer
-For a fixed-size Eigen type the size is a compile-time constant, so `static_assert(State::SizeAtCompileTime == 6, "state must be a fixed-size 6-vector");` — or `static_assert(State::RowsAtCompileTime == 6 && State::ColsAtCompileTime == 1);` — compiles for `Eigen::Matrix<double, 6, 1>` and fails for a dynamic `Eigen::VectorXd`, whose size constant is the sentinel `Eigen::Dynamic`. It belongs in the code because a run-time test can only observe that one particular build allocated nothing; the assertion forbids the dynamic type in every build, including the one someone produces after swapping the state type "temporarily".
+For a fixed-size Eigen type the size is a compile-time constant, so
+
+`static_assert(State::SizeAtCompileTime == 6, "state must be a fixed-size 6-vector");`
+
+or `static_assert(State::RowsAtCompileTime == 6 && State::ColsAtCompileTime == 1);` builds for `Eigen::Matrix<double, 6, 1>`. It fails for a dynamic `Eigen::VectorXd`, whose size constant is the special marker value `Eigen::Dynamic`.
+
+It belongs in the code because a run-time test can only observe that one particular build allocated nothing. The assertion forbids the dynamic type in *every* build — including the one someone makes after swapping the state type "temporarily".
 :::
 
 ## Summary
@@ -405,8 +503,100 @@ For a fixed-size Eigen type the size is a compile-time constant, so `static_asse
 | `if constexpr` | compile-time branch; the untaken branch is not compiled |
 | compile-time table | `constexpr auto t = make_table();` — literal data in read-only memory |
 | CRC-32 check value | `crc32("123456789") == 0xCBF43926` |
+| interpolation error | linear table with spacing $h$: worst error about $\tfrac{1}{8}h^2 \max\lvert f''\rvert$ |
 | `Quantity<L, T, M>` | exponents in the type; `*` adds, `/` subtracts, `+` requires equality |
 | `Fixed` with a `FracBits` parameter | fixed point with resolution $2^{-\text{FracBits}}$ in the type |
 | compile-time floating point | IEEE rounding applies; compare with a tolerance |
 
-The next lesson is about what happens when a value cannot be known at compile time and is wrong at run time — how flight code reports and handles errors without the exception machinery Python relies on.
+The next lesson is about what happens when a value cannot be known at compile time and turns out wrong at run time — how flight code reports and handles errors without the exception machinery Python relies on.
+
+::: context compile-vs-run Two different moments
+A C++ program lives through two separate moments. First the compiler reads your source and builds the program file, on an engineer's computer, weeks before flight. Later the flight computer runs that file. `constexpr` work happens in the first moment, so the vehicle only ever sees the answers.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="30" width="90" height="44" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="55" y="50" font-size="12" text-anchor="middle" fill="#1f2a44">source</text>
+  <text x="55" y="65" font-size="11" text-anchor="middle" fill="#1f2a44">code</text>
+  <rect x="135" y="30" width="90" height="44" rx="6" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="50" font-size="12" text-anchor="middle" fill="#1f2a44">compiler</text>
+  <text x="180" y="65" font-size="11" text-anchor="middle" fill="#1f2a44">builds tables</text>
+  <rect x="260" y="30" width="90" height="44" rx="6" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="305" y="50" font-size="12" text-anchor="middle" fill="#1f2a44">flight</text>
+  <text x="305" y="65" font-size="11" text-anchor="middle" fill="#1f2a44">computer</text>
+  <line x1="100" y1="52" x2="128" y2="52" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="134,52 126,48 126,56" fill="#1f2a44"/>
+  <line x1="225" y1="52" x2="253" y2="52" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="259,52 251,48 251,56" fill="#1f2a44"/>
+  <text x="117" y="100" font-size="12" text-anchor="middle" fill="#1d6fd1">compile time</text>
+  <text x="305" y="100" font-size="12" text-anchor="middle" fill="#b4232c">run time</text>
+  <text x="180" y="120" font-size="11" text-anchor="middle" fill="#6c7a93">static_assert fails here, not in flight</text>
+</svg>
+```
+:::
+
+::: context ub-at-compile-time The compiler as a free bug detector
+Undefined behaviour is the set of operations C++ gives no meaning to — overflowing a signed integer, reading past the end of an array, reading a variable that was never set. At run time these often *seem* to work, which is why they are dangerous. When the compiler evaluates a `constexpr` function, though, it is required to stop with an error the moment it hits one. So calling your function inside a `static_assert` with test inputs checks that path for undefined behaviour for free. Lesson 12 returns to undefined behaviour and the run-time tools that hunt it.
+:::
+
+::: context read-only-data Why read-only data is safer
+A running program's memory is split into regions. Some can be written, some only read. A `constexpr` table goes in a read-only region, and on many flight computers that region lives in flash memory next to the program's instructions. A stray pointer bug that scribbles over memory cannot change it: the processor refuses the write. Compare a table filled in by start-up code, which sits in ordinary writable memory for the whole flight, where one bad write could quietly change a sine value or a CRC entry.
+:::
+
+::: context crc-idea A fingerprint for a packet
+A CRC — cyclic redundancy check — boils a whole message down to one 32-bit number. The sender computes it and attaches it. The receiver computes it again from the bytes that arrived. If even one bit flipped on the way, the two numbers almost surely differ, and the packet is thrown away. It is a cousin of the check digit on a barcode, but far stronger: CRC-32 catches every single-bit error and every burst of flipped bits up to 32 long. The same CRC-32 guards Ethernet frames, ZIP files and PNG images.
+:::
+
+::: context taylor-sine Building a sine out of multiplication
+Near zero, $\sin x$ is almost exactly $x$. A better guess subtracts $x^3/6$, and a better one still adds back $x^5/120$:
+
+$$
+\sin x = x - \frac{x^3}{3!} + \frac{x^5}{5!} - \frac{x^7}{7!} + \cdots
+$$
+
+Each term is the previous one times $-x^2/\big((2n)(2n+1)\big)$, which is exactly the line `term *= ...` in the code. Only multiplication and addition are needed, so the compiler can do it. Keeping $x$ between $-\pi$ and $\pi$ makes the terms shrink fast. The calculus module shows where this series comes from.
+:::
+
+::: context interpolation-picture Why the error goes as the spacing squared
+Linear interpolation draws straight chords between table points. The curve bulges away from each chord, most in the middle. Halve the spacing and the bulge shrinks to a quarter, which is why the error bound has $h^2$ in it. Here the spacing is a huge $\pi/4$ so the gaps are visible; the real table uses $2\pi/1024$.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
+  <line x1="20" y1="150" x2="340" y2="150" stroke="#6c7a93" stroke-width="1"/>
+  <polyline fill="none" stroke="#1d6fd1" stroke-width="2" points="30.0,150.0 35.0,144.2 40.0,138.5 45.0,132.8 50.0,127.1 55.0,121.5 60.0,116.0 65.0,110.6 70.0,105.3 75.0,100.1 80.0,95.0 85.0,90.1 90.0,85.3 95.0,80.8 100.0,76.4 105.0,72.2 110.0,68.3 115.0,64.5 120.0,61.0 125.0,57.7 130.0,54.7 135.0,52.0 140.0,49.5 145.0,47.3 150.0,45.4 155.0,43.7 160.0,42.4 165.0,41.4 170.0,40.6 175.0,40.2 180.0,40.0 185.0,40.2 190.0,40.6 195.0,41.4 200.0,42.4 205.0,43.7 210.0,45.4 215.0,47.3 220.0,49.5 225.0,52.0 230.0,54.7 235.0,57.7 240.0,61.0 245.0,64.5 250.0,68.3 255.0,72.2 260.0,76.4 265.0,80.8 270.0,85.3 275.0,90.1 280.0,95.0 285.0,100.1 290.0,105.3 295.0,110.6 300.0,116.0 305.0,121.5 310.0,127.1 315.0,132.8 320.0,138.5 325.0,144.2 330.0,150.0"/>
+  <polyline fill="none" stroke="#b4232c" stroke-width="1.5" points="30,150 105,72.2 180,40 255,72.2 330,150"/>
+  <g fill="#1f2a44"><circle cx="30" cy="150" r="3"/><circle cx="105" cy="72.2" r="3"/><circle cx="180" cy="40" r="3"/><circle cx="255" cy="72.2" r="3"/><circle cx="330" cy="150" r="3"/></g>
+  <text x="180" y="28" font-size="12" text-anchor="middle" fill="#1d6fd1">sin x</text>
+  <text x="70" y="128" font-size="12" text-anchor="middle" fill="#b4232c">chords</text>
+  <text x="30" y="168" font-size="11" text-anchor="middle" fill="#1f2a44">0</text>
+  <text x="180" y="168" font-size="11" text-anchor="middle" fill="#1f2a44">π/2</text>
+  <text x="330" y="168" font-size="11" text-anchor="middle" fill="#1f2a44">π</text>
+</svg>
+```
+:::
+
+::: context static-init-order Who gets set up first?
+Imagine two classmates told to arrive at 8:00, where one must copy notes from the other. If the copier arrives first, the notes are blank. Globals with run-time set-up code are like that. C++ sets up globals within one source file in order, but between different source files the order is not specified. If the gyro driver's global reads a calibration global from another file during start-up, it may read it before it has been filled in. The program works on one build and fails on the next. `constinit` sidesteps it: no set-up code, so no order.
+:::
+
+::: context zero-cost What you do not use, you do not pay for
+Bjarne Stroustrup, who created C++, set two goals for its features. What you do not use, you do not pay for. And what you do use, you could not write more cheaply by hand. The `Quantity` template meets both: a program with unit checking is byte for byte the program you would get with bare `double`s. The phrase is often stretched to features that do cost something at run time, which is why it is worth checking — `sizeof(Force) == 8` is the check here.
+:::
+
+::: context q-format Reading a Q15.16 number
+A Q15.16 number is a 32-bit integer with an imaginary binary point placed 16 bits from the right. Reading the raw integer and dividing by $2^{16} = 65\,536$ gives the value. The biggest raw value, $2^{31} - 1$, divided by $65\,536$ is a hair under $32\,768$; one count is $2^{-16} \approx 0.0000153$.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="30" width="10" height="26" fill="#b4232c" stroke="#1f2a44" stroke-width="1"/>
+  <rect x="30" y="30" width="150" height="26" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1"/>
+  <rect x="180" y="30" width="160" height="26" fill="#f2b880" stroke="#1f2a44" stroke-width="1"/>
+  <line x1="180" y1="20" x2="180" y2="66" stroke="#1f2a44" stroke-width="2.5"/>
+  <text x="180" y="15" font-size="11" text-anchor="middle" fill="#1f2a44">binary point</text>
+  <text x="25" y="80" font-size="11" text-anchor="middle" fill="#b4232c">sign</text>
+  <text x="105" y="80" font-size="11" text-anchor="middle" fill="#1f2a44">15 integer bits</text>
+  <text x="260" y="80" font-size="11" text-anchor="middle" fill="#1f2a44">16 fraction bits</text>
+  <text x="180" y="102" font-size="11" text-anchor="middle" fill="#6c7a93">value = raw integer ÷ 65 536</text>
+</svg>
+```
+:::

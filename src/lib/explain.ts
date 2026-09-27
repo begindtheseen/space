@@ -216,10 +216,18 @@ export function rankNotes(
     // Every word she highlighted should be in the note's name for it to be about them.
     if (score < 40 && hits < Math.min(selTerms.size, 2)) continue
     if (score <= 0) continue
+    const exact = labels.includes(sel)
     const bodyTerms = new Set(terms(note.body))
     for (const w of selTerms) if (bodyTerms.has(w)) score += idf(w)
     const k = key(note.m, note.l)
     const where = k === key(me.here.moduleId, me.here.lessonId) ? 'here' : me.read.has(k) ? 'read' : me.earlier?.has(k) ? 'earlier' : 'ahead'
+    // A lesson she has not reached may use the same word in a sense she has
+    // not met ("pattern" in a shell lesson is not a null-motion pattern), so
+    // a note from ahead answers only when it is named for exactly her words.
+    if (where === 'ahead' && !exact) continue
+    // In a coding lesson, a note from an unread module (maths, GNC) is the
+    // same word in another subject; only Learn to code's own notes answer.
+    if (where === 'ahead' && me.here.moduleId === 'learn' && note.m !== 'learn') continue
     score *= where === 'here' ? 1.6 : where === 'ahead' ? 1 : 1.35
     scored.push({ note, score, where })
   }
