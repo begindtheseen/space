@@ -6,29 +6,49 @@
 
 === cpp2-01 | const correctness
 --- teach
-The basics course had you writing functions, vectors, strings, maps and small classes. This course turns that into careful, everyday modern C++: the standard library's containers and algorithms, classes that guard their own rules, and the debugging habits that catch C++'s quiet bugs. It starts with the keyword that makes code safe to pass around.
+The basics course ended with pointers: a raw pointer like `int*` to [[look at something|look-only-pointers]], and a `std::unique_ptr` to own it. Looking at a thing without changing it is the idea this lesson starts from.
 
-`const` is a promise the compiler holds you to. You met it on variables; it matters far more on **references** and **member functions**.
+This course turns what you learned in the basics into careful, everyday modern C++: the standard library's containers and algorithms, classes that guard their own rules, and the debugging habits that catch C++'s quiet bugs. It opens with the keyword that makes code safe to pass around: `const`.
 
-A `const` reference parameter says "I need to look at your object, I will not change it, and I will not copy it":
+### A promise the compiler holds you to
+
+Picture lending a friend your model rocket inside a glass case. They can look at every fin and every decal, but they cannot pick it up and bend anything. `const` (short for constant) is that glass case.
+
+You met it on variables in the basics course. After `const double pi = 3.14159;`, any line that tries to change `pi` is a compile error. So `const` is a promise, and it is one the [[compiler holds you to|const-in-flight-rules]]: break it, and the program does not build. On plain variables it is handy. On **references** and on **member functions** it matters far more.
+
+### const on a reference parameter
+
+You have written this kind of parameter since the vector lesson:
 
 ```cpp
 int total(const std::vector<int>& v);   // reads v, never copies it
 ```
 
-Inside a class, putting `const` after a member function's parameter list promises that calling it leaves the object unchanged:
+The `&` (read "reference to") means the function works on the caller's own vector, with no copy. The `const` means it promises not to change it. Together they tell whoever calls `total` three things: "I need to look at your object, I will not change it, and I will not copy it."
+
+### const on a member function
+
+In the classes lesson, `Account` had `int balance() const`. That `const`, written *after* a member function's parameter list, is the same promise made by a member function: calling it leaves the object unchanged.
+
+Here is a small class with one member function of each kind:
 
 ```cpp
 class Wallet {
 public:
-    void add(int cents) { cents_ += cents; }        // changes the object
-    int cents() const { return cents_; }            // only looks
+    void add(int cents) { cents_ += cents; }   // changes the object
+    int cents() const { return cents_; }       // only looks
 private:
     int cents_ = 0;
 };
 ```
 
-Here is why it matters. Through a `const Wallet&`, the compiler only lets you call `const` member functions:
+- `add` changes `cents_` (`+=` is "add to"), so it has no `const`.
+- `cents()` only reads, so it gets one. A member function like this, which hands back a piece of the object's data, is called a **getter**.
+- `int cents_ = 0;` gives the member its starting value right where it is declared, so every new wallet starts empty.
+
+### Why it matters: a const reference only allows const calls
+
+Here is a function that takes a wallet by `const` reference. It is a **free function**: an ordinary function that is not a member of any class.
 
 ```cpp
 void show(const Wallet& w) {
@@ -37,23 +57,111 @@ void show(const Wallet& w) {
 }
 ```
 
-So the most common mistake is the reverse: writing a getter and **forgetting** the `const`. The class still works on its own, but the moment someone passes it around the normal way, by `const&`, every call to that getter fails to compile. The rule of thumb:
+Through a `const Wallet&`, the compiler lets you call [[only the member functions marked const|const-view]]. It stops at the second line. clang, the compiler in this app, says:
 
-- Parameters you only read: `const T&` (or a plain copy for small things like `int`).
+```text
+error: 'this' argument to member function 'add' has type 'const Wallet', but function is not marked const
+```
+
+That is exactly what you want: `show` promised not to change the wallet, and the compiler caught it trying.
+
+### The mistake people really make
+
+**Watch out:** the common mistake is the reverse. You write a getter and **forget** the `const`:
+
+```cpp
+int cents() { return cents_; }   // no const
+```
+
+The class still works on its own, so you do not notice. But the moment someone passes a `Wallet` around the normal way, by `const Wallet&`, every call to that getter fails to compile. The getter only reads, but you never promised that, so the compiler has to assume it might write.
+
+### The rule of thumb
+
+- Parameters you only read: `const T&`. Here `T` stands for any type, as in `const std::string&` or `const Wallet&`. For small things like `int` or `double`, a plain copy is fine.
 - Member functions that only read: mark them `const`.
-- Loops that only read: `for (const auto& x : items)`.
+- Loops that only read: `for (const auto& x : items)`. The `auto` lets the compiler work out the element type, the `&` skips the copy, and the `const` promises not to change anything.
 
-A `const` member function cannot change members, and it can only call other `const` member functions. Inside one, `this` points at a `const` object.
+### Inside a const member function
 
-Two small things you will meet in the solution and all through this course. `v.size()` returns a `std::size_t`, an **unsigned** whole-number type (it can never be negative); when a function returns `int`, convert with `static_cast<int>(v.size())`. And `std::min_element(v.begin(), v.end())` from `<algorithm>` finds the smallest element for you. It returns an **iterator** (a position in the vector, used like a pointer), so put `*` in front to get the value. The next lessons cover algorithms and iterators properly.
+A `const` member function cannot change any member. It can also only call *other* `const` member functions of the same object, because calling one without `const` might change the object behind its back.
+
+How does the compiler keep track? Every member function gets a hidden pointer called **this**: the address of the object it was called on. In `w.cents()`, `this` points at `w`. Inside a `const` member function, [[this points at a const object|this-pointer]], so every change through it is refused. That is why the error above talks about the "'this' argument".
+
+### Two tools the task needs
+
+The task keeps its readings in a vector, so here are two small tools you will meet in its solution and all through this course.
+
+First, `v.size()` returns a `std::size_t`, an **unsigned** whole-number type: one that can never be negative. When your function returns an `int`, [[convert it|size-t-to-int]] with the `static_cast` from the arithmetic lesson:
+
+```cpp
+int count() const { return static_cast<int>(readings_.size()); }
+```
+
+Second, `std::min_element`, from the header `<algorithm>`, finds the smallest element for you. You hand it `v.begin()` and `v.end()`, which mark the start and the end of the vector, so together they mean "search the whole thing". It gives back an **[[iterator|iterator-preview]]**: a position in the vector, used like a pointer. So put `*` in front to get the value, the way `*p` followed a pointer in the pointers lesson:
+
+```cpp
+std::vector<int> r = {12, -3, 7};
+int low = *std::min_element(r.begin(), r.end());   // -3
+```
+
+`std::max_element` works the same way and finds the largest. The next lessons cover algorithms and iterators properly.
+
+::: context look-only-pointers const works on pointers too
+The same promise fits pointers. `const int* p` is a look-only pointer: you may read `*p`, but `*p = 0;` is a compile error. Careful code writes the "raw pointers to look at things" rule from the pointers lesson exactly this way. Reading the type from right to left helps: `const int* p` is "p is a pointer to an int that is const". A `const` after the star, as in `int* const p`, means something else: the pointer itself can never be moved to point somewhere new, though the int it points at can still change.
+:::
+
+::: context const-in-flight-rules Why flight-software rules love const
+`const` costs nothing while the program runs: all the checking happens while it compiles. Yet it catches a whole family of bugs, such as a function that was only meant to read a table of sensor limits but changed one by accident. That is why careful coding standards ask for it. MISRA C++, a rule book used for car, aircraft and spacecraft software, says that a variable which is never changed shall be declared `const`, and that a pointer or reference parameter shall be to `const` when the function does not change what it refers to. The C++ Core Guidelines say the same: make objects and member functions `const` by default.
+:::
+
+::: context const-view A read-only window onto the same object
+A `const Wallet&` does not make the wallet itself unchangeable. It is a read-only window onto it. The caller still holds the wallet under its own name and can call `add` whenever it likes. Only code that sees the wallet through the `const` window is limited to the `const` member functions.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="hb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1d6fd1"/>
+    </marker>
+  </defs>
+  <rect x="245" y="45" width="100" height="70" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="295" y="75" font-size="13" text-anchor="middle" fill="#1f2a44">Wallet w</text>
+  <text x="295" y="95" font-size="12" text-anchor="middle" fill="#1f2a44">cents_ = 250</text>
+  <text x="15" y="64" font-size="12" fill="#1f2a44">w.add(5)</text>
+  <line x1="95" y1="60" x2="243" y2="60" stroke="#1d6fd1" stroke-width="2" marker-end="url(#hb)"/>
+  <text x="15" y="104" font-size="12" fill="#1f2a44">view.cents()</text>
+  <line x1="105" y1="100" x2="243" y2="100" stroke="#1d6fd1" stroke-width="2" marker-end="url(#hb)"/>
+  <text x="15" y="144" font-size="12" fill="#1f2a44">view.add(5)</text>
+  <line x1="105" y1="140" x2="188" y2="140" stroke="#b4232c" stroke-width="2"/>
+  <line x1="195" y1="82" x2="195" y2="158" stroke="#6c7a93" stroke-width="4" stroke-dasharray="6 4"/>
+  <text x="195" y="76" font-size="11" text-anchor="middle" fill="#6c7a93">const window</text>
+  <text x="205" y="144" font-size="12" fill="#b4232c">compile error</text>
+  <text x="15" y="24" font-size="11" fill="#6c7a93">view is a const Wallet&amp; to the same w</text>
+</svg>
+```
+:::
+
+::: context this-pointer The hidden pointer called this
+When you write `w.cents()`, C++ quietly hands the function a pointer to `w`, named `this`. Inside the function, `cents_` is short for `this->cents_`. The arrow `->` follows a pointer and then picks a member; it means the same as `(*this).cents_`. In an ordinary member function of `Wallet`, `this` has the type `Wallet*`. In a `const` one it has the type `const Wallet*`, a look-only pointer, so any line that writes a member is refused.
+:::
+
+::: context size-t-to-int Why convert size() to an int
+A `std::size_t` is 8 bytes on a 64-bit computer, so it can count up to 18446744073709551615. An `int` is 4 bytes and stops at 2147483647. `static_cast<int>` is safe as long as the vector holds fewer elements than that, which a list of thermometer readings always will. The cast also says out loud "I know these two types differ". Mixing them without saying so draws warnings: with this app's `-Wall -Wextra`, comparing an `int` counter with `v.size()` gives "comparison of integers of different signs".
+:::
+
+::: context iterator-preview Why the task promises at least one reading
+`std::min_element` searches from `begin()` up to, but not including, `end()`. If there are several equal smallest values, it points at the first one. For an empty vector there is nothing to find, so it gives back `end()`, a mark just past the last element that is not an element at all. Putting `*` in front of that is undefined behaviour, like following `nullptr`. That is why the task lets you assume at least one reading. Iterators get their own lesson soon, "Iterators and range-for".
+:::
 --- task
-Finish the `Thermometer` class so it is const-correct:
+Finish the `Thermometer` class in the starter so it is const-correct. It keeps its readings in a private vector called `readings_`.
 
-- `void record(int reading)` adds a reading.
+- `void record(int reading)` adds a reading. The starter's version is already right: it changes the object, so it gets no `const`.
 - `int count() const` returns how many readings there are.
-- `int lowest() const` and `int highest() const` return the smallest and largest reading (you may assume there is at least one).
+- `int lowest() const` returns the smallest reading, and `int highest() const` the largest. You may assume there is at least one reading.
 
-Then write a free function `int range_of(const Thermometer& t)` that returns `highest - lowest`. The checks use your class through a `const Thermometer&`. No `main`.
+Then fix the free function `range_of` so its parameter is `const Thermometer& t`, and make it return `highest - lowest`. For the readings 12, -3 and 7 that is 12 - (-3) = 15. For a single reading it is 0.
+
+Add `#include <algorithm>` at the top for `std::min_element` and `std::max_element`. The checks use your class through a `const Thermometer&`, and also make a `const Thermometer` with no readings, whose `count()` must be 0. No `main`.
 --- starter
 #include <vector>
 
@@ -88,11 +196,11 @@ int range_of(const Thermometer& t) {
     return t.highest() - t.lowest();
 }
 --- hint
-Put `const` after the parameter list of each function that only reads: `int count() const { … }`.
+Every function that only reads gets `const` after its parameter list, like `int cents() const` in `Wallet`. And `range_of` should take `const Thermometer& t`, so it neither copies nor changes the thermometer.
 --- hint
-`std::min_element(v.begin(), v.end())` (from `<algorithm>`) returns an iterator to the smallest element; `*` it to get the value.
+`std::min_element(readings_.begin(), readings_.end())` (from `<algorithm>`) gives back an iterator to the smallest reading; put `*` in front to get the value. For the count, convert `readings_.size()` with `static_cast<int>`.
 --- hint
-`range_of` should take `const Thermometer& t`, so it neither copies nor changes it.
+The shapes are `int count() const { return static_cast<int>(readings_.size()); }` and `int lowest() const { return *std::min_element(readings_.begin(), readings_.end()); }`; `highest` is the same with `std::max_element`. Then `range_of` returns `t.highest() - t.lowest();`.
 --- check test | count, lowest and highest work through a const reference
 [] { Thermometer t; t.record(12); t.record(-3); t.record(7); const Thermometer& view = t; return view.count() == 3 && view.lowest() == -3 && view.highest() == 12; }()
 --- check case | range_of 12, -3, 7 is 15
@@ -107,14 +215,24 @@ Put `const` after the parameter list of each function that only reads: `int coun
 
 === cpp2-02 | Debugging: the function that changed a copy
 --- teach
-Some bugs make no noise at all: the program compiles, runs, and simply does nothing. Those call for a method, not guesswork.
+Last lesson, `const` stopped a function from changing something it was only meant to look at. This lesson is about the opposite bug: a function that is *meant* to change your data, runs without a single complaint, and changes nothing.
 
-1. **Reproduce** it with the smallest input you can: one or two items, numbers you can check in your head.
-2. **Check your assumptions** one at a time. "The function runs" — does it? Print inside it. "It changes my data" — print the data inside the function *and* straight after the call.
+### Bugs that make no noise
+
+Some [[bugs|where-bug-comes-from]] make no noise at all. The program compiles, it runs, and it does nothing: no error, no crash, the numbers are still the old ones. Guessing at a bug like that can waste an afternoon. It calls for a method.
+
+### A method instead of guesswork
+
+An **assumption** is something you believe is true but have not checked. A silent bug always hides behind one. So debug in four steps:
+
+1. **Reproduce** it with the [[smallest input you can|smallest-input]]: one or two items, numbers you can check in your head.
+2. **Check your assumptions**, one at a time. "The function runs" — does it? [[Print something inside it|prints-and-debuggers]]. "It changes my data" — print the data inside the function *and* straight after the call.
 3. **Narrow down** to the first place where what you see differs from what you expect.
-4. **Fix the cause**, not the symptom. Returning the changed vector and assigning it back would make the output right, but it hides a design mistake that will bite again.
+4. **Fix the cause**, not the [[symptom|cause-not-symptom]]. Returning the changed vector and assigning it back would make the output right, but it hides a design mistake that will bite again.
 
-In C++ the classic silent bug is **working on a copy**. Two places make copies without saying so:
+### The classic silent bug: working on a copy
+
+In the references lesson you saw that C++ hands a function a photocopy unless you ask for a reference. In C++ the classic silent bug is exactly that: **working on a copy**. Two places make copies without saying so. "By value" means "as a copy":
 
 ```cpp
 void reset(std::vector<int> v) {     // 1. a by-value parameter copies the caller's vector
@@ -124,13 +242,91 @@ void reset(std::vector<int> v) {     // 1. a by-value parameter copies the calle
 }
 ```
 
-Both copies are changed and then thrown away. Printing `x` inside the loop shows zeros, printing the caller's vector afterwards shows nothing changed — that gap is exactly where the copy is.
+Both copies are changed, and then thrown away when the function ends. The caller's vector never sees a thing.
 
-The fix is a reference at *each* copy point: `std::vector<int>& v` and `for (int& x : v)`. Fixing only one of the two still leaves the bug, which is why step 2 (checking after every change) matters.
+### Following the method
+
+Step 2 says: print inside, and print after. Here is what that looks like:
+
+```cpp
+void reset(std::vector<int> v) {
+    for (int x : v) {
+        x = 0;
+        std::cout << "inside: " << x << "\n";   // prints 0, twice
+    }
+}
+
+std::vector<int> d = {4, 5};
+reset(d);
+std::cout << "after: " << d[0] << "\n";          // prints 4
+```
+
+Inside the loop you see zeros. After the call, the caller's vector is unchanged. That gap, right inside and wrong outside, is [[exactly where the copy is|where-the-copy-is]].
+
+### The fix: a reference at each copy point
+
+Put a reference at *each* copy point: `std::vector<int>& v` for the parameter, and `for (int& x : v)` for the loop.
+
+```cpp
+void reset(std::vector<int>& v) {
+    for (int& x : v) {
+        x = 0;
+    }
+}
+```
+
+Fixing only one of the two still leaves the bug. Fix only the parameter, and the loop still zeroes a copy of each element. That is why step 2 matters: check again after every change you make.
+
+`auto` follows the same rule. `for (auto item : items)` copies each element, just like `for (int x : v)`. `for (auto& item : items)` makes `item` a reference, so changes stick.
+
+**Watch out:** the compiler rarely warns you. In the tiny `reset` above, clang does print `warning: variable 'x' set but not used`, a clue worth reading. But once the loop changes a member of a struct, as in `item.price_cents = …`, there is no warning at all. Only your method finds it.
+
+::: context where-bug-comes-from Where the word bug comes from
+Engineers called faults "bugs" long before computers; Thomas Edison used the word in letters in the 1870s. In September 1947, the team running the Harvard Mark II computer found a real moth stuck in one of its relays. They taped it into their logbook with the note "First actual case of bug being found." Grace Hopper, who worked on that machine and later helped create the language COBOL, loved telling the story. The logbook page is now at the Smithsonian's National Museum of American History.
+:::
+
+::: context smallest-input Why a tiny input helps
+With two items and round prices, you know the right answer before you run anything: 10% off 1000 is 900. With a thousand items you would need the program to check the program. A small failing case is also quick to run again after every change. Programmers call it a *minimal reproducible example*, and it is what you attach to a bug report so someone else can see the bug for themselves.
+:::
+
+::: context prints-and-debuggers Prints, debuggers and telemetry
+Adding print lines is the oldest debugging tool, and still one of the most used. Programs called debuggers, such as gdb and lldb, can instead pause a running program at any line and show every variable, without editing the code at all. Either way the idea is the same: stop guessing and look at the real values. Delete your print lines once the bug is fixed. A spacecraft does a version of this all the time: it sends a stream of measurements called *telemetry* back to Earth, so engineers can see inside a program running millions of kilometres away.
+:::
+
+::: context cause-not-symptom Symptom or cause
+The *symptom* is what you see going wrong; the *cause* is why. Here, making the function return its changed vector, so the caller writes `cart = apply_discount(cart, 10);`, would make the prices right. But the function's name and its `void` return promise to change the caller's vector in place, and the next person who calls it that normal way hits the same bug again. Accident investigators at NASA hunt for the *root cause* of every mishap for the same reason: a symptom that is patched over comes back somewhere else.
+:::
+
+::: context where-the-copy-is Three boxes, two copies
+The caller's `d` is copied into the parameter `v`, and each element of `v` is copied again into `x`. The zero lands in the last box only. Printing inside the loop looks at `x`; printing after the call looks at `d`.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <text x="60" y="36" font-size="12" text-anchor="middle" fill="#1d6fd1">d (caller)</text>
+  <text x="180" y="36" font-size="12" text-anchor="middle" fill="#1f2a44">v (parameter)</text>
+  <text x="300" y="36" font-size="12" text-anchor="middle" fill="#b4232c">x (loop copy)</text>
+  <rect x="15" y="45" width="90" height="40" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="135" y="45" width="90" height="40" fill="#f2b880" stroke="#1f2a44"/>
+  <rect x="255" y="45" width="90" height="40" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="60" y="70" font-size="14" text-anchor="middle" fill="#1f2a44">{4, 5}</text>
+  <text x="180" y="70" font-size="14" text-anchor="middle" fill="#1f2a44">{4, 5}</text>
+  <text x="300" y="70" font-size="14" text-anchor="middle" fill="#1f2a44">0</text>
+  <line x1="107" y1="65" x2="131" y2="65" stroke="#6c7a93" stroke-width="2"/>
+  <polygon points="133,65 125,61 125,69" fill="#6c7a93"/>
+  <line x1="227" y1="65" x2="251" y2="65" stroke="#6c7a93" stroke-width="2"/>
+  <polygon points="253,65 245,61 245,69" fill="#6c7a93"/>
+  <text x="60" y="108" font-size="12" text-anchor="middle" fill="#1d6fd1">after: 4</text>
+  <text x="300" y="108" font-size="12" text-anchor="middle" fill="#b4232c">inside: 0</text>
+  <text x="180" y="138" font-size="11" text-anchor="middle" fill="#6c7a93">the gap between the two prints is the copy</text>
+</svg>
+```
+:::
 --- task
 **Bug report:** "After `apply_discount(cart, 10)` every price in `cart` is still the old one. No error, no warning."
 
-`apply_discount` should lower each item's `price_cents` by `percent` percent, rounding down (so 10% off 250 is 225). Find why the caller's items never change and fix the cause, keeping the function's name and `void` return. No `main`.
+An `Item` is a struct with a `name` and a `price_cents`. `apply_discount` should lower each item's `price_cents` by `percent` percent, rounding down, so 10% off 250 is 225. The arithmetic line inside the loop is already right: whole-number division rounds down for you.
+
+Use the method from the explanation to find why the caller's items never change, then fix the cause. Keep the function's name and its `void` return. No `main`.
 --- starter
 #include <string>
 #include <vector>
@@ -162,9 +358,11 @@ void apply_discount(std::vector<Item>& items, int percent) {
     }
 }
 --- hint
-Print `items[0].price_cents` inside the function and `cart[0].price_cents` right after the call. They disagree — why?
+Picture step 2 of the method: print `items[0].price_cents` inside the function and `cart[0].price_cents` right after the call. They disagree. Why?
 --- hint
-There are two copies: the parameter and the loop variable. Each needs an `&`.
+There are two copy points, as in `reset`: the parameter `std::vector<Item> items` and the loop variable `auto item`. Each one needs an `&`.
+--- hint
+The parameter becomes `std::vector<Item>& items` and the loop becomes `for (auto& item : items)`. The line inside the loop stays exactly as it is.
 --- check test | 10% off changes the caller's cart
 [] { std::vector<Item> cart{{"tea", 1000}, {"jam", 250}}; apply_discount(cart, 10); return cart[0].price_cents == 900 && cart[1].price_cents == 225; }()
 --- check test | 0% leaves prices alone
@@ -401,7 +599,13 @@ is_palindrome("level") && is_palindrome("") && is_palindrome("a") && !is_palindr
 
 === cpp2-05 | std::map, std::unordered_map and std::set
 --- teach
-Three containers cover most "look it up" problems:
+In the iterators lesson you walked through a container one position at a time, with `begin()`, `end()` and `*it`. In the basics course you met `std::map`, which finds a value by its key instead of by its position. This lesson adds two close relatives of the map, shows how to choose between all three, and uses iterators to look things up.
+
+### Three containers for "look it up"
+
+Think of three everyday lists. A phone's contact list is kept in alphabetical order, so you can read it top to bottom. A cloakroom hands you a ticket and finds your coat straight away, but the coats hang in no particular order. And a guest list at a door only answers one question: is this name on it?
+
+C++ has one container for each:
 
 | Container | Holds | Order | Lookup |
 | --- | --- | --- | --- |
@@ -409,35 +613,155 @@ Three containers cover most "look it up" problems:
 | `std::unordered_map<K, V>` | key → value | none you can rely on | O(1) on average |
 | `std::set<T>` | unique values | sorted | O(log n) |
 
+`K` stands for the key's type, `V` for the value's type and `T` for the type of the things stored. The last column says how the time to find something grows as the container fills up. It is written in [[big-O notation|big-o]]: **O(log n)**, read "order log n", means that doubling the number of items adds only about one more step; **O(1)**, read "order one", means about the same few steps however many items there are.
+
+### std::set: each value once
+
+A **std::set** is a sorted collection in which every value appears at most once. Add a value that is already there and nothing happens. It needs `#include <set>`.
+
 ```cpp
-#include <map>
-#include <set>
-#include <unordered_map>
+std::set<std::string> seen = {"b", "a", "b"};   // {"a", "b"}: the second "b" vanishes
+seen.insert("c");                               // now {"a", "b", "c"}
+seen.contains("a");                             // true
+```
 
-std::set<std::string> seen = {"b", "a", "b"};   // {"a", "b"}: duplicates vanish
-seen.insert("c");
-seen.contains("a");                             // true (C++20)
+`.insert(x)` adds a value. `.contains(x)` answers true or false and never changes the set; it is [[new in C++20|contains-cpp20]].
 
+### std::unordered_map: fast, in no fixed order
+
+A **std::unordered_map** works like a `std::map` from the outside: keys, values, and `[ ]`. Inside, it is built as a [[hash table|hash-table]] instead of a sorted tree, which makes lookups faster but gives up the order. It needs `#include <unordered_map>`.
+
+Counting works exactly as it did with `std::map`, because a missing key starts at 0:
+
+```cpp
 std::unordered_map<std::string, int> count;
-for (const auto& w : words) count[w]++;         // missing keys start at 0
+for (const auto& w : words) count[w]++;         // each word's count goes up by one
+```
 
+### Finding a key, and the arrow ->
+
+`.find(key)` looks for a key without ever adding one. Like the algorithms in the iterators lesson, it gives back an iterator: a position pointing at the matching element, or `end()` if there is none. So always compare with `end()` before you use it:
+
+```cpp
 auto it = count.find("pear");
 if (it != count.end()) {
-    // it->first is the key, it->second the value
+    std::cout << it->first << " " << it->second << "\n";   // pear and its count
 }
 ```
 
-`it->first` is short for `(*it).first`: follow the iterator (or pointer), then take the member. A map's elements are pairs, so `first` is the key and `second` the value. Containers can also be built straight from a range: `std::set<std::string> s(words.begin(), words.end());` makes a set from a vector, and a vector can be made from a set in the same way.
+Each element of a map is a **pair**: a key and a value stuck together. `first` is the key and `second` is the value.
 
-How to choose: reach for `unordered_map` when you only need fast lookups, `map` when you also need the keys in order (printing a sorted report, "the smallest key over 10"), and `set` when you only care whether something is there.
+`->`, read "arrow", means "follow this, then take the member". [[Written out the long way|arrow-operator]], `it->first` is `(*it).first`: `*it` follows the iterator to the pair, and `.first` takes the key out of it. The arrow works the same way on pointers.
 
-Two things trip people up. `m[key]` **inserts** the key when it is missing, so use `find` or `contains` to only look. And an `unordered_map` iterates in an unpredictable order, so if your answer depends on order (say, breaking ties alphabetically), you have to decide that order yourself.
+### Building one container from another
+
+Every one of these containers can be made straight from a range, a begin and an end:
+
+```cpp
+std::vector<std::string> words = {"pear", "fig", "pear"};
+std::set<std::string> s(words.begin(), words.end());      // {"fig", "pear"}
+std::vector<std::string> back(s.begin(), s.end());        // {"fig", "pear"}, sorted
+```
+
+The first line makes a set from a vector, which removes the repeats and sorts what is left. The second makes a vector from the set, in the set's order.
+
+### Letters: isalpha and tolower
+
+In the strings lesson you used `std::toupper` and `std::isdigit` from `<cctype>`. Two more helpers live there:
+
+- `std::isalpha(c)` is true when `c` is a letter, `a` to `z` or `A` to `Z`.
+- `std::tolower(c)` gives the lowercase version: `'A'` becomes `'a'`, and anything that is not a capital letter comes back unchanged.
+
+As with `std::toupper`, hand them an `unsigned char` and turn the answer back into a `char`:
+
+```cpp
+char c = 'Q';
+unsigned char u = static_cast<unsigned char>(c);
+if (std::isalpha(u)) {
+    std::cout << static_cast<char>(std::tolower(u));   // prints q
+}
+```
+
+### Keeping the best so far
+
+To find the biggest value in a map, walk through every pair and remember the best one you have seen. To break a tie, compare the keys too: `<` on two strings asks "does this one come first alphabetically?"
+
+```cpp
+std::map<std::string, int> fuel = {{"tank-b", 40}, {"tank-a", 40}, {"tank-c", 12}};
+std::string fullest;   // the best name so far
+int most = 0;          // its amount
+for (const auto& [name, kg] : fuel) {
+    if (kg > most || (kg == most && name < fullest)) {
+        fullest = name;
+        most = kg;
+    }
+}
+// fullest is "tank-a": it ties with tank-b and comes first
+```
+
+Read the `if` as: "this one has more, **or** it has the same amount and its name comes first".
+
+### How to choose
+
+- Only need fast lookups? `unordered_map`.
+- Also need the keys in order, say for a sorted report or "the smallest key over 10"? `map`.
+- Only care whether something is there? `set`.
+
+**Watch out:** two things trip people up. First, `m[key]` **inserts** the key when it is missing, even when you only meant to read it; use `find` or `contains` to only look. Second, an `unordered_map` walks through its pairs in an [[unpredictable order|unordered-order]]. If your answer depends on order, like breaking ties alphabetically, you have to decide that order yourself, with a comparison like `name < fullest`.
+
+::: context big-o Counting steps, not seconds
+Big-O notation describes how the work grows as the data grows, ignoring the exact speed of any one computer. O(log n) comes from halving: a sorted tree can throw away about half of what is left at every step, and you can halve a million only about 20 times before one item is left. So a map of a million keys needs about 20 steps, and a map of two million about 21. O(1) means a fixed number of steps whether the container holds ten items or ten million. A plain search through a vector, looking at every element, is O(n): twice the data, twice the work.
+:::
+
+::: context contains-cpp20 Versions of C++
+C++ is updated every three years, and each version is named after its year: C++11, C++14, C++17, C++20, C++23. `.contains` arrived in C++20, and this app compiles your code as C++20. In older code you will see `s.count(x)` used for the same job: for a set or a map it gives 1 when `x` is there and 0 when it is not, which works as true or false in an `if`.
+:::
+
+::: context hash-table How a hash table finds things fast
+A hash table is a row of numbered slots called **buckets**. A **hash function** turns each key into a number, and that number picks the bucket. To find `"kiwi"` later, the table hashes `"kiwi"` again and looks straight in that one bucket, instead of searching. Sometimes two keys land in the same bucket; then the table checks the few keys there one by one. That is why lookup is O(1) only on average. The bucket numbers below are made up for the picture.
+
+```svg
+<svg viewBox="0 0 360 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="50" y="40" font-size="12" fill="#1f2a44" text-anchor="middle">"fig"</text>
+  <text x="50" y="85" font-size="12" fill="#1f2a44" text-anchor="middle">"kiwi"</text>
+  <text x="50" y="130" font-size="12" fill="#1f2a44" text-anchor="middle">"pear"</text>
+  <rect x="100" y="60" width="70" height="36" rx="6" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="135" y="82" font-size="12" fill="#1f2a44" text-anchor="middle">hash</text>
+  <line x1="75" y1="36" x2="100" y2="68" stroke="#6c7a93" stroke-width="1.5"/>
+  <line x1="80" y1="81" x2="100" y2="78" stroke="#6c7a93" stroke-width="1.5"/>
+  <line x1="80" y1="126" x2="100" y2="90" stroke="#6c7a93" stroke-width="1.5"/>
+  <rect x="230" y="15" width="100" height="26" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="230" y="41" width="100" height="26" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="230" y="67" width="100" height="26" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="230" y="93" width="100" height="26" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="230" y="119" width="100" height="26" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="222" y="32" font-size="11" fill="#6c7a93" text-anchor="end">0</text>
+  <text x="222" y="58" font-size="11" fill="#6c7a93" text-anchor="end">1</text>
+  <text x="222" y="84" font-size="11" fill="#6c7a93" text-anchor="end">2</text>
+  <text x="222" y="110" font-size="11" fill="#6c7a93" text-anchor="end">3</text>
+  <text x="222" y="136" font-size="11" fill="#6c7a93" text-anchor="end">4</text>
+  <text x="280" y="58" font-size="12" fill="#1f2a44" text-anchor="middle">pear</text>
+  <text x="280" y="110" font-size="12" fill="#1f2a44" text-anchor="middle">fig</text>
+  <text x="280" y="136" font-size="12" fill="#1f2a44" text-anchor="middle">kiwi</text>
+  <line x1="170" y1="78" x2="228" y2="78" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="200" y="162" font-size="11" fill="#6c7a93" text-anchor="middle">buckets: the key's hash picks one</text>
+</svg>
+```
+:::
+
+::: context arrow-operator Why the arrow exists
+The brackets in `(*it).first` are needed, because without them C++ would read `*it.first` as `*(it.first)`, which means something else entirely. Typing the brackets every time is clumsy, so the C language, which C++ grew out of, added `->` as a shorthand for "follow, then take a member". You will see it constantly on pointers to structs and classes, and later in the advanced course on smart pointers, which behave like pointers that clean up after themselves.
+:::
+
+::: context unordered-order Why the order is unpredictable
+An `unordered_map` walks its buckets in bucket order, and which bucket a key lands in depends on its hash and on how many buckets there are right now. When the table grows, it moves every key into a new, bigger set of buckets, so the order can change after one more insert. It can also differ between compilers. Code that happens to print the right order on your computer can fail on someone else's. Flight software aims to be *deterministic*, meaning the same input always gives the same output, so engineers never let a result depend on an order nobody chose.
+:::
 --- task
-Write three functions. No `main`.
+Write three functions. No `main`: the checker supplies it. The starter already includes `<cctype>`, `<map>`, `<set>`, `<string>`, `<unordered_map>` and `<vector>`.
 
-- `std::vector<std::string> unique_sorted(const std::vector<std::string>& words)` — each distinct word once, in sorted order.
-- `std::map<char, int> letter_counts(const std::string& text)` — how often each letter appears, counting upper and lower case as the same (keys are lowercase); ignore everything that is not a letter.
-- `std::string most_common(const std::vector<std::string>& words)` — the word that appears most often; if several tie, the alphabetically smallest of them; `""` for an empty list.
+- `std::vector<std::string> unique_sorted(const std::vector<std::string>& words)` returns each different word once, in sorted order. `unique_sorted({"pear", "apple", "pear", "fig"})` is `{"apple", "fig", "pear"}`.
+- `std::map<char, int> letter_counts(const std::string& text)` returns how often each letter appears, counting upper and lower case as the same letter. The keys are lowercase letters. Skip everything that is not a letter. `letter_counts("Aa b!")` has `'a'` → 2 and `'b'` → 1.
+- `std::string most_common(const std::vector<std::string>& words)` returns the word that appears most often. If several words tie, return the one that comes first alphabetically. For an empty list, return `""`.
 --- starter
 #include <cctype>
 #include <map>
@@ -493,11 +817,11 @@ std::string most_common(const std::vector<std::string>& words) {
     return best;
 }
 --- hint
-A `std::set` built from the words (`std::set<std::string> s(words.begin(), words.end());`) is already unique and sorted; turn it back into a vector the same way.
+For `unique_sorted`, a set does both jobs at once: it drops repeats and keeps things sorted. Build a set from the words, then build a vector from the set, as in "Building one container from another".
 --- hint
-For letters: `std::isalpha` and `std::tolower` from `<cctype>` — pass them an `unsigned char`.
+For `letter_counts`, loop over `text` one `char` at a time. Turn each into an `unsigned char` `u`; when `std::isalpha(u)` is true, add one to `counts[static_cast<char>(std::tolower(u))]`.
 --- hint
-For `most_common`, count first, then walk the counts keeping the best so far: replace it when the count is higher, or equal with a smaller word.
+For `most_common`, count first with `counts[w]++` in a loop. Then walk the counts keeping the best so far, exactly like the fuel-tank example: replace it when the count is higher, or equal with a word that is `<` the best one.
 --- check case | unique_sorted drops duplicates and sorts
 unique_sorted({"pear", "apple", "pear", "fig"})
 => std::vector<std::string>{"apple", "fig", "pear"}
@@ -516,9 +840,23 @@ most_common({})
 
 === cpp2-06 | Classes that keep their own rules
 --- teach
-A class earns its keep by holding an **invariant**: a rule that is true of every object, always. The constructor establishes it; every member function preserves it; the data is `private` so nobody else can break it.
+Last lesson you chose between ready-made containers. This lesson goes back to a type you design yourself. In the basics course you built an `Account` class with private data, a constructor and member functions. Now you will build a class whose whole job is to keep a rule true, whatever anyone does with it.
 
-Take a clock. The rule: the time is always between 00:00 and 23:59. If the data were public, any code could set the minutes to 75. With a class, the only ways in are the constructor and the member functions, so those are the only places the rule has to be enforced:
+### A rule that is always true
+
+Picture a digital clock. It can show 07:05 or 23:59, but never 07:75 and never 25:00. That is a rule about every clock, all the time.
+
+A rule like that is called an **[[invariant|invariant-word]]**: something that is true of every object of a class, always. A class keeps its invariant in three ways:
+
+1. The **constructor** makes the rule true the moment the object is born.
+2. Every **member function** that changes the data leaves the rule true when it finishes.
+3. The data is **private**, so no code outside the class can reach in and break it.
+
+If the data were public, any line of the program could set the minutes to 75. With a class, the only ways in are the constructor and the member functions, so those are the only places the rule has to be enforced.
+
+### A small example: a countdown timer
+
+Here is a timer whose rule is "the seconds left are never negative":
 
 ```cpp
 class Timer {
@@ -531,23 +869,125 @@ private:
 };
 ```
 
-Things worth knowing:
+Go through it one piece at a time:
 
-- The **member initialiser list** (`: seconds_(…)`) initialises members before the constructor body runs. Prefer it to assigning in the body.
-- `explicit` on a one-argument constructor stops surprise conversions like `Timer t = 5;`.
-- A good trick is to store the data in whatever shape makes the rule easy. For a clock, store **total minutes since midnight** in `[0, 1440)`; hours and minutes are then just `/ 60` and `% 60`.
-- `%` in C++ keeps the sign of the left side: `-1 % 1440` is `-1`, not `1439`. To wrap a possibly negative number into `[0, n)`, use `((x % n) + n) % n`.
-- `std::to_string(7)` (from `<string>`) turns a number into text: `"7"`.
-- A member marked `static` belongs to the class, not to any one object. `static int wrap(int m)` is a helper that needs no object. `static constexpr int kDay = 24 * 60;` is one constant that every `Clock` shares; `constexpr` means its value is known while compiling (the advanced course covers it), and constants are named `kLikeThis`.
+- The constructor uses the conditional operator from the algorithms lesson: `seconds < 0 ? 0 : seconds` gives `0` when the starting value is negative, and the value itself otherwise. So `Timer t(-5);` starts at 0, and the rule is true from the first moment.
+- `tick()` counts down by one, but only while there is something left. `--seconds_`, read "decrement", takes one away; it is the opposite of `++`. The `if` guard means the count can never go below 0.
+- `done()` only looks, so it is marked `const`, as in the const correctness lesson.
+
+Two habits from the basics course matter here. The **member initialiser list**, `: seconds_(…)`, gives each member its first value before the constructor body runs; prefer it to assigning in the body. And `explicit` on a constructor that takes one value stops surprise conversions like `Timer t = 5;`.
+
+### Store the data in the shape that makes the rule easy
+
+Now the clock. You could store hours and minutes as two numbers, but then every function has to juggle both: adding 70 minutes means carrying into the hours, and the hours then wrap past 23.
+
+A neater trick is to store **one** number: the total minutes since midnight. A day has 24 × 60 = 1440 minutes, so the rule becomes "the total is always in [0, 1440)". That bracket notation is the [[half-open range|half-open-day]] from the iterators lesson: from 0, up to but **not** including 1440.
+
+Hours and minutes then come straight out with whole-number division and remainder:
+
+```cpp
+int total = 125;         // 125 minutes after midnight
+int h = total / 60;      // 2
+int m = total % 60;      // 5, so the time is 02:05
+```
+
+### Wrapping any number onto the clock
+
+Every time the total changes, it has to be brought back into [0, 1440). The remainder `%` nearly does it: `1500 % 1440` is `60`, which is 01:00 the next day.
+
+But remember from the basics course that [[% keeps the sign of the left side|remainder-sign]]. So `-1 % 1440` is `-1`, not `1439`. One minute before midnight should be 23:59, and a plain `%` gets it wrong.
+
+The fix is a formula that works for every whole number, negative or not. To wrap `x` into [0, n):
+
+```cpp
+((x % n) + n) % n
+```
+
+Follow it for `x = -1` and `n = 1440`:
+
+1. `-1 % 1440` is `-1`.
+2. Add 1440: `1439`.
+3. `1439 % 1440` is `1439`. That is 23:59.
+
+And for `x = 60`, a number already in range:
+
+1. `60 % 1440` is `60`.
+2. Add 1440: `1500`.
+3. `1500 % 1440` is `60` again. The last `%` undoes the extra 1440 when it was not needed.
+
+### Numbers into text
+
+`std::to_string`, from `<string>`, turns a number into text: `std::to_string(7)` is `"7"`. A clock shows two digits, so add a `"0"` in front when the number is below 10:
+
+```cpp
+std::string s = std::to_string(7);   // "7"
+if (7 < 10) s = "0" + s;             // "07"
+```
+
+### static: belongs to the class, not to one object
+
+Some helpers do not need any particular clock. Wrapping a number is the same sum for every clock there is. A member marked **static** belongs to the class itself, not to any one object:
+
+```cpp
+class Clock {
+    // ...
+private:
+    static constexpr int kDay = 24 * 60;
+    static int wrap(int m) { return ((m % kDay) + kDay) % kDay; }
+};
+```
+
+- `static int wrap(int m)` is a [[static member function|static-members]]: a helper that works without an object, so it cannot see any one clock's data. It only uses its parameter.
+- `static constexpr int kDay = 24 * 60;` is one constant that every `Clock` shares. **constexpr** means its value is [[known while compiling|constexpr-meaning]], before the program ever runs (the advanced course covers it properly). Constants are often named `kLikeThis`, with a small `k` in front.
+
+Both sit in the `private:` part, because they are the class's own tools, not something other code needs.
+
+**Watch out:** the invariant has to be restored in **every** place the data changes. It is easy to wrap the total in the constructor and then forget in `add_minutes`; the clock works until someone adds 90 minutes at 23:00. Put the wrapping in one helper and call it everywhere the total changes.
+
+::: context invariant-word A word from mathematics
+"Invariant" means "does not vary". Mathematicians use it for something that stays the same while everything else changes: however you cut up a pizza, the total amount of pizza is invariant. Programmers borrowed it for the rules a class promises to keep. Careful teams write their invariants down and check them. NASA's Jet Propulsion Laboratory, in its "Power of Ten" rules for safety-critical code, asks for at least two assertions per function on average: checks that stop the program loudly if a rule that should always be true turns out to be false.
+:::
+
+::: context half-open-day Why 1440 itself is left out
+Minute 0 is midnight, 00:00. Minute 1439 is 23:59. Minute 1440 would be midnight again, the start of the next day, so it must wrap back to 0. A half-open range makes that automatic: the day has exactly 1440 allowed values, 0 to 1439, and the range [0, 1440) names them by writing the first one and the first one that is *not* allowed.
+
+```svg
+<svg viewBox="0 0 360 120" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <line x1="30" y1="60" x2="310" y2="60" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="30" y="50" width="250" height="20" fill="#8fb8f0" stroke="#1f2a44"/>
+  <circle cx="30" cy="60" r="6" fill="#1d6fd1" stroke="#1f2a44"/>
+  <circle cx="310" cy="60" r="6" fill="#ffffff" stroke="#b4232c" stroke-width="2"/>
+  <text x="30" y="35" font-size="12" fill="#1f2a44" text-anchor="middle">0</text>
+  <text x="30" y="92" font-size="11" fill="#1f2a44" text-anchor="middle">00:00</text>
+  <text x="280" y="35" font-size="12" fill="#1f2a44" text-anchor="middle">1439</text>
+  <text x="280" y="92" font-size="11" fill="#1f2a44" text-anchor="middle">23:59</text>
+  <text x="318" y="35" font-size="12" fill="#b4232c" text-anchor="middle">1440</text>
+  <text x="318" y="92" font-size="11" fill="#b4232c" text-anchor="middle">not allowed</text>
+  <text x="155" y="112" font-size="11" fill="#6c7a93" text-anchor="middle">[0, 1440): 1440 allowed values</text>
+</svg>
+```
+:::
+
+::: context remainder-sign Why C++ keeps the sign
+C++ division of whole numbers cuts toward zero, so `-1 / 1440` is `0`. The remainder is then defined so that division and remainder always fit back together: `(a / b) * b + a % b` equals `a`. With `a = -1` that forces `a % b` to be `-1`. Other languages choose differently: in Python, `-1 % 1440` is `1439`. The same formula wraps compass headings too: `((h % 360) + 360) % 360` turns a heading of -90 degrees into 270.
+:::
+
+::: context static-members One copy for the whole class
+Every `Clock` object has its own `total_`: two clocks, two totals. A static member has exactly one copy, shared by the whole class, however many clocks exist, even none at all. That is why a static member function has no object to work on, and cannot use `total_` or call `hours()`. From outside the class you would call a public one with the scope operator, read "from": `Clock::wrap(90)`, "wrap from Clock".
+:::
+
+::: context constexpr-meaning Worked out by the compiler
+When the compiler sees `constexpr int kDay = 24 * 60;`, it works out 1440 itself while it builds your program, and writes that number wherever `kDay` is used. Nothing is multiplied while the program runs, and nothing can change `kDay` afterwards. Flight software leans on values like this: a fixed table size or a sensor's limit that is known for certain before launch should be a constant the compiler checks, not a variable that something might overwrite.
+:::
 --- task
-Write `class Clock`:
+Write `class Clock`, a 24-hour clock that always shows a real time. No `main`: the checker supplies it. The starter includes `<string>`.
 
-- `Clock(int hours, int minutes)` — any values are allowed and are wrapped onto a 24-hour clock: `Clock(25, 70)` is 02:10, `Clock(0, -1)` is 23:59.
-- `void add_minutes(int m)` — moves the time forward (or back, if `m` is negative), wrapping around midnight.
-- `int hours() const` and `int minutes() const`.
-- `std::string to_string() const` — always `HH:MM` with two digits each, like `"07:05"`.
+- `Clock(int hours, int minutes)` accepts any values, and wraps them onto the 24-hour clock: `Clock(25, 70)` is 02:10, and `Clock(0, -1)` is 23:59.
+- `void add_minutes(int m)` moves the time forward, or back if `m` is negative, wrapping around midnight.
+- `int hours() const` and `int minutes() const` return the hour (0 to 23) and the minute (0 to 59).
+- `std::string to_string() const` returns the time as `HH:MM`, always two digits each, like `"07:05"`.
 
-No `main`.
+The starter stores hours and minutes separately and never wraps them. You may change the private part however you like.
 --- starter
 #include <string>
 
@@ -579,11 +1019,11 @@ private:
     int total_;   // minutes since midnight, always in [0, kDay)
 };
 --- hint
-Store one number: minutes since midnight. Wrap it every time it changes.
+Store one number, the minutes since midnight, as a private `int total_;`. The constructor turns its two values into `hours * 60 + minutes` and wraps that.
 --- hint
-`((m % 1440) + 1440) % 1440` wraps any int, negative or not, into `[0, 1440)`.
+Write a private helper `static int wrap(int m)` that returns `((m % 1440) + 1440) % 1440`, and call it in both the constructor and `add_minutes`. Then `hours()` is `total_ / 60` and `minutes()` is `total_ % 60`.
 --- hint
-Two-digit formatting: add a `"0"` in front when the number is below 10.
+For `to_string`, turn each part into text with `std::to_string`, put a `"0"` in front when it is below 10, and join the two parts with `":"` between them.
 --- check case | Clock(8, 5) shows 08:05
 Clock(8, 5).to_string()
 => "08:05"
@@ -601,23 +1041,74 @@ Clock(-49, 0).to_string()
 
 === cpp2-07 | Overloading and default arguments
 --- teach
-C++ lets several functions share a name as long as their parameter lists differ. The compiler picks one — **overload resolution** — by how well each argument matches:
+Last lesson your `Clock` turned numbers into text with `std::to_string`. You may have noticed that `std::to_string(7)` and `std::to_string(2.5)` both work, although one gets an `int` and the other a `double`. That is because `std::to_string` is not one function but several with the same name. This lesson shows how to write functions like that yourself, and how to let a caller leave out an argument.
+
+### One name, several functions
+
+In everyday speech one word can mean different things, and you tell which from what follows it: "play the piano" and "play football". C++ does the same with function names.
+
+**Overloading** means giving several functions the same name, as long as their parameter lists differ: a different number of parameters, or different types.
 
 ```cpp
 std::string area(int side)           { return "square"; }
 std::string area(int w, int h)       { return "rectangle"; }
 std::string area(double radius)      { return "circle"; }
-
-area(3);       // "square"    — exact match for int
-area(3, 4);    // "rectangle"
-area(1.5);     // "circle"
 ```
 
-Roughly, from best to worst: an exact match, a small promotion (`char` → `int`, `float` → `double`), a standard conversion (`int` → `double`, *anything pointer-like* → `bool`), and last a user-defined conversion (like `const char*` → `std::string`). If two candidates tie, the call is **ambiguous** and does not compile.
+Each version is a separate function. The return type alone does not count: two functions that differ only in what they return cannot share a name, because the call looks the same for both.
 
-That ranking hides a famous trap. A string literal like `"hi"` is a `const char*`. If you have overloads for `bool` and for `const std::string&`, the pointer-to-`bool` standard conversion **beats** the user-defined conversion to `std::string`, so `f("hi")` quietly calls the `bool` version. The cure is an overload that takes `const char*` exactly.
+### How the compiler picks one
 
-**Default arguments** fill in trailing parameters the caller leaves out:
+When you call `area`, the compiler looks at the arguments and picks the version that fits them best. This choosing is called **overload resolution**, and it happens while [[compiling|name-mangling]], not while the program runs.
+
+```cpp
+area(3);       // "square"    — 3 is an int: exact match
+area(3, 4);    // "rectangle" — the only one with two parameters
+area(1.5);     // "circle"    — 1.5 is a double: exact match
+```
+
+When no version is an exact match, the compiler ranks how much each argument would have to change. Roughly, from best to worst:
+
+1. an **exact match**: the argument already has the parameter's type;
+2. a **[[promotion|promotion]]**: a small, safe widening, like `char` to `int` or `float` to `double`;
+3. a **standard conversion**: a change built into the language, like `int` to `double`, or *anything pointer-like* to `bool`;
+4. a **user-defined conversion**: a change some class provides, like making a `std::string` out of a `const char*`.
+
+If two versions tie for best, the call is **ambiguous**, read "could mean either", and it does not compile:
+
+```cpp
+long big = 3;
+area(big);     // compile error: call to 'area' is ambiguous
+```
+
+A `long` is a bigger kind of whole number. Turning it into an `int` and turning it into a `double` are both standard conversions, so neither version wins.
+
+### The string literal trap
+
+That ranking hides a famous trap. A [[string literal|string-literal]] such as `"hi"`, text in double quotes, is not a `std::string`. C++ stores it as a row of `char`s and hands it over as a `const char*`: a pointer to its first character.
+
+Now suppose there are two overloads, one for `bool` and one for `const std::string&`:
+
+```cpp
+std::string f(bool b)               { return "bool"; }
+std::string f(const std::string& s) { return "string"; }
+
+f("hi");       // "bool"!
+```
+
+Turning a pointer into a `bool` is a standard conversion (rank 3). Building a `std::string` from it is a user-defined conversion (rank 4). The standard conversion wins, so `f("hi")` quietly calls the `bool` version: any pointer that is not `nullptr` counts as `true`. No error and no warning.
+
+The cure is an overload that takes `const char*` exactly. It wins because it is an exact match, and it can hand the work on to the string version:
+
+```cpp
+std::string f(const char* s) { return f(std::string(s)); }   // now f("hi") is "string"
+```
+
+`std::string(s)` builds a real `std::string` from the pointer, so the call inside picks the `const std::string&` version.
+
+### Default arguments
+
+Sometimes the difference between two versions is only a value the caller usually does not care about. A **default argument** is a value written into the parameter list, used whenever the caller leaves that argument out:
 
 ```cpp
 std::string greet(const std::string& name, const std::string& greeting = "Hello") {
@@ -627,11 +1118,73 @@ greet("Ada");            // "Hello, Ada"
 greet("Ada", "Hi");      // "Hi, Ada"
 ```
 
-Defaults go on the rightmost parameters only, and are written once (on the declaration). Use them for the common case; use overloads when the *work* differs by type.
---- task
-The starter has `describe` for `int`, `double`, `bool` and `const std::string&`, each returning the type name, a space and the value (`"int 42"`, `"double 2.5"`, `"bool true"`, `"string hi"`). But `describe("hi")` returns `"bool true"`. Add the overload that makes a string literal give `"string hi"`.
+Two rules:
 
-Then write `std::string pad_left(const std::string& s, std::size_t width, char fill = ' ')`: `s` with `fill` characters added in front until it is `width` long (unchanged if it is already that long or longer). No `main`.
+- Defaults go on the **rightmost** parameters only. The caller leaves arguments off the end, so C++ fills them in from the right.
+- A default is written **once**. If the function has a separate [[declaration|declaration-once]] (a line announcing it, without its body), the default goes there and not on the body.
+
+Use defaults for the common case. Use overloads when the *work* differs by type.
+
+### Two tools for padding text
+
+The task pads text on the left, which needs two more things.
+
+`std::string(n, c)` makes a string of `n` copies of the character `c`:
+
+```cpp
+std::string stars(3, '*');    // "***"
+```
+
+And `s.size()` is a `std::size_t`, which is unsigned: it can never be negative. So `width - s.size()` goes badly wrong when `s` is already longer than `width`: instead of a negative number, it wraps round to a gigantic positive one. Check `s.size() >= width` first, and only subtract when the answer cannot be negative.
+
+One last thing you will see in the task's starter: `describe(double)` builds its text with a [[string stream|to-string-double]] rather than `std::to_string`. It already works, so leave it as it is.
+
+**Watch out:** the literal trap bites whenever a function has a `bool` overload (or any other overload a pointer converts to) next to a `std::string` one. Test the overloads with a plain `"text"` argument, not only with a `std::string` variable, because that is how people will call them.
+
+::: context name-mangling How one name becomes several
+The computer that runs your program never sees the name `area` on its own. The compiler gives each version a longer hidden name that spells out its parameter types. With g++ on Linux, `int area(int)` becomes `_Z4areai`, `int area(int, int)` becomes `_Z4areaii`, and `int area(double)` becomes `_Z4aread`: the `4` is the length of "area", and the letters after it are the parameter types. This is called **name mangling**. It is how the parts of a large program, compiled separately, still find the right version of each other's functions.
+:::
+
+::: context promotion Widening without losing anything
+A promotion moves a value into a bigger type that can hold every value of the smaller one, so nothing is ever lost. A `char` is one byte and an `int` is usually four, so every `char` fits in an `int`. A `float` keeps about 7 significant digits and a `double` about 15, so every `float` fits in a `double`. A conversion like `double` to `int` is different: it can throw away the fraction or overflow, which is why C++ ranks it lower than a promotion.
+:::
+
+::: context string-literal What "hi" really is
+In memory, `"hi"` is three bytes in a row: `'h'`, `'i'`, and a hidden zero byte that marks the end (the basics course mentioned it in the strings lesson). Its type is "array of 3 const chars". When you pass an array to a function, C++ passes a pointer to its first element instead, a rule called **decay**. That is how `"hi"` arrives as a `const char*`, and why it can turn into a `bool`.
+
+```svg
+<svg viewBox="0 0 360 130" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="150" y="30" width="50" height="40" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="200" y="30" width="50" height="40" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="250" y="30" width="50" height="40" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="175" y="55" font-size="13" fill="#1f2a44" text-anchor="middle">'h'</text>
+  <text x="225" y="55" font-size="13" fill="#1f2a44" text-anchor="middle">'i'</text>
+  <text x="275" y="55" font-size="13" fill="#1f2a44" text-anchor="middle">'\0'</text>
+  <text x="275" y="90" font-size="11" fill="#6c7a93" text-anchor="middle">end marker</text>
+  <rect x="20" y="30" width="80" height="40" rx="6" fill="#ffffff" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="60" y="55" font-size="12" fill="#1f2a44" text-anchor="middle">const char*</text>
+  <line x1="100" y1="50" x2="144" y2="50" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="144,45 150,50 144,55" fill="#1d6fd1"/>
+  <text x="180" y="118" font-size="11" fill="#6c7a93" text-anchor="middle">the pointer holds the address of the first char</text>
+</svg>
+```
+:::
+
+::: context declaration-once Declarations and definitions
+A **declaration** tells the compiler a function exists: `std::string greet(const std::string& name, const std::string& greeting = "Hello");`, ending in a semicolon. The **definition** is the version with the body in braces. In bigger programs the declarations live in header files, so every part of the program can see them, and that is exactly where callers need to see the defaults. Writing the default again on the definition is a compile error, "redefinition of default argument". When a function has no separate declaration, as in the task, the default goes on the definition itself.
+:::
+
+::: context to-string-double Why describe uses a string stream
+The starter's `describe(double)` builds its text with a `std::ostringstream`, an output string stream: `<<` writes into it the same way it writes to `std::cout`, and `.str()` hands back the text. It uses one because `std::to_string(2.5)` gives `"2.500000"`, always six digits after the point, while `<<` prints `2.5`, the way you would write it. The course comes back to string streams in "Processing text with string streams".
+:::
+--- task
+The starter has four overloads of `describe`, for `int`, `double`, `bool` and `const std::string&`. Each returns the type's name, a space, and the value: `"int 42"`, `"double 2.5"`, `"bool true"`, `"string hi"`.
+
+But `describe("hi")` returns `"bool true"`, because of the string literal trap. Add the overload that makes `describe("hi")` return `"string hi"`, and keep the other four working.
+
+Then finish `std::string pad_left(const std::string& s, std::size_t width, char fill = ' ')`. It returns `s` with `fill` characters added in front until it is `width` characters long, so `pad_left("42", 5, '0')` is `"00042"`. If `s` is already `width` long or longer, return it unchanged. When no `fill` is given, it is a space: `pad_left("7", 3)` is `"  7"`. The starter's version has no default yet.
+
+No `main`: the checker supplies it.
 --- starter
 #include <sstream>
 #include <string>
@@ -667,11 +1220,11 @@ std::string pad_left(const std::string& s, std::size_t width, char fill = ' ') {
     return std::string(width - s.size(), fill) + s;
 }
 --- hint
-A string literal is a `const char*`. Give `describe` an overload taking exactly that, and have it call the `std::string` version.
+A string literal arrives as a `const char*`. Add a fifth `describe` that takes exactly a `const char* s`, so it is an exact match.
 --- hint
-`std::string(n, c)` is `n` copies of the character `c`.
+Inside it, hand the work to the string version: `return describe(std::string(s));`.
 --- hint
-The default goes in the parameter list: `char fill = ' '`. Check `s.size() >= width` before subtracting — `std::size_t` cannot go negative.
+For `pad_left`, write the default into the parameter list: `char fill = ' '`. Return `s` when `s.size() >= width`; otherwise return `std::string(width - s.size(), fill) + s`.
 --- check case | describe("hi") is a string
 describe("hi")
 => "string hi"
@@ -1211,11 +1764,29 @@ window_sums({1, 2}, 3)
 
 === cpp2-13 | Debugging: overflow and uninitialised values
 --- teach
-Two bugs produce numbers that are simply **wrong**, with no crash to point at them.
+Last lesson, "Debugging: off by one, out of range", you chased loops that ran one step too far and a subtraction that wrapped round to a huge number. Those bugs often end in a crash, which at least tells you something is wrong. This lesson is about two bugs that give you a number that is quietly **wrong**, with no crash and no error message to point at them.
 
-**Integer overflow.** An `int` holds up to 2,147,483,647. Go past it and a signed integer's behaviour is *undefined* — in practice you usually get a large negative number, but the compiler is allowed to assume it never happens at all. The cure is to pick a type big enough for the *result*, not just the inputs: `long long` goes to about 9 × 10¹⁸.
+### Bug one: a number too big for its box
 
-A classic hiding place is `std::accumulate`, which adds in the type of its starting value:
+Picture the mileage counter in an old car. It has six digits, so after 999,999 miles it rolls over to 000,000. The car did not travel backwards; the counter ran out of room.
+
+An `int` is a box of fixed size too. It holds whole numbers up to 2,147,483,647, about 2 billion. Going past the top is called **integer overflow**: a result too big for the type that holds it.
+
+```cpp
+int a = 2000000000;    // 2 billion: fits
+int b = 2000000000;    // fits
+int c = a + b;         // 4 billion does not fit in an int
+```
+
+For an `int`, which can be negative (a **signed** type), overflow is **[[undefined behaviour|ub-overflow]]**: the C++ rules make no promise at all about what happens. In practice you usually get a [[large negative number|wrap-around]]. Here `c` usually comes out as -294,967,296. But the compiler is also allowed to assume overflow never happens, and plan the rest of the program around that, so the wrong answer can change from one build to the next.
+
+### The fix: a box big enough for the result
+
+The cure is to pick a type big enough for the **result**, not only for the inputs. The basics course met `long long`, which goes up to about 9 × 10¹⁸ (a 9 with 18 more digits after it). Two `int`s that each fit can still add up to a total that does not, so think about the biggest total, not the biggest single value. Real systems have failed because a count kept growing until it [[outgrew its type|boeing-counter]].
+
+### Where overflow hides: std::accumulate
+
+A classic hiding place is `std::accumulate`, from the `<numeric>` header, which you met in the `<algorithm>` lesson. It adds up a range, and it does the adding in the **type of its starting value**, the last thing you pass it:
 
 ```cpp
 std::vector<int> v = {2000000000, 2000000000};
@@ -1223,24 +1794,85 @@ std::accumulate(v.begin(), v.end(), 0);     // int arithmetic: overflows
 std::accumulate(v.begin(), v.end(), 0LL);   // long long: 4000000000
 ```
 
-Declaring the function as returning `long long` does not help — the damage is done inside, before the result is converted.
+The only difference is the starting value. `0` on its own is an `int`. The letters `LL` stuck on the end, read "long long", make `0LL` a [[long long zero|literal-types]], so every step of the adding happens in the big box.
 
-**Uninitialised variables.** `int lowest;` does not mean zero. A local without an initialiser holds whatever was in that memory, and reading it is undefined behaviour: the program may seem to work today and fail tomorrow.
+**Watch out:** declaring the function as returning `long long` does not help. The damage is done inside, during the adding, before the result is converted to `long long` on the way out. The same is true of a plain sum:
 
-Debugging both:
+```cpp
+long long r = a + b;                            // still overflows: a + b is int arithmetic
+long long s = static_cast<long long>(a) + b;    // 4000000000
+```
 
-- **Read the warnings.** Compile with `-Wall -Wextra` (this checker does); clang flags many uninitialised reads.
-- **Test the edges** where these bugs live: very large values, all-negative or all-positive inputs, a single element.
-- **Fix the cause.** For "smallest so far", start from the first real element, not from 0 (which breaks on all-positive data) and not from a guess.
+In the second line, `static_cast<long long>(a)` turns `a` into a `long long` first, so the `+` happens in the big box.
+
+### Bug two: a variable with no starting value
+
+`int lowest;` does not mean zero. A local variable made without a starting value (an **initialiser**) holds [[whatever was left in that memory|leftover-memory]]. Reading it before you store something in it is undefined behaviour too: the program may seem to work today and fail tomorrow.
+
+```cpp
+int lowest;            // no initialiser: leftover junk
+int count = 0;         // initialised: really 0
+```
+
+### How to hunt both
+
+- **Read the warnings.** Compile with `-Wall` ("warn all") and `-Wextra` ("warn extra"), the way this checker does. Compilers flag many uninitialised reads, but [[not every one|warnings-not-enough]], so a clean compile is not proof.
+- **Test the edges** where these bugs live: very large values, lists that are all negative or all positive, and a list with a single element.
+- **Fix the cause.** For "smallest so far", start from the first real element, `temps[0]`. Do not start from 0, which breaks on all-positive data: for `{5, 7, 9}` nothing is below 0, so you would get 0, a temperature that is not even in the list. And do not start from a guess like 1000, which breaks the day every reading is above it.
+
+```cpp
+int lowest = temps[0];   // a value that is really in the list
+```
+
+::: context ub-overflow What "undefined" lets the compiler do
+Because signed overflow is undefined, the compiler may assume it never happens, and use that to make code faster. For example, it may decide that `x + 1 > x` is always true for an `int x` and delete the check completely, even though with wrap-around it would be false for the largest `int`. So a test you wrote to catch overflow can vanish from the program. That is why the fix is to prevent overflow with a big enough type, not to detect it afterwards. Unsigned types, like `std::size_t` from the last lesson, are different: their wrap-around is defined by the rules, which is why that bug was predictable.
+:::
+
+::: context wrap-around Why too big turns negative
+An `int` is 32 bits. In the pattern computers use for signed numbers, called two's complement, the counting runs up to 2,147,483,647 and the very next bit pattern means -2,147,483,648, the most negative `int`. So on real machines, stepping past the top usually lands you at the bottom, like the car's mileage counter rolling over. 4,000,000,000 is 4,294,967,296 too much for 32 bits, and 4,000,000,000 − 4,294,967,296 = −294,967,296.
+
+```svg
+<svg viewBox="0 0 360 140" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="180" y="20" font-size="13" fill="#1f2a44" text-anchor="middle">int values in a row, and the step past the top</text>
+  <line x1="30" y1="70" x2="330" y2="70" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="40" cy="70" r="5" fill="#1d6fd1"/>
+  <circle cx="180" cy="70" r="5" fill="#6c7a93"/>
+  <circle cx="320" cy="70" r="5" fill="#1d6fd1"/>
+  <text x="40" y="95" font-size="11" fill="#1f2a44" text-anchor="middle">−2,147,483,648</text>
+  <text x="180" y="95" font-size="11" fill="#1f2a44" text-anchor="middle">0</text>
+  <text x="320" y="95" font-size="11" fill="#1f2a44" text-anchor="middle">2,147,483,647</text>
+  <path d="M 320 62 C 300 30, 60 30, 40 62" fill="none" stroke="#b4232c" stroke-width="2"/>
+  <path d="M 40 62 L 36 52 L 47 55 Z" fill="#b4232c"/>
+  <text x="180" y="42" font-size="12" fill="#b4232c" text-anchor="middle">+1 wraps to the bottom</text>
+  <text x="180" y="125" font-size="12" fill="#6c7a93" text-anchor="middle">usual result on real machines; the C++ rules promise nothing</text>
+</svg>
+```
+:::
+
+::: context boeing-counter A counter that grounded airliners
+In 2015 the US Federal Aviation Administration ordered a fix for the Boeing 787. A software counter in the generator control units, which manage the plane's electrical power, would overflow if the units stayed powered on for 248 days without a restart. When that happened, the units could go into a safe mode and the aircraft could lose all its electrical generators, even in flight. The number 248 is no accident: counting hundredths of a second, a signed 32-bit counter runs out after 2,147,483,647 ÷ 100 ÷ 86,400 ≈ 248.6 days. Until the software was fixed, airlines had to switch the power off and on at regular intervals.
+:::
+
+::: context literal-types Numbers written in code have types too
+A number typed straight into code is called a **literal**, and each one has a type. `0` is an `int`, `0LL` is a `long long`, and `0.0` is a `double`. That matters for `std::accumulate` in both directions. Add up a vector of `double`s with a starting value of `0` and every step is cut back to a whole number: summing `{0.5, 0.5, 0.5}` gives 0, not 1.5. Start from `0.0` and you get 1.5. The rule is the same one: the starting value picks the type of the adding.
+:::
+
+::: context leftover-memory Why C++ does not clean up for you
+A function's local variables live in a scratch area of memory called the stack, which is reused over and over as functions are called and return. A new variable gets space that some earlier function was using, and whatever that function left there is still sitting in it. Setting every new variable to zero would cost a little time, and C++ was designed not to spend time you did not ask for. Variables declared outside every function are different: they always start at zero. Coding rules for cars and aircraft, such as MISRA, forbid reading any variable before it has been given a value.
+:::
+
+::: context warnings-not-enough Warnings help, but do not catch everything
+With the same flags, g++ warns that `lowest` in this lesson's starter "may be used uninitialized", but clang++, the compiler this app runs, says nothing about it: the read happens inside a loop, which is harder to analyse. So treat warnings as free help, and still test. NASA JPL's "Power of Ten" rules for safety-critical code ask for every warning to be turned on from the first day, and for the code to compile with no warnings at all.
+:::
 --- task
-**Bug report:** "`total_bytes` of three 1.5 GB files comes out negative. And `coldest({5, 7, 9})` returns nonsense instead of 5."
+**Bug report:** "`total_bytes` of three 1.5 GB files (1,500,000,000 bytes each) comes out as 205,032,704 instead of 4,500,000,000. And `coldest({5, 7, 9})` returns nonsense instead of 5."
 
 Fix both functions at the cause:
 
-- `long long total_bytes(const std::vector<int>& sizes)` — the sum of the sizes (0 for none).
-- `int coldest(const std::vector<int>& temps)` — the smallest temperature (the list is never empty).
+- `long long total_bytes(const std::vector<int>& sizes)`: the sum of the sizes, and 0 for an empty list.
+- `int coldest(const std::vector<int>& temps)`: the smallest temperature. The list is never empty.
 
-No `main`.
+No `main`: the checker supplies it.
 --- starter
 #include <numeric>
 #include <vector>
@@ -1278,7 +1910,9 @@ int coldest(const std::vector<int>& temps) {
 --- hint
 What type is the `0` passed to `accumulate`? That is the type the adding happens in.
 --- hint
-What value does `lowest` have before the loop? Start it from something that is really in the list.
+Change the starting value to the `long long` zero, `0LL`. For `coldest`: what value does `lowest` have before the loop?
+--- hint
+Start `lowest` from something that is really in the list: `int lowest = temps[0];`. The loop stays as it is.
 --- check case | Three 1.5 GB files
 total_bytes({1500000000, 1500000000, 1500000000})
 => 4500000000LL
@@ -1297,18 +1931,46 @@ coldest({42})
 
 === cpp2-14 | Problem solving: two that add up
 --- teach
-Problem-solving lessons ask you to design the algorithm. A reliable way in:
+In the last lesson, "Debugging: overflow and uninitialised values", you were handed a broken program and a bug report. This lesson hands you only a problem. There is no code yet: you design the **[[algorithm|algorithm-word]]**, the step-by-step method, yourself.
 
-1. **Restate** the problem in your own words and pin down the output exactly.
-2. **Work examples** by hand, including awkward ones: duplicates, negatives, no answer.
+### A reliable way in
+
+Engineers attack a new problem in four steps:
+
+1. **Restate** the problem in your own words and pin down exactly what the answer looks like.
+2. **Work examples** by hand, including the awkward ones: the same value twice, negative numbers, no answer at all.
 3. **Brute force first.** What is the obvious solution, and how slow is it?
 4. **Find the pattern** that removes the wasted work.
 
-Here: given numbers and a target, find two different positions whose values add up to the target.
+### Step 1: restate it
 
-The brute force checks every pair — two nested loops, about n²/2 pairs. For 10 numbers that is nothing; for 200,000 numbers it is 20 **billion** pairs, far too slow.
+Given a list of numbers and a target, find two **different positions** whose values add up to the target.
 
-The pattern: walk through the numbers once. When you are standing on value `x` at position `j`, you need some *earlier* value equal to `target - x`. If you remember every earlier value and where you saw it, that question takes O(1) with a hash map:
+For `{2, 7, 11, 15}` and target 9, the answer is positions 0 and 1, because 2 + 7 = 9. Notice the answer is the positions, not the values.
+
+### Step 2: work some examples
+
+- `{3, 3}` with target 6: positions 0 and 1. The same value may appear twice.
+- `{3, 2, 4}` with target 6: positions 1 and 2 (2 + 4). Not 0 and 0: 3 + 3 is 6, but that uses one position twice.
+- `{1, 2, 3}` with target 100: no answer.
+
+### Step 3: brute force
+
+**Brute force** means trying every possibility. Here that is every pair of positions, with two loops, one inside the other:
+
+```cpp
+for (int i = 0; i < n; ++i)
+    for (int j = i + 1; j < n; ++j)
+        if (nums[i] + nums[j] == target) { /* found */ }
+```
+
+Starting `j` at `i + 1` means each pair is tried once and never a position with itself. That is about n²/2 pairs (n² is read "n squared", n times n), so [[the work grows very fast|pairs-grow]]. For 10 numbers it is nothing. For 200,000 numbers it is 20 **billion** pairs, far too slow.
+
+### Step 4: find the pattern
+
+Walk through the numbers once, from left to right. When you are standing on value `x` at position `j`, you need some **earlier** value equal to `target - x`. That missing partner is called the **complement**.
+
+So the question at each step is: "have I already seen `target - x`, and where?" Keep a notebook of every earlier value and the position where you first saw it. Then the question is one lookup. In plan form:
 
 ```
 seen = {}                         value -> first position it appeared
@@ -1317,15 +1979,98 @@ for j, x in numbers:
     if x not in seen: seen[x] = j
 ```
 
-Checking *before* inserting `x` is what stops you pairing a number with itself. Keeping only the **first** position of each value gives the smallest `i` for that `j`. One pass, O(n) — 200,000 numbers take a blink.
+This is a plan, not C++ yet. `for j, x in numbers` means "for each position `j` and the value `x` sitting there", and `seen` is the notebook.
 
-`std::unordered_map<int, int>` is the tool; `find` or `contains` looks without inserting.
+Trace `{2, 7, 11, 15}` with target 9. At position 0, `x` is 2 and you need 7: the notebook is empty, so write down "2 is at 0". At position 1, `x` is 7 and you need 2: the notebook says 0. The answer is `{0, 1}`.
 
-The answer is two numbers, so the function returns a **`std::pair<int, int>`** (from `<utility>`). `return {i, j};` builds one, and `.first` and `.second` read it back. To remember a position, `m.emplace(key, value)` inserts only when the key is missing. It never overwrites.
+Two small choices do a lot of work:
+
+- **Look before you write.** Checking the notebook *before* adding `x` stops a number pairing with itself. In `{3, 2, 4}` with target 6, if you wrote "3 is at 0" first and then looked for 3, you would find position 0 and answer `{0, 0}`.
+- **Keep only the first position.** Keeping the first place each value appeared gives the smallest `i` for that `j`. And because `j` walks upward and you stop at the first match, the answer you return has the smallest `j` too.
+
+This walks the list once, so the time grows in step with the length of the list. In the [[notation programmers use|big-o]] that is O(n), against O(n²) for brute force. 200,000 numbers take a blink.
+
+### The C++ tools
+
+The notebook is a `std::unordered_map<int, int>`: value to first position. From the maps lesson you know a [[lookup in it is fast|hash-lookup]] on average, and that `find` or `contains` looks without inserting:
+
+```cpp
+std::unordered_map<int, int> first_seen;
+auto it = first_seen.find(target - x);
+if (it != first_seen.end()) {
+    // found: it->second is the position
+}
+```
+
+`find` gives back an iterator, which equals `end()` (read `!=` as "is not equal to") when the key is missing. The arrow `->` means "follow the iterator, then take the member", so `it->second` is the stored value, here the position.
+
+To write in the notebook, `m.emplace(key, value)` inserts only when the key is missing. It **never overwrites**, so the first position stays:
+
+```cpp
+first_seen.emplace(2, 0);   // 2 is at 0
+first_seen.emplace(2, 5);   // ignored: 2 is already there
+```
+
+**Watch out:** `first_seen[x] = j` would overwrite, replacing the first position with the latest one. That breaks the "smallest `i`" rule.
+
+### Returning two numbers
+
+The answer is two numbers, so the function returns a **`std::pair<int, int>`** (from the `<utility>` header): [[two values carried as one|pair-type]]. `return {i, j};` builds one, and `.first` and `.second` read it back:
+
+```cpp
+std::pair<int, int> p = {0, 1};
+std::cout << p.first << " " << p.second << "\n";   // prints 0 1
+```
+
+One last detail: positions go into a pair of `int`s, so loop with an `int j` and compare it with `static_cast<int>(nums.size())`. Comparing an `int` straight with `nums.size()`, which is unsigned, earns a warning with this checker's flags.
+
+::: context algorithm-word A word from a Baghdad mathematician
+"Algorithm" comes from the name of Muhammad ibn Musa al-Khwarizmi, a mathematician who worked in Baghdad in the 800s. His book on calculating with the Hindu-Arabic numerals, the digits 0 to 9 we use today, was translated into Latin, and his name, written Algoritmi, became the word for a step-by-step method of calculating. The word "algebra" comes from the title of another of his books.
+:::
+
+::: context pairs-grow Counting the pairs
+Draw the list along the top of a grid and again down the side. Each square is one pair of positions. The squares on the diagonal pair a position with itself, and the squares below it repeat pairs from above, so only the squares above the diagonal are real pairs. For n numbers that is n × (n − 1) ÷ 2. For 5 numbers it is 10. For 200,000 numbers it is 19,999,900,000, about 20 billion. Double the list and the work goes up four times.
+
+```svg
+<svg viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="100" y="18" font-size="12" fill="#1f2a44" text-anchor="middle">j = 0 to 4</text>
+  <text x="18" y="115" font-size="12" fill="#1f2a44" text-anchor="middle" transform="rotate(-90 18 115)">i = 0 to 4</text>
+  <g stroke="#1f2a44" stroke-width="1">
+    <rect x="40" y="40" width="30" height="30" fill="#f2b880"/><rect x="70" y="40" width="30" height="30" fill="#1d6fd1"/><rect x="100" y="40" width="30" height="30" fill="#1d6fd1"/><rect x="130" y="40" width="30" height="30" fill="#1d6fd1"/><rect x="160" y="40" width="30" height="30" fill="#1d6fd1"/>
+    <rect x="40" y="70" width="30" height="30" fill="#ffffff"/><rect x="70" y="70" width="30" height="30" fill="#f2b880"/><rect x="100" y="70" width="30" height="30" fill="#1d6fd1"/><rect x="130" y="70" width="30" height="30" fill="#1d6fd1"/><rect x="160" y="70" width="30" height="30" fill="#1d6fd1"/>
+    <rect x="40" y="100" width="30" height="30" fill="#ffffff"/><rect x="70" y="100" width="30" height="30" fill="#ffffff"/><rect x="100" y="100" width="30" height="30" fill="#f2b880"/><rect x="130" y="100" width="30" height="30" fill="#1d6fd1"/><rect x="160" y="100" width="30" height="30" fill="#1d6fd1"/>
+    <rect x="40" y="130" width="30" height="30" fill="#ffffff"/><rect x="70" y="130" width="30" height="30" fill="#ffffff"/><rect x="100" y="130" width="30" height="30" fill="#ffffff"/><rect x="130" y="130" width="30" height="30" fill="#f2b880"/><rect x="160" y="130" width="30" height="30" fill="#1d6fd1"/>
+    <rect x="40" y="160" width="30" height="30" fill="#ffffff"/><rect x="70" y="160" width="30" height="30" fill="#ffffff"/><rect x="100" y="160" width="30" height="30" fill="#ffffff"/><rect x="130" y="160" width="30" height="30" fill="#ffffff"/><rect x="160" y="160" width="30" height="30" fill="#f2b880"/>
+  </g>
+  <rect x="215" y="50" width="16" height="16" fill="#1d6fd1" stroke="#1f2a44"/>
+  <text x="238" y="63" font-size="12" fill="#1f2a44">10 real pairs</text>
+  <rect x="215" y="85" width="16" height="16" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="238" y="98" font-size="12" fill="#1f2a44">with itself: skip</text>
+  <rect x="215" y="120" width="16" height="16" fill="#ffffff" stroke="#1f2a44"/>
+  <text x="238" y="133" font-size="12" fill="#1f2a44">repeats: skip</text>
+  <text x="215" y="170" font-size="12" fill="#6c7a93">5 × 4 ÷ 2 = 10</text>
+</svg>
+```
+:::
+
+::: context big-o Big-O: how the work grows
+Programmers describe speed by how the work grows as the input grows, written with a capital O, read "order of". O(n) means the work grows in step with n: twice the numbers, about twice the time. O(n²) means it grows with n squared: twice the numbers, about four times the time. O(1) means the time does not grow with n at all. The notation ignores small constant factors, like the ÷ 2 in n²/2, because the shape of the growth is what decides whether 200,000 items take a millisecond or an hour.
+:::
+
+::: context hash-lookup How a hash map finds a key so fast
+An `unordered_map` is a **hash table**. It keeps many small buckets, and a function called a hash turns each key into a bucket number. To look up a key, it hashes the key and checks only that one bucket, instead of searching everything. Two keys can land in the same bucket, so a bucket sometimes holds a few entries; that is why the speed is O(1) "on average" rather than always. The table grows and spreads its keys over more buckets as you add them, to keep the buckets short.
+:::
+
+::: context pair-type A pair is a tiny struct
+`std::pair<int, int>` is a ready-made struct with two members, named `first` and `second`. The two types can differ: `std::pair<std::string, int>` holds a name and a number. You have used pairs already without seeing the name: every element of a `std::map` or `std::unordered_map` is a pair, which is why `it->first` is the key and `it->second` the value. When the two parts have real meanings, like a low and a high reading, a struct with named members reads better; the design lesson next shows that.
+:::
 --- task
-Write `std::pair<int, int> two_sum(const std::vector<int>& nums, int target)` returning positions `{i, j}` with `i < j` and `nums[i] + nums[j] == target`.
+Write `std::pair<int, int> two_sum(const std::vector<int>& nums, int target)`. It returns positions `{i, j}` with `i < j` and `nums[i] + nums[j] == target`.
 
-If there are several answers, return the one with the **smallest `j`**, and for that `j` the smallest `i`. If there is none, return `{-1, -1}`. The last check has 200,002 numbers, so it needs the one-pass idea. No `main`.
+- If there are several answers, return the one with the **smallest `j`**, and for that `j` the smallest `i`.
+- If there is no answer, return `{-1, -1}`.
+
+The last check has 200,002 numbers, so it needs the one-pass idea with a `std::unordered_map`, not brute force. No `main`: the checker supplies it.
 --- starter
 #include <unordered_map>
 #include <utility>
@@ -1349,9 +2094,11 @@ std::pair<int, int> two_sum(const std::vector<int>& nums, int target) {
     return {-1, -1};
 }
 --- hint
-For each position `j`, the question is "have I already seen `target - nums[j]`, and where?"
+For each position `j`, the question is "have I already seen `target - nums[j]`, and where?" Make a `std::unordered_map<int, int> first_seen;` to remember value to position.
 --- hint
-Look up before you insert, so a number never pairs with itself. `emplace` does not overwrite an existing key, so the first position of each value is kept.
+Look up before you insert, so a number never pairs with itself: `first_seen.find(target - nums[j])`, and if that is not `first_seen.end()`, return `{it->second, j}`. `emplace` does not overwrite an existing key, so the first position of each value is kept.
+--- hint
+The loop body is three lines: `auto it = first_seen.find(target - nums[j]);`, then `if (it != first_seen.end()) return {it->second, j};`, then `first_seen.emplace(nums[j], j);`. After the loop, `return {-1, -1};`.
 --- check case | The classic example
 two_sum({2, 7, 11, 15}, 9)
 => std::pair<int, int>{0, 1}
@@ -1378,34 +2125,133 @@ two_sum({}, 0)
 
 === cpp2-15 | Design: give repeated work a name
 --- teach
-Copy-pasted code is a bug waiting to happen. Three blocks that "do the same thing" drift apart the first time someone edits one and forgets the others — and the one they forgot is usually wrong.
+Last lesson, "Problem solving: two that add up", you designed an algorithm from a blank page. This lesson starts from code that already works, mostly, and gives it a better shape.
 
-Refactoring means changing the **shape** of code without changing what it does. For duplicated blocks:
+### Why copies go wrong
 
-1. **Find what varies.** Line the copies up side by side. Here only the data and a label differ.
-2. **Name the idea.** A function name should say what it computes, not how: `summarize`, not `loop_and_min_max`.
-3. **Return a meaningful type.** When a function produces several related values, a small `struct` with named fields beats three output parameters or a `std::pair` of a `std::pair`.
-4. **Replace each copy with a call**, then re-run the checks. They are your safety net: behaviour must not change (except for fixing bugs the duplication was hiding).
+Imagine a checklist copied onto three clipboards. Someone finds a mistake and fixes it on one clipboard, and forgets the other two. Now the three disagree, and nobody knows which is right.
+
+Copy-pasted code is the same: a [[bug waiting to happen|dry]]. Three blocks that "do the same thing" drift apart the first time someone edits one and forgets the others. And the one they forgot is usually the wrong one.
+
+**Refactoring** means [[changing the shape of code|refactoring-word]] without changing what it does. For duplicated blocks, work in four steps.
+
+### Step 1: find what varies
+
+Line the copies up side by side and spot the differences:
+
+```cpp
+out << "morning: min " << lo << "\n";   // copy 1
+out << "noon: min " << lo << "\n";      // copy 2
+```
+
+Here only the data and a label differ. Those differences become the function's **parameters**; everything the copies share becomes its body.
+
+### Step 2: name the idea
+
+A function name should say **what** it computes, not **how**: `summarize`, not `loop_and_min_max`. A reader should be able to guess what `summarize(readings)` gives back without opening it.
+
+### Step 3: return a meaningful type
+
+When a function produces several related values, a small `struct` with named members is the clearest thing to return:
 
 ```cpp
 struct Range { int low; int high; };
+```
 
+It beats the alternatives. Three [[output parameters|out-params]] (references the function writes its answers into) make every call longer and harder to read. A `std::pair` of a `std::pair` makes the reader decode `r.second.first`. A struct lets them write `r.low`.
+
+### Step 4: replace each copy with a call
+
+Swap every copy for a call to the new function, then re-run the checks. They are your [[safety net|regression]]: behaviour must not change, except for fixing bugs the duplication was hiding.
+
+### One place to get it right
+
+Here is a whole function that returns a `Range`:
+
+```cpp
 Range range_of(const std::vector<int>& v) {        // one place to get it right
     auto [lo, hi] = std::minmax_element(v.begin(), v.end());
     return {*lo, *hi};
 }
 ```
 
-A good split has one function for **computing** (`summarize` returns numbers) and one for **presenting** (`format_line` turns them into text). You can then test each alone, and reuse the numbers somewhere that does not want text.
+Read it slowly, because two pieces are new:
+
+- `std::minmax_element`, from `<algorithm>`, finds the smallest and the largest in one walk through the range. Like `max_element` in the iterators lesson, it gives back iterators, not values: a pair of them, the first pointing at the smallest element and the second at the largest.
+- `auto [lo, hi] = ...` is a **[[structured binding|structured-binding]]**: it unpacks a pair into two new variables with names you choose. Here `lo` is the pair's first part and `hi` its second.
+
+Then `*lo` follows the iterator to the value, and `return {*lo, *hi};` fills the `Range` in member order: `low` first, then `high`. For `{4, -1, 9, 3}` you get low -1 and high 9.
+
+**Watch out:** on an empty vector there is no smallest element, and both iterators are `end()`. Following `end()` with `*` is undefined behaviour. So a function like this only works on a non-empty list, and the code that calls it must check `empty()` first.
+
+### Computing apart from presenting
+
+A good split has one function for **computing** and one for **presenting**. The computing one returns numbers:
+
+```cpp
+Summary s = summarize(readings);   // numbers: min, max, mean
+```
+
+The presenting one turns them into text. It uses a `std::ostringstream` from the string streams lesson, set up with `std::fixed << std::setprecision(1)` so the mean always shows one decimal place:
+
+```cpp
+std::string line = format_line("noon", readings);   // "noon: min 10, max 20, mean 15.0\n"
+```
+
+You can then test each one on its own, and [[reuse the numbers|compute-present]] somewhere that does not want text at all.
+
+::: context dry Don't Repeat Yourself
+Programmers have a name for this rule: **DRY**, short for "Don't Repeat Yourself". It comes from the 1999 book *The Pragmatic Programmer* by Andy Hunt and Dave Thomas, who put it as: every piece of knowledge should have one single, clear home in a system. When a fact lives in two places, sooner or later someone changes one and not the other. DRY is about knowledge, not about lines that happen to look alike: two blocks that look the same today but mean different things can stay separate.
+:::
+
+::: context refactoring-word Where "refactoring" comes from
+The word borrows from algebra. Factoring rewrites 6x + 6y as 6(x + y): a different shape, the same value. Refactoring does the same to code. Martin Fowler's 1999 book *Refactoring* made the word famous, with a catalogue of small, safe steps. One of them, pulling repeated code out into its own function, is exactly what this lesson does. Each step is small enough to check before taking the next, so the program works after every one.
+:::
+
+::: context out-params Answers through references
+An **output parameter** is a reference parameter that the function writes a result into, the way `capitalize_all` changed the caller's vector in the iterators lesson. `void range_of(const std::vector<int>& v, int& low, int& high)` works, but every caller must first make empty variables to receive the answers, and a reader of a call like `range_of(v, a, b)` cannot tell which arguments go in and which come out. Returning a struct makes the answer obvious, and the compiler usually builds the returned struct straight in the caller's space, so it costs nothing extra.
+:::
+
+::: context regression Tests as a safety net
+A bug that creeps back into code that used to work is called a **regression**, and checks that you re-run after every change are regression tests. They are what make refactoring safe: change the shape, run the checks, and if any check fails you know that step broke something, while it is still small and fresh. The checks on this page are regression tests for `report`. Flight software teams re-run huge suites of them automatically on every change.
+:::
+
+::: context structured-binding Unpacking a pair
+Structured bindings arrived in C++17. They work on a `std::pair`, on a struct, and on the elements of a map: `for (const auto& [name, score] : scores)` walks a map and gives each key and value its own name, instead of `.first` and `.second`. The names are yours to choose, and the order follows the parts: first, then second.
+:::
+
+::: context compute-present Numbers on board, text on the ground
+Spacecraft work this way. The flight computer computes readings and sends them down as compact numbers, called telemetry. Software on the ground turns those numbers into displays, plots and alarm messages. The same numbers can feed a chart, a log file and a warning light, and changing how a screen looks never touches the flight code.
+
+```svg
+<svg viewBox="0 0 360 120" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="40" width="80" height="40" rx="6" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="50" y="64" font-size="12" fill="#1f2a44" text-anchor="middle">readings</text>
+  <rect x="120" y="40" width="100" height="40" rx="6" fill="#1d6fd1" stroke="#1f2a44"/>
+  <text x="170" y="58" font-size="12" fill="#ffffff" text-anchor="middle">summarize</text>
+  <text x="170" y="73" font-size="11" fill="#ffffff" text-anchor="middle">computes</text>
+  <rect x="250" y="40" width="100" height="40" rx="6" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="300" y="58" font-size="12" fill="#1f2a44" text-anchor="middle">format_line</text>
+  <text x="300" y="73" font-size="11" fill="#1f2a44" text-anchor="middle">presents</text>
+  <line x1="90" y1="60" x2="116" y2="60" stroke="#1f2a44" stroke-width="2"/>
+  <path d="M 120 60 L 112 56 L 112 64 Z" fill="#1f2a44"/>
+  <line x1="220" y1="60" x2="246" y2="60" stroke="#1f2a44" stroke-width="2"/>
+  <path d="M 250 60 L 242 56 L 242 64 Z" fill="#1f2a44"/>
+  <text x="235" y="30" font-size="11" fill="#6c7a93" text-anchor="middle">Summary</text>
+  <text x="170" y="105" font-size="11" fill="#6c7a93" text-anchor="middle">testable alone</text>
+  <text x="300" y="105" font-size="11" fill="#6c7a93" text-anchor="middle">text only here</text>
+</svg>
+```
+:::
 --- task
-`report` works, mostly — but its three copied blocks hide a copy-paste bug. Refactor it:
+`report` works, mostly, but its three copied blocks hide a copy-paste bug. Refactor it into these pieces:
 
 - `struct Summary { int min; int max; double mean; };`
-- `Summary summarize(const std::vector<int>& readings)` — for a non-empty list.
-- `std::string format_line(const std::string& label, const std::vector<int>& readings)` — `"label: min 1, max 5, mean 3.0\n"` (mean to one decimal place), or `"label: no readings\n"` for an empty list.
-- `report` returns the three lines, morning then noon then night, built with `format_line`.
+- `Summary summarize(const std::vector<int>& readings)`: the smallest value, the largest value and the mean (the average: the total divided by how many there are). It is only called with a non-empty list.
+- `std::string format_line(const std::string& label, const std::vector<int>& readings)`: returns `"label: min 1, max 5, mean 3.0\n"`, with the real label and numbers and the mean to one decimal place. For an empty list it returns `"label: no readings\n"` instead.
+- `report` returns the three lines, morning then noon then night, each built with `format_line`.
 
-Keep at most one loop in the whole file. No `main`.
+Keep at most one loop in the whole file. No `main`: the checker supplies it.
 --- starter
 #include <iomanip>
 #include <sstream>
@@ -1472,9 +2318,9 @@ std::string report(const std::vector<int>& morning, const std::vector<int>& noon
 --- hint
 Compare the three blocks line by line. What is different in the last one, and is it meant to be?
 --- hint
-Move one block into `summarize`, returning a `Summary{min, max, mean}`. Then `format_line` calls it and does the text.
+Move one block into `summarize`: start a `Summary s{readings[0], readings[0], 0.0};`, keep the one loop, and set `s.mean` from the `long long` sum at the end. Then `format_line` checks `readings.empty()` first, calls `summarize`, and writes the text with an `std::ostringstream` set to `std::fixed << std::setprecision(1)`.
 --- hint
-`report` becomes a single line: three `format_line` calls joined with `+`.
+`report` becomes a single line: three `format_line` calls joined with `+`, as in `format_line("morning", morning) + format_line("noon", noon) + format_line("night", night)`.
 --- check case | report gives the three lines, with the night mean right
 report({1, 5, 3}, {10, 20}, {-2, 4, 1, 1})
 => "morning: min 1, max 5, mean 3.0\nnoon: min 10, max 20, mean 15.0\nnight: min -2, max 4, mean 1.0\n"
