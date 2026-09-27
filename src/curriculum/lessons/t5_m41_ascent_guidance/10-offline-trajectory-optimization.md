@@ -115,7 +115,7 @@ Lesson 4, on Powered Explicit Guidance, solved a single guidance cycle from a fl
 
 **What the model believed.** Asked to predict its own outcome, the local model said it would hit the target orbit exactly — its leftover error was the solver's, better than one part in a billion ($10^{-9}$).
 
-**What really happened when trusted too long.** [[Flown open loop|frozen-steering]] — committed to that one steering law for the whole 354-second burn, against the true curved-gravity physics, with no re-solving — the rocket missed by 163.8 km of altitude, 343.5 m/s of horizontal speed, and 1238.6 m/s of leftover vertical speed. That is not an orbit.
+**What really happened when trusted too long.** [[Flown open loop|frozen-steering]] — committed to that one steering law for the whole 354-second burn, against the true curved-gravity physics, with no re-solving — the rocket ended 194.8 km too high, 546 m/s short of circular speed, and still climbing at 1841 m/s. That is not an orbit.
 
 **What the difference means.** The model was trusted for 354 seconds when its assumptions are good for a few. Re-solved every few seconds from the true state, the same model delivered lesson 4's insertion to within a fraction of a meter and a few m/s.
 
@@ -156,7 +156,7 @@ Why can the onboard guidance algorithm get away with a flat-gravity, drag-free l
 :::
 
 ::: answer
-Onboard guidance never trusts its local model for more than one guidance cycle — a few seconds — before re-solving from the vehicle's true state. The model's error has only that short a stretch to build up over, as lesson 4 showed directly: the same steering flown for the whole 354 s burn missed by 163.8 km. The offline optimizer's output is flown open loop for the *entire* atmospheric phase, with nothing re-solving it in real time, so any error in its model is carried, uncorrected, for the whole of that phase. That is why it needs the full-fidelity atmosphere, aerodynamics and structural model that the onboard algorithm has no time or hardware budget for.
+Onboard guidance never trusts its local model for more than one guidance cycle — a few seconds — before re-solving from the vehicle's true state. The model's error has only that short a stretch to build up over, as lesson 4 showed directly: the same steering flown for the whole 354 s burn ended 194.8 km too high. The offline optimizer's output is flown open loop for the *entire* atmospheric phase, with nothing re-solving it in real time, so any error in its model is carried, uncorrected, for the whole of that phase. That is why it needs the full-fidelity atmosphere, aerodynamics and structural model that the onboard algorithm has no time or hardware budget for.
 :::
 
 ::: check
@@ -270,7 +270,7 @@ Here is the idea in a picture. The re-solved guidance (blue) makes a small error
   <text x="46" y="14" font-size="12" fill="#1f2a44">altitude error</text>
   <path d="M 40 130 Q 220 128 320 30" fill="none" stroke="#b4232c" stroke-width="2.5"/>
   <text x="170" y="60" font-size="12" fill="#b4232c">frozen plan</text>
-  <text x="228" y="26" font-size="12" fill="#b4232c">163.8 km at 354 s</text>
+  <text x="228" y="26" font-size="12" fill="#b4232c">194.8 km at 354 s</text>
   <path d="M 40 130 L 70 126 L 70 130 L 100 126 L 100 130 L 130 126 L 130 130 L 160 126 L 160 130 L 190 126 L 190 130 L 220 126 L 220 130 L 250 126 L 250 130 L 280 126 L 280 130 L 310 126 L 310 130 L 320 129" fill="none" stroke="#1d6fd1" stroke-width="2"/>
   <text x="120" y="118" font-size="12" fill="#1d6fd1">re-solved every cycle</text>
 </svg>
