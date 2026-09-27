@@ -3787,6 +3787,34 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Embedded pairs and adaptive step size control"
       ],
       "file": "cod_py_07_integration/03-adaptive-step-size.md"
+    },
+    {
+      "id": "l04-solve-ivp-methods",
+      "title": "solve_ivp and its six methods",
+      "minutes": 21,
+      "covers": [
+        "solve_ivp methods: RK45, RK23, DOP853, Radau, BDF, LSODA"
+      ],
+      "file": "cod_py_07_integration/04-solve-ivp-methods.md"
+    },
+    {
+      "id": "l05-tolerances-and-output",
+      "title": "Choosing rtol and atol, and asking for output",
+      "minutes": 22,
+      "covers": [
+        "rtol and atol: what each controls and how to choose them from the state magnitudes",
+        "t_eval versus dense_output"
+      ],
+      "file": "cod_py_07_integration/05-tolerances-and-output.md"
+    },
+    {
+      "id": "l06-events",
+      "title": "Events: apogee, impact and other moments",
+      "minutes": 22,
+      "covers": [
+        "Events: terminal, direction, apogee and impact detection"
+      ],
+      "file": "cod_py_07_integration/06-events.md"
     }
   ],
   "cod_rs_01_basics": [
@@ -10316,14 +10344,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_07_integration": {
-    "covered": 3,
+    "covered": 7,
     "total": 12,
     "complete": false,
     "missing": [
-      "solve_ivp methods: RK45, RK23, DOP853, Radau, BDF, LSODA",
-      "rtol and atol: what each controls and how to choose them from the state magnitudes",
-      "t_eval versus dense_output",
-      "Events: terminal, direction, apogee and impact detection",
       "Stiffness: how to recognise it and when to switch to an implicit method",
       "Energy and Jacobi-constant drift as an independent accuracy check",
       "Symplectic integrators and long-horizon propagation",
