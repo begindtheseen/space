@@ -6,11 +6,11 @@ covers:
   - SFINAE and enable_if, and the C++20 replacement: concepts and requires
 ---
 
-Picture a roller coaster. At the entrance there is a sign: "You must be this tall to ride", with a line painted at 122 cm. A child who is too short learns it in two seconds, at the gate, from a sign that says exactly what the rule is. Now picture a park with no sign. The child gets in, sits down, and only halfway up the first hill does the lap bar refuse to close. The ride stops. Everyone waits. Somebody eventually explains that the problem was height.
+Picture a roller coaster. At the entrance there is a sign: "You must be this tall to ride", with a line painted at 122 cm. A child who is too short learns it in two seconds, at the gate, from a sign that states the rule. Now picture a park with no sign. The child gets in, and only halfway up the first hill does the lap bar refuse to close. The ride stops, and only then does someone explain that the problem was height.
 
 Templates without rules are the park with no sign. Last lesson's `Kalman1<int>` got a `static_assert`, which is a guard standing *inside* the ride: better than nothing, but the template has already been chosen by the time it speaks. This lesson is about signs at the gate. The old way to put one up is a trick with a strange name, **SFINAE**, usually used through a tool called `std::enable_if`. The C++20 way is **concepts**: named, readable requirements like `std::floating_point`, checked before the template is even picked.
 
-You will see both, on the same flight-software problems, and you will read the real g++ error messages each one produces when misused. That comparison is the point. In a large codebase, the person who hits your template's error is usually not you, and the quality of that message decides whether they lose five minutes or an afternoon.
+You will see both on the same problems, and read the real g++ errors each produces when misused. In a large codebase, the person who hits your template's error is usually not you, and that message decides whether they lose five minutes or an afternoon.
 
 ## Substitution failure is not an error
 
@@ -18,7 +18,7 @@ When you call a function that has several **overloads** (several functions with 
 
 For a function template, being a candidate takes two steps. First, **deduction**: work out the template arguments from the call, as lesson 1 showed. Second, **substitution**: paste those arguments into the template's *declaration* (its return type, its parameter types, its template parameters) to see what function signature comes out.
 
-Sometimes the pasted result is nonsense. If `C = double`, then `typename C::size_type` asks for "double's size type", and `double` has no members at all. The rule C++ has for this moment is the one with the long name: **substitution failure is not an error**, shortened to **[[SFINAE|sfinae-name]]** and usually said "SFINAE" or "sfee-nay". The broken candidate is quietly removed from the list, and overload resolution carries on with the others. Only if *no* candidate is left is there an error.
+Sometimes the pasted result is nonsense. If `C = double`, then `typename C::size_type` asks for "double's size type", and `double` has no members at all. The rule C++ has for this moment is the one with the long name: **substitution failure is not an error**, shortened to **[[SFINAE|sfinae-name]]** and often pronounced "sfee-nay". The broken candidate is quietly removed from the list, and overload resolution carries on with the others. Only if *no* candidate is left is there an error.
 
 ::: example SFINAE choosing between overloads
 ```cpp
@@ -60,9 +60,9 @@ Take the calls one at a time.
 
 1. `count_of(window)`. Candidate A deduces `C = std::vector<double>`. Substituting gives the return type `std::vector<double>::size_type`, which exists. Candidate B needs a `double`, and a vector cannot become one, so B is not viable. A wins and returns the size, 3.
 2. `count_of(burst)`. Same story with `C = std::array<float, 8>`: A wins, size 8.
-3. `count_of(2.5)`. Candidate A deduces `C = double` and substitutes: `double::size_type`. That type cannot exist. Without SFINAE this would be a hard error, and the whole program would fail to compile because of a candidate nobody wanted. With SFINAE, A is quietly dropped. B takes a `double` exactly, so B is called and returns 1.
+3. `count_of(2.5)`. Candidate A deduces `C = double` and substitutes: `double::size_type`, which cannot exist. Without SFINAE the program would fail to compile because of a candidate nobody wanted. With SFINAE, A is quietly dropped, and B, which takes a `double` exactly, returns 1.
 
-Sanity check: a window of three readings counts as 3 samples, eight slots as 8, and one reading as 1. Each call reached the overload that makes sense.
+Sanity check: three readings count as 3, eight slots as 8, one reading as 1. Each call reached the sensible overload.
 :::
 
 ::: warning Only the declaration is protected
@@ -71,7 +71,7 @@ SFINAE covers failures while substituting into the template's *declaration*: the
 
 ## enable_if: SFINAE on purpose
 
-In the example, SFINAE happened by accident: `double::size_type` just did not exist. Library writers soon wanted to trigger it *on purpose*, with any condition they liked, such as "only for integer types". The tool for that is `std::enable_if`, from `<type_traits>`. It is a trait, built exactly the way last lesson's traits were:
+Above, SFINAE happened by accident. Library writers wanted to trigger it *on purpose*, with any condition, such as "only for integer types". The tool for that is `std::enable_if`, from `<type_traits>`. It is a trait, built exactly the way last lesson's traits were:
 
 ```cpp
 template <bool B, typename T = void> struct enable_if {};                 // no member "type" at all
@@ -153,9 +153,9 @@ f2bad.cpp:14:1: note: candidate: 'template<class T> std::enable_if_t<is_floating
 f2bad.cpp:14:1: note:   template argument deduction/substitution failed:
 ```
 
-Look at what it actually says. The central error, `no type named 'type' in 'struct std::enable_if<false, double>'`, points into the standard library's own file, at a line you did not write, about a member you never asked for. To learn the *reason*, you have to read the candidate's signature, find the `is_integral_v<T>` buried in its return type, and work backwards. For the second candidate, g++ does not even show the reason. This is a small example; in a real library with five overloads and nested conditions, the same kind of message runs to pages.
+Look at what it says. The central error, `no type named 'type' in 'struct std::enable_if<false, double>'`, points into the standard library's own file, about a member you never asked for. To learn the *reason*, you must find the `is_integral_v<T>` buried in the candidate's return type and work backwards. For the second candidate, g++ does not show the reason at all. In a real library with many overloads and nested conditions, such messages run to pages.
 
-There is a second problem. The intent, "integers only", is hidden inside the return type, and two `enable_if` conditions that overlap make a call **ambiguous**. If one overload is enabled for `std::is_arithmetic_v<T>` (any number) and another for `std::is_floating_point_v<T>`, a call with `2.5` satisfies both, and g++ says `call of overloaded 'describe(double)' is ambiguous`. The compiler cannot see that one condition is narrower than the other; to it they are two unrelated expressions.
+A second problem: overlapping conditions make a call **ambiguous**. Enable one overload for `std::is_arithmetic_v<T>` (any number) and another for `std::is_floating_point_v<T>`, and a call with `2.5` satisfies both: g++ says `call of overloaded 'describe(double)' is ambiguous`. To the compiler the two conditions are unrelated expressions; it cannot see that one is narrower.
 
 ## Concepts: the sign at the gate
 
@@ -166,7 +166,7 @@ C++20 added a direct way to say what a template needs. A **[[concept|concepts-hi
 - `std::same_as<T, U>`: `T` and `U` are the same type;
 - `std::convertible_to<From, To>`: a `From` can be implicitly converted to a `To`.
 
-Many of them are thin wrappers over last lesson's traits. In g++'s library, `std::floating_point` is defined in one line as `std::is_floating_point_v<T>`. What is new is not the question, but where and how it is asked.
+Many are thin wrappers over last lesson's traits: in g++'s library, `std::floating_point` is one line, `std::is_floating_point_v<T>`. What is new is where and how the question is asked.
 
 A template states its requirement with a **requires-clause**: the keyword `requires` followed by a condition built from concepts. There are four spellings, all meaning the same thing:
 
@@ -177,7 +177,7 @@ template <std::floating_point T> T f3(T x);                        // the concep
 std::floating_point auto f4(std::floating_point auto x);           // abbreviated: "any floating-point x"
 ```
 
-Read `template <std::floating_point T>` as "for any floating-point type `T`". Read `std::floating_point auto x` as "`x`, of any floating-point type". The requirement is part of the template's **interface**, the part a caller sees, instead of being hidden in a return type. A constrained template whose requirement is not met is removed from overload resolution, just as with SFINAE, but now the compiler knows *which requirement* failed and can say so.
+Read `template <std::floating_point T>` as "for any floating-point type `T`", and `std::floating_point auto x` as "`x`, of any floating-point type". The requirement is part of the template's **interface**, the part a caller sees. A template whose requirement is not met is removed from overload resolution, as with SFINAE, but now the compiler knows *which requirement* failed and can say so.
 
 ::: key
 Concepts express requirements directly and readably, produce diagnostics naming the failed requirement, participate in overload resolution with a clear subsumption ordering, and can be reused by name. `enable_if` hid the intent in the return type and produced unreadable errors.
@@ -192,10 +192,10 @@ double to_dps(std::integral auto counts)       { return counts * kLsb; }
 double to_dps(std::floating_point auto value)  { return static_cast<double>(value); }
 ```
 
-With the same `main` it prints the same `10.7975` and `10.8000`. We compiled both versions with `-O2` and compared the machine code g++ generated for `main`: it was identical, instruction for instruction. A constraint is checked while compiling and then disappears. It costs **nothing at run time** and changes nothing in the object code; what it changes is the error you get when something is wrong.
+With the same `main` it prints the same `10.7975` and `10.8000`. We compiled both versions with `-O2` and compared the machine code g++ generated for `main`: identical, instruction for instruction. A constraint is checked while compiling and then disappears. It costs **nothing at run time**; what it changes is the error you get when something is wrong.
 
 ::: example Two diagnostics, side by side
-Pass the same `std::string` to the concept version. g++ 13's report, with only the source-line echoes removed:
+Pass the same `std::string` to the concept version. Here is g++ 13's report, shortened in the same way as before (source-line echoes and "In substitution of … required from here" lines removed):
 
 ```
 f3bad.cpp:13:33: error: no matching function for call to 'to_dps(std::string&)'
@@ -214,10 +214,10 @@ f3bad.cpp:9:8: note: constraints not satisfied
 Compare it with the `enable_if` report, line for line.
 
 1. Both start at the call site, line 13 here and line 18 there: "no matching function".
-2. The `enable_if` version's key line was `no type named 'type' in 'struct std::enable_if<false, double>'`. The concept version's key lines are `constraints not satisfied`, then `required for the satisfaction of 'integral<...>'`, then `the expression 'is_integral_v<...>' evaluated to 'false'`. It names the concept, `integral`, and the exact test that failed.
+2. Where `enable_if` said `no type named 'type' in 'struct std::enable_if<false, double>'`, the concept version says `constraints not satisfied`, `required for the satisfaction of 'integral<...>'`, and `the expression 'is_integral_v<...>' evaluated to 'false'`: the concept's name and the exact test that failed.
 3. The `enable_if` version explained only the first candidate. The concept version explains both: not `integral`, and not `floating_point`.
 
-In length they are close, 21 lines against 27, because g++ now explains more. The gain is in what the lines say. Sanity check: a reader who has never seen `to_dps` can tell from the concept version alone that it wants an integer or a floating-point value, and that a `std::string` is neither. From the `enable_if` version, they would have to open the source.
+In length they are close, 21 lines against 27, because g++ now explains more. The gain is in what the lines say. Sanity check: from the concept version alone, a reader who has never seen `to_dps` can tell it wants an integer or a floating-point value, and a `std::string` is neither.
 :::
 
 ## Writing your own concept
@@ -242,9 +242,9 @@ requires(T a, T b) {
 }
 ```
 
-The parameters `a` and `b` are never created and the expressions never run. The compiler only checks whether each line *would* be valid. The whole requires-expression is `true` if every requirement holds and `false` otherwise. In a compound requirement, read `{ a * b } -> std::convertible_to<T>` as "`a * b` must compile, and its result must be convertible to `T`".
+The parameters `a` and `b` are never created and nothing runs; the compiler only checks whether each line *would* be valid. The result is `true` if every requirement holds, `false` otherwise. In a compound requirement, read `{ a * b } -> std::convertible_to<T>` as "`a * b` must compile, and its result must be convertible to `T`".
 
-The difference between the two uses of `requires` trips people up. A **requires-clause** (after a template head or a function) *states* a constraint: `requires Scalar<T>`. A **requires-expression** (`requires (params) { ... }`) *tests* whether code is valid and yields a `bool`. You can put a requires-expression straight into a requires-clause, which gives the odd-looking `requires requires (T a) { a.step(1.0); }`. It is legal, but a named concept is almost always clearer.
+Keep the two uses of `requires` apart. A **requires-clause** *states* a constraint: `requires Scalar<T>`. A **requires-expression**, `requires (params) { ... }`, *tests* whether code is valid and yields a `bool`. Putting one straight into the other gives the odd-looking, legal `requires requires (T a) { a.step(1.0); }`; a named concept is almost always clearer.
 
 ::: example A Propagator concept, and its diagnostic
 A simulation loop can step any object forward in time, as long as it has `step(dt)` and a `state()` that gives a number.
@@ -349,12 +349,12 @@ Step by step. For `3`, an `int`, `Arithmetic` holds (it is integral) but `Real` 
 :::
 
 ::: note Why named concepts matter for subsumption
-The compiler compares constraints by breaking them into **atomic constraints**, the smallest pieces, such as `std::is_floating_point_v<T>` inside the definition of `std::floating_point`. Two atomic constraints count as the same only if they are literally the same expression from the same place in the source. That is why subsumption works through named concepts: `Real` and `Arithmetic` both mention `std::floating_point`, so they share the very same atomic constraint. If you wrote the raw expression `std::is_floating_point_v<T>` by hand in two different requires-clauses, the compiler would treat them as unrelated, and you would be back to an ambiguous call. Build overload sets from named concepts.
+The compiler compares constraints by breaking them into **atomic constraints**, the smallest pieces, such as the `std::is_floating_point_v<T>` inside `std::floating_point`. Two atomic constraints count as the same only if they are the same expression from the same place in the source. `Real` and `Arithmetic` both go through `std::floating_point`, so they share that piece. Write the raw `std::is_floating_point_v<T>` by hand in two requires-clauses and the compiler treats them as unrelated: an ambiguous call again. Build overload sets from named concepts.
 :::
 
 ## The exercise: a Matrix with a Scalar concept
 
-Lesson 2 built `Matrix<T, R, C>`. It works for `double`. But nothing stops someone from writing `Matrix<std::string, 2, 2>`, or `Matrix<int, 3, 3>` with its integer-division surprises. The exercise for this module asks you to constrain it with a concept, and to compare the diagnostics. Here are the two halves.
+Lesson 2 built `Matrix<T, R, C>`. It works for `double`. But nothing stops someone from writing `Matrix<std::string, 2, 2>`, or `Matrix<int, 3, 3>`, which would quietly do every later division, in an inverse or a normalization, in integer arithmetic. The exercise for this module asks you to constrain it with a concept, and to compare the diagnostics. Here are the two halves.
 
 Without constraints, something surprising happens: the declaration `Matrix<std::string, 2, 2> m;` **compiles**. A `std::array<std::string, 4>` is a perfectly good array. The error waits until you use the part that needs arithmetic. Multiply two such matrices and g++ 13 reports, from inside `operator*`:
 
@@ -369,7 +369,7 @@ g_unc.cpp:15:17: note:   template argument deduction/substitution failed:
 g_unc.cpp:20:62: note:   'std::__cxx11::basic_string<char>' is not derived from 'const Matrix<T, R, K>'
 ```
 
-The error points at line 20, the inner loop of the library's multiply: the body, where SFINAE offers no protection. The user who wrote the bad line 29 is told about an `operator*` of two strings they never wrote, and then about every other `operator*` g++ can see. In this 30-line file that was 12 lines. Add `#include <complex>` and `#include <chrono>`, which bring more `operator*` overloads into view, and the same mistake produced 34. In a real flight codebase with its math headers, it grows further, and every extra layer of helper functions adds another "required from" line to the backtrace.
+The error points at line 20, the inner loop of the library's multiply: the body, where SFINAE offers no protection. The user who wrote the bad line 29 is told about an `operator*` of two strings they never wrote, then about every other `operator*` g++ can see. Here that was 12 lines; adding `#include <complex>` and `#include <chrono>`, which bring more `operator*` overloads into view, made it 34. Each extra layer of helper functions adds another "required from" line.
 
 Now the constrained version. Define the concept, and put it on the class and on `operator*`:
 
@@ -400,7 +400,7 @@ g_con.cpp:9:9:   required for the satisfaction of 'Scalar<T>' [with T = std::__c
 /usr/include/c++/13/concepts:109:30: note: the expression 'is_floating_point_v<_Tp> [with _Tp = std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >]' evaluated to 'false'
 ```
 
-Read it from the top: line 46 of *your* file, "template constraint failure", "constraints not satisfied", "required for the satisfaction of 'Scalar<T>'", and the exact test that failed, `is_floating_point_v`. The diagnosis has moved from the middle of the library to the **[[interface boundary|interface-boundary]]**, the line where the misuse happened. It also catches `Matrix<int, 3, 3>`, which the unconstrained version would have accepted in silence.
+Read it from the top: line 46 of *your* file, "template constraint failure", "constraints not satisfied", `required for the satisfaction of 'Scalar<T>'`, and the exact test that failed, `is_floating_point_v`. The diagnosis has moved from the middle of the library to the **[[interface boundary|interface-boundary]]**, the line where the misuse happened. It also catches `Matrix<int, 3, 3>`, which the unconstrained version would have accepted in silence.
 
 ::: key
 The practical benefit of constraining a template with a concept: the error names the unsatisfied requirement at the call site, instead of surfacing deep inside the instantiation. The generated runtime code is the same; only the diagnosis moves.
@@ -469,7 +469,7 @@ A colleague says: "Adding concepts to our matrix library will make the flight co
 ::: answer
 No. Constraints are checked while compiling and then vanish; when we compiled the `enable_if` and concept versions of `to_dps` with `-O2`, the machine code for `main` was identical. For the types the library already accepted, nothing about the generated code changes.
 
-What it buys is at build time: a misuse like `Matrix<std::string, 2, 2>` or `Matrix<int, 3, 3>` is rejected at the line that wrote it, with a message that names the failed requirement (`Scalar<T>`, `is_floating_point_v` evaluated to false), instead of an error from inside the library's loops, or no error at all. It also documents the requirement in the interface, where every reader sees it.
+What it buys is at build time: a misuse like `Matrix<std::string, 2, 2>` or `Matrix<int, 3, 3>` is rejected at the line that wrote it, with a message naming the failed requirement, instead of an error from inside the library's loops, or no error at all. It also documents the requirement where every reader sees it.
 :::
 
 ## Summary
