@@ -541,11 +541,46 @@ INSERT INTO notes (id, title, tags) VALUES
   (5, 'Old stuff',    ''),
   (6, 'Board prep',   'urgent,work, work');
 --- teach
-This lesson's table: `notes` (`id`, `title`, `tags`), from a notes app whose first version stored tags as a comma-separated string.
+Last lesson, "JSON columns", you kept flexible data inside one text column and dug into it with JSON functions. This lesson is about a column that holds a **list**, and why a list is better kept as rows. You will design the right tables for it, then move the old data across without losing a tag.
 
-That design breaks as soon as anyone asks a real question. "All notes tagged work" becomes `tags LIKE '%work%'` — which also matches `homework`. Renaming a tag means rewriting strings. Nothing stops `'Work'` and `'work'` becoming two tags. The string is a **list stuffed into one column**, and relational databases do lists with rows.
+### The table
 
-A note has many tags; a tag belongs to many notes. That is a **many-to-many** relationship, and it always takes three tables: the two things, and a **join table** with one row per link:
+`notes` comes from the first version of a notes app. Each note has an `id`, a `title`, and `tags`: all its tags written as one string, separated by commas.
+
+| id | title | tags |
+| --- | --- | --- |
+| 1 | Q3 plan | work, urgent |
+| 2 | Groceries | personal |
+| 3 | Launch ideas | Work,ideas |
+| 4 | Draft | NULL |
+| 5 | Old stuff | (empty text) |
+| 6 | Board prep | urgent,work, work |
+
+Look closely. Some commas have a space after them and some do not. `Work` has a capital. Note 4 has no tags at all (NULL), note 5 has an empty string, and note 6 lists `work` twice.
+
+### The picture
+
+Think of the clubs at a school. One student can be in chess, choir and robotics. One club has many students. The club secretary does not write "chess, choir, robotics" in one box next to each name. They keep a sign-up sheet with one line per student per club: "Maya, chess". "Maya, choir". "Leo, chess". To find everyone in chess, they read down one column.
+
+### A list squeezed into one column
+
+The `tags` string works until someone asks a real question. "Which notes are tagged work?" becomes a `LIKE` pattern:
+
+```sql
+SELECT title, tags FROM notes WHERE tags LIKE '%work%';
+```
+
+| title | tags |
+| --- | --- |
+| Q3 plan | work, urgent |
+| Launch ideas | Work,ideas |
+| Board prep | urgent,work, work |
+
+Right today, by luck. `'%work%'` means "work anywhere in the text", so a note tagged `homework` would match too. Renaming a tag means rewriting every string that contains it. And nothing stops `Work` and `work` from living on as two different tags. The string is a list stuffed into one column, and a relational database keeps lists [[as rows, one value per box|one-value]].
+
+### Many-to-many
+
+A note has many tags. A tag belongs to many notes. That is a **many-to-many** relationship: many on each side. It always takes three tables: one for each of the two things, and a **join table** in the middle, with one row per link. The join table is the club secretary's sign-up sheet.
 
 ```sql
 CREATE TABLE tags (id INTEGER PRIMARY KEY, name TEXT NOT NULL UNIQUE);
@@ -556,9 +591,53 @@ CREATE TABLE note_tags (
 );
 ```
 
-The composite primary key makes each link unique — the same tag cannot be attached twice — and doubles as the index for "tags of this note". Cascades mean deleting a note removes its links (not the tags, which other notes share). Remember `PRAGMA foreign_keys = ON`.
+- `tags` stores each tag once. `UNIQUE` on `name` means a second `work` is refused.
+- `note_tags` has one row for each "this note has this tag". Both columns are foreign keys, as in the lesson "Foreign keys".
 
-**Migrating** the old strings is the expert part: split each string into rows. A recursive CTE does it by peeling off one piece per step:
+Here is [[how the three tables link up|link-picture]] once the data is in.
+
+### What the join table's rules do
+
+`PRIMARY KEY (note_id, tag_id)` is a composite primary key, the pair of columns together, like `order_items` in the lesson "Design: normalising a flat table". It makes each link unique: the same tag cannot be attached to the same note twice. It also [[works as an index|key-as-index]] for "which tags does this note have?".
+
+`ON DELETE CASCADE` on both columns means: delete a note, and its rows in `note_tags` go with it. The tags themselves stay, because other notes share them. Delete a tag, and its links go too.
+
+Foreign keys only do their job once they are switched on. As always in SQLite, run `PRAGMA foreign_keys = ON;` first.
+
+### Questions become joins
+
+With the three tables, "notes tagged work" is an ordinary join, and it can never match `homework`:
+
+```sql
+SELECT n.title
+FROM notes n
+JOIN note_tags nt ON nt.note_id = n.id
+JOIN tags t ON t.id = nt.tag_id
+WHERE t.name = 'work';
+```
+
+| title |
+| --- |
+| Q3 plan |
+| Launch ideas |
+| Board prep |
+
+Renaming a tag is now one `UPDATE` of one row in `tags`.
+
+### Moving the old data
+
+The new tables start empty. The old strings still hold every tag. Changing a live database's design and carrying its data across is called a **[[migration|migration]]**. This one has four steps:
+
+1. Split each string into pieces, one row per tag.
+2. Fill `tags` with each name once.
+3. Fill `note_tags` with each note's links.
+4. Drop the old `tags` column.
+
+Step 1 is the hard part, so it gets the most room.
+
+### Splitting a string, one piece per round
+
+SQLite has no function that splits a string into rows. But you know a tool that repeats a step: the recursive CTE, from the lesson "Recursive CTEs: a query that counts". Each round peels the first piece off the front of the string.
 
 ```sql
 WITH RECURSIVE split(note_id, piece, rest) AS (
@@ -572,7 +651,152 @@ WITH RECURSIVE split(note_id, piece, rest) AS (
 SELECT note_id, lower(piece) FROM split WHERE piece <> '';
 ```
 
-Normalise as you go (`lower`, `trim`, drop empty pieces), and use `INSERT OR IGNORE` or `DISTINCT` so a tag listed twice links once. You need the split twice — once to fill `tags`, once to fill `note_tags` — so save it once: `CREATE TEMP TABLE pieces AS <query>` stores a query's result as a table that disappears when the connection closes. When everything has moved, drop the old column with `ALTER TABLE notes DROP COLUMN tags;` so nobody keeps writing to it.
+The CTE has three columns: `note_id`, `piece` (the tag peeled off in this round) and `rest` (what is still left to split).
+
+- **The anchor** makes one starting row per note. `tags || ','` glues a comma onto the end (`||` joins two texts). Now every piece, even the last, ends in a comma. `piece` starts as NULL, because nothing has been peeled yet. `WHERE tags IS NOT NULL` skips note 4.
+- **The step** reads `rest`. `instr(rest, ',')` is the position of the first comma, as in the lesson "Working with text". `substr(rest, 1, instr(rest, ',') - 1)` is everything before it: the next piece. `trim` removes the spaces around it. `substr(rest, instr(rest, ',') + 1)` is everything after the comma: the new `rest`.
+- **The stopping condition** is `rest <> ''` (`<>` is "not equal"). When nothing is left, no new row is made.
+
+Here are the rounds for note 6, `'urgent,work, work'`:
+
+| round | piece | rest |
+| --- | --- | --- |
+| anchor | NULL | `'urgent,work, work,'` |
+| 1 | `'urgent'` | `'work, work,'` |
+| 2 | `'work'` | `' work,'` |
+| 3 | `'work'` | `''` |
+
+In round 1, the first comma is character 7, so the piece is the 6 characters before it, `urgent`, and the rest starts at character 8. In round 3, `trim` removed the space in front of `work`, and `rest` is empty, so the rounds stop.
+
+### Tidying as you go
+
+The final `SELECT` cleans the pieces before anything is stored:
+
+- `lower(piece)` turns `Work` into `work`, so they become one tag.
+- `WHERE piece <> ''` drops empty pieces. Note 5's empty string makes one piece, `''`, and it is dropped here. The anchor rows, whose `piece` is NULL, are dropped too, because a comparison with NULL is never true.
+- Note 6 still gives `work` twice. Add `DISTINCT` to keep each pair of note and tag once: `SELECT DISTINCT note_id, lower(piece) AS name …`. (`INSERT OR IGNORE`, from the lesson "Constraints: rules the database enforces", would also skip the repeat.)
+
+With `DISTINCT`, the split gives 7 rows:
+
+| note_id | name |
+| --- | --- |
+| 1 | urgent |
+| 1 | work |
+| 2 | personal |
+| 3 | ideas |
+| 3 | work |
+| 6 | urgent |
+| 6 | work |
+
+### Saving the split in a temporary table
+
+You need these rows twice: once to fill `tags`, and once to fill `note_tags`. Rather than writing the long CTE twice, save its result once:
+
+```sql
+CREATE TEMP TABLE pieces AS
+WITH RECURSIVE split(note_id, piece, rest) AS ( … )
+SELECT DISTINCT note_id, lower(piece) AS name FROM split WHERE piece <> '';
+```
+
+`CREATE TABLE pieces AS <query>` makes a table and fills it with whatever the query returns. The word `TEMP` makes it a **[[temporary table|temp-table]]**: a table that disappears by itself when the connection to the database closes. It is scrap paper for the migration.
+
+### Filling the two tables
+
+Both inserts use `INSERT … SELECT`, from the lesson "Design: normalising a flat table".
+
+```sql
+INSERT INTO tags (name) SELECT DISTINCT name FROM pieces;
+```
+
+That stores 4 tags: `ideas`, `personal`, `urgent` and `work`. SQLite numbers their `id`s.
+
+The links need each tag's new `id`. `pieces` only has the name, so join it to `tags` on the name:
+
+```sql
+INSERT INTO note_tags (note_id, tag_id)
+SELECT p.note_id, t.id FROM pieces p JOIN tags t ON t.name = p.name;
+```
+
+That stores 7 links. Joining the tables back together shows each note with its tags:
+
+| title | tag |
+| --- | --- |
+| Q3 plan | urgent |
+| Q3 plan | work |
+| Groceries | personal |
+| Launch ideas | ideas |
+| Launch ideas | work |
+| Board prep | urgent |
+| Board prep | work |
+
+Order matters: fill `tags` first. A link can only point at a tag that is already there.
+
+### Dropping the old column
+
+When everything has moved, remove the old column so no program keeps writing to it:
+
+```sql
+ALTER TABLE notes DROP COLUMN tags;
+```
+
+`ALTER TABLE` changes a table that already exists. `DROP COLUMN tags` removes that column and [[everything stored in it|drop-column]]. `notes` is left with `id` and `title`.
+
+**Watch out:** leave out `DISTINCT` and note 6 brings `work` twice. The insert into `note_tags` then stops with `UNIQUE constraint failed: note_tags.note_id, note_tags.tag_id`, and none of its rows go in. The primary key is doing its job. Remove the repeats before you insert (or use `INSERT OR IGNORE`), rather than dropping the key.
+
+::: context one-value Why one value per box
+In the lesson "Design: normalising a flat table" you met Edgar Codd's rules for tables. The very first of them, called **first normal form**, says each box in a table holds one value, not a list. The reason is that SQL's tools, like `WHERE`, joins, indexes and `UNIQUE`, all work on whole values. They cannot see inside a string. Keep a list as rows, and every one of those tools works on each item. (The JSON columns of last lesson bend this rule on purpose, for data whose shape keeps changing.)
+:::
+
+::: context link-picture Notes, links and tags
+Each line is one row of `note_tags`. Board prep has two lines, to urgent and work. The tag `work` has three lines, one from each note that has it. Nothing is written twice: the name `work` sits once in `tags`, and the lines point at it.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210" font-family="Inter, Arial, sans-serif">
+  <text x="75" y="20" font-size="12" fill="#1f2a44" text-anchor="middle">notes</text>
+  <text x="285" y="20" font-size="12" fill="#1f2a44" text-anchor="middle">tags</text>
+  <rect x="20" y="30" width="110" height="26" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="75" y="47" font-size="11" fill="#1f2a44" text-anchor="middle">Q3 plan</text>
+  <rect x="20" y="70" width="110" height="26" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="75" y="87" font-size="11" fill="#1f2a44" text-anchor="middle">Groceries</text>
+  <rect x="20" y="110" width="110" height="26" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="75" y="127" font-size="11" fill="#1f2a44" text-anchor="middle">Launch ideas</text>
+  <rect x="20" y="150" width="110" height="26" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="75" y="167" font-size="11" fill="#1f2a44" text-anchor="middle">Board prep</text>
+  <rect x="230" y="30" width="110" height="26" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="285" y="47" font-size="11" fill="#1f2a44" text-anchor="middle">work</text>
+  <rect x="230" y="70" width="110" height="26" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="285" y="87" font-size="11" fill="#1f2a44" text-anchor="middle">urgent</text>
+  <rect x="230" y="110" width="110" height="26" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="285" y="127" font-size="11" fill="#1f2a44" text-anchor="middle">personal</text>
+  <rect x="230" y="150" width="110" height="26" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="285" y="167" font-size="11" fill="#1f2a44" text-anchor="middle">ideas</text>
+  <line x1="130" y1="43" x2="230" y2="43" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="130" y1="43" x2="230" y2="83" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="130" y1="83" x2="230" y2="123" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="130" y1="123" x2="230" y2="163" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="130" y1="123" x2="230" y2="43" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="130" y1="163" x2="230" y2="83" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="130" y1="163" x2="230" y2="43" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="180" y="200" font-size="11" fill="#6c7a93" text-anchor="middle">7 lines = 7 rows in note_tags</text>
+</svg>
+```
+:::
+
+::: context key-as-index The key is an index too
+SQLite keeps an index for every primary key that is not a single `INTEGER PRIMARY KEY`. This one is sorted by `note_id` first, then `tag_id`, like the composite index in the lesson "Indexes and EXPLAIN QUERY PLAN". So "the tags of note 6" is a fast search. The other direction, "the notes tagged work", looks up `tag_id` alone, which is the second column, and cannot search that index. Apps that ask it often add one more: `CREATE INDEX idx_note_tags_tag ON note_tags(tag_id);`.
+:::
+
+::: context migration What a migration is
+A **migration** is a script that moves a database from one design to the next: new tables, new columns, and the data carried across. Apps keep them numbered in order, like `0007_tags_table.sql`, and a tool runs each one exactly once on every copy of the database: a developer's laptop, the test server, the real one. Mission ground software works the same way. When a telemetry database needs a new design, the change is written as a migration, tested on a copy, then run on the real data. You will see migrations again in the lesson "Debugging: orphans and duplicates".
+:::
+
+::: context temp-table Scrap paper that cleans itself up
+SQLite keeps temporary tables in a separate, private database called `temp`. Only the connection that made one can see it. Another program using the same file never does. When the connection closes, the table is gone, so a migration leaves no stray `pieces` table behind. `DROP TABLE pieces;` removes it sooner, if you like.
+:::
+
+::: context drop-column When SQLite refuses to drop a column
+`ALTER TABLE … DROP COLUMN` arrived in SQLite 3.35, in 2021. It refuses when the column is still needed somewhere: when it is part of the primary key, has a `UNIQUE` rule, is used in an index, a foreign key, a view or a trigger. Then you remove those first. Big apps often wait a while between the last read of a column and dropping it, so that an older copy of the program still running somewhere does not break.
+:::
 --- task
 Replace the `tags` string with a many-to-many design:
 
@@ -619,11 +843,11 @@ SELECT p.note_id, t.id FROM pieces p JOIN tags t ON t.name = p.name;
 
 ALTER TABLE notes DROP COLUMN tags;
 --- hint
-Create `note_tags` with a table-level `PRIMARY KEY (note_id, tag_id)` and `ON DELETE CASCADE` on both references.
+The starter already switches foreign keys on and makes `tags`. Add `note_tags` next: two `INTEGER NOT NULL` columns, each with `REFERENCES … ON DELETE CASCADE`, and a line `PRIMARY KEY (note_id, tag_id)` at the end.
 --- hint
-Split once into a temporary table (`CREATE TEMP TABLE pieces AS WITH RECURSIVE …`), keeping `DISTINCT note_id, lower(piece)` where the piece is not empty. Then fill `tags` and `note_tags` from it.
+Split once into a temporary table: `CREATE TEMP TABLE pieces AS` followed by the lesson's `WITH RECURSIVE split …` query, ending in `SELECT DISTINCT note_id, lower(piece) AS name FROM split WHERE piece <> '';`. Then fill `tags` with `SELECT DISTINCT name FROM pieces`, and `note_tags` by joining `pieces` to `tags` on the name.
 --- hint
-Finish with `ALTER TABLE notes DROP COLUMN tags;`.
+Finish with `ALTER TABLE notes DROP COLUMN tags;`, after both inserts, because the split reads that column.
 --- check query | Four tags, each once
 SELECT name FROM tags ORDER BY name
 => [["ideas"], ["personal"], ["urgent"], ["work"]]
@@ -662,11 +886,48 @@ CREATE TABLE audit_log (
   new_row TEXT
 );
 --- teach
-This lesson's tables: `products` (`id`, `name`, `price`) and an empty `audit_log` (`id`, `product_id`, `action`, `old_row`, `new_row`).
+Last lesson you changed a database's design and carried its data across. This lesson keeps a record of every change to the data itself. It joins two things you already know: triggers, from the lesson "Triggers: reacting to changes", and JSON, from the lesson "JSON columns".
 
-"Who changed this price, and what was it before?" Regulators, support teams and your future self all ask it. An **audit trail** records every change as a row. Doing it in application code misses every change made elsewhere — a migration, an admin console, a one-off fix at 2am. A trigger catches them all.
+### The tables
 
-Three triggers cover a table: one per event. Each writes the row as it was (`OLD`) and as it became (`NEW`). Store both as JSON so one log table works for any table's shape:
+- `products`: `id`, `name`, `price`. It starts with a Mug (id 1, price 9.0) and a Lamp (id 2, price 45.0).
+- `audit_log`: `id`, `product_id`, `action`, `old_row`, `new_row`. It starts empty. Your triggers will fill it.
+
+### The picture
+
+Think of the visitors' book at a school's front desk. Everyone who comes in writes a line: who, when, why. Nobody tears out a page. Weeks later, if someone asks "was anyone here on Tuesday afternoon?", the book answers.
+
+### An audit trail
+
+"Who changed this price, and what was it before?" Regulators, support teams and your future self all ask that question. An **[[audit trail|audit-word]]** answers it: a table that records every change as a row.
+
+You could write the log from the app's code. But then every change made somewhere else goes unrecorded: a migration, an admin console, a one-off fix typed in at 2am. A trigger runs whichever program makes the change, so [[it catches them all|every-writer]].
+
+### One trigger per event
+
+A table changes in three ways, so a full audit trail takes three triggers:
+
+- after `INSERT`: a new row appeared;
+- after `UPDATE`: a row changed;
+- after `DELETE`: a row went away.
+
+Each one writes a row to `audit_log` saying which product, what happened, and the row before and after.
+
+### A whole row as JSON
+
+How do you store "the row as it was" in one column? As JSON. **`json_object`** builds a JSON object from pairs of a key and a value:
+
+```sql
+SELECT json_object('name', name, 'price', price) FROM products WHERE id = 1;
+```
+
+| json_object('name', name, 'price', price) |
+| --- |
+| `{"name":"Mug","price":9.0}` |
+
+`'name'` is the key's label, and `name` (no quotes) is the column's value. Because every row becomes one piece of JSON text, the same `audit_log` could [[hold rows from any table|any-shape]], whatever its columns.
+
+### The update trigger
 
 ```sql
 CREATE TRIGGER products_audit_update
@@ -680,14 +941,111 @@ BEGIN
 END;
 ```
 
-Details that separate a useful audit trail from noise:
+As in "Triggers: reacting to changes", `OLD` is the row before the change and `NEW` the row after. `old_row` gets the before picture, and `new_row` the after.
 
-- **Skip no-op updates.** An app that saves a form rewrites every field, changed or not. The `WHEN` clause logs only real changes. Use `IS NOT`, not `<>`, so a change to or from NULL counts.
-- **Inserts have no `OLD`, deletes have no `NEW`.** Log NULL for the missing side.
-- **Never update or delete audit rows.** The log is append-only; that is what makes it evidence.
-- In production you would also record *when* (`datetime('now')`) and *who* — which the app has to supply, since the database does not know the user.
+After `UPDATE products SET price = 10.0 WHERE id = 1;` the log holds:
 
-`json_object('name', OLD.name, …)` builds `{"name":"Mug","price":9.0}`; `json_extract(old_row, '$.price')` reads it back.
+| id | product_id | action | old_row | new_row |
+| --- | --- | --- | --- | --- |
+| 1 | 1 | update | `{"name":"Mug","price":9.0}` | `{"name":"Mug","price":10.0}` |
+
+### Skip saves that change nothing
+
+An app that saves a form usually writes every field back, changed or not. That is an update that changes nothing, a **no-op** ("no operation"). Log those, and the real changes drown in [[noise|noise]].
+
+The `WHEN` line fires the trigger only when the name or the price is really different. With it, `UPDATE products SET name = 'Lamp', price = 45.0 WHERE id = 2;` writes nothing to the log, because the Lamp was already called Lamp and cost 45.0.
+
+### IS NOT, not <>
+
+The `WHEN` compares with `IS NOT`, not `<>` ("not equal"). The difference is NULL. As you saw in "Testing for NULL", a comparison with NULL gives NULL, and `WHEN` treats NULL as "no". `IS NOT` treats two NULLs as equal and NULL against a value as different:
+
+| comparison | `<>` gives | `IS NOT` gives |
+| --- | --- | --- |
+| 5 and 6 | 1 (true) | 1 (true) |
+| 5 and 5 | 0 (false) | 0 (false) |
+| 5 and NULL | NULL | 1 (true) |
+| NULL and NULL | NULL | 0 (false) |
+
+So with `<>`, a price changing from NULL to 5 would never be logged. Here both columns are `NOT NULL`, but `IS NOT` is the safe habit for every audit trigger.
+
+### Inserts and deletes
+
+An insert has no `OLD`: there was nothing before. A delete has no `NEW`: there is nothing after. Write NULL for the side that does not exist:
+
+- the insert trigger logs `NEW.id`, `'insert'`, NULL for `old_row`, and the new row as JSON for `new_row`;
+- the delete trigger logs `OLD.id`, `'delete'`, the old row as JSON for `old_row`, and NULL for `new_row`.
+
+### Reading the log back
+
+`json_extract`, from "JSON columns", reads a value back out of the stored JSON. `$.price` is the path to the `price` key:
+
+```sql
+SELECT json_extract(old_row, '$.price') FROM audit_log WHERE action = 'update';
+```
+
+| json_extract(old_row, '$.price') |
+| --- |
+| 9.0 |
+
+That is the answer to "what was it before?". `old_row ->> '$.price'` gives the same.
+
+### Rules for a log you can trust
+
+- **Never update or delete audit rows.** The log is [[append-only|append-only]]: rows are only ever added. That is what makes it evidence.
+- **Record when.** In production you would add a column filled with `datetime('now')`, the current date and time. It works like `date('now')` from the lesson "Dates and times", with the time of day added.
+- **Record who.** That one [[the app has to supply|who]], because the database does not know which person is using the app.
+
+**Watch out:** the three triggers look almost alike, so people copy the insert trigger to make the delete one and forget to change `NEW` to `OLD`. SQLite accepts the trigger when you create it, and only fails the first time a row is deleted. Test every trigger by firing it: insert, update and delete a row, then read `audit_log`.
+
+::: context audit-word Where "audit" comes from
+The word comes from the Latin *audire*, "to hear". In medieval times, accounts were often read out loud to an official who listened and checked them. Today an **audit** is any careful check of records, and an **audit trail** is the list of records that makes the check possible. Banks and hospitals are required by law to keep one for certain data. Flight software teams keep one for configuration tables, so they can show exactly which setting was loaded before a test.
+:::
+
+::: context every-writer Every path goes through the trigger
+The app, a person at an admin console, and a script someone runs at 2am all change `products` in different ways. None of them has to remember the log. The trigger sits on the table itself, so each change writes its line to `audit_log`, whoever made it.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1f2a44"/>
+    </marker>
+  </defs>
+  <rect x="8" y="20" width="110" height="30" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="63" y="39" font-size="11" fill="#1f2a44" text-anchor="middle">the app</text>
+  <rect x="8" y="65" width="110" height="30" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="63" y="84" font-size="11" fill="#1f2a44" text-anchor="middle">admin console</text>
+  <rect x="8" y="110" width="110" height="30" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="63" y="129" font-size="11" fill="#1f2a44" text-anchor="middle">2am fix script</text>
+  <rect x="158" y="60" width="86" height="40" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="201" y="84" font-size="11" fill="#1f2a44" text-anchor="middle">products</text>
+  <text x="201" y="118" font-size="11" fill="#b4232c" text-anchor="middle">trigger fires</text>
+  <rect x="272" y="60" width="80" height="40" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="312" y="84" font-size="11" fill="#1f2a44" text-anchor="middle">audit_log</text>
+  <line x1="118" y1="35" x2="156" y2="70" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#ar)"/>
+  <line x1="118" y1="80" x2="156" y2="80" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#ar)"/>
+  <line x1="118" y1="125" x2="156" y2="90" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#ar)"/>
+  <line x1="244" y1="80" x2="270" y2="80" stroke="#b4232c" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="180" y="160" font-size="11" fill="#6c7a93" text-anchor="middle">three writers, one log</text>
+</svg>
+```
+:::
+
+::: context any-shape One log for many tables
+A `products` row has a name and a price. A `customers` row might have an email and a phone. If the log had one column per field, every table would need its own log. Stored as JSON, any row fits in `old_row` and `new_row`. Real audit tables usually add a `table_name` column too, so one log serves the whole database, and a query can still pick values out with `json_extract`.
+:::
+
+::: context noise Why no-op rows hurt
+Picture a log where every "Save" click adds a row, even when nothing changed. Someone searching for the day a price went from 9 to 10 now has to read hundreds of rows that say 9 before and 9 after. The log also grows much faster, and it is kept forever. Skipping no-ops keeps each row meaningful: every line in the log is a real change.
+:::
+
+::: context append-only Making the log hard to tamper with
+**Append-only** means rows are only ever added, like the ledger in the lesson "Debugging: the running balance that repeats". You can make the database enforce it. A `BEFORE UPDATE` trigger and a `BEFORE DELETE` trigger on `audit_log` that run `SELECT RAISE(ABORT, 'audit log is append-only');` refuse any attempt to change or remove a line, as in "Triggers: reacting to changes". Serious systems go further and copy the log to a separate machine that the app cannot write to.
+:::
+
+::: context who Why the database does not know who
+An app usually connects to its database with one account of its own, and thousands of users share that one connection. So to the database, every change comes from "the app". Only the app knows which person clicked Save. A common pattern is an extra `changed_by` column that the app fills in, or a small table the app writes the current user's id into at the start of each transaction, for the trigger to read.
+:::
 --- task
 Create three triggers that record every change to `products` in `audit_log`, with `old_row` and `new_row` as `json_object('name', …, 'price', …)` of the row before and after (NULL for the side that does not exist):
 
@@ -725,9 +1083,11 @@ BEGIN
   VALUES (OLD.id, 'delete', json_object('name', OLD.name, 'price', OLD.price), NULL);
 END;
 --- hint
-Each trigger is `AFTER <event> ON products BEGIN INSERT INTO audit_log … ; END;`.
+Each trigger has the shape `CREATE TRIGGER … AFTER <event> ON products BEGIN INSERT INTO audit_log (product_id, action, old_row, new_row) VALUES (…); END;`. The starter's update trigger logs only two columns and fires on every save; replace it with the lesson's version.
 --- hint
-The update trigger needs `WHEN OLD.name IS NOT NEW.name OR OLD.price IS NOT NEW.price` so a save that changes nothing logs nothing.
+The update trigger needs `WHEN OLD.name IS NOT NEW.name OR OLD.price IS NOT NEW.price`, so a save that changes nothing logs nothing.
+--- hint
+The insert trigger writes `NEW.id, 'insert', NULL, json_object('name', NEW.name, 'price', NEW.price)`. The delete trigger reads `OLD` instead: `OLD.id, 'delete', json_object('name', OLD.name, 'price', OLD.price), NULL`.
 --- check query | Inserts, real updates and deletes are logged — a no-op save is not
 INSERT INTO products (id, name, price) VALUES (3, 'Pen', 3.5);
 UPDATE products SET price = 10.0 WHERE id = 1;
@@ -761,37 +1121,210 @@ INSERT INTO orders (id, customer_id, total) VALUES
   (1, 1, 20.0), (2, 3, 35.0), (3, 2, 10.0), (4, 5, 12.0),
   (5, 9, 50.0), (6, 4, 5.0), (7, NULL, 8.0), (8, 7, 3.0);
 --- teach
-This lesson's tables: `customers` (`id`, `email`, `name`) and `orders` (`id`, `customer_id`, `total`), from a legacy app with no constraints.
+Last lesson a trigger kept a record of every change. This lesson is about data that went wrong long before anyone was watching. You will track down two classic faults, duplicate rows and orphan rows, and repair them in an order that does not make things worse.
 
-**The bug report.** The customer count on the dashboard is higher than the CRM's, and revenue by customer does not add up to total revenue. Both are symptoms of bad data, not of bad report SQL.
+### The tables
 
-The method for data problems is the same as for code: **measure before you touch anything**.
+They come from a [[legacy app|legacy]] whose tables have no constraints at all: no `UNIQUE`, no foreign keys.
 
-1. **Find duplicates.** Group by the normalised key and look for groups over 1:
+`customers` (`id`, `email`, `name`):
+
+| id | email | name |
+| --- | --- | --- |
+| 1 | ana@mail.com | Ana |
+| 2 | bo@mail.com | Bo |
+| 3 | ANA@mail.com | Ana |
+| 4 | cy@mail.com | Cy |
+| 5 | `'bo@mail.com '` (a space at the end) | Bo |
+
+`orders` (`id`, `customer_id`, `total`):
+
+| id | customer_id | total |
+| --- | --- | --- |
+| 1 | 1 | 20.0 |
+| 2 | 3 | 35.0 |
+| 3 | 2 | 10.0 |
+| 4 | 5 | 12.0 |
+| 5 | 9 | 50.0 |
+| 6 | 4 | 5.0 |
+| 7 | NULL | 8.0 |
+| 8 | 7 | 3.0 |
+
+### The bug report
+
+Two complaints arrive. The customer count on the dashboard is higher than the one in the [[CRM|crm]]. And revenue added up per customer does not match total revenue.
+
+Both are real. `customers` has 5 rows, but only 3 different people. All orders add up to 143.0, but orders that join to a customer add up to only 82.0. The report SQL is fine. The data is not.
+
+### The picture
+
+A doctor does not operate on "my tummy hurts". First come the tests: temperature, a scan. Then the treatment. Then more tests, to see that it worked. Data problems follow the same rule: **measure before you touch anything**, and [[measure again after|measure]].
+
+### Step 1: find the duplicates
+
+Two rows are the same customer when their emails match once you ignore capitals and spaces. So group by the normalised email, as in the lesson "Deduplicating: keep the latest row", and keep the groups with more than one row:
 
 ```sql
 SELECT lower(trim(email)) AS k, COUNT(*), group_concat(id)
 FROM customers GROUP BY k HAVING COUNT(*) > 1;
 ```
 
-`group_concat(id)` joins the group's ids into one string, such as `'1,3'`, so you can see exactly which rows collide.
+| k | COUNT(*) | group_concat(id) |
+| --- | --- | --- |
+| ana@mail.com | 2 | 1,3 |
+| bo@mail.com | 2 | 2,5 |
 
-2. **Find orphans** — child rows whose parent is missing. An anti-join:
+**`group_concat`** is a new aggregate. It [[joins the group's values into one string|group-concat]], with a comma between them. Here it shows exactly which ids collide: customers 1 and 3 are one person, and so are 2 and 5.
+
+### Step 2: find the orphans
+
+An **orphan** is a child row whose parent is missing, as in the lesson "Foreign keys". Here, an order whose `customer_id` matches no customer. Find them with an anti-join, the `NOT EXISTS` from "Problem solving: finding what is missing":
 
 ```sql
 SELECT o.* FROM orders o
 WHERE NOT EXISTS (SELECT 1 FROM customers c WHERE c.id = o.customer_id);
 ```
 
-(A NULL `customer_id` matches nothing, so it shows up here too. When a table declares its foreign keys, `PRAGMA foreign_key_check` lists orphans for you.)
+| id | customer_id | total |
+| --- | --- | --- |
+| 5 | 9 | 50.0 |
+| 7 | NULL | 8.0 |
+| 8 | 7 | 3.0 |
 
-3. **Fix in the right order.** Merging duplicates means *re-pointing* their children to the survivor **before** deleting them — delete first, and you create new orphans. Choose the survivor by a rule (here the lowest id, the original account).
+There is no customer 9 or 7. Order 7's `customer_id` is NULL, and `c.id = NULL` is never true, so it matches nothing and shows up here too. That is what you want: an order with no customer is an orphan as well.
 
-4. **Decide what orphans mean.** Sometimes they can be re-attached; sometimes they are junk from a bug. Here they point at customers that no longer exist and cannot be recovered, so they go.
+When a table declares its foreign keys, `PRAGMA foreign_key_check;` lists orphans for you. These tables declare none, so here you write the anti-join yourself.
 
-5. **Measure again**, then **prevent it**: a unique index on the normalised email stops the duplicates coming back. (Adding a foreign key to an existing SQLite table means rebuilding the table — create the new table with the constraint, copy the rows, drop the old one, rename — which is a job for a migration of its own.)
+### Step 3: re-point, then delete
 
-Do the fix inside a transaction, so a mistake halfway leaves nothing half-done.
+To merge two duplicates, one row must survive. Choose it by a rule, not by eye: here the **lowest id**, the original account. So customer 1 survives for Ana, and customer 2 for Bo.
+
+Customers 3 and 5 still have orders (orders 2 and 4). Before you delete them, **re-point** those orders: change their `customer_id` to the survivor. [[Delete first, and you make new orphans|repoint-picture]].
+
+### Re-pointing with a subquery
+
+Each order needs its own new value, so `SET` uses a correlated subquery, like the ones in "Correlated subqueries and EXISTS":
+
+```sql
+UPDATE orders
+SET customer_id = (
+  SELECT MIN(c2.id)
+  FROM customers c1
+  JOIN customers c2 ON lower(trim(c2.email)) = lower(trim(c1.email))
+  WHERE c1.id = orders.customer_id
+)
+WHERE customer_id IN (SELECT id FROM customers);
+```
+
+Read the subquery for one order at a time:
+
+- `c1` is this order's current customer: `c1.id = orders.customer_id`.
+- `c2` is every customer with the same normalised email as `c1`, joined to the same table as in the lesson "Self-joins".
+- `MIN(c2.id)` is the lowest of those ids: the survivor.
+
+| order id | customer_id before | after |
+| --- | --- | --- |
+| 1 | 1 | 1 |
+| 2 | 3 | 1 |
+| 3 | 2 | 2 |
+| 4 | 5 | 2 |
+| 6 | 4 | 4 |
+
+Orders that already point at a survivor get the same value back. Only orders 2 and 4 change.
+
+The last line, `WHERE customer_id IN (SELECT id FROM customers)`, leaves the orphans alone. For them the subquery finds no customer, and `MIN` of nothing is NULL, which would quietly rewrite their `customer_id`. They are dealt with in their own step.
+
+### Then delete the duplicates
+
+Now no order points at customer 3 or 5, so they can go. Keep the lowest id in each group, and delete every other row:
+
+```sql
+DELETE FROM customers
+WHERE id NOT IN (SELECT MIN(id) FROM customers GROUP BY lower(trim(email)));
+```
+
+The subquery gives 1, 2 and 4, so customers 3 and 5 are deleted.
+
+### Step 4: decide what the orphans mean
+
+An orphan is a question, not an automatic delete. Sometimes it can be re-attached: an old customer id may be found in another system. Sometimes it is junk left by a bug. Here, orders 5, 7 and 8 point at customers that no longer exist and cannot be recovered, so they go:
+
+```sql
+DELETE FROM orders
+WHERE NOT EXISTS (SELECT 1 FROM customers c WHERE c.id = orders.customer_id);
+```
+
+### Step 5: measure again, then prevent it
+
+Run the measurements again. The duplicate query returns no rows, and so does the orphan query. `customers` has 3 rows, and revenue per customer (55.0 for Ana, 22.0 for Bo, 5.0 for Cy) adds up to the total, 82.0.
+
+A clean-up without prevention is a chore you will repeat. A unique index on the normalised email, as in "Deduplicating: keep the latest row", stops duplicates coming back:
+
+```sql
+CREATE UNIQUE INDEX customers_email_key ON customers(lower(trim(email)));
+```
+
+A foreign key would stop new orphans too. But SQLite cannot add one to a table that already exists: you [[rebuild the table|rebuild]], which is a migration of its own.
+
+### All in one transaction
+
+Put the whole fix between `BEGIN;` and `COMMIT;`, as in the lesson "Transactions: all or nothing". If one statement fails halfway, `ROLLBACK;` leaves the data exactly as it was, instead of half fixed.
+
+**Watch out:** the order. Delete the duplicate customers first, and orders 2 and 4 now point at customers 3 and 5, which are gone. They have become orphans, and the orphan step then deletes them too. That silently throws away 47.0 of real revenue from real customers. Always re-point the children before you delete the parents.
+
+::: context legacy What "legacy" means
+A **legacy** system is an older program that is still in use, often written by people who have moved on, with choices nobody would make today. Here it is a database with no `UNIQUE` and no foreign keys, so years of bugs have piled up in it. Legacy systems are everywhere: banks, airlines and space agencies all run code that is decades old, because it works and replacing it is risky. Cleaning up their data carefully, as in this lesson, is a big part of real engineering work.
+:::
+
+::: context crm The other system in the bug report
+A **CRM**, short for customer relationship management, is the system a sales or support team uses to keep track of customers: who they are, what they bought, every call and email. Companies often have one in a separate product, fed from the app's database. When two systems count the same thing and disagree, the difference is a clue. Here the CRM had already merged the duplicate accounts, so it counted people, while the dashboard counted rows.
+:::
+
+::: context measure Numbers to compare, before and after
+Write the measurements down before the fix: 5 customers but 3 distinct emails, 2 duplicate groups, 3 orphan orders, 143.0 total against 82.0 joined. After the fix, each number should move exactly as you expect, and nothing else should. If revenue per customer had dropped below 82.0, you would know the fix deleted something real. Engineers do the same with telemetry: record a baseline, change one thing, record again, and explain every difference.
+:::
+
+::: context group-concat More about group_concat
+`group_concat` takes an optional second argument, the separator: `group_concat(name, ' + ')` over all five customers gives `Ana + Bo + Ana + Cy + Bo`. The order of the values inside the string is not promised. Since SQLite 3.44 you can ask for one with `ORDER BY` inside the brackets: `group_concat(id, ',' ORDER BY id)`. Other databases spell the same idea `string_agg` (PostgreSQL) or `GROUP_CONCAT` with slightly different options (MySQL).
+:::
+
+::: context repoint-picture Moving the pointers first
+Orders 2 and 4 pointed at the duplicates, customers 3 and 5 (dashed lines). Re-pointing moves them to the survivors, customers 1 and 2 (blue lines). Only after that is it safe to delete 3 and 5: nothing points at them any more.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 205" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="nb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1d6fd1"/>
+    </marker>
+    <marker id="ng" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#6c7a93"/>
+    </marker>
+  </defs>
+  <rect x="20" y="40" width="90" height="28" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="65" y="58" font-size="11" fill="#1f2a44" text-anchor="middle">order 2</text>
+  <rect x="20" y="120" width="90" height="28" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="65" y="138" font-size="11" fill="#1f2a44" text-anchor="middle">order 4</text>
+  <rect x="230" y="20" width="115" height="28" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="287" y="38" font-size="11" fill="#1f2a44" text-anchor="middle">1 ana@mail.com</text>
+  <rect x="230" y="60" width="115" height="28" rx="4" fill="#fff" stroke="#b4232c"/>
+  <text x="287" y="78" font-size="11" fill="#b4232c" text-anchor="middle">3 ANA@mail.com</text>
+  <rect x="230" y="100" width="115" height="28" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="287" y="118" font-size="11" fill="#1f2a44" text-anchor="middle">2 bo@mail.com</text>
+  <rect x="230" y="140" width="115" height="28" rx="4" fill="#fff" stroke="#b4232c"/>
+  <text x="287" y="158" font-size="11" fill="#b4232c" text-anchor="middle">5 'bo@mail.com '</text>
+  <line x1="110" y1="54" x2="228" y2="74" stroke="#6c7a93" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ng)"/>
+  <line x1="110" y1="54" x2="228" y2="34" stroke="#1d6fd1" stroke-width="2" marker-end="url(#nb)"/>
+  <line x1="110" y1="134" x2="228" y2="154" stroke="#6c7a93" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ng)"/>
+  <line x1="110" y1="134" x2="228" y2="114" stroke="#1d6fd1" stroke-width="2" marker-end="url(#nb)"/>
+  <text x="180" y="194" font-size="11" fill="#6c7a93" text-anchor="middle">dashed: before; blue: after re-pointing; red: to delete</text>
+</svg>
+```
+:::
+
+::: context rebuild Adding a foreign key the long way
+SQLite's `ALTER TABLE` cannot add a constraint to an existing table. So a migration builds a new one: create `orders_new` with `customer_id INTEGER NOT NULL REFERENCES customers(id)`, copy the rows across with `INSERT … SELECT`, drop the old `orders`, and rename the new table with `ALTER TABLE orders_new RENAME TO orders;`. It runs inside a transaction, with foreign keys switched off during the swap and checked with `PRAGMA foreign_key_check;` at the end. The orphans must be gone first, or the new table would refuse them.
+:::
 --- task
 Clean the data, in a transaction:
 
@@ -826,11 +1359,11 @@ CREATE UNIQUE INDEX customers_email_key ON customers(lower(trim(email)));
 
 COMMIT;
 --- hint
-Measure first: group customers by `lower(trim(email))` for duplicates, and anti-join orders to customers for orphans. The starter deletes duplicates before moving their orders — creating new orphans.
+Measure first: run the lesson's duplicate query and orphan query. Then look at the starter: it deletes the duplicate customers before moving their orders, which turns orders 2 and 4 into new orphans.
 --- hint
-Re-point with a correlated subquery: for each order, the `MIN(id)` of customers whose normalised email equals its current customer's. Restrict the update to orders whose customer exists.
+Put the lesson's re-pointing `UPDATE orders SET customer_id = (SELECT MIN(c2.id) …) WHERE customer_id IN (SELECT id FROM customers);` right after `BEGIN;`, before the starter's `DELETE`.
 --- hint
-Then delete the duplicates, then `DELETE FROM orders WHERE NOT EXISTS (…)`, then create the unique index.
+After the customers' `DELETE`, add `DELETE FROM orders WHERE NOT EXISTS (SELECT 1 FROM customers c WHERE c.id = orders.customer_id);`, then `CREATE UNIQUE INDEX customers_email_key ON customers(lower(trim(email)));`, all before `COMMIT;`.
 --- check query | Three customers remain: the originals
 SELECT id, email FROM customers ORDER BY id
 => [[1, "ana@mail.com"], [2, "bo@mail.com"], [4, "cy@mail.com"]]
