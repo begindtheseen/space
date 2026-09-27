@@ -150,7 +150,7 @@ A `std::size_t` is 8 bytes on a 64-bit computer, so it can count up to 184467440
 :::
 
 ::: context iterator-preview Why the task promises at least one reading
-`std::min_element` searches from `begin()` up to, but not including, `end()`. If there are several equal smallest values, it points at the first one. For an empty vector there is nothing to find, so it gives back `end()`, a mark just past the last element that is not an element at all. Putting `*` in front of that is undefined behaviour, like following `nullptr`. That is why the task lets you assume at least one reading. Iterators get their own lesson soon, "Iterators and range-for".
+`std::min_element` searches from `begin()` up to, but not including, `end()`. If there are several equal smallest values, it points at the first one. For an empty vector there is nothing to find, so it gives back `end()`, a mark one past the last element that is not an element at all. Putting `*` in front of that is undefined behaviour, like following `nullptr`. That is why the task lets you assume at least one reading. Iterators get their own lesson soon, "Iterators and range-for".
 :::
 --- task
 Finish the `Thermometer` class in the starter so it is const-correct. It keeps its readings in a private vector called `readings_`.
@@ -277,7 +277,7 @@ void reset(std::vector<int>& v) {
 
 Fixing only one of the two still leaves the bug. Fix only the parameter, and the loop still zeroes a copy of each element. That is why step 2 matters: check again after every change you make.
 
-`auto` follows the same rule. `for (auto item : items)` copies each element, just like `for (int x : v)`. `for (auto& item : items)` makes `item` a reference, so changes stick.
+`auto` follows the same rule. `for (auto item : items)` copies each element, the same as `for (int x : v)`. `for (auto& item : items)` makes `item` a reference, so changes stick.
 
 **Watch out:** the compiler rarely warns you. In the tiny `reset` above, clang does print `warning: variable 'x' set but not used`, a clue worth reading. But once the loop changes a member of a struct, as in `item.price_cents = …`, there is no warning at all. Only your method finds it.
 
@@ -384,7 +384,7 @@ Using them makes your code say *what* it does ("sort these") instead of *how* ("
 
 ### A range: begin() and end()
 
-Every algorithm works on a **range**: a `begin()` and an `end()` iterator. You met the pair in the const correctness lesson, with `std::min_element`. `v.begin()` marks the first element and `v.end()` marks the spot just past the last, so together they mean "the whole vector". The next lesson looks at iterators closely.
+Every algorithm works on a **range**: a `begin()` and an `end()` iterator. You met the pair in the const correctness lesson, with `std::min_element`. `v.begin()` marks the first element and `v.end()` marks the spot one past the last, so together they mean "the whole vector". The next lesson looks at iterators closely.
 
 ### Sorting
 
@@ -649,7 +649,7 @@ Every container gives you two iterators:
 
 ### The half-open range
 
-Maths has a short way to write "from here, up to but not including there": `[begin, end)`. The square bracket means "this one is included"; the round bracket means "stop just before this one". A range like this is called a **[[half-open range|half-open]]**.
+Maths has a short way to write "from here, up to but not including there": `[begin, end)`. The square bracket means "this one is included"; the round bracket means "stop right before this one". A range like this is called a **[[half-open range|half-open]]**.
 
 That shape is why an empty container has `begin() == end()`: with no elements, the first position and the stopping mark are the same place. It is also why loops read "while not at the end":
 
@@ -687,7 +687,7 @@ If the largest value appears more than once, `std::max_element` points at the *f
 
 ### Walking backwards
 
-`rbegin()` and `rend()` walk backwards (the `r` is for reverse). `rbegin()` marks the last element, `++` moves toward the front, and `rend()` is the stopping mark just before the first. A `std::string` is a container of characters, so it has all four:
+`rbegin()` and `rend()` walk backwards (the `r` is for reverse). `rbegin()` marks the last element, `++` moves toward the front, and `rend()` is the stopping mark right before the first. A `std::string` is a container of characters, so it has all four:
 
 ```cpp
 std::string s = "abc";
@@ -874,7 +874,7 @@ seen.contains("a");                             // true
 
 A **std::unordered_map** works like a `std::map` from the outside: keys, values, and `[ ]`. Inside, it is built as a [[hash table|hash-table]] instead of a sorted tree, which makes lookups faster but gives up the order. It needs `#include <unordered_map>`.
 
-Counting works exactly as it did with `std::map`, because a missing key starts at 0:
+Counting works exactly as it did with `std::map`, because a missing key starts at 0. Here `words` is a `std::vector<std::string>`:
 
 ```cpp
 std::unordered_map<std::string, int> count;
@@ -906,7 +906,7 @@ std::set<std::string> s(words.begin(), words.end());      // {"fig", "pear"}
 std::vector<std::string> back(s.begin(), s.end());        // {"fig", "pear"}, sorted
 ```
 
-The first line makes a set from a vector, which removes the repeats and sorts what is left. The second makes a vector from the set, in the set's order.
+The middle line makes a set from the vector, which removes the repeats and sorts what is left. The last line makes a new vector from the set, in the set's order.
 
 ### Letters: isalpha and tolower
 
@@ -942,7 +942,7 @@ for (const auto& [name, kg] : fuel) {
 // fullest is "tank-a": it ties with tank-b and comes first
 ```
 
-Read the `if` as: "this one has more, **or** it has the same amount and its name comes first".
+Read the `if` as: "this one has more, **or** it has the same amount and its name comes first". A `std::map` already hands you its pairs in key order, so here the tie rule changes nothing. It matters with an `unordered_map`, whose pairs come in no fixed order.
 
 ### How to choose
 
@@ -1167,6 +1167,8 @@ std::string s = std::to_string(7);   // "7"
 if (7 < 10) s = "0" + s;             // "07"
 ```
 
+Your clock will have a member function called `to_string` too. That is allowed: inside the class, writing `std::to_string` with the `std::` in front makes it clear you mean the library's one.
+
 ### static: belongs to the class, not to one object
 
 Some helpers do not need any particular clock. Wrapping a number is the same sum for every clock there is. A member marked **static** belongs to the class itself, not to any one object:
@@ -1264,7 +1266,7 @@ private:
 --- hint
 Store one number, the minutes since midnight, as a private `int total_;`. The constructor turns its two values into `hours * 60 + minutes` and wraps that.
 --- hint
-Write a private helper `static int wrap(int m)` that returns `((m % 1440) + 1440) % 1440`, and call it in both the constructor and `add_minutes`. Then `hours()` is `total_ / 60` and `minutes()` is `total_ % 60`.
+Write a private helper `static int wrap(int m)` that returns `((m % 1440) + 1440) % 1440`, and call it in both places the total changes: the constructor (`: total_(wrap(hours * 60 + minutes))`) and `add_minutes`. Then `hours()` is `total_ / 60` and `minutes()` is `total_ % 60`.
 --- hint
 For `to_string`, turn each part into text with `std::to_string`, put a `"0"` in front when it is below 10, and join the two parts with `":"` between them.
 --- check case | Clock(8, 5) shows 08:05
