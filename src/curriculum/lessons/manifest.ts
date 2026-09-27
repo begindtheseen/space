@@ -635,7 +635,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-shape-of-the-process",
       "title": "The shape of the process, end to end",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "overall timeline: 5 to 8 weeks, up to roughly nine touchpoints"
       ],
@@ -1566,7 +1566,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-pointers",
       "title": "Pointers: holding an address, and the four places const can go",
-      "minutes": 20,
+      "minutes": 24,
       "covers": [
         "Pointers: dereference, arithmetic, nullptr, pointer-to-const vs const pointer, void*, function pointers"
       ],
@@ -1575,7 +1575,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-pointer-arithmetic-and-decay",
       "title": "Pointer arithmetic, and the length an array loses at a function boundary",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "Pointers: dereference, arithmetic, nullptr, pointer-to-const vs const pointer, void*, function pointers",
         "Array-to-pointer decay and why sizeof breaks at a function boundary"
@@ -1594,7 +1594,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-the-stack",
       "title": "The stack: frames, overflow, and why flight code does not recurse",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "The stack: frames, stack overflow, why deep recursion is banned in flight code"
       ],
@@ -1603,7 +1603,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-new-delete-and-placement-new",
       "title": "new and delete, the array forms, and placement new",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "new/delete, new[]/delete[], placement new"
       ],
@@ -1612,7 +1612,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-the-heap",
       "title": "The heap: what the allocator does, how long it takes, and how it fragments",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "The heap: fragmentation, non-deterministic allocation time, allocator behaviour"
       ],
@@ -1621,7 +1621,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-the-five-memory-bugs",
       "title": "Five ways to use memory you do not own",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "Dangling pointers, use-after-free, double free, buffer overrun, uninitialised reads"
       ],
@@ -1630,7 +1630,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-addresssanitizer",
       "title": "AddressSanitizer: how it works, how to read it, what it misses",
-      "minutes": 22,
+      "minutes": 23,
       "covers": [
         "AddressSanitizer as the daily tool for this material",
         "Dangling pointers, use-after-free, double free, buffer overrun, uninitialised reads"
@@ -1640,7 +1640,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-alignment-and-struct-layout",
       "title": "Alignment, padding, and the real size of a struct",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "Alignment, alignas, struct padding, offsetof, packing and wire formats"
       ],
@@ -1649,7 +1649,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-endianness-and-serialising-telemetry",
       "title": "Endianness and putting telemetry on the wire",
-      "minutes": 21,
+      "minutes": 25,
       "covers": [
         "Endianness and serialising telemetry"
       ],
@@ -1658,7 +1658,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-strict-aliasing-and-volatile",
       "title": "Strict aliasing, bit_cast, and what volatile really promises",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Strict aliasing; memcpy and std::bit_cast as the legal reinterpretation",
         "volatile: what it does (memory-mapped I/O) and does not do (threads)"
@@ -1942,7 +1942,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-non-type-template-parameters",
       "title": "Numbers as template parameters",
-      "minutes": 25,
+      "minutes": 23,
       "covers": [
         "Non-type template parameters: the key to Matrix<double,3,3>"
       ],
@@ -1976,6 +1976,233 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "if constexpr for compile-time branching"
       ],
       "file": "cod_cpp_05_templates/07-compile-time-computation.md"
+    }
+  ],
+  "cod_cpp_08_realtime": [
+    {
+      "id": "l01-real-time-and-worst-case-execution-time",
+      "title": "Real time and worst-case execution time",
+      "minutes": 26,
+      "covers": [
+        "Worst-case execution time: measurement, static analysis and their limits"
+      ],
+      "file": "cod_cpp_08_realtime/01-real-time-and-worst-case-execution-time.md"
+    },
+    {
+      "id": "l02-bounded-loops",
+      "title": "Bounded loops",
+      "minutes": 22,
+      "covers": [
+        "Bounded loops and why every loop needs a provable upper bound"
+      ],
+      "file": "cod_cpp_08_realtime/02-bounded-loops.md"
+    },
+    {
+      "id": "l03-stack-depth-and-no-recursion",
+      "title": "Stack depth and why flight code does not recurse",
+      "minutes": 27,
+      "covers": [
+        "Stack-depth analysis and static stack bounding; no recursion"
+      ],
+      "file": "cod_cpp_08_realtime/03-stack-depth-and-no-recursion.md"
+    },
+    {
+      "id": "l04-static-memory-pools-arenas-and-fixed-capacity",
+      "title": "Static memory, pools, arenas and fixed-capacity containers",
+      "minutes": 26,
+      "covers": [
+        "Static memory: pools, arenas, fixed-capacity containers, placement new at init"
+      ],
+      "file": "cod_cpp_08_realtime/04-static-memory-pools-arenas-and-fixed-capacity.md"
+    },
+    {
+      "id": "l05-interrupt-service-routines",
+      "title": "Interrupt service routines",
+      "minutes": 24,
+      "covers": [
+        "Interrupt service routines: what you may and may not do inside one"
+      ],
+      "file": "cod_cpp_08_realtime/05-interrupt-service-routines.md"
+    },
+    {
+      "id": "l06-watchdogs-heartbeats-and-health-monitoring",
+      "title": "Watchdogs, heartbeats and health monitoring",
+      "minutes": 24,
+      "covers": [
+        "Watchdogs, heartbeats and health monitoring"
+      ],
+      "file": "cod_cpp_08_realtime/06-watchdogs-heartbeats-and-health-monitoring.md"
+    },
+    {
+      "id": "l07-fault-detection-isolation-and-recovery",
+      "title": "Fault detection, isolation and recovery",
+      "minutes": 21,
+      "covers": [
+        "Fault detection, isolation and recovery; safe modes"
+      ],
+      "file": "cod_cpp_08_realtime/07-fault-detection-isolation-and-recovery.md"
+    },
+    {
+      "id": "l08-radiation-effects-and-software-mitigations",
+      "title": "Radiation effects and the software that survives them",
+      "minutes": 24,
+      "covers": [
+        "Radiation effects: SEU, SEL, TID, and the software mitigations (voting, checksums, scrubbing, resets)"
+      ],
+      "file": "cod_cpp_08_realtime/08-radiation-effects-and-software-mitigations.md"
+    },
+    {
+      "id": "l09-fixed-point-and-determinism",
+      "title": "Fixed-point arithmetic and bit-exact determinism",
+      "minutes": 22,
+      "covers": [
+        "Fixed-point arithmetic where floating point is unavailable or unqualified",
+        "Determinism and bit-exact reproducibility across compilers and platforms"
+      ],
+      "file": "cod_cpp_08_realtime/09-fixed-point-and-determinism.md"
+    },
+    {
+      "id": "l10-cross-compiling-and-linker-scripts",
+      "title": "Cross-compiling and linker scripts",
+      "minutes": 24,
+      "covers": [
+        "Cross-compiling to an embedded target with a CMake toolchain file",
+        "Linker scripts and memory regions; why you would move a function into RAM"
+      ],
+      "file": "cod_cpp_08_realtime/10-cross-compiling-and-linker-scripts.md"
+    },
+    {
+      "id": "l11-the-power-of-ten-rules",
+      "title": "The Power of Ten rules",
+      "minutes": 24,
+      "covers": [
+        "The NASA/JPL Power of Ten rules"
+      ],
+      "file": "cod_cpp_08_realtime/11-the-power-of-ten-rules.md"
+    },
+    {
+      "id": "l12-coding-standards-and-static-analysis",
+      "title": "Coding standards and static analysis",
+      "minutes": 22,
+      "covers": [
+        "MISRA C++:2023, which absorbs AUTOSAR C++14; JSF++ AV and its F-35 origin",
+        "Static analysis: clang-tidy, cppcheck, Polyspace, LDRA, Helix QAC"
+      ],
+      "file": "cod_cpp_08_realtime/12-coding-standards-and-static-analysis.md"
+    }
+  ],
+  "cod_cpp_09_eigen": [
+    {
+      "id": "l01-matrix-types-and-fixed-size",
+      "title": "Matrix types, fixed size and dynamic size",
+      "minutes": 23,
+      "covers": [
+        "Matrix<Scalar, Rows, Cols>; Vector3d, Matrix3d, Quaterniond typedefs; Dynamic sizing",
+        "Why fixed-size types allocate nothing and unroll their loops"
+      ],
+      "file": "cod_cpp_09_eigen/01-matrix-types-and-fixed-size.md"
+    },
+    {
+      "id": "l02-storage-order-and-map",
+      "title": "Storage order and Map",
+      "minutes": 23,
+      "covers": [
+        "Storage order; Map for wrapping an external buffer with no copy"
+      ],
+      "file": "cod_cpp_09_eigen/02-storage-order-and-map.md"
+    },
+    {
+      "id": "l03-block-operations",
+      "title": "Block operations: windows inside a matrix",
+      "minutes": 17,
+      "covers": [
+        "Block operations: block, head, tail, segment, row, col"
+      ],
+      "file": "cod_cpp_09_eigen/03-block-operations.md"
+    },
+    {
+      "id": "l04-array-versus-matrix-reductions-broadcasting",
+      "title": "Arrays versus matrices, reductions and broadcasting",
+      "minutes": 21,
+      "covers": [
+        "Coefficient-wise operations via .array() versus matrix operations",
+        "Reductions and broadcasting"
+      ],
+      "file": "cod_cpp_09_eigen/04-array-versus-matrix-reductions-broadcasting.md"
+    },
+    {
+      "id": "l05-expression-templates-aliasing-eval-noalias",
+      "title": "Expression templates, aliasing, eval() and noalias()",
+      "minutes": 25,
+      "covers": [
+        "Expression templates, lazy evaluation, aliasing, eval() and noalias()"
+      ],
+      "file": "cod_cpp_09_eigen/05-expression-templates-aliasing-eval-noalias.md"
+    },
+    {
+      "id": "l06-floating-point-in-practice",
+      "title": "Floating point in practice",
+      "minutes": 26,
+      "covers": [
+        "IEEE-754 in practice: fma, Kahan summation, condition number, reproducibility"
+      ],
+      "file": "cod_cpp_09_eigen/06-floating-point-in-practice.md"
+    },
+    {
+      "id": "l07-decompositions",
+      "title": "Decompositions, or taking a matrix apart",
+      "minutes": 25,
+      "covers": [
+        "Decompositions: LLT and LDLT (Cholesky, the covariance workhorse), PartialPivLU, HouseholderQR, ColPivHouseholderQR, JacobiSVD, BDCSVD, SelfAdjointEigenSolver"
+      ],
+      "file": "cod_cpp_09_eigen/07-decompositions.md"
+    },
+    {
+      "id": "l08-solve-do-not-invert",
+      "title": "Solve, do not invert",
+      "minutes": 20,
+      "covers": [
+        "Solving Ax=b with ldlt().solve(b) rather than inverting"
+      ],
+      "file": "cod_cpp_09_eigen/08-solve-do-not-invert.md"
+    },
+    {
+      "id": "l09-the-geometry-module",
+      "title": "Rotations and frames: the Geometry module",
+      "minutes": 26,
+      "covers": [
+        "The Geometry module: Quaterniond, AngleAxis, Translation, Isometry3d, Transform, slerp"
+      ],
+      "file": "cod_cpp_09_eigen/09-the-geometry-module.md"
+    },
+    {
+      "id": "l10-quaternion-element-order",
+      "title": "Quaternion element order",
+      "minutes": 22,
+      "covers": [
+        "The Quaterniond(w,x,y,z) constructor versus coeffs() returning x,y,z,w"
+      ],
+      "file": "cod_cpp_09_eigen/10-quaternion-element-order.md"
+    },
+    {
+      "id": "l11-alignment-and-proving-no-allocation",
+      "title": "Alignment and proving no allocation",
+      "minutes": 21,
+      "covers": [
+        "Alignment, fixed-size vectorizable types and EIGEN_MAKE_ALIGNED_OPERATOR_NEW",
+        "Proving no allocation with EIGEN_RUNTIME_NO_MALLOC and set_is_malloc_allowed"
+      ],
+      "file": "cod_cpp_09_eigen/11-alignment-and-proving-no-allocation.md"
+    },
+    {
+      "id": "l12-numpy-mapping-and-neighbours",
+      "title": "Eigen and NumPy side by side, and the neighbors",
+      "minutes": 21,
+      "covers": [
+        "Eigen to NumPy mental mapping",
+        "Neighbours: Sophus for Lie groups, Ceres and GTSAM for least squares and factor graphs, SymForce for generated C++"
+      ],
+      "file": "cod_cpp_09_eigen/12-numpy-mapping-and-neighbours.md"
     }
   ],
   "cod_git_01_basics": [
@@ -9332,49 +9559,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_cpp_08_realtime": {
-    "covered": 0,
+    "covered": 15,
     "total": 15,
-    "complete": false,
-    "missing": [
-      "Worst-case execution time: measurement, static analysis and their limits",
-      "Static memory: pools, arenas, fixed-capacity containers, placement new at init",
-      "Stack-depth analysis and static stack bounding; no recursion",
-      "Bounded loops and why every loop needs a provable upper bound",
-      "Watchdogs, heartbeats and health monitoring",
-      "Fault detection, isolation and recovery; safe modes",
-      "Radiation effects: SEU, SEL, TID, and the software mitigations (voting, checksums, scrubbing, resets)",
-      "Interrupt service routines: what you may and may not do inside one",
-      "Cross-compiling to an embedded target with a CMake toolchain file",
-      "Linker scripts and memory regions; why you would move a function into RAM",
-      "Fixed-point arithmetic where floating point is unavailable or unqualified",
-      "Determinism and bit-exact reproducibility across compilers and platforms",
-      "The NASA/JPL Power of Ten rules",
-      "MISRA C++:2023, which absorbs AUTOSAR C++14; JSF++ AV and its F-35 origin",
-      "Static analysis: clang-tidy, cppcheck, Polyspace, LDRA, Helix QAC"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_09_eigen": {
-    "covered": 0,
+    "covered": 16,
     "total": 16,
-    "complete": false,
-    "missing": [
-      "Matrix<Scalar, Rows, Cols>; Vector3d, Matrix3d, Quaterniond typedefs; Dynamic sizing",
-      "Why fixed-size types allocate nothing and unroll their loops",
-      "Storage order; Map for wrapping an external buffer with no copy",
-      "Block operations: block, head, tail, segment, row, col",
-      "Coefficient-wise operations via .array() versus matrix operations",
-      "Reductions and broadcasting",
-      "Decompositions: LLT and LDLT (Cholesky, the covariance workhorse), PartialPivLU, HouseholderQR, ColPivHouseholderQR, JacobiSVD, BDCSVD, SelfAdjointEigenSolver",
-      "Solving Ax=b with ldlt().solve(b) rather than inverting",
-      "The Geometry module: Quaterniond, AngleAxis, Translation, Isometry3d, Transform, slerp",
-      "The Quaterniond(w,x,y,z) constructor versus coeffs() returning x,y,z,w",
-      "Alignment, fixed-size vectorizable types and EIGEN_MAKE_ALIGNED_OPERATOR_NEW",
-      "Expression templates, lazy evaluation, aliasing, eval() and noalias()",
-      "Proving no allocation with EIGEN_RUNTIME_NO_MALLOC and set_is_malloc_allowed",
-      "Eigen to NumPy mental mapping",
-      "Neighbours: Sophus for Lie groups, Ceres and GTSAM for least squares and factor graphs, SymForce for generated C++",
-      "IEEE-754 in practice: fma, Kahan summation, condition number, reproducibility"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_10_cmake": {
     "covered": 0,
