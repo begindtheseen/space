@@ -8211,7 +8211,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-mimo-transmission-zeros-rga",
       "title": "MIMO systems, transmission zeros and the relative gain array",
-      "minutes": 22,
+      "minutes": 26,
       "covers": [
         "MIMO systems, transmission zeros, and the relative gain array"
       ],
@@ -8220,7 +8220,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-model-reduction-balanced-truncation",
       "title": "Model reduction — balanced truncation and Hankel singular values",
-      "minutes": 21,
+      "minutes": 19,
       "covers": [
         "Model reduction: balanced truncation and Hankel singular values"
       ],
@@ -8231,7 +8231,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-quadratic-cost-functional",
       "title": "The linear quadratic cost functional",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "The linear quadratic cost functional and what Q, R and the cross term weight"
       ],
@@ -8240,7 +8240,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-hjb-and-calculus-of-variations",
       "title": "Two derivations of LQR: dynamic programming and the calculus of variations",
-      "minutes": 21,
+      "minutes": 19,
       "covers": [
         "LQR derived via dynamic programming (HJB) and via calculus of variations"
       ],
@@ -8249,7 +8249,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-riccati-equations",
       "title": "The algebraic and differential Riccati equations",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "The algebraic and differential Riccati equations"
       ],
@@ -8285,7 +8285,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-lqr-with-integral-action",
       "title": "LQR with integral action",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "LQR with integral action"
       ],
@@ -8294,7 +8294,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-cheap-control-and-the-symmetric-root-locus",
       "title": "Cheap control and the asymptotic (Kalman) root locus",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Cheap control and the asymptotic (Kalman) root locus"
       ],
@@ -8303,7 +8303,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-time-varying-lqr",
       "title": "Time-varying LQR for trajectory stabilization",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "Time-varying LQR along a nominal trajectory for trajectory stabilization"
       ],
@@ -8312,7 +8312,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-lqg-and-the-separation-principle",
       "title": "LQG and the stochastic separation principle",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "LQG = LQR + Kalman filter, and the stochastic separation principle"
       ],
@@ -8321,7 +8321,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-loop-transfer-recovery",
       "title": "Loop transfer recovery and what it costs",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Loop transfer recovery and what it actually costs"
       ],
@@ -8330,7 +8330,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-discrete-time-lqr-and-the-dare",
       "title": "Discrete-time LQR and the DARE",
-      "minutes": 18,
+      "minutes": 17,
       "covers": [
         "Discrete-time LQR and the DARE"
       ],
@@ -8339,7 +8339,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-pontryagin-minimum-principle",
       "title": "The Hamiltonian and the Pontryagin minimum principle",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "The Hamiltonian and the Pontryagin minimum principle as the general frame"
       ],
@@ -8348,7 +8348,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-ilqr-and-ddp",
       "title": "iLQR and DDP, the nonlinear extension",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "iLQR and DDP as the nonlinear extension"
       ],
@@ -8359,7 +8359,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-modelling-uncertainty",
       "title": "Modelling uncertainty",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "Modelling uncertainty: additive, multiplicative (input and output), parametric, unstructured"
       ],
@@ -8368,7 +8368,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-small-gain-theorem",
       "title": "The small gain theorem",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "The small gain theorem and its exact hypotheses"
       ],
@@ -8377,7 +8377,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-h2-and-hinf-norms",
       "title": "The H2 and H-infinity norms",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "The H2 and H-infinity norms and what each one measures"
       ],
@@ -8386,7 +8386,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-hinf-synthesis-mixed-sensitivity",
       "title": "H-infinity synthesis and mixed sensitivity",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "H-infinity synthesis: mixed sensitivity S/KS/T weighting, the two-Riccati (DGKF) solution"
       ],
@@ -8395,7 +8395,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-structured-singular-value-mu",
       "title": "The structured singular value and D-K iteration",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "The structured singular value mu and mu-synthesis by D-K iteration"
       ],
@@ -8413,7 +8413,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-mimo-singular-values-directionality",
       "title": "Singular values of a transfer matrix and directionality",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "Singular values of MIMO transfer matrices and input/output directionality"
       ],
@@ -8422,7 +8422,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-mimo-margins-and-disk-margins",
       "title": "MIMO margins and the disk margin",
-      "minutes": 22,
+      "minutes": 23,
       "covers": [
         "MIMO stability margins, disk margins, and why per-loop SISO margins mislead"
       ],
@@ -8431,7 +8431,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-rhp-poles-and-zeros",
       "title": "What right-half-plane poles and zeros forbid",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "Performance limitations imposed by right-half-plane poles and zeros"
       ],
@@ -8440,7 +8440,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-lpv-and-gain-scheduling",
       "title": "Gain scheduling with guarantees, and LPV control",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "Linear parameter-varying control and gain scheduling with guarantees"
       ],
@@ -8449,7 +8449,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-adaptive-control",
       "title": "Adaptive control and its use and abuse",
-      "minutes": 22,
+      "minutes": 23,
       "covers": [
         "Adaptive control (MRAC, L1 adaptive) and its use and abuse in aerospace"
       ],
@@ -8458,7 +8458,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-flight-qualification-metrics",
       "title": "Flight qualification metrics",
-      "minutes": 23,
+      "minutes": 24,
       "covers": [
         "Flight qualification metrics: stability margin requirements across the envelope, discrete-time mu analysis, handling-qualities criteria"
       ],
@@ -8469,7 +8469,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-nonlinear-phenomena",
       "title": "Four things a linear model cannot do",
-      "minutes": 19,
+      "minutes": 26,
       "covers": [
         "Nonlinear phenomena: multiple equilibria, limit cycles, finite escape time, bifurcation"
       ],
@@ -8478,7 +8478,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-phase-plane-and-equilibrium-classification",
       "title": "Phase-plane analysis and equilibrium classification",
-      "minutes": 20,
+      "minutes": 23,
       "covers": [
         "Phase-plane analysis and equilibrium classification"
       ],
@@ -8487,7 +8487,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-linearization-and-the-indirect-method",
       "title": "Linearization and the Lyapunov indirect method",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "Linearization and the Lyapunov indirect method, including its failure cases"
       ],
@@ -8496,7 +8496,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-lyapunov-direct-method-and-lasalle",
       "title": "The direct method, Lyapunov functions and LaSalle",
-      "minutes": 26,
+      "minutes": 22,
       "covers": [
         "The Lyapunov direct method, Lyapunov functions, LaSalle invariance principle"
       ],
@@ -8505,7 +8505,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-region-of-attraction-estimation",
       "title": "Estimating the region of attraction",
-      "minutes": 22,
+      "minutes": 19,
       "covers": [
         "Region of attraction estimation, including sum-of-squares approaches"
       ],
@@ -8514,7 +8514,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-input-to-state-stability",
       "title": "Input-to-state stability",
-      "minutes": 18,
+      "minutes": 17,
       "covers": [
         "Input-to-state stability"
       ],
@@ -8523,7 +8523,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-feedback-linearization-and-zero-dynamics",
       "title": "Feedback linearization, relative degree and zero dynamics",
-      "minutes": 21,
+      "minutes": 20,
       "covers": [
         "Feedback linearization (input-state and input-output), relative degree, internal and zero dynamics"
       ],
@@ -8532,7 +8532,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-sliding-mode-control",
       "title": "Sliding mode control, chattering and boundary layers",
-      "minutes": 24,
+      "minutes": 19,
       "covers": [
         "Sliding mode control: sliding surface design, reaching phase, chattering, boundary layers, higher-order sliding modes"
       ],
@@ -8541,7 +8541,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-backstepping",
       "title": "Backstepping",
-      "minutes": 20,
+      "minutes": 17,
       "covers": [
         "Backstepping"
       ],
@@ -8550,7 +8550,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-passivity-based-control",
       "title": "Passivity-based control and energy shaping",
-      "minutes": 24,
+      "minutes": 22,
       "covers": [
         "Passivity-based control and energy shaping"
       ],
@@ -8559,7 +8559,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-spacecraft-attitude-control",
       "title": "Nonlinear spacecraft attitude control: unwinding, MRPs, and tracking",
-      "minutes": 34,
+      "minutes": 22,
       "covers": [
         "Nonlinear spacecraft attitude control: quaternion feedback laws, the unwinding problem, MRP-based control, Lyapunov-derived tracking laws with proof"
       ],
@@ -8568,7 +8568,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-describing-functions",
       "title": "Describing functions for limit-cycle prediction",
-      "minutes": 24,
+      "minutes": 20,
       "covers": [
         "Describing functions for limit-cycle prediction"
       ],
@@ -8577,7 +8577,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-underactuated-systems",
       "title": "Control of underactuated systems",
-      "minutes": 25,
+      "minutes": 22,
       "covers": [
         "Control of underactuated systems"
       ],
@@ -8586,7 +8586,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-bang-bang-and-pwpf",
       "title": "Bang-bang and on-off thruster control: Schmitt trigger and PWPF",
-      "minutes": 26,
+      "minutes": 24,
       "covers": [
         "Bang-bang and on-off thruster control: Schmitt trigger and pulse-width pulse-frequency modulation"
       ],
@@ -8597,7 +8597,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-receding-horizon-principle",
       "title": "The receding horizon principle",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "The receding horizon principle"
       ],
@@ -8606,7 +8606,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-finite-horizon-problem",
       "title": "The finite-horizon constrained optimal control problem",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "The finite-horizon constrained optimal control problem"
       ],
@@ -8615,7 +8615,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-linear-mpc-as-a-quadratic-program",
       "title": "Linear MPC as a quadratic program",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "Linear MPC as a quadratic program; condensed vs sparse formulations"
       ],
@@ -8624,7 +8624,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-constraints-and-slack-variables",
       "title": "State and input constraints, softening and slacks",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "State and input constraints; soft constraints and slack variables"
       ],
