@@ -185,7 +185,7 @@ Each takes a scalar or an array and converts every element. The unit names are f
 A pound-force is the weight of a pound-mass at standard gravity, so the two share a number only under standard gravity. Divide a force in lbf by a mass in lbm and you do not get ft/s². And a knot is one nautical mile per hour, $0.5144\,\mathrm{m/s}$, while a mile per hour is $0.4470\,\mathrm{m/s}$: mixing them is a 15 percent error. The most famous unit bug in spaceflight, the **[[Mars Climate Orbiter|mars-climate-orbiter]]**, was a pound-force mix-up.
 :::
 
-A good habit, on every GNC team, is to convert at the boundary. Data comes in from a file, a datasheet or a standard; it is converted to SI in one clearly marked place; and nothing inside the simulation ever sees another unit. The Dryden example does this: the formulas that the standard writes in feet get feet, and everything that leaves them is in meters.
+A good habit, on every GNC team, is to convert at the boundary. Data comes in from a file, a datasheet or a standard; it is converted to SI in one plainly marked place; and nothing inside the simulation ever sees another unit. The Dryden example does this: the formulas that the standard writes in feet get feet, and everything that leaves them is in meters.
 
 ## Check yourself
 
@@ -270,7 +270,7 @@ On launch day, weather teams release balloons that rise through the atmosphere w
 :::
 
 ::: context white-noise Why "white"
-White light contains every color in equal measure. White noise, by analogy, contains every frequency in equal measure: its spectrum is flat. Its samples are completely unrelated to one another, so it has no memory. A turbulence model gives it memory by filtering: the filter smooths the noise so that each moment resembles the moments just before it, the way a real gust builds and fades.
+White light contains every color in equal measure. White noise, by analogy, contains every frequency in equal measure: its spectrum is flat. Its samples are completely unrelated to one another, so it has no memory. A turbulence model gives it memory by filtering: the filter smooths the noise so that each moment resembles the moments right before it, the way a real gust builds and fades.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
