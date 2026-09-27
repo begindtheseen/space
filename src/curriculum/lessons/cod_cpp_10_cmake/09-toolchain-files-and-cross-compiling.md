@@ -1,7 +1,7 @@
 ---
 id: l09-toolchain-files-and-cross-compiling
 title: Toolchain files and cross-compiling
-minutes: 25
+minutes: 24
 covers:
   - Toolchain files for cross-compiling to an embedded target
 ---
@@ -18,11 +18,11 @@ In every lesson so far, CMake found your compiler by itself. When the `project()
 
 A flight computer is different in three ways that matter to a compiler:
 
-- **The processor.** A typical small flight controller uses a **microcontroller** — a whole computer on one chip, with processor, memory and input/output pins together. A common family is Arm **Cortex-M**. An x86-64 instruction means nothing to a Cortex-M4.
-- **The operating system.** There usually is none. Code that runs with no operating system under it is called **bare metal**. Nobody opens files or prints to a screen for you.
+- **The processor.** A small flight controller uses a **microcontroller** — a whole computer on one chip. A common family is Arm **Cortex-M**. An x86-64 instruction means nothing to a Cortex-M4.
+- **The operating system.** There usually is none. Code with no operating system under it is called **bare metal**.
 - **The libraries.** The target has its own small C library, built for its own processor. Your laptop's libraries are useless to it.
 
-So you need a different compiler. For Cortex-M the usual one is the GNU Arm toolchain, whose programs all start with **[[arm-none-eabi|target-triple]]**: `arm-none-eabi-gcc`, `arm-none-eabi-g++`, `arm-none-eabi-objcopy`, and so on. CMake will never pick these on its own. It has no way to know that you want to build for a chip that is not in the room.
+So you need a different compiler. For Cortex-M the usual one is the GNU Arm toolchain, whose programs all start with **[[arm-none-eabi|target-triple]]**: `arm-none-eabi-g++`, `arm-none-eabi-objcopy`, and so on. CMake will never pick these on its own; it cannot know you want to build for a chip that is not in the room.
 
 ## When the toolchain file is read
 
@@ -85,7 +85,7 @@ It has five parts. Take them one at a time.
 
 `CMAKE_SYSTEM_NAME` names the target's operating system. `Linux` and `Windows` are possible values; `Generic` means "no operating system CMake knows about", which is what bare metal is. Setting this variable yourself is the switch that puts CMake into cross-compiling mode: from then on, the variable `CMAKE_CROSSCOMPILING` is true, and your project can test it.
 
-`CMAKE_SYSTEM_PROCESSOR` names the target's processor family. CMake mostly passes it along for your own scripts to read. It does not choose any compiler flags by itself.
+`CMAKE_SYSTEM_PROCESSOR` names the target's processor family, for your own scripts to read. It does not choose any compiler flags.
 
 ### 2. Which compilers
 
@@ -405,7 +405,7 @@ CMake runs the toolchain file at the start of configure and again inside every t
 Writing `set(CMAKE_CXX_COMPILER arm-none-eabi-g++)` inside `CMakeLists.txt` looks like a shortcut. After `project()`, it is too late: the compiler has been found and tested. Before `project()`, it welds the project to one chip, and the host build and its tests break. The toolchain file exists so the project never has to say which machine it is for.
 :::
 
-Where this goes next: the tests above run only on the host. Some teams also run the target binary on the host under a processor **[[emulator|emulator]]**, so the real Arm machine code is tested before any hardware is on the bench. The real-time C++ module picks up this exact toolchain file and adds the linker script and startup code a real flight program needs.
+The tests above run only on the host. Some teams also run the target binary under a processor **[[emulator|emulator]]**. The real-time C++ module picks up this toolchain file and adds the linker script and startup code a real flight program needs.
 
 ## Check yourself
 
@@ -414,7 +414,7 @@ A teammate says: "Why not put `set(CMAKE_SYSTEM_NAME Generic)` and the compiler 
 :::
 
 ::: answer
-It would work for the chip, but only for the chip. The project would now always cross-compile, so the host build is gone — and with it the unit tests, which must run on the laptop. The whole design is that `CMakeLists.txt` describes *what* to build and says nothing about *which machine*; the machine comes in from outside, per build folder. Presets remove the typing problem anyway: `cmake --preset m4-release` carries the toolchain file for you.
+It works for the chip, but only for the chip. The project now always cross-compiles, so the host build is gone — and with it the unit tests, which must run on the laptop. `CMakeLists.txt` should say *what* to build, never *which machine*. Presets remove the typing anyway: `cmake --preset m4-release` carries the toolchain file for you.
 :::
 
 ::: check

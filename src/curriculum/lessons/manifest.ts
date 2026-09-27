@@ -2444,6 +2444,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_cpp_10_cmake/03-usage-requirements-public-private-interface.md"
     },
     {
+      "id": "l04-generator-expressions-and-configurations",
+      "title": "Generator expressions and build configurations",
+      "minutes": 18,
+      "covers": [
+        "Generator expressions and per-configuration settings"
+      ],
+      "file": "cod_cpp_10_cmake/04-generator-expressions-and-configurations.md"
+    },
+    {
       "id": "l06-project-layout-and-ctest",
       "title": "A project layout a stranger can build, and ctest",
       "minutes": 20,
@@ -2465,7 +2474,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-toolchain-files-and-cross-compiling",
       "title": "Toolchain files and cross-compiling",
-      "minutes": 25,
+      "minutes": 24,
       "covers": [
         "Toolchain files for cross-compiling to an embedded target"
       ],
@@ -2474,7 +2483,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-install-and-export",
       "title": "Install and export: letting other projects find you",
-      "minutes": 24,
+      "minutes": 21,
       "covers": [
         "install and export so downstream projects can find_package you"
       ],
@@ -10409,11 +10418,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cpp_10_cmake": {
-    "covered": 10,
+    "covered": 11,
     "total": 14,
     "complete": false,
     "missing": [
-      "Generator expressions and per-configuration settings",
       "find_package and config packages; FetchContent versus submodules versus Conan or vcpkg",
       "Sanitizer and coverage build configurations",
       "ccache and build-time hygiene"
