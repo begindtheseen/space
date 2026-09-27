@@ -3817,6 +3817,33 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_py_07_integration/06-events.md"
     },
     {
+      "id": "l07-stiffness",
+      "title": "Stiffness and when to switch to an implicit method",
+      "minutes": 21,
+      "covers": [
+        "Stiffness: how to recognise it and when to switch to an implicit method"
+      ],
+      "file": "cod_py_07_integration/07-stiffness.md"
+    },
+    {
+      "id": "l08-energy-and-jacobi-drift",
+      "title": "Energy and Jacobi-constant drift as an accuracy check",
+      "minutes": 20,
+      "covers": [
+        "Energy and Jacobi-constant drift as an independent accuracy check"
+      ],
+      "file": "cod_py_07_integration/08-energy-and-jacobi-drift.md"
+    },
+    {
+      "id": "l09-symplectic-integrators",
+      "title": "Symplectic integrators for long-horizon propagation",
+      "minutes": 19,
+      "covers": [
+        "Symplectic integrators and long-horizon propagation"
+      ],
+      "file": "cod_py_07_integration/09-symplectic-integrators.md"
+    },
+    {
       "id": "l10-discontinuities",
       "title": "Staging, engine cutoff and restarting the solver",
       "minutes": 22,
@@ -10362,14 +10389,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_07_integration": {
-    "covered": 9,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "Stiffness: how to recognise it and when to switch to an implicit method",
-      "Energy and Jacobi-constant drift as an independent accuracy check",
-      "Symplectic integrators and long-horizon propagation"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_py_08_performance": {
     "covered": 0,
