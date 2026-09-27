@@ -1,7 +1,7 @@
 ---
 id: l05-sorting-intervals-stacks-and-lists
 title: Sorting, intervals, stacks, queues and linked lists
-minutes: 26
+minutes: 21
 covers:
   - Sorting and intervals; stacks and queues; linked lists
 ---
