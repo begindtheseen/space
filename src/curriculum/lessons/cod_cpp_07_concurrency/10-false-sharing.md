@@ -120,10 +120,10 @@ Reading it line by line:
 3. The same work took 3.49 s together and 0.61 s apart, about 5.7 times longer when the counters share a line. Two more runs gave 5.5 and 5.4 times. Your numbers will differ with the machine and the load, but the direction will not.
 4. Per increment: $3.49\,\mathrm{s} / 10^8 \approx 35\,\mathrm{ns}$ together, against $0.61\,\mathrm{s} / 10^8 \approx 6\,\mathrm{ns}$ apart. The extra 29 ns or so is, roughly, the price of pulling the line over from the other core.
 
-Sanity check: all four sums are exactly 100,000,000, so the slow version is not wrong, only slow. That fits: false sharing never breaks correctness. It only burns time.
+Sanity check: all four sums are exactly 100,000,000. False sharing never breaks correctness; it only burns time.
 :::
 
-How bad is "slow"? The same 200 million increments done by **one** thread, on two counters, took about 1.23 s on this machine. So two threads fighting over one line took almost three times as long as one thread doing all the work alone. Adding a thread made the program slower. That is the classic signature of false sharing: parallel code that scales backwards.
+How bad is "slow"? One thread doing all 200 million increments took about 1.23 s on this machine. So two threads fighting over one line took almost three times as long as one thread alone. Adding a thread made the program slower. That is the classic signature of false sharing: parallel code that scales backwards.
 
 ::: warning Suspect false sharing when more threads make it slower
 If a loop gets slower as you add threads, and the threads write only their "own" variables, look at where those variables sit. Per-thread counters in adjacent struct members, or `counts[thread_id]` in a plain array, share lines. The fix is either to pad each one to its own line, or to count in a local variable inside each thread and write the total out once at the end. A local variable lives in a register or on the thread's own stack, so nothing is shared until that final write.

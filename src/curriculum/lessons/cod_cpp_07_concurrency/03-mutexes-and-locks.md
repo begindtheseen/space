@@ -14,7 +14,7 @@ Last lesson ended with two broken programs — a counter that lost counts and a 
 
 ## std::mutex, the key on the hook
 
-`std::mutex` lives in `<mutex>` and has three member functions you need:
+`std::mutex` lives in `<mutex>`. Its three member functions:
 
 - `lock()`: take the mutex, waiting as long as necessary.
 - `unlock()`: give it back. Only the thread that locked it may unlock it.
@@ -99,11 +99,11 @@ bool try_take(int w) {                  // check AND act under one lock
 With `switch_on` calling `try_take`, six runs printed `heater on (80 W)`, `radio refused`, `budget left: 20 W`. If the radio thread had won the race to the lock, it would have been `radio on (60 W)`, `heater refused`, 40 W left. Either way, the budget never goes negative.
 
 ::: warning The lock protects code, not data
-A guard protects only what happens inside its scope. Two ways it leaks: a function that returns a pointer or reference to the protected data hands out access that outlives the lock; and a guard with no name, `std::lock_guard<std::mutex>{m};`, is a temporary that unlocks at the semicolon, as the RAII module showed. Return copies, and always name the guard.
+A guard protects only what happens inside its scope. It leaks two ways: a function that returns a pointer or reference to the protected data hands out access that outlives the lock; and a guard with no name, `std::lock_guard<std::mutex>{m};`, is a temporary that unlocks at the semicolon, as the RAII module showed. Return copies, and always name the guard.
 :::
 
 ::: warning Keep critical sections short
-While one thread holds a mutex, every other thread that wants it waits. So do only the shared-data work inside the lock: copy the navigation state out, unlock, then compute with the copy. Never do I/O, sleep or wait for another thread while holding a lock that a control task needs.
+While one thread holds a mutex, every thread that wants it waits. So copy the shared data out, unlock, then compute with the copy. Never do I/O, sleep or wait for another thread while holding a lock that a control task needs.
 :::
 
 ## unique_lock: the flexible one
@@ -316,7 +316,7 @@ void add_pair(int a, int b) {
 
 printed `event 1`, then `calling add_pair`, and then nothing until `timeout` killed it after 3 seconds. A thread deadlocked with itself.
 
-**`std::recursive_mutex`** allows it. It remembers which thread owns it and counts: the owner can lock it again, each `lock()` adds one, each `unlock()` subtracts one, and other threads get in only when the count is back to zero. Swap the type in the event log, and it printed all three events and `done`.
+**`std::recursive_mutex`** allows it. It remembers which thread owns it and counts: the owner can lock it again, each `lock()` adds one, each `unlock()` subtracts one, and other threads get in only when the count is back to zero. With it, the event log printed all three events and `done`.
 
 So why not use it everywhere? Because needing it is a sign of a design problem. A mutex protects an **[[invariant|invariant]]** — a promise about the data, such as "`count_` equals the number of events printed" — that may be half-broken inside a critical section and must hold again at the unlock. A function that locks expects to find the invariant true. With a recursive mutex, `add` can be entered from the middle of `add_pair`, perhaps while the state is half-updated, and nothing warns you. It also hides who really holds the lock, and for how long.
 
@@ -350,7 +350,7 @@ Re-locking is allowed only for the thread that already owns the mutex. Two *diff
 
 ## What a lock really costs
 
-Talk of "locks are slow" is common. Here is a measurement instead.
+"Locks are slow" is often said. Here is a measurement.
 
 ::: example Timing a lock, honestly
 ```cpp
@@ -402,7 +402,7 @@ On one machine (4 cores, `nproc` prints 4, g++ 13 at `-O2`), one run printed:
 4. lock, 4 threads contending:  72.1 ns
 ```
 
-Five runs agreed within about 10 percent. Your machine will give different numbers.
+Five runs agreed within about 10 percent; yours will differ.
 
 Line 1 is the baseline: the volatile read and write alone. Line 3 is the honest **uncontended** cost — no other thread wants the lock — in a program that has threads: $19.0 - 2.3 = 16.7$ ns for one lock-and-unlock pair.
 
