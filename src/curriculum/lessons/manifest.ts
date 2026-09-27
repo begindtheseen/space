@@ -10547,7 +10547,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-bang-bang-singular-arcs",
       "title": "Bang-bang control, the switching function, and singular arcs",
-      "minutes": 16,
+      "minutes": 21,
       "covers": [
         "Bang-bang control, the switching function, and singular arcs"
       ],
@@ -10556,7 +10556,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-direct-transcription",
       "title": "Direct transcription: from a continuous problem to a finite NLP",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Direct transcription: converting an infinite-dimensional problem into a finite NLP"
       ],
@@ -10574,7 +10574,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-trapezoidal-hermite-simpson-collocation",
       "title": "Direct collocation: trapezoidal and Hermite-Simpson defects",
-      "minutes": 16,
+      "minutes": 23,
       "covers": [
         "Direct collocation: trapezoidal and Hermite-Simpson defect constraints"
       ],
@@ -10583,7 +10583,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-pseudospectral-nodes",
       "title": "Pseudospectral methods: node families and the differentiation matrix",
-      "minutes": 15,
+      "minutes": 23,
       "covers": [
         "Pseudospectral methods: Legendre-Gauss, Legendre-Gauss-Radau and Legendre-Gauss-Lobatto nodes"
       ],
@@ -10592,7 +10592,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-spectral-convergence-covector-mapping",
       "title": "Spectral convergence and the covector mapping theorem",
-      "minutes": 16,
+      "minutes": 22,
       "covers": [
         "Spectral convergence, the covector mapping theorem, and what pseudospectral costates buy you"
       ],
@@ -10627,8 +10627,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l14-scaling-and-conditioning",
-      "title": "Scaling and conditioning: non-dimensionalise before you solve anything",
-      "minutes": 18,
+      "title": "Scaling and conditioning: non-dimensionalize before you solve anything",
+      "minutes": 23,
       "covers": [
         "Scaling and conditioning: non-dimensionalising states, controls and constraints before you solve anything"
       ],
@@ -10637,7 +10637,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l15-warm-starting-homotopy-continuation",
       "title": "Warm starting, homotopy and continuation",
-      "minutes": 18,
+      "minutes": 25,
       "covers": [
         "Warm starting, homotopy and continuation from an easy problem to the real one"
       ],
@@ -11322,7 +11322,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-rate-architecture",
       "title": "Rate architecture for the integrated stack",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "Rate architecture: navigation at IMU rate, control at 100 Hz or faster, guidance re-solved at 1 to 2 Hz, mode management at a low rate"
       ],
@@ -11340,7 +11340,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-guidance-meets-control",
       "title": "Guidance in the loop: convex descent guidance meets control",
-      "minutes": 24,
+      "minutes": 23,
       "covers": [
         "Convex powered-descent guidance in the loop: re-solve cadence, warm starting, deadline policy and the closed-form fallback"
       ],
@@ -11349,7 +11349,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-control-meets-vehicle",
       "title": "Control in the loop: TVC, gain scheduling and saturation",
-      "minutes": 25,
+      "minutes": 22,
       "covers": [
         "TVC attitude control with bending-mode and slosh notch or roll-off filtering, and gain scheduling against dynamic pressure and mass"
       ],
@@ -11358,7 +11358,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-mode-management",
       "title": "Mode management and the transition boundary",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "Mode management across prelaunch, ascent, staging, coast, entry, landing and safe"
       ],
@@ -11376,7 +11376,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-the-integration-only-failure",
       "title": "The failure that only appears integrated",
-      "minutes": 23,
+      "minutes": 20,
       "covers": [
         "A multiplicative extended Kalman filter on IMU, GNSS and radar altimeter, with error-state formulation and attitude error as a three-parameter local perturbation",
         "TVC attitude control with bending-mode and slosh notch or roll-off filtering, and gain scheduling against dynamic pressure and mass"
@@ -11386,7 +11386,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-flight-code-architecture",
       "title": "One implementation, a C++ core and a Python layer",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "C++ flight core with a Python analysis and plotting layer over it, sharing exactly one implementation of the algorithms"
       ],
@@ -11406,7 +11406,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
   "t7_m49_interview_prep": [
     {
       "id": "l01-five-talks-and-the-defence",
-      "title": "The five-talk system, and rehearsing the defence",
+      "title": "The five-talk system, and rehearsing the defense",
       "minutes": 22,
       "covers": [
         "The project presentation: choosing five topics, building a 10 to 20 minute talk for each, and rehearsing the defence rather than the delivery"

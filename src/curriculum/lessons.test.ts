@@ -52,16 +52,11 @@ const KINDS = ['example', 'key', 'check', 'answer', 'note', 'warning', 'video', 
  */
 const WRITTEN_BEFORE_NOTES = new Set<string>([
   // Career
-  'car_08_pipeline', 'car_09_screens', 'car_10_past_project_presentation', 'car_11_domain_round',
-  'car_12_first_principles', 'car_13_behavioral_star',
-  // Tier 3
-  't3_m32_mpc',
-  // Tier 4
-  't4_m38_sensors_optical_nav', 't4_m39_orbit_determination',
+  'car_09_screens', 'car_10_past_project_presentation', 'car_11_domain_round', 'car_12_first_principles',
+  'car_13_behavioral_star',
   // Tiers 5–7
-  't5_m40_guidance_fundamentals', 't5_m41_ascent_guidance', 't5_m42_trajectory_optimization',
-  't5_m43_convex_guidance', 't6_m46_6dof_simulation', 't6_m47_vv_montecarlo', 't7_m48_capstone',
-  't7_m49_interview_prep',
+  't5_m40_guidance_fundamentals', 't5_m42_trajectory_optimization', 't5_m43_convex_guidance',
+  't7_m48_capstone', 't7_m49_interview_prep',
 ])
 const hasMarker = (d: string) => fs.existsSync(path.join(dir, d, '.plain-voice'))
 const NOTES_REQUIRED = new Set<string>([
