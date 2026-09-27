@@ -1592,6 +1592,71 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Parametric feature-based modelling: sketches, constraints, fully defined sketches"
       ],
       "file": "cod_cad_03_tools/07-parametric-sketches.md"
+    },
+    {
+      "id": "l08-features",
+      "title": "Features that turn sketches into parts",
+      "minutes": 20,
+      "covers": [
+        "Features: extrude, revolve, sweep, loft, fillet, shell, rib, draft, hole wizard, patterns, configurations"
+      ],
+      "file": "cod_cad_03_tools/08-features.md"
+    },
+    {
+      "id": "l09-the-feature-tree-and-design-intent",
+      "title": "The feature tree and design intent",
+      "minutes": 21,
+      "covers": [
+        "The feature tree, parent-child relationships, design intent, robust versus fragile modelling"
+      ],
+      "file": "cod_cad_03_tools/09-the-feature-tree-and-design-intent.md"
+    },
+    {
+      "id": "l10-assemblies",
+      "title": "Assemblies, mates and clash checks",
+      "minutes": 23,
+      "covers": [
+        "Assemblies: mates, sub-assemblies, in-context design and its dangers, interference detection"
+      ],
+      "file": "cod_cad_03_tools/10-assemblies.md"
+    },
+    {
+      "id": "l11-mass-properties",
+      "title": "Mass properties for a 6-DOF simulation",
+      "minutes": 24,
+      "covers": [
+        "Mass properties: where the mass, centre of gravity and inertia tensor for a 6-DOF simulation come from"
+      ],
+      "file": "cod_cad_03_tools/11-mass-properties.md"
+    },
+    {
+      "id": "l12-drawings-pmi-and-special-modelling",
+      "title": "Drawings from models, PMI, sheet metal and the outer mould line",
+      "minutes": 24,
+      "covers": [
+        "Drawings from models; PMI and model-based definition",
+        "Sheet metal, weldments and surfacing (awareness); outer mould line"
+      ],
+      "file": "cod_cad_03_tools/12-drawings-pmi-and-special-modelling.md"
+    },
+    {
+      "id": "l13-interchange-and-the-cad-landscape",
+      "title": "Moving models between programs, and who uses what",
+      "minutes": 22,
+      "covers": [
+        "Interchange formats: STEP, IGES, Parasolid, JT, and translation fidelity",
+        "The landscape: NX plus Teamcenter at SpaceX; CATIA at Boeing and Airbus; Creo in defence; SolidWorks at suppliers and startups; Onshape and Fusion as cloud-native newcomers"
+      ],
+      "file": "cod_cad_03_tools/13-interchange-and-the-cad-landscape.md"
+    },
+    {
+      "id": "l14-plm-revisions-and-effectivity",
+      "title": "Part numbers, revisions and which version is real",
+      "minutes": 20,
+      "covers": [
+        "PLM concepts: part numbers, revisions versus versions, effectivity, ECO and ECR, as-designed versus as-built versus as-flown"
+      ],
+      "file": "cod_cad_03_tools/14-plm-revisions-and-effectivity.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -1938,6 +2003,65 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "bisect for regression hunting"
       ],
       "file": "cod_git_01_basics/10-bisect.md"
+    }
+  ],
+  "cod_int_01_algorithms": [
+    {
+      "id": "l01-the-honest-calibration",
+      "title": "The honest calibration",
+      "minutes": 18,
+      "covers": [
+        "The honest calibration: medium level, not the main event, with real-world framing preferred",
+        "Preparing in C++ if targeting flight software; Python for the take-home",
+        "Roughly 120 to 150 problems is sufficient, grouped by pattern and timed"
+      ],
+      "file": "cod_int_01_algorithms/01-the-honest-calibration.md"
+    },
+    {
+      "id": "l02-complexity-out-loud",
+      "title": "Complexity you can say out loud",
+      "minutes": 25,
+      "covers": [
+        "Complexity analysis you can say out loud, including the space term"
+      ],
+      "file": "cod_int_01_algorithms/02-complexity-out-loud.md"
+    },
+    {
+      "id": "l03-two-pointers-and-sliding-windows",
+      "title": "Two pointers and sliding windows",
+      "minutes": 23,
+      "covers": [
+        "High-yield patterns: arrays and two pointers, sliding window, hash maps, binary search including on the answer"
+      ],
+      "file": "cod_int_01_algorithms/03-two-pointers-and-sliding-windows.md"
+    },
+    {
+      "id": "l04-hash-maps-and-binary-search",
+      "title": "Hash maps and binary search",
+      "minutes": 22,
+      "covers": [
+        "High-yield patterns: arrays and two pointers, sliding window, hash maps, binary search including on the answer"
+      ],
+      "file": "cod_int_01_algorithms/04-hash-maps-and-binary-search.md"
+    },
+    {
+      "id": "l05-sorting-intervals-stacks-and-lists",
+      "title": "Sorting, intervals, stacks, queues and linked lists",
+      "minutes": 21,
+      "covers": [
+        "Sorting and intervals; stacks and queues; linked lists"
+      ],
+      "file": "cod_int_01_algorithms/05-sorting-intervals-stacks-and-lists.md"
+    },
+    {
+      "id": "l07-heaps-prefix-sums-dp-and-bits",
+      "title": "Heaps, prefix sums, light DP and bits",
+      "minutes": 27,
+      "covers": [
+        "Trees and BFS/DFS; graphs including topological sort; heaps; prefix sums; light dynamic programming; bit manipulation",
+        "What to skip: exotic dynamic programming, advanced graph theory, segment trees"
+      ],
+      "file": "cod_int_01_algorithms/07-heaps-prefix-sums-dp-and-bits.md"
     }
   ],
   "cod_lnx_01_shell": [
@@ -9237,38 +9361,20 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cad_03_tools": {
-    "covered": 10,
+    "covered": 19,
     "total": 19,
-    "complete": false,
-    "missing": [
-      "Features: extrude, revolve, sweep, loft, fillet, shell, rib, draft, hole wizard, patterns, configurations",
-      "The feature tree, parent-child relationships, design intent, robust versus fragile modelling",
-      "Assemblies: mates, sub-assemblies, in-context design and its dangers, interference detection",
-      "Mass properties: where the mass, centre of gravity and inertia tensor for a 6-DOF simulation come from",
-      "Drawings from models; PMI and model-based definition",
-      "Sheet metal, weldments and surfacing (awareness); outer mould line",
-      "Interchange formats: STEP, IGES, Parasolid, JT, and translation fidelity",
-      "The landscape: NX plus Teamcenter at SpaceX; CATIA at Boeing and Airbus; Creo in defence; SolidWorks at suppliers and startups; Onshape and Fusion as cloud-native newcomers",
-      "PLM concepts: part numbers, revisions versus versions, effectivity, ECO and ECR, as-designed versus as-built versus as-flown"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_int_01_algorithms": {
-    "covered": 0,
+    "covered": 8,
     "total": 12,
     "complete": false,
     "missing": [
-      "The honest calibration: medium level, not the main event, with real-world framing preferred",
-      "Preparing in C++ if targeting flight software; Python for the take-home",
-      "High-yield patterns: arrays and two pointers, sliding window, hash maps, binary search including on the answer",
-      "Sorting and intervals; stacks and queues; linked lists",
-      "Trees and BFS/DFS; graphs including topological sort; heaps; prefix sums; light dynamic programming; bit manipulation",
-      "What to skip: exotic dynamic programming, advanced graph theory, segment trees",
-      "Complexity analysis you can say out loud, including the space term",
       "The engineering variants: binary protocol decommutation, telemetry dropout detection, two-rate time alignment, ring buffer, PID with anti-windup, running median over a stream",
       "struct, endianness and checksums in Python; bit twiddling in C++",
       "Talking while solving: restate, clarify, state the approach and its complexity, then code",
-      "Testing your own solution before saying you are done",
-      "Roughly 120 to 150 problems is sufficient, grouped by pattern and timed"
+      "Testing your own solution before saying you are done"
     ]
   },
   "cod_int_02_onsite": {
