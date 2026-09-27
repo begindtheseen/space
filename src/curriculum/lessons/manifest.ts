@@ -2143,7 +2143,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-live-debugging",
       "title": "Live debugging",
-      "minutes": 26,
+      "minutes": 20,
       "covers": [
         "Live debugging: here is code that crashes or leaks, find it"
       ],
@@ -2161,7 +2161,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-verification-and-fault-tolerant-computers",
       "title": "Verifying flight software and building a computer that survives faults",
-      "minutes": 22,
+      "minutes": 18,
       "covers": [
         "Engineering system design: GNC simulation infrastructure for a constellation; a telemetry pipeline for six thousand satellites; how you would verify this flight software; how you would architect a fault-tolerant flight computer",
         "Knowing the SpaceX answer: three dual-core x86 flight strings, per-string core cross-check, PowerPC actuator controllers judging three commands"
@@ -2171,12 +2171,41 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-domain-rounds-and-fermi-estimates",
       "title": "Domain rounds and Fermi estimates, out loud",
-      "minutes": 27,
+      "minutes": 25,
       "covers": [
         "Domain rounds for GNC roles: PD control, orbit determination, frequency domain, aerodynamic drag with real examples",
         "Fermi and order-of-magnitude estimation out loud"
       ],
       "file": "cod_int_02_onsite/06-domain-rounds-and-fermi-estimates.md"
+    },
+    {
+      "id": "l07-the-technical-presentation",
+      "title": "The technical presentation",
+      "minutes": 23,
+      "covers": [
+        "The technical presentation: about twelve minutes of slides and twenty-plus minutes of debate"
+      ],
+      "file": "cod_int_02_onsite/07-the-technical-presentation.md"
+    },
+    {
+      "id": "l08-behavioural-themes-and-ownership",
+      "title": "Behavioural themes and saying what you did",
+      "minutes": 20,
+      "covers": [
+        "Behavioural themes: mission alignment, extreme ownership, operating with ambiguity and speed, intellectual honesty about failure",
+        "Saying what you personally modelled, coded, analysed, tuned, tested or debugged versus what the team did"
+      ],
+      "file": "cod_int_02_onsite/08-behavioural-themes-and-ownership.md"
+    },
+    {
+      "id": "l09-star-stories-and-your-questions",
+      "title": "STAR stories and the questions you ask",
+      "minutes": 19,
+      "covers": [
+        "Building six to eight STAR stories from the capstones, each with a number in it",
+        "Questions to ask that show you understand the work"
+      ],
+      "file": "cod_int_02_onsite/09-star-stories-and-your-questions.md"
     }
   ],
   "cod_lnx_01_shell": [
@@ -9488,16 +9517,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_int_02_onsite": {
-    "covered": 8,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "The technical presentation: about twelve minutes of slides and twenty-plus minutes of debate",
-      "Behavioural themes: mission alignment, extreme ownership, operating with ambiguity and speed, intellectual honesty about failure",
-      "Saying what you personally modelled, coded, analysed, tuned, tested or debugged versus what the team did",
-      "Building six to eight STAR stories from the capstones, each with a number in it",
-      "Questions to ask that show you understand the work"
-    ]
+    "complete": true,
+    "missing": []
   },
   "car_01_itar_gate": {
     "covered": 10,
