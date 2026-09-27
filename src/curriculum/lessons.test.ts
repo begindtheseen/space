@@ -52,27 +52,11 @@ const KINDS = ['example', 'key', 'check', 'answer', 'note', 'warning', 'video', 
  */
 const WRITTEN_BEFORE_NOTES = new Set<string>([
   // Career
-  'car_05_tooling_reality', 'car_06_portfolio', 'car_07_resume_and_referrals', 'car_08_pipeline',
   'car_09_screens', 'car_10_past_project_presentation', 'car_11_domain_round', 'car_12_first_principles',
   'car_13_behavioral_star',
-  // Coding
-  'cod_cpp_01_basics', 'cod_cpp_02_memory', 'cod_py_02_idiomatic',
-  // Tier 0
-  't0_m07_calculus_multi', 't0_m11_optimization', 't0_m12_cpp',
-  // Tier 1
-  't1_m17_attitude_kinematics', 't1_m18_atmospheric_flight',
-  // Tier 2
-  't2_m22_lambert_targeting', 't2_m23_relative_motion_rpo', 't2_m24_edl',
-  // Tier 3
-  't3_m26_classical_control', 't3_m27_digital_control', 't3_m28_state_space', 't3_m29_optimal_control_lqr',
-  't3_m30_robust_control', 't3_m31_nonlinear_control', 't3_m32_mpc',
-  // Tier 4
-  't4_m33_least_squares', 't4_m34_kalman_filter', 't4_m35_nonlinear_filters', 't4_m36_inertial_navigation',
-  't4_m37_gnss', 't4_m38_sensors_optical_nav', 't4_m39_orbit_determination',
   // Tiers 5–7
-  't5_m40_guidance_fundamentals', 't5_m41_ascent_guidance', 't5_m42_trajectory_optimization',
-  't5_m43_convex_guidance', 't6_m44_realtime_embedded', 't6_m45_fsw_architecture', 't6_m46_6dof_simulation',
-  't6_m47_vv_montecarlo', 't7_m48_capstone', 't7_m49_interview_prep',
+  't5_m40_guidance_fundamentals', 't5_m42_trajectory_optimization', 't5_m43_convex_guidance',
+  't7_m48_capstone', 't7_m49_interview_prep',
 ])
 const hasMarker = (d: string) => fs.existsSync(path.join(dir, d, '.plain-voice'))
 const NOTES_REQUIRED = new Set<string>([
@@ -324,6 +308,14 @@ function arithmeticMismatches(body: string): { tex: string; detail: string }[] {
  * so an edit to any of these lessons brings the span back for review.
  */
 const ARITHMETIC_EXCEPTIONS = new Map<string, string>([
+  [
+    '0.212 - 0.105 = 0.108\\,\\mathrm{kg\\,m^2}',
+    'rounded inputs: unrounded, 0.21223 - 0.10472 = 0.10751, which rounds to the 0.108 found by the other method',
+  ],
+  [
+    '0.915\\times7.794 + 0.085\\times15.796 = 8.473\\,\\mathrm{km}',
+    'the lesson says it uses the unrounded weights 0.91517 and 0.08483, which give 8.473',
+  ],
   ['-1 = 4', 'a deliberately false line, shown to demonstrate an equation with no solution'],
   [
     'N \\ge (1.96 \\times 7.86/0.5)^2 = 950',
@@ -394,9 +386,14 @@ describe.each(moduleDirs)('lessons for %s', (moduleId) => {
   it('belongs to a real module and is numbered contiguously', () => {
     expect(module, `${moduleId} is not a module id`).toBeDefined()
     expect(files.length).toBeGreaterThan(0)
+    // A new module still being written may be pushed with gaps (lessons 1, 2
+    // and 4 done, 3 on the way); once it is finished, and in every older
+    // module, the numbers run 1, 2, 3 with none missing.
+    const writing = !hasMarker(moduleId) && !WRITTEN_BEFORE_NOTES.has(moduleId)
     files.forEach((f, i) => {
       expect(f, 'file names are <nn>-<slug>.md').toMatch(/^\d{2}-[a-z0-9][a-z0-9-]*\.md$/)
-      expect(Number(f.slice(0, 2)), `${f} should be number ${i + 1}`).toBe(i + 1)
+      if (writing) expect(Number(f.slice(0, 2)), `${f} is numbered after the lesson before it`).toBeGreaterThan(i ? Number(files[i - 1]!.slice(0, 2)) : 0)
+      else expect(Number(f.slice(0, 2)), `${f} should be number ${i + 1}`).toBe(i + 1)
     })
     const ids = parsed.map((p) => p.header.id)
     expect(new Set(ids).size, 'lesson ids are unique').toBe(ids.length)

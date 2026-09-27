@@ -6,7 +6,7 @@ covers:
   - floating-point pitfalls: catastrophic cancellation, machine epsilon
 ---
 
-In February 1991, during the Gulf War, a **[[Patriot|patriot]]** missile battery in Dhahran, Saudi Arabia, failed to stop an incoming Scud missile because its clock had drifted. The system counted time in tenths of a second. It stored one tenth as a 24-bit binary number — and 0.1 has no exact binary form, so every tick was short by a little under $10^{-7}\,\mathrm{s}$. After a hundred hours of running — $3.6 \times 10^{6}$ ticks — the official inquiry put the total error at about a third of a second. A target moving at $1.7\,\mathrm{km/s}$ travels several hundred metres in that time, so the radar looked in the wrong place. No error message appeared. The arithmetic did exactly what computer arithmetic always does.
+In February 1991, during the Gulf War, a **[[Patriot|patriot]]** missile battery in Dhahran, Saudi Arabia, failed to stop an incoming Scud missile because its clock had drifted. The system counted time in tenths of a second. It stored one tenth as a 24-bit binary number — and 0.1 has no exact binary form, so every tick was short by a little under $10^{-7}\,\mathrm{s}$. After a hundred hours of running — $3.6 \times 10^{6}$ ticks — the official inquiry put the total error at about a third of a second. A target moving at $1.7\,\mathrm{km/s}$ travels several hundred meters in that time, so the radar looked in the wrong place. No error message appeared. The arithmetic did exactly what computer arithmetic always does.
 
 Every number your orbit propagators, filters and controllers touch is a **float64**, and float64 is not the smooth number line from math class. It is a finite set of about $1.8 \times 10^{19}$ points, spaced unevenly, with rules for rounding onto them. Think of a ruler with a limited number of tick marks: every value snaps to the nearest tick.
 
@@ -228,7 +228,7 @@ Down to $10^{-8}$ the error shrinks in step with $h$. Below that, rounding takes
 
 A **central difference**, $\big(f(x+h) - f(x-h)\big)/2h$, improves the best error to about $\varepsilon^{2/3} \approx 10^{-11}$, with $h \approx \varepsilon^{1/3} \approx 6 \times 10^{-6}$.
 
-The numerical **Jacobians** (tables of slopes) that a Kalman filter or an optimiser builds from finite differences inherit exactly this trade. That is why they use $h \approx 10^{-6}$ to $10^{-8}$ relative to the state, not $10^{-12}$.
+The numerical **Jacobians** (tables of slopes) that a Kalman filter or an optimizer builds from finite differences inherit exactly this trade. That is why they use $h \approx 10^{-6}$ to $10^{-8}$ relative to the state, not $10^{-12}$.
 :::
 
 ::: note Why the best step is 2√ε
@@ -238,7 +238,7 @@ Call the total error $E(h) = \dfrac{h}{2} + \dfrac{2\varepsilon}{h}$. The first 
 ## Where this bites in GNC
 
 - **Absolute time.** Seconds since the **[[J2000|j2000]]** reference date are about $8 \times 10^8$. The float64 ulp there is $1.2 \times 10^{-7}\,\mathrm{s}$ — tolerable. In float32 it is $64\,\mathrm{s}$. Store time as a whole-number count of ticks plus a float fraction, or as seconds since a recent reference time.
-- **Large offsets.** Two positions of size $7 \times 10^6\,\mathrm{m}$ that differ by a metre are fine in float64 (spacing about $10^{-9}\,\mathrm{m}$) and hopeless in float32 (spacing $0.5\,\mathrm{m}$). That is exactly why rendezvous problems are set up in a frame centred on the target.
+- **Large offsets.** Two positions of size $7 \times 10^6\,\mathrm{m}$ that differ by a meter are fine in float64 (spacing about $10^{-9}\,\mathrm{m}$) and hopeless in float32 (spacing $0.5\,\mathrm{m}$). That is exactly why rendezvous problems are set up in a frame centered on the target.
 - **Energy and eccentricity.** Orbital energy per kilogram, $v^2/2 - \mu/r$, subtracts two terms of about $6 \times 10^7\,\mathrm{J/kg}$ that nearly cancel for an orbit close to escape. The eccentricity formula $e = \sqrt{1 - h^2/(\mu a)}$ loses digits for nearly circular orbits. **Equinoctial elements**, an alternative set of orbit numbers, exist to avoid these.
 - **Covariance updates.** $\mathbf{P} - \mathbf{K}\mathbf{H}\mathbf{P}$ subtracts nearly equal matrices when a measurement is very accurate. The **[[Joseph form|joseph]]** and square-root filters are the algebraic rearrangements that fix it.
 - **Comparisons.** `if x == y` on computed floats is almost always a bug. Use `math.isclose(x, y, rel_tol=1e-9, abs_tol=1e-12)` or `np.isclose`, and choose the tolerances from the arithmetic that produced `x` and `y`.
@@ -288,7 +288,7 @@ divides an exact $x$ by a sum near $2$, with no cancellation, and is accurate to
 :::
 
 ::: check
-An optimiser's numerical gradient of a smooth cost function is noisy, and its line search keeps failing. The finite-difference step is `h = 1e-13`. What is happening, and what step would you try?
+An optimizer's numerical gradient of a smooth cost function is noisy, and its line search keeps failing. The finite-difference step is `h = 1e-13`. What is happening, and what step would you try?
 :::
 
 ::: answer

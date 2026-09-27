@@ -100,7 +100,7 @@ A decimal in a computer is like a reading on a ruler. There are only so many tic
 
 `float64` is the IEEE-754 **double**. It stores a sign, 53 **significant bits** (binary digits of the number itself, worth about 15.95 decimal digits), and an 11-bit exponent that covers about $10^{-308}$ to $10^{308}$. `float32` is the **single**: 24 significant bits, about 7.2 decimal digits.
 
-The gap between two neighboring tick marks is called one **[[unit in the last place|ulp-ruler]]**, or **ulp**. It grows with the size of the number, because the same number of digits must stretch over a bigger value. Near $6.4 \times 10^6$ — Earth's radius in metres, which lies between $2^{22}$ and $2^{23}$ — the float32 ulp is $2^{22 - 23} = 0.5$ and the float64 ulp is $2^{22 - 52} \approx 9.3 \times 10^{-10}$:
+The gap between two neighboring tick marks is called one **[[unit in the last place|ulp-ruler]]**, or **ulp**. It grows with the size of the number, because the same number of digits must stretch over a bigger value. Near $6.4 \times 10^6$ — Earth's radius in meters, which lies between $2^{22}$ and $2^{23}$ — the float32 ulp is $2^{22 - 23} = 0.5$ and the float64 ulp is $2^{22 - 52} \approx 9.3 \times 10^{-10}$:
 
 ```python
 print(float(np.float32(6378137.3)))            # 6378137.5
@@ -115,7 +115,7 @@ print(np.spacing(np.float64(6.4e6)))           # 9.313225746154785e-10
 float32 vs float64: float32 carries about 7 decimal digits, which is about 0.5 m of resolution on a $6.4 \times 10^6\,\mathrm{m}$ Earth radius. Orbit propagation and covariance work run in float64; float32 shows up only in bandwidth-limited telemetry or GPU work.
 :::
 
-An Earth-centred position stored in float32 cannot tell $6\,378\,137.3\,\mathrm{m}$ from $6\,378\,137.5\,\mathrm{m}$. A position advanced step by step in float32 can pick up that half-metre error at every step. So leave NumPy's default alone — `np.zeros(n)` is float64 — and convert to `float32` only at the edge where a telemetry format or a graphics card demands it.
+An Earth-centered position stored in float32 cannot tell $6\,378\,137.3\,\mathrm{m}$ from $6\,378\,137.5\,\mathrm{m}$. A position advanced step by step in float32 can pick up that half-meter error at every step. So leave NumPy's default alone — `np.zeros(n)` is float64 — and convert to `float32` only at the edge where a telemetry format or a graphics card demands it.
 
 ### Special values
 
@@ -163,7 +163,7 @@ def ranges_vec(v0, angles_rad, g=9.80665):
 Both return the same array. The second is many times faster for $10^5$ samples, and the reason is worth understanding, not memorising:
 
 ::: key
-A per-sample Python loop is slow in a 100k-run Monte Carlo because the CPython interpreter pays type dispatch and object overhead on every iteration — each `th` is a **[[boxed|boxed-objects]]** Python object, each `*` looks up what multiplication means for that object, each result is allocated. NumPy pushes the loop into compiled C over a contiguous buffer, typically 50–200× faster.
+A per-sample Python loop is slow in a 100k-run Monte Carlo because the CPython interpreter pays type dispatch and object overhead on every iteration — each `th` is a **[[boxed|boxed-objects]]** Python object, each `*` looks up what multiplication means for that object, each result is allocated. NumPy pushes the loop into compiled C over a contiguous buffer, typically tens to hundreds of times faster.
 :::
 
 **CPython** is the standard Python program that reads and runs your code line by line — the **interpreter**. **Type dispatch** is the step where it asks "what kind of thing is this, and what does `*` mean for it?" In the loop it asks that question a hundred thousand times. NumPy asks once.
@@ -192,7 +192,7 @@ The NumPy broadcasting rule: shapes are compared right to left; two dimensions a
 Walk through three cases:
 
 - **A number and an array.** A single number has shape `()`, so `2 * a` stretches the 2 across every element.
-- **`(N, 3)` minus `(3,)`.** Compare from the right: `3` with `3`, equal. The `(3,)` has no second dimension, so it counts as 1 and stretches to `N`. Every row gets the same vector subtracted. That is how you centre a cloud of samples on its mean in one line: `X - X.mean(axis=0)`.
+- **`(N, 3)` minus `(3,)`.** Compare from the right: `3` with `3`, equal. The `(3,)` has no second dimension, so it counts as 1 and stretches to `N`. Every row gets the same vector subtracted. That is how you center a cloud of samples on its mean in one line: `X - X.mean(axis=0)`.
 - **`(3, 1)` plus `(1, 5)`** — the [[times table|broadcast-grid]]:
 
 ```python
@@ -297,7 +297,7 @@ If your `R.std()` comes out near $35.6\,\mathrm{m}$ (this seed gives $35.66$), t
 :::
 
 ::: example Centring and covariance of a sample cloud
-Suppose `X` is an `(N, 3)` array of landing positions in metres. The **sample covariance** measures how the cloud spreads along and between the axes:
+Suppose `X` is an `(N, 3)` array of landing positions in meters. The **sample covariance** measures how the cloud spreads along and between the axes:
 
 $$
 \mathbf{P} = \frac{1}{N-1}\sum_i (\mathbf{x}_i - \bar{\mathbf{x}})(\mathbf{x}_i - \bar{\mathbf{x}})^\mathsf{T}
@@ -376,7 +376,7 @@ None of 0.1, 0.2 or 0.3 can be stored exactly in binary. The rounded sum, `0.300
 :::
 
 ::: check
-A telemetry decoder hands you positions as `float32` arrays in Earth-centred metres. A colleague proposes doing the orbit determination in float32 "since the data is float32 anyway". What is wrong with that argument?
+A telemetry decoder hands you positions as `float32` arrays in Earth-centered meters. A colleague proposes doing the orbit determination in float32 "since the data is float32 anyway". What is wrong with that argument?
 :::
 
 ::: answer
@@ -395,7 +395,7 @@ But the estimator then forms differences, sums of squares and matrix inverses. I
 | dtypes | `float64` (53 bits, about 16 digits), `float32` (24 bits, about 7 digits), `int64` wraps | `np.finfo(np.float64).eps` $= 2.22 \times 10^{-16}$ |
 | float32 vs float64 | float32 ulp at Earth radius $= 0.5\,\mathrm{m}$; float64 ulp $\approx 9.3 \times 10^{-10}\,\mathrm{m}$ | GNC works in float64 |
 | NaN / inf | `np.isnan`, `np.nanmean`, `np.isclose`, `np.errstate(invalid="raise")` | `nan != nan` |
-| Vectorise | ufuncs `np.sin(a)`, reductions `a.mean(axis=0)`, `np.percentile(a, 99.87)` | 50–200× over a Python loop |
+| Vectorise | ufuncs `np.sin(a)`, reductions `a.mean(axis=0)`, `np.percentile(a, 99.87)` | tens to hundreds of times over a Python loop |
 | Broadcasting | compare shapes right to left; equal or 1; stretch 1s | `(3,1)` with `(1,5)` → `(3,5)` |
 | New axis | `a[:, None]`, `a[None, :]` | outer product `s[:, None] * s[None, :]` |
 | Products | `*` elementwise; `a @ b` matrix / dot; `np.cross`, `np.linalg.norm(V, axis=1)` | `(3,) @ (3,)` is a scalar |
@@ -416,7 +416,7 @@ An `int32` has 32 binary digits, one of them used for the sign, so its largest v
 :::
 
 ::: context ulp-ruler Snapping to the nearest tick
-Near Earth's radius, float32 has a tick mark every half metre. Any value in between snaps to the nearest tick, so $6\,378\,137.3$ is stored as $6\,378\,137.5$. Float64 has ticks about a billionth of a metre apart at the same size.
+Near Earth's radius, float32 has a tick mark every half meter. Any value in between snaps to the nearest tick, so $6\,378\,137.3$ is stored as $6\,378\,137.5$. Float64 has ticks about a billionth of a meter apart at the same size.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">

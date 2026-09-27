@@ -323,7 +323,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-verbatim-expectation",
       "title": "The verbatim expectation: you write the flight code",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "the verbatim expectation: implementation, validation, unit testing, and deployment of production software primarily in C++",
         "GNC engineers write flight code themselves rather than handing prototypes to a software team"
@@ -333,7 +333,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-languages-and-the-model-boundary",
       "title": "Where each language lives, and the model-to-flight-code boundary",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "Python for analysis, tooling, pipelines and test infrastructure",
         "MATLAB and Simulink as secondary skills and why the curriculum is not MATLAB-first"
@@ -343,7 +343,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-reading-someone-elses-simulation",
       "title": "Reading a simulation someone else built",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "6-DOF simulation stacks and what high fidelity actually means"
       ],
@@ -363,7 +363,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-redundancy-voting-and-fault-management",
       "title": "Redundancy, voting, and fault management",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "redundancy, voting and fault management as first-class design concerns"
       ],
@@ -372,7 +372,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-monte-carlo-dispersion-campaigns",
       "title": "Monte Carlo dispersion campaigns: what they actually prove",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "Monte Carlo dispersion campaigns across tens of thousands of CPUs and what they are used to prove"
       ],
@@ -381,7 +381,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-infrastructure-behind-the-simulations",
       "title": "Infrastructure: the stack that keeps the fleet running",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "infrastructure: Linux, Docker, Kubernetes, Ansible, Puppet, Terraform, Bazel-class build systems"
       ],
@@ -390,7 +390,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-data-discipline-telemetry-time-units-and-frames",
       "title": "Data discipline: telemetry, time, units and frames",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "Python for analysis, tooling, pipelines and test infrastructure"
       ],
@@ -399,7 +399,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-tickets-traceability-and-the-unglamorous-majority",
       "title": "Tickets, traceability, and the unglamorous majority of the work",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "continuous integration for rocket and simulation software"
       ],
@@ -408,7 +408,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-version-control-and-code-review",
       "title": "Version control, code review, and what a reviewer is checking",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "version control, code review and what production-quality means at senior level"
       ],
@@ -417,7 +417,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-what-to-practice-now",
       "title": "What to practice now, alone, that actually transfers",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "6-DOF simulation stacks and what high fidelity actually means",
         "version control, code review and what production-quality means at senior level"
@@ -429,7 +429,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-portfolio-principles",
       "title": "Portfolio principles: few, deep, and defensible",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "portfolio principles: few, deep, documented, defensible, reproducible",
         "what not to build: tutorial follow-alongs, notebooks without validation, thirty shallow repositories"
@@ -439,7 +439,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-write-up-structure",
       "title": "The write-up: structure, and the ninety-second read",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "the write-up structure: problem, model, assumptions, verification, validation, results, limitations"
       ],
@@ -448,7 +448,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-verification-toolkit",
       "title": "How you know the result is right: the verification toolkit",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "stating how you know the result is right: analytic cases, conservation checks, convergence, cross-comparison"
       ],
@@ -457,7 +457,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-anchor-a-6dof-simulation",
       "title": "Anchor A: the 6-DOF launch vehicle simulation",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "anchor project A — 6-DOF launch vehicle simulation with a real atmosphere model and dispersion campaign"
       ],
@@ -475,7 +475,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-anchor-c-quaternion-ekf",
       "title": "Anchor C: the quaternion EKF, proved consistent",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "anchor project C — multiplicative quaternion EKF fusing IMU and star tracker, with NEES and NIS consistency checks"
       ],
@@ -502,7 +502,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-hardware-adjacent-work",
       "title": "Hardware-adjacent work: meeting real sensor reality",
-      "minutes": 20,
+      "minutes": 18,
       "covers": [
         "hardware-adjacent work: a real IMU, a thrust-vector-control testbed, a balancing robot, to evidence sensor reality"
       ],
@@ -511,7 +511,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-reproducibility",
       "title": "Reproducibility: seeded, one command, pinned, CI",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "reproducibility: seeded, one-command, CI, pinned dependencies"
       ],
@@ -520,7 +520,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-licensing-and-prior-employer-ip",
       "title": "Licensing, and what to do about prior-employer IP",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "open-sourcing, licensing, and what to do about prior-employer intellectual property"
       ],
@@ -528,8 +528,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l12-feeding-the-past-project-defence",
-      "title": "How the portfolio feeds the past-project defence",
-      "minutes": 18,
+      "title": "How the portfolio feeds the past-project defense",
+      "minutes": 21,
       "covers": [
         "how the portfolio feeds the past-project presentation round"
       ],
@@ -540,7 +540,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-one-page-and-the-top-third",
       "title": "One page, reverse chronological: what goes in the top third",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "one page, reverse chronological, and what belongs in the top third"
       ],
@@ -558,8 +558,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l03-quantified-bullets",
-      "title": "Bullets that name a problem, a method, and a result",
-      "minutes": 24,
+      "title": "Bullets that name an action, a method, and a result",
+      "minutes": 25,
       "covers": [
         "quantified bullets: what you did, how, and the measured result"
       ],
@@ -567,8 +567,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l04-the-projects-section",
-      "title": "The projects section: the primary evidence, placed and labeled honestly",
-      "minutes": 17,
+      "title": "The projects section: your main evidence, placed and labeled honestly",
+      "minutes": 19,
       "covers": [
         "the projects section as the primary section for candidates without industry GNC experience"
       ],
@@ -577,7 +577,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-applicant-tracking-systems",
       "title": "Formatting so a parser reads it correctly",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "applicant tracking system parsing: no tables, no multi-column layouts, no images, standard headings, PDF"
       ],
@@ -605,7 +605,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-referrals",
       "title": "Referrals: what they do, and how to earn one",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "referrals: who can refer, how to ask, and what to give the referrer to make it easy"
       ],
@@ -614,7 +614,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-community-and-conferences",
       "title": "Community and conferences: building the presence a referral needs",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "community and conferences: AIAA and AAS Space Flight Mechanics, SmallSat, university seminars, open-source contribution"
       ],
@@ -623,7 +623,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-outreach-and-reapplying",
       "title": "LinkedIn outreach, and knowing when to reapply",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "recruiter outreach on LinkedIn done well and done badly",
         "reapplication cadence and what must change between attempts"
@@ -635,7 +635,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-shape-of-the-process",
       "title": "The shape of the process, end to end",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "overall timeline: 5 to 8 weeks, up to roughly nine touchpoints"
       ],
@@ -644,7 +644,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-recruiter-screen",
       "title": "Stage 1: the recruiter screen",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "stage 1 — recruiter screen, 20 to 30 minutes: background, motivation, ITAR confirmation"
       ],
@@ -653,7 +653,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-the-technical-phone-screen",
       "title": "Stage 2: the technical phone screen",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "stage 2 — technical phone screen, 30 minutes and sometimes 60 to 90, with a team engineer or the hiring manager"
       ],
@@ -662,7 +662,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-take-home",
       "title": "Stage 3: the take-home exercise",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "stage 3 — take-home exercise for some software and firmware roles"
       ],
@@ -671,7 +671,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-the-onsite-day",
       "title": "Stage 4: the full-day onsite",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "stage 4 — full-day onsite: 5 to 7 back-to-back interviews, often 8+ hours, sometimes with a facility tour"
       ],
@@ -680,7 +680,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-rounds-on-what-you-have-built",
       "title": "The onsite rounds on what you have already built",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "onsite composition: past-project presentation, 2 to 3 coding rounds, 1 to 2 systems and architecture rounds, 1+ domain-knowledge round, abstract problem solving, physics puzzles and Fermi estimation"
       ],
@@ -689,7 +689,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-rounds-on-how-you-think",
       "title": "The onsite rounds on how you think",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "onsite composition: past-project presentation, 2 to 3 coding rounds, 1 to 2 systems and architecture rounds, 1+ domain-knowledge round, abstract problem solving, physics puzzles and Fermi estimation"
       ],
@@ -697,8 +697,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l08-behavioural-and-culture",
-      "title": "Stage 5: behavioural and culture",
-      "minutes": 18,
+      "title": "Stage 5: behavioral and culture",
+      "minutes": 19,
       "covers": [
         "stage 5 — behavioural and culture, using STAR"
       ],
@@ -707,7 +707,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-reading-the-difficulty-rating",
       "title": "What a 2.8 out of 5 difficulty rating indicates",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "Glassdoor difficulty rating of 2.8 out of 5 for GNC Engineer, and what that really indicates"
       ],
@@ -716,7 +716,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-stamina-and-logistics",
       "title": "Logistics and stamina for an eight-hour day",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "logistics and stamina: sleep, food, water, breaks, and how to ask for one"
       ],
@@ -725,7 +725,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-what-to-ask-at-each-stage",
       "title": "What to ask at each stage, and what not to ask yet",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "what to ask at each stage, and what not to ask yet"
       ],
@@ -734,7 +734,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-debrief-and-decision",
       "title": "The debrief, and how mixed signals get weighed",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "debrief and decision; how a hiring committee weighs mixed signals"
       ],
@@ -743,7 +743,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-rejection-and-the-path-back",
       "title": "Rejection, and the path back in",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "handling rejection and the path back in"
       ],
@@ -754,7 +754,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-recruiter-screen",
       "title": "What the recruiter screen is actually confirming",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "recruiter screen structure and the questions actually asked: background, motivation, export-control eligibility, location and relocation, timeline, compensation expectations"
       ],
@@ -763,7 +763,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-ninety-second-narrative",
       "title": "The ninety-second background narrative",
-      "minutes": 23,
+      "minutes": 22,
       "covers": [
         "the 90-second background narrative and how to end it on a specific role family"
       ],
@@ -781,7 +781,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-technical-phone-screen",
       "title": "The technical phone screen: format and frame",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "the technical phone screen: 30 minutes, an engineer on the team or the hiring manager"
       ],
@@ -790,7 +790,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-resume-depth",
       "title": "Three questions deep on every line",
-      "minutes": 27,
+      "minutes": 24,
       "covers": [
         "resume depth: expect to be asked to go deeper on any line you wrote"
       ],
@@ -826,7 +826,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-frequency-domain-out-loud",
       "title": "Phase margin, explained out loud",
-      "minutes": 23,
+      "minutes": 22,
       "covers": [
         "reported topics: PD control, orbit determination, frequency-domain analysis"
       ],
@@ -835,7 +835,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-orbit-determination-out-loud",
       "title": "Orbit determination, out loud",
-      "minutes": 27,
+      "minutes": 24,
       "covers": [
         "reported topics: PD control, orbit determination, frequency-domain analysis"
       ],
@@ -854,7 +854,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-questions-and-follow-up",
       "title": "Questions to ask, and what happens after",
-      "minutes": 28,
+      "minutes": 24,
       "covers": [
         "questions to ask the interviewing engineer",
         "follow-up etiquette and timelines"
@@ -866,7 +866,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-format-and-the-four-axes",
       "title": "The format, and what the panel is actually scoring",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "the format: submit roughly five topics, they choose one, 10 to 20 minutes to a panel of 5 to 10 engineers, then extensive Q and A",
         "the four evaluation axes: technical depth, communication clarity, simplicity of design approach, and defending engineering decisions under direct questioning"
@@ -876,7 +876,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-choosing-the-five",
       "title": "Choosing five topics you would be content to be handed",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "choosing five topics so that every one is defensible and each shows a different competency",
         "the trap of listing a project you cannot defend in depth"
@@ -886,7 +886,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-ip-and-export-hygiene",
       "title": "What is yours to present, and what is not",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "intellectual property and export-control hygiene about a previous employer’s work"
       ],
@@ -895,7 +895,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-talk-structure-and-the-clock",
       "title": "Seven parts, and what each one gets of the clock",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "talk structure: problem, why it was hard, approach, the key decision and the alternatives rejected, verification, result, what you would do differently"
       ],
@@ -904,7 +904,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-assertion-evidence-slides",
       "title": "Assertion-evidence: the headline makes the claim",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "assertion-evidence slide design: a sentence headline that states the claim, a figure that proves it, no bullet dumps"
       ],
@@ -913,7 +913,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-slide-count-and-the-carrying-diagram",
       "title": "How many slides, and the one diagram that carries the talk",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "how many slides for 10 to 20 minutes, and why fewer is safer"
       ],
@@ -922,7 +922,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-the-backup-appendix",
       "title": "The appendix that makes a hard question look expected",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "the backup-slide appendix for anticipated questions"
       ],
@@ -931,7 +931,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-the-room-of-eight",
       "title": "A room of eight: address the asker, return to the room",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "presenting to a panel of 5 to 10: address the asker, then return to the room"
       ],
@@ -949,7 +949,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-saying-i-do-not-know",
       "title": "I do not know — and here is how I would find out",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "saying I do not know, here is how I would find out"
       ],
@@ -1336,7 +1336,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-orthographic-projection",
       "title": "Looking at a part straight on",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "Orthographic projection; third-angle (US) versus first-angle (ISO) and the symbol that identifies which"
       ],
@@ -1345,7 +1345,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-views-on-a-sheet",
       "title": "The views on a sheet",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Views: front, top, right, auxiliary, section (full, half, offset, broken-out), detail, isometric"
       ],
@@ -1354,7 +1354,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-lines-and-scales",
       "title": "The lines on a drawing, and its scale",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "Line types: visible, hidden, centre, phantom, section; line weights",
         "Scales and their notation"
@@ -1394,7 +1394,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-tolerance-stack-up",
       "title": "Tolerance stack-up — worst case and root-sum-square",
-      "minutes": 23,
+      "minutes": 24,
       "covers": [
         "Tolerance stack-up: worst case versus root-sum-square"
       ],
@@ -1409,6 +1409,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Fastener and thread callouts; materials and specifications"
       ],
       "file": "cod_cad_01_drawings/08-finishes-welds-and-fasteners.md"
+    },
+    {
+      "id": "l09-standards-mbd-and-export-control",
+      "title": "Drawing standards, model-based definition and export control",
+      "minutes": 20,
+      "covers": [
+        "ASME Y14.100 drawing practices, Y14.24 drawing types, Y14.41 model-based definition",
+        "Export-control markings on aerospace drawings"
+      ],
+      "file": "cod_cad_01_drawings/09-standards-mbd-and-export-control.md"
     }
   ],
   "cod_cad_02_gdt": [
@@ -1430,13 +1440,230 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Datums, datum features, the datum reference frame, the 3-2-1 rule and degrees of freedom"
       ],
       "file": "cod_cad_02_gdt/02-datums-and-the-3-2-1-rule.md"
+    },
+    {
+      "id": "l03-datum-targets-and-precedence",
+      "title": "Datum targets and datum precedence",
+      "minutes": 20,
+      "covers": [
+        "Datum targets and datum precedence"
+      ],
+      "file": "cod_cad_02_gdt/03-datum-targets-and-precedence.md"
+    },
+    {
+      "id": "l04-form-controls",
+      "title": "Form: flat, straight, round and cylindrical",
+      "minutes": 20,
+      "covers": [
+        "Form: flatness, straightness, circularity, cylindricity"
+      ],
+      "file": "cod_cad_02_gdt/04-form-controls.md"
+    },
+    {
+      "id": "l05-orientation-controls",
+      "title": "Orientation: square, parallel and at an angle",
+      "minutes": 18,
+      "covers": [
+        "Orientation: perpendicularity, angularity, parallelism"
+      ],
+      "file": "cod_cad_02_gdt/05-orientation-controls.md"
+    },
+    {
+      "id": "l06-position-and-location",
+      "title": "Location: position, concentricity and symmetry",
+      "minutes": 22,
+      "covers": [
+        "Location: position, concentricity, symmetry"
+      ],
+      "file": "cod_cad_02_gdt/06-position-and-location.md"
+    },
+    {
+      "id": "l07-material-condition-and-bonus",
+      "title": "MMC, LMC, RFS and bonus tolerance",
+      "minutes": 20,
+      "covers": [
+        "Material condition modifiers MMC, LMC and RFS; bonus tolerance"
+      ],
+      "file": "cod_cad_02_gdt/07-material-condition-and-bonus.md"
+    },
+    {
+      "id": "l08-virtual-condition-composite-projected",
+      "title": "Virtual condition, composite position and projected zones",
+      "minutes": 22,
+      "covers": [
+        "Virtual condition; composite position tolerance; projected tolerance zone"
+      ],
+      "file": "cod_cad_02_gdt/08-virtual-condition-composite-projected.md"
+    },
+    {
+      "id": "l09-profile-and-runout",
+      "title": "Profile and runout",
+      "minutes": 22,
+      "covers": [
+        "Profile of a line and profile of a surface, increasingly dominant in aerostructures",
+        "Runout: circular and total"
+      ],
+      "file": "cod_cad_02_gdt/09-profile-and-runout.md"
+    },
+    {
+      "id": "l10-free-state-and-geometric-stack-ups",
+      "title": "Free state, geometric stack-ups and the error budget",
+      "minutes": 24,
+      "covers": [
+        "Free-state variation for thin-wall aerospace parts",
+        "Tolerance stack-up with geometric controls"
+      ],
+      "file": "cod_cad_02_gdt/10-free-state-and-geometric-stack-ups.md"
+    },
+    {
+      "id": "l11-cmm-inspection-and-pmi",
+      "title": "Measuring GD&T — CMMs, gauges and PMI",
+      "minutes": 22,
+      "covers": [
+        "CMM inspection and how GD&T maps onto measurement",
+        "PMI annotation in a model-based-definition workflow"
+      ],
+      "file": "cod_cad_02_gdt/11-cmm-inspection-and-pmi.md"
+    }
+  ],
+  "cod_cad_03_tools": [
+    {
+      "id": "l01-the-autocad-command-line",
+      "title": "The AutoCAD command line and exact points",
+      "minutes": 21,
+      "covers": [
+        "AutoCAD: the command line as the real interface; absolute, relative and polar coordinate entry",
+        "Object snaps, ortho and polar tracking"
+      ],
+      "file": "cod_cad_03_tools/01-the-autocad-command-line.md"
+    },
+    {
+      "id": "l02-draw-and-modify",
+      "title": "Drawing and editing shapes",
+      "minutes": 21,
+      "covers": [
+        "Draw and modify: line, polyline, arc, offset, trim, extend, fillet, array, stretch"
+      ],
+      "file": "cod_cad_03_tools/02-draw-and-modify.md"
+    },
+    {
+      "id": "l03-layers",
+      "title": "Layers, the drafter's core discipline",
+      "minutes": 19,
+      "covers": [
+        "Layers as the core discipline: name, colour, linetype, lineweight, plot state, freeze versus off"
+      ],
+      "file": "cod_cad_03_tools/03-layers.md"
+    },
+    {
+      "id": "l04-blocks-and-xrefs",
+      "title": "Blocks, attributes and external references",
+      "minutes": 24,
+      "covers": [
+        "Blocks, attributes, dynamic blocks and external references"
+      ],
+      "file": "cod_cad_03_tools/04-blocks-and-xrefs.md"
+    },
+    {
+      "id": "l05-annotation-and-paper-space",
+      "title": "Annotation, paper space and plotting",
+      "minutes": 22,
+      "covers": [
+        "Annotation: text styles, dimension styles, multileaders, annotative scaling",
+        "Model space versus paper space; layouts, viewports and viewport scale; plot styles; sheet sets"
+      ],
+      "file": "cod_cad_03_tools/05-annotation-and-paper-space.md"
+    },
+    {
+      "id": "l06-templates-formats-and-where-autocad-lives",
+      "title": "Templates, file formats and where AutoCAD lives",
+      "minutes": 21,
+      "covers": [
+        "Templates, standards files, DWG versus DXF",
+        "Where AutoCAD genuinely lives in aerospace: facility and site layouts, ground support equipment, test-stand drawings, electrical and harness schematics, P&IDs, tooling layouts"
+      ],
+      "file": "cod_cad_03_tools/06-templates-formats-and-where-autocad-lives.md"
+    },
+    {
+      "id": "l07-parametric-sketches",
+      "title": "Parametric sketches and constraints",
+      "minutes": 21,
+      "covers": [
+        "Parametric feature-based modelling: sketches, constraints, fully defined sketches"
+      ],
+      "file": "cod_cad_03_tools/07-parametric-sketches.md"
+    },
+    {
+      "id": "l08-features",
+      "title": "Features that turn sketches into parts",
+      "minutes": 20,
+      "covers": [
+        "Features: extrude, revolve, sweep, loft, fillet, shell, rib, draft, hole wizard, patterns, configurations"
+      ],
+      "file": "cod_cad_03_tools/08-features.md"
+    },
+    {
+      "id": "l09-the-feature-tree-and-design-intent",
+      "title": "The feature tree and design intent",
+      "minutes": 21,
+      "covers": [
+        "The feature tree, parent-child relationships, design intent, robust versus fragile modelling"
+      ],
+      "file": "cod_cad_03_tools/09-the-feature-tree-and-design-intent.md"
+    },
+    {
+      "id": "l10-assemblies",
+      "title": "Assemblies, mates and clash checks",
+      "minutes": 23,
+      "covers": [
+        "Assemblies: mates, sub-assemblies, in-context design and its dangers, interference detection"
+      ],
+      "file": "cod_cad_03_tools/10-assemblies.md"
+    },
+    {
+      "id": "l11-mass-properties",
+      "title": "Mass properties for a 6-DOF simulation",
+      "minutes": 24,
+      "covers": [
+        "Mass properties: where the mass, centre of gravity and inertia tensor for a 6-DOF simulation come from"
+      ],
+      "file": "cod_cad_03_tools/11-mass-properties.md"
+    },
+    {
+      "id": "l12-drawings-pmi-and-special-modelling",
+      "title": "Drawings from models, PMI, sheet metal and the outer mould line",
+      "minutes": 24,
+      "covers": [
+        "Drawings from models; PMI and model-based definition",
+        "Sheet metal, weldments and surfacing (awareness); outer mould line"
+      ],
+      "file": "cod_cad_03_tools/12-drawings-pmi-and-special-modelling.md"
+    },
+    {
+      "id": "l13-interchange-and-the-cad-landscape",
+      "title": "Moving models between programs, and who uses what",
+      "minutes": 22,
+      "covers": [
+        "Interchange formats: STEP, IGES, Parasolid, JT, and translation fidelity",
+        "The landscape: NX plus Teamcenter at SpaceX; CATIA at Boeing and Airbus; Creo in defence; SolidWorks at suppliers and startups; Onshape and Fusion as cloud-native newcomers"
+      ],
+      "file": "cod_cad_03_tools/13-interchange-and-the-cad-landscape.md"
+    },
+    {
+      "id": "l14-plm-revisions-and-effectivity",
+      "title": "Part numbers, revisions and which version is real",
+      "minutes": 20,
+      "covers": [
+        "PLM concepts: part numbers, revisions versus versions, effectivity, ECO and ECR, as-designed versus as-built versus as-flown"
+      ],
+      "file": "cod_cad_03_tools/14-plm-revisions-and-effectivity.md"
     }
   ],
   "cod_cpp_01_basics": [
     {
       "id": "l01-the-build-pipeline",
       "title": "From source to executable: the four build stages",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "Preprocess, compile, assemble, link: what each stage consumes and emits",
         "g++ and clang++ invocation; -Wall -Wextra -Wpedantic -Werror; -g; -O0 to -O3; -std=c++20"
@@ -1446,7 +1673,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-translation-units-and-the-odr",
       "title": "Translation units, headers and the one-definition rule",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Translation units, headers vs sources, include guards and pragma once",
         "Declaration vs definition, the one-definition rule, inline, internal linkage"
@@ -1456,7 +1683,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-reading-linker-errors-and-make",
       "title": "Reading a linker error, and a Makefile that prevents them",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "Reading a linker error: undefined reference, multiple definition"
       ],
@@ -1465,7 +1692,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-fundamental-and-fixed-width-types",
       "title": "Fundamental types, cstdint and size_t",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Fundamental types; fixed-width types from cstdint; size_t"
       ],
@@ -1474,7 +1701,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-promotion-conversion-and-undefined-behaviour",
       "title": "Integer promotion, signed versus unsigned, and undefined behaviour",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "Integer promotion, signed/unsigned pitfalls, signed overflow as undefined behaviour"
       ],
@@ -1483,7 +1710,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-values-references-and-python-names",
       "title": "Values, references, and what a variable really is",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "Values, references and the difference from Python names"
       ],
@@ -1492,7 +1719,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-const-constexpr-consteval-auto",
       "title": "const, constexpr, consteval and auto",
-      "minutes": 16,
+      "minutes": 22,
       "covers": [
         "const, constexpr, consteval, auto"
       ],
@@ -1501,7 +1728,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-functions-overloading-default-arguments",
       "title": "Functions, overloading and default arguments",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "Functions, overloading, default arguments"
       ],
@@ -1510,7 +1737,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-arrays-std-array-and-vector",
       "title": "Raw arrays, std::array, std::vector and range-based for",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "Arrays vs std::array vs std::vector; range-based for"
       ],
@@ -1519,7 +1746,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-enums-structs-classes-namespaces",
       "title": "enum class, struct and class, access and namespaces",
-      "minutes": 17,
+      "minutes": 22,
       "covers": [
         "enum class; struct and class; access specifiers; namespaces"
       ],
@@ -1528,7 +1755,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-scope-lifetime-and-storage",
       "title": "Scope, lifetime, and where objects live",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "Scope, lifetime, and stack vs heap vs static storage"
       ],
@@ -1537,7 +1764,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-strings-and-formatted-output",
       "title": "Strings and formatted output",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "std::string vs const char*; iostream and std::format"
       ],
@@ -1546,7 +1773,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-assert-and-static-assert",
       "title": "assert and static_assert",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "assert and static_assert"
       ],
@@ -1557,7 +1784,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-object-model-and-storage",
       "title": "The object model: storage, lifetime, and the address of a thing",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "Storage duration: automatic, static, thread-local, dynamic; lifetime and initialisation order"
       ],
@@ -1566,7 +1793,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-pointers",
       "title": "Pointers: holding an address, and the four places const can go",
-      "minutes": 20,
+      "minutes": 24,
       "covers": [
         "Pointers: dereference, arithmetic, nullptr, pointer-to-const vs const pointer, void*, function pointers"
       ],
@@ -1575,7 +1802,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-pointer-arithmetic-and-decay",
       "title": "Pointer arithmetic, and the length an array loses at a function boundary",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "Pointers: dereference, arithmetic, nullptr, pointer-to-const vs const pointer, void*, function pointers",
         "Array-to-pointer decay and why sizeof breaks at a function boundary"
@@ -1585,7 +1812,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-references-and-temporaries",
       "title": "References, value categories, and the lifetime of a temporary",
-      "minutes": 20,
+      "minutes": 23,
       "covers": [
         "References: lvalue and rvalue, binding rules, lifetime extension of temporaries"
       ],
@@ -1594,7 +1821,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-the-stack",
       "title": "The stack: frames, overflow, and why flight code does not recurse",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "The stack: frames, stack overflow, why deep recursion is banned in flight code"
       ],
@@ -1603,7 +1830,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-new-delete-and-placement-new",
       "title": "new and delete, the array forms, and placement new",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "new/delete, new[]/delete[], placement new"
       ],
@@ -1612,7 +1839,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-the-heap",
       "title": "The heap: what the allocator does, how long it takes, and how it fragments",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "The heap: fragmentation, non-deterministic allocation time, allocator behaviour"
       ],
@@ -1621,7 +1848,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-the-five-memory-bugs",
       "title": "Five ways to use memory you do not own",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "Dangling pointers, use-after-free, double free, buffer overrun, uninitialised reads"
       ],
@@ -1630,7 +1857,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-addresssanitizer",
       "title": "AddressSanitizer: how it works, how to read it, what it misses",
-      "minutes": 22,
+      "minutes": 23,
       "covers": [
         "AddressSanitizer as the daily tool for this material",
         "Dangling pointers, use-after-free, double free, buffer overrun, uninitialised reads"
@@ -1640,7 +1867,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-alignment-and-struct-layout",
       "title": "Alignment, padding, and the real size of a struct",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "Alignment, alignas, struct padding, offsetof, packing and wire formats"
       ],
@@ -1649,7 +1876,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-endianness-and-serialising-telemetry",
       "title": "Endianness and putting telemetry on the wire",
-      "minutes": 21,
+      "minutes": 25,
       "covers": [
         "Endianness and serialising telemetry"
       ],
@@ -1658,7 +1885,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-strict-aliasing-and-volatile",
       "title": "Strict aliasing, bit_cast, and what volatile really promises",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Strict aliasing; memcpy and std::bit_cast as the legal reinterpretation",
         "volatile: what it does (memory-mapped I/O) and does not do (threads)"
@@ -1668,7 +1895,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-value-semantics-and-the-rules",
       "title": "Value semantics, reference semantics, and the rule of zero",
-      "minutes": 21,
+      "minutes": 26,
       "covers": [
         "Value semantics vs reference semantics; the rule of zero, three and five"
       ],
@@ -1677,11 +1904,1100 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-smart-pointers",
       "title": "unique_ptr, shared_ptr, and why sharing is not the default",
-      "minutes": 25,
+      "minutes": 28,
       "covers": [
         "unique_ptr, make_unique, shared_ptr and its control block, weak_ptr and cycles"
       ],
       "file": "cod_cpp_02_memory/14-smart-pointers.md"
+    }
+  ],
+  "cod_cpp_03_raii": [
+    {
+      "id": "l01-constructors",
+      "title": "Constructors, and the explicit keyword",
+      "minutes": 20,
+      "covers": [
+        "Constructors: default, parameterised, delegating, converting, explicit"
+      ],
+      "file": "cod_cpp_03_raii/01-constructors.md"
+    },
+    {
+      "id": "l02-member-initialiser-lists",
+      "title": "Member initialiser lists and initialisation order",
+      "minutes": 19,
+      "covers": [
+        "Member initialiser lists and the actual initialisation order (declaration order, not list order)"
+      ],
+      "file": "cod_cpp_03_raii/02-member-initialiser-lists.md"
+    },
+    {
+      "id": "l03-destructors-and-raii",
+      "title": "Destructors and RAII",
+      "minutes": 24,
+      "covers": [
+        "Destructors; virtual destructors for polymorphic bases"
+      ],
+      "file": "cod_cpp_03_raii/03-destructors-and-raii.md"
+    },
+    {
+      "id": "l04-copying-deep-and-shallow",
+      "title": "Copying objects, deep and shallow",
+      "minutes": 25,
+      "covers": [
+        "Copy constructor and copy assignment; deep versus shallow"
+      ],
+      "file": "cod_cpp_03_raii/04-copying-deep-and-shallow.md"
+    },
+    {
+      "id": "l05-move-semantics",
+      "title": "Moving objects instead of copying them",
+      "minutes": 24,
+      "covers": [
+        "Move constructor and move assignment; noexcept on moves and why containers check it"
+      ],
+      "file": "cod_cpp_03_raii/05-move-semantics.md"
+    },
+    {
+      "id": "l06-default-delete-and-generation-rules",
+      "title": "What the compiler writes for you, and how to say yes or no",
+      "minutes": 21,
+      "covers": [
+        "= default and = delete; the special-member generation rules"
+      ],
+      "file": "cod_cpp_03_raii/06-default-delete-and-generation-rules.md"
+    },
+    {
+      "id": "l07-rule-of-five-and-zero",
+      "title": "The rule of five, the rule of zero, and copy-and-swap",
+      "minutes": 24,
+      "covers": [
+        "Rule of five and rule of zero; copy-and-swap"
+      ],
+      "file": "cod_cpp_03_raii/07-rule-of-five-and-zero.md"
+    },
+    {
+      "id": "l08-const-static-and-friend",
+      "title": "const member functions, static members and friends",
+      "minutes": 22,
+      "covers": [
+        "const member functions and mutable",
+        "static members; friend functions"
+      ],
+      "file": "cod_cpp_03_raii/08-const-static-and-friend.md"
+    },
+    {
+      "id": "l09-operator-overloading",
+      "title": "Operator overloading",
+      "minutes": 22,
+      "covers": [
+        "Operator overloading: arithmetic, comparison and the spaceship operator, subscript, call, stream"
+      ],
+      "file": "cod_cpp_03_raii/09-operator-overloading.md"
+    },
+    {
+      "id": "l10-inheritance-and-slicing",
+      "title": "Inheritance, virtual functions and object slicing",
+      "minutes": 25,
+      "covers": [
+        "Inheritance, virtual, override, final; pure virtual and abstract classes",
+        "Object slicing and how to prevent it"
+      ],
+      "file": "cod_cpp_03_raii/10-inheritance-and-slicing.md"
+    },
+    {
+      "id": "l11-vtables-and-crtp",
+      "title": "How virtual calls work, what they cost, and CRTP",
+      "minutes": 25,
+      "covers": [
+        "vtables and the real cost of dynamic dispatch",
+        "Composition over inheritance; CRTP for static polymorphism"
+      ],
+      "file": "cod_cpp_03_raii/11-vtables-and-crtp.md"
+    },
+    {
+      "id": "l12-variant-visit-and-pimpl",
+      "title": "std::variant for fixed sets of types, and PIMPL for hiding a class's insides",
+      "minutes": 22,
+      "covers": [
+        "std::variant plus std::visit as a closed-set alternative to virtual dispatch",
+        "PIMPL for compilation firewalls"
+      ],
+      "file": "cod_cpp_03_raii/12-variant-visit-and-pimpl.md"
+    }
+  ],
+  "cod_cpp_04_stl": [
+    {
+      "id": "l01-sequence-containers",
+      "title": "Sequence containers: array, vector, deque and list",
+      "minutes": 24,
+      "covers": [
+        "array, vector (size vs capacity, reserve, iterator invalidation), deque, list"
+      ],
+      "file": "cod_cpp_04_stl/01-sequence-containers.md"
+    },
+    {
+      "id": "l02-map-and-set",
+      "title": "Ordered containers: map and set",
+      "minutes": 23,
+      "covers": [
+        "map and set (red-black tree, ordered, node-based, cache-hostile)"
+      ],
+      "file": "cod_cpp_04_stl/02-map-and-set.md"
+    },
+    {
+      "id": "l03-unordered-containers",
+      "title": "Hash tables: unordered_map and unordered_set",
+      "minutes": 24,
+      "covers": [
+        "unordered_map and unordered_set: hashing, load factor, worst case"
+      ],
+      "file": "cod_cpp_04_stl/03-unordered-containers.md"
+    },
+    {
+      "id": "l04-span-and-string-view",
+      "title": "Views - std::span and std::string_view",
+      "minutes": 24,
+      "covers": [
+        "span and string_view: non-owning views, and the dangling-view hazard"
+      ],
+      "file": "cod_cpp_04_stl/04-span-and-string-view.md"
+    },
+    {
+      "id": "l05-optional-variant-tuple-bitset",
+      "title": "Maybe, one-of, several-at-once, and flags - optional, variant, tuple, pair and bitset",
+      "minutes": 22,
+      "covers": [
+        "optional, variant, tuple, pair, bitset"
+      ],
+      "file": "cod_cpp_04_stl/05-optional-variant-tuple-bitset.md"
+    },
+    {
+      "id": "l06-iterators-and-invalidation",
+      "title": "Iterators, and when they stop being safe",
+      "minutes": 24,
+      "covers": [
+        "Iterators and their categories; per-container invalidation rules"
+      ],
+      "file": "cod_cpp_04_stl/06-iterators-and-invalidation.md"
+    },
+    {
+      "id": "l07-sorting-and-searching",
+      "title": "Sorting and searching",
+      "minutes": 24,
+      "covers": [
+        "Algorithms: sort, stable_sort, nth_element, lower_bound, binary_search, find_if"
+      ],
+      "file": "cod_cpp_04_stl/07-sorting-and-searching.md"
+    },
+    {
+      "id": "l08-transform-and-fold",
+      "title": "Transforming, combining and checking ranges",
+      "minutes": 23,
+      "covers": [
+        "transform, accumulate, reduce, copy_if, all_of/any_of/none_of, clamp, rotate, unique",
+        "numeric: iota, inner_product, partial_sum"
+      ],
+      "file": "cod_cpp_04_stl/08-transform-and-fold.md"
+    },
+    {
+      "id": "l09-erase-remove-and-parallel",
+      "title": "Removing elements, and running algorithms in parallel",
+      "minutes": 23,
+      "covers": [
+        "The erase-remove idiom and C++20 std::erase_if",
+        "Execution policies and parallel algorithms"
+      ],
+      "file": "cod_cpp_04_stl/09-erase-remove-and-parallel.md"
+    },
+    {
+      "id": "l10-lambdas",
+      "title": "Lambdas: small functions that carry what they need",
+      "minutes": 24,
+      "covers": [
+        "Lambdas: capture by value and reference, init-capture, mutable, generic lambdas"
+      ],
+      "file": "cod_cpp_04_stl/10-lambdas.md"
+    },
+    {
+      "id": "l11-std-function-and-callables",
+      "title": "std::function, templates and function pointers: three ways to pass a callable",
+      "minutes": 21,
+      "covers": [
+        "std::function versus templates versus function pointers, and its allocation"
+      ],
+      "file": "cod_cpp_04_stl/11-std-function-and-callables.md"
+    },
+    {
+      "id": "l12-chrono-and-random",
+      "title": "Clocks and random numbers you can trust",
+      "minutes": 24,
+      "covers": [
+        "chrono: steady_clock for intervals, system_clock for wall time, never mixed",
+        "random: engines, distributions, reproducible seeding for Monte Carlo"
+      ],
+      "file": "cod_cpp_04_stl/12-chrono-and-random.md"
+    },
+    {
+      "id": "l13-ranges-and-views",
+      "title": "Ranges and views",
+      "minutes": 26,
+      "covers": [
+        "C++20 ranges and views"
+      ],
+      "file": "cod_cpp_04_stl/13-ranges-and-views.md"
+    },
+    {
+      "id": "l14-error-handling",
+      "title": "Error handling: exceptions, error codes and expected",
+      "minutes": 28,
+      "covers": [
+        "Error handling: exceptions, error_code, expected, and why flight code disables exceptions"
+      ],
+      "file": "cod_cpp_04_stl/14-error-handling.md"
+    }
+  ],
+  "cod_cpp_05_templates": [
+    {
+      "id": "l01-function-and-class-templates",
+      "title": "Function and class templates",
+      "minutes": 24,
+      "covers": [
+        "Function and class templates; argument deduction; explicit and partial specialisation"
+      ],
+      "file": "cod_cpp_05_templates/01-function-and-class-templates.md"
+    },
+    {
+      "id": "l02-non-type-template-parameters",
+      "title": "Numbers as template parameters",
+      "minutes": 23,
+      "covers": [
+        "Non-type template parameters: the key to Matrix<double,3,3>"
+      ],
+      "file": "cod_cpp_05_templates/02-non-type-template-parameters.md"
+    },
+    {
+      "id": "l03-variadic-templates",
+      "title": "Templates that take any number of arguments",
+      "minutes": 18,
+      "covers": [
+        "Variadic templates, parameter packs, fold expressions"
+      ],
+      "file": "cod_cpp_05_templates/03-variadic-templates.md"
+    },
+    {
+      "id": "l04-dependent-names-and-lookup",
+      "title": "Dependent names: typename, template, and two-phase lookup",
+      "minutes": 26,
+      "covers": [
+        "typename vs class; dependent names and the typename/template disambiguators",
+        "Two-phase name lookup"
+      ],
+      "file": "cod_cpp_05_templates/04-dependent-names-and-lookup.md"
+    },
+    {
+      "id": "l05-type-traits",
+      "title": "Type traits: asking the compiler questions about types",
+      "minutes": 24,
+      "covers": [
+        "Type traits: is_same, is_floating_point, conditional, decay, remove_cvref"
+      ],
+      "file": "cod_cpp_05_templates/05-type-traits.md"
+    },
+    {
+      "id": "l06-sfinae-and-concepts",
+      "title": "SFINAE, enable_if and concepts: putting rules on a template",
+      "minutes": 28,
+      "covers": [
+        "SFINAE and enable_if, and the C++20 replacement: concepts and requires"
+      ],
+      "file": "cod_cpp_05_templates/06-sfinae-and-concepts.md"
+    },
+    {
+      "id": "l07-compile-time-computation",
+      "title": "Computing before the program runs, and if constexpr",
+      "minutes": 24,
+      "covers": [
+        "constexpr functions, consteval, constinit, compile-time computation",
+        "if constexpr for compile-time branching"
+      ],
+      "file": "cod_cpp_05_templates/07-compile-time-computation.md"
+    },
+    {
+      "id": "l08-crtp-and-policies",
+      "title": "CRTP mixins, deducing this, and policy-based design",
+      "minutes": 21,
+      "covers": [
+        "CRTP revisited for static polymorphism",
+        "Policy-based design and when it beats inheritance"
+      ],
+      "file": "cod_cpp_05_templates/08-crtp-and-policies.md"
+    },
+    {
+      "id": "l09-expression-templates",
+      "title": "Expression templates and lazy evaluation",
+      "minutes": 24,
+      "covers": [
+        "Expression templates and lazy evaluation; how Eigen removes temporaries"
+      ],
+      "file": "cod_cpp_05_templates/09-expression-templates.md"
+    },
+    {
+      "id": "l10-build-cost-and-template-errors",
+      "title": "Build cost and reading template errors",
+      "minutes": 24,
+      "covers": [
+        "Template instantiation cost, build-time blow-up, extern template",
+        "Reading a template error message without despair"
+      ],
+      "file": "cod_cpp_05_templates/10-build-cost-and-template-errors.md"
+    }
+  ],
+  "cod_cpp_06_modern": [
+    {
+      "id": "l01-cpp11",
+      "title": "C++11: the release that made modern C++",
+      "minutes": 21,
+      "covers": [
+        "C++11: auto, range-for, lambdas, move semantics, nullptr, enum class, constexpr, smart pointers, thread, override/final, std::array, chrono"
+      ],
+      "file": "cod_cpp_06_modern/01-cpp11.md"
+    },
+    {
+      "id": "l02-uniform-initialisation",
+      "title": "Brace initialisation and the initializer_list trap",
+      "minutes": 22,
+      "covers": [
+        "Uniform initialisation and the initializer_list gotcha"
+      ],
+      "file": "cod_cpp_06_modern/02-uniform-initialisation.md"
+    },
+    {
+      "id": "l03-cpp14",
+      "title": "C++14: finishing what C++11 started",
+      "minutes": 23,
+      "covers": [
+        "C++14: generic lambdas, return type deduction, make_unique, variable templates"
+      ],
+      "file": "cod_cpp_06_modern/03-cpp14.md"
+    },
+    {
+      "id": "l04-cpp17",
+      "title": "C++17: the everyday upgrades",
+      "minutes": 21,
+      "covers": [
+        "C++17: structured bindings, if/switch init statements, if constexpr, fold expressions, optional/variant/any, string_view, filesystem, parallel algorithms, guaranteed copy elision, CTAD"
+      ],
+      "file": "cod_cpp_06_modern/04-cpp17.md"
+    },
+    {
+      "id": "l05-guaranteed-copy-elision",
+      "title": "Returning big objects without copying them",
+      "minutes": 22,
+      "covers": [
+        "Guaranteed copy elision and what it means for returning big objects"
+      ],
+      "file": "cod_cpp_06_modern/05-guaranteed-copy-elision.md"
+    },
+    {
+      "id": "l06-cpp20",
+      "title": "C++20: the big update",
+      "minutes": 20,
+      "covers": [
+        "C++20: concepts, ranges, span, format, three-way comparison, designated initialisers, constinit/consteval, modules, coroutines, atomic_ref"
+      ],
+      "file": "cod_cpp_06_modern/06-cpp20.md"
+    },
+    {
+      "id": "l07-modules-and-coroutines",
+      "title": "Modules and coroutines, and why flight code waits",
+      "minutes": 24,
+      "covers": [
+        "Why modules adoption is slow and what it will change",
+        "Why coroutines are rare in flight code"
+      ],
+      "file": "cod_cpp_06_modern/07-modules-and-coroutines.md"
+    },
+    {
+      "id": "l08-cpp23",
+      "title": "C++23: expected, mdspan and print",
+      "minutes": 22,
+      "covers": [
+        "C++23 highlights: expected, mdspan, print"
+      ],
+      "file": "cod_cpp_06_modern/08-cpp23.md"
+    },
+    {
+      "id": "l09-the-flight-subset",
+      "title": "The flight subset of C++",
+      "minutes": 22,
+      "covers": [
+        "The flight subset: typically C++11/14/17 core, no exceptions, no RTTI, no dynamic allocation after init, restricted standard library"
+      ],
+      "file": "cod_cpp_06_modern/09-the-flight-subset.md"
+    },
+    {
+      "id": "l10-modernising-legacy-code",
+      "title": "Modernising old C++ code safely",
+      "minutes": 19,
+      "covers": [
+        "Modernising legacy code: what to change first and how to justify each change"
+      ],
+      "file": "cod_cpp_06_modern/10-modernising-legacy-code.md"
+    }
+  ],
+  "cod_cpp_07_concurrency": [
+    {
+      "id": "l01-threads",
+      "title": "Processes and threads",
+      "minutes": 27,
+      "covers": [
+        "Processes vs threads; std::thread and jthread; join and detach"
+      ],
+      "file": "cod_cpp_07_concurrency/01-threads.md"
+    },
+    {
+      "id": "l02-data-races",
+      "title": "Data races",
+      "minutes": 26,
+      "covers": [
+        "Data races as undefined behaviour, not merely a wrong answer"
+      ],
+      "file": "cod_cpp_07_concurrency/02-data-races.md"
+    },
+    {
+      "id": "l03-mutexes-and-locks",
+      "title": "Mutexes and lock guards",
+      "minutes": 28,
+      "covers": [
+        "mutex, lock_guard, unique_lock, scoped_lock, shared_mutex, recursive_mutex"
+      ],
+      "file": "cod_cpp_07_concurrency/03-mutexes-and-locks.md"
+    },
+    {
+      "id": "l04-deadlock",
+      "title": "Deadlock, and how to make it impossible",
+      "minutes": 24,
+      "covers": [
+        "Deadlock: the four conditions, lock ordering, std::lock and scoped_lock"
+      ],
+      "file": "cod_cpp_07_concurrency/04-deadlock.md"
+    },
+    {
+      "id": "l05-condition-variables",
+      "title": "Waiting for something to happen: condition variables",
+      "minutes": 23,
+      "covers": [
+        "condition_variable and spurious wakeups; the predicate form of wait"
+      ],
+      "file": "cod_cpp_07_concurrency/05-condition-variables.md"
+    },
+    {
+      "id": "l06-atomics-and-memory-orderings",
+      "title": "Atomics and memory orderings",
+      "minutes": 23,
+      "covers": [
+        "std::atomic and memory orderings: relaxed, acquire/release, seq_cst"
+      ],
+      "file": "cod_cpp_07_concurrency/06-atomics-and-memory-orderings.md"
+    },
+    {
+      "id": "l07-the-memory-model",
+      "title": "The C++ memory model",
+      "minutes": 22,
+      "covers": [
+        "The C++ memory model; is_lock_free; atomic_ref"
+      ],
+      "file": "cod_cpp_07_concurrency/07-the-memory-model.md"
+    },
+    {
+      "id": "l08-futures-and-thread-pools",
+      "title": "Futures, promises and thread pools",
+      "minutes": 19,
+      "covers": [
+        "future, promise, packaged_task, async, and thread pools"
+      ],
+      "file": "cod_cpp_07_concurrency/08-futures-and-thread-pools.md"
+    },
+    {
+      "id": "l09-lock-free-ring-buffers",
+      "title": "Lock-free ring buffers for telemetry",
+      "minutes": 21,
+      "covers": [
+        "Lock-free single-producer single-consumer ring buffers for telemetry",
+        "Lock-free is not wait-free; progress guarantees"
+      ],
+      "file": "cod_cpp_07_concurrency/09-lock-free-ring-buffers.md"
+    },
+    {
+      "id": "l10-false-sharing",
+      "title": "False sharing: when two threads fight over one cache line",
+      "minutes": 22,
+      "covers": [
+        "False sharing and hardware_destructive_interference_size"
+      ],
+      "file": "cod_cpp_07_concurrency/10-false-sharing.md"
+    },
+    {
+      "id": "l11-real-time-and-scheduling",
+      "title": "Real time: deadlines, worst cases and rate-monotonic scheduling",
+      "minutes": 24,
+      "covers": [
+        "Hard, firm and soft real time; WCET and why average latency is irrelevant",
+        "Rate-monotonic scheduling and utilisation bounds"
+      ],
+      "file": "cod_cpp_07_concurrency/11-real-time-and-scheduling.md"
+    },
+    {
+      "id": "l12-priority-inversion-and-rtos",
+      "title": "Priority inversion, Mars Pathfinder, and real-time operating systems",
+      "minutes": 21,
+      "covers": [
+        "Priority inversion and priority inheritance; the Mars Pathfinder case",
+        "RTOS landscape: FreeRTOS, RTEMS, VxWorks, Linux PREEMPT_RT"
+      ],
+      "file": "cod_cpp_07_concurrency/12-priority-inversion-and-rtos.md"
+    },
+    {
+      "id": "l13-linux-real-time-setup",
+      "title": "Setting up Linux for a real-time loop",
+      "minutes": 26,
+      "covers": [
+        "sched_setscheduler, SCHED_FIFO, CPU pinning, mlockall"
+      ],
+      "file": "cod_cpp_07_concurrency/13-linux-real-time-setup.md"
+    },
+    {
+      "id": "l14-triple-redundancy-case-study",
+      "title": "Case study: three flight computers and a vote",
+      "minutes": 21,
+      "covers": [
+        "The SpaceX triple-redundancy architecture as a case study"
+      ],
+      "file": "cod_cpp_07_concurrency/14-triple-redundancy-case-study.md"
+    }
+  ],
+  "cod_cpp_08_realtime": [
+    {
+      "id": "l01-real-time-and-worst-case-execution-time",
+      "title": "Real time and worst-case execution time",
+      "minutes": 26,
+      "covers": [
+        "Worst-case execution time: measurement, static analysis and their limits"
+      ],
+      "file": "cod_cpp_08_realtime/01-real-time-and-worst-case-execution-time.md"
+    },
+    {
+      "id": "l02-bounded-loops",
+      "title": "Bounded loops",
+      "minutes": 22,
+      "covers": [
+        "Bounded loops and why every loop needs a provable upper bound"
+      ],
+      "file": "cod_cpp_08_realtime/02-bounded-loops.md"
+    },
+    {
+      "id": "l03-stack-depth-and-no-recursion",
+      "title": "Stack depth and why flight code does not recurse",
+      "minutes": 27,
+      "covers": [
+        "Stack-depth analysis and static stack bounding; no recursion"
+      ],
+      "file": "cod_cpp_08_realtime/03-stack-depth-and-no-recursion.md"
+    },
+    {
+      "id": "l04-static-memory-pools-arenas-and-fixed-capacity",
+      "title": "Static memory, pools, arenas and fixed-capacity containers",
+      "minutes": 26,
+      "covers": [
+        "Static memory: pools, arenas, fixed-capacity containers, placement new at init"
+      ],
+      "file": "cod_cpp_08_realtime/04-static-memory-pools-arenas-and-fixed-capacity.md"
+    },
+    {
+      "id": "l05-interrupt-service-routines",
+      "title": "Interrupt service routines",
+      "minutes": 24,
+      "covers": [
+        "Interrupt service routines: what you may and may not do inside one"
+      ],
+      "file": "cod_cpp_08_realtime/05-interrupt-service-routines.md"
+    },
+    {
+      "id": "l06-watchdogs-heartbeats-and-health-monitoring",
+      "title": "Watchdogs, heartbeats and health monitoring",
+      "minutes": 24,
+      "covers": [
+        "Watchdogs, heartbeats and health monitoring"
+      ],
+      "file": "cod_cpp_08_realtime/06-watchdogs-heartbeats-and-health-monitoring.md"
+    },
+    {
+      "id": "l07-fault-detection-isolation-and-recovery",
+      "title": "Fault detection, isolation and recovery",
+      "minutes": 21,
+      "covers": [
+        "Fault detection, isolation and recovery; safe modes"
+      ],
+      "file": "cod_cpp_08_realtime/07-fault-detection-isolation-and-recovery.md"
+    },
+    {
+      "id": "l08-radiation-effects-and-software-mitigations",
+      "title": "Radiation effects and the software that survives them",
+      "minutes": 24,
+      "covers": [
+        "Radiation effects: SEU, SEL, TID, and the software mitigations (voting, checksums, scrubbing, resets)"
+      ],
+      "file": "cod_cpp_08_realtime/08-radiation-effects-and-software-mitigations.md"
+    },
+    {
+      "id": "l09-fixed-point-and-determinism",
+      "title": "Fixed-point arithmetic and bit-exact determinism",
+      "minutes": 22,
+      "covers": [
+        "Fixed-point arithmetic where floating point is unavailable or unqualified",
+        "Determinism and bit-exact reproducibility across compilers and platforms"
+      ],
+      "file": "cod_cpp_08_realtime/09-fixed-point-and-determinism.md"
+    },
+    {
+      "id": "l10-cross-compiling-and-linker-scripts",
+      "title": "Cross-compiling and linker scripts",
+      "minutes": 24,
+      "covers": [
+        "Cross-compiling to an embedded target with a CMake toolchain file",
+        "Linker scripts and memory regions; why you would move a function into RAM"
+      ],
+      "file": "cod_cpp_08_realtime/10-cross-compiling-and-linker-scripts.md"
+    },
+    {
+      "id": "l11-the-power-of-ten-rules",
+      "title": "The Power of Ten rules",
+      "minutes": 24,
+      "covers": [
+        "The NASA/JPL Power of Ten rules"
+      ],
+      "file": "cod_cpp_08_realtime/11-the-power-of-ten-rules.md"
+    },
+    {
+      "id": "l12-coding-standards-and-static-analysis",
+      "title": "Coding standards and static analysis",
+      "minutes": 22,
+      "covers": [
+        "MISRA C++:2023, which absorbs AUTOSAR C++14; JSF++ AV and its F-35 origin",
+        "Static analysis: clang-tidy, cppcheck, Polyspace, LDRA, Helix QAC"
+      ],
+      "file": "cod_cpp_08_realtime/12-coding-standards-and-static-analysis.md"
+    }
+  ],
+  "cod_cpp_09_eigen": [
+    {
+      "id": "l01-matrix-types-and-fixed-size",
+      "title": "Matrix types, fixed size and dynamic size",
+      "minutes": 23,
+      "covers": [
+        "Matrix<Scalar, Rows, Cols>; Vector3d, Matrix3d, Quaterniond typedefs; Dynamic sizing",
+        "Why fixed-size types allocate nothing and unroll their loops"
+      ],
+      "file": "cod_cpp_09_eigen/01-matrix-types-and-fixed-size.md"
+    },
+    {
+      "id": "l02-storage-order-and-map",
+      "title": "Storage order and Map",
+      "minutes": 23,
+      "covers": [
+        "Storage order; Map for wrapping an external buffer with no copy"
+      ],
+      "file": "cod_cpp_09_eigen/02-storage-order-and-map.md"
+    },
+    {
+      "id": "l03-block-operations",
+      "title": "Block operations: windows inside a matrix",
+      "minutes": 17,
+      "covers": [
+        "Block operations: block, head, tail, segment, row, col"
+      ],
+      "file": "cod_cpp_09_eigen/03-block-operations.md"
+    },
+    {
+      "id": "l04-array-versus-matrix-reductions-broadcasting",
+      "title": "Arrays versus matrices, reductions and broadcasting",
+      "minutes": 21,
+      "covers": [
+        "Coefficient-wise operations via .array() versus matrix operations",
+        "Reductions and broadcasting"
+      ],
+      "file": "cod_cpp_09_eigen/04-array-versus-matrix-reductions-broadcasting.md"
+    },
+    {
+      "id": "l05-expression-templates-aliasing-eval-noalias",
+      "title": "Expression templates, aliasing, eval() and noalias()",
+      "minutes": 25,
+      "covers": [
+        "Expression templates, lazy evaluation, aliasing, eval() and noalias()"
+      ],
+      "file": "cod_cpp_09_eigen/05-expression-templates-aliasing-eval-noalias.md"
+    },
+    {
+      "id": "l06-floating-point-in-practice",
+      "title": "Floating point in practice",
+      "minutes": 26,
+      "covers": [
+        "IEEE-754 in practice: fma, Kahan summation, condition number, reproducibility"
+      ],
+      "file": "cod_cpp_09_eigen/06-floating-point-in-practice.md"
+    },
+    {
+      "id": "l07-decompositions",
+      "title": "Decompositions, or taking a matrix apart",
+      "minutes": 25,
+      "covers": [
+        "Decompositions: LLT and LDLT (Cholesky, the covariance workhorse), PartialPivLU, HouseholderQR, ColPivHouseholderQR, JacobiSVD, BDCSVD, SelfAdjointEigenSolver"
+      ],
+      "file": "cod_cpp_09_eigen/07-decompositions.md"
+    },
+    {
+      "id": "l08-solve-do-not-invert",
+      "title": "Solve, do not invert",
+      "minutes": 20,
+      "covers": [
+        "Solving Ax=b with ldlt().solve(b) rather than inverting"
+      ],
+      "file": "cod_cpp_09_eigen/08-solve-do-not-invert.md"
+    },
+    {
+      "id": "l09-the-geometry-module",
+      "title": "Rotations and frames: the Geometry module",
+      "minutes": 26,
+      "covers": [
+        "The Geometry module: Quaterniond, AngleAxis, Translation, Isometry3d, Transform, slerp"
+      ],
+      "file": "cod_cpp_09_eigen/09-the-geometry-module.md"
+    },
+    {
+      "id": "l10-quaternion-element-order",
+      "title": "Quaternion element order",
+      "minutes": 22,
+      "covers": [
+        "The Quaterniond(w,x,y,z) constructor versus coeffs() returning x,y,z,w"
+      ],
+      "file": "cod_cpp_09_eigen/10-quaternion-element-order.md"
+    },
+    {
+      "id": "l11-alignment-and-proving-no-allocation",
+      "title": "Alignment and proving no allocation",
+      "minutes": 21,
+      "covers": [
+        "Alignment, fixed-size vectorizable types and EIGEN_MAKE_ALIGNED_OPERATOR_NEW",
+        "Proving no allocation with EIGEN_RUNTIME_NO_MALLOC and set_is_malloc_allowed"
+      ],
+      "file": "cod_cpp_09_eigen/11-alignment-and-proving-no-allocation.md"
+    },
+    {
+      "id": "l12-numpy-mapping-and-neighbours",
+      "title": "Eigen and NumPy side by side, and the neighbors",
+      "minutes": 21,
+      "covers": [
+        "Eigen to NumPy mental mapping",
+        "Neighbours: Sophus for Lie groups, Ceres and GTSAM for least squares and factor graphs, SymForce for generated C++"
+      ],
+      "file": "cod_cpp_09_eigen/12-numpy-mapping-and-neighbours.md"
+    }
+  ],
+  "cod_cpp_10_cmake": [
+    {
+      "id": "l01-why-cmake-and-a-first-project",
+      "title": "Why CMake, and a first project",
+      "minutes": 22,
+      "covers": [
+        "cmake_minimum_required, project, and why a modern minimum matters",
+        "Out-of-source builds and CMAKE_BUILD_TYPE"
+      ],
+      "file": "cod_cpp_10_cmake/01-why-cmake-and-a-first-project.md"
+    },
+    {
+      "id": "l02-targets-libraries-and-executables",
+      "title": "Targets, libraries and executables",
+      "minutes": 22,
+      "covers": [
+        "add_library and add_executable; INTERFACE, STATIC and SHARED"
+      ],
+      "file": "cod_cpp_10_cmake/02-targets-libraries-and-executables.md"
+    },
+    {
+      "id": "l03-usage-requirements-public-private-interface",
+      "title": "Usage requirements: PUBLIC, PRIVATE and INTERFACE",
+      "minutes": 24,
+      "covers": [
+        "target_link_libraries with PUBLIC, PRIVATE and INTERFACE, and what each propagates",
+        "target_include_directories, target_compile_features, target_compile_options, target_compile_definitions"
+      ],
+      "file": "cod_cpp_10_cmake/03-usage-requirements-public-private-interface.md"
+    },
+    {
+      "id": "l04-generator-expressions-and-configurations",
+      "title": "Generator expressions and build configurations",
+      "minutes": 18,
+      "covers": [
+        "Generator expressions and per-configuration settings"
+      ],
+      "file": "cod_cpp_10_cmake/04-generator-expressions-and-configurations.md"
+    },
+    {
+      "id": "l05-dependencies-find-package-and-fetchcontent",
+      "title": "Dependencies: find_package and FetchContent",
+      "minutes": 20,
+      "covers": [
+        "find_package and config packages; FetchContent versus submodules versus Conan or vcpkg"
+      ],
+      "file": "cod_cpp_10_cmake/05-dependencies-find-package-and-fetchcontent.md"
+    },
+    {
+      "id": "l06-project-layout-and-ctest",
+      "title": "A project layout a stranger can build, and ctest",
+      "minutes": 20,
+      "covers": [
+        "Canonical layout: apps, cmake, extern, include, src, tests",
+        "ctest and test registration"
+      ],
+      "file": "cod_cpp_10_cmake/06-project-layout-and-ctest.md"
+    },
+    {
+      "id": "l07-cmake-presets",
+      "title": "CMake presets",
+      "minutes": 19,
+      "covers": [
+        "CMakePresets.json for reproducible configure and build commands"
+      ],
+      "file": "cod_cpp_10_cmake/07-cmake-presets.md"
+    },
+    {
+      "id": "l08-sanitizer-coverage-and-ccache-builds",
+      "title": "Sanitizer, coverage and ccache builds",
+      "minutes": 24,
+      "covers": [
+        "Sanitizer and coverage build configurations",
+        "ccache and build-time hygiene"
+      ],
+      "file": "cod_cpp_10_cmake/08-sanitizer-coverage-and-ccache-builds.md"
+    },
+    {
+      "id": "l09-toolchain-files-and-cross-compiling",
+      "title": "Toolchain files and cross-compiling",
+      "minutes": 24,
+      "covers": [
+        "Toolchain files for cross-compiling to an embedded target"
+      ],
+      "file": "cod_cpp_10_cmake/09-toolchain-files-and-cross-compiling.md"
+    },
+    {
+      "id": "l10-install-and-export",
+      "title": "Install and export: letting other projects find you",
+      "minutes": 21,
+      "covers": [
+        "install and export so downstream projects can find_package you"
+      ],
+      "file": "cod_cpp_10_cmake/10-install-and-export.md"
+    }
+  ],
+  "cod_cpp_11_gtest": [
+    {
+      "id": "l01-first-tests-and-fixtures",
+      "title": "Your first tests, and fixtures that start fresh",
+      "minutes": 20,
+      "covers": [
+        "TEST and TEST_F; test suites and fixtures; SetUp and TearDown"
+      ],
+      "file": "cod_cpp_11_gtest/01-first-tests-and-fixtures.md"
+    },
+    {
+      "id": "l02-assert-versus-expect",
+      "title": "ASSERT versus EXPECT, and failure messages that talk",
+      "minutes": 22,
+      "covers": [
+        "ASSERT_* versus EXPECT_* and when a fatal assertion is correct"
+      ],
+      "file": "cod_cpp_11_gtest/02-assert-versus-expect.md"
+    },
+    {
+      "id": "l03-floating-point-assertions",
+      "title": "Comparing floating-point results, and choosing the tolerance",
+      "minutes": 22,
+      "covers": [
+        "Floating-point assertions: EXPECT_NEAR, EXPECT_DOUBLE_EQ, and choosing the tolerance"
+      ],
+      "file": "cod_cpp_11_gtest/03-floating-point-assertions.md"
+    },
+    {
+      "id": "l04-parameterised-tests",
+      "title": "Parameterised tests — one test, many cases",
+      "minutes": 24,
+      "covers": [
+        "TEST_P parameterised tests and value generators"
+      ],
+      "file": "cod_cpp_11_gtest/04-parameterised-tests.md"
+    },
+    {
+      "id": "l05-typed-tests-and-death-tests",
+      "title": "Typed tests and death tests",
+      "minutes": 23,
+      "covers": [
+        "Typed and type-parameterised tests for template code",
+        "Death tests for contract violations"
+      ],
+      "file": "cod_cpp_11_gtest/05-typed-tests-and-death-tests.md"
+    },
+    {
+      "id": "l06-dependency-injection",
+      "title": "Dependency injection — opening a seam for the test",
+      "minutes": 20,
+      "covers": [
+        "Dependency injection as the precondition for mockability"
+      ],
+      "file": "cod_cpp_11_gtest/06-dependency-injection.md"
+    },
+    {
+      "id": "l07-googlemock-basics",
+      "title": "GoogleMock, a pretend sensor that does what you say",
+      "minutes": 21,
+      "covers": [
+        "GoogleMock: mocking an ISensor or HAL interface; EXPECT_CALL, matchers, cardinalities"
+      ],
+      "file": "cod_cpp_11_gtest/07-googlemock-basics.md"
+    },
+    {
+      "id": "l08-nice-strict-and-naggy-mocks",
+      "title": "Nice, naggy and strict mocks, and the calls nobody mentioned",
+      "minutes": 21,
+      "covers": [
+        "NiceMock, StrictMock and what an uninteresting call means"
+      ],
+      "file": "cod_cpp_11_gtest/08-nice-strict-and-naggy-mocks.md"
+    },
+    {
+      "id": "l09-ctest-integration-and-catch2",
+      "title": "Every test by name in CTest, and a look at Catch2",
+      "minutes": 21,
+      "covers": [
+        "gtest_discover_tests, CTest registration, test filters and labels",
+        "Catch2 as the alternative and what it trades"
+      ],
+      "file": "cod_cpp_11_gtest/09-ctest-integration-and-catch2.md"
+    },
+    {
+      "id": "l10-coverage-and-sanitizers-in-the-test-matrix",
+      "title": "Coverage and sanitizers in the test matrix",
+      "minutes": 26,
+      "covers": [
+        "Coverage with gcov, lcov and llvm-cov; interpreting an uncovered branch",
+        "Sanitizer builds in the test matrix"
+      ],
+      "file": "cod_cpp_11_gtest/10-coverage-and-sanitizers-in-the-test-matrix.md"
+    },
+    {
+      "id": "l11-testing-numerical-kernels",
+      "title": "Testing numerical kernels",
+      "minutes": 26,
+      "covers": [
+        "Testing numerical kernels: invariants, convergence, golden data"
+      ],
+      "file": "cod_cpp_11_gtest/11-testing-numerical-kernels.md"
+    }
+  ],
+  "cod_dbg_01_gdb": [
+    {
+      "id": "l01-debugging-as-science",
+      "title": "Debugging as an experiment",
+      "minutes": 28,
+      "covers": [
+        "The scientific method of debugging; minimal reproducers"
+      ],
+      "file": "cod_dbg_01_gdb/01-debugging-as-science.md"
+    },
+    {
+      "id": "l02-gdb-breakpoints-and-backtraces",
+      "title": "gdb: stopping a program and reading its stack",
+      "minutes": 17,
+      "covers": [
+        "gdb: break, conditional breakpoints, watchpoints, run, bt, frame, up/down"
+      ],
+      "file": "cod_dbg_01_gdb/02-gdb-breakpoints-and-backtraces.md"
+    },
+    {
+      "id": "l03-inspecting-state-in-gdb",
+      "title": "Looking inside a stopped program",
+      "minutes": 19,
+      "covers": [
+        "info args, info locals, info registers, print, p *ptr@n, x/16xb"
+      ],
+      "file": "cod_dbg_01_gdb/03-inspecting-state-in-gdb.md"
+    },
+    {
+      "id": "l04-stepping-and-changing-state",
+      "title": "Stepping through code and changing it while it runs",
+      "minutes": 23,
+      "covers": [
+        "step vs next vs finish vs until; tbreak; display; set var"
+      ],
+      "file": "cod_dbg_01_gdb/04-stepping-and-changing-state.md"
+    },
+    {
+      "id": "l05-attaching-and-core-dumps",
+      "title": "Attaching to a running program, and reading core dumps",
+      "minutes": 25,
+      "covers": [
+        "Attaching to a running process; gdb -p",
+        "Core dumps: ulimit -c unlimited, gdb ./bin ./core, thread apply all bt"
+      ],
+      "file": "cod_dbg_01_gdb/05-attaching-and-core-dumps.md"
+    },
+    {
+      "id": "l06-gdb-comfort-and-remote-debugging",
+      "title": "Making gdb comfortable, debugging remotely, and running backwards",
+      "minutes": 23,
+      "covers": [
+        "TUI mode, .gdbinit, pretty-printers for STL and Eigen",
+        "gdbserver and remote/embedded debugging; rr for reverse debugging"
+      ],
+      "file": "cod_dbg_01_gdb/06-gdb-comfort-and-remote-debugging.md"
+    },
+    {
+      "id": "l07-debugging-python",
+      "title": "Debugging Python: pdb, breakpoint() and py-spy",
+      "minutes": 24,
+      "covers": [
+        "Python: pdb, breakpoint(), py-spy for a live process"
+      ],
+      "file": "cod_dbg_01_gdb/07-debugging-python.md"
+    },
+    {
+      "id": "l08-sanitizers-and-valgrind",
+      "title": "Sanitizers and Valgrind",
+      "minutes": 28,
+      "covers": [
+        "AddressSanitizer, UBSan, ThreadSanitizer, LeakSanitizer",
+        "Valgrind memcheck, helgrind, callgrind and when to prefer it over ASan"
+      ],
+      "file": "cod_dbg_01_gdb/08-sanitizers-and-valgrind.md"
+    },
+    {
+      "id": "l09-profiling-with-perf-and-benchmarks",
+      "title": "Finding where the time goes",
+      "minutes": 28,
+      "covers": [
+        "perf stat (IPC, cache misses, branch misses), perf record/report, flame graphs",
+        "hyperfine for wall clock, Google Benchmark for microbenchmarks"
+      ],
+      "file": "cod_dbg_01_gdb/09-profiling-with-perf-and-benchmarks.md"
+    },
+    {
+      "id": "l10-logging-and-post-flight-investigation",
+      "title": "Logs, ring buffers and the one dataset",
+      "minutes": 25,
+      "covers": [
+        "Logging strategy: levels, structured logs, flight-side ring buffers",
+        "Post-flight anomaly investigation: one dataset, no reruns"
+      ],
+      "file": "cod_dbg_01_gdb/10-logging-and-post-flight-investigation.md"
     }
   ],
   "cod_git_01_basics": [
@@ -1776,6 +3092,311 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "bisect for regression hunting"
       ],
       "file": "cod_git_01_basics/10-bisect.md"
+    }
+  ],
+  "cod_git_02_collab": [
+    {
+      "id": "l01-remotes-fetch-and-pull",
+      "title": "Remotes: fetch, pull and upstream tracking",
+      "minutes": 24,
+      "covers": [
+        "Remotes: fetch vs pull, pull --rebase, upstream tracking"
+      ],
+      "file": "cod_git_02_collab/01-remotes-fetch-and-pull.md"
+    },
+    {
+      "id": "l02-merge-versus-rebase",
+      "title": "Merge versus rebase, and the golden rule",
+      "minutes": 19,
+      "covers": [
+        "Merge vs rebase and the golden rule about shared history"
+      ],
+      "file": "cod_git_02_collab/02-merge-versus-rebase.md"
+    },
+    {
+      "id": "l03-interactive-rebase",
+      "title": "Interactive rebase and force-with-lease",
+      "minutes": 22,
+      "covers": [
+        "Interactive rebase: squash, fixup, reword, drop, reorder",
+        "push --force-with-lease vs --force"
+      ],
+      "file": "cod_git_02_collab/03-interactive-rebase.md"
+    },
+    {
+      "id": "l04-conflict-strategy-and-rerere",
+      "title": "Resolving conflicts on purpose, and rerere",
+      "minutes": 21,
+      "covers": [
+        "Conflict resolution strategy; rerere"
+      ],
+      "file": "cod_git_02_collab/04-conflict-strategy-and-rerere.md"
+    },
+    {
+      "id": "l05-team-workflows",
+      "title": "Team workflows: trunk-based, GitFlow and forks",
+      "minutes": 24,
+      "covers": [
+        "Trunk-based development vs GitFlow vs forking workflows"
+      ],
+      "file": "cod_git_02_collab/05-team-workflows.md"
+    },
+    {
+      "id": "l06-pull-requests",
+      "title": "Pull requests that get merged",
+      "minutes": 22,
+      "covers": [
+        "Pull requests: small diffs, draft PRs, required checks, CODEOWNERS"
+      ],
+      "file": "cod_git_02_collab/06-pull-requests.md"
+    },
+    {
+      "id": "l07-reviewing-a-diff",
+      "title": "Reviewing a diff",
+      "minutes": 25,
+      "covers": [
+        "Reviewing a diff: correctness, tests, interfaces, units and frames"
+      ],
+      "file": "cod_git_02_collab/07-reviewing-a-diff.md"
+    },
+    {
+      "id": "l08-release-branches-and-changelogs",
+      "title": "Release branches, tags and changelogs",
+      "minutes": 22,
+      "covers": [
+        "Release branches, tags, semantic versioning, changelogs"
+      ],
+      "file": "cod_git_02_collab/08-release-branches-and-changelogs.md"
+    },
+    {
+      "id": "l09-cherry-pick-and-backports",
+      "title": "Cherry-pick and backporting a fix",
+      "minutes": 22,
+      "covers": [
+        "cherry-pick and backporting a fix to a release branch"
+      ],
+      "file": "cod_git_02_collab/09-cherry-pick-and-backports.md"
+    },
+    {
+      "id": "l10-submodules-subtrees-vendoring",
+      "title": "Other people's code: submodules, subtrees and vendoring",
+      "minutes": 24,
+      "covers": [
+        "Submodules vs subtrees vs vendoring"
+      ],
+      "file": "cod_git_02_collab/10-submodules-subtrees-vendoring.md"
+    },
+    {
+      "id": "l11-binary-files-and-locking",
+      "title": "Binary files, Simulink models and locking",
+      "minutes": 22,
+      "covers": [
+        "Binary-file pain: model locking for Simulink and CAD assets"
+      ],
+      "file": "cod_git_02_collab/11-binary-files-and-locking.md"
+    }
+  ],
+  "cod_int_01_algorithms": [
+    {
+      "id": "l01-the-honest-calibration",
+      "title": "The honest calibration",
+      "minutes": 18,
+      "covers": [
+        "The honest calibration: medium level, not the main event, with real-world framing preferred",
+        "Preparing in C++ if targeting flight software; Python for the take-home",
+        "Roughly 120 to 150 problems is sufficient, grouped by pattern and timed"
+      ],
+      "file": "cod_int_01_algorithms/01-the-honest-calibration.md"
+    },
+    {
+      "id": "l02-complexity-out-loud",
+      "title": "Complexity you can say out loud",
+      "minutes": 25,
+      "covers": [
+        "Complexity analysis you can say out loud, including the space term"
+      ],
+      "file": "cod_int_01_algorithms/02-complexity-out-loud.md"
+    },
+    {
+      "id": "l03-two-pointers-and-sliding-windows",
+      "title": "Two pointers and sliding windows",
+      "minutes": 23,
+      "covers": [
+        "High-yield patterns: arrays and two pointers, sliding window, hash maps, binary search including on the answer"
+      ],
+      "file": "cod_int_01_algorithms/03-two-pointers-and-sliding-windows.md"
+    },
+    {
+      "id": "l04-hash-maps-and-binary-search",
+      "title": "Hash maps and binary search",
+      "minutes": 22,
+      "covers": [
+        "High-yield patterns: arrays and two pointers, sliding window, hash maps, binary search including on the answer"
+      ],
+      "file": "cod_int_01_algorithms/04-hash-maps-and-binary-search.md"
+    },
+    {
+      "id": "l05-sorting-intervals-stacks-and-lists",
+      "title": "Sorting, intervals, stacks, queues and linked lists",
+      "minutes": 21,
+      "covers": [
+        "Sorting and intervals; stacks and queues; linked lists"
+      ],
+      "file": "cod_int_01_algorithms/05-sorting-intervals-stacks-and-lists.md"
+    },
+    {
+      "id": "l06-trees-and-graphs",
+      "title": "Trees, graphs, BFS, DFS and topological sort",
+      "minutes": 24,
+      "covers": [
+        "Trees and BFS/DFS; graphs including topological sort; heaps; prefix sums; light dynamic programming; bit manipulation"
+      ],
+      "file": "cod_int_01_algorithms/06-trees-and-graphs.md"
+    },
+    {
+      "id": "l07-heaps-prefix-sums-dp-and-bits",
+      "title": "Heaps, prefix sums, light DP and bits",
+      "minutes": 26,
+      "covers": [
+        "Trees and BFS/DFS; graphs including topological sort; heaps; prefix sums; light dynamic programming; bit manipulation",
+        "What to skip: exotic dynamic programming, advanced graph theory, segment trees"
+      ],
+      "file": "cod_int_01_algorithms/07-heaps-prefix-sums-dp-and-bits.md"
+    },
+    {
+      "id": "l08-talking-and-testing",
+      "title": "Talking while solving, and testing before you are done",
+      "minutes": 21,
+      "covers": [
+        "Talking while solving: restate, clarify, state the approach and its complexity, then code",
+        "Testing your own solution before saying you are done"
+      ],
+      "file": "cod_int_01_algorithms/08-talking-and-testing.md"
+    },
+    {
+      "id": "l09-bytes-endianness-and-checksums",
+      "title": "Bytes, endianness and checksums",
+      "minutes": 24,
+      "covers": [
+        "struct, endianness and checksums in Python; bit twiddling in C++"
+      ],
+      "file": "cod_int_01_algorithms/09-bytes-endianness-and-checksums.md"
+    },
+    {
+      "id": "l10-decommutation-and-dropouts",
+      "title": "Decommutation and dropouts",
+      "minutes": 20,
+      "covers": [
+        "The engineering variants: binary protocol decommutation, telemetry dropout detection, two-rate time alignment, ring buffer, PID with anti-windup, running median over a stream",
+        "struct, endianness and checksums in Python; bit twiddling in C++"
+      ],
+      "file": "cod_int_01_algorithms/10-decommutation-and-dropouts.md"
+    },
+    {
+      "id": "l11-ring-buffers-and-time-alignment",
+      "title": "Ring buffers and time alignment",
+      "minutes": 20,
+      "covers": [
+        "The engineering variants: binary protocol decommutation, telemetry dropout detection, two-rate time alignment, ring buffer, PID with anti-windup, running median over a stream"
+      ],
+      "file": "cod_int_01_algorithms/11-ring-buffers-and-time-alignment.md"
+    },
+    {
+      "id": "l12-pid-anti-windup-and-running-median",
+      "title": "PID with anti-windup and the running median",
+      "minutes": 20,
+      "covers": [
+        "The engineering variants: binary protocol decommutation, telemetry dropout detection, two-rate time alignment, ring buffer, PID with anti-windup, running median over a stream"
+      ],
+      "file": "cod_int_01_algorithms/12-pid-anti-windup-and-running-median.md"
+    }
+  ],
+  "cod_int_02_onsite": [
+    {
+      "id": "l01-the-process-and-the-itar-gate",
+      "title": "The process end to end, and the ITAR gate",
+      "minutes": 19,
+      "covers": [
+        "The reported process: recruiter screen, a two to four hour take-home or timed challenge, technical rounds, a day-long onsite of four to six rounds, behavioural throughout",
+        "US person status under ITAR as a hard gate for essentially all roles"
+      ],
+      "file": "cod_int_02_onsite/01-the-process-and-the-itar-gate.md"
+    },
+    {
+      "id": "l02-the-systems-cpp-round",
+      "title": "The systems C++ round",
+      "minutes": 25,
+      "covers": [
+        "Systems C++ round: pointers and memory, double delete, RAII, rule of five, unique_ptr versus shared_ptr, virtual destructors, vtable layout, move semantics, undefined behaviour, static and const and volatile, data races, cache effects"
+      ],
+      "file": "cod_int_02_onsite/02-the-systems-cpp-round.md"
+    },
+    {
+      "id": "l03-live-debugging",
+      "title": "Live debugging",
+      "minutes": 20,
+      "covers": [
+        "Live debugging: here is code that crashes or leaks, find it"
+      ],
+      "file": "cod_int_02_onsite/03-live-debugging.md"
+    },
+    {
+      "id": "l04-designing-sim-and-telemetry-systems",
+      "title": "Designing a simulation system and a telemetry pipeline, aloud",
+      "minutes": 21,
+      "covers": [
+        "Engineering system design: GNC simulation infrastructure for a constellation; a telemetry pipeline for six thousand satellites; how you would verify this flight software; how you would architect a fault-tolerant flight computer"
+      ],
+      "file": "cod_int_02_onsite/04-designing-sim-and-telemetry-systems.md"
+    },
+    {
+      "id": "l05-verification-and-fault-tolerant-computers",
+      "title": "Verifying flight software and building a computer that survives faults",
+      "minutes": 18,
+      "covers": [
+        "Engineering system design: GNC simulation infrastructure for a constellation; a telemetry pipeline for six thousand satellites; how you would verify this flight software; how you would architect a fault-tolerant flight computer",
+        "Knowing the SpaceX answer: three dual-core x86 flight strings, per-string core cross-check, PowerPC actuator controllers judging three commands"
+      ],
+      "file": "cod_int_02_onsite/05-verification-and-fault-tolerant-computers.md"
+    },
+    {
+      "id": "l06-domain-rounds-and-fermi-estimates",
+      "title": "Domain rounds and Fermi estimates, out loud",
+      "minutes": 25,
+      "covers": [
+        "Domain rounds for GNC roles: PD control, orbit determination, frequency domain, aerodynamic drag with real examples",
+        "Fermi and order-of-magnitude estimation out loud"
+      ],
+      "file": "cod_int_02_onsite/06-domain-rounds-and-fermi-estimates.md"
+    },
+    {
+      "id": "l07-the-technical-presentation",
+      "title": "The technical presentation",
+      "minutes": 23,
+      "covers": [
+        "The technical presentation: about twelve minutes of slides and twenty-plus minutes of debate"
+      ],
+      "file": "cod_int_02_onsite/07-the-technical-presentation.md"
+    },
+    {
+      "id": "l08-behavioural-themes-and-ownership",
+      "title": "Behavioural themes and saying what you did",
+      "minutes": 20,
+      "covers": [
+        "Behavioural themes: mission alignment, extreme ownership, operating with ambiguity and speed, intellectual honesty about failure",
+        "Saying what you personally modelled, coded, analysed, tuned, tested or debugged versus what the team did"
+      ],
+      "file": "cod_int_02_onsite/08-behavioural-themes-and-ownership.md"
+    },
+    {
+      "id": "l09-star-stories-and-your-questions",
+      "title": "STAR stories and the questions you ask",
+      "minutes": 19,
+      "covers": [
+        "Building six to eight STAR stories from the capstones, each with a number in it",
+        "Questions to ask that show you understand the work"
+      ],
+      "file": "cod_int_02_onsite/09-star-stories-and-your-questions.md"
     }
   ],
   "cod_lnx_01_shell": [
@@ -2036,6 +3657,419 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_lnx_02_scripting/14-when-to-stop-writing-bash.md"
     }
   ],
+  "cod_mat_01_core": [
+    {
+      "id": "l01-the-matlab-desktop",
+      "title": "The MATLAB desktop",
+      "minutes": 21,
+      "covers": [
+        "The desktop, Command Window, Workspace, Editor and Live Editor"
+      ],
+      "file": "cod_mat_01_core/01-the-matlab-desktop.md"
+    },
+    {
+      "id": "l02-everything-is-a-matrix",
+      "title": "Everything is a matrix",
+      "minutes": 22,
+      "covers": [
+        "Everything is a matrix; the colon operator, linspace, zeros, ones, eye",
+        "Concatenation, reshape, size, length, numel"
+      ],
+      "file": "cod_mat_01_core/02-everything-is-a-matrix.md"
+    },
+    {
+      "id": "l03-indexing",
+      "title": "Reaching inside a matrix",
+      "minutes": 19,
+      "covers": [
+        "One-based indexing, end, logical indexing, find"
+      ],
+      "file": "cod_mat_01_core/03-indexing.md"
+    },
+    {
+      "id": "l04-element-wise-versus-matrix",
+      "title": "Element-wise versus matrix operations",
+      "minutes": 21,
+      "covers": [
+        "Element-wise .* ./ .^ versus matrix * / ^ (the single most common beginner error)"
+      ],
+      "file": "cod_mat_01_core/04-element-wise-versus-matrix.md"
+    },
+    {
+      "id": "l05-backslash-and-linear-systems",
+      "title": "Backslash and linear systems",
+      "minutes": 21,
+      "covers": [
+        "Backslash mldivide and why A\\b beats inv(A)*b"
+      ],
+      "file": "cod_mat_01_core/05-backslash-and-linear-systems.md"
+    },
+    {
+      "id": "l06-control-flow-and-preallocation",
+      "title": "Control flow and preallocation",
+      "minutes": 20,
+      "covers": [
+        "Control flow: if, switch, for, while, break, continue",
+        "Preallocation and why growing an array in a loop is fatal"
+      ],
+      "file": "cod_mat_01_core/06-control-flow-and-preallocation.md"
+    },
+    {
+      "id": "l07-structs-cells-tables-strings",
+      "title": "Structs, cells, tables and text",
+      "minutes": 20,
+      "covers": [
+        "struct, cell, table, categorical, string versus char"
+      ],
+      "file": "cod_mat_01_core/07-structs-cells-tables-strings.md"
+    },
+    {
+      "id": "l08-printing-and-files",
+      "title": "Printing, saving and loading",
+      "minutes": 21,
+      "covers": [
+        "fprintf, sprintf, disp; save/load and .mat files; readtable and writetable"
+      ],
+      "file": "cod_mat_01_core/08-printing-and-files.md"
+    },
+    {
+      "id": "l09-scripts-functions-workspaces",
+      "title": "Scripts, functions and workspaces",
+      "minutes": 18,
+      "covers": [
+        "Scripts versus functions and the base workspace: a classic interview question"
+      ],
+      "file": "cod_mat_01_core/09-scripts-functions-workspaces.md"
+    },
+    {
+      "id": "l10-function-handles-and-closures",
+      "title": "Local, nested and anonymous functions, and function handles",
+      "minutes": 21,
+      "covers": [
+        "Local, nested and anonymous functions; function handles; closures"
+      ],
+      "file": "cod_mat_01_core/10-function-handles-and-closures.md"
+    },
+    {
+      "id": "l11-validating-inputs",
+      "title": "Checking what goes into a function",
+      "minutes": 23,
+      "covers": [
+        "nargin, nargout, varargin; arguments blocks and validateattributes"
+      ],
+      "file": "cod_mat_01_core/11-validating-inputs.md"
+    },
+    {
+      "id": "l12-classdef-handle-and-value",
+      "title": "Classes in MATLAB, and handle versus value",
+      "minutes": 20,
+      "covers": [
+        "MATLAB OOP: classdef, handle versus value semantics"
+      ],
+      "file": "cod_mat_01_core/12-classdef-handle-and-value.md"
+    },
+    {
+      "id": "l13-profiling-and-speed",
+      "title": "Profiling and making code fast",
+      "minutes": 22,
+      "covers": [
+        "The Profiler, tic/toc, vectorisation, parfor",
+        "Preallocation and why growing an array in a loop is fatal"
+      ],
+      "file": "cod_mat_01_core/13-profiling-and-speed.md"
+    },
+    {
+      "id": "l14-plotting-and-timetables",
+      "title": "Plotting flight data and lining up time",
+      "minutes": 24,
+      "covers": [
+        "Plotting: plot, tiledlayout, yyaxis, semilogx, exportgraphics",
+        "timetable, synchronize and retime as the merge_asof equivalent"
+      ],
+      "file": "cod_mat_01_core/14-plotting-and-timetables.md"
+    }
+  ],
+  "cod_mat_02_gnc_toolboxes": [
+    {
+      "id": "l01-lti-models",
+      "title": "Describing a system to MATLAB with tf, zpk, ss and frd",
+      "minutes": 22,
+      "covers": [
+        "tf, zpk, ss, frd; series, parallel, feedback, connect, sumblk"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/01-lti-models.md"
+    },
+    {
+      "id": "l02-time-responses",
+      "title": "Watching a system respond with step, impulse, lsim, initial and stepinfo",
+      "minutes": 19,
+      "covers": [
+        "step, impulse, lsim, initial, stepinfo"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/02-time-responses.md"
+    },
+    {
+      "id": "l03-poles-zeros-root-locus",
+      "title": "Poles, zeros and the root locus with pole, zero, damp, pzmap and rlocus",
+      "minutes": 22,
+      "covers": [
+        "rlocus, pzmap, damp, pole, zero"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/03-poles-zeros-root-locus.md"
+    },
+    {
+      "id": "l04-frequency-response-and-margins",
+      "title": "Frequency response, Bode plots and stability margins",
+      "minutes": 24,
+      "covers": [
+        "bode, nyquist, nichols, margin, allmargin, sigma"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/04-frequency-response-and-margins.md"
+    },
+    {
+      "id": "l05-discretisation",
+      "title": "Discretisation: c2d, d2c, zoh and tustin",
+      "minutes": 16,
+      "covers": [
+        "c2d and d2c with zoh, tustin and prewarp; c2dOptions"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/05-discretisation.md"
+    },
+    {
+      "id": "l06-state-space-design",
+      "title": "State-space design: place, lqr and kalman",
+      "minutes": 20,
+      "covers": [
+        "ctrb, obsv, gram; place, acker; lqr, dlqr, lqi; kalman, lqg"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/06-state-space-design.md"
+    },
+    {
+      "id": "l07-model-reduction-and-pid-tuning",
+      "title": "Shrinking models and tuning PID controllers",
+      "minutes": 23,
+      "covers": [
+        "minreal, balred, modred for model reduction",
+        "Control System Designer and PID Tuner; pidtune"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/07-model-reduction-and-pid-tuning.md"
+    },
+    {
+      "id": "l08-gain-scheduling",
+      "title": "Gain scheduling across a flight envelope",
+      "minutes": 24,
+      "covers": [
+        "Gain scheduling across a flight envelope; arrays of LTI models"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/08-gain-scheduling.md"
+    },
+    {
+      "id": "l09-aerospace-frames",
+      "title": "Aerospace frames: ECI, ECEF, NED, ENU, body, wind, stability",
+      "minutes": 25,
+      "covers": [
+        "Aerospace frames: ECI, ECEF, NED, ENU, body, wind, stability"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/09-aerospace-frames.md"
+    },
+    {
+      "id": "l10-rotations-and-quaternion-convention",
+      "title": "Rotations, quaternions and the scalar-first trap",
+      "minutes": 22,
+      "covers": [
+        "dcm2angle, angle2dcm, dcm2quat, quat2dcm, quatmultiply, quatrotate",
+        "The scalar-first quaternion convention in MathWorks Aerospace products"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/10-rotations-and-quaternion-convention.md"
+    },
+    {
+      "id": "l11-atmosphere-gravity-magnetism",
+      "title": "The air, gravity and magnetic field around the vehicle",
+      "minutes": 24,
+      "covers": [
+        "Atmosphere models: atmosisa, atmoscoesa (valid to 86 km), atmosnrlmsise00",
+        "Gravity and magnetic models: gravitywgs84, gravitysphericalharmonic, wrldmagm"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/11-atmosphere-gravity-magnetism.md"
+    },
+    {
+      "id": "l12-turbulence-wind-and-units",
+      "title": "Wind, turbulence and unit conversions",
+      "minutes": 21,
+      "covers": [
+        "Dryden and von Karman turbulence; wind shear",
+        "Unit conversion helpers: convang, convvel, convforce, convmass, convlength"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/12-turbulence-wind-and-units.md"
+    },
+    {
+      "id": "l13-satellite-scenario",
+      "title": "Orbits, ground tracks and access with satelliteScenario",
+      "minutes": 21,
+      "covers": [
+        "satelliteScenario for orbits, access and ground tracks"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/13-satellite-scenario.md"
+    }
+  ],
+  "cod_ops_01_docker": [
+    {
+      "id": "l01-images-containers-and-layers",
+      "title": "Images, containers and the layers inside them",
+      "minutes": 22,
+      "covers": [
+        "Images vs containers; layers and the union filesystem"
+      ],
+      "file": "cod_ops_01_docker/01-images-containers-and-layers.md"
+    },
+    {
+      "id": "l02-writing-a-dockerfile",
+      "title": "Writing a Dockerfile, one instruction at a time",
+      "minutes": 23,
+      "covers": [
+        "Dockerfile: FROM RUN COPY WORKDIR ENV ARG ENTRYPOINT CMD USER HEALTHCHECK"
+      ],
+      "file": "cod_ops_01_docker/02-writing-a-dockerfile.md"
+    },
+    {
+      "id": "l03-fast-rebuilds-and-slim-images",
+      "title": "Fast rebuilds and slim images",
+      "minutes": 22,
+      "covers": [
+        "Layer caching and instruction ordering for fast rebuilds",
+        "Multi-stage builds: compile fat, ship slim",
+        ".dockerignore and build context size"
+      ],
+      "file": "cod_ops_01_docker/03-fast-rebuilds-and-slim-images.md"
+    },
+    {
+      "id": "l04-choosing-a-base-image",
+      "title": "Choosing a base image, and the Alpine trap",
+      "minutes": 19,
+      "covers": [
+        "Base-image choice: debian-slim vs alpine and the musl trap for scientific Python"
+      ],
+      "file": "cod_ops_01_docker/04-choosing-a-base-image.md"
+    },
+    {
+      "id": "l05-volumes-networks-and-compose",
+      "title": "Volumes, networks and docker compose",
+      "minutes": 22,
+      "covers": [
+        "Volumes and bind mounts, networks, port publishing",
+        "docker compose for sim + database + dashboard stacks"
+      ],
+      "file": "cod_ops_01_docker/05-volumes-networks-and-compose.md"
+    },
+    {
+      "id": "l06-registries-tags-and-digests",
+      "title": "Registries, tags and digests",
+      "minutes": 21,
+      "covers": [
+        "Registries, tagging discipline, never :latest in a pipeline",
+        "Digest pinning and lockfiles for true reproducibility"
+      ],
+      "file": "cod_ops_01_docker/06-registries-tags-and-digests.md"
+    },
+    {
+      "id": "l07-dev-containers-and-kubernetes",
+      "title": "Dev containers for new teammates, and a first look at Kubernetes",
+      "minutes": 24,
+      "covers": [
+        "Dev Containers for onboarding",
+        "Kubernetes literacy: pods, deployments, services"
+      ],
+      "file": "cod_ops_01_docker/07-dev-containers-and-kubernetes.md"
+    },
+    {
+      "id": "l08-alternatives-podman-nix-spack-conda-uv",
+      "title": "Other ways to pin an environment: Podman, Nix, Spack, conda-lock and uv",
+      "minutes": 22,
+      "covers": [
+        "Alternatives: Podman, Nix, Spack, conda-lock, uv"
+      ],
+      "file": "cod_ops_01_docker/08-alternatives-podman-nix-spack-conda-uv.md"
+    }
+  ],
+  "cod_ops_02_ci": [
+    {
+      "id": "l01-what-ci-buys-a-simulation-team",
+      "title": "What continuous integration buys a simulation team",
+      "minutes": 22,
+      "covers": [
+        "What CI buys a simulation team, stated as failure modes it prevents"
+      ],
+      "file": "cod_ops_02_ci/01-what-ci-buys-a-simulation-team.md"
+    },
+    {
+      "id": "l02-github-actions-basics",
+      "title": "GitHub Actions: your first pipeline",
+      "minutes": 24,
+      "covers": [
+        "GitHub Actions: workflows, events, jobs, steps, runners"
+      ],
+      "file": "cod_ops_02_ci/02-github-actions-basics.md"
+    },
+    {
+      "id": "l03-matrices-caching-and-secrets",
+      "title": "Matrices, caches, artifacts and secrets",
+      "minutes": 26,
+      "covers": [
+        "Matrix builds across OS, compiler and interpreter version",
+        "Caching pip, cargo and ccache; artefacts; secrets; environments"
+      ],
+      "file": "cod_ops_02_ci/03-matrices-caching-and-secrets.md"
+    },
+    {
+      "id": "l04-reuse-runners-and-other-ci-systems",
+      "title": "Reusing pipelines, choosing runners, and other CI systems",
+      "minutes": 24,
+      "covers": [
+        "Reusable workflows and composite actions",
+        "Self-hosted runners for licensed tools and special hardware",
+        "GitLab CI and Jenkins, still common in defence and aerospace"
+      ],
+      "file": "cod_ops_02_ci/04-reuse-runners-and-other-ci-systems.md"
+    },
+    {
+      "id": "l05-a-gnc-pipeline",
+      "title": "A pipeline for GNC code",
+      "minutes": 28,
+      "covers": [
+        "A GNC pipeline: lint, static analysis, unit tests, coverage gate, Debug+ASan and Release builds, regression sims with tolerances, benchmark thresholds, docs, artefacts"
+      ],
+      "file": "cod_ops_02_ci/05-a-gnc-pipeline.md"
+    },
+    {
+      "id": "l06-golden-files-and-nightly-monte-carlo",
+      "title": "Golden files and the nightly Monte Carlo",
+      "minutes": 25,
+      "covers": [
+        "Golden-file regression comparison with numerical tolerance",
+        "Nightly and scheduled long-running Monte Carlo jobs"
+      ],
+      "file": "cod_ops_02_ci/06-golden-files-and-nightly-monte-carlo.md"
+    },
+    {
+      "id": "l07-matlab-and-simulink-in-ci",
+      "title": "MATLAB and Simulink in CI",
+      "minutes": 24,
+      "covers": [
+        "MATLAB and Simulink in CI: setup-matlab, headless Simulink Test, licence servers"
+      ],
+      "file": "cod_ops_02_ci/07-matlab-and-simulink-in-ci.md"
+    },
+    {
+      "id": "l08-flaky-tests-protection-and-releases",
+      "title": "Flaky tests, protected branches and releases",
+      "minutes": 26,
+      "covers": [
+        "Flaky-test policy; quarantine rather than retry-until-green",
+        "Branch protection, required checks, release automation"
+      ],
+      "file": "cod_ops_02_ci/08-flaky-tests-protection-and-releases.md"
+    }
+  ],
   "cod_py_01_basics": [
     {
       "id": "l01-interpreter-repl-and-scripts",
@@ -2213,7 +4247,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-inheritance-composition-protocols",
       "title": "Inheritance, composition and Protocols",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "Inheritance vs composition; duck typing and Protocols"
       ],
@@ -2222,7 +4256,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-context-managers",
       "title": "Context managers: release on every path",
-      "minutes": 15,
+      "minutes": 18,
       "covers": [
         "Context managers: with, __enter__/__exit__, contextlib"
       ],
@@ -2231,7 +4265,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-decorators",
       "title": "Decorators, wraps and caching",
-      "minutes": 15,
+      "minutes": 21,
       "covers": [
         "Decorators, functools.wraps, functools.lru_cache"
       ],
@@ -2240,7 +4274,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-type-annotations-and-mypy",
       "title": "Type annotations and mypy",
-      "minutes": 17,
+      "minutes": 22,
       "covers": [
         "Type annotations, Optional, Sequence, npt.NDArray, and mypy"
       ],
@@ -2249,7 +4283,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-logging",
       "title": "Logging instead of print",
-      "minutes": 15,
+      "minutes": 20,
       "covers": [
         "logging instead of print; levels and handlers"
       ],
@@ -2258,7 +4292,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-argparse",
       "title": "Command-line tools with argparse",
-      "minutes": 15,
+      "minutes": 20,
       "covers": [
         "argparse for command-line tools"
       ],
@@ -2267,11 +4301,1239 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-package-layout",
       "title": "Package layout and relative imports",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "Package layout: src/ layout, __init__.py, relative imports"
       ],
       "file": "cod_py_02_idiomatic/13-package-layout.md"
+    }
+  ],
+  "cod_py_03_numpy": [
+    {
+      "id": "l01-the-ndarray",
+      "title": "The ndarray: dtype, shape and strides",
+      "minutes": 21,
+      "covers": [
+        "ndarray: dtype, shape, ndim, strides, itemsize"
+      ],
+      "file": "cod_py_03_numpy/01-the-ndarray.md"
+    },
+    {
+      "id": "l02-creating-arrays",
+      "title": "Making arrays",
+      "minutes": 18,
+      "covers": [
+        "Creation: zeros, ones, full, arange, linspace, eye, default_rng"
+      ],
+      "file": "cod_py_03_numpy/02-creating-arrays.md"
+    },
+    {
+      "id": "l03-slicing-views-and-copies",
+      "title": "Slicing, views and copies",
+      "minutes": 20,
+      "covers": [
+        "Indexing and slicing; views vs copies; base; fancy indexing and boolean masks"
+      ],
+      "file": "cod_py_03_numpy/03-slicing-views-and-copies.md"
+    },
+    {
+      "id": "l04-fancy-indexing-and-masks",
+      "title": "Fancy indexing and boolean masks",
+      "minutes": 22,
+      "covers": [
+        "Indexing and slicing; views vs copies; base; fancy indexing and boolean masks"
+      ],
+      "file": "cod_py_03_numpy/04-fancy-indexing-and-masks.md"
+    },
+    {
+      "id": "l05-broadcasting",
+      "title": "Broadcasting",
+      "minutes": 24,
+      "covers": [
+        "Broadcasting rules, newaxis, and when shapes are incompatible"
+      ],
+      "file": "cod_py_03_numpy/05-broadcasting.md"
+    },
+    {
+      "id": "l06-axes-and-reductions",
+      "title": "Axes and reductions",
+      "minutes": 20,
+      "covers": [
+        "Axis semantics in reductions: sum, mean, std, min, argmax with axis="
+      ],
+      "file": "cod_py_03_numpy/06-axes-and-reductions.md"
+    },
+    {
+      "id": "l07-reshaping-and-stacking",
+      "title": "Reshaping, transposing and stacking",
+      "minutes": 21,
+      "covers": [
+        "reshape, ravel, transpose, stack, concatenate, C vs Fortran order"
+      ],
+      "file": "cod_py_03_numpy/07-reshaping-and-stacking.md"
+    },
+    {
+      "id": "l08-products-matmul-dot-cross-einsum",
+      "title": "Products: @, dot, cross and einsum",
+      "minutes": 21,
+      "covers": [
+        "matmul and @, dot, cross, einsum"
+      ],
+      "file": "cod_py_03_numpy/08-products-matmul-dot-cross-einsum.md"
+    },
+    {
+      "id": "l09-linear-algebra",
+      "title": "Linear algebra: solve, lstsq, eig, svd",
+      "minutes": 24,
+      "covers": [
+        "Linear algebra: solve, lstsq, eig, svd, norm, cond, and why not inv"
+      ],
+      "file": "cod_py_03_numpy/09-linear-algebra.md"
+    },
+    {
+      "id": "l10-floating-point-pitfalls",
+      "title": "Floating-point pitfalls",
+      "minutes": 20,
+      "covers": [
+        "Float pitfalls: allclose, catastrophic cancellation, float32 vs float64"
+      ],
+      "file": "cod_py_03_numpy/10-floating-point-pitfalls.md"
+    },
+    {
+      "id": "l11-random-numbers",
+      "title": "Random numbers you can reproduce",
+      "minutes": 17,
+      "covers": [
+        "Random numbers: default_rng, seeding, reproducibility"
+      ],
+      "file": "cod_py_03_numpy/11-random-numbers.md"
+    },
+    {
+      "id": "l12-saving-loading-and-memmap",
+      "title": "Saving, loading and memory-mapping big telemetry",
+      "minutes": 19,
+      "covers": [
+        "save, load, npz, memmap for big telemetry"
+      ],
+      "file": "cod_py_03_numpy/12-saving-loading-and-memmap.md"
+    },
+    {
+      "id": "l13-vectorisation",
+      "title": "Vectorisation as the default",
+      "minutes": 18,
+      "covers": [
+        "Vectorisation as the default, and when it genuinely does not apply"
+      ],
+      "file": "cod_py_03_numpy/13-vectorisation.md"
+    }
+  ],
+  "cod_py_04_scipy": [
+    {
+      "id": "l01-root-finding",
+      "title": "Root finding with brentq, newton, fsolve and root",
+      "minutes": 24,
+      "covers": [
+        "scipy.optimize: brentq, root, fsolve, newton"
+      ],
+      "file": "cod_py_04_scipy/01-root-finding.md"
+    },
+    {
+      "id": "l02-minimize-and-curve-fitting",
+      "title": "Minimizing, fitting curves and finding the best valley",
+      "minutes": 25,
+      "covers": [
+        "scipy.optimize: minimize, least_squares, curve_fit, differential_evolution"
+      ],
+      "file": "cod_py_04_scipy/02-minimize-and-curve-fitting.md"
+    },
+    {
+      "id": "l03-residuals-jacobians-scaling",
+      "title": "Residuals, Jacobians and scaling",
+      "minutes": 25,
+      "covers": [
+        "Residuals, Jacobians, scaling and why conditioning of decision variables matters"
+      ],
+      "file": "cod_py_04_scipy/03-residuals-jacobians-scaling.md"
+    },
+    {
+      "id": "l04-dense-linear-algebra",
+      "title": "Dense linear algebra: Cholesky, QR, expm and Riccati",
+      "minutes": 24,
+      "covers": [
+        "scipy.linalg: cholesky, qr, expm, solve_continuous_are and solve_discrete_are"
+      ],
+      "file": "cod_py_04_scipy/04-dense-linear-algebra.md"
+    },
+    {
+      "id": "l05-filters-and-spectra",
+      "title": "Filters and spectra: butter, lfilter, filtfilt and welch",
+      "minutes": 22,
+      "covers": [
+        "scipy.signal: butter, filtfilt vs lfilter, welch, bode, tf2ss, cont2discrete"
+      ],
+      "file": "cod_py_04_scipy/05-filters-and-spectra.md"
+    },
+    {
+      "id": "l06-systems-and-discretization",
+      "title": "Systems and discretization: bode, tf2ss and cont2discrete",
+      "minutes": 22,
+      "covers": [
+        "scipy.signal: butter, filtfilt vs lfilter, welch, bode, tf2ss, cont2discrete"
+      ],
+      "file": "cod_py_04_scipy/06-systems-and-discretization.md"
+    },
+    {
+      "id": "l07-interpolation-and-aero-tables",
+      "title": "Interpolation and aero tables",
+      "minutes": 22,
+      "covers": [
+        "scipy.interpolate: interp1d, CubicSpline, RegularGridInterpolator for aero tables"
+      ],
+      "file": "cod_py_04_scipy/07-interpolation-and-aero-tables.md"
+    },
+    {
+      "id": "l08-rotations",
+      "title": "Rotations with SciPy",
+      "minutes": 19,
+      "covers": [
+        "scipy.spatial.transform.Rotation: from_quat, as_quat, from_euler, as_matrix, slerp"
+      ],
+      "file": "cod_py_04_scipy/08-rotations.md"
+    },
+    {
+      "id": "l09-quaternion-conventions",
+      "title": "Scalar-first and scalar-last quaternions",
+      "minutes": 16,
+      "covers": [
+        "The scalar-last quaternion convention in SciPy and the scalar-first convention elsewhere"
+      ],
+      "file": "cod_py_04_scipy/09-quaternion-conventions.md"
+    },
+    {
+      "id": "l10-statistics-for-monte-carlo",
+      "title": "Statistics for Monte Carlo runs",
+      "minutes": 22,
+      "covers": [
+        "scipy.stats: distributions, rvs, fit, percentile-based reporting for Monte Carlo"
+      ],
+      "file": "cod_py_04_scipy/10-statistics-for-monte-carlo.md"
+    },
+    {
+      "id": "l11-constants-and-choosing-a-solver",
+      "title": "Units you can trust, and picking the right solver",
+      "minutes": 24,
+      "covers": [
+        "scipy.constants and dimensional sanity",
+        "Choosing a solver from the structure of the problem"
+      ],
+      "file": "cod_py_04_scipy/11-constants-and-choosing-a-solver.md"
+    }
+  ],
+  "cod_py_05_plotting": [
+    {
+      "id": "l01-figure-and-axes",
+      "title": "Figures and Axes, and why you name them",
+      "minutes": 17,
+      "covers": [
+        "Figure and Axes object API versus the pyplot state machine"
+      ],
+      "file": "cod_py_05_plotting/01-figure-and-axes.md"
+    },
+    {
+      "id": "l02-layouts",
+      "title": "Many panels on one page",
+      "minutes": 18,
+      "covers": [
+        "subplots, shared axes, twin axes, gridspec, constrained layout"
+      ],
+      "file": "cod_py_05_plotting/02-layouts.md"
+    },
+    {
+      "id": "l03-plot-types",
+      "title": "Lines, steps, stems, error bars and sigma bands",
+      "minutes": 25,
+      "covers": [
+        "Line, scatter, step, stem, errorbar, fill_between for sigma envelopes"
+      ],
+      "file": "cod_py_05_plotting/03-plot-types.md"
+    },
+    {
+      "id": "l04-log-axes-and-control-plots",
+      "title": "Log axes, Bode plots, pole-zero maps and root loci",
+      "minutes": 20,
+      "covers": [
+        "Log and semilog axes; annotated Bode, pole-zero and root-locus plots"
+      ],
+      "file": "cod_py_05_plotting/04-log-axes-and-control-plots.md"
+    },
+    {
+      "id": "l05-ticks-labels-and-legends",
+      "title": "Ticks, labels, annotations and legends",
+      "minutes": 20,
+      "covers": [
+        "Ticks, locators, formatters, datetime axes",
+        "Text, annotation, legends outside axes, units in every axis label"
+      ],
+      "file": "cod_py_05_plotting/05-ticks-labels-and-legends.md"
+    },
+    {
+      "id": "l06-colour",
+      "title": "Color that carries meaning",
+      "minutes": 22,
+      "covers": [
+        "Colour: colourblind-safe cycles, sequential vs diverging, when colour carries data"
+      ],
+      "file": "cod_py_05_plotting/06-colour.md"
+    },
+    {
+      "id": "l07-saving-figures",
+      "title": "Saving figures that survive the trip",
+      "minutes": 22,
+      "covers": [
+        "Saving: vector formats, dpi, font embedding, figure size for a slide vs a report"
+      ],
+      "file": "cod_py_05_plotting/07-saving-figures.md"
+    },
+    {
+      "id": "l08-animation-and-plotly",
+      "title": "Moving pictures and plots you can poke",
+      "minutes": 23,
+      "covers": [
+        "Animation and interactive review; Plotly for exploratory telemetry"
+      ],
+      "file": "cod_py_05_plotting/08-animation-and-plotly.md"
+    },
+    {
+      "id": "l09-pandas-basics",
+      "title": "Telemetry tables with pandas",
+      "minutes": 23,
+      "covers": [
+        "pandas: DataFrame, Series, DatetimeIndex, read_csv, read_parquet"
+      ],
+      "file": "cod_py_05_plotting/09-pandas-basics.md"
+    },
+    {
+      "id": "l10-resample-rolling-groupby",
+      "title": "Resample, rolling, interpolate and groupby",
+      "minutes": 22,
+      "covers": [
+        "resample, rolling, interpolate, groupby and agg"
+      ],
+      "file": "cod_py_05_plotting/10-resample-rolling-groupby.md"
+    },
+    {
+      "id": "l11-merge-asof",
+      "title": "Lining up two clocks with merge_asof",
+      "minutes": 22,
+      "covers": [
+        "merge and merge_asof for aligning a 200 Hz IMU stream to 1 Hz GPS"
+      ],
+      "file": "cod_py_05_plotting/11-merge-asof.md"
+    },
+    {
+      "id": "l12-decimation-for-plotting",
+      "title": "Shrinking big data for a plot without losing the spike",
+      "minutes": 18,
+      "covers": [
+        "Downsampling for plotting without hiding transients (min/max decimation)"
+      ],
+      "file": "cod_py_05_plotting/12-decimation-for-plotting.md"
+    }
+  ],
+  "cod_py_06_testing": [
+    {
+      "id": "l01-pytest-basics",
+      "title": "Your first pytest suite",
+      "minutes": 22,
+      "covers": [
+        "pytest discovery rules, plain assert, and the rewritten assertion output"
+      ],
+      "file": "cod_py_06_testing/01-pytest-basics.md"
+    },
+    {
+      "id": "l02-approx-and-allclose",
+      "title": "Comparing numbers that are only close",
+      "minutes": 22,
+      "covers": [
+        "pytest.approx and its rel/abs semantics; the 1e-6 relative default",
+        "numpy.testing assert_allclose and assert_array_equal"
+      ],
+      "file": "cod_py_06_testing/02-approx-and-allclose.md"
+    },
+    {
+      "id": "l03-parametrize",
+      "title": "One test, a whole table of cases",
+      "minutes": 20,
+      "covers": [
+        "parametrize for tables of cases; ids for readable failures"
+      ],
+      "file": "cod_py_06_testing/03-parametrize.md"
+    },
+    {
+      "id": "l04-fixtures",
+      "title": "Fixtures, scopes, conftest.py, tmp_path and monkeypatch",
+      "minutes": 22,
+      "covers": [
+        "Fixtures, scopes, conftest.py, tmp_path, monkeypatch"
+      ],
+      "file": "cod_py_06_testing/04-fixtures.md"
+    },
+    {
+      "id": "l05-markers-and-fast-suite",
+      "title": "Markers, choosing tests, and keeping the suite fast",
+      "minutes": 21,
+      "covers": [
+        "Markers, -k, -x, --lf, and keeping the fast suite fast"
+      ],
+      "file": "cod_py_06_testing/05-markers-and-fast-suite.md"
+    },
+    {
+      "id": "l06-property-based-testing",
+      "title": "Property-based testing with Hypothesis",
+      "minutes": 21,
+      "covers": [
+        "Property-based testing with Hypothesis; invariants over examples"
+      ],
+      "file": "cod_py_06_testing/06-property-based-testing.md"
+    },
+    {
+      "id": "l07-golden-files",
+      "title": "Golden-file regression tests",
+      "minutes": 22,
+      "covers": [
+        "Golden-file regression tests with explicit tolerances"
+      ],
+      "file": "cod_py_06_testing/07-golden-files.md"
+    },
+    {
+      "id": "l08-testing-numerical-code",
+      "title": "Testing numerical code without an answer key",
+      "minutes": 22,
+      "covers": [
+        "Testing numerical code: invariants, convergence order, conservation laws"
+      ],
+      "file": "cod_py_06_testing/08-testing-numerical-code.md"
+    },
+    {
+      "id": "l09-test-doubles",
+      "title": "Fakes and mocks for sensors and hardware",
+      "minutes": 21,
+      "covers": [
+        "Test doubles: fakes and mocks for sensors and hardware interfaces"
+      ],
+      "file": "cod_py_06_testing/09-test-doubles.md"
+    },
+    {
+      "id": "l10-coverage",
+      "title": "Coverage, and why it is a floor",
+      "minutes": 19,
+      "covers": [
+        "Coverage with pytest-cov, and why coverage is a floor not a goal"
+      ],
+      "file": "cod_py_06_testing/10-coverage.md"
+    },
+    {
+      "id": "l11-linters-and-hooks",
+      "title": "Linters, formatters, type checkers and pre-commit hooks",
+      "minutes": 20,
+      "covers": [
+        "ruff, black, mypy and pre-commit hooks"
+      ],
+      "file": "cod_py_06_testing/11-linters-and-hooks.md"
+    },
+    {
+      "id": "l12-docstrings-and-doctest",
+      "title": "Docstrings in NumPy style, and doctest",
+      "minutes": 19,
+      "covers": [
+        "Docstrings in NumPy style and doctest"
+      ],
+      "file": "cod_py_06_testing/12-docstrings-and-doctest.md"
+    }
+  ],
+  "cod_py_07_integration": [
+    {
+      "id": "l01-initial-value-problem",
+      "title": "The initial value problem and how integration errors pile up",
+      "minutes": 22,
+      "covers": [
+        "The initial value problem and local versus global truncation error"
+      ],
+      "file": "cod_py_07_integration/01-initial-value-problem.md"
+    },
+    {
+      "id": "l02-euler-rk2-rk4",
+      "title": "Euler, RK2 and RK4 by hand, and how to prove their order",
+      "minutes": 17,
+      "covers": [
+        "Euler, RK2, classic RK4 implemented by hand; order verification by step halving"
+      ],
+      "file": "cod_py_07_integration/02-euler-rk2-rk4.md"
+    },
+    {
+      "id": "l03-adaptive-step-size",
+      "title": "Embedded pairs and step sizes that choose themselves",
+      "minutes": 19,
+      "covers": [
+        "Embedded pairs and adaptive step size control"
+      ],
+      "file": "cod_py_07_integration/03-adaptive-step-size.md"
+    },
+    {
+      "id": "l04-solve-ivp-methods",
+      "title": "solve_ivp and its six methods",
+      "minutes": 21,
+      "covers": [
+        "solve_ivp methods: RK45, RK23, DOP853, Radau, BDF, LSODA"
+      ],
+      "file": "cod_py_07_integration/04-solve-ivp-methods.md"
+    },
+    {
+      "id": "l05-tolerances-and-output",
+      "title": "Choosing rtol and atol, and asking for output",
+      "minutes": 22,
+      "covers": [
+        "rtol and atol: what each controls and how to choose them from the state magnitudes",
+        "t_eval versus dense_output"
+      ],
+      "file": "cod_py_07_integration/05-tolerances-and-output.md"
+    },
+    {
+      "id": "l06-events",
+      "title": "Events: apogee, impact and other moments",
+      "minutes": 22,
+      "covers": [
+        "Events: terminal, direction, apogee and impact detection"
+      ],
+      "file": "cod_py_07_integration/06-events.md"
+    },
+    {
+      "id": "l07-stiffness",
+      "title": "Stiffness and when to switch to an implicit method",
+      "minutes": 21,
+      "covers": [
+        "Stiffness: how to recognise it and when to switch to an implicit method"
+      ],
+      "file": "cod_py_07_integration/07-stiffness.md"
+    },
+    {
+      "id": "l08-energy-and-jacobi-drift",
+      "title": "Energy and Jacobi-constant drift as an accuracy check",
+      "minutes": 20,
+      "covers": [
+        "Energy and Jacobi-constant drift as an independent accuracy check"
+      ],
+      "file": "cod_py_07_integration/08-energy-and-jacobi-drift.md"
+    },
+    {
+      "id": "l09-symplectic-integrators",
+      "title": "Symplectic integrators for long-horizon propagation",
+      "minutes": 19,
+      "covers": [
+        "Symplectic integrators and long-horizon propagation"
+      ],
+      "file": "cod_py_07_integration/09-symplectic-integrators.md"
+    },
+    {
+      "id": "l10-discontinuities",
+      "title": "Staging, engine cutoff and restarting the solver",
+      "minutes": 22,
+      "covers": [
+        "Discontinuities: staging, thrust cutoff and why you restart the solver"
+      ],
+      "file": "cod_py_07_integration/10-discontinuities.md"
+    },
+    {
+      "id": "l11-fixed-step-real-time",
+      "title": "Fixed-step integration for real-time flight code",
+      "minutes": 20,
+      "covers": [
+        "Fixed-step integration for real-time and code generation"
+      ],
+      "file": "cod_py_07_integration/11-fixed-step-real-time.md"
+    }
+  ],
+  "cod_py_08_performance": [
+    {
+      "id": "l01-measure-first",
+      "title": "Measure first, then change the code",
+      "minutes": 24,
+      "covers": [
+        "Measure first: timeit, cProfile, pstats, snakeviz, line_profiler, memory_profiler"
+      ],
+      "file": "cod_py_08_performance/01-measure-first.md"
+    },
+    {
+      "id": "l02-complexity-first",
+      "title": "Fix the algorithm before the details",
+      "minutes": 24,
+      "covers": [
+        "Algorithmic complexity before micro-optimisation"
+      ],
+      "file": "cod_py_08_performance/02-complexity-first.md"
+    },
+    {
+      "id": "l03-vectorisation-and-memory",
+      "title": "Vectorise by default, but watch the memory",
+      "minutes": 22,
+      "covers": [
+        "Vectorisation as the default; when it costs more memory than it saves time"
+      ],
+      "file": "cod_py_08_performance/03-vectorisation-and-memory.md"
+    },
+    {
+      "id": "l04-numba-njit",
+      "title": "Numba – compiling the hot loop",
+      "minutes": 22,
+      "covers": [
+        "Numba njit: nopython mode, supported subset, cache=True, parallel and prange"
+      ],
+      "file": "cod_py_08_performance/04-numba-njit.md"
+    },
+    {
+      "id": "l05-when-numba-is-slower",
+      "title": "When @njit makes things slower",
+      "minutes": 18,
+      "covers": [
+        "Why an njit function can be slower: compile time, object mode fallback, unsupported types"
+      ],
+      "file": "cod_py_08_performance/05-when-numba-is-slower.md"
+    },
+    {
+      "id": "l06-cython-and-pybind11",
+      "title": "Cython and pybind11 – a compiled core with a Python harness",
+      "minutes": 20,
+      "covers": [
+        "Cython and pybind11; calling a C++ simulation core from a Python harness"
+      ],
+      "file": "cod_py_08_performance/06-cython-and-pybind11.md"
+    },
+    {
+      "id": "l07-gil-threads-processes",
+      "title": "The GIL, threads and processes",
+      "minutes": 21,
+      "covers": [
+        "The GIL: what it does and does not block",
+        "Threads for I/O and released-GIL numerics, processes for CPU-bound Python"
+      ],
+      "file": "cod_py_08_performance/07-gil-threads-processes.md"
+    },
+    {
+      "id": "l08-parallel-monte-carlo",
+      "title": "Running a Monte Carlo on every core",
+      "minutes": 22,
+      "covers": [
+        "multiprocessing, concurrent.futures and joblib for embarrassingly parallel Monte Carlo",
+        "Serialisation cost and why passing large arrays between processes can dominate"
+      ],
+      "file": "cod_py_08_performance/08-parallel-monte-carlo.md"
+    },
+    {
+      "id": "l09-bigger-than-memory",
+      "title": "Telemetry bigger than memory",
+      "minutes": 23,
+      "covers": [
+        "numpy.memmap, chunking and Parquet for telemetry larger than memory"
+      ],
+      "file": "cod_py_08_performance/09-bigger-than-memory.md"
+    },
+    {
+      "id": "l10-caching-and-precomputation",
+      "title": "Caching and precomputation",
+      "minutes": 24,
+      "covers": [
+        "Caching and precomputation: lookup tables, interpolators built once"
+      ],
+      "file": "cod_py_08_performance/10-caching-and-precomputation.md"
+    },
+    {
+      "id": "l11-benchmark-methodology",
+      "title": "Benchmarks you can believe",
+      "minutes": 24,
+      "covers": [
+        "Benchmark methodology: warmup, repetitions, frequency scaling, noise"
+      ],
+      "file": "cod_py_08_performance/11-benchmark-methodology.md"
+    }
+  ],
+  "cod_py_09_packaging": [
+    {
+      "id": "l01-packages-and-imports",
+      "title": "Packages, __init__.py and relative imports",
+      "minutes": 19,
+      "covers": [
+        "__init__.py, package versus namespace package, relative imports"
+      ],
+      "file": "cod_py_09_packaging/01-packages-and-imports.md"
+    },
+    {
+      "id": "l02-src-layout",
+      "title": "The src layout",
+      "minutes": 17,
+      "covers": [
+        "The src layout and why it prevents accidental local imports"
+      ],
+      "file": "cod_py_09_packaging/02-src-layout.md"
+    },
+    {
+      "id": "l03-pyproject-and-backends",
+      "title": "pyproject.toml and build backends",
+      "minutes": 20,
+      "covers": [
+        "pyproject.toml: project metadata, dependencies, optional-dependencies, build-system",
+        "Build backends: setuptools, hatchling, flit"
+      ],
+      "file": "cod_py_09_packaging/03-pyproject-and-backends.md"
+    },
+    {
+      "id": "l04-editable-installs",
+      "title": "Editable installs and what they really do",
+      "minutes": 22,
+      "covers": [
+        "Editable installs and what they actually do"
+      ],
+      "file": "cod_py_09_packaging/04-editable-installs.md"
+    },
+    {
+      "id": "l05-wheels-and-sdists",
+      "title": "Wheels, source distributions and manylinux",
+      "minutes": 24,
+      "covers": [
+        "Wheels versus source distributions; manylinux"
+      ],
+      "file": "cod_py_09_packaging/05-wheels-and-sdists.md"
+    },
+    {
+      "id": "l06-entry-points",
+      "title": "Console entry points for command-line tools",
+      "minutes": 20,
+      "covers": [
+        "Console entry points for command-line tools"
+      ],
+      "file": "cod_py_09_packaging/06-entry-points.md"
+    },
+    {
+      "id": "l07-version-pinning",
+      "title": "Version pinning, ranges and lockfiles",
+      "minutes": 22,
+      "covers": [
+        "Version pinning: exact pins for applications, ranges for libraries, lockfiles for both"
+      ],
+      "file": "cod_py_09_packaging/07-version-pinning.md"
+    },
+    {
+      "id": "l08-semantic-versioning",
+      "title": "Semantic versioning and deciding a bump",
+      "minutes": 23,
+      "covers": [
+        "Semantic versioning and how to decide a bump"
+      ],
+      "file": "cod_py_09_packaging/08-semantic-versioning.md"
+    },
+    {
+      "id": "l09-dependency-resolution-and-abi",
+      "title": "Dependency resolution, extras and the ABI problem",
+      "minutes": 21,
+      "covers": [
+        "Dependency resolution, extras, and the scientific-stack ABI problem"
+      ],
+      "file": "cod_py_09_packaging/09-dependency-resolution-and-abi.md"
+    },
+    {
+      "id": "l10-environment-tools",
+      "title": "Environments with venv, pip, uv and conda",
+      "minutes": 25,
+      "covers": [
+        "venv, pip, uv, conda and when each is the right answer"
+      ],
+      "file": "cod_py_09_packaging/10-environment-tools.md"
+    },
+    {
+      "id": "l11-docs-and-readme",
+      "title": "Docstrings, Sphinx and a README a stranger can run",
+      "minutes": 20,
+      "covers": [
+        "Sphinx and NumPy-style docstrings; README that lets a stranger run it"
+      ],
+      "file": "cod_py_09_packaging/11-docs-and-readme.md"
+    },
+    {
+      "id": "l12-publishing",
+      "title": "Publishing to PyPI and to private indexes",
+      "minutes": 24,
+      "covers": [
+        "Publishing internally versus on PyPI; private indexes"
+      ],
+      "file": "cod_py_09_packaging/12-publishing.md"
+    }
+  ],
+  "cod_rs_01_basics": [
+    {
+      "id": "l01-rustup-and-cargo",
+      "title": "Installing Rust, and running everything with Cargo",
+      "minutes": 25,
+      "covers": [
+        "rustup, toolchains, editions; cargo new, build, run, test, doc, clippy, fmt",
+        "Cargo.toml, dev and release profiles, workspaces, semver and feature flags"
+      ],
+      "file": "cod_rs_01_basics/01-rustup-and-cargo.md"
+    },
+    {
+      "id": "l02-variables-types-and-overflow",
+      "title": "Variables, types, and what happens when a number overflows",
+      "minutes": 22,
+      "covers": [
+        "Variables, mut, shadowing; scalar and compound types",
+        "Integer overflow: panics in debug, wraps in release; checked, wrapping and saturating operations"
+      ],
+      "file": "cod_rs_01_basics/02-variables-types-and-overflow.md"
+    },
+    {
+      "id": "l03-strings-and-control-flow",
+      "title": "Text as String and &str, and the ways a program repeats and decides",
+      "minutes": 21,
+      "covers": [
+        "String versus &str",
+        "Control flow; loop, while let, for"
+      ],
+      "file": "cod_rs_01_basics/03-strings-and-control-flow.md"
+    },
+    {
+      "id": "l04-structs-enums-and-match",
+      "title": "Structs, enums and match",
+      "minutes": 24,
+      "covers": [
+        "struct, enum as real sum types, impl blocks",
+        "Pattern matching and match exhaustiveness"
+      ],
+      "file": "cod_rs_01_basics/04-structs-enums-and-match.md"
+    },
+    {
+      "id": "l05-modules-and-collections",
+      "title": "Modules and collections",
+      "minutes": 24,
+      "covers": [
+        "Modules, pub, paths, use",
+        "Slices and arrays; Vec, HashMap, BTreeMap"
+      ],
+      "file": "cod_rs_01_basics/05-modules-and-collections.md"
+    },
+    {
+      "id": "l06-option-result-and-the-question-mark",
+      "title": "Option, Result and the question mark",
+      "minutes": 21,
+      "covers": [
+        "Option and Result, the absence of null, and the ? operator"
+      ],
+      "file": "cod_rs_01_basics/06-option-result-and-the-question-mark.md"
+    },
+    {
+      "id": "l07-iterators-and-closures",
+      "title": "Iterators and closures",
+      "minutes": 22,
+      "covers": [
+        "Iterators and adapters and their zero-cost nature",
+        "Closures: Fn, FnMut, FnOnce"
+      ],
+      "file": "cod_rs_01_basics/07-iterators-and-closures.md"
+    },
+    {
+      "id": "l08-derive-cfg-doc-tests-and-clippy",
+      "title": "derive, cfg, doc tests and clippy",
+      "minutes": 24,
+      "covers": [
+        "derive macros; cfg attributes; doc tests",
+        "clippy as a teaching tool"
+      ],
+      "file": "cod_rs_01_basics/08-derive-cfg-doc-tests-and-clippy.md"
+    }
+  ],
+  "cod_rs_02_ownership": [
+    {
+      "id": "l01-ownership-and-moves",
+      "title": "Ownership and moves",
+      "minutes": 20,
+      "covers": [
+        "The three ownership rules; move by default and Copy types"
+      ],
+      "file": "cod_rs_02_ownership/01-ownership-and-moves.md"
+    },
+    {
+      "id": "l02-borrowing-and-aliasing-xor-mutability",
+      "title": "Borrowing, and the rule of many readers or one writer",
+      "minutes": 22,
+      "covers": [
+        "Borrowing: shared &T versus exclusive &mut T",
+        "Aliasing XOR mutability and why it removes data races and iterator invalidation by construction"
+      ],
+      "file": "cod_rs_02_ownership/02-borrowing-and-aliasing-xor-mutability.md"
+    },
+    {
+      "id": "l03-reading-borrow-checker-errors",
+      "title": "Reading borrow-checker errors",
+      "minutes": 23,
+      "covers": [
+        "Reading borrow-checker errors instead of fighting them"
+      ],
+      "file": "cod_rs_02_ownership/03-reading-borrow-checker-errors.md"
+    },
+    {
+      "id": "l04-lifetimes",
+      "title": "Lifetimes, or how long a borrow may last",
+      "minutes": 24,
+      "covers": [
+        "Lifetimes: elision rules, explicit annotations, lifetimes in structs, static"
+      ],
+      "file": "cod_rs_02_ownership/04-lifetimes.md"
+    },
+    {
+      "id": "l05-interior-mutability-and-shared-ownership",
+      "title": "Interior mutability and shared ownership",
+      "minutes": 28,
+      "covers": [
+        "Interior mutability: Cell, RefCell and its runtime panics, Rc, Arc, Mutex, RwLock, OnceLock"
+      ],
+      "file": "cod_rs_02_ownership/05-interior-mutability-and-shared-ownership.md"
+    },
+    {
+      "id": "l06-send-sync-box-pin-and-drop",
+      "title": "Send, Sync, Box, Pin and Drop",
+      "minutes": 24,
+      "covers": [
+        "Send and Sync: thread safety as a type-system property",
+        "Box and Pin (awareness); Drop as Rust RAII"
+      ],
+      "file": "cod_rs_02_ownership/06-send-sync-box-pin-and-drop.md"
+    },
+    {
+      "id": "l07-unsafe-rust",
+      "title": "Unsafe Rust and the safe wrapper",
+      "minutes": 24,
+      "covers": [
+        "unsafe: the five superpowers, and the discipline of wrapping it in a safe abstraction with documented invariants"
+      ],
+      "file": "cod_rs_02_ownership/07-unsafe-rust.md"
+    },
+    {
+      "id": "l08-traits-and-dispatch",
+      "title": "Traits, generics and dispatch",
+      "minutes": 24,
+      "covers": [
+        "Traits: definition, default methods, associated types versus generic parameters, where clauses, blanket impls, the orphan rule",
+        "Static dispatch (impl Trait, generics) versus dynamic dispatch (dyn Trait, fat pointers)"
+      ],
+      "file": "cod_rs_02_ownership/08-traits-and-dispatch.md"
+    },
+    {
+      "id": "l09-the-standard-traits",
+      "title": "The standard traits",
+      "minutes": 22,
+      "covers": [
+        "Operator traits, From/Into, TryFrom, Display, Debug, Default, Iterator, Deref"
+      ],
+      "file": "cod_rs_02_ownership/09-the-standard-traits.md"
+    },
+    {
+      "id": "l10-errors-and-panics",
+      "title": "Errors and panics",
+      "minutes": 25,
+      "covers": [
+        "Error handling: custom error enums, thiserror for libraries, anyhow for applications",
+        "panic versus recoverable errors; unwrap and expect discipline; panic = abort"
+      ],
+      "file": "cod_rs_02_ownership/10-errors-and-panics.md"
+    },
+    {
+      "id": "l11-testing-and-the-cpp-map",
+      "title": "Testing, and the map back to C++",
+      "minutes": 25,
+      "covers": [
+        "Testing: #[test], integration tests, criterion benchmarks, proptest, cargo-fuzz, miri",
+        "Mapping each concept back to its C++ equivalent"
+      ],
+      "file": "cod_rs_02_ownership/11-testing-and-the-cpp-map.md"
+    }
+  ],
+  "cod_rs_03_aerospace": [
+    {
+      "id": "l01-no-std-and-the-bare-metal-entry",
+      "title": "no_std, no_main and how a microcontroller starts",
+      "minutes": 24,
+      "covers": [
+        "no_std and no_main; core versus alloc versus std",
+        "Panic handlers; cortex-m and cortex-m-rt; the entry attribute, vector tables, memory.x"
+      ],
+      "file": "cod_rs_03_aerospace/01-no-std-and-the-bare-metal-entry.md"
+    },
+    {
+      "id": "l02-embedded-hal-pacs-and-hals",
+      "title": "Registers, PACs, HALs and embedded-hal: one driver for every chip",
+      "minutes": 20,
+      "covers": [
+        "embedded-hal 1.0 as the driver ecosystem contract; PACs from svd2rust; HAL crates"
+      ],
+      "file": "cod_rs_03_aerospace/02-embedded-hal-pacs-and-hals.md"
+    },
+    {
+      "id": "l03-embassy-rtic-hubris-and-tock",
+      "title": "Many jobs, one processor: Embassy, RTIC, Hubris and Tock",
+      "minutes": 22,
+      "covers": [
+        "Embassy as the async-first embedded framework family, and RTIC for static-priority hard real time",
+        "Hubris (Oxide) and Tock as all-Rust microcontroller operating systems"
+      ],
+      "file": "cod_rs_03_aerospace/03-embassy-rtic-hubris-and-tock.md"
+    },
+    {
+      "id": "l04-embedded-tooling-and-static-memory",
+      "title": "Logging, flashing and fixed-size memory on a chip",
+      "minutes": 24,
+      "covers": [
+        "defmt logging, probe-rs, cargo-embed, rtt-target",
+        "heapless collections: Vec, String and spsc::Queue with static capacity",
+        "critical-section and static_assertions"
+      ],
+      "file": "cod_rs_03_aerospace/04-embedded-tooling-and-static-memory.md"
+    },
+    {
+      "id": "l05-ffi-with-c-and-cpp",
+      "title": "Calling between Rust and C or C++",
+      "minutes": 20,
+      "covers": [
+        "FFI both directions: extern C, no_mangle, bindgen, cbindgen, and Rust modules inside an existing C or C++ flight codebase"
+      ],
+      "file": "cod_rs_03_aerospace/05-ffi-with-c-and-cpp.md"
+    },
+    {
+      "id": "l06-nalgebra-matrices",
+      "title": "nalgebra: matrices whose size is part of the type",
+      "minutes": 19,
+      "covers": [
+        "nalgebra: type-level dimensions, SMatrix versus DMatrix, and when it allocates"
+      ],
+      "file": "cod_rs_03_aerospace/06-nalgebra-matrices.md"
+    },
+    {
+      "id": "l07-nalgebra-geometry-and-neighbour-crates",
+      "title": "Turning things in space: nalgebra geometry and its neighbours",
+      "minutes": 28,
+      "covers": [
+        "nalgebra geometry: UnitQuaternion, Rotation3, Isometry3, slerp; no_std support",
+        "Neighbouring crates: ndarray, argmin, nyx-space, hifitime, micromath, libm"
+      ],
+      "file": "cod_rs_03_aerospace/07-nalgebra-geometry-and-neighbour-crates.md"
+    },
+    {
+      "id": "l08-certification-do-178c-and-ecss",
+      "title": "Allowed to fly: DO-178C, coverage, tool qualification and ECSS",
+      "minutes": 24,
+      "covers": [
+        "Certification: DO-178C DAL levels, structural coverage, DO-330 tool qualification, ECSS-Q-ST-80C"
+      ],
+      "file": "cod_rs_03_aerospace/08-certification-do-178c-and-ecss.md"
+    },
+    {
+      "id": "l09-ferrocene-the-qualified-toolchain",
+      "title": "Ferrocene: a Rust compiler you are allowed to trust",
+      "minutes": 23,
+      "covers": [
+        "Ferrocene: the qualified Rust toolchain and exactly what its qualification covers"
+      ],
+      "file": "cod_rs_03_aerospace/09-ferrocene-the-qualified-toolchain.md"
+    },
+    {
+      "id": "l10-rust-in-space-the-evidence",
+      "title": "Rust in space: what the evidence actually says",
+      "minutes": 24,
+      "covers": [
+        "ESA activity: cRustacea in Space (DLR), the armv7-rtems-eabihf target, ADCSS 2024",
+        "What the evidence actually supports about Rust at SpaceX, and the fabricated claims to reject"
+      ],
+      "file": "cod_rs_03_aerospace/10-rust-in-space-the-evidence.md"
+    }
+  ],
+  "cod_slk_01_models": [
+    {
+      "id": "l01-the-simulink-editor",
+      "title": "The Simulink Editor, the Library Browser and block search",
+      "minutes": 18,
+      "covers": [
+        "The Simulink Editor, Library Browser and block search"
+      ],
+      "file": "cod_slk_01_models/01-the-simulink-editor.md"
+    },
+    {
+      "id": "l02-signals-and-basic-blocks",
+      "title": "Signals, lines and the five blocks in every model",
+      "minutes": 23,
+      "covers": [
+        "Signals and lines; Constant, Gain, Sum, Product, Integrator"
+      ],
+      "file": "cod_slk_01_models/02-signals-and-basic-blocks.md"
+    },
+    {
+      "id": "l03-sources-and-sinks",
+      "title": "Sources and sinks: feeding a model and keeping what comes out",
+      "minutes": 19,
+      "covers": [
+        "Sources: Step, Ramp, Sine Wave, Clock, Signal Editor",
+        "Sinks: Scope, Display, To Workspace; the Simulation Data Inspector"
+      ],
+      "file": "cod_slk_01_models/03-sources-and-sinks.md"
+    },
+    {
+      "id": "l04-checking-against-the-analytic-answer",
+      "title": "Checking a model against the answer you already know",
+      "minutes": 21,
+      "covers": [
+        "Comparing a model result to an analytic solution as the first habit"
+      ],
+      "file": "cod_slk_01_models/04-checking-against-the-analytic-answer.md"
+    },
+    {
+      "id": "l05-transfer-fcn-state-space-and-the-derivative-trap",
+      "title": "Transfer Fcn, State-Space, and the Derivative trap",
+      "minutes": 22,
+      "covers": [
+        "Transfer Fcn and State-Space blocks",
+        "Why the Derivative block is a trap in a feedback loop"
+      ],
+      "file": "cod_slk_01_models/05-transfer-fcn-state-space-and-the-derivative-trap.md"
+    },
+    {
+      "id": "l06-mux-buses-selector-demux",
+      "title": "Mux, buses, Selector and Demux",
+      "minutes": 18,
+      "covers": [
+        "Mux versus Bus Creator, and never using Mux for dissimilar signals",
+        "Selector and Demux"
+      ],
+      "file": "cod_slk_01_models/06-mux-buses-selector-demux.md"
+    },
+    {
+      "id": "l07-nonlinear-blocks",
+      "title": "Nonlinear blocks and the limits every real actuator has",
+      "minutes": 19,
+      "covers": [
+        "Nonlinear blocks: Saturation, Rate Limiter, Dead Zone, Quantizer, Switch, Relay, MinMax"
+      ],
+      "file": "cod_slk_01_models/07-nonlinear-blocks.md"
+    },
+    {
+      "id": "l08-lookup-tables",
+      "title": "Lookup tables for aerodynamic and engine data",
+      "minutes": 17,
+      "covers": [
+        "Lookup Table (n-D) for aerodynamic and engine data"
+      ],
+      "file": "cod_slk_01_models/08-lookup-tables.md"
+    },
+    {
+      "id": "l09-matlab-function-block",
+      "title": "MATLAB code inside a model",
+      "minutes": 16,
+      "covers": [
+        "MATLAB Function block (code-generation-compatible subset) versus Interpreted MATLAB Function"
+      ],
+      "file": "cod_slk_01_models/09-matlab-function-block.md"
+    },
+    {
+      "id": "l10-parameters-and-diagnostics",
+      "title": "Where parameters live, and how to read a model error",
+      "minutes": 22,
+      "covers": [
+        "Model parameters in the base workspace versus mask parameters",
+        "The Diagnostic Viewer and reading a model error"
+      ],
+      "file": "cod_slk_01_models/10-parameters-and-diagnostics.md"
+    }
+  ],
+  "cod_slk_02_solvers": [
+    {
+      "id": "l01-how-a-solver-steps",
+      "title": "How a solver steps: fixed or variable",
+      "minutes": 24,
+      "covers": [
+        "Variable-step versus fixed-step: error control and zero-crossing detection versus determinism"
+      ],
+      "file": "cod_slk_02_solvers/01-how-a-solver-steps.md"
+    },
+    {
+      "id": "l02-variable-step-solvers-and-tolerances",
+      "title": "ode45, ode23, ode113 and the tolerances that steer them",
+      "minutes": 27,
+      "covers": [
+        "Continuous solvers: ode45 (Dormand-Prince, the default starting point), ode23, ode113",
+        "RelTol and AbsTol; max step size and when to constrain it"
+      ],
+      "file": "cod_slk_02_solvers/02-variable-step-solvers-and-tolerances.md"
+    },
+    {
+      "id": "l03-stiffness",
+      "title": "Stiff models and the implicit solvers",
+      "minutes": 23,
+      "covers": [
+        "Stiff solvers: ode15s, ode23s, ode23t, ode23tb; daessc"
+      ],
+      "file": "cod_slk_02_solvers/03-stiffness.md"
+    },
+    {
+      "id": "l04-fixed-step-solvers",
+      "title": "Fixed-step solvers: ode1 to ode8, and the step that keeps a loop stable",
+      "minutes": 24,
+      "covers": [
+        "Fixed-step solvers: ode1 (Euler), ode2, ode4 (classic RK4), ode5, ode8, ode14x, ode1be"
+      ],
+      "file": "cod_slk_02_solvers/04-fixed-step-solvers.md"
+    },
+    {
+      "id": "l05-zero-crossings",
+      "title": "Zero crossings: catching the exact moment something happens",
+      "minutes": 24,
+      "covers": [
+        "Zero-crossing detection: how it works, chattering, adaptive versus non-adaptive, the consecutive-crossing limit",
+        "Solver reset method Fast versus Robust",
+        "Fixed-step zero-crossing for real-time: bounded, deterministic event cost"
+      ],
+      "file": "cod_slk_02_solvers/05-zero-crossings.md"
+    },
+    {
+      "id": "l06-sample-times",
+      "title": "Sample times: the beat every block runs on",
+      "minutes": 22,
+      "covers": [
+        "Sample times: continuous, discrete, inherited, constant; colour coding"
+      ],
+      "file": "cod_slk_02_solvers/06-sample-times.md"
+    },
+    {
+      "id": "l07-multirate-and-rate-transitions",
+      "title": "Multirate models and the Rate Transition block",
+      "minutes": 24,
+      "covers": [
+        "Multirate models and Rate Transition blocks; data integrity versus determinism options"
+      ],
+      "file": "cod_slk_02_solvers/07-multirate-and-rate-transitions.md"
+    },
+    {
+      "id": "l08-algebraic-loops",
+      "title": "Algebraic loops: finding them, breaking them, paying for it",
+      "minutes": 23,
+      "covers": [
+        "Algebraic loops: what creates them, the Algebraic Constraint block, breaking them with a unit delay and its phase cost"
+      ],
+      "file": "cod_slk_02_solvers/08-algebraic-loops.md"
+    }
+  ],
+  "cod_slk_03_architecture": [
+    {
+      "id": "l01-virtual-and-atomic-subsystems",
+      "title": "Virtual and atomic subsystems",
+      "minutes": 23,
+      "covers": [
+        "Virtual versus atomic subsystems: execution ordering and code-generation consequences"
+      ],
+      "file": "cod_slk_03_architecture/01-virtual-and-atomic-subsystems.md"
     }
   ],
   "cod_sql_01_select": [
@@ -2461,6 +5723,232 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "UNION, UNION ALL, INTERSECT and EXCEPT"
       ],
       "file": "cod_sql_02_joins/11-set-operations.md"
+    }
+  ],
+  "cod_sql_03_windows": [
+    {
+      "id": "l01-windows-versus-groups",
+      "title": "Windows: aggregates that keep every row",
+      "minutes": 22,
+      "covers": [
+        "OVER (PARTITION BY ... ORDER BY ...) and how a window differs from a group"
+      ],
+      "file": "cod_sql_03_windows/01-windows-versus-groups.md"
+    },
+    {
+      "id": "l02-ranking-functions",
+      "title": "Ranking rows",
+      "minutes": 19,
+      "covers": [
+        "Ranking: ROW_NUMBER, RANK, DENSE_RANK, NTILE, PERCENT_RANK"
+      ],
+      "file": "cod_sql_03_windows/02-ranking-functions.md"
+    },
+    {
+      "id": "l03-lag-lead-and-offsets",
+      "title": "Looking back and ahead: LAG, LEAD and friends",
+      "minutes": 21,
+      "covers": [
+        "Offsets: LAG and LEAD, FIRST_VALUE, LAST_VALUE, NTH_VALUE"
+      ],
+      "file": "cod_sql_03_windows/03-lag-lead-and-offsets.md"
+    },
+    {
+      "id": "l04-running-totals-and-moving-averages",
+      "title": "Running totals and moving averages",
+      "minutes": 21,
+      "covers": [
+        "Aggregate windows: running totals and moving averages"
+      ],
+      "file": "cod_sql_03_windows/04-running-totals-and-moving-averages.md"
+    },
+    {
+      "id": "l05-frames",
+      "title": "Frames: ROWS, RANGE and the default",
+      "minutes": 22,
+      "covers": [
+        "Frames: ROWS BETWEEN n PRECEDING AND CURRENT ROW versus RANGE BETWEEN an interval",
+        "The default frame and the classic LAST_VALUE surprise"
+      ],
+      "file": "cod_sql_03_windows/05-frames.md"
+    },
+    {
+      "id": "l06-deduplication-and-latest-per-key",
+      "title": "Deduplicating and picking the latest per key",
+      "minutes": 21,
+      "covers": [
+        "Deduplication with ROW_NUMBER filtered to 1",
+        "DISTINCT ON in PostgreSQL for latest-per-key"
+      ],
+      "file": "cod_sql_03_windows/06-deduplication-and-latest-per-key.md"
+    },
+    {
+      "id": "l07-gaps-and-islands",
+      "title": "Gaps and islands",
+      "minutes": 22,
+      "covers": [
+        "Gaps and islands: detecting contiguous runs"
+      ],
+      "file": "cod_sql_03_windows/07-gaps-and-islands.md"
+    },
+    {
+      "id": "l08-sessionisation",
+      "title": "Sessionising event streams",
+      "minutes": 20,
+      "covers": [
+        "Sessionisation of event streams"
+      ],
+      "file": "cod_sql_03_windows/08-sessionisation.md"
+    },
+    {
+      "id": "l09-downsampling-and-binning",
+      "title": "Downsampling into time buckets",
+      "minutes": 21,
+      "covers": [
+        "Downsampling and binning with date_trunc or time_bucket"
+      ],
+      "file": "cod_sql_03_windows/09-downsampling-and-binning.md"
+    },
+    {
+      "id": "l10-windows-versus-self-joins",
+      "title": "Window or self-join?",
+      "minutes": 25,
+      "covers": [
+        "When a window function beats a self-join, and when it does not"
+      ],
+      "file": "cod_sql_03_windows/10-windows-versus-self-joins.md"
+    }
+  ],
+  "cod_sql_04_schema": [
+    {
+      "id": "l01-normalisation",
+      "title": "Normalisation, and when to break it",
+      "minutes": 23,
+      "covers": [
+        "Normalisation to third normal form and deliberate denormalisation for analytics"
+      ],
+      "file": "cod_sql_04_schema/01-normalisation.md"
+    },
+    {
+      "id": "l02-star-schemas-and-keys",
+      "title": "Star schemas, surrogate keys and natural keys",
+      "minutes": 20,
+      "covers": [
+        "Star and snowflake schemas; surrogate versus natural keys"
+      ],
+      "file": "cod_sql_04_schema/02-star-schemas-and-keys.md"
+    },
+    {
+      "id": "l03-constraints",
+      "title": "Constraints: letting the database say no",
+      "minutes": 21,
+      "covers": [
+        "Constraints: NOT NULL, UNIQUE, CHECK, foreign keys with ON DELETE"
+      ],
+      "file": "cod_sql_04_schema/03-constraints.md"
+    },
+    {
+      "id": "l04-transactions-and-acid",
+      "title": "Transactions, isolation and deadlocks",
+      "minutes": 27,
+      "covers": [
+        "Transactions and ACID; isolation levels; deadlocks"
+      ],
+      "file": "cod_sql_04_schema/04-transactions-and-acid.md"
+    },
+    {
+      "id": "l05-index-types",
+      "title": "How an index works, and the kinds there are",
+      "minutes": 24,
+      "covers": [
+        "Index types: B-tree, hash, GIN and GiST, and BRIN for append-only time-ordered data"
+      ],
+      "file": "cod_sql_04_schema/05-index-types.md"
+    },
+    {
+      "id": "l06-composite-and-covering-indexes",
+      "title": "Composite and covering indexes",
+      "minutes": 20,
+      "covers": [
+        "Composite indexes and the left-prefix rule; covering indexes and index-only scans"
+      ],
+      "file": "cod_sql_04_schema/06-composite-and-covering-indexes.md"
+    },
+    {
+      "id": "l07-partial-indexes-and-write-cost",
+      "title": "Partial indexes and what indexes cost",
+      "minutes": 21,
+      "covers": [
+        "Partial indexes; why a low-cardinality index is usually useless",
+        "Index maintenance cost on a write-heavy ingest path"
+      ],
+      "file": "cod_sql_04_schema/07-partial-indexes-and-write-cost.md"
+    },
+    {
+      "id": "l08-reading-explain",
+      "title": "Reading EXPLAIN plans",
+      "minutes": 22,
+      "covers": [
+        "EXPLAIN and EXPLAIN ANALYZE: sequential versus index versus bitmap heap scan; nested loop versus hash versus merge join",
+        "Estimated versus actual rows as the tell for stale statistics"
+      ],
+      "file": "cod_sql_04_schema/08-reading-explain.md"
+    },
+    {
+      "id": "l09-sargability",
+      "title": "SARGable predicates",
+      "minutes": 23,
+      "covers": [
+        "SARGability: why wrapping an indexed column in a function kills the index"
+      ],
+      "file": "cod_sql_04_schema/09-sargability.md"
+    },
+    {
+      "id": "l10-partitioning-and-aggregates",
+      "title": "Partitioning by time and precomputed aggregates",
+      "minutes": 27,
+      "covers": [
+        "Range partitioning by time; clustering; materialised views and continuous aggregates"
+      ],
+      "file": "cod_sql_04_schema/10-partitioning-and-aggregates.md"
+    },
+    {
+      "id": "l11-columnar-storage-and-ingest",
+      "title": "Columnar storage, Parquet, batch and streaming",
+      "minutes": 24,
+      "covers": [
+        "Columnar storage and Parquet; batch versus streaming ingest"
+      ],
+      "file": "cod_sql_04_schema/11-columnar-storage-and-ingest.md"
+    },
+    {
+      "id": "l12-upserts-and-data-quality",
+      "title": "Upserts, duplicates and data quality",
+      "minutes": 26,
+      "covers": [
+        "Upserts and idempotent ingest for duplicated downlink frames",
+        "Data quality: gap detection, out-of-order packets, vehicle-to-ground clock skew, duplicate frames"
+      ],
+      "file": "cod_sql_04_schema/12-upserts-and-data-quality.md"
+    },
+    {
+      "id": "l13-the-telemetry-lifecycle",
+      "title": "From vehicle to report: the telemetry lifecycle",
+      "minutes": 24,
+      "covers": [
+        "The telemetry lifecycle: vehicle, downlink, decommutation, time-series store, analysis, report",
+        "Time-series stores: InfluxDB, TimescaleDB, ClickHouse; the reported Starlink stack of Kafka, HBase, HDFS on Docker and Kubernetes"
+      ],
+      "file": "cod_sql_04_schema/13-the-telemetry-lifecycle.md"
+    },
+    {
+      "id": "l14-export-control-retention-reproducibility",
+      "title": "Export control, retention and reproducible plots",
+      "minutes": 26,
+      "covers": [
+        "Export control and retention for flight data; reproducibility of every published plot"
+      ],
+      "file": "cod_sql_04_schema/14-export-control-retention-reproducibility.md"
     }
   ],
   "t0_m00_basecamp": [
@@ -3135,7 +6623,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-partial-derivatives",
       "title": "Functions of several variables and partial derivatives",
-      "minutes": 20,
+      "minutes": 25,
       "covers": [
         "partial derivatives"
       ],
@@ -3144,7 +6632,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-gradient",
       "title": "The gradient and the directional derivative",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "gradient and directional derivative"
       ],
@@ -3162,7 +6650,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-chain-rule-hessian",
       "title": "The chain rule for vector functions, and the Hessian",
-      "minutes": 26,
+      "minutes": 24,
       "covers": [
         "chain rule for vector functions",
         "Jacobian and Hessian"
@@ -3172,7 +6660,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-curves-and-rotating-frames",
       "title": "Trajectories as vector functions of time",
-      "minutes": 26,
+      "minutes": 24,
       "covers": [
         "vector-valued functions of time, arc length, curvature"
       ],
@@ -3181,7 +6669,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-multiple-integrals",
       "title": "Double and triple integrals",
-      "minutes": 25,
+      "minutes": 23,
       "covers": [
         "multiple integrals"
       ],
@@ -3190,7 +6678,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-line-and-surface-integrals",
       "title": "Line integrals and surface integrals",
-      "minutes": 25,
+      "minutes": 30,
       "covers": [
         "line and surface integrals"
       ],
@@ -3199,7 +6687,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-div-curl-laplacian",
       "title": "Divergence, curl and the Laplacian",
-      "minutes": 25,
+      "minutes": 23,
       "covers": [
         "divergence, curl, Laplacian"
       ],
@@ -3208,7 +6696,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-divergence-and-stokes-theorems",
       "title": "The divergence theorem and Stokes' theorem",
-      "minutes": 25,
+      "minutes": 24,
       "covers": [
         "divergence and Stokes theorems"
       ],
@@ -3217,7 +6705,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-conservative-fields",
       "title": "Conservative fields, potentials and orbital energy",
-      "minutes": 27,
+      "minutes": 22,
       "covers": [
         "conservative fields and potential functions"
       ],
@@ -3528,8 +7016,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
   "t0_m11_optimization": [
     {
       "id": "l01-descent-and-line-search",
-      "title": "Unconstrained optimisation I: optimality conditions, gradient descent and line search",
-      "minutes": 20,
+      "title": "Finding the bottom: descent, line search and Newton's method",
+      "minutes": 24,
       "covers": [
         "unconstrained optimisation: gradient descent, Newton, BFGS, line search, trust region"
       ],
@@ -3537,8 +7025,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l02-lagrange-and-kkt",
-      "title": "Constrained optimisation: Lagrange multipliers and the KKT conditions",
-      "minutes": 26,
+      "title": "Rules in the way: Lagrange multipliers and the KKT conditions",
+      "minutes": 19,
       "covers": [
         "constrained optimisation and Lagrange multipliers",
         "KKT conditions"
@@ -3548,7 +7036,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-convex-sets-and-functions",
       "title": "Convex sets and convex functions",
-      "minutes": 25,
+      "minutes": 23,
       "covers": [
         "convex sets and convex functions"
       ],
@@ -3566,7 +7054,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-linear-and-quadratic-programming",
       "title": "Linear and quadratic programming",
-      "minutes": 27,
+      "minutes": 24,
       "covers": [
         "linear and quadratic programming"
       ],
@@ -3575,7 +7063,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-second-order-cone-programming",
       "title": "Second-order cone programming and the convex landing problem",
-      "minutes": 30,
+      "minutes": 24,
       "covers": [
         "second-order cone programming"
       ],
@@ -3584,7 +7072,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-duality-and-the-dual-problem",
       "title": "Duality and the dual problem",
-      "minutes": 28,
+      "minutes": 22,
       "covers": [
         "duality and the dual problem"
       ],
@@ -3593,7 +7081,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-semidefinite-programming",
       "title": "Semidefinite programming",
-      "minutes": 28,
+      "minutes": 23,
       "covers": [
         "semidefinite programming"
       ],
@@ -3602,7 +7090,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-interior-point-methods",
       "title": "Interior-point methods",
-      "minutes": 30,
+      "minutes": 24,
       "covers": [
         "interior-point methods"
       ],
@@ -3611,7 +7099,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-sequential-quadratic-programming",
       "title": "Sequential quadratic programming",
-      "minutes": 30,
+      "minutes": 22,
       "covers": [
         "sequential quadratic programming"
       ],
@@ -3620,7 +7108,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-nonlinear-programming-solvers",
       "title": "Nonlinear programming solvers: IPOPT and SNOPT",
-      "minutes": 28,
+      "minutes": 22,
       "covers": [
         "nonlinear programming solvers (IPOPT, SNOPT)"
       ],
@@ -3628,8 +7116,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l12-modelling-languages-and-solvers",
-      "title": "Modelling languages and solvers: CVXPY, ECOS, SCS, OSQP, Clarabel",
-      "minutes": 30,
+      "title": "Modeling languages and solvers: CVXPY, ECOS, SCS, OSQP, Clarabel",
+      "minutes": 22,
       "covers": [
         "modelling languages and solvers: CVXPY, ECOS, SCS, OSQP, Clarabel"
       ],
@@ -3638,7 +7126,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-real-time-embedded-convex-solvers",
       "title": "Real-time embedded convex solvers and code generation",
-      "minutes": 32,
+      "minutes": 24,
       "covers": [
         "real-time embedded convex solvers and code generation"
       ],
@@ -3658,7 +7146,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-values-references-const",
       "title": "Value semantics, references and const",
-      "minutes": 22,
+      "minutes": 25,
       "covers": [
         "value semantics, references, const-correctness"
       ],
@@ -3667,7 +7155,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-raii-ownership-and-moves",
       "title": "RAII, ownership, smart pointers and moves",
-      "minutes": 25,
+      "minutes": 24,
       "covers": [
         "RAII, ownership, smart pointers",
         "move semantics"
@@ -3686,7 +7174,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-templates-and-generic-programming",
       "title": "Templates and generic programming",
-      "minutes": 25,
+      "minutes": 24,
       "covers": [
         "templates and generic programming"
       ],
@@ -3695,7 +7183,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-stl-containers-algorithms-iterators",
       "title": "The STL: containers, algorithms and iterators",
-      "minutes": 24,
+      "minutes": 25,
       "covers": [
         "the STL: containers, algorithms, iterators"
       ],
@@ -3704,7 +7192,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-constexpr-compile-time",
       "title": "constexpr and compile-time computation",
-      "minutes": 25,
+      "minutes": 26,
       "covers": [
         "constexpr and compile-time computation"
       ],
@@ -3713,7 +7201,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-error-handling-without-exceptions",
       "title": "Error handling without exceptions",
-      "minutes": 24,
+      "minutes": 25,
       "covers": [
         "error handling without exceptions"
       ],
@@ -3722,7 +7210,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-memory-cache-hot-loops",
       "title": "Memory layout, the cache, and allocation-free hot loops",
-      "minutes": 27,
+      "minutes": 26,
       "covers": [
         "memory layout, cache behaviour, allocation-free hot loops"
       ],
@@ -3731,7 +7219,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-eigen-and-geometry",
       "title": "Eigen, including the Geometry module",
-      "minutes": 24,
+      "minutes": 26,
       "covers": [
         "Eigen, including the Geometry module"
       ],
@@ -3740,7 +7228,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-cmake-and-googletest",
       "title": "Building with CMake and testing with GoogleTest",
-      "minutes": 24,
+      "minutes": 22,
       "covers": [
         "CMake, with Bazel awareness",
         "GoogleTest"
@@ -3750,7 +7238,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-undefined-behaviour-and-sanitizers",
       "title": "Undefined behaviour, and the sanitizers that catch it",
-      "minutes": 25,
+      "minutes": 24,
       "covers": [
         "undefined behaviour",
         "profiling and sanitizers: perf, valgrind, ASan/UBSan"
@@ -4179,7 +7667,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-kinematic-differential-equations",
       "title": "Kinematic differential equations for DCM, quaternion, Euler angles and MRP",
-      "minutes": 17,
+      "minutes": 22,
       "covers": [
         "kinematic differential equations for DCM, quaternion, Euler angles and MRP"
       ],
@@ -4188,7 +7676,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-numerical-integration-and-renormalisation",
       "title": "Integrating attitude numerically, and re-normalisation",
-      "minutes": 21,
+      "minutes": 26,
       "covers": [
         "numerical integration of attitude with re-normalisation"
       ],
@@ -4197,7 +7685,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-quaternion-integration-schemes-and-norm-drift",
       "title": "Quaternion integration schemes and norm drift",
-      "minutes": 20,
+      "minutes": 25,
       "covers": [
         "quaternion integration schemes and norm drift"
       ],
@@ -4206,7 +7694,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-six-state-rotational-system",
       "title": "Coupling kinematics to Euler dynamics — the rotational 6-state",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "combining kinematics with Euler dynamics into a 6-state rotational system"
       ],
@@ -4215,7 +7703,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-external-disturbance-torques",
       "title": "External torques — gravity gradient, aerodynamic, SRP and magnetic",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "external torques: gravity gradient, aerodynamic, solar radiation pressure, residual magnetic dipole"
       ],
@@ -4224,7 +7712,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-reaction-wheels-cmgs-and-momentum-coupling",
       "title": "Reaction wheels, CMGs and momentum coupling",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "reaction wheel and CMG dynamics and momentum coupling"
       ],
@@ -4233,7 +7721,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-thruster-control-and-minimum-impulse-bit",
       "title": "Thruster attitude control and the minimum impulse bit",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "thruster attitude control and minimum impulse bit"
       ],
@@ -4242,7 +7730,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-thrust-vector-control-gimbal-dynamics",
       "title": "Thrust vector control — gimbal dynamics for launch vehicles",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "thrust vector control gimbal dynamics for launch vehicles"
       ],
@@ -4251,7 +7739,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-actuator-saturation-and-rate-limits",
       "title": "Actuator saturation and rate limits",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "actuator saturation and rate limits"
       ],
@@ -4260,7 +7748,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-coning-motion-and-coning-correction",
       "title": "Coning motion and coning correction",
-      "minutes": 20,
+      "minutes": 23,
       "covers": [
         "coning motion and coning correction"
       ],
@@ -4271,7 +7759,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-standard-atmosphere",
       "title": "The standard atmosphere",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "standard atmosphere models: US Standard 1976, exponential, NRLMSISE-00",
         "density, pressure and temperature vs altitude"
@@ -4281,7 +7769,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-dynamic-pressure-and-max-q",
       "title": "Dynamic pressure and max-Q",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "dynamic pressure and max-Q"
       ],
@@ -4290,7 +7778,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-mach-regimes-and-drag",
       "title": "Mach number, flow regimes and the drag coefficient",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Mach number and the subsonic / transonic / supersonic / hypersonic regimes",
         "drag coefficient vs Mach"
@@ -4300,7 +7788,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-angle-of-attack-and-wind-frame",
       "title": "Angle of attack, sideslip and the wind frame",
-      "minutes": 18,
+      "minutes": 23,
       "covers": [
         "angle of attack and sideslip; body vs wind frame"
       ],
@@ -4308,8 +7796,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l05-normal-force-and-static-margin",
-      "title": "Normal force, centre of pressure and static margin",
-      "minutes": 19,
+      "title": "Normal force, center of pressure and static margin",
+      "minutes": 24,
       "covers": [
         "normal force, centre of pressure vs centre of gravity, static margin"
       ],
@@ -4318,7 +7806,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-unstable-booster-and-tvc",
       "title": "The aerodynamically unstable booster and its TVC loop",
-      "minutes": 19,
+      "minutes": 25,
       "covers": [
         "aerodynamic instability of a boosting rocket"
       ],
@@ -4327,7 +7815,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-q-alpha-and-load-relief",
       "title": "The q-alpha load indicator and load relief",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "the q-alpha load indicator and load relief control"
       ],
@@ -4336,7 +7824,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-winds-gusts-and-shear",
       "title": "Wind profiles, gusts and wind shear",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "wind profiles and gust models (Dryden, von Karman), wind shear"
       ],
@@ -4345,7 +7833,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-bending-modes-and-structural-filters",
       "title": "Bending modes, flexible-body dynamics and structural filters",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "bending modes, flexible body dynamics and structural filter design"
       ],
@@ -4354,7 +7842,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-propellant-slosh",
       "title": "Propellant slosh as a pendulum or mass-spring",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "propellant slosh as a pendulum or mass-spring"
       ],
@@ -4363,7 +7851,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-control-structure-interaction",
       "title": "Control-structure interaction",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "control-structure interaction"
       ],
@@ -4372,7 +7860,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-grid-fins-and-entry",
       "title": "Grid fins, control surfaces and entry aerodynamics",
-      "minutes": 22,
+      "minutes": 25,
       "covers": [
         "grid fins and aerodynamic control surfaces",
         "ballistic coefficient and lift-to-drag ratio in entry"
@@ -4730,7 +8218,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-lamberts-problem-and-theorem",
       "title": "Lambert's problem and Lambert's theorem",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "Lambert's problem statement and Lambert's theorem"
       ],
@@ -4739,7 +8227,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-universal-variable-solver",
       "title": "Solving Lambert's problem: Gauss, universal variables, and Izzo",
-      "minutes": 22,
+      "minutes": 18,
       "covers": [
         "solution methods: Gauss, universal variables / Battin, Izzo"
       ],
@@ -4748,7 +8236,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-branches-short-long-multirev",
       "title": "Branches, honestly: short way, long way, and multiple revolutions",
-      "minutes": 21,
+      "minutes": 18,
       "covers": [
         "multi-revolution solutions and their multiplicity"
       ],
@@ -4757,7 +8245,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-180-degree-singularity",
       "title": "The 180-degree singularity",
-      "minutes": 20,
+      "minutes": 18,
       "covers": [
         "convergence and singular geometries near a 180 degree transfer"
       ],
@@ -4766,7 +8254,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-the-state-transition-matrix",
       "title": "The state transition matrix for two-body motion",
-      "minutes": 21,
+      "minutes": 18,
       "covers": [
         "the state transition matrix and its use in targeting"
       ],
@@ -4775,7 +8263,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-differential-correction",
       "title": "Targeting and differential correction",
-      "minutes": 22,
+      "minutes": 20,
       "covers": [
         "targeting and differential correction"
       ],
@@ -4784,7 +8272,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-b-plane-targeting",
       "title": "B-plane targeting",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "B-plane targeting"
       ],
@@ -4802,7 +8290,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-tcm-and-linear-covariance",
       "title": "Trajectory correction manoeuvres and linear covariance analysis",
-      "minutes": 24,
+      "minutes": 25,
       "covers": [
         "trajectory correction manoeuvres",
         "linear covariance analysis of targeting errors"
@@ -4814,7 +8302,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-relative-motion-frames",
       "title": "Relative motion frames: LVLH, Hill and RIC",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "relative motion frames: LVLH, Hill, RIC"
       ],
@@ -4823,7 +8311,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-deriving-clohessy-wiltshire",
       "title": "Deriving the Clohessy-Wiltshire equations",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "derivation of the Clohessy-Wiltshire equations"
       ],
@@ -4832,7 +8320,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-cw-state-transition-matrix",
       "title": "Solving CW — closed-form motion and the state transition matrix",
-      "minutes": 17,
+      "minutes": 15,
       "covers": [
         "the CW state transition matrix"
       ],
@@ -4850,7 +8338,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-secular-drift-and-the-counterintuitive-burn",
       "title": "Secular drift and the counterintuitive burn",
-      "minutes": 18,
+      "minutes": 17,
       "covers": [
         "secular in-track drift and why it dominates"
       ],
@@ -4859,7 +8347,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-football-orbits-and-circumnavigation",
       "title": "Football orbits and natural motion circumnavigation",
-      "minutes": 22,
+      "minutes": 19,
       "covers": [
         "football and drifting relative orbits",
         "natural motion circumnavigation"
@@ -4869,7 +8357,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-two-impulse-cw-targeting",
       "title": "Two-impulse CW rendezvous targeting",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "two-impulse CW rendezvous targeting"
       ],
@@ -4878,7 +8366,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-glideslope-algorithms",
       "title": "Glideslope algorithms",
-      "minutes": 18,
+      "minutes": 16,
       "covers": [
         "glideslope algorithms"
       ],
@@ -4887,7 +8375,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-vbar-rbar-passive-safety",
       "title": "V-bar and R-bar approaches and passive safety",
-      "minutes": 23,
+      "minutes": 26,
       "covers": [
         "V-bar and R-bar approaches and their safety properties",
         "passive safety and safety ellipses"
@@ -4897,7 +8385,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-corridors-keepout-and-aborts",
       "title": "Approach corridors, keep-out spheres and abort trajectories",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "approach corridors and keep-out spheres",
         "abort trajectories and collision avoidance manoeuvres"
@@ -4907,7 +8395,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-docking-vs-berthing-iss-profile",
       "title": "Docking vs berthing, and the ISS visiting-vehicle profile",
-      "minutes": 20,
+      "minutes": 16,
       "covers": [
         "docking vs berthing",
         "ISS visiting vehicle requirements"
@@ -4928,7 +8416,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-entry-interface-conditions",
       "title": "The entry interface and the entry state",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "entry interface conditions"
       ],
@@ -4937,7 +8425,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-ballistic-entry-and-the-allen-eggers-solution",
       "title": "Ballistic entry and the Allen-Eggers solution",
-      "minutes": 14,
+      "minutes": 19,
       "covers": [
         "ballistic entry and the Allen-Eggers solution"
       ],
@@ -4946,7 +8434,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-peak-deceleration-and-peak-heating",
       "title": "Peak deceleration and peak heating, derived and then measured",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "peak deceleration and peak heating relations"
       ],
@@ -4955,7 +8443,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-aerothermodynamics-and-thermal-protection",
       "title": "Aerothermodynamics and thermal protection",
-      "minutes": 17,
+      "minutes": 22,
       "covers": [
         "aerothermodynamics: convective and radiative heating, Sutton-Graves",
         "thermal protection systems, heat rate vs heat load"
@@ -4965,7 +8453,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-ballistic-coefficient-and-trajectory-shape",
       "title": "Ballistic coefficient and the shape of the trajectory",
-      "minutes": 14,
+      "minutes": 16,
       "covers": [
         "ballistic coefficient and its effect on the trajectory"
       ],
@@ -4974,7 +8462,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-the-entry-corridor",
       "title": "The entry corridor: undershoot and overshoot",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "the entry corridor: undershoot and overshoot boundaries"
       ],
@@ -4983,7 +8471,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-skip-entry-and-lifting-entry",
       "title": "Skip entry and lifting entry",
-      "minutes": 16,
+      "minutes": 22,
       "covers": [
         "skip entry",
         "lifting entry and bank-angle modulation"
@@ -4993,7 +8481,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-apollo-and-shuttle-entry-guidance",
       "title": "Apollo and Shuttle entry guidance",
-      "minutes": 16,
+      "minutes": 23,
       "covers": [
         "Apollo entry guidance and its descendants",
         "Shuttle drag-vs-energy entry guidance"
@@ -5003,7 +8491,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-hypersonic-aerodynamics-and-transonic-transition",
       "title": "Hypersonic aerodynamics and the transonic transition",
-      "minutes": 15,
+      "minutes": 19,
       "covers": [
         "hypersonic aerodynamics and the transonic transition"
       ],
@@ -5012,7 +8500,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-propulsive-descent-phases",
       "title": "Propulsive descent — entry burn, aerodynamic guidance, landing burn",
-      "minutes": 14,
+      "minutes": 18,
       "covers": [
         "propulsive descent: entry burn, aerodynamic guidance, landing burn"
       ],
@@ -5021,7 +8509,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-terminal-descent-sensors",
       "title": "Terminal descent sensors",
-      "minutes": 14,
+      "minutes": 19,
       "covers": [
         "terminal descent sensors: radar altimeter, lidar, terrain relative navigation"
       ],
@@ -5030,7 +8518,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-hoverslam-and-divert-capability",
       "title": "The hoverslam problem, divert capability, and propellant margin",
-      "minutes": 17,
+      "minutes": 27,
       "covers": [
         "landing burn timing and the hoverslam problem",
         "divert capability and the landing ellipse"
@@ -5040,7 +8528,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-mars-edl-and-reusable-booster-return",
       "title": "Mars EDL and reusable booster return modes",
-      "minutes": 16,
+      "minutes": 22,
       "covers": [
         "Mars EDL: thin atmosphere, supersonic parachutes, sky crane",
         "reusable booster return modes: RTLS vs droneship, boostback burns"
@@ -5162,7 +8650,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-what-feedback-buys",
       "title": "What feedback buys, and what it costs",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "Feedback fundamentals: disturbance rejection, noise attenuation, insensitivity to plant variation"
       ],
@@ -5171,7 +8659,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-pid-and-the-filtered-derivative",
       "title": "PID, term by term, and the derivative you can actually build",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "PID control: the physical meaning of each term, ideal vs practical form, derivative filtering"
       ],
@@ -5180,7 +8668,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-windup-anti-windup-and-mode-changes",
       "title": "Windup, anti-windup, bumpless transfer and setpoint weighting",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "Integrator windup, anti-windup schemes, bumpless transfer, setpoint weighting"
       ],
@@ -5189,7 +8677,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-three-ways-to-tune-a-pid",
       "title": "Three ways to tune a PID, and what each one optimises",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "PID tuning: Ziegler-Nichols, loop shaping, pole placement"
       ],
@@ -5198,7 +8686,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-root-locus",
       "title": "The root locus, and designing with it",
-      "minutes": 20,
+      "minutes": 23,
       "covers": [
         "Root locus construction rules and root-locus design"
       ],
@@ -5207,7 +8695,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-nyquist",
       "title": "The Nyquist plot and the Nyquist stability criterion",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "The Nyquist plot and the Nyquist stability criterion"
       ],
@@ -5216,7 +8704,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-the-four-margins",
       "title": "Gain, phase, delay and modulus margins",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "Gain margin, phase margin, delay margin, and the modulus (vector) margin"
       ],
@@ -5225,7 +8713,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-why-margins-can-lie",
       "title": "Why margins can lie",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "Why margins can lie: MIMO coupling, nonlinearity, simultaneous perturbations"
       ],
@@ -5234,7 +8722,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-lead-lag-compensators",
       "title": "Lead, lag and lead-lag compensators",
-      "minutes": 15,
+      "minutes": 17,
       "covers": [
         "Lead, lag and lead-lag compensators"
       ],
@@ -5243,7 +8731,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-notches-and-bending-modes",
       "title": "Notch filters, and gain versus phase stabilization",
-      "minutes": 20,
+      "minutes": 24,
       "covers": [
         "Notch filters for structural bending modes; gain stabilization vs phase stabilization"
       ],
@@ -5252,7 +8740,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-gain-phase-and-the-waterbed",
       "title": "The gain-phase relationship and the waterbed effect",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "The Bode gain-phase relationship, the Bode sensitivity integral, and the waterbed effect"
       ],
@@ -5261,7 +8749,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-cascade-rate-inside-attitude",
       "title": "Cascade control — a fast rate loop inside a slower attitude loop",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "Cascade architecture: a fast rate loop inside a slower attitude loop"
       ],
@@ -5270,7 +8758,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-feedforward-and-gain-scheduling",
       "title": "Feedforward, two-degree-of-freedom control, and gain scheduling",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "Feedforward and 2-DOF control; gain scheduling across flight regimes"
       ],
@@ -5299,7 +8787,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-z-transform-discrete-tf",
       "title": "The z-transform and discrete transfer functions",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "The z-transform and discrete transfer functions"
       ],
@@ -5308,7 +8796,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-s-plane-to-z-plane",
       "title": "Mapping the s-plane to the z-plane",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "Mapping the s-plane to the z-plane; the unit circle as the stability boundary"
       ],
@@ -5335,7 +8823,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-choosing-a-sample-rate",
       "title": "Choosing a sample rate",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Choosing a sample rate: the 20-40x bandwidth rule of thumb and what drives the ends of that range"
       ],
@@ -5353,7 +8841,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-discrete-pid-realization-forms",
       "title": "Discrete PID realization forms",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "Discrete PID realization forms (direct, parallel, delta) and their numerical conditioning"
       ],
@@ -5362,7 +8850,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-biquad-sections",
       "title": "Biquad sections for discrete filters and notches",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Biquad sections for discrete filters and notches"
       ],
@@ -5382,7 +8870,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-state-space-models-and-realizations",
       "title": "State-space models and their realizations",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "State-space representation and realizations: controllable canonical, observable canonical, modal"
       ],
@@ -5391,7 +8879,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-similarity-transformations-and-invariants",
       "title": "Similarity transformations and what survives them",
-      "minutes": 15,
+      "minutes": 19,
       "covers": [
         "Similarity transformations and what is invariant under them"
       ],
@@ -5400,7 +8888,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-solving-the-state-equation-and-discretisation",
       "title": "Solving the state equation, and the model your computer runs",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "Solution of xdot = Ax + Bu via the matrix exponential; the discrete-time equivalent"
       ],
@@ -5409,7 +8897,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-controllability-rank-gramian-pbh",
       "title": "Controllability — the rank test, the Gramian and PBH",
-      "minutes": 19,
+      "minutes": 23,
       "covers": [
         "Controllability: the Kalman rank test, the controllability Gramian, the PBH test"
       ],
@@ -5418,7 +8906,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-observability-duality-stabilizability-detectability",
       "title": "Observability, duality, stabilizability and detectability",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "Observability and duality; stabilizability and detectability"
       ],
@@ -5427,7 +8915,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-pole-placement",
       "title": "Pole placement — Ackermann, Bass-Gura and robust eigenstructure",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Pole placement: Ackermann, Bass-Gura, and robust (eigenstructure) pole placement"
       ],
@@ -5436,7 +8924,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-luenberger-observers",
       "title": "Luenberger observers and the estimation error dynamics",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "Luenberger observers and the estimation error dynamics"
       ],
@@ -5445,7 +8933,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-the-separation-principle",
       "title": "The separation principle and exactly when it holds",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "The separation principle and the exact conditions under which it holds"
       ],
@@ -5454,7 +8942,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-integral-action-servo-design",
       "title": "Integral action in state feedback — servo and augmented-state design",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "Integral action in state feedback: servo and augmented-state design"
       ],
@@ -5463,7 +8951,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-mimo-transmission-zeros-rga",
       "title": "MIMO systems, transmission zeros and the relative gain array",
-      "minutes": 22,
+      "minutes": 26,
       "covers": [
         "MIMO systems, transmission zeros, and the relative gain array"
       ],
@@ -5472,7 +8960,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-model-reduction-balanced-truncation",
       "title": "Model reduction — balanced truncation and Hankel singular values",
-      "minutes": 21,
+      "minutes": 19,
       "covers": [
         "Model reduction: balanced truncation and Hankel singular values"
       ],
@@ -5483,7 +8971,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-quadratic-cost-functional",
       "title": "The linear quadratic cost functional",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "The linear quadratic cost functional and what Q, R and the cross term weight"
       ],
@@ -5492,7 +8980,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-hjb-and-calculus-of-variations",
       "title": "Two derivations of LQR: dynamic programming and the calculus of variations",
-      "minutes": 21,
+      "minutes": 19,
       "covers": [
         "LQR derived via dynamic programming (HJB) and via calculus of variations"
       ],
@@ -5501,7 +8989,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-riccati-equations",
       "title": "The algebraic and differential Riccati equations",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "The algebraic and differential Riccati equations"
       ],
@@ -5537,7 +9025,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-lqr-with-integral-action",
       "title": "LQR with integral action",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "LQR with integral action"
       ],
@@ -5546,7 +9034,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-cheap-control-and-the-symmetric-root-locus",
       "title": "Cheap control and the asymptotic (Kalman) root locus",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Cheap control and the asymptotic (Kalman) root locus"
       ],
@@ -5555,7 +9043,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-time-varying-lqr",
       "title": "Time-varying LQR for trajectory stabilization",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "Time-varying LQR along a nominal trajectory for trajectory stabilization"
       ],
@@ -5564,7 +9052,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-lqg-and-the-separation-principle",
       "title": "LQG and the stochastic separation principle",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "LQG = LQR + Kalman filter, and the stochastic separation principle"
       ],
@@ -5573,7 +9061,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-loop-transfer-recovery",
       "title": "Loop transfer recovery and what it costs",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Loop transfer recovery and what it actually costs"
       ],
@@ -5582,7 +9070,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-discrete-time-lqr-and-the-dare",
       "title": "Discrete-time LQR and the DARE",
-      "minutes": 18,
+      "minutes": 17,
       "covers": [
         "Discrete-time LQR and the DARE"
       ],
@@ -5591,7 +9079,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-pontryagin-minimum-principle",
       "title": "The Hamiltonian and the Pontryagin minimum principle",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "The Hamiltonian and the Pontryagin minimum principle as the general frame"
       ],
@@ -5600,7 +9088,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-ilqr-and-ddp",
       "title": "iLQR and DDP, the nonlinear extension",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "iLQR and DDP as the nonlinear extension"
       ],
@@ -5611,7 +9099,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-modelling-uncertainty",
       "title": "Modelling uncertainty",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "Modelling uncertainty: additive, multiplicative (input and output), parametric, unstructured"
       ],
@@ -5620,7 +9108,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-small-gain-theorem",
       "title": "The small gain theorem",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "The small gain theorem and its exact hypotheses"
       ],
@@ -5629,7 +9117,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-h2-and-hinf-norms",
       "title": "The H2 and H-infinity norms",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "The H2 and H-infinity norms and what each one measures"
       ],
@@ -5638,7 +9126,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-hinf-synthesis-mixed-sensitivity",
       "title": "H-infinity synthesis and mixed sensitivity",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "H-infinity synthesis: mixed sensitivity S/KS/T weighting, the two-Riccati (DGKF) solution"
       ],
@@ -5647,7 +9135,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-structured-singular-value-mu",
       "title": "The structured singular value and D-K iteration",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "The structured singular value mu and mu-synthesis by D-K iteration"
       ],
@@ -5665,7 +9153,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-mimo-singular-values-directionality",
       "title": "Singular values of a transfer matrix and directionality",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "Singular values of MIMO transfer matrices and input/output directionality"
       ],
@@ -5674,7 +9162,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-mimo-margins-and-disk-margins",
       "title": "MIMO margins and the disk margin",
-      "minutes": 22,
+      "minutes": 23,
       "covers": [
         "MIMO stability margins, disk margins, and why per-loop SISO margins mislead"
       ],
@@ -5683,7 +9171,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-rhp-poles-and-zeros",
       "title": "What right-half-plane poles and zeros forbid",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "Performance limitations imposed by right-half-plane poles and zeros"
       ],
@@ -5692,7 +9180,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-lpv-and-gain-scheduling",
       "title": "Gain scheduling with guarantees, and LPV control",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "Linear parameter-varying control and gain scheduling with guarantees"
       ],
@@ -5701,7 +9189,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-adaptive-control",
       "title": "Adaptive control and its use and abuse",
-      "minutes": 22,
+      "minutes": 23,
       "covers": [
         "Adaptive control (MRAC, L1 adaptive) and its use and abuse in aerospace"
       ],
@@ -5710,7 +9198,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-flight-qualification-metrics",
       "title": "Flight qualification metrics",
-      "minutes": 23,
+      "minutes": 24,
       "covers": [
         "Flight qualification metrics: stability margin requirements across the envelope, discrete-time mu analysis, handling-qualities criteria"
       ],
@@ -5721,7 +9209,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-nonlinear-phenomena",
       "title": "Four things a linear model cannot do",
-      "minutes": 19,
+      "minutes": 26,
       "covers": [
         "Nonlinear phenomena: multiple equilibria, limit cycles, finite escape time, bifurcation"
       ],
@@ -5730,7 +9218,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-phase-plane-and-equilibrium-classification",
       "title": "Phase-plane analysis and equilibrium classification",
-      "minutes": 20,
+      "minutes": 23,
       "covers": [
         "Phase-plane analysis and equilibrium classification"
       ],
@@ -5739,7 +9227,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-linearization-and-the-indirect-method",
       "title": "Linearization and the Lyapunov indirect method",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "Linearization and the Lyapunov indirect method, including its failure cases"
       ],
@@ -5748,7 +9236,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-lyapunov-direct-method-and-lasalle",
       "title": "The direct method, Lyapunov functions and LaSalle",
-      "minutes": 26,
+      "minutes": 22,
       "covers": [
         "The Lyapunov direct method, Lyapunov functions, LaSalle invariance principle"
       ],
@@ -5757,7 +9245,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-region-of-attraction-estimation",
       "title": "Estimating the region of attraction",
-      "minutes": 22,
+      "minutes": 19,
       "covers": [
         "Region of attraction estimation, including sum-of-squares approaches"
       ],
@@ -5766,7 +9254,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-input-to-state-stability",
       "title": "Input-to-state stability",
-      "minutes": 18,
+      "minutes": 17,
       "covers": [
         "Input-to-state stability"
       ],
@@ -5775,7 +9263,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-feedback-linearization-and-zero-dynamics",
       "title": "Feedback linearization, relative degree and zero dynamics",
-      "minutes": 21,
+      "minutes": 20,
       "covers": [
         "Feedback linearization (input-state and input-output), relative degree, internal and zero dynamics"
       ],
@@ -5784,7 +9272,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-sliding-mode-control",
       "title": "Sliding mode control, chattering and boundary layers",
-      "minutes": 24,
+      "minutes": 19,
       "covers": [
         "Sliding mode control: sliding surface design, reaching phase, chattering, boundary layers, higher-order sliding modes"
       ],
@@ -5793,7 +9281,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-backstepping",
       "title": "Backstepping",
-      "minutes": 20,
+      "minutes": 17,
       "covers": [
         "Backstepping"
       ],
@@ -5802,7 +9290,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-passivity-based-control",
       "title": "Passivity-based control and energy shaping",
-      "minutes": 24,
+      "minutes": 22,
       "covers": [
         "Passivity-based control and energy shaping"
       ],
@@ -5811,7 +9299,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-spacecraft-attitude-control",
       "title": "Nonlinear spacecraft attitude control: unwinding, MRPs, and tracking",
-      "minutes": 34,
+      "minutes": 22,
       "covers": [
         "Nonlinear spacecraft attitude control: quaternion feedback laws, the unwinding problem, MRP-based control, Lyapunov-derived tracking laws with proof"
       ],
@@ -5820,7 +9308,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-describing-functions",
       "title": "Describing functions for limit-cycle prediction",
-      "minutes": 24,
+      "minutes": 20,
       "covers": [
         "Describing functions for limit-cycle prediction"
       ],
@@ -5829,7 +9317,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-underactuated-systems",
       "title": "Control of underactuated systems",
-      "minutes": 25,
+      "minutes": 22,
       "covers": [
         "Control of underactuated systems"
       ],
@@ -5838,7 +9326,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-bang-bang-and-pwpf",
       "title": "Bang-bang and on-off thruster control: Schmitt trigger and PWPF",
-      "minutes": 26,
+      "minutes": 24,
       "covers": [
         "Bang-bang and on-off thruster control: Schmitt trigger and pulse-width pulse-frequency modulation"
       ],
@@ -5849,7 +9337,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-receding-horizon-principle",
       "title": "The receding horizon principle",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "The receding horizon principle"
       ],
@@ -5858,7 +9346,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-finite-horizon-problem",
       "title": "The finite-horizon constrained optimal control problem",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "The finite-horizon constrained optimal control problem"
       ],
@@ -5867,7 +9355,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-linear-mpc-as-a-quadratic-program",
       "title": "Linear MPC as a quadratic program",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "Linear MPC as a quadratic program; condensed vs sparse formulations"
       ],
@@ -5876,7 +9364,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-constraints-and-slack-variables",
       "title": "State and input constraints, softening and slacks",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "State and input constraints; soft constraints and slack variables"
       ],
@@ -5885,7 +9373,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-terminal-cost-and-terminal-set",
       "title": "Terminal cost and terminal set",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "Terminal cost and terminal constraint set for stability guarantees"
       ],
@@ -5894,7 +9382,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-recursive-feasibility-and-invariant-sets",
       "title": "Feasibility, recursive feasibility and invariant sets",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "Feasibility, recursive feasibility, and the maximal control invariant set"
       ],
@@ -5903,7 +9391,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-robust-mpc-tubes-and-min-max",
       "title": "Robust MPC, tubes and min-max",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "Robust MPC: tube MPC and min-max formulations"
       ],
@@ -5912,7 +9400,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-explicit-mpc",
       "title": "Explicit MPC and multi-parametric programming",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "Explicit MPC and multi-parametric programming"
       ],
@@ -5921,7 +9409,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-nonlinear-and-economic-mpc",
       "title": "Nonlinear MPC and economic MPC",
-      "minutes": 25,
+      "minutes": 24,
       "covers": [
         "Nonlinear MPC",
         "Economic MPC"
@@ -5931,7 +9419,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-real-time-onboard-mpc",
       "title": "Real-time onboard MPC and embedded QP solvers",
-      "minutes": 25,
+      "minutes": 24,
       "covers": [
         "Real-time onboard MPC: warm starting, solver choice, worst-case iteration bounds, certifiable solve time",
         "Embedded QP solvers (OSQP, qpOASES, HPIPM) and code generation"
@@ -5952,7 +9440,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-linear-least-squares-normal-equations-qr-svd",
       "title": "The linear least squares problem",
-      "minutes": 22,
+      "minutes": 20,
       "covers": [
         "The linear least squares problem; normal equations, QR, and SVD solutions"
       ],
@@ -5961,7 +9449,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-weighted-least-squares-and-the-information-matrix",
       "title": "Weighted least squares and the information matrix",
-      "minutes": 21,
+      "minutes": 18,
       "covers": [
         "Weighted least squares and the information matrix"
       ],
@@ -5970,7 +9458,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-minimum-variance-blue-gauss-markov",
       "title": "Minimum variance and BLUE: the Gauss-Markov theorem",
-      "minutes": 19,
+      "minutes": 16,
       "covers": [
         "Minimum variance and BLUE: the Gauss-Markov theorem"
       ],
@@ -5979,7 +9467,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-maximum-likelihood-equivalence-wls-gaussian",
       "title": "Maximum likelihood and its equivalence to WLS under Gaussian noise",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "Maximum likelihood and its equivalence to WLS under Gaussian noise"
       ],
@@ -5988,7 +9476,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-maximum-a-posteriori-estimation",
       "title": "Maximum a posteriori estimation",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "Maximum a posteriori estimation"
       ],
@@ -5997,7 +9485,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-nonlinear-least-squares-gauss-newton-levenberg-marquardt",
       "title": "Nonlinear least squares: Gauss-Newton and Levenberg-Marquardt",
-      "minutes": 20,
+      "minutes": 24,
       "covers": [
         "Nonlinear least squares: Gauss-Newton and Levenberg-Marquardt"
       ],
@@ -6006,7 +9494,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-recursive-least-squares-kalman-bridge",
       "title": "Recursive least squares and the bridge to the Kalman filter",
-      "minutes": 15,
+      "minutes": 21,
       "covers": [
         "Recursive least squares and the bridge to the Kalman filter"
       ],
@@ -6015,7 +9503,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-condition-number-observability-metric",
       "title": "The normal matrix condition number as an observability metric",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "The normal matrix condition number as an observability metric"
       ],
@@ -6024,7 +9512,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-residual-analysis-outlier-rejection-robust-estimation",
       "title": "Residual analysis, outlier rejection, and robust estimation",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Residual analysis, outlier rejection, and robust estimation (Huber loss, RANSAC)"
       ],
@@ -6033,7 +9521,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-wahba-problem",
       "title": "The Wahba problem: aligning two sets of vector observations",
-      "minutes": 15,
+      "minutes": 19,
       "covers": [
         "The Wahba problem: find the rotation best aligning two sets of vector observations"
       ],
@@ -6042,7 +9530,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-wahba-solutions-triad-davenport-quest-svd",
       "title": "Wahba solutions: TRIAD, Davenport, QUEST, ESOQ, and SVD",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Wahba solutions: TRIAD, Davenport q-method, QUEST, ESOQ, and the SVD method"
       ],
@@ -6051,7 +9539,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-attitude-covariance-sensor-geometry",
       "title": "Covariance of an attitude solution and the effect of sensor geometry",
-      "minutes": 18,
+      "minutes": 16,
       "covers": [
         "Covariance of an attitude solution and the effect of sensor geometry"
       ],
@@ -6062,7 +9550,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-stochastic-state-space-model",
       "title": "The stochastic state-space model, process noise Q and measurement noise R",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "The stochastic state-space model: process noise Q and measurement noise R"
       ],
@@ -6071,7 +9559,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-three-derivations-of-the-kalman-filter",
       "title": "Three derivations of the Kalman filter",
-      "minutes": 24,
+      "minutes": 20,
       "covers": [
         "Three derivations of the Kalman filter: minimum variance/orthogonality, Bayesian Gaussian conditioning, recursive least squares"
       ],
@@ -6080,7 +9568,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-the-predict-and-update-steps",
       "title": "The predict and update steps",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "The predict and update steps"
       ],
@@ -6089,7 +9577,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-kalman-gain-as-a-trust-ratio",
       "title": "The Kalman gain as a trust ratio between prediction and measurement",
-      "minutes": 18,
+      "minutes": 23,
       "covers": [
         "The Kalman gain as a trust ratio between prediction and measurement"
       ],
@@ -6098,7 +9586,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-covariance-propagation-and-the-discrete-riccati-equation",
       "title": "Covariance propagation and the discrete Riccati equation",
-      "minutes": 14,
+      "minutes": 18,
       "covers": [
         "Covariance propagation and the discrete Riccati equation"
       ],
@@ -6107,7 +9595,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-process-noise-tuning-and-getting-q-wrong",
       "title": "Process noise tuning and the consequences of getting Q wrong",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Process noise tuning and the consequences of getting Q wrong"
       ],
@@ -6116,7 +9604,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-the-steady-state-kalman-filter",
       "title": "The steady-state Kalman filter",
-      "minutes": 19,
+      "minutes": 23,
       "covers": [
         "The steady-state Kalman filter"
       ],
@@ -6125,7 +9613,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-observability-and-filter-convergence",
       "title": "Observability and filter convergence",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "Observability and filter convergence"
       ],
@@ -6134,7 +9622,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-numerically-stable-formulations",
       "title": "Numerically stable formulations: Joseph form, square-root, and UD factorization",
-      "minutes": 24,
+      "minutes": 21,
       "covers": [
         "Numerically stable formulations: Joseph form, square-root (Potter, Carlson), UD factorization (Bierman-Thornton)"
       ],
@@ -6143,7 +9631,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-filter-divergence-causes-and-remedies",
       "title": "Filter divergence: causes and remedies",
-      "minutes": 23,
+      "minutes": 24,
       "covers": [
         "Filter divergence: causes and remedies (fading memory, Q inflation, covariance symmetrization)"
       ],
@@ -6152,7 +9640,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-consistency-testing",
       "title": "Consistency testing: innovation whiteness, NEES and NIS",
-      "minutes": 25,
+      "minutes": 18,
       "covers": [
         "Consistency testing: innovation whiteness, NEES and NIS chi-square tests, innovation autocorrelation"
       ],
@@ -6161,7 +9649,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-sequential-vs-batch-updates-and-gating",
       "title": "Sequential vs batch measurement updates; measurement editing and gating",
-      "minutes": 21,
+      "minutes": 19,
       "covers": [
         "Sequential vs batch measurement updates; measurement editing and gating"
       ],
@@ -6170,7 +9658,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-the-rauch-tung-striebel-smoother",
       "title": "The Rauch-Tung-Striebel smoother",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "The Rauch-Tung-Striebel smoother"
       ],
@@ -6179,7 +9667,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-the-information-filter-form",
       "title": "The information filter form and its use in sensor fusion",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "The information filter form and its use in sensor fusion"
       ],
@@ -6199,7 +9687,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-extended-kalman-filter",
       "title": "The Extended Kalman Filter — linearizing about the estimate",
-      "minutes": 21,
+      "minutes": 25,
       "covers": [
         "The Extended Kalman Filter: linearization about the current estimate, Jacobians F and H, first-order truncation error"
       ],
@@ -6208,7 +9696,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-continuous-discrete-and-iterated-ekf",
       "title": "The continuous-discrete EKF and the iterated EKF",
-      "minutes": 20,
+      "minutes": 18,
       "covers": [
         "Continuous-discrete EKF and the iterated EKF"
       ],
@@ -6226,7 +9714,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-unscented-kalman-filter",
       "title": "The Unscented Kalman Filter",
-      "minutes": 22,
+      "minutes": 23,
       "covers": [
         "The Unscented Kalman Filter: the unscented transform, sigma point selection (alpha, beta, kappa), the square-root UKF"
       ],
@@ -6235,7 +9723,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-why-the-ukf-beats-the-ekf",
       "title": "Why the UKF beats the EKF for strong nonlinearity, and the cost",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "Why the UKF beats the EKF for strong nonlinearity, and the cost comparison"
       ],
@@ -6244,7 +9732,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-the-cubature-kalman-filter",
       "title": "The cubature Kalman filter",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "The cubature Kalman filter"
       ],
@@ -6253,7 +9741,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-particle-filters",
       "title": "Particle filters — sequential importance sampling and resampling",
-      "minutes": 23,
+      "minutes": 28,
       "covers": [
         "Particle filters: sequential importance sampling, resampling, degeneracy and sample impoverishment"
       ],
@@ -6262,7 +9750,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-when-a-particle-filter-is-required",
       "title": "When a particle filter is genuinely required",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "When a particle filter is genuinely required: multi-modal and non-Gaussian posteriors"
       ],
@@ -6271,7 +9759,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-gaussian-sum-filters",
       "title": "Gaussian sum filters",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "Gaussian sum filters"
       ],
@@ -6280,7 +9768,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-the-error-state-kalman-filter",
       "title": "The error-state (indirect) Kalman filter",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "The error-state (indirect) Kalman filter: why the error state is small and nearly linear, injection and reset, the Jacobian of the reset"
       ],
@@ -6298,7 +9786,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-invariant-and-on-manifold-ekf",
       "title": "On-manifold and invariant EKF, equivariant filtering",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "On-manifold and invariant EKF (IEKF), equivariant filtering"
       ],
@@ -6307,7 +9795,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-consider-states-and-bias-augmentation",
       "title": "Consider states and bias augmentation",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Consider states and bias augmentation"
       ],
@@ -6316,7 +9804,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-multiple-model-and-imm-filters",
       "title": "Multiple-model and IMM filters",
-      "minutes": 19,
+      "minutes": 23,
       "covers": [
         "Multiple-model and IMM filters"
       ],
@@ -6336,7 +9824,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-imu-error-models",
       "title": "IMU error models",
-      "minutes": 24,
+      "minutes": 21,
       "covers": [
         "IMU error models: turn-on and in-run bias, scale factor, non-orthogonality and misalignment, g-sensitivity, quantization"
       ],
@@ -6345,7 +9833,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-random-walk-bias-instability-rate-random-walk",
       "title": "Random walk, bias instability, and rate random walk",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "Angle random walk, velocity random walk, rate random walk, and bias instability"
       ],
@@ -6354,7 +9842,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-allan-deviation-temperature-and-calibration",
       "title": "The Allan deviation, temperature effects, and calibration",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Allan variance for IMU characterization; temperature effects and calibration"
       ],
@@ -6363,7 +9851,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-strapdown-mechanization-eci-ecef-ned",
       "title": "Strapdown mechanization in ECI, ECEF, and the local-level frame",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "Strapdown mechanization in ECI, ECEF and local-level (NED) frames"
       ],
@@ -6372,7 +9860,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-attitude-velocity-position-update",
       "title": "The mechanization loop: attitude, velocity, and position update",
-      "minutes": 13,
+      "minutes": 15,
       "covers": [
         "Attitude update, velocity update with Coriolis and gravity, position update"
       ],
@@ -6381,7 +9869,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-coning-sculling-multi-sample-algorithms",
       "title": "Coning and sculling corrections",
-      "minutes": 17,
+      "minutes": 23,
       "covers": [
         "Coning and sculling corrections and multi-sample algorithms"
       ],
@@ -6390,7 +9878,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-schuler-oscillation",
       "title": "The Schuler oscillation",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "The Schuler oscillation and why it bounds unaided INS horizontal error"
       ],
@@ -6399,7 +9887,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-free-inertial-error-propagation",
       "title": "Free-inertial error propagation",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "Free-inertial error propagation: how position error grows with time from each error source"
       ],
@@ -6408,7 +9896,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-initial-alignment",
       "title": "Initial alignment",
-      "minutes": 17,
+      "minutes": 24,
       "covers": [
         "Initial alignment: coarse leveling, gyrocompassing, fine alignment via Kalman filter, transfer and in-flight alignment"
       ],
@@ -6417,7 +9905,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-ins-gnss-integration-architectures",
       "title": "INS/GNSS integration architectures",
-      "minutes": 14,
+      "minutes": 20,
       "covers": [
         "INS/GNSS integration architectures: loosely, tightly, and ultra-tightly (deeply) coupled"
       ],
@@ -6426,7 +9914,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-error-state-filter-15-21-state",
       "title": "The error-state filter for INS",
-      "minutes": 15,
+      "minutes": 24,
       "covers": [
         "Error-state filter formulation for INS: the 15-state and 21-state models"
       ],
@@ -6435,7 +9923,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-lever-arm-zupt-vibration-rectification",
       "title": "Lever arm compensation, zero-velocity updates, and vibration rectification",
-      "minutes": 16,
+      "minutes": 21,
       "covers": [
         "Lever arm compensation, zero-velocity updates, vibration rectification"
       ],
@@ -6446,7 +9934,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-constellation-and-signal-structure",
       "title": "The constellation and the signal",
-      "minutes": 23,
+      "minutes": 22,
       "covers": [
         "GNSS constellation and signal structure: L1/L2/L5, C/A and P(Y) codes, CDMA, the navigation message"
       ],
@@ -6455,7 +9943,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-pseudorange-and-its-error-budget",
       "title": "The pseudorange and its error budget",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "The pseudorange measurement and its error budget"
       ],
@@ -6464,7 +9952,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-receiver-clock-bias-the-fourth-unknown",
       "title": "The receiver clock as the fourth unknown",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "Receiver clock bias as the fourth unknown"
       ],
@@ -6473,7 +9961,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-navigation-solution-by-least-squares",
       "title": "The navigation solution by least squares",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "The navigation solution by iterative least squares / Newton iteration"
       ],
@@ -6491,7 +9979,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-ionospheric-and-tropospheric-delay",
       "title": "Ionospheric and tropospheric delay",
-      "minutes": 24,
+      "minutes": 23,
       "covers": [
         "Ionospheric and tropospheric delay, their models, and the dual-frequency ionosphere-free combination"
       ],
@@ -6500,7 +9988,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-multipath-ephemeris-and-clock-errors",
       "title": "Multipath, ephemeris and clock errors",
-      "minutes": 24,
+      "minutes": 23,
       "covers": [
         "Multipath; ephemeris and satellite clock errors"
       ],
@@ -6509,7 +9997,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-carrier-phase-and-integer-ambiguity",
       "title": "Carrier phase and integer ambiguity resolution",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "Carrier phase measurements, cycle slips, integer ambiguity resolution with LAMBDA"
       ],
@@ -6518,7 +10006,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-differential-gnss-rtk-and-ppp",
       "title": "Differential GNSS, RTK and precise point positioning",
-      "minutes": 22,
+      "minutes": 17,
       "covers": [
         "Differential GNSS, RTK, and precise point positioning"
       ],
@@ -6527,7 +10015,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-gnss-above-the-constellation",
       "title": "GNSS above the constellation",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "Space-based GNSS: use above the constellation, side-lobe reception, high-dynamics tracking, Doppler"
       ],
@@ -6536,7 +10024,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-gnss-in-the-launch-vehicle-environment",
       "title": "GNSS in the launch vehicle environment",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "GNSS in a launch vehicle environment: acceleration, jerk, vibration, plume attenuation, antenna switching"
       ],
@@ -6545,7 +10033,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-integrity-jamming-and-spoofing",
       "title": "Integrity, jamming and spoofing",
-      "minutes": 24,
+      "minutes": 21,
       "covers": [
         "Jamming and spoofing; RAIM and integrity monitoring"
       ],
@@ -6554,7 +10042,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-receiver-tracking-loops",
       "title": "Receiver tracking loops",
-      "minutes": 17,
+      "minutes": 24,
       "covers": [
         "Receiver tracking loops (DLL, PLL, FLL) and the bandwidth/dynamics trade"
       ],
@@ -6563,7 +10051,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-vector-tracking-and-deep-coupling",
       "title": "Vector tracking and deep coupling",
-      "minutes": 22,
+      "minutes": 23,
       "covers": [
         "Vector tracking and deep coupling"
       ],
@@ -6583,7 +10071,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-star-tracker-accuracy-boresight-update-rate-stray-light",
       "title": "Star tracker accuracy: boresight geometry, update rate, and stray light",
-      "minutes": 28,
+      "minutes": 25,
       "covers": [
         "Star tracker accuracy: cross-boresight vs about-boresight, update rate, exclusion angles, stray light"
       ],
@@ -6592,7 +10080,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-sun-sensors-coarse-fine-albedo-error",
       "title": "Sun sensors: coarse and fine, and the Earth-albedo error",
-      "minutes": 27,
+      "minutes": 24,
       "covers": [
         "Sun sensors: coarse analog and fine digital, field of view, albedo error"
       ],
@@ -6601,7 +10089,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-magnetometers-igrf-wmm-hard-soft-iron-calibration",
       "title": "Magnetometers: the IGRF/WMM field model and hard- and soft-iron calibration",
-      "minutes": 20,
+      "minutes": 24,
       "covers": [
         "Magnetometers, the IGRF and WMM field models, residual dipole, hard-iron and soft-iron calibration"
       ],
@@ -6610,7 +10098,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-earth-and-horizon-sensors",
       "title": "Earth and horizon sensors",
-      "minutes": 14,
+      "minutes": 16,
       "covers": [
         "Earth and horizon sensors"
       ],
@@ -6619,7 +10107,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-radar-laser-altimeters-lidar",
       "title": "Radar altimeters, laser altimeters and lidar",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Radar altimeters, laser altimeters and lidar"
       ],
@@ -6628,7 +10116,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-cameras-pinhole-intrinsics-extrinsics-distortion",
       "title": "Cameras for optical navigation: the pinhole model, intrinsics, extrinsics, distortion",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "Cameras for optical navigation: the pinhole model, intrinsics and extrinsics, distortion"
       ],
@@ -6637,7 +10125,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-feature-tracking-terrain-relative-navigation-crater-matching",
       "title": "Feature detection and tracking, terrain relative navigation, and crater matching",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "Feature detection and tracking; terrain relative navigation; crater and landmark matching"
       ],
@@ -6646,7 +10134,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-hazard-detection-visual-inertial-odometry",
       "title": "Hazard detection and avoidance; visual-inertial odometry basics",
-      "minutes": 16,
+      "minutes": 24,
       "covers": [
         "Hazard detection and avoidance; visual-inertial odometry basics"
       ],
@@ -6654,8 +10142,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l10-relative-navigation-docking-retroreflectors",
-      "title": "Relative navigation for docking: retroreflectors and the closing error ellipse",
-      "minutes": 17,
+      "title": "Docking navigation: retroreflectors and the closing error ellipse",
+      "minutes": 23,
       "covers": [
         "Relative navigation sensors for docking: retroreflector tracking and pattern recognition"
       ],
@@ -6664,7 +10152,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-sensor-fusion-architectures-measurement-models",
       "title": "Sensor fusion architectures and per-sensor measurement models",
-      "minutes": 15,
+      "minutes": 23,
       "covers": [
         "Sensor fusion architectures and per-sensor measurement models"
       ],
@@ -6673,7 +10161,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-sensor-calibration-alignment-fault-detection",
       "title": "Sensor calibration, alignment estimation, and fault detection",
-      "minutes": 14,
+      "minutes": 25,
       "covers": [
         "Sensor calibration, alignment estimation, and fault detection"
       ],
@@ -6684,7 +10172,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-initial-orbit-determination",
       "title": "Initial orbit determination: Gibbs, Herrick-Gibbs and Gauss angles-only",
-      "minutes": 27,
+      "minutes": 26,
       "covers": [
         "Initial orbit determination: angles-only (Gauss, Laplace, double-r), three position vectors (Gibbs, Herrick-Gibbs), range and range-rate methods"
       ],
@@ -6693,7 +10181,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-batch-least-squares-orbit-determination",
       "title": "Batch least-squares orbit determination with the state transition matrix",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "Batch least-squares orbit determination with the state transition matrix"
       ],
@@ -6702,7 +10190,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-variational-equations-stm-integration",
       "title": "The variational equations and computing the STM by integration",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "The variational equations and computing the STM by integration"
       ],
@@ -6711,7 +10199,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-sequential-orbit-determination-ekf-ukf",
       "title": "Sequential orbit determination with EKF and UKF",
-      "minutes": 16,
+      "minutes": 24,
       "covers": [
         "Sequential orbit determination with EKF and UKF"
       ],
@@ -6720,7 +10208,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-measurement-types-and-models",
       "title": "Measurement types and models: range, range-rate, angles, GNSS, VLBI, ISL",
-      "minutes": 13,
+      "minutes": 22,
       "covers": [
         "Measurement types and models: range, range-rate/Doppler, angles, GNSS, VLBI, inter-satellite links"
       ],
@@ -6729,7 +10217,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-tracking-geometry-and-observability",
       "title": "Station and tracking geometry and its effect on observability",
-      "minutes": 14,
+      "minutes": 19,
       "covers": [
         "Station and tracking geometry and its effect on observability"
       ],
@@ -6738,7 +10226,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-process-noise-gauss-markov-dmc",
       "title": "Process noise for orbit determination: Gauss-Markov acceleration and DMC",
-      "minutes": 16,
+      "minutes": 24,
       "covers": [
         "Process noise for orbit determination: Gauss-Markov acceleration and dynamic model compensation"
       ],
@@ -6747,7 +10235,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-consider-covariance-analysis",
       "title": "Consider-covariance analysis",
-      "minutes": 12,
+      "minutes": 19,
       "covers": [
         "Consider-covariance analysis"
       ],
@@ -6756,7 +10244,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-residual-editing-and-data-weighting",
       "title": "Residual editing and data weighting",
-      "minutes": 14,
+      "minutes": 24,
       "covers": [
         "Residual editing and data weighting"
       ],
@@ -6765,7 +10253,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-orbit-accuracy-ric-frame",
       "title": "Orbit accuracy metrics and covariance in the RIC frame",
-      "minutes": 13,
+      "minutes": 19,
       "covers": [
         "Orbit accuracy metrics and covariance in the RIC (radial, in-track, cross-track) frame"
       ],
@@ -6774,7 +10262,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-conjunction-assessment-collision-probability",
       "title": "Conjunction assessment and collision probability",
-      "minutes": 13,
+      "minutes": 21,
       "covers": [
         "Conjunction assessment and collision probability"
       ],
@@ -6783,7 +10271,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-maneuver-estimation-and-reconstruction",
       "title": "Maneuver estimation and reconstruction",
-      "minutes": 12,
+      "minutes": 24,
       "covers": [
         "Maneuver estimation and reconstruction"
       ],
@@ -6792,7 +10280,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-relative-od-and-autonomous-onboard-od",
       "title": "Relative orbit determination and autonomous onboard OD",
-      "minutes": 14,
+      "minutes": 23,
       "covers": [
         "Relative orbit determination for constellations; autonomous onboard orbit determination"
       ],
@@ -6802,8 +10290,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
   "t5_m40_guidance_fundamentals": [
     {
       "id": "l01-guidance-navigation-control-decomposition",
-      "title": "The guidance, navigation and control decomposition",
-      "minutes": 20,
+      "title": "The guidance, navigation and control split",
+      "minutes": 21,
       "covers": [
         "The guidance / navigation / control decomposition and the loop rate of each"
       ],
@@ -6812,7 +10300,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-open-loop-vs-closed-loop-guidance",
       "title": "Open-loop, reference-following and explicit guidance",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Open-loop vs closed-loop guidance; reference-trajectory following vs explicit guidance"
       ],
@@ -6821,7 +10309,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-line-of-sight-and-pursuit-guidance",
       "title": "Line-of-sight and pursuit guidance",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "Line-of-sight guidance and pursuit guidance"
       ],
@@ -6857,7 +10345,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-optimal-guidance-lq-formulation",
       "title": "Optimal guidance from a linear-quadratic formulation",
-      "minutes": 22,
+      "minutes": 18,
       "covers": [
         "Optimal guidance from an LQ formulation and how PN emerges from it"
       ],
@@ -6866,7 +10354,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-zem-zev-guidance",
       "title": "Zero-effort-miss and zero-effort-velocity guidance",
-      "minutes": 23,
+      "minutes": 19,
       "covers": [
         "Zero-effort-miss and zero-effort-velocity guidance; the ZEM/ZEV feedback law for landing"
       ],
@@ -6875,7 +10363,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-miss-distance-and-adjoint-methods",
       "title": "Miss-distance analysis and the adjoint method",
-      "minutes": 24,
+      "minutes": 18,
       "covers": [
         "Miss-distance analysis and adjoint methods"
       ],
@@ -6893,7 +10381,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-gravity-turn-ascent",
       "title": "The gravity turn",
-      "minutes": 24,
+      "minutes": 22,
       "covers": [
         "Gravity turn ascent and zero-lift trajectories; the pitch program and open-loop pitch kick"
       ],
@@ -6902,7 +10390,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-terminal-midcourse-and-actuator-limits",
       "title": "Terminal versus midcourse guidance, and actuator limits",
-      "minutes": 23,
+      "minutes": 17,
       "covers": [
         "Terminal vs midcourse guidance; guidance under actuator limits"
       ],
@@ -6913,7 +10401,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-ascent-phases",
       "title": "The phases of an ascent",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Ascent phases: liftoff, pitch kick, gravity turn, max-Q, staging, exoatmospheric closed loop"
       ],
@@ -6922,7 +10410,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-open-loop-atmospheric-steering",
       "title": "Open-loop steering and why the loop stays open in the atmosphere",
-      "minutes": 15,
+      "minutes": 18,
       "covers": [
         "Open-loop atmospheric steering (the pitch program) and why closed-loop guidance is avoided in dense atmosphere"
       ],
@@ -6931,7 +10419,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-linear-tangent-steering-law",
       "title": "The linear tangent steering law",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "Optimal exoatmospheric steering: the linear tangent law from Pontryagin and the calculus of variations"
       ],
@@ -6940,7 +10428,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-powered-explicit-guidance",
       "title": "Powered Explicit Guidance and UPFG",
-      "minutes": 21,
+      "minutes": 26,
       "covers": [
         "Powered Explicit Guidance and Unified Powered Flight Guidance; why explicit guidance needs no reference trajectory"
       ],
@@ -6949,7 +10437,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-two-phase-throttle-structure",
       "title": "The two-phase throttle structure",
-      "minutes": 15,
+      "minutes": 18,
       "covers": [
         "The two-phase throttle structure: constant thrust to a g-limit, then throttled constant acceleration"
       ],
@@ -6958,7 +10446,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-iterative-guidance-mode",
       "title": "Iterative Guidance Mode, Saturn V's explicit guidance",
-      "minutes": 13,
+      "minutes": 23,
       "covers": [
         "Iterative Guidance Mode as flown on Saturn V"
       ],
@@ -6967,7 +10455,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-target-orbit-specification",
       "title": "Target orbit specification and the terminal constraint set",
-      "minutes": 13,
+      "minutes": 19,
       "covers": [
         "Target orbit specification and the terminal constraint set"
       ],
@@ -6976,7 +10464,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-tvc-allocation-and-engine-out",
       "title": "Thrust vector control allocation and engine-out contingency",
-      "minutes": 20,
+      "minutes": 27,
       "covers": [
         "Thrust vector control allocation and engine-out contingency"
       ],
@@ -6985,7 +10473,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-load-relief-and-guidance",
       "title": "Load relief and its interaction with guidance",
-      "minutes": 14,
+      "minutes": 20,
       "covers": [
         "Load relief and its interaction with guidance"
       ],
@@ -6994,7 +10482,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-offline-trajectory-optimization",
       "title": "Ascent trajectory optimization as an offline problem",
-      "minutes": 14,
+      "minutes": 24,
       "covers": [
         "Ascent trajectory optimization as an offline problem feeding onboard guidance"
       ],
@@ -7003,7 +10491,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-day-of-launch-wind-updates",
       "title": "Day-of-launch trajectory updates from measured winds",
-      "minutes": 14,
+      "minutes": 20,
       "covers": [
         "Day-of-launch trajectory updates from measured winds"
       ],
@@ -7012,7 +10500,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-abort-modes",
       "title": "Abort modes and the decision logic behind them",
-      "minutes": 15,
+      "minutes": 21,
       "covers": [
         "Abort modes: RTLS, TAL, AOA and the decision logic"
       ],
@@ -7023,7 +10511,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-bolza-mayer-lagrange",
       "title": "The Bolza, Mayer and Lagrange cost forms",
-      "minutes": 16,
+      "minutes": 22,
       "covers": [
         "The general optimal control problem in Bolza, Mayer and Lagrange form, and how to convert between them"
       ],
@@ -7032,7 +10520,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-euler-lagrange-costates",
       "title": "The Euler-Lagrange conditions and costates as shadow prices",
-      "minutes": 17,
+      "minutes": 22,
       "covers": [
         "Indirect methods: the Hamiltonian, the Euler-Lagrange conditions, costates as shadow prices"
       ],
@@ -7041,7 +10529,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-pontryagin-transversality",
       "title": "Pontryagin's Minimum Principle: why minimise, and transversality in full",
-      "minutes": 18,
+      "minutes": 24,
       "covers": [
         "Pontryagin's Minimum Principle, the stationarity condition, and transversality conditions"
       ],
@@ -7050,7 +10538,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-shooting-and-brittleness",
       "title": "The two-point boundary value problem and why shooting is brittle",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "The two-point boundary value problem; single and multiple shooting; costate sensitivity and why indirect methods are brittle"
       ],
@@ -7059,7 +10547,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-bang-bang-singular-arcs",
       "title": "Bang-bang control, the switching function, and singular arcs",
-      "minutes": 16,
+      "minutes": 21,
       "covers": [
         "Bang-bang control, the switching function, and singular arcs"
       ],
@@ -7068,7 +10556,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-direct-transcription",
       "title": "Direct transcription: from a continuous problem to a finite NLP",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Direct transcription: converting an infinite-dimensional problem into a finite NLP"
       ],
@@ -7077,7 +10565,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-direct-single-vs-multiple-shooting",
       "title": "Direct single shooting vs direct multiple shooting",
-      "minutes": 17,
+      "minutes": 23,
       "covers": [
         "Direct single shooting vs direct multiple shooting, and the conditioning difference between them"
       ],
@@ -7086,7 +10574,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-trapezoidal-hermite-simpson-collocation",
       "title": "Direct collocation: trapezoidal and Hermite-Simpson defects",
-      "minutes": 16,
+      "minutes": 23,
       "covers": [
         "Direct collocation: trapezoidal and Hermite-Simpson defect constraints"
       ],
@@ -7095,7 +10583,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-pseudospectral-nodes",
       "title": "Pseudospectral methods: node families and the differentiation matrix",
-      "minutes": 15,
+      "minutes": 23,
       "covers": [
         "Pseudospectral methods: Legendre-Gauss, Legendre-Gauss-Radau and Legendre-Gauss-Lobatto nodes"
       ],
@@ -7104,7 +10592,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-spectral-convergence-covector-mapping",
       "title": "Spectral convergence and the covector mapping theorem",
-      "minutes": 16,
+      "minutes": 22,
       "covers": [
         "Spectral convergence, the covector mapping theorem, and what pseudospectral costates buy you"
       ],
@@ -7131,7 +10619,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-nlp-sparsity",
       "title": "NLP sparsity: the Jacobian and Hessian block pattern",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "NLP sparsity structure, the Jacobian and Hessian block pattern, and why sparsity decides solve time"
       ],
@@ -7139,8 +10627,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l14-scaling-and-conditioning",
-      "title": "Scaling and conditioning: non-dimensionalise before you solve anything",
-      "minutes": 18,
+      "title": "Scaling and conditioning: non-dimensionalize before you solve anything",
+      "minutes": 23,
       "covers": [
         "Scaling and conditioning: non-dimensionalising states, controls and constraints before you solve anything"
       ],
@@ -7149,7 +10637,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l15-warm-starting-homotopy-continuation",
       "title": "Warm starting, homotopy and continuation",
-      "minutes": 18,
+      "minutes": 25,
       "covers": [
         "Warm starting, homotopy and continuation from an easy problem to the real one"
       ],
@@ -7334,7 +10822,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-priority-inversion",
       "title": "Priority inversion, priority inheritance and priority ceiling",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "Priority inversion, priority inheritance and priority ceiling; the Mars Pathfinder failure and its fix"
       ],
@@ -7343,7 +10831,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-rtos-primitives",
       "title": "RTOS primitives and which of them can block unboundedly",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "RTOS primitives: tasks, semaphores, mutexes, message queues, and which of them can block unboundedly"
       ],
@@ -7416,7 +10904,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-architecture-layering-and-cfs",
       "title": "Architecture layering, and NASA cFS as a reference",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "Layering: hardware abstraction, device managers, the GNC application, the mode manager, telemetry and command",
         "NASA core Flight System as a public reference architecture: apps, the software bus, tables"
@@ -7426,7 +10914,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-mode-management-state-machine",
       "title": "Mode management as an explicit state machine",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Mode management as an explicit state machine, with guard conditions and an exit to safe from every state"
       ],
@@ -7435,7 +10923,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-command-and-telemetry",
       "title": "Command and telemetry",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "Command and telemetry: CCSDS packet structure, dictionaries, limit checking, and command authentication"
       ],
@@ -7444,7 +10932,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-data-integrity-and-time",
       "title": "Data integrity and time management",
-      "minutes": 20,
+      "minutes": 26,
       "covers": [
         "Data integrity: CRCs, checksums, sequence counts and staleness checks on every input",
         "Time management, epochs, leap seconds and monotonic vs wall-clock time"
@@ -7454,7 +10942,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-redundancy-architectures",
       "title": "Redundancy architectures, classical and modern",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "Redundancy architectures: cold, warm and hot standby; dual-dual; cross-strapping",
         "Commodity multi-core computers running Linux with redundant flight strings and voted output, as publicly described for modern launch and crew vehicles"
@@ -7464,7 +10952,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-tmr-and-voting",
       "title": "Triple modular redundancy and voting",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Triple modular redundancy and voting; mid-value select; what a voter can and cannot detect"
       ],
@@ -7473,7 +10961,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-byzantine-faults-and-determinism",
       "title": "Byzantine faults and determinism",
-      "minutes": 20,
+      "minutes": 27,
       "covers": [
         "Byzantine faults and why a majority vote does not handle an asymmetric liar",
         "Determinism across redundant strings, and why a non-deterministic algorithm cannot be voted"
@@ -7483,7 +10971,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-radiation-and-watchdogs",
       "title": "Radiation effects and watchdog timers",
-      "minutes": 22,
+      "minutes": 26,
       "covers": [
         "Radiation effects: single-event upsets, latch-up, total ionising dose; EDAC and ECC memory; memory scrubbing",
         "Watchdog timers: what they catch, what they miss, and why a reset is a real-time decision"
@@ -7493,7 +10981,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-fault-detection-isolation-recovery",
       "title": "Fault detection, isolation and recovery",
-      "minutes": 24,
+      "minutes": 28,
       "covers": [
         "Fault detection, isolation and recovery: residual monitors, hypothesis tests, persistence counters and hysteresis"
       ],
@@ -7502,7 +10990,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-fmea-fault-trees-abort",
       "title": "FMEA, fault trees, and the abort decision",
-      "minutes": 22,
+      "minutes": 27,
       "covers": [
         "FMEA and fault trees; identifying the single points of failure a voter does not cover",
         "Abort logic and autonomous flight termination systems"
@@ -7512,7 +11000,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-safing-reachability",
       "title": "Safing modes: proving safe is reachable",
-      "minutes": 17,
+      "minutes": 23,
       "covers": [
         "Safing modes and the rule that safe must be reachable, stable and exitable only by an explicit decision"
       ],
@@ -7521,7 +11009,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-traceability-config-updates",
       "title": "Traceability, configuration management, and in-flight updates",
-      "minutes": 21,
+      "minutes": 25,
       "covers": [
         "Requirements traceability from a vehicle requirement to a line of code to a test",
         "Configuration management of gains, I-loads and tables separately from the executable",
@@ -7534,7 +11022,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-five-box-decomposition",
       "title": "The five-box decomposition",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "The five-box decomposition: plant, sensors, GNC, actuators, environment — and why the interfaces between them are the whole design"
       ],
@@ -7552,7 +11040,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-two-rate-simulation-and-zoh",
       "title": "Two rates and the zero-order hold",
-      "minutes": 18,
+      "minutes": 16,
       "covers": [
         "Running the plant at a fine step while the flight software runs at its true rate, with zero-order hold between updates"
       ],
@@ -7561,7 +11049,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-frame-and-unit-discipline",
       "title": "Frame and unit discipline",
-      "minutes": 24,
+      "minutes": 23,
       "covers": [
         "Frame and unit discipline: naming every vector by its frame, and the conventions that stop a sign error becoming a three-week debugging session"
       ],
@@ -7579,7 +11067,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-sensor-models",
       "title": "Sensor models",
-      "minutes": 25,
+      "minutes": 22,
       "covers": [
         "Sensor models: noise, bias and bias instability, scale factor, misalignment, quantisation, latency, dropout, saturation, update rate"
       ],
@@ -7588,7 +11076,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-actuator-models",
       "title": "Actuator models",
-      "minutes": 24,
+      "minutes": 27,
       "covers": [
         "Actuator models: thrust curves and start-up transients, TVC gimbal dynamics and rate limits, reaction wheel friction, thruster minimum impulse bit, valve delay"
       ],
@@ -7597,7 +11085,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-mass-properties-against-time",
       "title": "Mass properties against time",
-      "minutes": 21,
+      "minutes": 20,
       "covers": [
         "Mass properties against time: propellant depletion, centre of mass migration, inertia tensor change"
       ],
@@ -7606,7 +11094,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-slosh-and-structural-flex",
       "title": "Slosh and structural flex",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "Slosh and structural flex models, and where they get inserted in the loop"
       ],
@@ -7615,7 +11103,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-staging-events-and-zero-crossing-detection",
       "title": "Staging events and zero-crossing detection",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "Staging and other discontinuous events; zero-crossing detection and bisection to the event time"
       ],
@@ -7624,7 +11112,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-flight-software-in-the-loop-boundary",
       "title": "The flight-software-in-the-loop boundary",
-      "minutes": 20,
+      "minutes": 18,
       "covers": [
         "The flight-software-in-the-loop boundary: compiling the actual flight code into the sim rather than a Python re-implementation of it"
       ],
@@ -7651,7 +11139,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-validation-analytic-solutions-and-conservation-laws",
       "title": "Validation: analytic solutions, conservation laws and flight data",
-      "minutes": 30,
+      "minutes": 24,
       "covers": [
         "Validation against analytic solutions, conservation laws, and eventually flight data"
       ],
@@ -7660,7 +11148,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l15-regression-testing-and-golden-files",
       "title": "Regression testing and golden files",
-      "minutes": 19,
+      "minutes": 17,
       "covers": [
         "Regression testing and golden-file comparison; what to do when a legitimate model improvement breaks every golden file"
       ],
@@ -7669,7 +11157,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l16-determinism-and-reproducibility",
       "title": "Determinism and reproducibility",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Determinism and reproducibility: seeded random number streams, per-case seeds, and bit-exact replay of a single case out of a campaign"
       ],
@@ -7687,7 +11175,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l18-configuration-management-of-the-simulation",
       "title": "Configuration management of the simulation",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "Configuration management of the sim: models, parameters and scenarios versioned separately from the code"
       ],
@@ -7698,7 +11186,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-verification-validation-and-the-matrix",
       "title": "Verification, validation, and the verification matrix",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "Requirements, verification and validation; the verification matrix that maps every requirement to its evidence",
         "Verification by analysis, test, inspection and demonstration, and choosing correctly between them"
@@ -7717,7 +11205,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-correlated-dispersions",
       "title": "Distributions, their justification, and correlated dispersions",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "Distributions and their justification; correlations between dispersed parameters and why ignoring them is not conservative"
       ],
@@ -7726,7 +11214,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-how-many-runs-buys-what-claim",
       "title": "How many runs buys what claim",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "Number of runs against the confidence in the claim; the zero-failure formula and its assumptions"
       ],
@@ -7735,7 +11223,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-defining-a-failed-case",
       "title": "Defining a failed case",
-      "minutes": 18,
+      "minutes": 16,
       "covers": [
         "Success criteria and scoring: defining what a failed case IS, before the campaign runs"
       ],
@@ -7744,7 +11232,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-tail-risk-importance-sampling-and-worst-case",
       "title": "Tail risk, extreme-value estimation, and worst-case analysis",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "Extreme-value estimation and importance sampling when the failure probability is too small to sample directly",
         "Worst-case and corner-case analysis as a complement to, not a substitute for, Monte Carlo"
@@ -7754,7 +11242,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-linear-covariance-analysis",
       "title": "Linear covariance analysis, and where it breaks",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "Linear covariance analysis as the fast complement: one run gives the covariance a thousand runs would estimate",
         "Where LinCov is valid and where nonlinearity, saturation and discrete logic force you back to Monte Carlo"
@@ -7764,7 +11252,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-three-sigma-is-not-the-99-73rd-percentile",
       "title": "Three sigma is not the 99.73rd percentile",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "Three sigma versus the 99.73rd percentile, and why they differ for anything non-Gaussian"
       ],
@@ -7773,7 +11261,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-sensitivity-analysis-and-envelope-coverage",
       "title": "Sensitivity analysis and flight-envelope coverage",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "Sensitivity analysis and driver identification: regression on the dispersion inputs, and scatter plots you actually look at",
         "Flight-envelope coverage and the difference between random coverage and designed coverage"
@@ -7783,7 +11271,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-stability-margins-across-the-envelope",
       "title": "Stability margins across the envelope",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "Stability margin verification across the envelope: frozen-time linearisation, gain, phase and delay margin against flight time"
       ],
@@ -7792,7 +11280,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-code-verification-and-static-analysis",
       "title": "Code verification and static analysis",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "Code verification: unit, integration and regression tests; statement, branch and MC-DC coverage",
         "Static analysis and formal methods: Coverity, Polyspace, model checking with SPIN",
@@ -7803,7 +11291,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-continuous-integration-and-closing-the-loop",
       "title": "Continuous integration and closing the loop",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Continuous integration for flight and simulation software: what runs on every commit, what runs nightly, what runs before a release",
         "Test-as-you-fly, and the risk taken every time you deviate from it",
@@ -7816,7 +11304,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-system-decomposition-and-interfaces",
       "title": "System decomposition and interface contracts",
-      "minutes": 21,
+      "minutes": 20,
       "covers": [
         "System decomposition and the interface contracts between navigation, guidance, control and the vehicle"
       ],
@@ -7825,7 +11313,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-error-budgeting",
       "title": "Error budgeting for a landing-accuracy requirement",
-      "minutes": 20,
+      "minutes": 18,
       "covers": [
         "Error budgeting: allocating a landing-accuracy requirement across navigation, guidance and control"
       ],
@@ -7834,7 +11322,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-rate-architecture",
       "title": "Rate architecture for the integrated stack",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "Rate architecture: navigation at IMU rate, control at 100 Hz or faster, guidance re-solved at 1 to 2 Hz, mode management at a low rate"
       ],
@@ -7843,7 +11331,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-navigation-meets-guidance",
       "title": "Navigation in the loop: the multiplicative EKF meets guidance",
-      "minutes": 24,
+      "minutes": 25,
       "covers": [
         "A multiplicative extended Kalman filter on IMU, GNSS and radar altimeter, with error-state formulation and attitude error as a three-parameter local perturbation"
       ],
@@ -7852,7 +11340,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-guidance-meets-control",
       "title": "Guidance in the loop: convex descent guidance meets control",
-      "minutes": 24,
+      "minutes": 23,
       "covers": [
         "Convex powered-descent guidance in the loop: re-solve cadence, warm starting, deadline policy and the closed-form fallback"
       ],
@@ -7861,7 +11349,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-control-meets-vehicle",
       "title": "Control in the loop: TVC, gain scheduling and saturation",
-      "minutes": 25,
+      "minutes": 22,
       "covers": [
         "TVC attitude control with bending-mode and slosh notch or roll-off filtering, and gain scheduling against dynamic pressure and mass"
       ],
@@ -7870,7 +11358,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-mode-management",
       "title": "Mode management and the transition boundary",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "Mode management across prelaunch, ascent, staging, coast, entry, landing and safe"
       ],
@@ -7888,7 +11376,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-the-integration-only-failure",
       "title": "The failure that only appears integrated",
-      "minutes": 23,
+      "minutes": 20,
       "covers": [
         "A multiplicative extended Kalman filter on IMU, GNSS and radar altimeter, with error-state formulation and attitude error as a three-parameter local perturbation",
         "TVC attitude control with bending-mode and slosh notch or roll-off filtering, and gain scheduling against dynamic pressure and mass"
@@ -7898,7 +11386,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-flight-code-architecture",
       "title": "One implementation, a C++ core and a Python layer",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "C++ flight core with a Python analysis and plotting layer over it, sharing exactly one implementation of the algorithms"
       ],
@@ -7918,7 +11406,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
   "t7_m49_interview_prep": [
     {
       "id": "l01-five-talks-and-the-defence",
-      "title": "The five-talk system, and rehearsing the defence",
+      "title": "The five-talk system, and rehearsing the defense",
       "minutes": 22,
       "covers": [
         "The project presentation: choosing five topics, building a 10 to 20 minute talk for each, and rehearsing the defence rather than the delivery"
@@ -8359,85 +11847,28 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_git_02_collab": {
-    "covered": 0,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "Merge vs rebase and the golden rule about shared history",
-      "Interactive rebase: squash, fixup, reword, drop, reorder",
-      "cherry-pick and backporting a fix to a release branch",
-      "Conflict resolution strategy; rerere",
-      "Remotes: fetch vs pull, pull --rebase, upstream tracking",
-      "push --force-with-lease vs --force",
-      "Trunk-based development vs GitFlow vs forking workflows",
-      "Pull requests: small diffs, draft PRs, required checks, CODEOWNERS",
-      "Release branches, tags, semantic versioning, changelogs",
-      "Submodules vs subtrees vs vendoring",
-      "Reviewing a diff: correctness, tests, interfaces, units and frames",
-      "Binary-file pain: model locking for Simulink and CAD assets"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_ops_01_docker": {
-    "covered": 0,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "Images vs containers; layers and the union filesystem",
-      "Dockerfile: FROM RUN COPY WORKDIR ENV ARG ENTRYPOINT CMD USER HEALTHCHECK",
-      "Layer caching and instruction ordering for fast rebuilds",
-      "Multi-stage builds: compile fat, ship slim",
-      ".dockerignore and build context size",
-      "Base-image choice: debian-slim vs alpine and the musl trap for scientific Python",
-      "Volumes and bind mounts, networks, port publishing",
-      "docker compose for sim + database + dashboard stacks",
-      "Registries, tagging discipline, never :latest in a pipeline",
-      "Digest pinning and lockfiles for true reproducibility",
-      "Dev Containers for onboarding",
-      "Kubernetes literacy: pods, deployments, services",
-      "Alternatives: Podman, Nix, Spack, conda-lock, uv"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_ops_02_ci": {
-    "covered": 0,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "What CI buys a simulation team, stated as failure modes it prevents",
-      "GitHub Actions: workflows, events, jobs, steps, runners",
-      "Matrix builds across OS, compiler and interpreter version",
-      "Caching pip, cargo and ccache; artefacts; secrets; environments",
-      "Reusable workflows and composite actions",
-      "Self-hosted runners for licensed tools and special hardware",
-      "GitLab CI and Jenkins, still common in defence and aerospace",
-      "A GNC pipeline: lint, static analysis, unit tests, coverage gate, Debug+ASan and Release builds, regression sims with tolerances, benchmark thresholds, docs, artefacts",
-      "Golden-file regression comparison with numerical tolerance",
-      "Nightly and scheduled long-running Monte Carlo jobs",
-      "MATLAB and Simulink in CI: setup-matlab, headless Simulink Test, licence servers",
-      "Flaky-test policy; quarantine rather than retry-until-green",
-      "Branch protection, required checks, release automation"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_dbg_01_gdb": {
-    "covered": 0,
+    "covered": 15,
     "total": 15,
-    "complete": false,
-    "missing": [
-      "The scientific method of debugging; minimal reproducers",
-      "gdb: break, conditional breakpoints, watchpoints, run, bt, frame, up/down",
-      "info args, info locals, info registers, print, p *ptr@n, x/16xb",
-      "step vs next vs finish vs until; tbreak; display; set var",
-      "Attaching to a running process; gdb -p",
-      "Core dumps: ulimit -c unlimited, gdb ./bin ./core, thread apply all bt",
-      "TUI mode, .gdbinit, pretty-printers for STL and Eigen",
-      "gdbserver and remote/embedded debugging; rr for reverse debugging",
-      "Python: pdb, breakpoint(), py-spy for a live process",
-      "AddressSanitizer, UBSan, ThreadSanitizer, LeakSanitizer",
-      "Valgrind memcheck, helgrind, callgrind and when to prefer it over ASan",
-      "perf stat (IPC, cache misses, branch misses), perf record/report, flame graphs",
-      "hyperfine for wall clock, Google Benchmark for microbenchmarks",
-      "Logging strategy: levels, structured logs, flight-side ring buffers",
-      "Post-flight anomaly investigation: one dataset, no reruns"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_py_01_basics": {
     "covered": 12,
@@ -8452,140 +11883,46 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_03_numpy": {
-    "covered": 0,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "ndarray: dtype, shape, ndim, strides, itemsize",
-      "Creation: zeros, ones, full, arange, linspace, eye, default_rng",
-      "Indexing and slicing; views vs copies; base; fancy indexing and boolean masks",
-      "Broadcasting rules, newaxis, and when shapes are incompatible",
-      "Axis semantics in reductions: sum, mean, std, min, argmax with axis=",
-      "reshape, ravel, transpose, stack, concatenate, C vs Fortran order",
-      "Linear algebra: solve, lstsq, eig, svd, norm, cond, and why not inv",
-      "matmul and @, dot, cross, einsum",
-      "Float pitfalls: allclose, catastrophic cancellation, float32 vs float64",
-      "Random numbers: default_rng, seeding, reproducibility",
-      "save, load, npz, memmap for big telemetry",
-      "Vectorisation as the default, and when it genuinely does not apply"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_py_04_scipy": {
-    "covered": 0,
+    "covered": 11,
     "total": 11,
-    "complete": false,
-    "missing": [
-      "scipy.optimize: brentq, root, fsolve, newton",
-      "scipy.optimize: minimize, least_squares, curve_fit, differential_evolution",
-      "Residuals, Jacobians, scaling and why conditioning of decision variables matters",
-      "scipy.linalg: cholesky, qr, expm, solve_continuous_are and solve_discrete_are",
-      "scipy.signal: butter, filtfilt vs lfilter, welch, bode, tf2ss, cont2discrete",
-      "scipy.interpolate: interp1d, CubicSpline, RegularGridInterpolator for aero tables",
-      "scipy.spatial.transform.Rotation: from_quat, as_quat, from_euler, as_matrix, slerp",
-      "The scalar-last quaternion convention in SciPy and the scalar-first convention elsewhere",
-      "scipy.stats: distributions, rvs, fit, percentile-based reporting for Monte Carlo",
-      "scipy.constants and dimensional sanity",
-      "Choosing a solver from the structure of the problem"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_py_05_plotting": {
-    "covered": 0,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "Figure and Axes object API versus the pyplot state machine",
-      "subplots, shared axes, twin axes, gridspec, constrained layout",
-      "Line, scatter, step, stem, errorbar, fill_between for sigma envelopes",
-      "Log and semilog axes; annotated Bode, pole-zero and root-locus plots",
-      "Ticks, locators, formatters, datetime axes",
-      "Colour: colourblind-safe cycles, sequential vs diverging, when colour carries data",
-      "Text, annotation, legends outside axes, units in every axis label",
-      "Saving: vector formats, dpi, font embedding, figure size for a slide vs a report",
-      "Animation and interactive review; Plotly for exploratory telemetry",
-      "pandas: DataFrame, Series, DatetimeIndex, read_csv, read_parquet",
-      "resample, rolling, interpolate, groupby and agg",
-      "merge and merge_asof for aligning a 200 Hz IMU stream to 1 Hz GPS",
-      "Downsampling for plotting without hiding transients (min/max decimation)"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_py_06_testing": {
-    "covered": 0,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "pytest discovery rules, plain assert, and the rewritten assertion output",
-      "pytest.approx and its rel/abs semantics; the 1e-6 relative default",
-      "numpy.testing assert_allclose and assert_array_equal",
-      "parametrize for tables of cases; ids for readable failures",
-      "Fixtures, scopes, conftest.py, tmp_path, monkeypatch",
-      "Markers, -k, -x, --lf, and keeping the fast suite fast",
-      "Property-based testing with Hypothesis; invariants over examples",
-      "Golden-file regression tests with explicit tolerances",
-      "Testing numerical code: invariants, convergence order, conservation laws",
-      "Test doubles: fakes and mocks for sensors and hardware interfaces",
-      "Coverage with pytest-cov, and why coverage is a floor not a goal",
-      "ruff, black, mypy and pre-commit hooks",
-      "Docstrings in NumPy style and doctest"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_py_07_integration": {
-    "covered": 0,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "The initial value problem and local versus global truncation error",
-      "Euler, RK2, classic RK4 implemented by hand; order verification by step halving",
-      "Embedded pairs and adaptive step size control",
-      "solve_ivp methods: RK45, RK23, DOP853, Radau, BDF, LSODA",
-      "rtol and atol: what each controls and how to choose them from the state magnitudes",
-      "t_eval versus dense_output",
-      "Events: terminal, direction, apogee and impact detection",
-      "Stiffness: how to recognise it and when to switch to an implicit method",
-      "Energy and Jacobi-constant drift as an independent accuracy check",
-      "Symplectic integrators and long-horizon propagation",
-      "Discontinuities: staging, thrust cutoff and why you restart the solver",
-      "Fixed-step integration for real-time and code generation"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_py_08_performance": {
-    "covered": 0,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "Measure first: timeit, cProfile, pstats, snakeviz, line_profiler, memory_profiler",
-      "Algorithmic complexity before micro-optimisation",
-      "Vectorisation as the default; when it costs more memory than it saves time",
-      "Numba njit: nopython mode, supported subset, cache=True, parallel and prange",
-      "Why an njit function can be slower: compile time, object mode fallback, unsupported types",
-      "Cython and pybind11; calling a C++ simulation core from a Python harness",
-      "The GIL: what it does and does not block",
-      "Threads for I/O and released-GIL numerics, processes for CPU-bound Python",
-      "multiprocessing, concurrent.futures and joblib for embarrassingly parallel Monte Carlo",
-      "Serialisation cost and why passing large arrays between processes can dominate",
-      "numpy.memmap, chunking and Parquet for telemetry larger than memory",
-      "Caching and precomputation: lookup tables, interpolators built once",
-      "Benchmark methodology: warmup, repetitions, frequency scaling, noise"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_py_09_packaging": {
-    "covered": 0,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "The src layout and why it prevents accidental local imports",
-      "pyproject.toml: project metadata, dependencies, optional-dependencies, build-system",
-      "Build backends: setuptools, hatchling, flit",
-      "Editable installs and what they actually do",
-      "Wheels versus source distributions; manylinux",
-      "Console entry points for command-line tools",
-      "__init__.py, package versus namespace package, relative imports",
-      "Version pinning: exact pins for applications, ranges for libraries, lockfiles for both",
-      "Semantic versioning and how to decide a bump",
-      "Dependency resolution, extras, and the scientific-stack ABI problem",
-      "venv, pip, uv, conda and when each is the right answer",
-      "Sphinx and NumPy-style docstrings; README that lets a stranger run it",
-      "Publishing internally versus on PyPI; private indexes"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_01_basics": {
     "covered": 15,
@@ -8600,297 +11937,91 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cpp_03_raii": {
-    "covered": 0,
+    "covered": 16,
     "total": 16,
-    "complete": false,
-    "missing": [
-      "Constructors: default, parameterised, delegating, converting, explicit",
-      "Member initialiser lists and the actual initialisation order (declaration order, not list order)",
-      "Destructors; virtual destructors for polymorphic bases",
-      "Copy constructor and copy assignment; deep versus shallow",
-      "Move constructor and move assignment; noexcept on moves and why containers check it",
-      "= default and = delete; the special-member generation rules",
-      "Rule of five and rule of zero; copy-and-swap",
-      "const member functions and mutable",
-      "static members; friend functions",
-      "Operator overloading: arithmetic, comparison and the spaceship operator, subscript, call, stream",
-      "Inheritance, virtual, override, final; pure virtual and abstract classes",
-      "vtables and the real cost of dynamic dispatch",
-      "Object slicing and how to prevent it",
-      "Composition over inheritance; CRTP for static polymorphism",
-      "std::variant plus std::visit as a closed-set alternative to virtual dispatch",
-      "PIMPL for compilation firewalls"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_04_stl": {
-    "covered": 0,
+    "covered": 17,
     "total": 17,
-    "complete": false,
-    "missing": [
-      "array, vector (size vs capacity, reserve, iterator invalidation), deque, list",
-      "map and set (red-black tree, ordered, node-based, cache-hostile)",
-      "unordered_map and unordered_set: hashing, load factor, worst case",
-      "span and string_view: non-owning views, and the dangling-view hazard",
-      "optional, variant, tuple, pair, bitset",
-      "Iterators and their categories; per-container invalidation rules",
-      "Algorithms: sort, stable_sort, nth_element, lower_bound, binary_search, find_if",
-      "transform, accumulate, reduce, copy_if, all_of/any_of/none_of, clamp, rotate, unique",
-      "The erase-remove idiom and C++20 std::erase_if",
-      "numeric: iota, inner_product, partial_sum",
-      "Execution policies and parallel algorithms",
-      "Lambdas: capture by value and reference, init-capture, mutable, generic lambdas",
-      "std::function versus templates versus function pointers, and its allocation",
-      "chrono: steady_clock for intervals, system_clock for wall time, never mixed",
-      "random: engines, distributions, reproducible seeding for Monte Carlo",
-      "C++20 ranges and views",
-      "Error handling: exceptions, error_code, expected, and why flight code disables exceptions"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_05_templates": {
-    "covered": 0,
+    "covered": 14,
     "total": 14,
-    "complete": false,
-    "missing": [
-      "Function and class templates; argument deduction; explicit and partial specialisation",
-      "Non-type template parameters: the key to Matrix<double,3,3>",
-      "Variadic templates, parameter packs, fold expressions",
-      "typename vs class; dependent names and the typename/template disambiguators",
-      "Two-phase name lookup",
-      "SFINAE and enable_if, and the C++20 replacement: concepts and requires",
-      "Type traits: is_same, is_floating_point, conditional, decay, remove_cvref",
-      "constexpr functions, consteval, constinit, compile-time computation",
-      "if constexpr for compile-time branching",
-      "CRTP revisited for static polymorphism",
-      "Expression templates and lazy evaluation; how Eigen removes temporaries",
-      "Template instantiation cost, build-time blow-up, extern template",
-      "Policy-based design and when it beats inheritance",
-      "Reading a template error message without despair"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_06_modern": {
-    "covered": 0,
+    "covered": 11,
     "total": 11,
-    "complete": false,
-    "missing": [
-      "C++11: auto, range-for, lambdas, move semantics, nullptr, enum class, constexpr, smart pointers, thread, override/final, std::array, chrono",
-      "C++14: generic lambdas, return type deduction, make_unique, variable templates",
-      "C++17: structured bindings, if/switch init statements, if constexpr, fold expressions, optional/variant/any, string_view, filesystem, parallel algorithms, guaranteed copy elision, CTAD",
-      "C++20: concepts, ranges, span, format, three-way comparison, designated initialisers, constinit/consteval, modules, coroutines, atomic_ref",
-      "C++23 highlights: expected, mdspan, print",
-      "Uniform initialisation and the initializer_list gotcha",
-      "Guaranteed copy elision and what it means for returning big objects",
-      "Why modules adoption is slow and what it will change",
-      "Why coroutines are rare in flight code",
-      "The flight subset: typically C++11/14/17 core, no exceptions, no RTTI, no dynamic allocation after init, restricted standard library",
-      "Modernising legacy code: what to change first and how to justify each change"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_07_concurrency": {
-    "covered": 0,
+    "covered": 17,
     "total": 17,
-    "complete": false,
-    "missing": [
-      "Processes vs threads; std::thread and jthread; join and detach",
-      "Data races as undefined behaviour, not merely a wrong answer",
-      "mutex, lock_guard, unique_lock, scoped_lock, shared_mutex, recursive_mutex",
-      "Deadlock: the four conditions, lock ordering, std::lock and scoped_lock",
-      "condition_variable and spurious wakeups; the predicate form of wait",
-      "std::atomic and memory orderings: relaxed, acquire/release, seq_cst",
-      "The C++ memory model; is_lock_free; atomic_ref",
-      "future, promise, packaged_task, async, and thread pools",
-      "Lock-free single-producer single-consumer ring buffers for telemetry",
-      "Lock-free is not wait-free; progress guarantees",
-      "False sharing and hardware_destructive_interference_size",
-      "Hard, firm and soft real time; WCET and why average latency is irrelevant",
-      "Priority inversion and priority inheritance; the Mars Pathfinder case",
-      "RTOS landscape: FreeRTOS, RTEMS, VxWorks, Linux PREEMPT_RT",
-      "Rate-monotonic scheduling and utilisation bounds",
-      "sched_setscheduler, SCHED_FIFO, CPU pinning, mlockall",
-      "The SpaceX triple-redundancy architecture as a case study"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_08_realtime": {
-    "covered": 0,
+    "covered": 15,
     "total": 15,
-    "complete": false,
-    "missing": [
-      "Worst-case execution time: measurement, static analysis and their limits",
-      "Static memory: pools, arenas, fixed-capacity containers, placement new at init",
-      "Stack-depth analysis and static stack bounding; no recursion",
-      "Bounded loops and why every loop needs a provable upper bound",
-      "Watchdogs, heartbeats and health monitoring",
-      "Fault detection, isolation and recovery; safe modes",
-      "Radiation effects: SEU, SEL, TID, and the software mitigations (voting, checksums, scrubbing, resets)",
-      "Interrupt service routines: what you may and may not do inside one",
-      "Cross-compiling to an embedded target with a CMake toolchain file",
-      "Linker scripts and memory regions; why you would move a function into RAM",
-      "Fixed-point arithmetic where floating point is unavailable or unqualified",
-      "Determinism and bit-exact reproducibility across compilers and platforms",
-      "The NASA/JPL Power of Ten rules",
-      "MISRA C++:2023, which absorbs AUTOSAR C++14; JSF++ AV and its F-35 origin",
-      "Static analysis: clang-tidy, cppcheck, Polyspace, LDRA, Helix QAC"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_09_eigen": {
-    "covered": 0,
+    "covered": 16,
     "total": 16,
-    "complete": false,
-    "missing": [
-      "Matrix<Scalar, Rows, Cols>; Vector3d, Matrix3d, Quaterniond typedefs; Dynamic sizing",
-      "Why fixed-size types allocate nothing and unroll their loops",
-      "Storage order; Map for wrapping an external buffer with no copy",
-      "Block operations: block, head, tail, segment, row, col",
-      "Coefficient-wise operations via .array() versus matrix operations",
-      "Reductions and broadcasting",
-      "Decompositions: LLT and LDLT (Cholesky, the covariance workhorse), PartialPivLU, HouseholderQR, ColPivHouseholderQR, JacobiSVD, BDCSVD, SelfAdjointEigenSolver",
-      "Solving Ax=b with ldlt().solve(b) rather than inverting",
-      "The Geometry module: Quaterniond, AngleAxis, Translation, Isometry3d, Transform, slerp",
-      "The Quaterniond(w,x,y,z) constructor versus coeffs() returning x,y,z,w",
-      "Alignment, fixed-size vectorizable types and EIGEN_MAKE_ALIGNED_OPERATOR_NEW",
-      "Expression templates, lazy evaluation, aliasing, eval() and noalias()",
-      "Proving no allocation with EIGEN_RUNTIME_NO_MALLOC and set_is_malloc_allowed",
-      "Eigen to NumPy mental mapping",
-      "Neighbours: Sophus for Lie groups, Ceres and GTSAM for least squares and factor graphs, SymForce for generated C++",
-      "IEEE-754 in practice: fma, Kahan summation, condition number, reproducibility"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_10_cmake": {
-    "covered": 0,
+    "covered": 14,
     "total": 14,
-    "complete": false,
-    "missing": [
-      "cmake_minimum_required, project, and why a modern minimum matters",
-      "add_library and add_executable; INTERFACE, STATIC and SHARED",
-      "target_link_libraries with PUBLIC, PRIVATE and INTERFACE, and what each propagates",
-      "target_include_directories, target_compile_features, target_compile_options, target_compile_definitions",
-      "Generator expressions and per-configuration settings",
-      "find_package and config packages; FetchContent versus submodules versus Conan or vcpkg",
-      "CMakePresets.json for reproducible configure and build commands",
-      "Out-of-source builds and CMAKE_BUILD_TYPE",
-      "Toolchain files for cross-compiling to an embedded target",
-      "install and export so downstream projects can find_package you",
-      "ctest and test registration",
-      "Canonical layout: apps, cmake, extern, include, src, tests",
-      "Sanitizer and coverage build configurations",
-      "ccache and build-time hygiene"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_11_gtest": {
-    "covered": 0,
+    "covered": 14,
     "total": 14,
-    "complete": false,
-    "missing": [
-      "TEST and TEST_F; test suites and fixtures; SetUp and TearDown",
-      "ASSERT_* versus EXPECT_* and when a fatal assertion is correct",
-      "Floating-point assertions: EXPECT_NEAR, EXPECT_DOUBLE_EQ, and choosing the tolerance",
-      "TEST_P parameterised tests and value generators",
-      "Typed and type-parameterised tests for template code",
-      "Death tests for contract violations",
-      "GoogleMock: mocking an ISensor or HAL interface; EXPECT_CALL, matchers, cardinalities",
-      "NiceMock, StrictMock and what an uninteresting call means",
-      "Dependency injection as the precondition for mockability",
-      "gtest_discover_tests, CTest registration, test filters and labels",
-      "Catch2 as the alternative and what it trades",
-      "Coverage with gcov, lcov and llvm-cov; interpreting an uncovered branch",
-      "Sanitizer builds in the test matrix",
-      "Testing numerical kernels: invariants, convergence, golden data"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_mat_01_core": {
-    "covered": 0,
+    "covered": 17,
     "total": 17,
-    "complete": false,
-    "missing": [
-      "The desktop, Command Window, Workspace, Editor and Live Editor",
-      "Everything is a matrix; the colon operator, linspace, zeros, ones, eye",
-      "One-based indexing, end, logical indexing, find",
-      "Element-wise .* ./ .^ versus matrix * / ^ (the single most common beginner error)",
-      "Backslash mldivide and why A\\b beats inv(A)*b",
-      "Concatenation, reshape, size, length, numel",
-      "struct, cell, table, categorical, string versus char",
-      "Control flow: if, switch, for, while, break, continue",
-      "Preallocation and why growing an array in a loop is fatal",
-      "fprintf, sprintf, disp; save/load and .mat files; readtable and writetable",
-      "Scripts versus functions and the base workspace: a classic interview question",
-      "Local, nested and anonymous functions; function handles; closures",
-      "nargin, nargout, varargin; arguments blocks and validateattributes",
-      "MATLAB OOP: classdef, handle versus value semantics",
-      "The Profiler, tic/toc, vectorisation, parfor",
-      "Plotting: plot, tiledlayout, yyaxis, semilogx, exportgraphics",
-      "timetable, synchronize and retime as the merge_asof equivalent"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_mat_02_gnc_toolboxes": {
-    "covered": 0,
+    "covered": 17,
     "total": 17,
-    "complete": false,
-    "missing": [
-      "tf, zpk, ss, frd; series, parallel, feedback, connect, sumblk",
-      "step, impulse, lsim, initial, stepinfo",
-      "bode, nyquist, nichols, margin, allmargin, sigma",
-      "rlocus, pzmap, damp, pole, zero",
-      "c2d and d2c with zoh, tustin and prewarp; c2dOptions",
-      "ctrb, obsv, gram; place, acker; lqr, dlqr, lqi; kalman, lqg",
-      "minreal, balred, modred for model reduction",
-      "Control System Designer and PID Tuner; pidtune",
-      "Gain scheduling across a flight envelope; arrays of LTI models",
-      "Aerospace frames: ECI, ECEF, NED, ENU, body, wind, stability",
-      "dcm2angle, angle2dcm, dcm2quat, quat2dcm, quatmultiply, quatrotate",
-      "The scalar-first quaternion convention in MathWorks Aerospace products",
-      "Atmosphere models: atmosisa, atmoscoesa (valid to 86 km), atmosnrlmsise00",
-      "Gravity and magnetic models: gravitywgs84, gravitysphericalharmonic, wrldmagm",
-      "Dryden and von Karman turbulence; wind shear",
-      "Unit conversion helpers: convang, convvel, convforce, convmass, convlength",
-      "satelliteScenario for orbits, access and ground tracks"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_slk_01_models": {
-    "covered": 0,
+    "covered": 14,
     "total": 14,
-    "complete": false,
-    "missing": [
-      "The Simulink Editor, Library Browser and block search",
-      "Signals and lines; Constant, Gain, Sum, Product, Integrator",
-      "Why the Derivative block is a trap in a feedback loop",
-      "Transfer Fcn and State-Space blocks",
-      "Sources: Step, Ramp, Sine Wave, Clock, Signal Editor",
-      "Sinks: Scope, Display, To Workspace; the Simulation Data Inspector",
-      "Mux versus Bus Creator, and never using Mux for dissimilar signals",
-      "Selector and Demux",
-      "Nonlinear blocks: Saturation, Rate Limiter, Dead Zone, Quantizer, Switch, Relay, MinMax",
-      "Lookup Table (n-D) for aerodynamic and engine data",
-      "MATLAB Function block (code-generation-compatible subset) versus Interpreted MATLAB Function",
-      "Model parameters in the base workspace versus mask parameters",
-      "The Diagnostic Viewer and reading a model error",
-      "Comparing a model result to an analytic solution as the first habit"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_slk_02_solvers": {
-    "covered": 0,
+    "covered": 11,
     "total": 13,
     "complete": false,
     "missing": [
-      "Variable-step versus fixed-step: error control and zero-crossing detection versus determinism",
-      "Continuous solvers: ode45 (Dormand-Prince, the default starting point), ode23, ode113",
-      "Stiff solvers: ode15s, ode23s, ode23t, ode23tb; daessc",
-      "Fixed-step solvers: ode1 (Euler), ode2, ode4 (classic RK4), ode5, ode8, ode14x, ode1be",
-      "RelTol and AbsTol; max step size and when to constrain it",
-      "Solver reset method Fast versus Robust",
-      "Zero-crossing detection: how it works, chattering, adaptive versus non-adaptive, the consecutive-crossing limit",
-      "Fixed-step zero-crossing for real-time: bounded, deterministic event cost",
-      "Sample times: continuous, discrete, inherited, constant; colour coding",
-      "Multirate models and Rate Transition blocks; data integrity versus determinism options",
-      "Algebraic loops: what creates them, the Algebraic Constraint block, breaking them with a unit delay and its phase cost",
       "The Solver Profiler",
       "The golden rule for deployable models: fixed-step, cleanly multirate, no algebraic loops"
     ]
   },
   "cod_slk_03_architecture": {
-    "covered": 0,
+    "covered": 1,
     "total": 18,
     "complete": false,
     "missing": [
-      "Virtual versus atomic subsystems: execution ordering and code-generation consequences",
       "Enabled, triggered and function-call subsystems; If and Switch Case action subsystems; For Each",
       "Masking: parameters, icons, callbacks, self-documenting blocks",
       "Simulink.Bus objects as interface contracts; Bus Creator, Selector, Assignment; nested buses",
@@ -8939,72 +12070,22 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_rs_01_basics": {
-    "covered": 0,
+    "covered": 15,
     "total": 15,
-    "complete": false,
-    "missing": [
-      "rustup, toolchains, editions; cargo new, build, run, test, doc, clippy, fmt",
-      "Cargo.toml, dev and release profiles, workspaces, semver and feature flags",
-      "Variables, mut, shadowing; scalar and compound types",
-      "Integer overflow: panics in debug, wraps in release; checked, wrapping and saturating operations",
-      "String versus &str",
-      "Control flow; loop, while let, for",
-      "Pattern matching and match exhaustiveness",
-      "struct, enum as real sum types, impl blocks",
-      "Modules, pub, paths, use",
-      "Slices and arrays; Vec, HashMap, BTreeMap",
-      "Option and Result, the absence of null, and the ? operator",
-      "Iterators and adapters and their zero-cost nature",
-      "Closures: Fn, FnMut, FnOnce",
-      "derive macros; cfg attributes; doc tests",
-      "clippy as a teaching tool"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_rs_02_ownership": {
-    "covered": 0,
+    "covered": 16,
     "total": 16,
-    "complete": false,
-    "missing": [
-      "The three ownership rules; move by default and Copy types",
-      "Borrowing: shared &T versus exclusive &mut T",
-      "Aliasing XOR mutability and why it removes data races and iterator invalidation by construction",
-      "Reading borrow-checker errors instead of fighting them",
-      "Lifetimes: elision rules, explicit annotations, lifetimes in structs, static",
-      "Interior mutability: Cell, RefCell and its runtime panics, Rc, Arc, Mutex, RwLock, OnceLock",
-      "Send and Sync: thread safety as a type-system property",
-      "Box and Pin (awareness); Drop as Rust RAII",
-      "unsafe: the five superpowers, and the discipline of wrapping it in a safe abstraction with documented invariants",
-      "Traits: definition, default methods, associated types versus generic parameters, where clauses, blanket impls, the orphan rule",
-      "Static dispatch (impl Trait, generics) versus dynamic dispatch (dyn Trait, fat pointers)",
-      "Operator traits, From/Into, TryFrom, Display, Debug, Default, Iterator, Deref",
-      "Error handling: custom error enums, thiserror for libraries, anyhow for applications",
-      "panic versus recoverable errors; unwrap and expect discipline; panic = abort",
-      "Testing: #[test], integration tests, criterion benchmarks, proptest, cargo-fuzz, miri",
-      "Mapping each concept back to its C++ equivalent"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_rs_03_aerospace": {
-    "covered": 0,
+    "covered": 16,
     "total": 16,
-    "complete": false,
-    "missing": [
-      "no_std and no_main; core versus alloc versus std",
-      "Panic handlers; cortex-m and cortex-m-rt; the entry attribute, vector tables, memory.x",
-      "embedded-hal 1.0 as the driver ecosystem contract; PACs from svd2rust; HAL crates",
-      "Embassy as the async-first embedded framework family, and RTIC for static-priority hard real time",
-      "Hubris (Oxide) and Tock as all-Rust microcontroller operating systems",
-      "defmt logging, probe-rs, cargo-embed, rtt-target",
-      "heapless collections: Vec, String and spsc::Queue with static capacity",
-      "critical-section and static_assertions",
-      "FFI both directions: extern C, no_mangle, bindgen, cbindgen, and Rust modules inside an existing C or C++ flight codebase",
-      "nalgebra: type-level dimensions, SMatrix versus DMatrix, and when it allocates",
-      "nalgebra geometry: UnitQuaternion, Rotation3, Isometry3, slerp; no_std support",
-      "Neighbouring crates: ndarray, argmin, nyx-space, hifitime, micromath, libm",
-      "Certification: DO-178C DAL levels, structural coverage, DO-330 tool qualification, ECSS-Q-ST-80C",
-      "Ferrocene: the qualified Rust toolchain and exactly what its qualification covers",
-      "ESA activity: cRustacea in Space (DLR), the armv7-rtems-eabihf target, ADCSS 2024",
-      "What the evidence actually supports about Rust at SpaceX, and the fabricated claims to reject"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_sql_01_select": {
     "covered": 10,
@@ -9019,141 +12100,46 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_sql_03_windows": {
-    "covered": 0,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "OVER (PARTITION BY ... ORDER BY ...) and how a window differs from a group",
-      "Ranking: ROW_NUMBER, RANK, DENSE_RANK, NTILE, PERCENT_RANK",
-      "Offsets: LAG and LEAD, FIRST_VALUE, LAST_VALUE, NTH_VALUE",
-      "Aggregate windows: running totals and moving averages",
-      "Frames: ROWS BETWEEN n PRECEDING AND CURRENT ROW versus RANGE BETWEEN an interval",
-      "The default frame and the classic LAST_VALUE surprise",
-      "Deduplication with ROW_NUMBER filtered to 1",
-      "Gaps and islands: detecting contiguous runs",
-      "Sessionisation of event streams",
-      "DISTINCT ON in PostgreSQL for latest-per-key",
-      "Downsampling and binning with date_trunc or time_bucket",
-      "When a window function beats a self-join, and when it does not"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_sql_04_schema": {
-    "covered": 0,
+    "covered": 18,
     "total": 18,
-    "complete": false,
-    "missing": [
-      "Normalisation to third normal form and deliberate denormalisation for analytics",
-      "Star and snowflake schemas; surrogate versus natural keys",
-      "Constraints: NOT NULL, UNIQUE, CHECK, foreign keys with ON DELETE",
-      "Transactions and ACID; isolation levels; deadlocks",
-      "Index types: B-tree, hash, GIN and GiST, and BRIN for append-only time-ordered data",
-      "Composite indexes and the left-prefix rule; covering indexes and index-only scans",
-      "Partial indexes; why a low-cardinality index is usually useless",
-      "Index maintenance cost on a write-heavy ingest path",
-      "EXPLAIN and EXPLAIN ANALYZE: sequential versus index versus bitmap heap scan; nested loop versus hash versus merge join",
-      "Estimated versus actual rows as the tell for stale statistics",
-      "SARGability: why wrapping an indexed column in a function kills the index",
-      "Range partitioning by time; clustering; materialised views and continuous aggregates",
-      "Columnar storage and Parquet; batch versus streaming ingest",
-      "Upserts and idempotent ingest for duplicated downlink frames",
-      "The telemetry lifecycle: vehicle, downlink, decommutation, time-series store, analysis, report",
-      "Time-series stores: InfluxDB, TimescaleDB, ClickHouse; the reported Starlink stack of Kafka, HBase, HDFS on Docker and Kubernetes",
-      "Data quality: gap detection, out-of-order packets, vehicle-to-ground clock skew, duplicate frames",
-      "Export control and retention for flight data; reproducibility of every published plot"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cad_01_drawings": {
-    "covered": 13,
+    "covered": 15,
     "total": 15,
-    "complete": false,
-    "missing": [
-      "ASME Y14.100 drawing practices, Y14.24 drawing types, Y14.41 model-based definition",
-      "Export-control markings on aerospace drawings"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cad_02_gdt": {
-    "covered": 3,
+    "covered": 15,
     "total": 15,
-    "complete": false,
-    "missing": [
-      "Datum targets and datum precedence",
-      "Form: flatness, straightness, circularity, cylindricity",
-      "Orientation: perpendicularity, angularity, parallelism",
-      "Location: position, concentricity, symmetry",
-      "Profile of a line and profile of a surface, increasingly dominant in aerostructures",
-      "Runout: circular and total",
-      "Material condition modifiers MMC, LMC and RFS; bonus tolerance",
-      "Virtual condition; composite position tolerance; projected tolerance zone",
-      "Free-state variation for thin-wall aerospace parts",
-      "Tolerance stack-up with geometric controls",
-      "CMM inspection and how GD&T maps onto measurement",
-      "PMI annotation in a model-based-definition workflow"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cad_03_tools": {
-    "covered": 0,
+    "covered": 19,
     "total": 19,
-    "complete": false,
-    "missing": [
-      "AutoCAD: the command line as the real interface; absolute, relative and polar coordinate entry",
-      "Object snaps, ortho and polar tracking",
-      "Draw and modify: line, polyline, arc, offset, trim, extend, fillet, array, stretch",
-      "Layers as the core discipline: name, colour, linetype, lineweight, plot state, freeze versus off",
-      "Blocks, attributes, dynamic blocks and external references",
-      "Annotation: text styles, dimension styles, multileaders, annotative scaling",
-      "Model space versus paper space; layouts, viewports and viewport scale; plot styles; sheet sets",
-      "Templates, standards files, DWG versus DXF",
-      "Where AutoCAD genuinely lives in aerospace: facility and site layouts, ground support equipment, test-stand drawings, electrical and harness schematics, P&IDs, tooling layouts",
-      "Parametric feature-based modelling: sketches, constraints, fully defined sketches",
-      "Features: extrude, revolve, sweep, loft, fillet, shell, rib, draft, hole wizard, patterns, configurations",
-      "The feature tree, parent-child relationships, design intent, robust versus fragile modelling",
-      "Assemblies: mates, sub-assemblies, in-context design and its dangers, interference detection",
-      "Mass properties: where the mass, centre of gravity and inertia tensor for a 6-DOF simulation come from",
-      "Drawings from models; PMI and model-based definition",
-      "Sheet metal, weldments and surfacing (awareness); outer mould line",
-      "Interchange formats: STEP, IGES, Parasolid, JT, and translation fidelity",
-      "The landscape: NX plus Teamcenter at SpaceX; CATIA at Boeing and Airbus; Creo in defence; SolidWorks at suppliers and startups; Onshape and Fusion as cloud-native newcomers",
-      "PLM concepts: part numbers, revisions versus versions, effectivity, ECO and ECR, as-designed versus as-built versus as-flown"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_int_01_algorithms": {
-    "covered": 0,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "The honest calibration: medium level, not the main event, with real-world framing preferred",
-      "Preparing in C++ if targeting flight software; Python for the take-home",
-      "High-yield patterns: arrays and two pointers, sliding window, hash maps, binary search including on the answer",
-      "Sorting and intervals; stacks and queues; linked lists",
-      "Trees and BFS/DFS; graphs including topological sort; heaps; prefix sums; light dynamic programming; bit manipulation",
-      "What to skip: exotic dynamic programming, advanced graph theory, segment trees",
-      "Complexity analysis you can say out loud, including the space term",
-      "The engineering variants: binary protocol decommutation, telemetry dropout detection, two-rate time alignment, ring buffer, PID with anti-windup, running median over a stream",
-      "struct, endianness and checksums in Python; bit twiddling in C++",
-      "Talking while solving: restate, clarify, state the approach and its complexity, then code",
-      "Testing your own solution before saying you are done",
-      "Roughly 120 to 150 problems is sufficient, grouped by pattern and timed"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_int_02_onsite": {
-    "covered": 0,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "The reported process: recruiter screen, a two to four hour take-home or timed challenge, technical rounds, a day-long onsite of four to six rounds, behavioural throughout",
-      "US person status under ITAR as a hard gate for essentially all roles",
-      "Systems C++ round: pointers and memory, double delete, RAII, rule of five, unique_ptr versus shared_ptr, virtual destructors, vtable layout, move semantics, undefined behaviour, static and const and volatile, data races, cache effects",
-      "Live debugging: here is code that crashes or leaks, find it",
-      "Engineering system design: GNC simulation infrastructure for a constellation; a telemetry pipeline for six thousand satellites; how you would verify this flight software; how you would architect a fault-tolerant flight computer",
-      "Knowing the SpaceX answer: three dual-core x86 flight strings, per-string core cross-check, PowerPC actuator controllers judging three commands",
-      "Domain rounds for GNC roles: PD control, orbit determination, frequency domain, aerodynamic drag with real examples",
-      "The technical presentation: about twelve minutes of slides and twenty-plus minutes of debate",
-      "Behavioural themes: mission alignment, extreme ownership, operating with ambiguity and speed, intellectual honesty about failure",
-      "Saying what you personally modelled, coded, analysed, tuned, tested or debugged versus what the team did",
-      "Fermi and order-of-magnitude estimation out loud",
-      "Building six to eight STAR stories from the capstones, each with a number in it",
-      "Questions to ask that show you understand the work"
-    ]
+    "complete": true,
+    "missing": []
   },
   "car_01_itar_gate": {
     "covered": 10,

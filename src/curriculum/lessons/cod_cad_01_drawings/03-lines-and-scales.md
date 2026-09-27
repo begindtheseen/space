@@ -1,7 +1,7 @@
 ---
 id: l03-lines-and-scales
 title: The lines on a drawing, and its scale
-minutes: 18
+minutes: 21
 covers:
   - 'Line types: visible, hidden, centre, phantom, section; line weights'
   - Scales and their notation

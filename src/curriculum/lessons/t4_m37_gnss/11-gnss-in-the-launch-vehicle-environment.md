@@ -1,143 +1,345 @@
 ---
 id: l11-gnss-in-the-launch-vehicle-environment
 title: GNSS in the launch vehicle environment
-minutes: 21
+minutes: 23
 covers:
   - "GNSS in a launch vehicle environment: acceleration, jerk, vibration, plume attenuation, antenna switching"
 ---
 
-The constellation lesson deferred a promise: on a launch vehicle, Doppler rate "rises by orders of magnitude." The signal-structure and error-budget lessons were built around a receiver sitting still or drifting gently; a launch vehicle does neither. In the space of a few minutes it accelerates through several times the weight it started with, sheds stages in events measured in tenths of a second, shakes itself hard enough to worry every piece of avionics on board, burns propellant whose exhaust can outright block a radio signal rather than merely delay it, and switches which antenna is even listening as its geometry changes beneath the sky. None of this is exotic physics — it is the same pseudorange, the same tracking loop, the same Doppler formula this module has used throughout — but the numbers involved are large enough to change what "good enough" means for a receiver's design.
+Imagine trying to hold a phone call from the back seat of a car. The driver floors the gas, then slams the brakes. The road is full of potholes. There is thick smoke outside the window. And every so often someone swaps your phone for a different one mid-sentence. You would lose the call — not because any one of those things is exotic, but because they all happen at once.
 
-## Acceleration and jerk: stressing the Doppler rate
+That is life for a GNSS receiver on a rocket. In a few minutes the vehicle speeds up until it pushes on everything inside with several times its own weight. It drops a stage in a few tenths of a second. It shakes hard enough to worry every box of electronics on board. Its exhaust can block a radio signal outright, not merely slow it down. And it switches which antenna is listening as it turns under the sky.
 
-The vehicle's own growing speed already widens the baseline Doppler well beyond the ground receiver's $\pm4.9\,\mathrm{kHz}$ window long before staging — by orbital insertion a launch vehicle is moving at the same several-kilometres-per-second scale the space-based lesson's GTO and GEO users travel at, and the same Doppler arithmetic applies. What a launch vehicle adds on top of that offset is how *fast* it changes. The signal-structure lesson's Doppler formula, $f_d=-\dot\rho/\lambda$, differentiates once more under acceleration: $\dot{f}_d = -\ddot\rho/\lambda$, the **Doppler rate**, proportional to the line-of-sight component of relative acceleration. A static ground receiver's Doppler rate stays under $1\,\mathrm{Hz/s}$, set only by the slow geometric drift of a satellite crossing the sky. A launch vehicle supplies its own acceleration directly, and by first-stage cutoff that acceleration is not small: thrust stays roughly constant while propellant mass falls away, so a vehicle that lifts off at a thrust-to-weight ratio only a little over one can be pulling several times Earth's gravity by the time the tanks run dry.
+None of this needs new physics. It is the same pseudorange, the same Doppler formula and the same tracking loops this module has used all along. But the numbers are big enough to change what "good enough" means for a receiver. This lesson puts a number on each problem — acceleration, jerk, vibration, plume, antenna switching — and then asks what keeps the vehicle navigating when the receiver loses the signal anyway.
 
-::: example Steady thrust against a staging transient
-Near main engine cutoff a representative booster is still accelerating at about $4g_0$:
+## Acceleration: the Doppler starts to run
 
-$$
-\dot f_d = \frac{a}{\lambda}: \qquad a = 4g_0 = 39.2\,\mathrm{m/s^2}\ \implies\ \dot f_d = \frac{39.2}{0.1903} = 206.1\,\mathrm{Hz/s},
-$$
+The constellation lesson gave the Doppler shift as the rate at which the range changes, divided by the wavelength: $f_d = -\dot\rho/\lambda$. Read $\dot\rho$ as "rho dot": the range rate, how fast the distance to the satellite is changing. The minus sign says a shrinking range raises the frequency. On L1, $\lambda = 0.1903\,\mathrm{m}$.
 
-two orders of magnitude above the ground case, and that is a *steady*, predictable acceleration a receiver's loop can be designed around. Staging is not steady: main engine cutoff removes essentially all of the thrust acceleration within a few tenths of a second, and the difference between "several $g$" and "free fall" divided by that short interval is real **jerk** — the rate of change of acceleration, which drives the *second* derivative of Doppler:
+By the time a rocket reaches orbit it moves several kilometers per second, like the spacecraft in the last lesson, so its Doppler is already far outside a ground receiver's $\pm4.9\,\mathrm{kHz}$ window. What a rocket adds is how *fast* the Doppler changes. Take the rate of change of both sides of the Doppler formula:
 
 $$
-\text{jerk} = \frac{\Delta a}{\Delta t} = \frac{39.2\,\mathrm{m/s^2}}{0.3\,\mathrm{s}} = 130.8\,\mathrm{m/s^3} \implies \ddot f_d = \frac{130.8}{0.1903} = 687.1\,\mathrm{Hz/s^2}.
+\dot f_d = -\frac{\ddot\rho}{\lambda}.
 $$
 
-A tracking loop that comfortably follows the steady $206\,\mathrm{Hz/s}$ climb through powered flight can still be caught by a transient this sharp, precisely the reason the multipath and ephemeris lesson flagged jerk as the term that breaks a high-order phase-lock loop — the tracking-loop lesson ahead derives exactly why.
+This is the **Doppler rate**. Read $\ddot\rho$ as "rho double dot": the rate of change of the range rate, which is the acceleration along the line to the satellite. So the Doppler rate is the **line-of-sight acceleration**, $a_{\mathrm{LOS}}$ — the part of the acceleration pointing along the line to the satellite — divided by the wavelength. Its size is $|\dot f_d| = a_{\mathrm{LOS}}/\lambda$, measured in hertz per second.
+
+A receiver sitting on the ground sees Doppler rates below about $1\,\mathrm{Hz/s}$, from nothing but the slow drift of satellites across the sky. A rocket brings its own acceleration, and that acceleration grows during flight. The engines push with roughly constant force, while the propellant mass drains away. Same push, less mass, more acceleration. A vehicle that leaves the pad at a **[[thrust-to-weight ratio|thrust-to-weight]]** only a little over one can be pulling several times Earth's gravity when its tanks run dry.
+
+::: example Doppler rate near engine cutoff
+Near **main engine cutoff**, when the first stage shuts down, a typical booster accelerates at about $4g_0$, where $g_0 = 9.80665\,\mathrm{m/s^2}$ is standard gravity. Take the worst case: all of it along the line to a satellite.
+
+**Step 1: the acceleration in SI units.**
+
+$$
+a = 4 \times 9.80665 = 39.23\,\mathrm{m/s^2}.
+$$
+
+**Step 2: divide by the wavelength.**
+
+$$
+\dot f_d = \frac{39.23}{0.1903} = 206.1\,\mathrm{Hz/s}.
+$$
+
+**Sanity check.** That is about two hundred times the ground receiver's $1\,\mathrm{Hz/s}$. It is big, but it is *steady* and predictable, so a tracking loop can be designed to follow it.
+:::
+
+## Jerk: the sudden change at staging
+
+Staging is not steady. At main engine cutoff the thrust disappears within a few tenths of a second, and the vehicle goes from "four $g$" to free fall. The rate of change of acceleration is called **jerk** — the lurch you feel when a car's brakes grab. Jerk drives the *second* rate of change of the Doppler, the **Doppler acceleration**:
+
+$$
+\ddot f_d = \frac{j_{\mathrm{LOS}}}{\lambda},
+$$
+
+where $j_{\mathrm{LOS}}$ is the jerk along the line of sight, in $\mathrm{m/s^3}$. Read $\ddot f_d$ as "f d double dot".
+
+::: example The staging transient
+Take the same $39.23\,\mathrm{m/s^2}$ of acceleration vanishing in $0.3\,\mathrm{s}$ at **[[main engine cutoff|meco]]**.
+
+**Step 1: the jerk** is the change in acceleration over the time it took:
+
+$$
+j = \frac{39.23}{0.3} = 130.8\,\mathrm{m/s^3}.
+$$
+
+**Step 2: the Doppler acceleration** divides that by the wavelength:
+
+$$
+\ddot f_d = \frac{130.8}{0.1903} = 687.3\,\mathrm{Hz/s^2}.
+$$
+
+**What it means.** For those three tenths of a second, the Doppler rate itself is changing by nearly $700\,\mathrm{Hz/s}$ every second. A loop that follows the steady $206\,\mathrm{Hz/s}$ climb with ease can still be thrown off by a transient this sharp. Jerk is the term that breaks a **[[third-order phase-lock loop|loop-order]]**, and the tracking-loop lesson shows exactly why.
 :::
 
 ::: key
-Doppler rate $\dot f_d = a_{\mathrm{LOS}}/\lambda$; Doppler acceleration (from jerk) $\ddot f_d = j_{\mathrm{LOS}}/\lambda$. A representative booster near main engine cutoff: $\dot f_d \approx 200\,\mathrm{Hz/s}$ from steady $4g$ thrust acceleration, $\ddot f_d \approx 700\,\mathrm{Hz/s^2}$ from the staging transient — both far beyond anything a static or orbital receiver design has to survive.
+Doppler rate $\dot f_d = a_{\mathrm{LOS}}/\lambda$; Doppler acceleration (from jerk) $\ddot f_d = j_{\mathrm{LOS}}/\lambda$. A representative booster near main engine cutoff: $\dot f_d \approx 200\,\mathrm{Hz/s}$ from steady $4g$ thrust acceleration, $\ddot f_d \approx 700\,\mathrm{Hz/s^2}$ from the staging transient — far beyond anything a static or orbital receiver design has to survive.
 :::
 
-## Vibration: the same coupling, oscillating
+## Vibration: the same push, back and forth
 
-Structural vibration is the same acceleration-coupling mechanism as thrust, alternating rather than building steadily. A vibration environment with a peak of $5g$ at some structural resonance couples into the Doppler rate exactly the way steady thrust does, instantaneously:
+Hold a phone against a running washing machine. The phone does not go anywhere, but it is shaken hard every instant. A rocket's structure does the same thing. Its engines and airflow set it ringing at its natural frequencies, a **[[resonance|resonance]]**, and the antenna rides along.
 
-$$
-\dot f_{d,\mathrm{peak}} = \frac{5g_0}{\lambda} = \frac{49.0}{0.1903} = 257.7\,\mathrm{Hz/s},
-$$
-
-comparable to, or larger than, the steady thrust acceleration case above — even though vibration's *net* displacement averages close to zero over each cycle and contributes almost nothing to cumulative position error. The threat vibration poses to a tracking loop is not the position error it causes (negligible) but the instantaneous dynamic stress it places on the loop at whatever rate it oscillates. A loop's bandwidth acts as a filter on this: vibration content at frequencies well inside the loop's tracking bandwidth couples directly into tracking error the way any other dynamics would, while content well above the bandwidth is attenuated by the loop's own response before it can do much damage — which is exactly the bandwidth-versus-dynamics trade the tracking-loop lesson formalises. Beyond the electrical tracking problem, sustained vibration is also a mechanical one: connectors work loose, antenna radomes flex, and cable runs flexing at resonance modulate signal amplitude in ways no amount of loop design fixes — reasons a launch vehicle's GNSS antenna and its cabling are qualified against the vehicle's actual vibration and shock environment, not only its RF performance.
-
-## Plume attenuation: from delay to blackout
-
-The ionosphere lesson derived a signal's phase refractive index in a plasma, $n\approx1-40.3\,N_e/f^2$, and everything that lesson built assumed $f$ was far above the plasma frequency $f_p$, so the effect was a small delay. That assumption can fail entirely in a rocket's exhaust plume. Combustion products — free electrons and ions from the flame, sometimes enriched by easily-ionised metal compounds depending on the propellant — can reach an electron density high enough that the plasma frequency approaches or exceeds the GNSS carrier itself, and a wave below the plasma frequency does not merely slow down in a plasma, it is reflected and absorbed rather than transmitted.
-
-The threshold follows directly from the same physics the ionosphere lesson derived: $f_p^2 = N_e e^2/(4\pi^2\varepsilon_0 m_e) = 80.6\,N_e$ (SI units, $N_e$ in electrons per cubic metre). Setting $f_p=f_{L1}$,
+Vibration couples into the Doppler exactly as thrust does. It is acceleration, only it swings back and forth instead of building steadily. Suppose a structural resonance shakes the antenna with peak acceleration $5g_0$:
 
 $$
-N_e = \frac{f_{L1}^2}{80.6} = \frac{(1575.42\times10^6)^2}{80.6} = 3.08\times10^{16}\,\mathrm{el/m^3} = 3.08\times10^{10}\,\mathrm{el/cm^3}.
+5 \times 9.80665 = 49.03\,\mathrm{m/s^2}, \qquad \dot f_{d,\mathrm{peak}} = \frac{49.03}{0.1903} = 257.6\,\mathrm{Hz/s}.
 $$
 
-The ionosphere's own peak electron density, at solar maximum, is on the order of $10^{12}\,\mathrm{el/m^3}$ — some four orders of magnitude below this threshold, which is exactly why the ionosphere only ever delays a GNSS signal and never blocks it outright. A dense combustion plasma close to the nozzle can plausibly approach the density this threshold requires, particularly for propellant chemistries that leave the exhaust rich in easily-ionised species; whether a given plume actually reaches it, and over how much of the flight, is a vehicle-specific electromagnetic analysis, not a fact this module can hand you as a number. What the physics does hand you is the *mechanism* — an ordinary delay turning into an outright blackout once electron density crosses this line — and why lower frequencies are the first to go: $f_p$ needed to block L5 is $(1176.45/1575.42)^2=0.558$ times L1's, so a plume that has not yet blocked L1 can already be blocking L5.
+That peak is bigger than the steady-thrust Doppler rate from the first example. Yet vibration barely moves the vehicle: over each shake cycle, the back cancels the forth, so the position error it causes is tiny. The danger is not where the vehicle ends up. The danger is the moment-to-moment stress on the tracking loop, which must follow the Doppler as it swings.
 
-::: example Antenna placement is an electromagnetic decision, not only a structural one
-A single antenna, wherever it sits, will at some point in flight have its view of some part of the sky pass close to or through the plume — during a pitch manoeuvre, or because the plume trails directly behind the vehicle along much of its own velocity vector. Multiple antennas at different body locations, selected or combined so that at least one always has a plume-free view of enough satellites, is the standard answer, and it is why the next section — antenna switching — is not an afterthought but a routine part of flight.
+A tracking loop's **bandwidth** acts like a filter here. Shaking that is slow compared with the loop's bandwidth gets followed, and so it shows up as tracking error like any other motion. Shaking much faster than the bandwidth is smoothed away by the loop's own sluggishness before it can do much harm. Picking that bandwidth is the central trade the tracking-loop lesson works out.
+
+Vibration also causes plain mechanical trouble that no loop design can fix. Connectors work loose. The antenna's protective cover, the **radome**, flexes. Cables bending at resonance can change the signal's strength in rhythm with the shaking. That is why a rocket's GNSS antenna and its cables are tested against the vehicle's real vibration and shock levels, not only against radio performance.
+
+## Plume: from delay to blackout
+
+A rocket's exhaust is hot enough to knock electrons loose from atoms. Gas full of free electrons is a **plasma**, the same kind of stuff as the ionosphere. The ionosphere lesson found that a plasma slows a GNSS signal a little, with refractive index $n \approx 1 - 40.3\,N_e/f^2$, where $N_e$ is the number of free electrons per cubic meter. That lesson assumed the signal's frequency $f$ was far above the plasma's own natural frequency, the **[[plasma frequency|plasma-frequency]]** $f_p$. Then the effect is only a small delay.
+
+In a dense exhaust plume that assumption can fail. Below the plasma frequency, a radio wave does not slow down; it cannot travel through at all. It bounces back and is soaked up. Think of a fence: small balls pass through the gaps, but once the gaps get smaller than the ball, nothing gets through. The plasma frequency depends only on the electron density:
+
+$$
+f_p^2 = \frac{N_e e^2}{4\pi^2\varepsilon_0 m_e} = 80.6\,N_e,
+$$
+
+with $f_p$ in hertz and $N_e$ in electrons per cubic meter. Here $e$ is the electron's charge, $m_e$ its mass, and $\varepsilon_0$ (read "epsilon nought") the electric constant of empty space. To find the density that blocks L1, set $f_p$ equal to the L1 frequency and solve for $N_e$:
+
+$$
+N_e = \frac{f_{L1}^2}{80.6}, \qquad \frac{(1575.42\times10^{6})^2}{80.6} = 3.08\times10^{16}\,\mathrm{el/m^3}.
+$$
+
+That is $3.08\times10^{10}$ electrons in every cubic centimeter. The ionosphere's densest layer, at the peak of the Sun's activity cycle, holds about $10^{12}$ electrons per cubic meter. That is roughly four orders of magnitude short of the threshold, which is why the ionosphere only ever delays GNSS and never blocks it.
+
+A rocket plume close to the nozzle is another matter. Some propellants leave the exhaust rich in atoms that give up electrons easily — sodium and potassium traces, for instance, which are common in **[[solid rocket motors|solid-motors]]**. Such a plume can plausibly approach the threshold. Whether a particular plume does, and over how much of the flight, takes a vehicle-specific electromagnetic analysis; it is not a number this module can hand you. What the physics does hand you is the *mechanism*: once the electron density crosses the line, an ordinary delay becomes a blackout.
+
+It also tells you which signal goes first. The density needed scales with $f^2$, so for L5 at $1176.45\,\mathrm{MHz}$ it is
+
+$$
+\left(\frac{1176.45}{1575.42}\right)^2 = 0.558
+$$
+
+times the L1 threshold. A plume that has not yet blocked L1 can already be blocking L5. (The plasma *frequency* at which L5 is blocked is $1176.45/1575.42 = 0.747$ times L1's; the density, which goes as the square, is what drops to $0.558$.)
+
+::: note Why the constant is 80.6
+Push a cloud of electrons a little to one side of the heavier ions. The separated charges pull them back, they overshoot, and the cloud sloshes back and forth. That sloshing has a natural angular frequency $\omega_p = \sqrt{N_e e^2/(\varepsilon_0 m_e)}$, the plasma frequency. Divide by $2\pi$ to turn angular frequency into hertz and square both sides: $f_p^2 = N_e e^2/(4\pi^2\varepsilon_0 m_e)$. Put in $e = 1.602\times10^{-19}\,\mathrm{C}$, $m_e = 9.109\times10^{-31}\,\mathrm{kg}$ and $\varepsilon_0 = 8.854\times10^{-12}\,\mathrm{F/m}$, and the constant comes out $80.6$. It is the same $80.6$ hiding in the ionosphere lesson: $40.3$ is exactly half of it.
+:::
+
+::: example Antenna placement is a radio decision, not only a structural one
+**The problem.** A single antenna, wherever it sits on the vehicle, will at some point look at part of the sky through the plume. It may happen during a pitch maneuver. It may happen because the plume trails straight behind the rocket, along much of its own flight path, and some satellites sit in that direction.
+
+**The standard answer.** Mount several antennas at different places on the body — for example on opposite sides — and select or combine them so at least one always has a clear, plume-free view of enough satellites.
+
+**The consequence.** The receiver will have to change antennas during flight. That makes antenna switching, the next section, a routine part of every flight rather than an afterthought.
 :::
 
 ## Antenna switching
 
-Switching from one antenna to another mid-flight changes the electrical path from sky to receiver in an instant: a different cable length, a different phase centre, sometimes a different amplifier — all of it adding up to a sudden jump in the apparent range the receiver measures, on every satellite the new antenna sees. On the code, this is a discontinuity the tracking loop has to re-settle through, generally within its ordinary pull-in range. On the carrier phase, it is worse: an abrupt phase jump of unknown size looks exactly like the cycle slip the carrier-phase lesson's detector was built to catch, because that is what it is — the physical path length genuinely changed, and the count of accumulated cycles genuinely needs a new starting offset. A receiver that is not explicitly told when a switch happens will, correctly, flag it as a slip and either resolve a fresh ambiguity from that point or, lacking the redundancy to do so cleanly, drop that satellite's carrier-phase track until it can.
+Changing from one antenna to another in flight changes the electrical path from sky to receiver in an instant. The cable length is different. The antenna's **[[phase center|phase-center]]**, the point the range is really measured to, is in a different place. Sometimes the amplifier is different too. All of it adds up to a sudden jump in the apparent range to every satellite the new antenna sees.
 
-::: warning
-Do not assume antenna switching is invisible to the tracking loop merely because the code measurement recovers quickly. A code loop's few-hundred-nanosecond pull-in range can absorb a switch's path-length jump in well under a second and look, from a crude health check, like nothing happened; the carrier phase is a different story; the previous lesson's few-centimetre wavelength notices a jump the code loop shrugs off, and any receiver software using carrier phase — for a precise fix, or for velocity — needs to be told exactly when a switch occurs so it can treat the resulting jump as the deliberate event it is rather than a spurious slip to chase down after the fact.
+The code measurement handles this fairly well. The jump is a step the code tracking loop has to settle through, usually within its ordinary pull-in range. The carrier phase handles it badly. An abrupt phase jump of unknown size looks exactly like the **[[cycle slip|cycle-slip]]** the carrier-phase lesson's detector was built to catch — because that is what it is. The path length really changed, so the count of whole cycles really needs a new starting point. A receiver that is not told a switch happened will, correctly, flag a slip. Then it must either solve a fresh ambiguity from that moment or drop that satellite's carrier phase until it can.
+
+::: warning Switching is not invisible
+Do not assume a switch is harmless because the code measurement recovers quickly. The code loop can absorb the jump in well under a second, and a crude health check will say nothing happened. The carrier phase is a different story. Its wavelength is $19\,\mathrm{cm}$ on L1, so it notices a jump of a few centimeters that the code loop shrugs off. Any software that uses carrier phase — for a precise fix, or for velocity — must be told exactly when a switch happens, so it can treat the jump as a planned event instead of a mystery slip to chase down later.
 :::
 
-## Reacquisition after a launch-vehicle outage
+## Riding through an outage
 
-Staging, a plume-shadowed antenna, or dynamics briefly exceeding a loop's tracking range can each cost lock outright, and every one of them is more likely at exactly the moments a launch vehicle can least afford bad navigation. What carries the vehicle through the gap is not GNSS at all: it is the inertial navigation system, which keeps producing a position and velocity solution — degrading, but continuous — throughout, exactly the subject the inertial navigation module works out in full, including how much a given inertial sensor's error grows over a given outage duration and how long a filter can trust it.
+Staging, an antenna in the plume's shadow, or a jolt that exceeds a loop's limits can each cost lock outright. Every one of them is most likely at exactly the moments a rocket can least afford bad navigation.
 
-What this module can add is what the outage does to *reacquisition* once GNSS signals return. The previous lesson's search-space argument applies here with the numbers changed: during an outage of duration $\Delta t$, if the vehicle's acceleration is uncertain by some amount $\delta a$ — inertial navigation alone is not perfectly calibrated — the Doppler the receiver should expect on return has drifted by an additional, unpredicted amount:
+What carries the vehicle through the gap is not GNSS at all. It is the **inertial navigation system (INS)**: gyroscopes and accelerometers, called together an **[[IMU|imu-grade]]** (inertial measurement unit), feeding a computer that adds up measured acceleration to get velocity and position. It never loses lock, because it needs nothing from outside — not radio, not plume-free sky. Its weakness is that its errors grow the longer it runs without a correction, so it *coasts*: continuous, but slowly getting worse.
+
+How fast does it get worse? The simplest error is an accelerometer **bias** $b$: a small constant offset in what it reads. Added up once, it becomes a velocity error $bt$. Added up twice, it becomes a position error that grows with the square of time:
 
 $$
-\delta f_d = \frac{\delta a\,\Delta t}{\lambda}: \qquad \delta a = 2g_0,\ \Delta t = 5\,\mathrm{s} \implies \delta f_d = \frac{2\times9.80665\times5}{0.1903} = 515\,\mathrm{Hz},
+\delta r = \tfrac{1}{2}\,b\,t^2.
 $$
 
-on top of whatever Doppler search window the vehicle's known, modelled dynamics already demand. Every second of outage widens the search a little further, which is exactly why a shorter outage is not only easier on the inertial solution's growing position error — it is directly cheaper to reacquire from. Deep coupling, at the end of this module, closes this loop from the other direction: an inertial-aided receiver reacquires faster precisely because the inertial solution, however degraded, still predicts the Doppler well enough to narrow that search dramatically, which is a second, independent reason — beyond holding lock longer — that tightly coupling the two systems pays off on exactly the vehicle this lesson has been describing.
+Accelerometer biases are quoted in **milli-g** (mg), thousandths of $g_0$: $1\,\mathrm{mg} = 0.00981\,\mathrm{m/s^2}$. A **tactical-grade** IMU has a bias around $1\,\mathrm{mg}$. After a $60\,\mathrm{s}$ coast,
+
+$$
+\tfrac{1}{2}\times0.00981\times60^2 = 17.7\,\mathrm{m},
+$$
+
+and after $120\,\mathrm{s}$ it is $70.6\,\mathrm{m}$. A **navigation-grade** IMU, with a bias around $0.025\,\mathrm{mg}$, forty times smaller, gets forty times less error from this term: under $2\,\mathrm{m}$ after the same two minutes. Doubling the outage quadruples this error, so a short outage is cheap and a long one is expensive. Real coasts also carry the velocity and tilt errors that existed when lock was lost, and those often grow faster still; the inertial navigation module works out the full error budget. How long a coast a vehicle can tolerate is a requirements calculation: pick the IMU grade, grow its errors over the longest expected outage, and compare with the accuracy needed at the end. Other sensors can hold the drift down too — a **radar altimeter** measuring height above the ground, or a camera matching terrain below — which matters most for a booster coming back to land.
+
+### Getting the signal back
+
+When the signals return, the receiver must find them again, and the last lesson's search-space argument applies with new numbers. The INS knows the vehicle's acceleration only to within some uncertainty $\delta a$. During an outage of length $\Delta t$ that uncertainty piles up into an unpredicted change in velocity, and so an unpredicted change in Doppler:
+
+$$
+\delta f_d = \frac{\delta a\,\Delta t}{\lambda}.
+$$
+
+::: note Where the reacquisition formula comes from
+A velocity error is acceleration error added up over time: $\delta v = \delta a\,\Delta t$ when $\delta a$ stays constant. A Doppler shift is velocity along the line of sight divided by the wavelength, so a velocity error of $\delta v$ becomes a Doppler error of $\delta v/\lambda$. Put the two together and you get $\delta f_d = \delta a\,\Delta t/\lambda$. With $\delta a = 2g_0$ and $\Delta t = 5\,\mathrm{s}$ on L1:
+
+$$
+\frac{2\times9.80665\times5}{0.1903} = 515.3\,\mathrm{Hz}.
+$$
+:::
+
+That extra width — about $515\,\mathrm{Hz}$ for a five-second outage with a $2g_0$ uncertainty — comes on top of whatever window the vehicle's known motion already demands. Every second of outage widens the search. So a shorter outage is doubly good: less INS drift, and a cheaper search when the signal returns.
+
+Deep coupling, at the end of this module, attacks this from the other side. When the INS helps steer the receiver, the INS prediction of each satellite's Doppler — even while degraded — narrows the search a great deal, so the receiver reacquires far faster. That is a second reason to tie the two systems tightly together, beyond holding lock longer in the first place.
+
+::: key
+Why GNSS is hard on a launch vehicle: high acceleration and jerk stress the tracking loops, vibration modulates the carrier, the exhaust plume attenuates and refracts the signal, the vehicle body shadows antennas so switching is needed, and staging events cause transients — all at once. The inertial navigation system carries the vehicle through a lock outage, with error growth set by the IMU grade.
+:::
 
 ## Check yourself
 
 ::: check
-A vehicle is accelerating at $2.5g$ along a satellite's line of sight. What Doppler rate does that produce on L1?
+A vehicle accelerates at $2.5g_0$ straight along a satellite's line of sight. What Doppler rate does that produce on L1?
 :::
 
 ::: answer
-$\dot f_d = a/\lambda = (2.5\times9.80665)/0.1903 = 128.8\,\mathrm{Hz/s}$.
+First the acceleration in SI units: $2.5 \times 9.80665 = 24.52\,\mathrm{m/s^2}$. Then divide by the wavelength: $24.52/0.1903 = 128.8\,\mathrm{Hz/s}$. That is over a hundred times what a ground receiver sees.
 :::
 
 ::: check
-A staging event drops acceleration by $3g$ over $0.2\,\mathrm{s}$. Compute the jerk and the resulting Doppler acceleration on L1.
+A staging event drops the acceleration by $3g_0$ over $0.2\,\mathrm{s}$. Find the jerk and the Doppler acceleration on L1.
 :::
 
 ::: answer
-Jerk $=\Delta a/\Delta t = (3\times9.80665)/0.2=147.1\,\mathrm{m/s^3}$. Doppler acceleration $=147.1/0.1903=772.99\,\mathrm{Hz/s^2}$ — even sharper than the module's $4g$-over-$0.3\,\mathrm{s}$ example, because the same acceleration change happened faster.
+Jerk is the change in acceleration over the time: $3 \times 9.80665 / 0.2 = 147.1\,\mathrm{m/s^3}$. Doppler acceleration divides by the wavelength: $147.1/0.1903 = 773.0\,\mathrm{Hz/s^2}$. That is sharper than the lesson's $4g_0$-in-$0.3\,\mathrm{s}$ example, even though the drop is smaller, because it happens faster.
 :::
 
 ::: check
-Why does vibration threaten a tracking loop through its peak instantaneous acceleration rather than through the net position error it causes?
+Vibration hardly changes where the vehicle ends up. Why is it still a threat to a tracking loop?
 :::
 
 ::: answer
-Vibration is oscillatory, so its contribution to net position — the double integral of acceleration over a full cycle — averages close to zero and is not what a tracking loop struggles with. What the loop actually has to follow, moment to moment, is the *rate of change* of range, and an oscillating acceleration produces an oscillating Doppler rate whose *peak* can rival or exceed a steady thrust acceleration's Doppler rate, stressing the loop's dynamic tracking capability at that instant even though the vehicle has barely moved from where it would otherwise have been.
+Vibration swings back and forth, so over each cycle its effect on position nearly cancels, and the net position error is tiny. But the loop has to follow the Doppler *moment by moment*, and a swinging acceleration makes the Doppler rate swing too. At its peak, that rate can match or beat the Doppler rate of steady thrust — $257.6\,\mathrm{Hz/s}$ at a $5g_0$ peak, against $206.1\,\mathrm{Hz/s}$ for $4g_0$ of thrust. It is that peak stress, not the position, that can break lock.
 :::
 
 ::: check
-Compute the electron density needed for a plasma to reach the plasma frequency of L5 ($1176.45\,\mathrm{MHz}$), and compare it to the L1 threshold worked out in the lesson.
+What electron density blocks L5 ($1176.45\,\mathrm{MHz}$)? Compare it with the L1 threshold from the lesson.
 :::
 
 ::: answer
-$N_e = f_{L5}^2/80.6 = (1176.45\times10^6)^2/80.6 = 1.72\times10^{16}\,\mathrm{el/m^3}$, against L1's $3.08\times10^{16}\,\mathrm{el/m^3}$ — L5 needs $1.79$ times less electron density to be blocked, the same $(f_1/f_2)^2$ scaling the ionosphere lesson used for delay, here applied to an opacity threshold instead: a plume dense enough to start blocking L5 may still be letting L1 through.
+$N_e = f_{L5}^2/80.6$, and $\frac{(1176.45\times10^{6})^2}{80.6} = 1.72\times10^{16}\,\mathrm{el/m^3}$. The L1 threshold is $3.08\times10^{16}\,\mathrm{el/m^3}$, and $3.08/1.72 = 1.79$, so L5 is blocked by $1.79$ times less electron density. It is the same $f^2$ scaling the ionosphere lesson used for delay, here setting a blackout threshold: a plume dense enough to block L5 may still let L1 through.
 :::
 
 ::: check
-Why does switching to a different antenna mid-flight typically cause more trouble for a carrier-phase measurement than for a code measurement on the same satellite?
+Why does switching antennas mid-flight cause more trouble for the carrier phase than for the code on the same satellite?
 :::
 
 ::: answer
-Both measurements see the same sudden jump in electrical path length, but they see it at very different scales relative to their own precision. The code loop's tracking uncertainty is metres to tens of metres, so a switch-induced jump of centimetres to a few metres is well inside what the loop's ordinary pull-in range absorbs without incident. The carrier-phase measurement is precise to millimetres, so the same jump is many wavelengths — indistinguishable, without being told otherwise, from a genuine cycle slip, and it forces exactly the ambiguity-recovery response a slip would.
+Both see the same sudden jump in path length, but they measure at very different scales. The code measurement is only good to a meter or so, so a jump of centimeters to a few meters sits inside what the code loop absorbs anyway. The carrier phase is precise to millimeters, with a $19\,\mathrm{cm}$ wavelength, so the same jump is many wavelengths. Unless the receiver is told about the switch, the jump looks exactly like a cycle slip and forces a fresh ambiguity solution.
 :::
 
 ::: check
-A launch vehicle loses GNSS lock for $8\,\mathrm{s}$ with an acceleration uncertainty of $1.5g$. How much extra Doppler search width does this add on return, on L1?
+A rocket loses GNSS lock for $8\,\mathrm{s}$, and its INS knows the acceleration only to within $1.5g_0$. How much extra Doppler search width does that add on L1 when the signal returns?
 :::
 
 ::: answer
-$\delta f_d = \delta a\,\Delta t/\lambda = (1.5\times9.80665\times8)/0.1903 = 618.4\,\mathrm{Hz}$, added on top of whatever search window the vehicle's already-modelled dynamics require.
+$\delta f_d = \delta a\,\Delta t/\lambda$, so
+
+$$
+\frac{1.5\times9.80665\times8}{0.1903} = 618.4\,\mathrm{Hz},
+$$
+
+added on top of the window the vehicle's known motion already needs. A longer outage or a worse acceleration estimate would widen it further.
 :::
 
 ## Summary
 
-| Item | Statement |
+| Idea | What to remember |
 | --- | --- |
-| Doppler rate | $\dot f_d=a_{\mathrm{LOS}}/\lambda$; $\approx206\,\mathrm{Hz/s}$ at $4g$ steady thrust on L1 |
-| Doppler acceleration (jerk) | $\ddot f_d=j_{\mathrm{LOS}}/\lambda$; $\approx687\,\mathrm{Hz/s^2}$ for a $4g$-over-$0.3\,\mathrm{s}$ staging transient |
-| Vibration | Same coupling, oscillating; peak Doppler-rate excursion can rival steady thrust ($258\,\mathrm{Hz/s}$ at $5g$ peak); loop bandwidth filters high-frequency content |
-| Plume opacity threshold | $N_e=f^2/80.6\,\mathrm{el/m^3}$; $3.08\times10^{16}\,\mathrm{el/m^3}$ for L1, four orders of magnitude above the ionosphere's own peak density |
-| Antenna switching | Instant path-length jump; code loop absorbs it, carrier phase reads it as a cycle slip unless flagged |
-| Outage reacquisition | $\delta f_d=\delta a\,\Delta t/\lambda$ extra search width per second of outage and per unit acceleration uncertainty |
-| What carries the outage | The inertial navigation system (inertial navigation module), while deep coupling (ahead) narrows the reacquisition search on return |
+| Doppler rate | $\dot f_d = a_{\mathrm{LOS}}/\lambda$; about $206\,\mathrm{Hz/s}$ at $4g_0$ on L1, against under $1\,\mathrm{Hz/s}$ on the ground |
+| Doppler acceleration | $\ddot f_d = j_{\mathrm{LOS}}/\lambda$; about $687\,\mathrm{Hz/s^2}$ when $4g_0$ vanishes in $0.3\,\mathrm{s}$ at staging |
+| Vibration | same coupling, swinging; $257.6\,\mathrm{Hz/s}$ peak at $5g_0$; loop bandwidth smooths fast shaking |
+| Plume blackout | $f_p^2 = 80.6\,N_e$; blocks L1 above $3.08\times10^{16}\,\mathrm{el/m^3}$, about four orders above the ionosphere's peak; L5 goes first |
+| Antenna switching | instant path jump; the code absorbs it, the carrier phase sees a cycle slip unless told |
+| Coasting | the INS carries the outage; accelerometer bias gives $\delta r = \tfrac{1}{2}bt^2$; a better IMU grade buys a longer coast |
+| Reacquisition | extra search width $\delta f_d = \delta a\,\Delta t/\lambda$; inertial aiding narrows it |
 
-Two threads from this lesson and the one before it — a search space that can be narrowed by outside knowledge, and dynamics sharp enough to defeat a loop that is not built for them — both point at the receiver's tracking loops themselves. The next lesson pauses the dynamics story to work out what a receiver can do about a single bad measurement hiding among good ones, before the final two lessons return to the loops and close the module with the aided architecture built to survive everything this lesson described.
+This lesson and the last both ended at a search that outside knowledge can narrow, and at motion sharp enough to break a loop not built for it. Both point at the tracking loops, which the last two lessons open up. First, though, the next lesson asks a different question: what can a receiver do when one of its measurements is wrong — by accident, or on purpose?
+
+::: context thrust-to-weight Push against pull
+The **thrust-to-weight ratio** compares the engines' push with the vehicle's weight. Above $1$ the rocket can climb; at exactly $1$ it hovers. Big launchers leave the pad at around $1.2$ to $1.5$, so at first they climb slowly. As propellant burns off, the push stays nearly the same while the weight keeps falling, so the ratio — and the acceleration — climbs all the way to cutoff. That is why the hardest acceleration comes at the end of a stage's burn, not the start.
+:::
+
+::: context meco The moment the push stops
+**Main engine cutoff** (MECO) is when a stage's engines shut down. Acceleration that has been climbing for two minutes drops to nothing in a few tenths of a second. The steep cliff at the end is the jerk.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <line x1="40" y1="170" x2="340" y2="170" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="40" y1="170" x2="40" y2="20" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="36" y1="30" x2="44" y2="30" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="32" y="34" font-size="11" fill="#1f2a44" text-anchor="end">4 g</text>
+  <text x="32" y="174" font-size="11" fill="#1f2a44" text-anchor="end">0</text>
+  <path d="M 40 124.5 Q 220 110 300 30" fill="none" stroke="#1d6fd1" stroke-width="2.5"/>
+  <line x1="300" y1="30" x2="303" y2="170" stroke="#b4232c" stroke-width="2.5"/>
+  <text x="250" y="60" font-size="11" fill="#1f2a44" text-anchor="end">acceleration grows</text>
+  <text x="250" y="74" font-size="11" fill="#1f2a44" text-anchor="end">as propellant burns</text>
+  <text x="310" y="110" font-size="11" fill="#b4232c">MECO</text>
+  <text x="310" y="124" font-size="11" fill="#b4232c">jerk</text>
+  <text x="190" y="190" font-size="11" fill="#1f2a44" text-anchor="middle">time</text>
+</svg>
+```
+:::
+
+::: context loop-order Why jerk is the killer
+A tracking loop's **order** says which rate of change it can follow with no steady lag. A second-order loop follows a steady Doppler perfectly but lags behind a steady Doppler *rate*. A third-order loop, the usual choice for a receiver that must handle real acceleration, follows a steady Doppler rate perfectly but lags behind jerk. A staging cliff is a burst of jerk, one step beyond what even a third-order loop follows. The tracking-loop lesson derives the size of that lag, and shows why widening the loop to cope lets in more noise.
+:::
+
+::: context resonance Every structure has a note
+Tap a wine glass and it rings at one pitch: its **resonance**. A rocket's body, tanks and brackets ring too, each at its own frequencies. When the engine's rumble or the rushing air contains those frequencies, the shaking builds up, the way a swing goes higher when you push it in time. Vibration tests on the ground hunt for these frequencies so nothing important sits on top of one.
+:::
+
+::: context plasma-frequency Too dense to pass
+Below its plasma frequency a plasma acts like a mirror. The ionosphere does exactly this for AM radio: its plasma frequency is a few megahertz, so AM broadcasts at night bounce off it and travel beyond the horizon. GNSS signals, at over a gigahertz, sail through. The scale below shows how far a plasma would have to go to stop them.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <line x1="30" y1="70" x2="330" y2="70" stroke="#1f2a44" stroke-width="1.5"/>
+  <g stroke="#1f2a44" stroke-width="1.5">
+    <line x1="30" y1="65" x2="30" y2="75"/><line x1="105" y1="65" x2="105" y2="75"/><line x1="180" y1="65" x2="180" y2="75"/><line x1="255" y1="65" x2="255" y2="75"/><line x1="330" y1="65" x2="330" y2="75"/>
+  </g>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="30" y="90">10^10</text><text x="105" y="90">10^12</text><text x="180" y="90">10^14</text><text x="255" y="90">10^16</text><text x="330" y="90">10^18</text>
+  </g>
+  <text x="180" y="110" font-size="11" fill="#6c7a93" text-anchor="middle">electrons per cubic meter (log scale)</text>
+  <circle cx="105" cy="70" r="5" fill="#1d6fd1"/>
+  <text x="105" y="50" font-size="11" fill="#1d6fd1" text-anchor="middle">ionosphere peak</text>
+  <line x1="263.8" y1="58" x2="263.8" y2="82" stroke="#f2b880" stroke-width="3"/>
+  <line x1="273.3" y1="58" x2="273.3" y2="82" stroke="#b4232c" stroke-width="3"/>
+  <text x="250" y="30" font-size="11" fill="#1f2a44" text-anchor="middle">blocks L5</text>
+  <text x="300" y="46" font-size="11" fill="#b4232c" text-anchor="middle">blocks L1</text>
+</svg>
+```
+:::
+
+::: context solid-motors Why solid boosters are worst
+**Solid rocket motors** burn a rubbery mix of fuel and oxidizer, usually with aluminum powder added. Traces of sodium and potassium in the ingredients give up electrons at flame temperatures, making the exhaust far more ionized than, say, a kerosene–oxygen flame. Radio engineers have long known that solid-booster plumes can weaken or cut radio links to a vehicle, which is why antenna placement on vehicles with solid boosters gets special care.
+:::
+
+::: context phase-center Where the range ends
+A range must be measured to *some* point on the antenna, and that point — the **phase center** — is not a bolt you can touch. It is the point the arriving waves seem to spread out from, a few centimeters inside or above the antenna, and it shifts a little with the satellite's direction. Two antennas on opposite sides of a rocket have phase centers a meter or more apart, so switching between them really does move the measurement point.
+:::
+
+::: context cycle-slip A skipped count
+Carrier phase measures range by counting whole wavelengths plus a fraction, like counting laps on a track. A **cycle slip** is a lost count: the fraction is still measured perfectly, but the whole-lap number jumps by some unknown amount. Everything precise built on the count must then be re-solved. The carrier-phase lesson built a detector for exactly this.
+:::
+
+::: context imu-grade Buying time with better sensors
+IMUs come in grades, and a better grade buys a longer coast. The curves show only the accelerometer-bias term, $\tfrac{1}{2}bt^2$, for a $1\,\mathrm{mg}$ tactical unit and a $0.025\,\mathrm{mg}$ navigation-grade unit. Real coasts add the velocity and tilt errors present at loss of lock, but the shape — slow at first, then running away — is the same.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <line x1="40" y1="170" x2="340" y2="170" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="40" y1="170" x2="40" y2="30" stroke="#1f2a44" stroke-width="1.5"/>
+  <polyline fill="none" stroke="#b4232c" stroke-width="2.5" points="40,170 64,169.2 88,166.7 112,162.5 136,156.7 160,149.2 184,140 208,129.2 232,116.7 256,102.5 280,86.6 304,69.1 328,50"/>
+  <polyline fill="none" stroke="#1d6fd1" stroke-width="2.5" points="40,170 88,169.9 136,169.7 184,169.2 232,168.7 280,167.9 328,167"/>
+  <line x1="36" y1="50" x2="44" y2="50" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="32" y="54" font-size="11" fill="#1f2a44" text-anchor="end">71 m</text>
+  <text x="32" y="174" font-size="11" fill="#1f2a44" text-anchor="end">0</text>
+  <text x="328" y="186" font-size="11" fill="#1f2a44" text-anchor="middle">120 s</text>
+  <text x="190" y="195" font-size="11" fill="#1f2a44" text-anchor="middle">outage length</text>
+  <text x="250" y="78" font-size="11" fill="#b4232c" text-anchor="end">tactical, 1 mg</text>
+  <text x="330" y="158" font-size="11" fill="#1d6fd1" text-anchor="end">navigation grade</text>
+</svg>
+```
+:::

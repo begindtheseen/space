@@ -2,10 +2,32 @@
 @title C++
 @name C++, close to the machine
 @blurb Compiled for real by clang++ in your browser: from main() and std::cout to vectors, strings, references, classes and pointers.
+@plainvoice true
 
 === cpp-01 | Hello, main()
 --- teach
-Every C++ program starts in a function called `main`. The compiler turns your source into a program; when it runs, `main` runs.
+In the Terminal course you typed one command at a time, pressed Enter, and the shell ran it straight away. C++ works in a different way. You write all your instructions first, in a file. Then a tool turns the whole file into something the computer can run, and only then does it run. This lesson shows you the smallest complete C++ program and what every piece of it does.
+
+C++ is the language much of the world's [[flight software|cpp-in-flight]] is written in, so everything here is a first step toward code that flies.
+
+## A program is a list of instructions
+
+A **program** is a list of instructions the computer follows, in order, top to bottom, like a recipe. Every command you ran in the terminal, `ls` and `git` included, is a program somebody wrote.
+
+The instructions you write are called **source code**: text a person can read. You keep it in a **source file**. C++ source files end in `.cpp`, and the file in the editor here is called `main.cpp`.
+
+## The compiler translates it
+
+The computer's processor cannot read C++. It only understands **machine code**: long runs of numbers, each one a tiny instruction such as "add these two" or "copy this over there".
+
+A **[[compiler|compiler]]** is a program that translates your whole source file into machine code, ahead of time. Here the compiler is called clang++. When you press the run button, two things happen, one after the other:
+
+1. The compiler reads all of `main.cpp` and builds a program out of it.
+2. That program runs, and what it prints shows up in the **Console** tab.
+
+## The smallest complete program
+
+Here is a whole C++ program. The rest of the lesson walks through it one line at a time.
 
 ```cpp
 #include <iostream>
@@ -16,19 +38,134 @@ int main() {
 }
 ```
 
-- `#include <iostream>` brings in the standard input/output library.
-- `std::cout << …` sends text to the output; `\n` ends the line. You can chain: `std::cout << "a" << 42 << "\n";`
-- Every statement ends with `;`. Blocks go in `{ }`.
-- `return 0;` tells whoever ran the program that it succeeded.
+It prints one line:
 
-Unlike Python or JavaScript, nothing runs until the whole file compiles. A missing `;` means no program at all — read the compiler's first error, it points at the line.
+```
+Launch in T-minus 10
+```
+
+### Line 1: bringing in a library
+
+```cpp
+#include <iostream>
+```
+
+Read it aloud as "hash include i-o-stream". A **library** is a collection of ready-made code that someone else wrote so you do not have to. `iostream` is the part of the C++ [[standard library|standard-library]] that handles input and output ("io" is input/output, and a **stream** is a flow of characters, one after another). Without this line, the compiler does not know what `std::cout` means.
+
+### Line 3: the main function
+
+```cpp
+int main() {
+```
+
+A **function** is a named block of instructions. This one is called `main`, and it is special: **every C++ program starts in `main`**. When the program runs, `main` runs, line by line from top to bottom, and when `main` ends, the program ends. A program has exactly one `main`.
+
+- `int` (short for integer, a whole number) says that `main` hands back a whole number when it finishes. You will see which number in a moment.
+- The **parentheses** `( )` after the name are where a function's inputs go. `main` takes none here, so they are empty.
+- The **curly braces** `{ }` hold the function's **body**: the instructions that belong to it. Everything between `{` and the matching `}` is part of `main`. A group of lines inside braces is called a **block**.
+
+### Line 4: printing a line
+
+```cpp
+std::cout << "Launch in T-minus 10\n";
+```
+
+This is where the work happens. Take it piece by piece:
+
+- `std::cout`, read "standard see-out", is the character output: whatever you send it appears on the screen (here, the Console tab).
+- `::`, two colons, is the **scope operator**. Read it as "from". So `std::cout` is "`cout` from `std`", and `std` is the name of the standard library's [[namespace|namespace]].
+- `<<`, two less-than signs, is read "put to". It puts the thing on its right into the output on its left. Picture the arrows pointing toward `cout`, showing which way the text flows.
+- `"Launch in T-minus 10\n"` is text in double quotes, called a **string** (a string of characters, like beads on a thread). It is printed exactly as written, without the quotes.
+- `\n`, a backslash and an n, is the [[newline character|escape-sequences]]. It ends the line. Without it, whatever you print next carries on along the same line.
+- `;`, the semicolon, ends the **statement** (one complete instruction), the way a full stop ends a sentence. Every statement ends with `;`.
+
+You can put several things in a row with more `<<`, like this: `std::cout << "a" << 42 << "\n";` prints `a42`. The next lesson is all about that.
+
+### Line 5: reporting success
+
+```cpp
+return 0;
+```
+
+`return` ends `main` and hands the number `0` back to whoever started the program. `0` means "it worked". That number is the program's [[exit code|exit-code]], and it is the same one you can check in bash.
+
+### Notes for humans
+
+Two slashes, `//`, start a **comment**: a note for people reading the code. The compiler ignores everything from `//` to the end of that line. The starter code below has one:
+
+```cpp
+// Print the two lines here.
+```
+
+## Nothing runs until the whole file compiles
+
+In languages like Python or JavaScript, a program is read and run one line at a time, so it can get halfway before it trips over a mistake. C++ is different: nothing runs until the whole file compiles. A missing `;` means no program at all, not even the lines that were fine.
+
+**Watch out:** forgetting a semicolon is the mistake everyone makes first. Leave the `;` off line 4 and the compiler stops with an [[error message|compile-errors]] like this:
+
+```
+main.cpp:4:42: error: expected ';' after expression
+```
+
+That reads as: in `main.cpp`, line 4, column 42, a `;` was expected. Read the compiler's first error, not the last one: it points at the line to fix.
+
+::: context cpp-in-flight Where C++ flies
+C++ was created by Bjarne Stroustrup at Bell Labs. He began in 1979 with a language called "C with Classes", renamed it C++ in 1983, and it was first sold in 1985. It is still used wherever a program must be fast and sit close to the hardware. Lockheed Martin wrote a C++ coding standard in 2005 for the F-35 fighter's software, and SpaceX engineers have said publicly that the flight software for Falcon 9 and Dragon is written in C++. Its older sister, C, runs many NASA spacecraft, including the Curiosity rover. What you learn here carries over to both.
+:::
+
+::: context compiler Translating ahead of time
+A compiler is a translator that works on the whole book before anyone reads it. You hand it your source file; it checks every line and writes out a finished program in machine code. The program is then run as often as you like, without the compiler.
+
+```svg
+<svg viewBox="0 0 360 130" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="8" y="35" width="96" height="54" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="56" y="58" font-size="13" text-anchor="middle" fill="#1f2a44">main.cpp</text>
+  <text x="56" y="76" font-size="11" text-anchor="middle" fill="#6c7a93">words you write</text>
+  <rect x="132" y="35" width="96" height="54" rx="6" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="180" y="58" font-size="13" text-anchor="middle" fill="#1f2a44">compiler</text>
+  <text x="180" y="76" font-size="11" text-anchor="middle" fill="#1f2a44">clang++</text>
+  <rect x="256" y="35" width="96" height="54" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="304" y="58" font-size="13" text-anchor="middle" fill="#1f2a44">program</text>
+  <text x="304" y="76" font-size="11" text-anchor="middle" fill="#6c7a93">machine code</text>
+  <line x1="106" y1="62" x2="126" y2="62" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="130,62 122,57 122,67" fill="#1f2a44"/>
+  <line x1="230" y1="62" x2="250" y2="62" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="254,62 246,57 246,67" fill="#1f2a44"/>
+  <text x="180" y="116" font-size="11" text-anchor="middle" fill="#b4232c">one mistake here and no program comes out</text>
+</svg>
+```
+
+A single mistake stops the compiler, so no program is made at all. That feels strict, but it means many errors are caught on your desk instead of in flight.
+:::
+
+::: context standard-library The toolbox that comes with C++
+Every C++ compiler comes with the standard library: ready-made, well-tested code for printing, reading input, text, lists, maths and much more. Each part lives in a **header**, a file you pull in with `#include`. Lines that start with `#` are handled before the real compiling begins: `#include <iostream>` copies the contents of the iostream header into your file. You will meet more headers soon, such as `<string>` for text.
+:::
+
+::: context namespace Surnames for code
+Two people in a class can both be called Alex, so you add a surname to tell them apart. A namespace does the same for code: it is a family name that everything in the standard library shares, and that name is `std`. So `std::cout` means "the `cout` from the `std` family". Someone else's library could have its own `cout` without a clash. You may see programs that write `using namespace std;` to drop the `std::`, but many teams avoid that, because the surname tells a reader exactly where a name comes from.
+:::
+
+::: context escape-sequences Characters you cannot type into a string
+Inside a string, the backslash `\` means "the next character is special". It is called an escape. `\n` is a newline, `\t` is a tab, `\"` is a double quote that does not end the string, and `\\` is one real backslash. So `\n` is two characters in your source file but becomes a single invisible "end of line" character in the output.
+:::
+
+::: context exit-code The number a program leaves behind
+When any program finishes, it leaves a small whole number called its exit code: `0` for success, anything else for some kind of failure. In bash, `echo $?` prints the exit code of the last command, and `&&` runs the next command only if the last one returned `0`. Scripts that launch other programs, including test systems that check flight software, rely on these codes. In `main` only, if you leave out `return 0;`, C++ returns 0 for you, but writing it makes your intent plain.
+:::
+
+::: context compile-errors Reading what the compiler says
+The compiler reports each problem as `file:line:column: error: message`, then usually shows the line with a `^` pointing at the spot. One real mistake often causes several more errors after it, because the compiler gets confused about what follows. That is why you fix the first error, compile again, and see what is left. It also sometimes prints a **warning**: the program still builds, but something looks suspicious. Warnings are worth reading too.
+:::
 --- task
-Write a complete program that prints exactly:
+The starter already has the skeleton: `#include <iostream>`, `int main() { … }` and `return 0;`. Inside `main`, above `return 0;`, write two `std::cout` statements so the program prints exactly these two lines:
 
 ```
 Hello, world!
 C++ is compiled and running in your browser.
 ```
+
+Each line needs its own `\n` at the end, and each statement ends with `;`. Spelling, capitals and the full stop must match exactly.
 --- starter
 #include <iostream>
 
@@ -45,31 +182,315 @@ int main() {
     return 0;
 }
 --- hint
-`std::cout << "Hello, world!\n";` — and a second line like it.
+Use one `std::cout` statement for each line of output, placed between the `{` and `return 0;`.
+--- hint
+The first one is `std::cout << "Hello, world!\n";`.
+--- hint
+The second has the same shape: `std::cout << "…\n";` with the second sentence between the quotes, full stop included.
 --- check output | Prints both lines, exactly
 Hello, world!
 C++ is compiled and running in your browser.
 
+=== cpp-01b | Printing text and numbers together
+--- teach
+Last lesson each `std::cout` statement printed one string. Now you will put several pieces into one statement, mix words with numbers, and learn what the compiler tells you when it is unhappy.
+
+## Chaining pieces with <<
+
+Remember that `<<` is read "put to". You can use it again and again in one statement. Each `<<` puts the next piece into the output, [[one after another|chaining]], left to right:
+
+```cpp
+std::cout << "a" << 42 << "\n";
+```
+
+This prints:
+
+```
+a42
+```
+
+Three pieces went out: the string `"a"`, the number `42`, and the newline `"\n"`. Only one `;` is needed, at the very end, because it is all one statement.
+
+## Numbers need no quotes
+
+A number written in your code without quotes, like `42`, is a real number. Later you will do arithmetic with numbers like this. The same digits inside quotes, `"42"`, are just [[text that looks like a number|text-vs-number]]. Both print the same, but only the first is a number to C++.
+
+```cpp
+std::cout << 42 << "\n";     // a number
+std::cout << "42" << "\n";   // a string made of the characters 4 and 2
+```
+
+Both lines print `42`.
+
+## You choose every space
+
+The pieces are glued together exactly as they are. C++ adds no spaces of its own, so any space you want must be inside the quotes:
+
+```cpp
+std::cout << "Crew:" << 4 << "\n";    // prints Crew:4
+std::cout << "Crew: " << 4 << "\n";   // prints Crew: 4
+```
+
+The second line has a space after the colon, inside the quotes.
+
+## Long statements can span lines
+
+Outside quotes, the compiler ignores extra [[spaces and line breaks|whitespace]]. A statement ends at its `;`, not at the end of a line, so a long one can be split to make it easier to read:
+
+```cpp
+std::cout << "Stage 1: " << 9 << " engines\n"
+          << "Stage 2: " << 1 << " engine\n";
+```
+
+That is one statement, printing two lines:
+
+```
+Stage 1: 9 engines
+Stage 2: 1 engine
+```
+
+## Errors and warnings
+
+When the compiler finds a mistake, it prints an **error** and no program is made. Sometimes it prints a [[warning|warnings]] instead: the program is built, but the compiler thinks something looks wrong. Read both.
+
+**Watch out:** every piece needs its own `<<` in front of it. Leave one out and the compiler cannot tell where one piece ends and the next begins:
+
+```cpp
+std::cout << "Crew: " 4 << "\n";   // a << is missing before 4
+```
+
+The compiler says `error: expected ';' after expression`, because it thinks the statement ended after `"Crew: "`. The message does not always name the real problem, but the line number is right, so look closely at that line. Put the missing `<<` back and it compiles.
+
+::: context chaining Why the arrows can keep going
+`std::cout << "a"` does its printing and then hands back `std::cout` itself. So the next `<<` has `std::cout` on its left again, ready for the next piece. The computer works it out like this: `((std::cout << "a") << 42) << "\n"`.
+
+```svg
+<svg viewBox="0 0 360 120" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="20" width="80" height="34" rx="5" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="50" y="42" font-size="13" text-anchor="middle" fill="#1f2a44">"a"</text>
+  <rect x="110" y="20" width="80" height="34" rx="5" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="150" y="42" font-size="13" text-anchor="middle" fill="#1f2a44">42</text>
+  <rect x="210" y="20" width="80" height="34" rx="5" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="250" y="42" font-size="13" text-anchor="middle" fill="#1f2a44">"\n"</text>
+  <text x="50" y="72" font-size="11" text-anchor="middle" fill="#1d6fd1">1st</text>
+  <text x="150" y="72" font-size="11" text-anchor="middle" fill="#1d6fd1">2nd</text>
+  <text x="250" y="72" font-size="11" text-anchor="middle" fill="#1d6fd1">3rd</text>
+  <rect x="60" y="84" width="240" height="28" rx="5" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="180" y="103" font-size="13" text-anchor="middle" fill="#1f2a44">Console:  a42  (then a new line)</text>
+</svg>
+```
+
+The pieces go out in the order you wrote them, and nothing is added in between.
+:::
+
+::: context text-vs-number Two different things that look alike
+Inside the computer, the number `42` is stored as one value the processor can add, multiply and compare. The string `"42"` is stored as two separate characters, a `4` and a `2`, each kept as its own code. You cannot do arithmetic on the string: to C++ it is no more a number than the word `"hello"` is. This difference matters a lot once your programs start calculating, which starts very soon.
+:::
+
+::: context whitespace What the compiler skips
+Whitespace means spaces, tabs and line breaks. Outside quotes, the compiler treats any amount of it the same as one space, and between symbols it can often be left out entirely. So `std::cout<<42<<"\n";` compiles, but it is harder to read. Programmers use spaces and indenting (lining things up with spaces) purely for people. Inside quotes, every space is kept, because it is part of the text.
+:::
+
+::: context warnings When the compiler says "are you sure?"
+A warning means "this compiles, but it is probably not what you meant". The compiler in this app is started with the options `-Wall` and `-Wextra`, which switch on a wide set of warnings. Professional flight-software teams usually go further and treat every warning as an error, so no program is built until the code is warning-free. Getting into the habit of reading warnings now will save you from real bugs later.
+:::
+--- task
+Write a program that prints exactly these two lines:
+
+```
+Crew: 4
+Days in orbit: 182
+```
+
+Write `4` and `182` as numbers, without quotes, and chain each one after its text with `<<`, like `std::cout << "Crew: " << 4 << "\n";`. Mind the space after each colon.
+--- starter
+#include <iostream>
+
+int main() {
+    // Print the two lines here, with 4 and 182 as numbers.
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    std::cout << "Crew: " << 4 << "\n";
+    std::cout << "Days in orbit: " << 182 << "\n";
+    return 0;
+}
+--- hint
+Each line is three pieces chained with `<<`: the text, the number, and `"\n"`.
+--- hint
+The first line is `std::cout << "Crew: " << 4 << "\n";`. The space after the colon sits inside the quotes.
+--- hint
+The second line has the same shape, with `"Days in orbit: "` and `182`.
+--- check output | Prints both lines, exactly
+Crew: 4
+Days in orbit: 182
+--- check source | Puts the number 4 into the output without quotes
+<<\s*4\s*<<
+--- check source | Puts the number 182 into the output without quotes
+<<\s*182\s*<<
+
 === cpp-02 | Variables and types
 --- teach
-C++ is **statically typed**: every variable has a type, fixed when it is declared.
+So far every value you printed was typed straight into the `std::cout` line. Real programs need to remember values and use them again: the fuel left, the number of crew, the name of a city. This lesson gives values names.
+
+## A variable is a labelled box
+
+Picture a box with a label on it. You put a value in the box, and later you ask for it by the label. In C++ that box is a **variable**: a named place that holds a value.
+
+```cpp
+int count = 3;
+std::cout << count << "\n";   // prints 3
+```
+
+The first line is a **declaration**: it makes the variable. Read it as "an int called count, which [[gets|gets-not-equals]] 3":
+
+- `int` is the **type**: what kind of value the box holds. `int` holds whole numbers.
+- `count` is the variable's **name**.
+- `=`, read "gets", puts the value `3` in the box.
+- `;` ends the statement, as always.
+
+The second line prints the value in the box, not the word "count", because the name has no quotes around it.
+
+## Every variable has a fixed type
+
+C++ is **[[statically typed|static-typing]]**: every variable has a type, fixed when it is declared, and it can never hold a different kind of value. The type also decides how much [[memory|memory-bytes]] the box takes. Here are the types you will use most, one at a time.
+
+### Whole numbers and decimals
 
 ```cpp
 int count = 3;               // whole number
 double price = 4.99;         // decimal
+```
+
+An `int` holds a whole number with no decimal point. A `double` holds a number with a decimal point; its name comes from **[[double-precision floating point|floating-point]]**, the way the computer stores decimals.
+
+### True or false
+
+```cpp
 bool ready = true;
+```
+
+A `bool` holds one of two values, `true` or `false`. It is named after George Boole, a mathematician who worked out the rules of true-and-false logic.
+
+### One character
+
+```cpp
 char grade = 'A';            // one character, single quotes
+```
+
+A `char` holds exactly [[one character|char-codes]]: a letter, digit or symbol. It goes in **single quotes**. `'A'` is a char; `"A"` in double quotes is a string.
+
+### Text
+
+```cpp
 std::string name = "Ada";    // needs #include <string>
+```
+
+A `std::string` holds text of any length, in double quotes. It lives in the standard library (the `std::` again) and needs `#include <string>` at the top of the file, next to `#include <iostream>`.
+
+### Letting the compiler choose
+
+```cpp
 auto total = count * price;  // auto: let the compiler work out the type (double)
 ```
 
-`const` marks a value that must not change: `const double pi = 3.14159;`. Assigning to it is a compile error — the compiler catches the mistake before the program exists.
+`auto` asks the compiler to work out the type from the value on the right. The star `*` means "times", so `count * price` is 3 times 4.99. A whole number times a decimal gives a decimal, so `total` becomes a `double`. It still has a fixed type; you just did not have to write it.
+
+## Values that must not change
+
+Put `const` (short for constant) in front, and the value can never change:
+
+```cpp
+const double pi = 3.14159;
+pi = 3;   // compile error
+```
+
+Trying to assign to a [[const|const-values]] variable is a compile error:
+
+```
+error: cannot assign to variable 'pi' with const-qualified type 'const double'
+```
+
+The compiler catches the mistake before the program even exists.
+
+## Printing variables
+
+Variables chain into `std::cout` like any other piece:
+
+```cpp
+std::string name = "Ada";
+int age = 36;
+std::cout << name << " is " << age << "\n";   // prints Ada is 36
+```
+
+**Watch out:** a variable's name goes in the code without quotes. `std::cout << "name"` prints the word `name`. `std::cout << name` prints what is in the box, `Ada`.
+
+::: context gets-not-equals Why "gets" and not "equals"
+In maths, `=` says two things are already the same. In C++, a single `=` is an action: work out the value on the right, then store it in the box on the left. That is why programmers read it "gets". It also explains a line that would be nonsense in maths, `count = count + 1;`: take the value in `count`, add one, and put the result back. You will use exactly that idea in a few lessons.
+:::
+
+::: context static-typing Checked before launch
+In Python, a variable can hold a number now and some text later, and a mix-up is only discovered when that line runs. In C++, the compiler knows the type of every variable and checks every use of it before the program is built. Put text where a number belongs and you get a compile error on your desk, not a surprise during a flight. For software that cannot be patched halfway to Mars, finding mistakes early is worth a lot.
+:::
+
+::: context memory-bytes How big each box is
+Memory is a long row of tiny cells called **bytes**; each byte holds 8 bits (8 ones-and-zeros). On nearly every computer today a `char` is 1 byte, a `bool` 1 byte, an `int` 4 bytes and a `double` 8 bytes.
+
+```svg
+<svg viewBox="0 0 360 130" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="10" y="31" font-size="12" fill="#1f2a44">char</text>
+  <rect x="70" y="16" width="26" height="22" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="104" y="31" font-size="11" fill="#6c7a93">1 byte</text>
+  <text x="10" y="71" font-size="12" fill="#1f2a44">int</text>
+  <rect x="70" y="56" width="26" height="22" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="96" y="56" width="26" height="22" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="122" y="56" width="26" height="22" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="148" y="56" width="26" height="22" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="182" y="71" font-size="11" fill="#6c7a93">4 bytes</text>
+  <text x="10" y="111" font-size="12" fill="#1f2a44">double</text>
+  <rect x="70" y="96" width="26" height="22" fill="#1d6fd1" stroke="#1f2a44"/>
+  <rect x="96" y="96" width="26" height="22" fill="#1d6fd1" stroke="#1f2a44"/>
+  <rect x="122" y="96" width="26" height="22" fill="#1d6fd1" stroke="#1f2a44"/>
+  <rect x="148" y="96" width="26" height="22" fill="#1d6fd1" stroke="#1f2a44"/>
+  <rect x="174" y="96" width="26" height="22" fill="#1d6fd1" stroke="#1f2a44"/>
+  <rect x="200" y="96" width="26" height="22" fill="#1d6fd1" stroke="#1f2a44"/>
+  <rect x="226" y="96" width="26" height="22" fill="#1d6fd1" stroke="#1f2a44"/>
+  <rect x="252" y="96" width="26" height="22" fill="#1d6fd1" stroke="#1f2a44"/>
+  <text x="286" y="111" font-size="11" fill="#6c7a93">8 bytes</text>
+</svg>
+```
+
+Four bytes give an `int` room for whole numbers from −2,147,483,648 to 2,147,483,647, about 2 billion either way. A later lesson shows what to do when that is not enough.
+:::
+
+::: context floating-point Decimals are stored approximately
+A `double` stores a number as a set of digits plus a position for the decimal point, which can "float" left or right, so it holds both 0.000001 and 6,000,000,000 in the same 8 bytes. It keeps about 15 to 16 significant digits. Most decimals, like 0.1, cannot be stored exactly, so tiny rounding errors creep in. Also, `std::cout` shows only 6 significant digits by default: `std::cout << 3.14159265` prints `3.14159`. `1651.1` has 5, so it prints in full.
+:::
+
+::: context char-codes Letters are numbers underneath
+Every character is stored as a small number called its character code. In the ASCII code, which C++ uses for ordinary English letters, `'A'` is 65, `'B'` is 66, and the digit `'7'` is 55, not 7. That is why a `char` fits in one byte: one byte can hold 256 different codes. When you print a `char`, `std::cout` shows the letter, not the number.
+:::
+
+::: context const-values Constants in engineering code
+Some numbers should never change while a program runs: the value of pi, the standard gravity 9.80665 m/s², the number of engines on a stage. Marking them `const` does two jobs. It tells every reader "this is fixed", and it makes the compiler refuse any line that tries to change it by accident. Flight-software coding standards encourage making everything `const` that does not need to change, because a value that cannot change cannot be changed wrongly.
+:::
 --- task
-In `main`, declare `const std::string city = "Houston";`, an `int population` of `2300000`, and a `double area_km2` of `1651.1`. Print them as:
+Inside `main`, declare these three variables:
+
+- `const std::string city = "Houston";`
+- an `int` called `population` holding `2300000`
+- a `double` called `area_km2` holding `1651.1`
+
+Then print them in one `std::cout` statement so the output is exactly:
 
 ```
 Houston: 2300000 people, 1651.1 km2
 ```
+
+The starter already includes `<string>`.
 --- starter
 #include <iostream>
 #include <string>
@@ -89,7 +510,11 @@ int main() {
     return 0;
 }
 --- hint
-Chain everything into one `std::cout << … << "\n";`.
+Declare each variable on its own line, type first: `int population = 2300000;`, and the same shape for the `double`.
+--- hint
+Chain everything into one `std::cout << … << "\n";`. The variables go in without quotes; the words and punctuation between them go in quotes.
+--- hint
+The pieces are: `city`, `": "`, `population`, `" people, "`, `area_km2`, `" km2\n"`.
 --- check output | Prints the line
 Houston: 2300000 people, 1651.1 km2
 --- check source | city is a const std::string
@@ -97,9 +522,13 @@ const\s+std::string\s+city
 --- check source | population is an int
 \bint\s+population\b
 
-=== cpp-03 | Arithmetic, and integer division
+=== cpp-02b | Writing your own function
 --- teach
-From here on, some lessons ask for **functions** rather than a whole program. You write the function; the checker supplies `main()` and calls it — so do **not** write a `main` in those lessons.
+You have already met one function: `main`, where every program starts. Now you will write your own. A function lets you give a piece of work a name, and then use that name whenever you need the work done.
+
+## A function is a small machine
+
+Think of a vending machine. You put something in, it does its job, and something comes out. A function is the same: it takes some values in, works on them, and hands one value back.
 
 ```cpp
 int add(int a, int b) {
@@ -107,18 +536,253 @@ int add(int a, int b) {
 }
 ```
 
-The return type comes first, then the name, then the typed **parameters** (`a` and `b`). The values a call passes in — `2` and `3` in `add(2, 3)` — are the **arguments**.
+Read it from left to right:
 
-Arithmetic has one trap everyone meets: dividing two `int`s gives an `int`, throwing the remainder away.
+- `int` at the front is the **return type**: the kind of value the function hands back. Here, a whole number.
+- `add` is the function's **name**.
+- `(int a, int b)` are the **[[parameters|parameters-copies]]**: the inputs, each with its type and a name, separated by a comma. Inside the function, `a` and `b` work like variables.
+- `{ … }` is the **body**, the work the function does.
+- `return a + b;` works out `a + b` and hands that value back. `return` also ends the function straight away.
+
+## Calling a function
+
+To use a function, you **call** it: write its name with values in the parentheses.
 
 ```cpp
-7 / 2                        // 3
-7 % 2                        // 1  (the remainder)
-7.0 / 2                      // 3.5
-static_cast<double>(7) / 2   // 3.5 — convert first, then divide
+add(2, 3)          // gives back 5
 ```
+
+The values a call passes in, `2` and `3` here, are the **arguments**. The first argument goes into the first parameter (`a` is 2) and the second into the second (`b` is 3).
+
+A call can go anywhere a value can, for example straight into `std::cout`:
+
+```cpp
+#include <iostream>
+
+int add(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    std::cout << add(2, 3) << "\n";   // prints 5
+    return 0;
+}
+```
+
+The function is written above `main`, so the compiler has seen it by the time `main` uses it.
+
+## Another example
+
+The minus sign `-` subtracts, as it does on paper:
+
+```cpp
+int stages_left(int stages, int dropped) {
+    return stages - dropped;
+}
+```
+
+`stages_left(3, 1)` gives back `2`. Function names follow the same [[naming rules|names]] as variable names.
+
+## The checker brings its own main
+
+From here on, some lessons ask for **functions** rather than a whole program. You write the function; [[the checker supplies main|test-harness]] and calls it with test values. So do **not** write a `main` in those lessons.
+
+**Watch out:** a program may have only one `main`. If you write one in a lesson like this, the checker's `main` makes it two, and the compiler stops with:
+
+```
+error: redefinition of 'main'
+```
+
+The other slip is leaving out the `return` line. Then the function hands back [[no proper value|missing-return]], and the compiler warns you about it.
+
+::: context parameters-copies Parameters get copies
+When you call `add(2, 3)`, the function gets its own copies of the values: a new `a` holding 2 and a new `b` holding 3. If the function changed `a`, the caller's value would not change, the same way scribbling on a photocopy leaves the original clean. A parameter is the name in the recipe; an argument is the actual value you hand over. Later, in the lesson on references, you will see how a function can work on the caller's own variable instead of a copy.
+:::
+
+::: context names What you may call things
+A name (programmers say **identifier**) may use letters, digits and the underscore `_`, but it may not start with a digit and may not contain spaces. So `fuel_left` and `stage2` are fine, but `2stage` and `fuel left` are not. Names are case-sensitive: `Count` and `count` are different. Words that C++ itself uses, like `int` and `return`, cannot be names. Many C++ programmers join words with underscores, a style called snake_case.
+:::
+
+::: context test-harness How the checking works
+When you press run in a lesson like this, the checker adds its own `main` below your code. That `main` calls your functions with test values, such as `add(2, 3)`, and compares what comes back with the right answer. This is called a **unit test**: testing one small piece on its own. Professional teams do the same thing on a huge scale. Flight software is surrounded by thousands of tests that run on every change, so a broken function is caught long before it reaches a rocket.
+
+```svg
+<svg viewBox="0 0 360 120" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="12" width="150" height="40" rx="5" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="85" y="37" font-size="12" text-anchor="middle" fill="#1f2a44">your add(a, b)</text>
+  <rect x="10" y="68" width="150" height="40" rx="5" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="85" y="93" font-size="12" text-anchor="middle" fill="#1f2a44">checker's main()</text>
+  <line x1="160" y1="80" x2="220" y2="45" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="228" y="40" font-size="12" fill="#1f2a44">add(2, 3) gives 5?</text>
+  <line x1="160" y1="96" x2="220" y2="96" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="228" y="100" font-size="12" fill="#1d6fd1">pass</text>
+  <text x="270" y="100" font-size="12" fill="#6c7a93">or</text>
+  <text x="292" y="100" font-size="12" fill="#b4232c">fail</text>
+</svg>
+```
+:::
+
+::: context missing-return Falling off the end
+If a function promises to return an `int` but reaches its closing `}` without a `return`, what comes back is not defined by the rules of C++. It could be any leftover number in memory, and it could change from one run to the next. The compiler warns "non-void function does not return a value". `main` is the one exception: reaching the end of `main` counts as `return 0;`.
+:::
 --- task
-Write `double average(int total, int count)` that returns the exact average (so `average(7, 2)` is `3.5`), and `int remainder_of(int a, int b)` returning the remainder of `a / b`. No `main` — the checker has it.
+Write two functions. No `main`: the checker supplies it.
+
+- `int add(int a, int b)`, which returns `a` plus `b`. For example, `add(2, 3)` returns `5`.
+- `int fuel_left(int start, int used)`, which returns `start` minus `used`. For example, `fuel_left(500, 120)` returns `380`.
+--- starter
+// No main() in this lesson: the checker supplies it and calls your functions.
+
+int add(int a, int b) {
+    return 0;
+}
+
+int fuel_left(int start, int used) {
+    return 0;
+}
+--- solution
+// No main() in this lesson: the checker supplies it and calls your functions.
+
+int add(int a, int b) {
+    return a + b;
+}
+
+int fuel_left(int start, int used) {
+    return start - used;
+}
+--- hint
+Each function needs only one line changed: the `return` line. Replace the `0` with the value the function should hand back.
+--- hint
+For `add`, hand back the two parameters added together: `return a + b;`.
+--- hint
+For `fuel_left`, the same shape with `-`: `return start - used;`.
+--- check case | add(2, 3) is 5
+add(2, 3)
+=> 5
+--- check case | add(-4, 10) is 6
+add(-4, 10)
+=> 6
+--- check case | fuel_left(500, 120) is 380
+fuel_left(500, 120)
+=> 380
+
+=== cpp-03 | Arithmetic, and integer division
+--- teach
+Last lesson you wrote `add` and `fuel_left`. Now you will do real arithmetic inside functions, and meet the one trap in C++ arithmetic that catches everybody.
+
+## A quick recap of functions
+
+From here on, some lessons ask for **functions** rather than a whole program. You write the function; the checker supplies `main()` and calls it, so do **not** write a `main` in those lessons.
+
+```cpp
+int add(int a, int b) {
+    return a + b;
+}
+```
+
+The return type comes first, then the name, then the typed **parameters** (`a` and `b`). The values a call passes in, `2` and `3` in `add(2, 3)`, are the **arguments**.
+
+## The five arithmetic operators
+
+An **operator** is a symbol that does something to values. C++ has five for arithmetic:
+
+```cpp
+7 + 2    // 9    plus
+7 - 2    // 5    minus
+7 * 2    // 14   the star: times
+7 / 2    // 3    the slash: divided by (see below!)
+7 % 2    // 1    the percent sign: remainder
+```
+
+They follow the same [[order as in maths|precedence]]: `*`, `/` and `%` happen before `+` and `-`, and parentheses go first of all. So `2 + 3 * 4` is 14, and `(2 + 3) * 4` is 20.
+
+## Dividing two whole numbers
+
+Here is the trap everyone meets: dividing an `int` by an `int` gives an `int`, throwing the remainder away.
+
+```cpp
+7 / 2        // 3, not 3.5
+```
+
+Think of sharing 7 sweets between 2 people with no cutting: each gets 3 and one is left over. That is **[[integer division|integer-division]]**. The answer is cut down to a whole number, not rounded: `9 / 10` is `0`.
+
+## The remainder
+
+The leftover has its own operator. `%` is read "mod" or "remainder":
+
+```cpp
+7 % 2        // 1  (the remainder)
+17 % 5       // 2  (17 is 3 fives, which make 15, with 2 left over)
+```
+
+## Getting the decimal answer
+
+If at least one side of the `/` is a `double`, the division keeps the decimal part:
+
+```cpp
+7.0 / 2      // 3.5
+```
+
+When the values are `int` variables, you cannot add `.0` to them. Instead, you convert one of them to a `double` first:
+
+```cpp
+static_cast<double>(7) / 2   // 3.5: convert first, then divide
+```
+
+Read `static_cast` as "convert to". This kind of conversion is called a [[cast|static-cast]]. The type you want goes in the **angle brackets** `< >`, and the value to convert goes in the parentheses. In a function it looks like `static_cast<double>(total) / count`.
+
+**Watch out:** the order matters. Convert the value, not the answer.
+
+```cpp
+static_cast<double>(7 / 2)   // 3.0: the division already threw the .5 away
+```
+
+The same thing happens without any cast: if a function returns a `double` but does `return total / count;` with two ints, the division makes `3` first, and only then is it turned into `3.0`. Dividing by zero is a [[different kind of mistake|undefined-behaviour]], and losing the part of a number that does not fit has [[brought down a rocket|ariane-5]].
+
+::: context precedence Who goes first
+**Precedence** is the rule for which operator is worked out first when several share a line. C++ uses the order you learned in maths class: parentheses, then multiply, divide and remainder from left to right, then add and subtract from left to right. When you are not sure, add parentheses. They cost nothing, and they make your intent plain to every reader. Arithmetic also comes before `<<`, which is why `std::cout << 2 + 3` prints 5.
+:::
+
+::: context integer-division Groups and the leftover
+`7 / 2` asks "how many whole groups of 2 fit in 7?" and `7 % 2` asks "how many are left over?". Together they always rebuild the start: 3 × 2 + 1 = 7.
+
+```svg
+<svg viewBox="0 0 360 110" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="12" y="14" width="64" height="36" rx="8" fill="none" stroke="#1d6fd1" stroke-width="1.5"/>
+  <circle cx="32" cy="32" r="10" fill="#8fb8f0" stroke="#1f2a44"/>
+  <circle cx="56" cy="32" r="10" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="88" y="14" width="64" height="36" rx="8" fill="none" stroke="#1d6fd1" stroke-width="1.5"/>
+  <circle cx="108" cy="32" r="10" fill="#8fb8f0" stroke="#1f2a44"/>
+  <circle cx="132" cy="32" r="10" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="164" y="14" width="64" height="36" rx="8" fill="none" stroke="#1d6fd1" stroke-width="1.5"/>
+  <circle cx="184" cy="32" r="10" fill="#8fb8f0" stroke="#1f2a44"/>
+  <circle cx="208" cy="32" r="10" fill="#8fb8f0" stroke="#1f2a44"/>
+  <circle cx="262" cy="32" r="10" fill="#f2b880" stroke="#b4232c" stroke-width="1.5"/>
+  <text x="120" y="76" font-size="12" text-anchor="middle" fill="#1d6fd1">3 groups: 7 / 2 is 3</text>
+  <text x="262" y="76" font-size="12" text-anchor="middle" fill="#b4232c">7 % 2 is 1</text>
+  <text x="180" y="100" font-size="11" text-anchor="middle" fill="#6c7a93">the half is thrown away, not rounded</text>
+</svg>
+```
+
+With negative numbers, C++ cuts toward zero: `-7 / 2` is `-3`, and `-7 % 2` is `-1`.
+:::
+
+::: context static-cast Why the long name
+C++ inherited a short way to convert from the older language C: `(double)total`. Modern C++ prefers `static_cast<double>(total)` because it is easy to spot and easy to search for, and because the compiler checks that the conversion makes sense. Conversions are a common source of bugs, so making them loud is a feature. The word "static" means the conversion is worked out by the compiler, before the program runs.
+:::
+
+::: context undefined-behaviour When the rules say nothing
+Dividing an `int` by zero has no answer, and C++ does not promise what happens: the program may crash, or carry on with nonsense. This is called **undefined behaviour**, and it is one of the most dangerous things in C++, because the program might seem fine in testing and fail later. With a `double`, dividing by zero gives a special value on nearly every computer: `1.0 / 0` prints `inf`, short for infinity. Careful code checks a divisor before dividing.
+:::
+
+::: context ariane-5 The conversion that cost a rocket
+On 4 June 1996, the first Ariane 5 rocket broke up about 37 seconds after lift-off. Its guidance software, reused from the smaller Ariane 4, converted a 64-bit decimal value into a 16-bit whole number. Ariane 5 flew faster, the value was too big to fit, and the conversion failed. The guidance computers shut down and the rocket veered off course. The code was written in a language called Ada, not C++, but the lesson is the same in any language: every time you convert a number, ask whether it can lose something.
+:::
+--- task
+Write two functions. No `main`: the checker has it.
+
+- `double average(int total, int count)`, which returns the exact average, decimals kept. So `average(7, 2)` is `3.5` and `average(10, 4)` is `2.5`. Convert `total` to a `double` with `static_cast` before dividing.
+- `int remainder_of(int a, int b)`, which returns the remainder of `a / b`. So `remainder_of(17, 5)` is `2`.
 --- starter
 // No main() in this lesson: the checker supplies it and calls your functions.
 
@@ -140,7 +804,11 @@ int remainder_of(int a, int b) {
     return a % b;
 }
 --- hint
-`total / count` divides two ints. Convert one first: `static_cast<double>(total) / count`.
+`total / count` divides two ints, so the .5 is lost before the function hands anything back. One side has to become a `double` first.
+--- hint
+Convert before dividing: `return static_cast<double>(total) / count;`.
+--- hint
+For the remainder, use the percent sign: `return a % b;`.
 --- check case | average(7, 2) is 3.5
 average(7, 2)
 => 3.5
@@ -151,9 +819,35 @@ average(10, 4)
 remainder_of(17, 5)
 => 2
 
-=== cpp-04 | Reading input
+=== cpp-03b | Reading a value with std::cin
 --- teach
-`std::cin >> variable` reads the next value from standard input — whatever is in the **Input** box under the editor — skipping spaces and newlines, and converting to the variable's type:
+Last lesson your functions got their numbers from the checker. Real programs get data from outside: a sensor, a file, a person typing. This lesson shows how a program reads values in.
+
+## Where input comes from
+
+`std::cout` sends text out. Its partner, `std::cin` (read "standard see-in"), brings text in. It reads from **[[standard input|standard-input]]**: here, whatever is in the **Input** tab under the editor.
+
+## Reading one value
+
+```cpp
+int crew;
+std::cin >> crew;
+std::cout << "Crew: " << crew << "\n";
+```
+
+- `int crew;` makes a box with [[no value in it yet|uninitialized]].
+- `>>`, two greater-than signs, is read "get from". It gets the next value from the input and puts it into the variable. The arrows point from `cin` toward `crew`, the way the data flows.
+- It also converts the text to the variable's type. The input holds the characters `4`; the box gets the whole number 4.
+
+If the Input tab holds `4`, this prints:
+
+```
+Crew: 4
+```
+
+## Reading two values
+
+You can declare two variables of the same type in one line by separating the names with a comma. And, like `<<`, the `>>` can be chained:
 
 ```cpp
 int a, b;
@@ -161,22 +855,282 @@ std::cin >> a >> b;
 std::cout << a + b << "\n";
 ```
 
-Used as a condition, `std::cin >> x` is true while it managed to read something, so this reads every number until the input runs out:
+With the input `3 4`, this prints `7`. The arithmetic happens before the printing, so `a + b` goes out as one number.
+
+## Spaces and new lines are skipped
+
+`>>` skips any spaces and line breaks before a value, and stops at the first one after it. So these two inputs are read in exactly the same way:
+
+```
+3 4
+```
+
+```
+3
+4
+```
+
+Both give `a` the value 3 and `b` the value 4.
+
+## Reading a whole line
+
+`>>` into a `std::string` stops at the first space. With the input `Apollo 11`, reading one string gets only `Apollo`. To read a whole line, spaces included, use `std::getline(std::cin, line)`, which reads a whole line into a `std::string` instead:
+
+```cpp
+std::string line;
+std::getline(std::cin, line);
+std::cout << line << "\n";   // prints Apollo 11
+```
+
+`std::string` needs `#include <string>`, as before. Mixing `>>` and `getline` has [[one catch|getline-catch]].
+
+**Watch out:** the arrows for `cin` point the other way from `cout`. Writing `std::cin << a;` by mistake gives a whole screenful of confusing errors, starting with `invalid operands to binary expression`. If you see that near a `cin`, check the arrows: `cout <<` puts to the screen, `cin >>` gets from the input. And if the input holds a word where a number was expected, the read [[fails|failed-read]].
+
+::: context standard-input A stream you already know from bash
+Every program starts with three streams: standard input (in), standard output (out) and standard error (for error messages). You met them in the Terminal course. In bash, `echo "3 4" | ./program` pipes text into a program's standard input, and `./program < numbers.txt` feeds it a file. `std::cin` reads whatever arrives that way. In this app, the Input tab plays the part of that file.
+
+```svg
+<svg viewBox="0 0 360 110" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="8" y="30" width="92" height="44" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="54" y="24" font-size="11" text-anchor="middle" fill="#6c7a93">Input tab</text>
+  <text x="54" y="57" font-size="14" text-anchor="middle" fill="#1f2a44">3 4</text>
+  <line x1="102" y1="52" x2="126" y2="52" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="132,52 124,47 124,57" fill="#1f2a44"/>
+  <rect x="134" y="30" width="120" height="44" rx="6" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="194" y="57" font-size="12" text-anchor="middle" fill="#1f2a44">std::cin &gt;&gt; a &gt;&gt; b</text>
+  <line x1="256" y1="44" x2="280" y2="36" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="256" y1="60" x2="280" y2="70" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="284" y="20" width="66" height="28" rx="4" fill="#ffffff" stroke="#1f2a44"/>
+  <text x="317" y="39" font-size="12" text-anchor="middle" fill="#1f2a44">a: 3</text>
+  <rect x="284" y="58" width="66" height="28" rx="4" fill="#ffffff" stroke="#1f2a44"/>
+  <text x="317" y="77" font-size="12" text-anchor="middle" fill="#1f2a44">b: 4</text>
+</svg>
+```
+:::
+
+::: context uninitialized A box with leftovers in it
+A variable declared without a value, like `int crew;`, holds whatever happened to be in that piece of memory before. Reading it before you put a value in is undefined behaviour: you might get 0, or a random-looking number. Here it is safe, because `std::cin >> crew` fills it before anything reads it. MISRA C, a coding standard used in cars and aircraft, forbids reading a variable before it has been given a value, and many teams give every variable a starting value when they declare it.
+:::
+
+::: context getline-catch The leftover line break
+After `std::cin >> n` reads a number, the line break that followed it is still waiting in the input. A `std::getline` straight after that reads up to that line break and gets an empty line. If you read a number and then a line of text, skip the leftover first, for example with `std::cin >> std::ws;` (read "skip white space") before the `getline`.
+:::
+
+::: context failed-read When the input is not a number
+If `std::cin >> crew` meets text like `four` where it needs a whole number, the read fails. The variable is set to 0, and `std::cin` switches into a failed state in which every later `>>` does nothing until the problem is cleared. Programs that read real data, from sensors or files, always check whether each read worked. The next lesson shows how to check.
+:::
+--- task
+The Input tab holds two whole numbers:
+
+```
+7 5
+```
+
+Read them into two `int` variables, `a` and `b`, with `std::cin >>`, then print exactly:
+
+```
+7 + 5 = 12
+```
+
+Build the line from the variables: print `a`, then `" + "`, then `b`, then `" = "`, then `a + b`, then `"\n"`. Do not type the answer 12 yourself; let the program work it out.
+--- stdin
+7 5
+--- starter
+#include <iostream>
+
+int main() {
+    int a, b;
+    // Read a and b from the input, then print the line.
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    int a, b;
+    std::cin >> a >> b;
+    std::cout << a << " + " << b << " = " << a + b << "\n";
+    return 0;
+}
+--- hint
+First read both numbers in one statement: `std::cin >> a >> b;`.
+--- hint
+Then print with one `std::cout`, chaining the variables and the text pieces with `<<`.
+--- hint
+The print line is `std::cout << a << " + " << b << " = " << a + b << "\n";`.
+--- check output | Prints the sum line
+7 + 5 = 12
+--- check source | Reads with std::cin
+std::cin\s*>>
+--- check source absent | Works out 12 instead of typing it
+\b12\b
+
+=== cpp-04 | Reading input
+--- teach
+Last lesson you read two numbers, because you knew there would be two. But often you do not know how many values are coming: a sensor sends readings until it stops. This lesson reads every number until the input runs out, and keeps a count, a total and the largest along the way.
+
+As a reminder: `std::cin >> variable` reads the next value from standard input (whatever is in the **Input** box under the editor), skipping spaces and newlines, and converting to the variable's type:
+
+```cpp
+int a, b;
+std::cin >> a >> b;
+std::cout << a + b << "\n";
+```
+
+## A read also answers "did it work?"
+
+`std::cin >> n` does two jobs. It reads a value, and it also reports whether it managed to. Used as a **condition** (a question with a yes-or-no answer), `std::cin >> n` is true while it managed to read something, and false once there is nothing left to read.
+
+## Repeating with while
+
+A **loop** repeats a block of code. The `while` loop repeats its block for as long as its condition is true:
+
+```cpp
+while (condition) {
+    // this block runs again and again while condition is true
+}
+```
+
+Put the read in as the condition, and you get a loop that reads every number until the input runs out:
 
 ```cpp
 int n;
 while (std::cin >> n) {
-    // use n
+    std::cout << n << "\n";
 }
 ```
 
-`std::getline(std::cin, line)` reads a whole line into a `std::string` instead.
+With the input `4 8 11`, the block runs three times and prints each number on its own line. On the fourth try there is [[nothing left to read|end-of-input]], the condition is false, and the loop stops. [[Loops|while-loop]] get a whole lesson of their own later.
+
+## Counting with ++
+
+To count the numbers, start a counter at 0 before the loop and add one each time round:
+
+```cpp
+int count = 0;
+while (std::cin >> n) {
+    count++;
+}
+```
+
+`++`, read "plus plus", [[adds one|plus-plus]] to a variable. `count++;` does the same as `count = count + 1;`.
+
+## Adding up with +=
+
+To total the numbers, start a sum at 0 and add each number to it:
+
+```cpp
+sum += n;
+```
+
+`+=`, read "plus-equals", adds the value on the right to the variable on the left. It is [[shorthand|compound-assignment]] for `sum = sum + n;`. A total that grows one value at a time like this is called a [[running total|running-total]].
+
+## Keeping the largest with if
+
+To remember the largest number, you only change it when a bigger one arrives. `if` runs the statement after it only when its condition is true (it too gets a whole lesson later):
+
+```cpp
+if (n > max) max = n;
+```
+
+`>` means "is greater than". So this reads: "if n is greater than max, max gets n".
+
+## Starting from the first number
+
+What should `max` start at? The safe answer is the first number itself. So the rule becomes: "if this is the first number, or it is bigger than max, max gets n":
+
+```cpp
+if (count == 0 || n > max) max = n;
+```
+
+- `==`, two equals signs, asks "is equal to?". One `=` stores a value; two `==` compare. Mixing them up is a classic bug.
+- `||`, two vertical bars, means [[or|short-circuit]]: the whole condition is true if either side is true.
+
+Do this check before `count++`, while `count` is still 0 for the first number.
+
+**Watch out:** do not start `max` at 0 and compare from there. It works for `4 8 11 2 5`, but if every input is [[negative|negative-readings]], like `-3 -7`, no number is ever greater than 0, and your program reports a largest value of 0 that was never in the input.
+
+::: context end-of-input How the input runs out
+When `std::cin` reaches the end of its input, the next read fails and the stream is marked "end of file" (EOF for short), even when the input is not a file. In this app, that happens after the last character in the Input box. If you run a program in a real terminal and type the input yourself, you signal the end by pressing Ctrl-D at the start of a line on Linux or macOS. The failed read makes `std::cin >> n` false, and the loop ends.
+:::
+
+::: context while-loop Loops, and loops that must end
+The `while` loop comes back in the Loops lesson, alongside the counting `for` loop. Loops are where programs spend most of their time, and a loop that never ends freezes the program. That is why the NASA JPL "Power of Ten" rules for safety-critical code, written by Gerard Holzmann in 2006, require every loop to have a fixed upper limit that a checking tool can prove. Reading "until the input runs out" is fine here, but flight code would also cap how many values it accepts.
+:::
+
+::: context plus-plus The name of the language
+`++` adds one, and `--` subtracts one. The language's name is a programmer's joke built on this: C++ is "C, plus one", one step beyond the language C it grew from. The name was suggested by Rick Mascitti in 1983. You will see `++` in almost every loop you write from now on.
+:::
+
+::: context compound-assignment A whole family of shortcuts
+`+=` has relatives for every arithmetic operator: `-=` subtracts, `*=` multiplies, `/=` divides and `%=` keeps the remainder. So `fuel -= 20;` means `fuel = fuel - 20;`, and `total *= 2;` doubles `total`. They say "change this variable by that much" in one short line, and they save you from typing the variable's name twice, which is one less place for a typo.
+:::
+
+::: context running-total Following the loop by hand
+Here is what the three variables hold after each number of the input `4 8 11 2 5` is read. Writing a table like this, called a trace, is how programmers check a loop by hand.
+
+```svg
+<svg viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="8" width="320" height="26" fill="#8fb8f0"/>
+  <g font-size="12" text-anchor="middle" fill="#1f2a44">
+    <text x="70" y="26">read n</text>
+    <text x="150" y="26">count</text>
+    <text x="230" y="26">sum</text>
+    <text x="300" y="26">max</text>
+    <text x="70" y="54" fill="#6c7a93">start</text>
+    <text x="150" y="54">0</text>
+    <text x="230" y="54">0</text>
+    <text x="300" y="54">0</text>
+    <text x="70" y="80">4</text>
+    <text x="150" y="80">1</text>
+    <text x="230" y="80">4</text>
+    <text x="300" y="80">4</text>
+    <text x="70" y="106">8</text>
+    <text x="150" y="106">2</text>
+    <text x="230" y="106">12</text>
+    <text x="300" y="106">8</text>
+    <text x="70" y="132">11</text>
+    <text x="150" y="132">3</text>
+    <text x="230" y="132">23</text>
+    <text x="300" y="132">11</text>
+    <text x="70" y="158">2</text>
+    <text x="150" y="158">4</text>
+    <text x="230" y="158">25</text>
+    <text x="300" y="158">11</text>
+    <text x="70" y="184">5</text>
+    <text x="150" y="184">5</text>
+    <text x="230" y="184">30</text>
+    <text x="300" y="184" fill="#b4232c">11</text>
+  </g>
+  <line x1="20" y1="34" x2="340" y2="34" stroke="#1f2a44"/>
+  <line x1="20" y1="192" x2="340" y2="192" stroke="#1f2a44"/>
+</svg>
+```
+
+The last row is the answer: count 5, sum 30, max 11.
+:::
+
+::: context short-circuit Or, and why the order helps
+`a || b` is true when `a` is true, when `b` is true, or both. C++ checks the left side first, and if that is already true it does not look at the right side at all, because the answer cannot change. This is called short-circuit evaluation. Here it means that on the very first number, `count == 0` is true and `n > max` is never asked, which is good, because `max` has no sensible value yet.
+:::
+
+::: context negative-readings Real data goes below zero
+Plenty of real measurements are negative: the temperature of a spacecraft in Earth's shadow, a descent rate, the altitude of a probe below a reference level. Code that quietly assumes "everything is at least 0" works in every test with positive numbers, then gives a wrong answer the first time real data dips below zero. Starting `max` from the first value read, instead of from a made-up number, removes the assumption entirely.
+:::
 --- task
-The input is a list of whole numbers. Read them all and print how many there were, their sum, and the largest, as:
+The Input tab holds a list of whole numbers (here `4 8 11` on one line and `2 5` on the next). Read them all with a `while (std::cin >> n)` loop, and keep:
+
+- `count`: how many numbers there were,
+- `sum`: all of them added up,
+- `max`: the largest, starting from the first number read (not from 0).
+
+After the loop, print them in exactly this form:
 
 ```
 count 5, sum 30, max 11
 ```
+
+Your program should work for any list of whole numbers, including one where every number is negative.
 --- stdin
 4 8 11
 2 5
@@ -204,9 +1158,11 @@ int main() {
     return 0;
 }
 --- hint
-`while (std::cin >> n) { … }` runs once per number.
+Declare `int count = 0;`, `int sum = 0;` and `int max = 0;` before the loop. `while (std::cin >> n) { … }` then runs once per number.
 --- hint
-Start `max` from the first number rather than from 0, or negative inputs would break it.
+Inside the loop: `if (count == 0 || n > max) max = n;` first, then `count++;` and `sum += n;`. Starting `max` from the first number, rather than from 0, keeps negative inputs working.
+--- hint
+After the loop's closing `}`: `std::cout << "count " << count << ", sum " << sum << ", max " << max << "\n";`.
 --- check output | Prints count, sum and max for the input
 count 5, sum 30, max 11
 --- check source | Reads with std::cin
@@ -214,7 +1170,39 @@ std::cin\s*>>
 
 === cpp-05 | Making decisions
 --- teach
-`if` runs a block when a condition is true:
+Last lesson your program read numbers with `std::cin` and kept going `while` there was more input. Inside that loop it already made a small decision: "is this number bigger than the biggest one so far?" This lesson is about decisions — how a program looks at a value and picks which lines to run.
+
+Picture a launch director a minute before liftoff. She asks one question: "Is the weather good?" If yes, the countdown goes on. If not, it holds. A program decides in exactly that way.
+
+### if: run a block only when something is true
+
+The **`if` statement** means "run these lines only if this is true":
+
+```cpp
+if (fuel_percent < 10) {
+    std::cout << "low fuel\n";
+}
+```
+
+Read it aloud: "if fuel percent is less than 10, print low fuel." The part inside the round brackets `( )` is the **[[condition|condition-bool]]** — a question whose answer is true or false. The curly braces `{ }` hold the **block** — the lines that run only when the answer is true. When the answer is false, the program skips the whole block and carries on after the closing `}`.
+
+### else: the other way
+
+Add **`else`**, meaning "otherwise", for lines that run when the condition is false:
+
+```cpp
+if (fuel_percent < 10) {
+    std::cout << "low fuel\n";
+} else {
+    std::cout << "fuel ok\n";
+}
+```
+
+Exactly one of the two blocks runs. Never both, and never neither.
+
+### else if: more than two choices
+
+For three or more choices, chain the questions with **[[else if|else-if]]**, meaning "otherwise, if this other thing is true". The program asks the questions from top to bottom, runs the block of the *first* one that is true, and skips all the rest:
 
 ```cpp
 if (temperature > 30) {
@@ -226,9 +1214,117 @@ if (temperature > 30) {
 }
 ```
 
-Compare with `==`, `!=`, `<`, `<=`, `>`, `>=`; combine with `&&` (and), `||` (or), `!` (not). Watch for `=` (assign) where you meant `==` (compare) — clang warns about it, which is one reason to read warnings.
+With `temperature` at 20: is 20 more than 30? No. Is 20 more than 15? Yes — so it prints `mild` and never looks at the last `else`.
+
+With `temperature` at 35 it prints `hot`. 35 is more than 15 too, but the program already stopped at the first true question. That is why the order matters: ask about the highest band first.
+
+### Comparing two values
+
+The questions are built from **comparison operators** — symbols that compare two values and give back true or false:
+
+| Symbol | Read it as | An example that is true |
+| --- | --- | --- |
+| `==` | is equal to | `3 == 3` |
+| `!=` | is not equal to | `3 != 4` |
+| `<` | is less than | `2 < 5` |
+| `<=` | is less than or equal to | `5 <= 5` |
+| `>` | is greater than | `9 > 1` |
+| `>=` | is greater than or equal to | `70 >= 70` |
+
+Look closely at the last row. `>=` includes the edge: `70 >= 70` is true, but `70 > 70` is false. Getting each [[boundary|boundary-values]] on the right side is most of the work in a decision.
+
+### Combining questions
+
+Three **logical operators** join two conditions or flip one:
+
+- `&&`, read "and": true only when both sides are true.
+- `||`, read "or": true when at least one side is true. (The `|` key is the vertical bar, usually above Enter.)
+- `!`, read "not": turns true into false and false into true.
+
+```cpp
+if (fuel_ok && weather_ok) {
+    std::cout << "go\n";
+}
+if (!engines_armed || wind > 40) {
+    std::cout << "hold\n";
+}
+```
+
+The first prints `go` only when both are true. Read the second as "if the engines are not armed, or the wind is over 40, print hold". C++ also [[stops checking early|short-circuit]] once it knows the answer.
+
+### Deciding inside a function
+
+In your task the decision lives inside a function (you wrote your first ones in the lesson on writing your own function) that gives back a word. `return` hands the value back *and* leaves the function right away, so nothing below it runs:
+
+```cpp
+#include <string>
+
+std::string fuel_status(int percent) {
+    if (percent >= 50) {
+        return "plenty";
+    } else if (percent >= 10) {
+        return "low";
+    }
+    return "empty";
+}
+```
+
+`fuel_status(80)` gives `"plenty"`, `fuel_status(30)` gives `"low"` and `fuel_status(5)` gives `"empty"`. The last `return` needs no `else` around it: the program only reaches that line when neither `if` returned first.
+
+**Watch out:** one equals sign `=` **assigns** (puts a value into a variable); two, `==`, **compares**. `if (score = 70)` does not ask whether the score is 70. It *sets* the score to 70, and then treats 70 as true. The program still compiles and quietly does the wrong thing. clang, the [[compiler that builds your code|compiler-warnings]] on this page, prints a warning about it — one reason to read warnings, not only errors.
+
+::: context condition-bool Every condition is a bool
+In the variables lesson you met `bool`, the type that holds only `true` or `false`. A condition is any expression that works out to a bool. `temperature > 30` becomes `true` or `false` first, and only then does `if` look at it. So you can store a condition in a variable and use it later: `bool hot = temperature > 30;` and then `if (hot) { … }`.
+
+Numbers can stand in as conditions too: 0 counts as false, and every other number counts as true. That rule is why `if (score = 70)` sneaks past the compiler — the assignment's value is 70, which is not 0, so the block always runs.
+:::
+
+::: context else-if Not a new word
+C++ has no special `elseif` keyword. `else if` is an ordinary `else` whose "otherwise" part is another `if`. Written out in full, `else if (b) { … }` means `else { if (b) { … } }` — the braces are left off because the inner `if` is a single statement. That is why you can chain as many as you like: each `else` holds the next question. Python shortens it to `elif`; JavaScript writes it the same way C++ does.
+:::
+
+::: context boundary-values Test the edges
+Most bugs in decisions sit exactly on an edge: a score of 70 when the rule says "70 or more". Testers call this **boundary testing**: for every edge, try the value one below it, the value on it, and the value one above it — 69, 70 and 71. That is why the checks for this lesson try `grade(70)` on its own. A filled dot on a number line means "this value belongs to the band on its right":
+
+```svg
+<svg viewBox="0 0 360 130" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="30" y="40" width="180" height="26" fill="#f2b880" opacity="0.5"/>
+  <rect x="210" y="40" width="30" height="26" fill="#8fb8f0" opacity="0.6"/>
+  <rect x="240" y="40" width="90" height="26" fill="#1d6fd1" opacity="0.35"/>
+  <text x="120" y="58" font-size="12" fill="#1f2a44" text-anchor="middle">fail</text>
+  <text x="225" y="32" font-size="11" fill="#1f2a44" text-anchor="middle">close</text>
+  <text x="285" y="58" font-size="12" fill="#1f2a44" text-anchor="middle">pass</text>
+  <line x1="30" y1="80" x2="330" y2="80" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="30" y1="74" x2="30" y2="86" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="330" y1="74" x2="330" y2="86" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="210" cy="80" r="5" fill="#b4232c"/>
+  <circle cx="240" cy="80" r="5" fill="#b4232c"/>
+  <text x="30" y="102" font-size="12" fill="#1f2a44" text-anchor="middle">0</text>
+  <text x="210" y="102" font-size="12" fill="#1f2a44" text-anchor="middle">60</text>
+  <text x="240" y="102" font-size="12" fill="#1f2a44" text-anchor="middle">70</text>
+  <text x="330" y="102" font-size="12" fill="#1f2a44" text-anchor="middle">100</text>
+  <text x="180" y="122" font-size="11" fill="#6c7a93" text-anchor="middle">60 and 70 each belong to the band on their right</text>
+</svg>
+```
+:::
+
+::: context short-circuit The right side may never run
+With `&&`, if the left side is false the whole answer is already false, so C++ never even works out the right side. With `||`, if the left side is true the answer is already true, so again the right side is skipped. This is called **short-circuit evaluation**. Programmers use it as a guard: `if (count != 0 && total / count > 5)` never divides by zero, because when `count` is 0 the division is never reached. Put the safety check on the left.
+:::
+
+::: context compiler-warnings Warnings are free bug reports
+The **compiler** is the program that turns your C++ into a program the computer can run. An *error* means it could not build your program at all. A *warning* means it built it, but something looks like a mistake. Warnings cost nothing to read and often point straight at a bug.
+
+Flight software takes this seriously. In 2006 Gerard Holzmann of NASA's Jet Propulsion Laboratory published "The Power of Ten", ten rules for code that must not fail. The last rule: turn on every compiler warning at the strictest setting from the first day, and fix the code until there are none at all.
+:::
 --- task
-Write `std::string grade(int score)` returning `"pass"` for 70 or more, `"close"` for 60 to 69, and `"fail"` otherwise. (No `main`.)
+Write a function `std::string grade(int score)` that returns:
+
+- `"pass"` for a score of 70 or more,
+- `"close"` for a score from 60 to 69,
+- `"fail"` for anything lower.
+
+The starter already has `#include <string>` at the top. No `main` in this lesson: the checker supplies it and calls `grade` with scores like 85, 70, 64 and 12.
 --- starter
 #include <string>
 
@@ -247,7 +1343,11 @@ std::string grade(int score) {
     return "fail";
 }
 --- hint
-Test the highest band first: `if (score >= 70) return "pass";`
+Use an `if` / `else if` chain, the way `fuel_status` does, and ask about the highest band first.
+--- hint
+Test the highest band first: `if (score >= 70) { return "pass"; }`. Then `else if (score >= 60)` for `"close"`. Use `>=` so that 70 and 60 land in the right band.
+--- hint
+The shape is: `if (score >= 70)` returns `"pass"`, `else if (score >= 60)` returns `"close"`, and a last `return "fail";` after the chain catches everything lower.
 --- check case | 85 passes
 grade(85)
 => "pass"
@@ -263,7 +1363,13 @@ grade(12)
 
 === cpp-06 | Loops
 --- teach
-The counting `for` loop has three parts — start; keep going while; step:
+Last lesson your program chose which lines to run. This lesson it runs the same lines again and again. That repeating is called a **loop**.
+
+Think of a countdown: "10, 9, 8, …, 1, liftoff." Nobody writes ten separate print lines for that. You describe the pattern once — "say the number, then make it one smaller, until you reach zero" — and the loop repeats it for you. You have met one loop already: `while (std::cin >> n)` in the lesson on reading input repeated once for every number in the input.
+
+### The counting for loop
+
+The **`for` loop** repeats a block a counted number of times:
 
 ```cpp
 for (int i = 1; i <= 5; i++) {
@@ -271,9 +1377,178 @@ for (int i = 1; i <= 5; i++) {
 }
 ```
 
-`while (condition) { … }` repeats while the condition is true. `break` leaves a loop early; `continue` skips to the next pass.
+This prints 1, 2, 3, 4 and 5, one per line. Inside the round brackets are three parts, split by semicolons `;`:
+
+1. **Start:** `int i = 1` runs once, before anything else. It makes a counter [[variable called i|loop-variable]] and sets it to 1.
+2. **Keep going while:** `i <= 5` ("i is less than or equal to 5") is [[checked before every pass|loop-order]]. While it is true, the block runs. The first time it is false, the loop ends.
+3. **Step:** `i++` runs after every pass. [[The ++ sign|plus-plus]], read "plus plus", adds one to `i`. It does the same as `i = i + 1`.
+
+Each trip through the block is one **pass** (programmers also say an **iteration** — one repeat). Follow the counter:
+
+| `i` | Is `i <= 5`? | What happens |
+| --- | --- | --- |
+| 1 | yes | prints 1, then `i` becomes 2 |
+| 2 | yes | prints 2, then `i` becomes 3 |
+| … | … | … |
+| 5 | yes | prints 5, then `i` becomes 6 |
+| 6 | no | the loop ends |
+
+The block ran 5 times, and the counter stopped at 6.
+
+A loop can count down, too. `i--`, read "minus minus", takes one away:
+
+```cpp
+for (int i = 3; i >= 1; i--) {
+    std::cout << "T-minus " << i << "\n";
+}
+std::cout << "Liftoff!\n";
+```
+
+That prints `T-minus 3`, `T-minus 2`, `T-minus 1`, then `Liftoff!`.
+
+### while: repeat until something changes
+
+A **`while` loop** has only the middle part: it repeats as long as its condition is true.
+
+```cpp
+int fuel = 20;
+while (fuel > 0) {
+    std::cout << "burning, fuel " << fuel << "\n";
+    fuel = fuel - 7;
+}
+```
+
+This prints fuel 20, then 13, then 6. After that `fuel` is -1, so `fuel > 0` is false and the loop ends. Use `for` when you know how many passes you want. Use `while` when you repeat until something happens. Either way, the block must change something the condition depends on, or you get an [[infinite loop|infinite-loop]].
+
+### break: leave the loop early
+
+**`break`** jumps straight out of the loop, even if its condition is still true:
+
+```cpp
+for (int i = 1; i <= 100; i++) {
+    if (i * i > 50) {
+        break;
+    }
+    std::cout << i << "\n";
+}
+```
+
+This prints 1 to 7. At `i` = 8, `8 * 8` is 64, more than 50, so `break` ends the loop before 8 is printed.
+
+### continue: skip to the next pass
+
+**`continue`** skips the rest of this pass and goes on to the next one:
+
+```cpp
+for (int i = 1; i <= 6; i++) {
+    if (i % 2 == 0) {
+        continue;
+    }
+    std::cout << i << "\n";
+}
+```
+
+This prints 1, 3 and 5. Remember `%` from the arithmetic lesson, the remainder: `i % 2 == 0` means "dividing `i` by 2 leaves nothing over", so `i` is even, and the even numbers are skipped.
+
+### A decision inside a loop
+
+Put an `if` chain from the decisions lesson inside a loop, and the program makes a fresh decision on every pass:
+
+```cpp
+for (int n = 1; n <= 4; n++) {
+    if (n % 2 == 0) {
+        std::cout << "even\n";
+    } else {
+        std::cout << n << "\n";
+    }
+}
+```
+
+This prints `1`, `even`, `3`, `even`. "`n` is a multiple of 3" works the same way: `n % 3 == 0`. That is all you need for your task, a counting game called [[FizzBuzz|fizzbuzz]]. Remember the rule from the decisions lesson: in an `else if` chain the *first* true question wins.
+
+**Watch out:** `<` and `<=` differ by one pass. `for (int i = 1; i < 5; i++)` stops at 4, because `5 < 5` is false. When a loop runs one time too many or one too few, it is called an [[off-by-one error|off-by-one]]. Check the last value by hand: "when `i` is 5, is the condition true?"
+
+::: context loop-variable Why everyone calls it i
+A loop counter is an ordinary `int` variable, and you may call it anything — `n`, `second`, `stage`. The name `i` is a habit from mathematics, where i, j and k label the items in a list. Early FORTRAN, a language from the 1950s, even treated every variable starting with the letters I to N as a whole number by default, so programmers reached for `i` first.
+
+One C++ detail: a variable made in the start part of a `for` exists only inside that loop. After the closing `}` it is gone, and using `i` there is a compile error.
+:::
+
+::: context loop-order What happens on each pass
+The order is always the same: start once, then check, run the block, step, and back to the check. The check comes *before* each pass, so if it is false the very first time, the block never runs at all — `for (int i = 10; i <= 5; i++)` prints nothing.
+
+```svg
+<svg viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1f2a44"/>
+    </marker>
+  </defs>
+  <rect x="20" y="16" width="120" height="32" rx="6" fill="#ffffff" stroke="#1f2a44"/>
+  <text x="80" y="37" font-size="12" fill="#1f2a44" text-anchor="middle">start: int i = 1</text>
+  <rect x="20" y="82" width="120" height="32" rx="6" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="80" y="103" font-size="12" fill="#1f2a44" text-anchor="middle">check: i &lt;= 5 ?</text>
+  <rect x="210" y="82" width="130" height="32" rx="6" fill="#ffffff" stroke="#1f2a44"/>
+  <text x="275" y="103" font-size="12" fill="#1f2a44" text-anchor="middle">block: print i</text>
+  <rect x="210" y="16" width="130" height="32" rx="6" fill="#ffffff" stroke="#1f2a44"/>
+  <text x="275" y="37" font-size="12" fill="#1f2a44" text-anchor="middle">step: i++</text>
+  <rect x="20" y="152" width="120" height="32" rx="6" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="80" y="173" font-size="12" fill="#1f2a44" text-anchor="middle">after the loop</text>
+  <line x1="80" y1="48" x2="80" y2="80" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="140" y1="104" x2="208" y2="104" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="174" y="124" font-size="11" fill="#1d6fd1" text-anchor="middle">true</text>
+  <line x1="275" y1="82" x2="275" y2="50" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#a)"/>
+  <path d="M210 32 L170 32 L170 90 L142 90" fill="none" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="80" y1="114" x2="80" y2="150" stroke="#b4232c" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="96" y="136" font-size="11" fill="#b4232c">false</text>
+</svg>
+```
+:::
+
+::: context plus-plus Where C++ got its name
+`++` adds one to a variable, and `--` takes one away. `+=` is the bigger cousin: `total += 5` adds 5 to `total`. The `++` sign came from C, the older language C++ grew out of. Bjarne Stroustrup began C++ in 1979 under the name "C with Classes"; in 1983 it was renamed C++, a programmer's joke meaning "C, plus one" — one step better than C.
+:::
+
+::: context infinite-loop Loops that never end
+If nothing inside a `while` loop ever makes its condition false, the loop runs forever: the program looks frozen and has to be stopped from outside.
+
+Flight software is strict about this. NASA JPL's "Power of Ten" rules for safety-critical code say every loop must have a fixed upper limit on its passes, so that a checking tool can prove it ends. The one allowed exception is a loop meant never to end, like the main loop of a flight computer that runs for the whole mission — and for that one, it must be provable that it never stops.
+:::
+
+::: context fizzbuzz A children's game turned test
+FizzBuzz began as a counting game for teaching children division: players take turns counting, and say "Fizz" for multiples of 3, "Buzz" for multiples of 5 and "FizzBuzz" for multiples of both. In 2007 two blog posts, by Imran Ghory and Jeff Atwood, made it famous as a quick test in programming job interviews.
+
+A handy fact: a number is a multiple of both 3 and 5 exactly when it is a multiple of 15, because 3 and 5 share no factor. So `n % 15 == 0` asks "both?" in one step.
+:::
+
+::: context off-by-one Count the fence posts
+A fence 30 metres long with a post every 10 metres needs 4 posts, not 3: one at each end plus two between. Counting the gaps when you meant the posts (or the other way round) is the oldest counting mistake there is.
+
+```svg
+<svg viewBox="0 0 360 110" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <line x1="60" y1="50" x2="300" y2="50" stroke="#6c7a93" stroke-width="3"/>
+  <rect x="55" y="30" width="10" height="40" fill="#1d6fd1"/>
+  <rect x="135" y="30" width="10" height="40" fill="#1d6fd1"/>
+  <rect x="215" y="30" width="10" height="40" fill="#1d6fd1"/>
+  <rect x="295" y="30" width="10" height="40" fill="#1d6fd1"/>
+  <text x="100" y="44" font-size="12" fill="#1f2a44" text-anchor="middle">10 m</text>
+  <text x="180" y="44" font-size="12" fill="#1f2a44" text-anchor="middle">10 m</text>
+  <text x="260" y="44" font-size="12" fill="#1f2a44" text-anchor="middle">10 m</text>
+  <text x="180" y="96" font-size="12" fill="#1f2a44" text-anchor="middle">3 gaps, 4 posts</text>
+</svg>
+```
+
+In loops it shows up as `<` versus `<=`. It comes back in the vector lesson: a list's positions start at 0, so a list of 5 items uses positions 0 to 4, and the loop is written `i < 5`.
+:::
 --- task
-Write a program that prints the numbers 1 to 15, one per line, printing `Fizz` for multiples of 3, `Buzz` for multiples of 5, and `FizzBuzz` for multiples of both.
+Write a whole program (with `main`, as in the lesson on reading input) that goes through the numbers 1 to 15 with a loop and prints one line for each number:
+
+- `FizzBuzz` if the number is a multiple of both 3 and 5,
+- otherwise `Fizz` if it is a multiple of 3,
+- otherwise `Buzz` if it is a multiple of 5,
+- otherwise the number itself.
+
+The output starts `1`, `2`, `Fizz`, `4`, `Buzz` and ends with `14`, `FizzBuzz`.
 --- starter
 #include <iostream>
 
@@ -298,7 +1573,11 @@ int main() {
     return 0;
 }
 --- hint
-`n % 3 == 0` means n is a multiple of 3 — check 15 first.
+Start with the loop: `for (int n = 1; n <= 15; n++) { … }`. Inside it goes an `if` / `else if` chain that prints one line per number.
+--- hint
+`n % 3 == 0` means n is a multiple of 3. A multiple of both 3 and 5 is a multiple of 15 — check 15 first, because the first true question in the chain wins.
+--- hint
+The chain: `if (n % 15 == 0)` prints `"FizzBuzz\n"`, `else if (n % 3 == 0)` prints `"Fizz\n"`, `else if (n % 5 == 0)` prints `"Buzz\n"`, and the last `else` prints `n << "\n"`.
 --- check output | Prints FizzBuzz from 1 to 15
 1
 2
@@ -320,21 +1599,137 @@ FizzBuzz
 
 === cpp-07 | Functions
 --- teach
-Functions let you name a piece of work and reuse it. A function must be declared before it is used, and its parameter and return types are part of what it is:
+Since you wrote `add`, you have been writing functions like `average` and `grade`, and the checker has been calling them. This lesson looks at functions properly: what each part means, functions that give nothing back, and how to pick a type big enough for the answer.
+
+A **function** is a named piece of work you can run whenever you need it. It is like a recipe card with a title: write "pancakes" once, and from then on "make pancakes" is enough. Running a function is called **calling** it.
+
+### The parts, one more time
 
 ```cpp
 bool is_positive(int n) {
     return n > 0;
 }
+```
 
+- `bool` is the **return type**: the kind of value that comes back. Here, true or false.
+- `is_positive` is the name. Names for yes-or-no functions often start with `is_`, so a call reads like a question.
+- `(int n)` is the **parameter** list: each input's type and name.
+- `return n > 0;` works out the condition `n > 0` (a bool, from the decisions lesson) and hands it back.
+
+Now `is_positive(5)` is `true` and `is_positive(-3)` is `false`. You can [[call it|function-call]] anywhere a bool fits, such as `if (is_positive(altitude)) { … }`.
+
+The parameter types and the return type are part of what the function *is*. `is_positive` takes an `int` and gives a `bool`, and the compiler checks every call against that. `is_positive("hello")` is a compile error, caught before the program ever runs.
+
+### Define it before you use it
+
+The compiler reads your file from top to bottom. A function must be [[declared before it is used|declaration]] — it has to appear above any line that calls it:
+
+```cpp
 long long square(long long x) {
     return x * x;
 }
+
+long long fourth_power(long long x) {
+    return square(square(x));   // fine: square is already above
+}
 ```
 
-`void` means it returns nothing. `int` holds numbers up to about 2 billion; `long long` goes to about 9 × 10¹⁸ — pick it when values can get big. A function can call itself (**recursion**) as long as some case stops it.
+Swap the two around and clang stops with an error like "use of undeclared identifier 'square'" — it has not met `square` yet.
+
+### void: a function that gives nothing back
+
+**`void`** — "nothing" — as the return type means the function does its work and returns no value:
+
+```cpp
+void announce(int seconds) {
+    std::cout << "T-minus " << seconds << "\n";
+}
+```
+
+`announce(10);` prints `T-minus 10`. There is nothing to catch, so `int x = announce(10);` is a compile error. Inside a `void` function, `return;` on its own leaves early.
+
+### Big numbers: int and long long
+
+Every whole-number type is a box of fixed size. An **`int`** holds numbers up to 2,147,483,647 — about 2 billion — and down to about minus 2 billion. A **`long long`** is a [[much bigger box|int-sizes]]: up to 9,223,372,036,854,775,807, about 9 × 10¹⁸ (a 9 followed by 18 more digits). Pick `long long` when values can get big.
+
+That is why `square` above takes and returns a `long long`. Squares grow fast: 100,000 squared is 10,000,000,000 — ten billion, far too big for an `int`. Putting a number into a box too small for it is called **[[overflow|overflow]]**, and the answer that comes out is garbage.
+
+### Adding up and multiplying in a loop
+
+Many functions build an answer in a loop. Two shortcuts help:
+
+- `total += i`, read "plus equals", means `total = total + i`.
+- `result *= i`, read "times equals", means `result = result * i`.
+
+```cpp
+long long sum_to(int n) {
+    long long total = 0;
+    for (int i = 1; i <= n; i++) {
+        total += i;
+    }
+    return total;
+}
+```
+
+`sum_to(4)` works out 0 + 1 + 2 + 3 + 4 = 10. The sum starts at 0, because adding 0 changes nothing.
+
+Your task needs the multiplying version: the **factorial** of n, written n! and read "n factorial", is 1 × 2 × 3 × … × n. So 5! = 1 × 2 × 3 × 4 × 5 = 120. A product has to start at 1, because multiplying by 1 changes nothing (starting at 0 would make everything 0). By agreement [[0! is 1|zero-factorial]]. Factorials grow very fast: 13! is already too big for an `int`, and 20! = 2,432,902,008,176,640,000 is close to the top of a `long long`.
+
+A function can even call itself. That is called **recursion**, and it works as long as some case stops it. It gets its own lesson next.
+
+**Watch out:** to test for even, use `n % 2 == 0`. Do not test for odd with `n % 2 == 1`: in C++ the remainder of a negative number is negative, so `-7 % 2` is `-1`, not `1`, and that test would call -7 "not odd". `n % 2 == 0` is right for negative numbers too.
+
+::: context function-call What happens during a call
+When the program reaches `is_positive(altitude)`, it pauses where it is and jumps into the function. The parameter `n` is made as a fresh variable holding a **copy** of the value you passed in (the argument). The body runs until `return`. Then the program jumps back, and the returned value takes the place of the whole call — as if you had written `true` right there.
+
+Because `n` is a copy, changing it inside the function does not change `altitude` outside. The references lesson shows how to let a function change the caller's own variable, with references.
+:::
+
+::: context declaration Declarations and header files
+You can also tell the compiler about a function before writing its body. The first line on its own, ending in a semicolon, is a **declaration**: `long long square(long long x);` says "a function with this name and these types exists; the body comes later." After that line, calls anywhere below it compile.
+
+This is what a header file is for. `#include <iostream>` pastes in a file full of declarations like this one, which is how the compiler knows about `std::cout` without you writing it. Large programs, flight software included, keep their declarations in headers so many files can share them.
+:::
+
+::: context int-sizes Boxes of bits
+Memory is made of **bits**, each a 0 or a 1, grouped eight at a time into **bytes**. On almost every computer today, including this page, an `int` is 4 bytes (32 bits) and a `long long` is 8 bytes (64 bits). One bit records the sign, so an `int` reaches 2³¹ − 1 = 2,147,483,647 and a `long long` reaches 2⁶³ − 1.
+
+```svg
+<svg viewBox="0 0 360 160" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="12" y="42" font-size="12" fill="#1f2a44">int</text>
+  <g fill="#8fb8f0" stroke="#1f2a44">
+    <rect x="96" y="24" width="28" height="28"/><rect x="124" y="24" width="28" height="28"/>
+    <rect x="152" y="24" width="28" height="28"/><rect x="180" y="24" width="28" height="28"/>
+  </g>
+  <text x="96" y="70" font-size="11" fill="#6c7a93">4 bytes = 32 bits, up to 2,147,483,647</text>
+  <text x="12" y="112" font-size="12" fill="#1f2a44">long long</text>
+  <g fill="#1d6fd1" fill-opacity="0.45" stroke="#1f2a44">
+    <rect x="96" y="94" width="28" height="28"/><rect x="124" y="94" width="28" height="28"/>
+    <rect x="152" y="94" width="28" height="28"/><rect x="180" y="94" width="28" height="28"/>
+    <rect x="208" y="94" width="28" height="28"/><rect x="236" y="94" width="28" height="28"/>
+    <rect x="264" y="94" width="28" height="28"/><rect x="292" y="94" width="28" height="28"/>
+  </g>
+  <text x="96" y="140" font-size="11" fill="#6c7a93">8 bytes = 64 bits, up to 9,223,372,036,854,775,807</text>
+</svg>
+```
+:::
+
+::: context overflow A rocket lost to a number too big
+On 4 June 1996 the first Ariane 5 rocket veered off course about 37 seconds after liftoff and was destroyed. Its guidance software converted a 64-bit number with a decimal point, linked to the rocket's sideways speed, into a 16-bit whole number. On Ariane 5's faster flight path the value was too big for 16 bits. The conversion failed, and both guidance computers — the main one and its backup, running the same code — shut down. The code had been reused from Ariane 4, whose flights never produced a value that large.
+
+In C++, overflowing an `int` is **undefined behaviour**: the language makes no promise at all about what happens. Choosing a big enough type is the fix.
+:::
+
+::: context zero-factorial Why 0! is 1
+Factorials count arrangements. Three books can stand on a shelf in 3! = 6 orders; n things can be lined up in n! orders. How many ways can you arrange no books at all? Exactly one: the empty shelf. So 0! = 1.
+
+It also keeps the pattern n! = n × (n − 1)! working. At n = 1 it says 1! = 1 × 0!, and since 1! is 1, 0! must be 1. That pattern is the heart of the next lesson, on recursion.
+:::
 --- task
-Write `bool is_even(int n)` and `long long factorial(int n)` (the product 1 × 2 × … × n, with `factorial(0)` equal to 1). No `main`.
+Write two functions. No `main`: the checker supplies it.
+
+- `bool is_even(int n)` returns `true` when `n` is even and `false` when it is odd.
+- `long long factorial(int n)` returns the product 1 × 2 × … × n, with `factorial(0)` equal to 1. The checker tries `factorial(5)` (which is 120), `factorial(0)` and `factorial(20)`, so the answer must be a `long long`.
 --- starter
 bool is_even(int n) {
     return false;
@@ -356,7 +1751,11 @@ long long factorial(int n) {
     return result;
 }
 --- hint
-`factorial`: start `result` at 1 and multiply by 2, 3, … n in a loop.
+`is_even`: a number is even when dividing by 2 leaves no remainder. `factorial`: build the answer in a loop, like `sum_to`, but multiplying.
+--- hint
+`is_even` can be one line: `return n % 2 == 0;`. For `factorial`, start `long long result = 1;` — not 0.
+--- hint
+`factorial`: start `result` at 1 and multiply by 2, 3, … n in a loop: `for (int i = 2; i <= n; i++) { result *= i; }`, then `return result;`. When n is 0 the loop never runs, so you get 1.
 --- check test | is_even works both ways
 is_even(10) && !is_even(7)
 --- check case | factorial(5) is 120
@@ -369,25 +1768,268 @@ factorial(0)
 factorial(20)
 => 2432902008176640000LL
 
+=== cpp-07b | Recursion: a function that calls itself
+--- teach
+Last lesson you worked out a factorial with a loop, and met the idea that a function can call itself. This lesson shows how that works, and when it stops.
+
+Think of a countdown again. How do you count down from 5? Say "5", then count down from 4. How do you count down from 4? Say "4", then count down from 3. The job contains a smaller copy of the same job, until you reach 0 and say "Liftoff!" instead.
+
+### A function that calls itself
+
+That is **recursion**: a function that calls itself to do a smaller piece of the same job.
+
+```cpp
+void countdown(int n) {
+    if (n == 0) {
+        std::cout << "Liftoff!\n";
+        return;
+    }
+    std::cout << n << "\n";
+    countdown(n - 1);
+}
+```
+
+`countdown(3)` prints `3`, then calls `countdown(2)`, which prints `2` and calls `countdown(1)`, which prints `1` and calls `countdown(0)`, which prints `Liftoff!` and stops.
+
+Every recursive function has two parts:
+
+- the **base case** — the case answered directly, without calling itself. Here: `n == 0`.
+- the **recursive case** — the function calls itself on a *smaller* problem, one step closer to the base case. Here: `countdown(n - 1)`.
+
+### Recursion that returns a value
+
+Look at the pattern: 5! = 5 × 4 × 3 × 2 × 1, and the part 4 × 3 × 2 × 1 is 4!. So 5! = 5 × 4!, and in general n! = n × (n − 1)!. That sentence is already a recursive function, with 0! = 1 as the base case:
+
+```cpp
+long long factorial(int n) {
+    if (n == 0) {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+```
+
+Follow `factorial(3)` step by step:
+
+- `factorial(3)` is `3 * factorial(2)` — it has to wait for `factorial(2)`.
+- `factorial(2)` is `2 * factorial(1)` — waits too.
+- `factorial(1)` is `1 * factorial(0)` — waits too.
+- `factorial(0)` is the base case: it returns 1.
+
+Now the answers come back up: `factorial(1)` returns 1 × 1 = 1, `factorial(2)` returns 2 × 1 = 2, and `factorial(3)` returns 3 × 2 = 6. While they wait, the unfinished calls [[pile up on top of each other|call-stack]].
+
+Recursion fits problems that have the [[same shape inside themselves|recursive-shapes]]. Anything recursive can also be written with a loop, as you did last lesson.
+
+**Watch out:** a recursive function needs a base case it will always reach. Leave out the base case, or call `countdown(n)` instead of `countdown(n - 1)`, and it never stops. The same thing happens if you call `factorial(-1)`: counting down from -1 never hits 0. The waiting calls pile up until memory for them runs out and the program crashes — a [[stack overflow|stack-overflow]].
+
+That risk is why [[flight software usually avoids recursion|no-recursion-rule]] and uses loops with a fixed limit instead.
+
+::: context call-stack The call stack
+Each call that is still waiting keeps its own little record — its own `n`, and where to go back to — in an area of memory called the **call stack**. New calls go on top, like plates on a stack; the top one finishes first and is taken off, handing its answer to the call below.
+
+```svg
+<svg viewBox="0 0 360 190" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="20" width="190" height="34" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="115" y="42" font-size="12" fill="#1f2a44" text-anchor="middle">factorial(0): base case</text>
+  <rect x="20" y="60" width="190" height="34" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="115" y="82" font-size="12" fill="#1f2a44" text-anchor="middle">factorial(1): 1 * ?</text>
+  <rect x="20" y="100" width="190" height="34" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="115" y="122" font-size="12" fill="#1f2a44" text-anchor="middle">factorial(2): 2 * ?</text>
+  <rect x="20" y="140" width="190" height="34" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="115" y="162" font-size="12" fill="#1f2a44" text-anchor="middle">factorial(3): 3 * ?</text>
+  <text x="222" y="42" font-size="12" fill="#1d6fd1">returns 1</text>
+  <text x="222" y="82" font-size="12" fill="#1d6fd1">returns 1 * 1 = 1</text>
+  <text x="222" y="122" font-size="12" fill="#1d6fd1">returns 2 * 1 = 2</text>
+  <text x="222" y="162" font-size="12" fill="#1d6fd1">returns 3 * 2 = 6</text>
+</svg>
+```
+
+The first call sits at the bottom. The last call made is the first to finish.
+:::
+
+::: context recursive-shapes Things with the same shape inside
+A folder can hold files and other folders, and each of those folders can hold files and folders too. That is a recursive shape, and it is why `ls -R` and `cp -r` from the Terminal course are called *recursive*: "do this here, then do the same thing inside every folder". The base case is a folder with no folders inside.
+
+Trees, family trees, a sentence inside a sentence, and splitting a list in half and sorting each half (a method you will meet in later courses) all have the same shape inside themselves.
+:::
+
+::: context stack-overflow When the stack runs out
+The call stack has a fixed size, often a few megabytes on a desktop computer and far less on a small flight computer. Every waiting call uses some of it. A recursion that never reaches its base case keeps adding calls until the stack is full, and the operating system stops the program. That crash is a **stack overflow** — which is also where the programmers' question-and-answer website Stack Overflow got its name.
+:::
+
+::: context no-recursion-rule Why flight software avoids it
+Because no one can easily prove how deep a recursion will go, rules for safety-critical code usually ban it. The first of NASA JPL's "Power of Ten" rules forbids recursion, direct or indirect, and the MISRA C rules, used in cars and many other safety-critical machines, say a function shall not call itself. With plain loops that have fixed limits, a checking tool can prove the stack never runs out. You will still meet recursion in ordinary programs, where it makes some problems much shorter to write.
+:::
+--- task
+Write `long long power(int base, int exponent)` that returns `base` raised to the power `exponent` — `base` multiplied by itself `exponent` times. For example, `power(2, 3)` is 2 × 2 × 2 = 8, `power(3, 4)` is 81, and anything to the power 0 is 1, so `power(7, 0)` is 1. The exponent is never negative.
+
+Use recursion: `power` must call itself. The rule is the same shape as factorial:
+
+- base case: when `exponent` is 0, the answer is 1;
+- recursive case: `power(base, exponent)` is `base` times `power(base, exponent - 1)`.
+
+No `main`: the checker supplies it and also tries `power(2, 40)`, which is over a trillion, so keep the `long long`.
+--- starter
+long long power(int base, int exponent) {
+    return 0;
+}
+--- solution
+long long power(int base, int exponent) {
+    if (exponent == 0) {
+        return 1;
+    }
+    return base * power(base, exponent - 1);
+}
+--- hint
+Write it the way `factorial` is written in this lesson: an `if` for the base case first, then a `return` that calls `power` again.
+--- hint
+The base case: `if (exponent == 0) { return 1; }`. The recursive case makes the exponent one smaller each time, so it always reaches 0.
+--- hint
+After the base case: `return base * power(base, exponent - 1);`
+--- check case | power(2, 10) is 1024
+power(2, 10)
+=> 1024
+--- check case | power(7, 0) is 1
+power(7, 0)
+=> 1
+--- check case | power(3, 4) is 81
+power(3, 4)
+=> 81
+--- check case | power(2, 40) needs a long long
+power(2, 40)
+=> 1099511627776LL
+--- check source | power calls itself
+\bpower\s*\([^)]*\)\s*\{[\s\S]*\bpower\s*\(
+?? Inside the body of power, call power again with exponent - 1.
+
 === cpp-08 | std::vector
 --- teach
-`std::vector` is C++'s growable array — the container to reach for first:
+In the last few lessons you wrote functions that take a number or two and give back one value. Real programs work with whole lists: every temperature reading from a flight, every mass on a cargo manifest. This lesson gives you C++'s list, the vector.
+
+Picture an egg carton that can stretch. The cups sit in one row, each cup holds one egg, and the cups are numbered from the left. When you need one more cup, the carton grows. That is a **vector**: a row of values of one type, stored side by side, that can [[get longer while the program runs|growing-in-flight]]. It is C++'s growable [[array|array-in-memory]], and it is the container to reach for first. Each value in it is called an **element**.
+
+### Making a vector
+
+A vector lives in the standard library, so you bring it in with `#include <vector>`, the same way `#include <iostream>` brought in `std::cout`.
 
 ```cpp
 #include <vector>
 
 std::vector<int> v = {3, 9, 2};
-v.push_back(7);        // add to the end
-v.size();              // 4
-v[0];                  // 3
-for (int x : v) {      // a range-for loop: each element in turn
-    // ...
+```
+
+`std::vector` means "vector from std, the standard library" (`::` is the scope operator, read "from"). Read the whole type `std::vector<int>` as "a vector of ints". The type inside the angle brackets `< >` says what every element is, and a vector holds only [[that one type|one-type-inside]]. The curly braces `{3, 9, 2}` list the starting elements, in order.
+
+### Adding to the end
+
+`push_back` adds one element to the end:
+
+```cpp
+v.push_back(7);   // v is now {3, 9, 2, 7}
+```
+
+The dot `.` means "reach into this vector and use one of its own functions". A function that belongs to a type like this is called a **member function**: `push_back` is a member function of every vector.
+
+### How many, and which one
+
+The member function `size()` tells you how many elements there are:
+
+```cpp
+v.size();   // 4
+```
+
+Square brackets `[ ]` pick one element by its **index**, its position in the row, [[counted from 0|zero-index]]:
+
+```cpp
+v[0];   // 3  (the first)
+v[1];   // 9
+v[3];   // 7  (the last one is always at size() - 1)
+```
+
+### Visiting every element
+
+A **range-for loop** runs its body once for each element, in order. Read the colon `:` as "in": "for each int x in v".
+
+```cpp
+int total = 0;
+for (int x : v) {
+    total += x;   // x is 3, then 9, then 2, then 7
+}
+// total is 21
+```
+
+It is the `for` loop from the loops lesson with the counting done for you.
+
+### Passing a vector to a function
+
+When a function takes a vector, write the parameter like this:
+
+```cpp
+int first(const std::vector<int>& v) {
+    return v[0];
 }
 ```
 
-Pass a vector to a function as `const std::vector<int>& v`: the `&` means "refer to the caller's vector" instead of copying it, and `const` promises not to change it. (More on references in lesson 10.)
+There are two new pieces around the type:
+
+- The ampersand `&`, read "reference to", means "refer to the caller's vector" instead of copying it. Copying a vector of a million readings would be slow; a reference costs almost nothing.
+- `const` promises the function will not change the vector. If it tries, the program does not compile.
+
+So `const std::vector<int>& v` reads "v is a reference to a vector of ints that I promise not to change". The references lesson, coming soon, is all about them. Until then, write it this way whenever a function only reads a vector.
+
+**Watch out:** C++ does not check your index. On a vector with 4 elements, `v[4]` does not stop the program with a helpful error. It reads whatever memory happens to sit past the end, and from then on the program's behaviour is [[undefined|undefined-behaviour]]. So use `v[0]` only when you know the vector is not empty, and keep every index below `size()`.
+
+**Watch out, too:** dividing a whole-number total by `size()` is whole-number division, so it throws the remainder away, the same as `7 / 2` in the arithmetic lesson. Worse, `size()` gives back an [[unsigned|size-is-unsigned]] number, which breaks negative totals completely. To get an exact average, convert the total to a `double` first: `static_cast<double>(total) / v.size()`.
+
+::: context growing-in-flight Why flight code avoids growing
+When a vector runs out of room, it quietly asks the computer for a bigger block of memory and moves every element into it. That is handy on a laptop. On a spacecraft it is a risk: asking for memory takes an unknown amount of time, and it might fail. NASA JPL's "Power of Ten" rules for safety-critical code say: do not allocate memory after the program has started up. Flight programmers therefore set every list's size at startup, or use fixed-size arrays, so the memory a mission needs is known before launch.
+:::
+
+::: context array-in-memory A row of boxes in memory
+An **array** is a row of same-sized boxes in the computer's memory, one right after another. On nearly every computer today an `int` takes 4 bytes, so element 1 starts 4 bytes after element 0, element 2 starts 8 bytes after, and so on. That is why finding `v[3]` is instant: the computer multiplies 3 by 4 and jumps straight there, with no searching. A vector keeps its elements in exactly this kind of row, plus some spare room at the end to grow into.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 140" font-family="Inter, Arial, sans-serif">
+  <text x="20" y="22" font-size="12" fill="#1f2a44">std::vector&lt;int&gt; v = {3, 9, 2, 7}</text>
+  <rect x="20" y="40" width="60" height="40" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="80" y="40" width="60" height="40" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="140" y="40" width="60" height="40" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="200" y="40" width="60" height="40" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="260" y="40" width="80" height="40" fill="#fff" stroke="#6c7a93" stroke-dasharray="4 3"/>
+  <text x="50" y="65" font-size="14" text-anchor="middle" fill="#1f2a44">3</text>
+  <text x="110" y="65" font-size="14" text-anchor="middle" fill="#1f2a44">9</text>
+  <text x="170" y="65" font-size="14" text-anchor="middle" fill="#1f2a44">2</text>
+  <text x="230" y="65" font-size="14" text-anchor="middle" fill="#1f2a44">7</text>
+  <text x="300" y="65" font-size="11" text-anchor="middle" fill="#6c7a93">room to grow</text>
+  <text x="50" y="100" font-size="12" text-anchor="middle" fill="#1d6fd1">v[0]</text>
+  <text x="110" y="100" font-size="12" text-anchor="middle" fill="#1d6fd1">v[1]</text>
+  <text x="170" y="100" font-size="12" text-anchor="middle" fill="#1d6fd1">v[2]</text>
+  <text x="230" y="100" font-size="12" text-anchor="middle" fill="#1d6fd1">v[3]</text>
+  <text x="20" y="128" font-size="11" fill="#6c7a93">each box is one int, 4 bytes, right after the one before</text>
+</svg>
+```
+:::
+
+::: context one-type-inside One vector, one type
+The angle brackets make `std::vector` a **template**: a pattern the compiler fills in with a type. `std::vector<int>` holds ints, `std::vector<double>` holds decimals, `std::vector<std::string>` holds pieces of text. You cannot put a string into a `std::vector<int>`; the compiler refuses before the program exists. That strictness is the same static typing you met in the variables lesson, and it is why every box in the row can be the same size.
+:::
+
+::: context zero-index Why counting starts at 0
+The index is not "which one" but "how many steps from the start". The first element is 0 steps from the start, so it is `v[0]`. That is also what lets the computer find an element fast: it jumps index × (size of one element) bytes from the beginning. Most programming languages count this way. The price is that the last element of a vector with 4 elements is `v[3]`, not `v[4]`, and reaching one past the end is one of the most common bugs there is.
+:::
+
+::: context undefined-behaviour Undefined behaviour
+**Undefined behaviour** means the C++ rules say nothing at all about what happens next. The program might print a strange number, crash, or seem to work today and fail next week. C++ skips the index check on purpose, because checking every access costs time. If you want the check, `v.at(4)` does test the index, and stops with an error called `std::out_of_range` when it is too big. Safety-critical coding rules for aircraft and spacecraft, such as MISRA C++, exist largely to keep programs away from undefined behaviour.
+:::
+
+::: context size-is-unsigned Numbers that cannot be negative
+`size()` returns a `std::size_t`, an **unsigned** whole number: one that can never be negative, because a count never is. When C++ divides a signed number by an unsigned one of the same size, it turns the signed one into unsigned first. So a total of −6 divided by a size of 3 does not give −2. It gives 6148914691236517203, because −6 wrapped around to a gigantic positive number. Converting the total to `double` first avoids this and keeps the fraction too.
+:::
 --- task
-Write `int max_value(const std::vector<int>& v)` (assume v is not empty) and `double mean(const std::vector<int>& v)`. No `main`.
+Write two functions that each take a vector of ints. There is no `main` in this lesson: the checker supplies it.
+
+- `int max_value(const std::vector<int>& v)` returns the largest element. You may assume `v` is not empty. `max_value({3, 9, 2})` is `9`, and `max_value({-5, -2, -9})` is `-2`.
+- `double mean(const std::vector<int>& v)` returns the average: the sum of all the elements divided by how many there are. `mean({1, 2, 3, 4})` is `2.5`.
 --- starter
 #include <vector>
 
@@ -415,9 +2057,11 @@ double mean(const std::vector<int>& v) {
     return static_cast<double>(sum) / v.size();
 }
 --- hint
-Start `best` at `v[0]`, then compare every element.
+For `max_value`, keep a "best so far" variable. Start it at the first element, `v[0]`, not at 0: if every number is negative, 0 would win, and 0 is not even in the vector.
 --- hint
-For the mean, add up in a loop, then divide as a double.
+Visit every element with `for (int x : v)` and replace `best` whenever `x > best`. For `mean`, add the elements up in the same kind of loop.
+--- hint
+Divide as a double, converting the sum first: `return static_cast<double>(sum) / v.size();`
 --- check case | max_value({3, 9, 2}) is 9
 max_value({3, 9, 2})
 => 9
@@ -429,23 +2073,129 @@ std::abs(mean({1, 2, 3, 4}) - 2.5) < 1e-9
 
 === cpp-09 | std::string
 --- teach
-`std::string` holds text and knows its own length:
+Last lesson a vector held a row of numbers. Text is a row too: a row of characters. In C++ that row is a `std::string`, and it works a lot like the vector you met last lesson.
+
+A **string** is a piece of text that [[knows its own length|knows-its-length]]. You bring it in with `#include <string>`:
 
 ```cpp
 #include <string>
 
 std::string s = "Ada Lovelace";
-s.size();              // 12
-s[0];                  // 'A'   (a char)
-s + "!"                // "Ada Lovelace!"
-s.find("Love");        // 4 — or std::string::npos if absent
-s.substr(4, 4);        // "Love"
-for (char c : s) { }   // each character
 ```
 
-`<cctype>` has helpers for single characters: `std::toupper(c)`, `std::isspace(c)`, `std::isdigit(c)`. They take and return an `int`, not a `char`, so convert on the way in and out: `static_cast<char>(std::toupper(static_cast<unsigned char>(c)))`. The `unsigned char` step matters for letters outside plain English (like `é`), which a `char` can hold as a negative number the helpers are not allowed to receive.
+### Length, and one character at a time
+
+The member function `size()` counts the characters, spaces included:
+
+```cpp
+s.size();   // 12
+```
+
+Square brackets pick one character by its index, counted from 0, as in a vector:
+
+```cpp
+s[0];   // 'A'
+s[4];   // 'L'
+```
+
+What comes back is a **char**: one [[character|char-is-a-number]], written in single quotes. Double quotes make a string, single quotes make a char. `"A"` is a string that happens to be one character long; `'A'` is the character itself. They are [[different types|two-kinds-of-quotes]], and C++ keeps them apart.
+
+### Joining and building
+
+The plus sign `+` joins text:
+
+```cpp
+s + "!";   // "Ada Lovelace!"
+```
+
+`+=`, read "add on to", appends to the end of a string you already have, and it works with a single char too. A string you declare without a value starts empty, as `""`:
+
+```cpp
+std::string code;   // ""
+code += 'G';        // "G"
+code += 'O';        // "GO"
+```
+
+### Visiting every character
+
+The range-for loop from last lesson works on strings as well. Each pass gives you one char:
+
+```cpp
+int spaces = 0;
+for (char c : s) {
+    if (c == ' ') spaces++;
+}
+// spaces is 1
+```
+
+`' '` is the space character, in single quotes, and `==` compares two chars.
+
+### Helpers for single characters
+
+The header `<cctype>` has small functions that ask about, or change, one character:
+
+- `std::toupper(c)` gives the uppercase version: `'a'` becomes `'A'`, and anything that is not a lowercase letter comes back unchanged.
+- `std::isspace(c)` is true for a space, a tab or a newline.
+- `std::isdigit(c)` is true for the digits `'0'` to `'9'`.
+
+These helpers [[come from C|from-c]], and they take and return an `int`, not a `char`. So you convert on the way in and on the way out, with the `static_cast` from the arithmetic lesson:
+
+```cpp
+char c = 'a';
+char big = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+// big is 'A'
+```
+
+Read it from the inside out:
+
+1. `static_cast<unsigned char>(c)` turns `c` into an **unsigned char**: the same byte, read as a number from 0 to 255, never negative.
+2. `std::toupper(…)` returns the uppercase letter as an `int`.
+3. `static_cast<char>(…)` turns that `int` back into a `char`, which you can store or add to a string.
+
+**Watch out:** leaving out the `unsigned char` step compiles, and it seems to work for plain English letters. It goes wrong for letters outside plain English, like the `é` in "Andrés". A `char` can hold those [[as negative numbers|negative-chars]], and the helpers are not allowed to receive a negative number. Always convert to `unsigned char` first.
+
+::: context knows-its-length Text that remembers its size
+In C, the language C++ grew out of, text is a bare row of chars with a zero byte at the end to mark where it stops. To find the length you walk along until you hit the zero. Forget to leave room for that zero, or copy text into a row that is too short, and you write past the end: a **buffer overflow**, the cause of many famous security holes. A `std::string` stores its length alongside the characters and grows when you add to it, so these mistakes are much harder to make.
+:::
+
+::: context char-is-a-number A char is a small number
+Inside the computer, a `char` is one byte: a number from 0 to 255 (or −128 to 127). A table called **ASCII** says which number stands for which character. `'A'` is 65, `'d'` is 100 and `'a'` is 97, so the string "Ada" is stored as the three numbers 65, 100, 97. The uppercase letters are 65 to 90 in order and the lowercase letters are 97 to 122, which is why turning a letter to uppercase is really a small piece of arithmetic.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <text x="20" y="22" font-size="12" fill="#1f2a44">std::string s = "Ada";</text>
+  <rect x="60" y="36" width="70" height="36" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="130" y="36" width="70" height="36" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="200" y="36" width="70" height="36" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="95" y="59" font-size="14" text-anchor="middle" fill="#1f2a44">'A'</text>
+  <text x="165" y="59" font-size="14" text-anchor="middle" fill="#1f2a44">'d'</text>
+  <text x="235" y="59" font-size="14" text-anchor="middle" fill="#1f2a44">'a'</text>
+  <text x="20" y="96" font-size="11" fill="#6c7a93">byte</text>
+  <text x="95" y="96" font-size="13" text-anchor="middle" fill="#1d6fd1">65</text>
+  <text x="165" y="96" font-size="13" text-anchor="middle" fill="#1d6fd1">100</text>
+  <text x="235" y="96" font-size="13" text-anchor="middle" fill="#1d6fd1">97</text>
+</svg>
+```
+:::
+
+::: context two-kinds-of-quotes Single quotes, double quotes
+`'A'` is a `char`: exactly one character, stored as one byte. `"A"` is a piece of text, which C++ stores as the character plus the hidden zero byte that marks the end, so it takes two bytes. Mixing them up is a common beginner error: `code += "G"` happens to work, but `if (c == "G")` compares a char with text and will not compile. When you mean one character, use single quotes.
+:::
+
+::: context from-c Why the helpers take an int
+`<cctype>` comes from the C language of the 1970s, and so the helpers work the way C did. In C, the function that reads one character from input returns an `int`, so that on top of the 256 byte values it can also return a special value, `EOF` (end of file, usually −1), meaning "there is no more input". The character helpers were built to accept anything that function returns, so they take an `int`. That is why you convert in and out.
+:::
+
+::: context negative-chars How é becomes negative
+Plain English letters fit in one byte, 0 to 127. Other letters are stored as several bytes in a system called **UTF-8**: `é` is two bytes, 195 and 169. On most PCs a `char` is signed, running from −128 to 127, so those bytes read as −61 and −87. Handing −61 to `std::toupper` is undefined behaviour, the same "the rules say nothing" trouble as reading past the end of a vector. Converting to `unsigned char` turns them back into 195 and 169, which the helpers accept.
+:::
 --- task
-Write `std::string initials(const std::string& name)` returning the uppercase first letter of each word (`"ada lovelace"` → `"AL"`; words are separated by spaces), and `int count_char(const std::string& s, char c)`. No `main`.
+Write two functions. No `main`: the checker supplies it.
+
+- `std::string initials(const std::string& name)` returns the uppercase first letter of each word. Words are separated by spaces, and there may be more than one space between words, or spaces before the first word. `initials("ada lovelace")` is `"AL"`, and `initials("  grace  brewster hopper")` is `"GBH"`.
+- `int count_char(const std::string& s, char c)` returns how many times the character `c` appears in `s`. `count_char("mississippi", 's')` is `4`.
+
+`const std::string&` is the same read-only, no-copy parameter you used for vectors last lesson.
 --- starter
 #include <string>
 #include <cctype>
@@ -483,9 +2233,11 @@ int count_char(const std::string& s, char c) {
     return n;
 }
 --- hint
-Keep a flag "the next letter starts a word": true at the start and after each space.
+For `initials`, start with an empty string `out`, walk the name one char at a time, and keep a `bool` flag meaning "the next letter starts a word". It is `true` at the beginning and becomes `true` again after every space.
 --- hint
-`out += static_cast<char>(std::toupper(static_cast<unsigned char>(c)));` appends one uppercase character.
+When a char is not a space and the flag is `true`, append its uppercase version to `out` and set the flag to `false`. For `count_char`, keep a counter and add one whenever `x == c` in a range-for loop.
+--- hint
+Appending one uppercase character: `out += static_cast<char>(std::toupper(static_cast<unsigned char>(c)));`
 --- check case | initials("ada lovelace") is "AL"
 initials("ada lovelace")
 => "AL"
@@ -496,11 +2248,208 @@ initials("  grace  brewster hopper")
 count_char("mississippi", 's')
 => 4
 
+=== cpp-09b | Finding text inside a string
+--- teach
+Last lesson you went through a string one character at a time. Often you want a bigger piece: the part before a colon, or the word that starts at a certain spot. Two member functions of `std::string` do that: `find` searches, and `substr` cuts out a piece.
+
+Think of the string as a row of numbered boxes, one character in each, numbered from 0:
+
+```cpp
+std::string s = "Ada Lovelace";
+// A  d  a     L  o  v  e  l  a  c  e
+// 0  1  2  3  4  5  6  7  8  9  10 11
+```
+
+### Searching with find
+
+`find` looks for some text and gives back the index where it starts:
+
+```cpp
+s.find("Love");   // 4
+```
+
+It also works with a single char, in single quotes, and it finds the first match from the left:
+
+```cpp
+s.find('L');   // 4
+s.find("a");   // 2  (the first "a", not the one at 9)
+```
+
+### When find finds nothing
+
+If the text is not there, `find` gives back a special value, `std::string::npos`. Read it as "npos from std::string"; the `::` is the scope operator you have seen in `std::cout`. The name means "no position", and it is [[a very large number|npos-is-huge]], not 0 and not −1. So you always compare with it:
+
+```cpp
+if (s.find("xyz") == std::string::npos) {
+    // "xyz" is not in s
+}
+```
+
+To keep the index for later, store it. `auto`, from the variables lesson, lets the compiler write the type for you (it is `std::size_t`, the same unsigned whole-number type that `size()` gives):
+
+```cpp
+auto pos = s.find(' ');   // pos is 3
+```
+
+### Cutting out a piece with substr
+
+`substr(start, length)` copies out a **substring**, a piece of the string. It starts at index `start` and takes `length` characters. The [[second number is a length|length-not-end]], not an end index:
+
+```cpp
+s.substr(4, 4);   // "Love"
+s.substr(0, 3);   // "Ada"
+```
+
+Give only the start, and you get everything from there to the end:
+
+```cpp
+s.substr(4);   // "Lovelace"
+```
+
+The original string does not change; `substr` hands you a new one.
+
+### Find, then cut
+
+The two work as a team. Find the space, then cut on either side of it:
+
+```cpp
+auto pos = s.find(' ');      // 3
+s.substr(0, pos);            // "Ada"       (3 characters from 0)
+s.substr(pos + 1);           // "Lovelace"  (from right after the space)
+```
+
+This is how programs [[pull fields out of a line of text|telemetry-text]].
+
+**Watch out:** check for `npos` before you cut. If there is no space, `pos` is `npos`, and `pos + 1` [[wraps around to 0|wrap-around]], so `s.substr(pos + 1)` quietly hands back the whole string instead of nothing. No error, no warning: a wrong answer that looks right.
+
+::: context npos-is-huge What npos really is
+`std::string::npos` is the largest number a `std::size_t` can hold. On a 64-bit computer that is 18446744073709551615, a bit more than 18 quintillion. No real string is that long, so it can never be a real position, which makes it a safe "not found" signal. The standard library writes it as −1 converted to an unsigned type, which is where that huge number comes from. Comparing with `std::string::npos` by name is clearer than typing the number, and correct on every computer.
+:::
+
+::: context length-not-end Start and length, not start and end
+Some languages cut text by giving a start and an end position. C++'s `substr` takes a start and a **count**. For "Ada Lovelace", `s.substr(4, 4)` is "Love" (4 characters from index 4), while `s.substr(4, 8)` is "Lovelace" (8 characters). If the count runs past the end, `substr` stops at the end, so `s.substr(4, 100)` is also "Lovelace". A start past the end is different: that stops the program with an `std::out_of_range` error.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <g font-size="13" text-anchor="middle" fill="#1f2a44">
+    <rect x="18" y="30" width="324" height="32" fill="#fff" stroke="#1f2a44"/>
+    <rect x="126" y="30" width="108" height="32" fill="#8fb8f0" stroke="#1f2a44"/>
+    <text x="31" y="51">A</text><text x="58" y="51">d</text><text x="85" y="51">a</text><text x="112" y="51"> </text>
+    <text x="139" y="51">L</text><text x="166" y="51">o</text><text x="193" y="51">v</text><text x="220" y="51">e</text>
+    <text x="247" y="51">l</text><text x="274" y="51">a</text><text x="301" y="51">c</text><text x="328" y="51">e</text>
+  </g>
+  <g font-size="11" text-anchor="middle" fill="#6c7a93">
+    <text x="31" y="78">0</text><text x="58" y="78">1</text><text x="85" y="78">2</text><text x="112" y="78">3</text>
+    <text x="139" y="78">4</text><text x="166" y="78">5</text><text x="193" y="78">6</text><text x="220" y="78">7</text>
+    <text x="247" y="78">8</text><text x="274" y="78">9</text><text x="301" y="78">10</text><text x="328" y="78">11</text>
+  </g>
+  <text x="126" y="20" font-size="12" fill="#1d6fd1">start 4</text>
+  <line x1="126" y1="98" x2="234" y2="98" stroke="#1d6fd1" stroke-width="2"/>
+  <line x1="126" y1="92" x2="126" y2="104" stroke="#1d6fd1" stroke-width="2"/>
+  <line x1="234" y1="92" x2="234" y2="104" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="180" y="120" font-size="12" text-anchor="middle" fill="#1d6fd1">length 4: s.substr(4, 4) is "Love"</text>
+</svg>
+```
+:::
+
+::: context telemetry-text Splitting lines for real
+A lot of real data arrives as lines of text with a separator between the fields. GPS receivers, for example, commonly send "NMEA" sentences: lines that start with `$` and list time, latitude, longitude and more, separated by commas. Ground software for rockets and satellites often logs readings as name-and-value pairs in text too. Reading them always comes down to what you do here: find the separator, then cut out the pieces on either side.
+:::
+
+::: context wrap-around Counting past the top
+An unsigned number cannot go below 0 or above its largest value. When it passes the largest value, it wraps around to 0, like a car's trip counter rolling over from 999.9 to 000.0. Since `npos` is the largest `std::size_t`, `npos + 1` is exactly 0, and `s.substr(0)` is the whole string. C++ defines this wrap-around for unsigned numbers on purpose, so no warning appears. Only the check for `npos` protects you.
+:::
+--- task
+A spacecraft sends readings as text lines like `ALT:4200`: a field name, a colon, then a value. Write two functions that split such a line. No `main`: the checker supplies it.
+
+- `std::string field_name(const std::string& line)` returns the part before the first colon. If there is no colon, it returns the whole line. `field_name("ALT:4200")` is `"ALT"`, and `field_name("NOCOLON")` is `"NOCOLON"`.
+- `std::string field_value(const std::string& line)` returns the part after the first colon. If there is no colon, it returns `""` (an empty string). `field_value("ALT:4200")` is `"4200"`, `field_value("MODE:SAFE:2")` is `"SAFE:2"`, and `field_value("NOCOLON")` is `""`.
+
+Use `find` to locate the colon.
+--- starter
+#include <string>
+
+std::string field_name(const std::string& line) {
+    return "";
+}
+
+std::string field_value(const std::string& line) {
+    return "";
+}
+--- solution
+#include <string>
+
+std::string field_name(const std::string& line) {
+    auto pos = line.find(':');
+    if (pos == std::string::npos) {
+        return line;
+    }
+    return line.substr(0, pos);
+}
+
+std::string field_value(const std::string& line) {
+    auto pos = line.find(':');
+    if (pos == std::string::npos) {
+        return "";
+    }
+    return line.substr(pos + 1);
+}
+--- hint
+In each function, first find the colon and keep its index: `auto pos = line.find(':');`. Then check whether it was found at all, by comparing `pos` with `std::string::npos`.
+--- hint
+If there is no colon, return the answer for that case right away: the whole `line` for `field_name`, `""` for `field_value`. Otherwise cut with `substr`: the name is the `pos` characters starting at 0, and the value starts right after the colon.
+--- hint
+The two cuts are `line.substr(0, pos)` and `line.substr(pos + 1)`.
+--- check case | field_name("ALT:4200") is "ALT"
+field_name("ALT:4200")
+=> "ALT"
+--- check case | field_value("ALT:4200") is "4200"
+field_value("ALT:4200")
+=> "4200"
+--- check case | Only the first colon splits
+field_value("MODE:SAFE:2")
+=> "SAFE:2"
+--- check case | No colon: field_name is the whole line
+field_name("NOCOLON")
+=> "NOCOLON"
+--- check case | No colon: field_value is empty
+field_value("NOCOLON")
+=> ""
+--- check source | Uses find
+\.find\s*\(
+
 === cpp-10 | References
 --- teach
-By default C++ passes arguments **by value**: the function gets a copy, and changing it changes nothing outside.
+In the vector lesson you wrote `const std::vector<int>& v` and were promised more about that `&` later. This is later. Here you learn how a function can change a variable that belongs to whoever called it.
 
-A **reference** (`&`) is another name for an existing variable. Pass by reference and the function works on the caller's own variable:
+### Functions get copies
+
+Picture handing a friend a photocopy of your homework. They can scribble all over the copy, and your page stays clean. That is what C++ does with arguments unless you say otherwise. It is called **pass by value**: the function gets its own copy, and changing the copy changes nothing outside.
+
+```cpp
+void add_one(int n) {
+    n = n + 1;    // changes the copy only
+}
+
+int x = 4;
+add_one(x);   // x is still 4
+```
+
+### A second name for the same variable
+
+Now picture a nickname. "Ada" and "the tall one" are two names for one person; whatever happens to the tall one happens to Ada. A **reference** is that: [[another name for a variable that already exists|bound-for-life]]. You make one by putting an ampersand `&` after the type, read "reference to":
+
+```cpp
+int a = 5;
+int& b = a;   // b is another name for a
+b = 8;        // a is now 8
+```
+
+There is no second int here. `a` and `b` are [[one box with two labels|one-box-two-names]].
+
+### Pass by reference
+
+Put the `&` on a parameter, and the function works on the caller's own variable. This is **pass by reference**:
 
 ```cpp
 void add_one(int& n) {
@@ -511,15 +2460,104 @@ int x = 4;
 add_one(x);   // x is now 5
 ```
 
-So there are three ways to take an argument:
+The only change from before is one `&`, and now `n` is another name for `x`.
 
-- `int n` — a copy; cheap for small types
-- `const std::vector<int>& v` — no copy, read-only; the default for big things
-- `std::vector<int>& v` — no copy, and the function may change it
+### Three ways to take an argument
 
-The checks in this lesson are written as `[] { …; return …; }()`. That is a **lambda** — a small unnamed function — defined and called on the spot, so a check can set up variables, call your function and test the result. You will write lambdas yourself later; here you only need to read them.
+- `int n`: a copy. Cheap for small types like `int`, `double` and `char`.
+- `const std::vector<int>& v`: no copy, read-only. The default for big things like vectors and strings, because a copy could mean [[copying millions of bytes|cost-of-a-copy]].
+- `std::vector<int>& v`: no copy, and the function may change it.
+
+Choose the third only when [[changing the caller's variable|return-or-change]] is the whole point of the function. Changing the caller's own vector, instead of making a new one, is called working **in place**.
+
+### The loop variable needs one too
+
+A range-for loop copies each element into its loop variable, the same way a function copies its arguments. To change the elements themselves, make the loop variable a reference:
+
+```cpp
+std::vector<int> d = {1, 2, 3};
+for (int& y : d) {
+    y = y * 10;
+}
+// d is now {10, 20, 30}
+```
+
+**Watch out:** forgetting either `&` compiles without a word of complaint and silently does nothing. With `std::vector<int> v` as the parameter, the function changes its own copy of the vector. With `for (int x : v)`, the loop changes a copy of each element. A function that changes a vector in place needs both: `std::vector<int>& v` and `for (int& x : v)`.
+
+### Swapping needs a spare
+
+To swap the juice in two glasses, you need a third, empty glass. [[Swapping two variables|std-swap]] works the same way: a **temporary** variable holds one value while you move the other.
+
+```cpp
+int a = 1;
+int b = 2;
+int tmp = a;   // tmp is 1
+a = b;         // a is 2
+b = tmp;       // b is 1
+```
+
+Without `tmp`, `a = b; b = a;` leaves both at 2: the first line wipes out the old value of `a` before anything saved it.
+
+### Reading the checks
+
+The checks in this lesson look like this:
+
+```cpp
+[] { int a = 1, b = 2; swap_values(a, b); return a == 2 && b == 1; }()
+```
+
+That is a **lambda**: a small function with no name, [[defined and called on the spot|lambda-parts]]. The square brackets `[]` start it, the curly braces `{ … }` hold its body, and the `()` at the very end calls it right away. Inside, `int a = 1, b = 2;` declares two ints on one line. A lambda lets a check set up variables, call your function and test the result. You will write lambdas yourself later; here you only need to read them.
+
+::: context bound-for-life A reference is bound for life
+A reference must be tied to a variable the moment it is made: `int& b;` on its own does not compile. After that it can never be moved to a different variable. `b = c;` does not make `b` a name for `c`; it copies the value of `c` into `a`, the variable `b` names. And there is no such thing as a reference to nothing. Pointers, in the last lesson of this course, are the tool that can change what it points at and can point at nothing, which is exactly why they need more care.
+:::
+
+::: context one-box-two-names Copies and references, side by side
+Pass by value makes a second box with the same number in it; the function scribbles on its own box. Pass by reference makes no new box at all: the function's name is a second label stuck on the caller's box, so every change lands in the one box there is.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
+  <text x="85" y="20" font-size="12" text-anchor="middle" fill="#1f2a44">by value: int n</text>
+  <rect x="25" y="50" width="50" height="40" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="95" y="50" width="50" height="40" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="50" y="75" font-size="14" text-anchor="middle" fill="#1f2a44">4</text>
+  <text x="120" y="75" font-size="14" text-anchor="middle" fill="#1f2a44">5</text>
+  <text x="50" y="42" font-size="12" text-anchor="middle" fill="#1d6fd1">x</text>
+  <text x="120" y="42" font-size="12" text-anchor="middle" fill="#b4232c">n (a copy)</text>
+  <text x="85" y="120" font-size="11" text-anchor="middle" fill="#6c7a93">two boxes: x stays 4</text>
+  <line x1="180" y1="30" x2="180" y2="140" stroke="#6c7a93" stroke-dasharray="4 3"/>
+  <text x="270" y="20" font-size="12" text-anchor="middle" fill="#1f2a44">by reference: int&amp; n</text>
+  <rect x="245" y="50" width="50" height="40" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="270" y="75" font-size="14" text-anchor="middle" fill="#1f2a44">5</text>
+  <text x="250" y="42" font-size="12" text-anchor="middle" fill="#1d6fd1">x</text>
+  <text x="290" y="42" font-size="12" text-anchor="middle" fill="#b4232c">n</text>
+  <text x="270" y="120" font-size="11" text-anchor="middle" fill="#6c7a93">one box, two names: x is 5</text>
+</svg>
+```
+:::
+
+::: context cost-of-a-copy What a copy costs
+An `int` takes 4 bytes on nearly every computer today, so a vector of one million ints holds 4 million bytes, about 4 megabytes. Passing it by value copies all of it on every call: the computer has to find 4 more megabytes and fill them, then throw them away when the function ends. Called inside a loop, that adds up fast. A reference is about the size of one memory address, 8 bytes on a 64-bit computer, however big the vector is.
+:::
+
+::: context return-or-change Return it, or change it?
+A function can hand back a result with `return`, or change a variable the caller passed by reference. The C++ Core Guidelines, a widely used rule book edited by C++'s creator Bjarne Stroustrup, advise preferring return values for results, because `int y = f(x);` shows at a glance what changes. Pass by non-const reference is for when changing the caller's object is the job itself, as when you update a big vector in place instead of building a new one.
+:::
+
+::: context std-swap The library's own swap
+Swapping two values is so common that the standard library has it ready-made: `std::swap(a, b)`, from the header `<utility>`, does exactly what you write in this lesson, and works for any type. Sorting a list is mostly a long series of swaps. Writing your own `swap_values` once is still worth it, because it shows why the parameters must be references: a swap done on copies would swap nothing.
+:::
+
+::: context lambda-parts The parts of a lambda
+The name comes from the Greek letter lambda, used by the logician Alonzo Church in the 1930s for functions without names. In C++ the `[]` is the **capture list**: it can bring in variables from outside the lambda, and here it is empty. The `{ … }` is the body, like any function's. A lambda is a value, so the `()` after it calls it, exactly as `add_one(x)` calls a named function; an empty `()` means "no arguments". Lambdas come back later in the course, when you hand a small rule to a library function, such as how to sort a list.
+:::
 --- task
-Write `void double_all(std::vector<int>& v)` that doubles every element **in place**, and `void swap_values(int& a, int& b)`. No `main`.
+Write two functions that change their caller's variables. No `main`: the checker supplies it.
+
+- `void double_all(std::vector<int>& v)` doubles every element of `v` **in place**, so the caller's own vector changes: `{1, 2, 3}` becomes `{2, 4, 6}`.
+- `void swap_values(int& a, int& b)` swaps the two values: if `a` was 1 and `b` was 2, afterwards `a` is 2 and `b` is 1.
+
+The starter has the right names, but it takes everything by value, so nothing it does reaches the caller. Fix the parameters and the loop, and fill in the swap.
 --- starter
 #include <vector>
 
@@ -546,7 +2584,9 @@ void swap_values(int& a, int& b) {
     b = tmp;
 }
 --- hint
-Both the parameter and the loop variable need `&`: `std::vector<int>& v` and `for (int& x : v)`.
+Reread the Watch out: in `double_all` there are two places that each make a copy. Which two?
+--- hint
+Both the parameter and the loop variable need `&`: `std::vector<int>& v` and `for (int& x : v)`. `swap_values` needs it on both parameters: `int& a, int& b`.
 --- hint
 Swapping needs a temporary: `int tmp = a; a = b; b = tmp;`
 --- check test | double_all changes the caller's vector
@@ -556,19 +2596,57 @@ Swapping needs a temporary: `int tmp = a; a = b; b = tmp;`
 
 === cpp-11 | Structs and classes
 --- teach
-A `struct` groups related values into one type:
+Last lesson you passed variables by reference, so a function could change the caller's own `int` or vector. So far, every variable you made held one kind of thing: one number, one piece of text, one list. This lesson lets you invent a type of your own that bundles several values together, and then give that type rules it enforces by itself.
+
+### A struct: several values under one name
+
+Think of where a rover is on a flat map. That is not one number but two: how far across (call it x) and how far up (call it y). You could keep two separate `double` variables, but they belong together, and a function that needs "the position" should get both at once.
+
+A **struct** (short for *structure*) is a new type you design that [[groups related values|struct-memory]] under one name:
 
 ```cpp
 struct Point {
     double x;
     double y;
 };
-
-Point p{3.0, 4.0};
-p.x;   // 3.0
 ```
 
-A `class` is the same thing with its data **private** by default, so only its own member functions can change it. That is how a type keeps its rules:
+Read it as: "a `Point` is made of a `double` called `x` and a `double` called `y`." Each value inside is a **member**: one named part of the struct. This only describes the shape. No point exists yet, the same way a blank form is not a filled-in form.
+
+**Watch out:** a struct ends with `};`, a closing brace *and* a semicolon. The braces you have closed so far, after an `if`, a loop or a function, need no `;`, so this one is easy to forget. (A class, coming up below, ends with `};` too.) Leave it off and the compiler stops with an error like `expected ';' after struct`.
+
+### Making a Point and reading its parts
+
+Now make a real point, the same way you make an `int`:
+
+```cpp
+Point p{3.0, 4.0};           // x is 3.0, y is 4.0
+std::cout << p.x << "\n";    // prints 3
+```
+
+The braces `{ }` fill in the members in the order the struct lists them: first `x`, then `y`. The dot `.` is the **member access** operator: read `p.x` as "p's x". You can change a member the same way, with `p.y = 10.0;`.
+
+A `Point` is a type like any other, so a function can take one as a parameter and read its members:
+
+```cpp
+double height_of(Point p) {
+    return p.y;
+}
+```
+
+### The distance between two points
+
+To get the straight-line distance between two points, use [[Pythagoras' rule|pythagoras]]. Find how far apart they are across (`dx`, the difference of the x's) and how far apart they are up (`dy`, the difference of the y's). The distance is the square root of `dx * dx + dy * dy`.
+
+`std::sqrt` gives a square root. It lives in the `<cmath>` header (the maths library), so a file that uses it starts with `#include <cmath>`:
+
+```cpp
+std::sqrt(25.0)    // 5
+```
+
+### A class: data that keeps its own rules
+
+Picture a bank account. Anyone should be able to put money in and read the balance, but nobody should be able to reach inside and write any number they like into it. A struct's members are open to everyone. A **class** is the same thing as a struct, except its members are **[[private|why-private]]** by default: only the class's own functions can touch them.
 
 ```cpp
 class Account {
@@ -581,9 +2659,103 @@ private:
 };
 ```
 
-The part after `:` in the constructor initialises members before the body runs.
+Take it one piece at a time:
+
+- `public:` is a label. Everything below it, until the next label, is **public**: code outside the class may use it.
+- `private:` is the other label. Everything below it is private: only the class's own functions may use it. Here that is `int balance_;`, the data. The underscore at the end of the name is only a habit that marks it as private data; the compiler does not care.
+- `deposit` is a **member function**: a function that lives inside the class and works on one object's own data. `balance_ += amount` means "add `amount` to `balance_`" (`+=` is read "add to").
+- `balance()` hands back the balance. The `const` after its parentheses is a [[promise that it only looks|const-member]] and never changes the object.
+
+### The constructor
+
+The first line inside `public:` is the **constructor**: a special member function that runs once, when an object is created, to set it up. It has the same name as the class and no return type.
+
+```cpp
+explicit Account(int start) : balance_(start) {}
+```
+
+- `(int start)` is its parameter, like any function's.
+- `: balance_(start)` is the **[[member initialiser list|init-list]]**. After the colon, each member gets its first value before the body runs. Here `balance_` starts out equal to `start`.
+- `{}` is the body. It is empty because there is nothing more to do.
+- `explicit` means the constructor runs only when you ask for it by name. It stops C++ from [[quietly turning a plain number into an Account|explicit-keyword]].
+
+Now use it. Put the starting value in parentheses after the object's name:
+
+```cpp
+Account savings(100);                     // the constructor runs: balance_ starts at 100
+savings.deposit(50);
+std::cout << savings.balance() << "\n";   // prints 150
+// savings.balance_ = 1000000;            // compile error: balance_ is private
+```
+
+You can also make an object with no name and use it at once: `Account(100).balance()` is `100`.
+
+**Watch out:** calling a member function needs its parentheses, even when it takes nothing: `savings.balance()`, not `savings.balance`.
+
+::: context struct-memory How a Point sits in memory
+A struct's members are stored one after another in the computer's memory, in the order you listed them. On ordinary computers a `double` takes 8 bytes, so a `Point` is 16 bytes: 8 for `x`, then 8 for `y`. When you pass a `Point` to a function, all 16 bytes are copied, just like copying an `int`. Flight software uses structs constantly for exactly this reason: a telemetry packet, a sensor reading or a position is a fixed bundle of numbers laid out in a known order.
+
+```svg
+<svg viewBox="0 0 360 120" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="180" y="20" font-size="13" fill="#1f2a44" text-anchor="middle">Point p{3.0, 4.0}: 16 bytes in a row</text>
+  <rect x="30" y="35" width="150" height="40" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="180" y="35" width="150" height="40" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="105" y="60" font-size="13" fill="#1f2a44" text-anchor="middle">x = 3.0</text>
+  <text x="255" y="60" font-size="13" fill="#1f2a44" text-anchor="middle">y = 4.0</text>
+  <text x="105" y="95" font-size="12" fill="#6c7a93" text-anchor="middle">8 bytes</text>
+  <text x="255" y="95" font-size="12" fill="#6c7a93" text-anchor="middle">8 bytes</text>
+</svg>
+```
+:::
+
+::: context pythagoras The rule behind distance
+Walk 3 steps across and 4 steps up, and the straight line back to where you started is exactly 5 steps long. That is Pythagoras' rule for a right-angled triangle: the long side squared equals the two short sides squared, added. Here 3 × 3 + 4 × 4 = 9 + 16 = 25, and the square root of 25 is 5. For two points, the short sides are `dx` and `dy`. The sign of `dx` does not matter, because squaring a negative number gives a positive one.
+
+```svg
+<svg viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <line x1="60" y1="170" x2="150" y2="170" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="150" y1="170" x2="150" y2="50" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="60" y1="170" x2="150" y2="50" stroke="#1d6fd1" stroke-width="3"/>
+  <rect x="140" y="160" width="10" height="10" fill="none" stroke="#1f2a44"/>
+  <circle cx="60" cy="170" r="4" fill="#b4232c"/>
+  <circle cx="150" cy="50" r="4" fill="#b4232c"/>
+  <text x="40" y="190" font-size="12" fill="#1f2a44">a (0, 0)</text>
+  <text x="160" y="48" font-size="12" fill="#1f2a44">b (3, 4)</text>
+  <text x="105" y="188" font-size="12" fill="#1f2a44" text-anchor="middle">dx = 3</text>
+  <text x="158" y="115" font-size="12" fill="#1f2a44">dy = 4</text>
+  <text x="80" y="105" font-size="12" fill="#1d6fd1" text-anchor="end">5</text>
+  <text x="215" y="130" font-size="12" fill="#1f2a44">√(3×3 + 4×4)</text>
+  <text x="215" y="148" font-size="12" fill="#1f2a44">= √25 = 5</text>
+</svg>
+```
+:::
+
+::: context why-private Why hide the data at all
+A rule a type must always keep is called an **invariant**. "A counter is never negative" or "an account's balance only changes through deposits" are invariants. If the data is public, any line anywhere in a program of a million lines could break the rule, and you would have to search all of them to find which one did. If the data is private, only the class's own few functions can change it, so there are only a few places to check. That is why big, careful programs, flight software included, keep data private. You will build classes that guard their own rules in the next course's "Classes that keep their own rules".
+:::
+
+::: context const-member A promise the compiler checks
+The `const` after `balance()` is not a comment; the compiler holds you to it. If the body tried to change `balance_`, the program would not compile. It also lets the function be called on an object you are only allowed to look at, such as one passed in as a `const Account&`. Without that `const`, even reading the balance of such an object would be a compile error. The next course opens with a whole lesson on this, "const correctness".
+:::
+
+::: context init-list Why members get their value before the body
+You could write `Account(int start) { balance_ = start; }` and for an `int` it works the same. But the list after the colon does something the body cannot: it gives a member its very first value, instead of changing it afterwards. Some members must be set at birth and can never be assigned later, such as a `const` member or a reference member, so they can only be set in this list. One more detail: members are always set up in the order they are declared in the class, whatever order you write them in the list.
+:::
+
+::: context explicit-keyword What explicit prevents
+Without `explicit`, a constructor that takes one value also works as an automatic conversion. Then `Account a = 100;` would compile, and so would passing the number `100` to a function that expects an `Account`: C++ would quietly build an account from it. That is almost never what you meant, and it hides mistakes. With `explicit`, both are compile errors, and you have to write `Account a(100);` on purpose. Many style guides ask for `explicit` on every one-value constructor.
+:::
 --- task
-Write `struct Point { double x; double y; };` and `double distance(Point a, Point b)` (straight-line distance; `std::sqrt` is in `<cmath>`). Then write a `class Counter` with a constructor taking a starting value, `void increment()`, `void reset()` (back to 0), and `int value() const`. No `main`.
+Write `struct Point { double x; double y; };` and a function `double distance(Point a, Point b)` that returns the straight-line distance between the two points (use `std::sqrt`, from `<cmath>`, which the starter already includes).
+
+Then write a `class Counter` with:
+
+- a constructor that takes the starting value as an `int`,
+- `void increment()`, which adds one,
+- `void reset()`, which sets the count back to `0`,
+- `int value() const`, which returns the current count.
+
+No `main`: the checker supplies it.
 --- starter
 #include <cmath>
 
@@ -611,9 +2783,11 @@ private:
     int value_;
 };
 --- hint
-Distance: `std::sqrt(dx * dx + dy * dy)`.
+For the distance, make two `double`s: `dx = a.x - b.x` and `dy = a.y - b.y`. Then return `std::sqrt(dx * dx + dy * dy)`. Remember the `;` after the struct's closing brace.
 --- hint
-Keep the count in a private member, e.g. `int value_;`, set by the constructor.
+Model `Counter` on `Account`: a `public:` part with the constructor and the three functions, and a `private:` part holding the count, for example `int value_;`.
+--- hint
+The constructor is `explicit Counter(int start) : value_(start) {}`. Then `increment` does `value_++;`, `reset` does `value_ = 0;`, and `value() const` returns `value_`.
 --- check test | distance of a 3-4-5 triangle is 5
 std::abs(distance(Point{0, 0}, Point{3, 4}) - 5.0) < 1e-9
 --- check case | Counter starts where it is told
@@ -624,24 +2798,144 @@ Counter(5).value()
 
 === cpp-12 | std::map
 --- teach
-`std::map` stores **key → value** pairs, kept sorted by key:
+Last lesson you built types of your own with `struct` and `class`. This lesson uses a ready-made type from the standard library that you will reach for again and again: the map.
+
+### Looking things up by name
+
+A `std::vector` finds things by position: `v[0]`, `v[1]`, `v[2]`. Often you want to find things by name instead. Think of a space station's supply list: you do not ask "what is item number 2?", you ask "how much water is left?"
+
+A **std::map** is a container of **key → value** pairs, where the arrow is read "maps to":
+
+- the **key** is what you look things up by (here, the name of a supply);
+- the **value** is what is stored under that key (here, how many there are).
+
+Each key appears at most once, and the map keeps its pairs [[sorted by key|map-tree]].
+
+### Making a map
 
 ```cpp
 #include <map>
 #include <string>
 
-std::map<std::string, int> stock;
-stock["apples"] = 5;
-stock["pears"] += 2;          // a missing key starts at 0, then += 2
-stock.count("kiwis");         // 0 — does the key exist?
-for (const auto& [name, qty] : stock) {
-    // name, qty — in key order
+std::map<std::string, int> supplies;
+```
+
+Inside the [[angle brackets|template-args]] `< >` go two types: first the key's type, then the value's type. So this map goes from `std::string` names to `int` amounts. It starts empty.
+
+### Storing and reading with [ ]
+
+Square brackets with a key work like a labelled box:
+
+```cpp
+supplies["water"] = 40;                  // store 40 under "water"
+supplies["oxygen"] = 12;
+std::cout << supplies["water"] << "\n";  // prints 40
+```
+
+Storing under a key that is already there replaces the old value.
+
+### A missing key starts at 0
+
+If you use `[ ]` with a key the map does not have yet, the map adds that key with a value that [[starts at 0|starts-at-zero]], and then does what you asked:
+
+```cpp
+supplies["food"] += 3;    // "food" was missing: it starts at 0, then += 3 makes it 3
+```
+
+That makes counting easy. `++` adds one (you met it in `i++` in the loops lesson), so `counts[word]++` means "add one to this word's count", and it works even the very first time a word shows up.
+
+### Looking without touching
+
+`.count(key)` tells you whether a key is there: `1` if it is, `0` if not. It only looks; it never adds anything.
+
+```cpp
+supplies.count("fuel");   // 0: there is no "fuel" key
+```
+
+`.find(key)` also looks without adding. You will use it properly in the next course.
+
+**Watch out:** *reading* `m[key]` also inserts the key if it is missing. `std::cout << supplies["fuel"];` prints `0`, and now the map has a `"fuel"` entry it did not have before. When you only want to check whether a key is there, use `m.count(key)` or `m.find(key)`, never `m[key]`.
+
+### Going through every pair
+
+A range-for loop (from the `std::vector` lesson) visits every pair, in key order:
+
+```cpp
+for (const auto& [name, qty] : supplies) {
+    std::cout << name << " " << qty << "\n";
 }
 ```
 
-Reading `m[key]` inserts the key if it is missing; use `m.find(key)` or `m.count(key)` when you only want to look.
+- `const auto&` means "each pair, by read-only reference": no copies, and no changes (like `const std::vector<int>&` in the references lesson).
+- `[name, qty]` is a **[[structured binding|structured-bindings]]**: it unpacks each pair into two names, the key and the value.
+
+For string keys, key order is [[alphabetical order|string-order]]. With `food` 3, `oxygen` 12 and `water` 40 stored, this prints:
+
+```
+food 3
+oxygen 12
+water 40
+```
+
+### Reading words out of a string
+
+To count words you first need to pull the words out of one long string. In the reading-input lesson, `std::cin >> w` read the next value from the Input box, skipping spaces. A **std::istringstream** (input string stream) does the same thing, but reads from a string you give it. It needs `#include <sstream>`.
+
+```cpp
+std::istringstream in("go no go");
+std::string w;
+while (in >> w) {
+    std::cout << w << "\n";
+}
+```
+
+This prints `go`, `no` and `go`, one per line. Like `std::cin >> w`, `in >> w` is true while it managed to read a word, so the loop stops when the words run out. This works because `std::cin` and `std::istringstream` are both [[streams|streams]].
+
+::: context map-tree A tree behind the scenes
+A `std::map` does not keep its pairs in one long row. It keeps them in a *tree*: each key has smaller keys down its left branch and bigger keys down its right. To find a key, it starts at the top and goes left or right at each step. The map keeps the tree balanced, so a million keys need only about 20 steps (2 multiplied by itself 20 times is just over a million). This picture shows one shape the map can build for the words of "to be or not to be":
+
+```svg
+<svg viewBox="0 0 360 190" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <line x1="180" y1="45" x2="100" y2="95" stroke="#6c7a93" stroke-width="2"/>
+  <line x1="180" y1="45" x2="260" y2="95" stroke="#6c7a93" stroke-width="2"/>
+  <line x1="100" y1="115" x2="160" y2="150" stroke="#6c7a93" stroke-width="2"/>
+  <rect x="140" y="20" width="80" height="30" rx="6" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="180" y="40" font-size="13" fill="#1f2a44" text-anchor="middle">or: 1</text>
+  <rect x="60" y="90" width="80" height="30" rx="6" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="100" y="110" font-size="13" fill="#1f2a44" text-anchor="middle">be: 2</text>
+  <rect x="220" y="90" width="80" height="30" rx="6" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="260" y="110" font-size="13" fill="#1f2a44" text-anchor="middle">to: 2</text>
+  <rect x="120" y="145" width="80" height="30" rx="6" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="160" y="165" font-size="13" fill="#1f2a44" text-anchor="middle">not: 1</text>
+  <text x="20" y="75" font-size="12" fill="#6c7a93">smaller: left</text>
+  <text x="270" y="75" font-size="12" fill="#6c7a93">bigger: right</text>
+</svg>
+```
+:::
+
+::: context template-args Types that take types
+`std::vector<int>` and `std::map<std::string, int>` are both *templates*: general-purpose recipes that become a real type once you fill in the angle brackets. The same `std::map` code works for a map from names to numbers, from numbers to names, or from part numbers to whole structs. You fill in the types; the compiler writes the specific version for you. Later, in the advanced course, you will write templates of your own.
+:::
+
+::: context starts-at-zero Where the zero comes from
+When `[ ]` meets a missing key, the map creates a brand-new value for it the plain, empty way: `0` for an `int`, `0.0` for a `double`, and an empty string `""` for a `std::string`. Because `[ ]` may add a key, it cannot be used on a map you are only allowed to read, such as one passed in as `const std::map<std::string, int>&`: that is a compile error. For those, use `.count` or `.find`, or `.at(key)`, which reads an existing key and stops the program with an error if the key is missing.
+:::
+
+::: context structured-bindings Pairs, and unpacking them
+Each element of a map is a `std::pair`: a tiny struct with two members, `.first` (the key) and `.second` (the value). Before C++17, the 2017 version of the language, you had to write `p.first` and `p.second`. Structured bindings, added in C++17, let you name both parts at once. The key part is always `const`: if you could change a key in place, it would end up in the wrong spot in the sorted order.
+:::
+
+::: context string-order Why "Zebra" comes before "apple"
+Strings are compared one character at a time, from the left, using each character's number code. Every capital letter has a smaller code than every small letter: `'A'` is 65, `'Z'` is 90 and `'a'` is 97. So a map puts `"Zebra"` before `"apple"`. Digits compare the same way, which is why `"10"` comes before `"9"`: the first characters are `'1'` and `'9'`, and `'1'` is smaller. When you want numbers in number order, use `int` keys.
+:::
+
+::: context streams One way of reading, many sources
+A *stream* is a flow of characters you read from (or write to) in order. `std::cin` reads from the keyboard or the Input box, `std::istringstream` reads from a string, and `std::ifstream` reads from a file, but all of them use the same `>>`. Learn it once and it works everywhere, which is why flight software can test its telemetry parser on a string before it ever touches a real radio link. The next course has a whole lesson on processing text with string streams.
+:::
 --- task
-Write `std::map<std::string, int> count_words(const std::string& text)` that counts how many times each space-separated word appears. (Reading words out of a string: `std::istringstream in(text); std::string w; while (in >> w) { … }` — it needs `<sstream>`.) No `main`.
+Write `std::map<std::string, int> count_words(const std::string& text)` that counts how many times each space-separated word appears in `text`. For example, for `"to be or not to be"` the map holds `be` → 2, `not` → 1, `or` → 1, `to` → 2.
+
+Read the words out of the string with a `std::istringstream in(text);` and a `while (in >> w) { … }` loop, as in the explanation; it needs `<sstream>`, which the starter already includes. No `main`.
 --- starter
 #include <map>
 #include <string>
@@ -666,7 +2960,11 @@ std::map<std::string, int> count_words(const std::string& text) {
     return counts;
 }
 --- hint
-`counts[word]++` works even the first time: a missing entry starts at 0.
+Two steps: pull the words out one at a time with a string stream, and add one to each word's count in the map.
+--- hint
+Before the `return`, make `std::istringstream in(text);` and `std::string word;`, then loop with `while (in >> word) { … }`.
+--- hint
+Inside the loop, `counts[word]++;` is all you need: a word seen for the first time starts at 0 and becomes 1.
 --- check case | Counts repeated words
 count_words("to be or not to be")
 => std::map<std::string, int>{{"be", 2}, {"not", 1}, {"or", 1}, {"to", 2}}
@@ -675,27 +2973,139 @@ count_words("").empty()
 
 === cpp-13 | Pointers and ownership
 --- teach
-A **pointer** holds the address of a value. `&x` takes the address of `x`; `*p` follows a pointer to the value:
+In the references lesson you gave an existing variable a second name, and last lesson a map let you find a value by its key. This lesson shows the tool that sits underneath both: the pointer, which finds a value by *where it lives* in memory.
+
+### Every value lives at an address
+
+Picture the computer's memory as one very long street of numbered mailboxes. Each variable lives in a box (or a few boxes next to each other), and every box has a number. That number is the variable's **[[address|addresses]]**: where it lives in memory.
+
+`&x` is the **address-of** operator. Read `&x` as "the address of x".
 
 ```cpp
 int x = 10;
-int* p = &x;     // p points at x
-*p = 20;         // x is now 20
-int* none = nullptr;   // points at nothing — never follow it
+std::cout << &x << "\n";   // prints an address, something like 0x7ffd5c3a1e4c
 ```
 
-Pointers are how C++ reaches memory that outlives a function. Memory you allocate must be given back exactly once, so modern C++ does not use raw `new` and `delete` for that: a **smart pointer** owns the object and frees it automatically.
+The address is printed in hexadecimal (base 16) and changes from run to run, so you will see a different number each time.
+
+The `&` symbol now has two jobs. Written after a *type*, as in `int& n`, it makes a reference (the references lesson). Written in front of a *variable*, as in `&x`, it means "the address of".
+
+### A pointer holds an address
+
+A **pointer** is a variable whose value is an address. It is a slip of paper with a mailbox number written on it.
+
+```cpp
+int* p = &x;    // p points at x
+```
+
+`int*` is read "[[pointer to int|star-placement]]". So this line says: make a pointer to an `int` called `p`, and store in it the address of `x`. We say "p points at x".
+
+### Following a pointer
+
+Put `*` in front of a pointer to follow it to the value it points at. This is called **dereferencing**; read `*p` as "the thing p points at".
+
+```cpp
+*p = 20;                  // x is now 20
+std::cout << x << "\n";   // prints 20
+```
+
+Nothing was written to `x` by name, yet `x` changed, because `p` held its address.
+
+### Pointing at nothing
+
+Sometimes a pointer has nothing to point at yet. For that there is **nullptr**, the null pointer: a pointer value that means "points at nothing".
+
+```cpp
+int* none = nullptr;   // points at nothing: never follow it
+```
+
+Following a null pointer (`*none`) is **[[undefined behaviour|undefined-behaviour]]**: C++ makes no promise at all about what happens. Usually the program crashes.
+
+**Watch out:** when a function is handed a pointer, it may be handed `nullptr`. Check before you follow it:
+
+```cpp
+if (p != nullptr) {
+    *p = 0;
+}
+```
+
+### Memory that outlives a function
+
+A function's ordinary variables disappear when the function returns. Pointers are how C++ reaches [[memory that outlives a function|stack-and-heap]]. You can ask for a piece of memory with `new` (for example `new int(5)`), and it stays until you give it back with `delete`.
+
+Memory you ask for must be given back **[[exactly once|new-delete-bugs]]**: forget, and it is never freed; do it twice, and the program is broken. So modern C++ does not use raw `new` and `delete` for this. Instead, a **smart pointer** owns the object: it is the one thing responsible for the object, and it frees it automatically.
+
+### std::unique_ptr: one owner
+
+**std::unique_ptr** is the smart pointer for "exactly one owner". `std::make_unique` makes a new object and hands back a `unique_ptr` that owns it. Both need `#include <memory>`.
 
 ```cpp
 #include <memory>
-auto p = std::make_unique<int>(42);   // p owns an int
-*p += 1;                              // 43
-// freed automatically when p goes out of scope
+
+auto p = std::make_unique<int>(42);   // p owns a new int holding 42
+*p += 1;                              // follow it like a pointer: now 43
+// the int is freed automatically when p goes out of scope
 ```
 
-Rule of thumb: raw pointers to *look at* things, `std::unique_ptr` to *own* them.
+"Goes out of scope" means the program reaches the closing `}` of the block where `p` was made. Here `auto` lets the compiler work out that `p` is a `std::unique_ptr<int>`: a unique pointer that owns an `int`.
+
+A function can make an object and hand ownership to its caller by returning the `unique_ptr`:
+
+```cpp
+std::unique_ptr<double> make_fuel_gauge(double litres) {
+    return std::make_unique<double>(litres);
+}
+```
+
+The rule of thumb: use raw pointers like `int*` to *look at* things, and [[std::unique_ptr to own them|owning-later]].
+
+::: context addresses Memory is numbered boxes
+Memory is made of bytes, and every byte has a number, its address. An `int` usually takes 4 bytes; its address is the number of its first byte. On a 64-bit computer a pointer takes 8 bytes, whatever it points at, because an address is always the same size. In the picture, the addresses are made small to fit; real ones are long hexadecimal numbers.
+
+```svg
+<svg viewBox="0 0 360 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b4232c"/>
+    </marker>
+  </defs>
+  <text x="80" y="30" font-size="12" fill="#6c7a93" text-anchor="middle">address 1000</text>
+  <text x="265" y="30" font-size="12" fill="#6c7a93" text-anchor="middle">address 1008</text>
+  <rect x="40" y="40" width="80" height="40" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="210" y="40" width="110" height="40" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="80" y="65" font-size="14" fill="#1f2a44" text-anchor="middle">10</text>
+  <text x="265" y="65" font-size="14" fill="#1f2a44" text-anchor="middle">1000</text>
+  <text x="80" y="100" font-size="13" fill="#1f2a44" text-anchor="middle">int x</text>
+  <text x="265" y="100" font-size="13" fill="#1f2a44" text-anchor="middle">int* p = &amp;x</text>
+  <path d="M265,110 C265,160 80,160 80,112" fill="none" stroke="#b4232c" stroke-width="2" marker-end="url(#head)"/>
+  <text x="172" y="160" font-size="12" fill="#b4232c" text-anchor="middle">*p follows the address</text>
+</svg>
+```
+:::
+
+::: context star-placement Where the star belongs
+`int* p` and `int *p` mean exactly the same thing; the spaces do not matter. But the star belongs to each name separately, which leads to a classic trap: `int* a, b;` makes `a` a pointer and `b` a plain `int`. Declaring one pointer per line avoids the trap completely.
+:::
+
+::: context undefined-behaviour When C++ makes no promise
+The C++ rules list some mistakes, like following a null pointer or reading past the end of an array, as *undefined behaviour*. The compiler is allowed to assume they never happen, so the result can be anything: a crash, a wrong answer, or a program that seems fine today and fails later. On most computers, following a null pointer crashes the program at once. Tony Hoare, who invented the null reference in 1965, later called it his "billion-dollar mistake" because of how many bugs it has caused.
+:::
+
+::: context stack-and-heap Two kinds of memory
+A function's ordinary variables live on the *stack*: a pile that grows when a function starts and shrinks when it returns, so those variables vanish automatically. Memory from `new` comes from the *heap* (also called the free store), and it stays until someone gives it back. That is what lets an object outlive the function that made it. It is also why someone has to be clearly in charge of giving it back.
+:::
+
+::: context new-delete-bugs Leaks, double frees and flight rules
+Forgetting `delete` is a *memory leak*: the memory stays taken, and a program that runs for days slowly runs out. Calling `delete` twice, or using the memory after it was deleted, is undefined behaviour and can corrupt anything. Spacecraft software is so careful about this that NASA's Jet Propulsion Laboratory coding rules, the "Power of Ten", forbid asking for new memory at all once the program has finished starting up, and limit how pointers may be used.
+:::
+
+::: context owning-later Who owns what, and where it comes back
+`std::unique_ptr` arrived in C++11 and `std::make_unique` in C++14. A `unique_ptr` cannot be copied, because two owners would both try to free the same memory; ownership can only be moved from one to another. The advanced course comes back to all of this: destructors that clean up automatically, moving, and `std::shared_ptr` for things with more than one owner.
+:::
 --- task
-Write `void set_to_zero(int* p)` that sets the value `p` points at to zero — and does nothing if `p` is `nullptr`. Then write `std::unique_ptr<int> make_counter(int start)` that returns a newly owned int holding `start`. No `main`.
+Write `void set_to_zero(int* p)` that sets the value `p` points at to `0`, and does nothing at all if `p` is `nullptr`.
+
+Then write `std::unique_ptr<int> make_counter(int start)` that returns a newly owned `int` holding `start`. Use `std::make_unique`, not raw `new`. The starter already includes `<memory>`. No `main`.
 --- starter
 #include <memory>
 
@@ -715,9 +3125,11 @@ std::unique_ptr<int> make_counter(int start) {
     return std::make_unique<int>(start);
 }
 --- hint
-Check `if (p != nullptr)` before `*p = 0;`.
+For `set_to_zero`, follow the pointer with `*p` to change the value, but only after checking that `p` is not `nullptr`.
 --- hint
-`return std::make_unique<int>(start);`
+`if (p != nullptr) { *p = 0; }` is the whole body of `set_to_zero`.
+--- hint
+`make_counter` looks like `make_fuel_gauge` from the explanation, with `int` in place of `double`: `return std::make_unique<int>(start);`
 --- check test | set_to_zero changes the value it points at
 [] { int x = 7; set_to_zero(&x); return x == 0; }()
 --- check test | set_to_zero(nullptr) is safe

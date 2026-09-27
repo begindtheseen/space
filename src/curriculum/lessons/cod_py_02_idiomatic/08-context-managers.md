@@ -1,20 +1,22 @@
 ---
 id: l08-context-managers
 title: Context managers: release on every path
-minutes: 15
+minutes: 18
 covers:
   - Context managers: with, __enter__/__exit__, contextlib
 ---
 
-Acquire, use, release. Open a file, read it, close it. Take a lock, update the shared table, release it. Command a valve open, flow propellant, command it shut. The pattern is everywhere, and the part that goes wrong is always the same part: the release, on the path where something failed.
+Borrowing a library book has three steps: check it out, read it, give it back. The first two take care of themselves. The third is the one that gets forgotten — especially on the day something went wrong, like the day you dropped the book in a puddle and left in a hurry.
 
-You already know the shape of the problem from the exceptions lesson in the first module. `f.close()` written after the work does not run when the work raises, because the exception carries control past it. `try` / `finally` fixes that and costs three lines and an indent every time, which means it gets written for the important resources and forgotten for the rest.
+Programs borrow things all the time and follow the same three steps: **acquire, use, release**. Open a file, read it, close it. Take a **[[lock|lock-meaning]]**, update a shared table, let go of the lock. Command a valve open, flow propellant, command it shut. The step that goes wrong is always the same one: the release, on the path where something failed.
 
-`with` is Python's answer, and it is the same idea as RAII in C++: the release is attached to the object, not to the call site, so it happens on every path out of the block — normal completion, `return`, `break`, and an exception on its way up. This lesson covers using `with`, writing `__enter__` and `__exit__` yourself, and the `contextlib` shortcut that turns a generator into a context manager.
+You met the shape of this problem in the exceptions lesson of the first module. A `f.close()` written after the work does not run when the work raises an error, because the exception carries control straight past it. `try` / `finally` fixes that, but it costs three lines and an extra indent every time. So people write it for the important resources and forget it for the rest.
+
+Python's answer is the `with` statement. It is the same idea as **[[RAII|raii]]** in C++: the release is attached to the *object*, not to the place where you called it, so it happens on every path out of the block. This lesson covers using `with`, writing the two methods behind it yourself, and the `contextlib` shortcut that turns a generator into one.
 
 ## What `with` actually guarantees
 
-Two readers, the same parse, the same failing input:
+Here are two readers that parse the first line of a file as a number. The first closes the file by hand. The second uses `with`. Both are fed a file whose first line is not a number:
 
 ```python
 # close_paths.py
@@ -56,17 +58,24 @@ python3 close_paths.py
 # read_first_float_with: ValueError, file closed afterwards: True
 ```
 
-The first function left the file open. Not "might have"; the `closed` flag says so. CPython will eventually close it when the last reference goes away, but "eventually" is not a guarantee you can build on, and on a loop over a thousand run files it arrives as `OSError: [Errno 24] Too many open files` — a failure whose message has nothing to do with the parsing bug that caused it.
+Follow the first reader. `float("n/a\n")` raises `ValueError`. The exception jumps out of the function, and the line `f.close()` never runs. The file's `closed` flag says `False` — not "might be open", but open.
 
-Note the second function returns from *inside* the `with` block and the file is still closed. That is the property worth internalising: `__exit__` runs on every exit, including `return`, including `break`, including an exception passing through.
+Python will close it eventually, when nothing refers to the file any more. But "eventually" is not a promise you can build on. In a loop over a thousand run files, it shows up as `OSError: [Errno 24] Too many open files` — an error whose message has nothing to do with the parsing bug that caused it. The program has **[[run out of file handles|too-many-open-files]]**.
+
+Now the second reader. It returns from *inside* the `with` block, and the file is still closed afterwards. That is the property to remember: the release runs on every way out — `return`, `break`, and an exception on its way up.
 
 ::: key
-`with expr as name:` calls `expr.__enter__()`, binds its return value to `name`, runs the body, and calls `__exit__` on every path out — normal end, `return`, `break`, `continue`, or a propagating exception. It is the one construct that makes release unforgettable.
+`with expr as name:` calls `expr.__enter__()`, binds its return value to `name`, runs the body, and calls `__exit__` on **[[every path out|with-paths]]** — normal end, `return`, `break`, `continue`, or a propagating exception. It is the one construct that makes release unforgettable.
 :::
 
 ## Writing one: `__enter__` and `__exit__`
 
-Any object with those two methods is a context manager.
+A **context manager** is any object with two special methods:
+
+- `__enter__` — read it "dunder enter" — does the acquiring. Whatever it returns is bound to the name after `as`.
+- `__exit__` — "dunder exit" — does the releasing. Python calls it however the block ends.
+
+Here is a valve that stays open only while a block runs:
 
 ```python
 # valve.py
@@ -125,11 +134,34 @@ python3 valve.py
 # valve open? False
 ```
 
-Read the aborted run's order: the valve closed *before* the `except` clause printed. `__exit__` runs as the exception unwinds, before any handler further out sees it, which is what you want from a safing action.
+Read the aborted run line by line. The valve opened. Propellant flowed. Then the block raised. The valve closed, and only *then* did the `except` clause print "caught". So `__exit__` runs while the exception is **[[unwinding|unwinding]]**, before any handler further out sees it. That is exactly what you want from a **[[safing|safing]]** action: the valve is shut before anyone starts deciding what went wrong.
 
-`__exit__` takes three arguments describing the exception in flight: its type, the exception object and the traceback, all `None` on the normal path. You almost never need them except to decide whether the release should differ — commit on success, roll back on failure.
+::: note What `with` turns into
+A `with` block is shorthand for a `try` statement you could write yourself. Ignoring a few details, `with valve as v:` followed by a body behaves like this:
 
-The `return False` is the important line. A falsy return means "I did my cleanup; let the exception continue". Returning `True` means "I have handled this; discard it", and that is almost always wrong:
+```python
+v = valve.__enter__()
+try:
+    body(v)
+except BaseException as exc:
+    if not valve.__exit__(type(exc), exc, exc.__traceback__):
+        raise
+else:
+    valve.__exit__(None, None, None)
+```
+
+Read it path by path. If the body raises, the `except` branch calls `__exit__` with the three facts about the exception, and a bare `raise` sends the exception on its way unless `__exit__` returned something truthy. If the body finishes, the `else` branch calls `__exit__` with three `None`s. (A `return` or `break` inside the body also triggers the exit call; the real machinery handles that too.) There is no path that skips `__exit__`, which is the whole guarantee.
+:::
+
+::: key
+`__enter__` acquires and returns the resource, `__exit__` releases it and runs even when the body raises. It is Python RAII, and `contextlib.contextmanager` lets you write it as a generator with one `yield`.
+:::
+
+### The three arguments, and the return value
+
+`__exit__` receives three arguments describing the exception in flight: its type, the exception object itself, and the **[[traceback|traceback-arg]]**. On the normal path all three are `None`. You rarely need them, except when the release should differ: save the work on success, undo it on failure.
+
+The `return False` is the important line. A **falsy** return (one that counts as false, such as `False` or `None`) means "I did my cleanup; let the exception carry on". Returning `True` means "I have dealt with this; throw it away". That is almost always wrong:
 
 ```python
 # swallow.py
@@ -169,10 +201,12 @@ python3 swallow.py
 # ZeroDivisionError still propagates: float division by zero
 ```
 
-The division by zero vanished and `margin` kept its previous value — a context manager that hides bugs. `contextlib.suppress(ExceptionType)` is the disciplined version: it discards only the named types and lets everything else through, as the third block shows. Use it where the exception genuinely is the expected case, such as deleting a file that may not exist.
+The division by zero vanished without a trace, and `margin` kept its old value, `None`. That is a context manager that hides bugs.
+
+`contextlib.suppress(ExceptionType)` is the careful version. It throws away only the types you name and lets everything else through, as the third block shows: `ZeroDivisionError` is not `FileNotFoundError`, so it escapes. Use `suppress` where the exception really is the expected case, such as deleting a file that may not exist.
 
 ::: example `@contextmanager`: one generator instead of two methods
-Writing a class for a two-line acquire and release is heavy. `contextlib.contextmanager` turns a generator into a context manager: everything before the `yield` is `__enter__`, everything after is `__exit__`, and the whole thing must be wrapped in `try` / `finally` or the "after" part does not run on the exception path.
+Writing a whole class for a two-line acquire and release is heavy. `contextlib.contextmanager` turns a **generator** — a function containing `yield`, from lesson 2 — into a context manager. **[[Everything before the `yield`|generator-split]]** is the enter part. Everything after it is the exit part. And the whole thing must be wrapped in `try` / `finally`, or the exit part does not run when the block fails.
 
 ```python
 # ctxmgr.py
@@ -231,13 +265,19 @@ python3 ctxmgr.py
 # all durations non-negative: True
 ```
 
-The durations themselves are not printed, because they differ on every run and on every machine; what is printed is which stages got recorded, and that is the whole result. `ascent` and `aborted` are both there. `aborted_no_finally` is **not**, because its generator was resumed with the exception thrown in at the `yield`, and with no `try` / `finally` the lines after the `yield` never ran.
+The durations themselves are not printed, because they change on every run and every machine. What matters is which stages got recorded.
 
-That is the one thing to remember about `@contextmanager`: the body after `yield` is your `__exit__`, and it only runs on the failure path if you put it in a `finally`. A stage timer that silently omits the stage that crashed is worse than no timer, because the missing row looks like a stage that was skipped.
+Go through the three blocks:
+
+1. `ascent` finished normally. After the `yield`, the `finally` clause recorded it.
+2. `aborted` raised inside the block. The exception was thrown into the generator at the `yield`. The `finally` clause ran on its way out, recorded the stage, and let the exception continue to the `except`, which printed "caught".
+3. `aborted_no_finally` raised too. The exception arrived at the bare `yield`, with no `try` to stop it, and left the generator at once. The lines after the `yield` never ran. The stage is **missing** from the list.
+
+That is the one thing to remember about `@contextmanager`: the code after `yield` is your `__exit__`, and it only runs on the failure path if you put it in a `finally`. A stage timer that quietly leaves out the stage that crashed is worse than no timer. The missing row looks like a stage that was skipped.
 :::
 
 ::: example A context manager from the library you will use most
-NumPy's floating-point error policy is process-wide state, and `np.errstate` is a context manager that changes it for one block and puts it back. This is the shape to recognise: *temporarily change a global, restore it whatever happens*.
+NumPy has a floating-point error policy — what to do on a divide by zero, an overflow, and so on. It is **global state**: one setting shared by the whole program. `np.errstate` is a context manager that changes it for one block and puts it back afterwards. This is the shape to recognize: *change a global setting for a while, and restore it whatever happens*.
 
 ```python
 # errstate.py
@@ -266,22 +306,28 @@ python3 errstate.py
 # warn
 ```
 
-The array is dynamic pressure converted to true airspeed, $v = \sqrt{2q/\rho}$, at three altitudes, one of which has a density of zero because the atmosphere table ran out. Inside the first block that is `inf` and no warning; inside the second it is a `FloatingPointError` you can catch and attribute to a specific altitude; and after both blocks `np.geterr()` shows the policy back at its default, `warn`.
+The code turns **dynamic pressure** $q$ (the push of the oncoming air, in pascals) into **[[true airspeed|airspeed-from-q]]** with $v = \sqrt{2q/\rho}$, where $\rho$ (read "rho") is the air density in kg/m³. Check the first entry by hand: $2 \times 1000 / 1.225 = 1632.7$, and $\sqrt{1632.7} \approx 40.4$ m/s. The third: $2 \times 4000 / 0.3639 = 21984$, and its square root is about 148.3 m/s. Faster at altitude for the same push, because the air is thinner — as it should be.
 
-The restoration is the part `with` guarantees. Setting the policy with `np.seterr` and restoring it by hand works exactly until the block raises, at which point the rest of the program runs with a floating-point policy somebody set for one calculation — and the next `nan` in an unrelated filter goes unreported.
+The middle density is zero, because the atmosphere table ran out. Dividing by zero gives `inf`, meaning infinity:
 
-Several managers can share one `with`, separated by commas, and they nest left to right, so the rightmost is released first:
+- Inside the first block, with `divide="ignore"`, you get `inf` and no warning.
+- Inside the second, with `divide="raise"`, you get a `FloatingPointError` you can catch and trace back to one altitude.
+- After both blocks, `np.geterr()` shows the policy back at its default, `warn`.
+
+That restoring is the part `with` guarantees. Setting the policy with `np.seterr` and putting it back by hand works — right up until the block raises. Then the rest of the program runs with a policy somebody set for one calculation, and the next `nan` in an unrelated filter goes unreported.
+
+Several managers can share one `with`, separated by commas. They are entered left to right and **[[released right to left|with-stack]]**, so the rightmost is released first:
 
 ```python
 with open("in.csv") as src, open("out.csv", "w") as dst:
     dst.write(src.readline())
 ```
 
-From Python 3.10 the list may be wrapped in parentheses and split over lines, which is how a `with` holding four resources stays readable.
+From Python 3.10 the list may be wrapped in parentheses and split over several lines. That is how a `with` holding four resources stays readable.
 :::
 
 ::: warning
-A context manager built with `@contextmanager` is **single use**. The generator is consumed by the first `with`, so reusing the same object raises:
+A context manager built with `@contextmanager` is **single use**. The generator is used up by the first `with`, so reusing the same object fails:
 
 ```python
 # single_use.py
@@ -314,19 +360,19 @@ python3 single_use.py
 # a fresh manager: 1
 ```
 
-The message names a private attribute of `contextlib`'s implementation and is not something to write code against; the fact to take away is that reuse fails. Call the factory again — `with once() as v:` each time — rather than storing the manager. A class-based context manager may be reusable, as `PropellantValve` above is, but that is a property you have to design in, not one you get.
+The message names a private detail inside `contextlib`, so do not write code that depends on it. The fact to take away is that reuse fails. Call the function again — `with once() as v:` every time — rather than storing the manager in a variable. A class-based manager *can* be reusable, as `PropellantValve` is, but that is something you design in, not something you get for free.
 :::
 
 ## Check yourself
 
 ::: check
-`with open(path) as f:` and `f = open(path)` followed by `f.close()` at the end of the function. Name the specific circumstance in which they differ, and what the symptom looks like in a batch job.
+Compare `with open(path) as f:` against `f = open(path)` with `f.close()` at the end of the function. Name the exact circumstance in which they differ, and describe what the symptom looks like in a batch job.
 :::
 
 ::: answer
-They differ whenever the code between the open and the close does not complete normally: an exception, an early `return`, a `break` out of a surrounding loop, or a `continue`. In all of those the manual `close()` is skipped and the file stays open, as the `closed: False` in this lesson's first measurement showed.
+They differ whenever the code between the open and the close does not finish normally: an exception, an early `return`, a `break` out of a loop around it, or a `continue`. In every one of those cases the hand-written `close()` is skipped and the file stays open, as the `closed: False` in this lesson's first measurement showed.
 
-In a batch job over a thousand run files, each of which occasionally fails to parse, the open handles accumulate. The symptom is that the job runs fine for the first few hundred files and then every subsequent open fails with `OSError: [Errno 24] Too many open files` — an error about resources, reported long after and far from the parsing bug that caused it, and one that goes away when you re-run with a smaller batch, which is the worst possible property for a bug to have.
+In a batch job over a thousand run files, a few of which fail to parse, the open files pile up. The job runs fine for the first few hundred files. Then every later open fails with `OSError: [Errno 24] Too many open files`. That error is about resources. It is reported long after, and far away from, the parsing bug that caused it. Worse, it goes away when you re-run with a smaller batch — the most confusing property a bug can have.
 :::
 
 ::: check
@@ -334,9 +380,9 @@ What are the three arguments to `__exit__`, and what does returning `True` from 
 :::
 
 ::: answer
-`__exit__(self, exc_type, exc, tb)`: the type of the exception in flight, the exception instance, and its traceback. All three are `None` when the block finished normally, which is how `__exit__` tells the two cases apart — useful when the release differs, such as committing on success and rolling back on failure.
+`__exit__(self, exc_type, exc, tb)`: the type of the exception in flight, the exception object, and its traceback. All three are `None` when the block finished normally. That is how `__exit__` tells the two cases apart — useful when the release should differ, such as saving on success and undoing on failure.
 
-Returning a truthy value tells Python the exception has been handled, so it is discarded and execution continues after the `with` block. This is almost never what you want: it hides the failure from every caller, and the code after the block runs with whatever half-finished state the failure left. Return `False`, or simply let the method return `None`, which is falsy. The legitimate use is a manager written specifically to swallow one named exception type — and `contextlib.suppress` already is that, done correctly.
+Returning a truthy value tells Python the exception has been handled. It is thrown away, and the program carries on after the `with` block. That is almost never what you want. It hides the failure from every caller, and the code after the block runs with whatever half-finished state the failure left behind. Return `False`, or let the method end without a `return`, which gives `None` — also falsy. The one fair use is a manager built to swallow one named exception type, and `contextlib.suppress` already does that correctly.
 :::
 
 ::: check
@@ -344,11 +390,11 @@ Why must the body of a `@contextmanager` generator wrap its `yield` in `try` / `
 :::
 
 ::: answer
-Because when the `with` block raises, the exception is thrown into the generator at the point of the `yield`. Without a `try`, that exception propagates straight out of the generator and the statements after the `yield` — your entire release — never execute.
+Because when the `with` block raises, the exception is thrown into the generator at the `yield`. Without a `try`, that exception passes straight out of the generator, and the statements after the `yield` — your whole release — never run.
 
-With `try` / `finally`, the `finally` clause runs as the exception passes through, so the release happens and the exception continues on its way. This lesson's measurement is the evidence: the stage that raised was recorded by the version with `finally` and missing from the version without.
+With `try` / `finally`, the `finally` clause runs as the exception passes through. The release happens, and the exception continues on its way. This lesson's measurement is the evidence: the stage that raised was recorded by the version with `finally` and missing from the version without.
 
-If you want to catch the exception rather than merely clean up, use `try` / `except` / `raise` inside the generator, but be deliberate — swallowing it there has the same consequences as returning `True` from `__exit__`.
+If you want to *catch* the exception rather than only clean up, use `try` / `except` inside the generator and re-raise with a bare `raise`. Be deliberate about it: swallowing the exception there has the same effect as returning `True` from `__exit__`.
 :::
 
 ::: check
@@ -361,13 +407,13 @@ with np.errstate(over="raise"):
     result = risky_calculation(x)
 ```
 
-`np.seterr` changes the policy for the whole process and returns the old settings, which you are then responsible for restoring. If the calculation raises — which is the entire point of setting the policy — the restoring line never runs, and every subsequent test in the session inherits a policy it did not ask for. Tests then pass or fail depending on the order they ran in, which is the hardest class of test failure to diagnose.
+`np.seterr` changes the policy for the whole program and returns the old settings, which you are then responsible for putting back. If the calculation raises — which is the whole point of setting the policy — the line that restores it never runs. Every later test in the session inherits a policy it did not ask for. Tests then pass or fail depending on the order they happened to run in, which is the hardest kind of test failure to track down.
 
-`np.errstate` is a context manager, so the restore is attached to the block and happens on the exception path too. The final line of this lesson's measurement, `warn`, is that restoration observed after a block that raised.
+`np.errstate` is a context manager, so the restore is attached to the block and happens on the exception path too. The last line of this lesson's measurement, `warn`, is that restore, observed after a block that raised.
 :::
 
 ::: check
-You are writing a `TestStand` class that connects to hardware, runs a sequence, and must command the stand safe. Sketch the interface and say what `__exit__` should do if the safing command itself fails.
+You are writing a `TestStand` class that connects to hardware, runs a sequence, and must command the stand safe at the end. Sketch the interface, and say what `__exit__` should do if the safing command itself fails.
 :::
 
 ::: answer
@@ -385,9 +431,11 @@ class TestStand:
         return False
 ```
 
-`__enter__` acquires and returns the object the body will use; `__exit__` safes, then closes, then returns a falsy value so any exception from the body continues to the caller.
+`__enter__` acquires the connection and returns the object the body will use. `__exit__` safes the stand, then closes the connection, then returns a falsy value so any exception from the body carries on to the caller.
 
-If the safing command itself raises, that exception replaces the one from the body — which is the correct priority, because a stand that could not be safed is a more urgent fact than whatever the sequence was doing. The original is not lost: Python chains them, and the traceback shows the body's exception under "During handling of the above exception, another exception occurred". The nested `finally` is there so that the connection closes even when safing failed, since a stuck connection would prevent the next attempt from reaching the hardware at all.
+If the safing command itself raises, that new exception replaces the one from the body. That is the right priority: a stand that could not be made safe is more urgent news than whatever the sequence was doing. The original is not lost. Python **chains** them: the new exception's `__context__` attribute holds the old one, and the traceback shows the body's exception, then "During handling of the above exception, another exception occurred", then the safing failure. Running a small version confirms it: the caught error is `RuntimeError('safing failed')`, and its `__context__` is the body's `ValueError`.
+
+The inner `finally` makes sure the connection closes even when safing failed. A stuck connection would stop the next attempt from reaching the hardware at all.
 :::
 
 ## Summary
@@ -399,11 +447,135 @@ If the safing command itself raises, that exception replaces the one from the bo
 | `__enter__(self)` | Acquires; returns the object the body should use, often `self` |
 | `__exit__(self, t, e, tb)` | Releases; the three arguments are `None` on the normal path |
 | Return from `__exit__` | Falsy lets the exception continue; truthy discards it — almost always wrong |
-| `contextlib.suppress(E)` | The disciplined discard: only type `E`, everything else propagates |
+| `contextlib.suppress(E)` | The careful discard: only type `E`, everything else propagates |
 | `@contextmanager` | Generator with one `yield`; before it is enter, after it is exit |
 | The `finally` rule | Without `try`/`finally` around the `yield`, the exit part is skipped when the body raises |
-| Single use | A `@contextmanager` object is consumed by one `with`; call the factory again |
-| Several at once | `with a() as x, b() as y:` — released right to left; parenthesised across lines in 3.10+ |
+| Single use | A `@contextmanager` object is used up by one `with`; call the function again |
+| Several at once | `with a() as x, b() as y:` — released right to left; parenthesized across lines in 3.10+ |
 | `np.errstate` | Temporarily changes a global policy and restores it; measured here returning to `warn` |
 
-The next lesson is the other half of `@contextmanager`: the decorator syntax itself. `@` in front of a function means a function was passed to a function, and understanding that is what lets you write `@timed`, `@retry` and `@lru_cache` of your own.
+Next lesson: the `@` in `@contextmanager` is itself a tool you can write. A decorator is a function that takes a function and hands back a new one, and knowing how it works lets you write your own `@timed`, `@retry` and `@lru_cache`.
+
+::: context lock-meaning What a lock is
+When two parts of a program run at the same time — two **threads** — and both want to change the same table, they can trip over each other: one reads a value, the other changes it, the first writes back something stale. A **lock** is a token only one thread can hold at a time, like the single key to a bathroom at a gas station. You take the key, do your business, and hand it back.
+
+Forgetting to hand it back is the classic disaster: every other thread waits forever. Python's `threading.Lock` is a context manager for exactly that reason.
+:::
+
+::: context raii The C++ name for the same idea
+**RAII** stands for "Resource Acquisition Is Initialization", a clumsy name for a simple idea from C++. When an object is created it grabs its resource. When the object goes out of scope — the program leaves the curly braces it lived in — its **destructor** runs automatically and gives the resource back, whether the program left normally or because of an error.
+
+Flight software written in C++ leans on this heavily, and you will meet it in the C++ modules. Python cannot promise exactly when an object is destroyed, so it makes the exit point explicit instead: the end of the `with` block.
+:::
+
+::: context too-many-open-files Why the count runs out
+Every open file uses a small number called a **file descriptor**, which the operating system hands out from a limited supply for each process. On many Linux systems the everyday limit is 1,024 per process, and some machines set it higher. You can see yours in a terminal with `ulimit -n`.
+
+A leaked file keeps its number until the object is finally cleaned up. Leak enough of them in a loop and the supply runs dry. "Errno 24" is the operating system's error number for "this process has no descriptors left", which is why the message sounds unrelated to your actual bug.
+:::
+
+::: context with-paths Every road goes through the exit
+However the body of a `with` block ends, the path out passes through `__exit__`. There is no way around it short of the whole process being killed.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <rect x="120" y="8" width="120" height="30" rx="6" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="180" y="28" font-size="12" fill="#1f2a44" text-anchor="middle">__enter__()</text>
+  <line x1="180" y1="38" x2="180" y2="52" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="100" y="52" width="160" height="30" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="180" y="72" font-size="12" fill="#1f2a44" text-anchor="middle">body</text>
+  <line x1="180" y1="82" x2="50" y2="98" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="50" y1="120" x2="180" y2="148" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="12" y="98" width="76" height="22" rx="11" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="50" y="113" font-size="11" fill="#1f2a44" text-anchor="middle">normal end</text>
+  <line x1="180" y1="82" x2="135" y2="98" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="135" y1="120" x2="180" y2="148" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="97" y="98" width="76" height="22" rx="11" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="135" y="113" font-size="11" fill="#1f2a44" text-anchor="middle">return</text>
+  <line x1="180" y1="82" x2="225" y2="98" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="225" y1="120" x2="180" y2="148" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="187" y="98" width="76" height="22" rx="11" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="225" y="113" font-size="11" fill="#1f2a44" text-anchor="middle">break</text>
+  <line x1="180" y1="82" x2="310" y2="98" stroke="#b4232c" stroke-width="1.5"/>
+  <line x1="310" y1="120" x2="180" y2="148" stroke="#b4232c" stroke-width="1.5"/>
+  <rect x="272" y="98" width="76" height="22" rx="11" fill="#f2b880" stroke="#b4232c" stroke-width="1.5"/>
+  <text x="310" y="113" font-size="11" fill="#1f2a44" text-anchor="middle">exception</text>
+  <rect x="120" y="148" width="120" height="30" rx="6" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="180" y="168" font-size="12" fill="#1f2a44" text-anchor="middle">__exit__(...)</text>
+  <text x="180" y="194" font-size="11" fill="#6c7a93" text-anchor="middle">then on to wherever the path was going</text>
+</svg>
+```
+
+After `__exit__` finishes, a `return` still returns its value and an exception still travels on to its handler — unless `__exit__` returned `True`.
+:::
+
+::: context unwinding How an exception travels
+When code raises an exception, Python abandons the current line and starts looking for a matching `except`. It checks the block it is in, then the function that called this one, then the caller of that, moving outward one layer at a time. This outward search is called **unwinding the stack**.
+
+As it leaves each `with` block and each `try` with a `finally`, Python runs their cleanup before moving further out. That is why the valve printed "closed" before the handler printed "caught": the valve's block was inside the `try`, so it was passed first.
+:::
+
+::: context safing Making a vehicle safe
+To **safe** a vehicle or a test stand means putting it into a state where nothing dangerous can happen: valves shut, igniters disarmed, tanks vented to a safe pressure. Test-stand software is built so that any abort, fault or lost connection leads to a safing sequence.
+
+Engineers care most about the *failure* path here, because that is precisely when a valve left open matters. A context manager is a natural fit: the safing lives in `__exit__`, which runs on the path where something went wrong.
+:::
+
+::: context traceback-arg What the third argument holds
+The **traceback** is the record of where the exception happened: which file, which line, and the chain of function calls that led there. It is what Python prints in red when a program crashes.
+
+Inside `__exit__` it arrives as an object, usually named `tb`. Most context managers never touch it. A logging manager might pass it on so the log records exactly where the failure came from.
+:::
+
+::: context generator-split One function, cut at the yield
+`@contextmanager` runs your generator up to the `yield` when the `with` starts, and resumes it when the `with` ends. If the block raised, the exception is thrown into the generator right at the `yield`.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="10" width="210" height="150" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <g font-size="12" fill="#1f2a44" font-family="monospace">
+    <text x="22" y="34">t0 = perf_counter()</text>
+    <text x="22" y="58">try:</text>
+    <text x="40" y="82" font-weight="700" fill="#1d6fd1">yield</text>
+    <text x="22" y="106">finally:</text>
+    <text x="40" y="130">record(label)</text>
+  </g>
+  <line x1="10" y1="68" x2="220" y2="68" stroke="#6c7a93" stroke-dasharray="4 3"/>
+  <line x1="10" y1="92" x2="220" y2="92" stroke="#6c7a93" stroke-dasharray="4 3"/>
+  <text x="290" y="40" font-size="12" fill="#1d6fd1" text-anchor="middle">like __enter__</text>
+  <text x="290" y="84" font-size="12" fill="#1f2a44" text-anchor="middle">with-block runs</text>
+  <text x="290" y="120" font-size="12" fill="#1d6fd1" text-anchor="middle">like __exit__</text>
+  <text x="290" y="140" font-size="11" fill="#b4232c" text-anchor="middle">also runs on failure</text>
+  <text x="290" y="154" font-size="11" fill="#b4232c" text-anchor="middle">thanks to finally</text>
+</svg>
+```
+
+The dashed lines mark where the generator pauses and where it resumes.
+:::
+
+::: context airspeed-from-q Where the airspeed formula comes from
+Dynamic pressure is defined as $q = \tfrac12 \rho v^2$ — half the density times the speed squared. Solve for $v$: multiply both sides by 2 and divide by $\rho$ to get $v^2 = 2q/\rho$, then take the square root.
+
+An airspeed sensor on an aircraft or a rocket's air-data probe works this way round: it measures $q$ as a pressure difference and needs a density to turn that into a speed. Feed it a density of zero and the formula divides by zero, which is exactly the fault in the example.
+:::
+
+::: context with-stack Last in, first out
+Resources in one `with` behave like a stack of plates: the last one put on is the first one taken off. That order is not arbitrary. The later resource may depend on the earlier one, so it must be released while the earlier one still exists.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="70" width="140" height="30" rx="4" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="90" y="90" font-size="12" fill="#1f2a44" text-anchor="middle">1. open src</text>
+  <rect x="20" y="36" width="140" height="30" rx="4" fill="#f2b880" stroke="#b4232c" stroke-width="2"/>
+  <text x="90" y="56" font-size="12" fill="#1f2a44" text-anchor="middle">2. open dst</text>
+  <text x="90" y="24" font-size="11" fill="#6c7a93" text-anchor="middle">entered bottom to top</text>
+  <text x="250" y="44" font-size="12" fill="#1f2a44" text-anchor="middle">close dst first</text>
+  <text x="250" y="94" font-size="12" fill="#1f2a44" text-anchor="middle">close src second</text>
+  <line x1="250" y1="52" x2="250" y2="78" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="250,84 245,76 255,76" fill="#1f2a44"/>
+  <text x="180" y="122" font-size="11" fill="#6c7a93" text-anchor="middle">with open("in.csv") as src, open("out.csv", "w") as dst:</text>
+</svg>
+```
+
+For two files the order hardly matters. For a connection and a session opened over it, it matters a great deal.
+:::

@@ -147,13 +147,13 @@ Second, the ranking changes between the columns. Drag has vanished, because ther
 That is why a geostationary satellite splits its propellant two ways. Most goes to **north–south station-keeping**, fighting the Moon and Sun, which tip the orbit's plane. A little goes to **east–west station-keeping**, fighting the lumps in Earth's gravity around the equator. A low-orbit mission instead spends its effort on $J_2$ and drag.
 
 ::: key Perturbation ranking at 400 km (LEO)
-Two-body ≈ 8.7 m/s² · $J_2$ ≈ 1.2 × 10⁻² · higher geopotential harmonics ≈ 10⁻⁵ · drag ≈ 10⁻⁶ to 10⁻⁵ (solar-cycle dependent; a quiet Sun can drop it toward 10⁻⁷) · lunar third body ≈ 10⁻⁶ · solar third body ≈ 5 × 10⁻⁷ · SRP ≈ 10⁻⁷.
+Two-body ≈ 8.7 m/s² · $J_2$ ≈ 1.2 × 10⁻² · higher geopotential harmonics ≈ a few × 10⁻⁵ · drag ≈ 10⁻⁷ to 10⁻⁵ (solar-cycle and B dependent) · lunar third body ≈ 10⁻⁶ · solar third body ≈ 5 × 10⁻⁷ · SRP ≈ 10⁻⁷.
 
 In words: $J_2 \gg$ higher harmonics $\gtrsim$ drag $\gtrsim$ lunisolar $\gtrsim$ SRP. $J_2$ falls off as $1/r^4$ against the two-body term's $1/r^2$.
 :::
 
 ::: key Perturbation ranking at GEO
-Two-body ≈ 0.22 m/s² · $J_2$ ≈ 10⁻⁵ · lunar third body ≈ 7 × 10⁻⁶ · solar third body ≈ 3 × 10⁻⁶ · SRP ≈ 10⁻⁷ to 10⁻⁶ · drag negligible.
+Two-body ≈ 0.22 m/s² · $J_2$ ≈ 10⁻⁵ · lunar third body ≈ 7–9 × 10⁻⁶ · solar third body ≈ 3 × 10⁻⁶ · SRP ≈ 10⁻⁷ to 10⁻⁶ · drag negligible.
 
 $J_2 \approx$ lunisolar $\gg$ SRP. Lunisolar perturbation is what drives the expensive **[[north–south station-keeping|station-keeping]]**. Drag matters only in LEO and is gone above roughly $1000\,\mathrm{km}$.
 :::

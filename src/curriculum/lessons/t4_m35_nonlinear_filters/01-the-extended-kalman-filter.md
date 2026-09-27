@@ -1,28 +1,44 @@
 ---
 id: l01-the-extended-kalman-filter
 title: The Extended Kalman Filter — linearizing about the estimate
-minutes: 21
+minutes: 25
 covers:
   - 'The Extended Kalman Filter: linearization about the current estimate, Jacobians F and H, first-order truncation error'
 ---
 
-Every filter this curriculum has built so far assumed the world was linear: a constant-velocity target, a linear measurement matrix $\mathbf{H}$, dynamics you could write as $\mathbf{x}_k=\mathbf{F}\mathbf{x}_{k-1}+\mathbf{w}_{k-1}$. Almost nothing a real vehicle senses or does is actually like that. A star tracker reports a unit vector through a nonlinear projection. A radar reports range and bearing, not Cartesian position. A quaternion evolves through a bilinear kinematic equation. An orbit's radius vector obeys an inverse-square law. The Extended Kalman Filter, EKF, is the oldest and still the most common answer to "what do I do with the Kalman filter's machinery when $\mathbf{f}$ and $\mathbf{h}$ are not linear" — it has flown on essentially every crewed and uncrewed spacecraft since Apollo, and it sits inside every consumer GPS receiver today.
+Stand in a big field and look around. The ground looks flat. You know the Earth is round, but the piece you can see is so small compared with the whole planet that "flat" is an excellent description of it. Walk a hundred kilometers and "flat" starts to fail. Up close, almost any curve looks like a straight line.
 
-The idea is disarmingly simple: keep the Kalman filter's predict-update structure exactly as the Kalman filter module derived it, propagate the state estimate through the true nonlinear functions, and linearize only where linearity is unavoidable — in the covariance's transformation law. That one design choice is both why the EKF works as well as it does on a huge range of real problems, and why it can fail in ways a linear Kalman filter never does. This lesson states the EKF precisely, derives the two Jacobians it needs, and quantifies exactly what "linearize" throws away. The next two lessons in this module build directly on it: one extends it to continuous time and to repeated relinearization, the next shows concretely how the throwing-away catches up with a filter that trusts it too far.
+The Kalman filter from the last module only knows straight lines. Its dynamics are a matrix times the state, and its sensor is another matrix times the state. Real vehicles are not like that. A radar reports range and bearing, not east and north. A star tracker reports a direction. An orbit bends under an inverse-square pull. The **Extended Kalman Filter** (**EKF**) — the Kalman filter adapted to curved, nonlinear problems — handles them with the field trick: zoom in on the curve at the spot where you think you are, and treat it as straight *there*.
 
-## The nonlinear state-space model
+The EKF is the oldest answer to "what do I do when the world curves", and still the most common. It grew out of the navigation work for [[Apollo|apollo-origin]] in the early 1960s, and versions of it run in spacecraft, aircraft, drones and phones today. This lesson writes it down, builds the two slope tables it needs (the Jacobians $\mathbf F$ and $\mathbf H$), and measures exactly what the "treat it as straight" step throws away.
 
-Write the model the way the Kalman filter module wrote the linear one, but let $\mathbf{f}$ and $\mathbf{h}$ be any differentiable functions:
+## When the world is not a straight line
+
+Write the model the way the Kalman filter module did, but let the two rules be any smooth functions:
 
 $$
-\mathbf{x}_k = \mathbf{f}(\mathbf{x}_{k-1}, \mathbf{u}_{k-1}) + \mathbf{w}_{k-1}, \qquad \mathbf{z}_k = \mathbf{h}(\mathbf{x}_k) + \mathbf{v}_k,
+\mathbf{x}_k = \mathbf{f}(\mathbf{x}_{k-1}, \mathbf{u}_{k-1}) + \mathbf{w}_{k-1}, \qquad \mathbf{z}_k = \mathbf{h}(\mathbf{x}_k) + \mathbf{v}_k.
 $$
 
-with $\mathbf{w}_{k-1}\sim\mathcal N(\mathbf 0,\mathbf Q_{k-1})$ and $\mathbf{v}_k\sim\mathcal N(\mathbf 0,\mathbf R_k)$, white and mutually independent, exactly as the stochastic-model lesson assumed. Nothing about the noise changes. What changes is that $\mathbf f$ and $\mathbf h$ are no longer matrices — they are whatever nonlinear map the physics hands you: a coordinate transformation, a quaternion product, a $1/r^2$ force law, an $\operatorname{atan2}$.
+Read $\mathbf f$ as "the motion rule": it takes the state at the last step and the control input $\mathbf u$ and returns the state now. Read $\mathbf h$ as "the sensor rule": it takes the state and returns what the sensor should read. The noises are exactly as before: $\mathbf{w}_{k-1}\sim\mathcal N(\mathbf 0,\mathbf Q_{k-1})$ and $\mathbf{v}_k\sim\mathcal N(\mathbf 0,\mathbf R_k)$, white and independent of each other. Only $\mathbf f$ and $\mathbf h$ have changed. They are no longer matrices. They can be a coordinate change, a $1/r^2$ gravity law, or an $\operatorname{atan2}$.
 
-The predict step of a linear Kalman filter needed only $\mathbb E[\mathbf x_k\mid \mathbf z_{1:k-1}] = \mathbf F\hat{\mathbf x}_{k-1}^+$, which followed from linearity of expectation. That identity has no nonlinear analogue: $\mathbb E[\mathbf f(\mathbf x)] \neq \mathbf f(\mathbb E[\mathbf x])$ in general. The EKF's answer is an approximation, stated plainly rather than hidden: pretend the state is concentrated enough around $\hat{\mathbf x}$ that the two sides are close, and propagate the single point $\hat{\mathbf x}$ through $\mathbf f$ itself rather than trying to propagate a whole distribution through it exactly. Everything else in this lesson is about making that approximation as good as it can be, and naming precisely what it costs.
+That one change breaks a step the linear filter relied on. The linear filter predicted the mean with $\mathbf F\hat{\mathbf x}$, because the **average** of a matrix times something is the matrix times the average. For a curved function that is false:
 
-## The Jacobians F and H
+$$
+\mathbb E[\mathbf f(\mathbf x)] \neq \mathbf f(\mathbb E[\mathbf x]) \quad\text{in general.}
+$$
+
+(Read $\mathbb E[\cdot]$ as "the expected value of", the average over all the ways things could turn out.) Here is the simplest case. Let $x$ be a random number with average $0$ and standard deviation $1$, and let $f(x)=x^2$. Then $f$ of the average is $0^2 = 0$. But $x^2$ is never negative, and its average is the variance, $1$. The [[curve bends the average|jensen-bend]] away from where the straight-line thinking puts it.
+
+The EKF's answer is an honest approximation. Assume the state is packed closely enough around the estimate $\hat{\mathbf x}$ that the two sides are nearly equal. Then push the single best-guess point through the true $\mathbf f$, instead of trying to push the whole spread of possibilities through it.
+
+## Zooming in: the Jacobians F and H
+
+To zoom in on a curve you need its slope. For a function of one number, that is the derivative. For a function of several numbers that returns several numbers, you need a slope for every pair — "how much does output $i$ change when I nudge input $j$". Arrange those slopes in a table and you have the **[[Jacobian|jacobi-name]]** matrix: the best straight-line (linear) stand-in for a curved function near one chosen point.
+
+For a sensor rule $\mathbf h$ that takes $n$ state numbers and returns $m$ readings, the Jacobian $\mathbf H$ has $m$ rows and $n$ columns. Its entry in row $i$, column $j$ is $\partial h_i/\partial x_j$, read "partial h i by partial x j": the slope of output $i$ when only input $j$ moves and the others are held still. Every entry is worked out at one specific point.
+
+Which point? This is the heart of the whole lesson. The EKF works out $\mathbf H_k$ at $\hat{\mathbf x}_k^-$, its own prediction. It cannot use the true state $\mathbf x_k$, because nobody ever gets to see the truth — the filter included. $\mathbf F_{k-1}$ is worked out at $\hat{\mathbf x}_{k-1}^+$ for the same reason. The Jacobian answers "if I nudge the state a little, starting from *here*, how does the output change?" — and "here" is always the filter's best current guess, because that is the only point it has.
 
 ::: key The Extended Kalman Filter
 $$
@@ -37,21 +53,35 @@ $$
 with $\mathbf F_{k-1}=\left.\dfrac{\partial \mathbf f}{\partial \mathbf x}\right|_{\hat{\mathbf x}_{k-1}^+,\,\mathbf u_{k-1}}$. The mean is carried through the true nonlinear $\mathbf f$ and $\mathbf h$; only $\mathbf P$'s transformation is linearized.
 :::
 
-Read that block slowly, because every symbol in it is doing exactly what the predict-and-update lesson's symbol did, with one substitution. $\hat{\mathbf x}_k^-$ is still the *a priori* state estimate, $\mathbf P_k^+$ still the *a posteriori* covariance, $\boldsymbol\nu_k$ still the innovation, $\mathbf K_k$ still the gain that balances how much the filter trusts its prediction against how much it trusts the new measurement. The gain formula, the covariance update, the innovation covariance $\mathbf S_k$ — all unchanged in *form*. What is new is $\mathbf F_{k-1}$ and $\mathbf H_k$: the **Jacobian matrices** of $\mathbf f$ and $\mathbf h$, matrices of partial derivatives that give the best *local, linear* approximation to a nonlinear map at a single point.
+::: key EKF in one line
+Run the Kalman equations with $\mathbf F = \partial\mathbf f/\partial\mathbf x$ and $\mathbf H = \partial\mathbf h/\partial\mathbf x$ evaluated at the current estimate, but propagate the MEAN through the nonlinear functions $\mathbf f$ and $\mathbf h$, not through the Jacobians.
+:::
 
-For a vector-valued $\mathbf h:\mathbb R^n\to\mathbb R^m$, the Jacobian is the $m\times n$ matrix whose $(i,j)$ entry is $\partial h_i/\partial x_j$, every entry evaluated at one specific point. That point matters enormously, and it is the detail this lesson is building toward: $\mathbf H_k$ is evaluated at $\hat{\mathbf x}_k^-$, the filter's own prediction — not at the true state $\mathbf x_k$, which no one, filter included, ever gets to see. $\mathbf F_{k-1}$ is evaluated at $\hat{\mathbf x}_{k-1}^+$ for the identical reason. The Jacobian answers "if I nudge the state a little starting from *here*, how does the output change" — and "here" is always the filter's best current guess, because that is the only point the filter has.
+Read the first block slowly. Every symbol does the same job it did in the predict-and-update lesson. $\hat{\mathbf x}_k^-$ ("x hat k minus") is still the prediction before the reading. $\mathbf P_k^+$ is still the covariance after it. $\boldsymbol\nu_k$ ("nu k") is still the **innovation**, the surprise in the reading. $\mathbf K_k$ is still the gain that sets how far to trust the reading over the prediction. The gain formula and the covariance update have the same shape as before. Two things are new. The mean now goes through the real $\mathbf f$ and $\mathbf h$. And $\mathbf F$ and $\mathbf H$ are now slope tables, recomputed at the current estimate.
 
-::: example The bearing-sensor Jacobian, exactly
-A common GNC sensor model is bearing-only: a fixed or slowly-moving observer measures only the direction to a target, not its range. With state $\mathbf x=(x,\,y,\,\dot x,\,\dot y)^{\mathsf T}$ (target position and velocity relative to the observer) and measurement $h(\mathbf x)=\operatorname{atan2}(y,x)$, the Jacobian follows from ordinary calculus: with $r^2=x^2+y^2$,
+::: example The bearing sensor's Jacobian
+A **bearing-only** sensor reports only the direction to a target, not its distance — think of hearing a sound and pointing at it. Take the state $\mathbf x=(x,\,y,\,\dot x,\,\dot y)^{\mathsf T}$: the target's position and velocity relative to the observer ($\dot x$ is read "x dot", the speed in $x$). The reading is the angle $h(\mathbf x)=\operatorname{atan2}(y,x)$, the [[four-quadrant arctangent|atan2-recall]].
+
+**Step 1: the slopes.** Write $r^2=x^2+y^2$ for the squared distance. Ordinary calculus gives
+
 $$
-\frac{\partial h}{\partial x} = \frac{-y}{x^2+y^2}, \qquad \frac{\partial h}{\partial y} = \frac{x}{x^2+y^2}, \qquad \frac{\partial h}{\partial \dot x}=\frac{\partial h}{\partial \dot y}=0,
+\frac{\partial h}{\partial x} = \frac{-y}{x^2+y^2}, \qquad \frac{\partial h}{\partial y} = \frac{x}{x^2+y^2}, \qquad \frac{\partial h}{\partial \dot x}=\frac{\partial h}{\partial \dot y}=0.
 $$
-so $\mathbf H(\mathbf x) = \left(-y/r^2,\ \ x/r^2,\ \ 0,\ \ 0\right)$. Evaluate this at $\hat{\mathbf x}=(812,\ 431,\ -60,\ 15)^{\mathsf T}\,\mathrm m$, so $r=919.30\,\mathrm m$:
+
+The last two are zero because the angle does not depend on speed. So $\mathbf H(\mathbf x) = \left(-y/r^2,\ \ x/r^2,\ \ 0,\ \ 0\right)$.
+
+**Step 2: a number.** Take the estimate $\hat{\mathbf x}=(812,\ 431,\ -60,\ 15)^{\mathsf T}$, positions in meters and speeds in m/s. The distance is $r=\sqrt{812^2+431^2}=919.30\,\mathrm m$, so $r^2 = 845\,105\,\mathrm{m^2}$. Divide:
+
 $$
 \mathbf H(\hat{\mathbf x}) = \left(-0.00051000,\ \ 0.00096083,\ \ 0,\ \ 0\right)\ \mathrm{rad/m}.
 $$
-A central finite difference at the same point, $\left[h(\hat{\mathbf x}+\epsilon\mathbf e_i)-h(\hat{\mathbf x}-\epsilon\mathbf e_i)\right]/2\epsilon$ with $\epsilon=10^{-6}\,\mathrm m$, gives the identical four numbers to at least eleven significant figures (the two agree to within $9.3\times10^{-12}$). This is the standard way to catch a wrong hand-derived Jacobian before it ever reaches a filter: code the finite difference once, diff it against the analytic formula on a handful of random states, and treat any disagreement bigger than the finite-difference step size itself as a bug in the analytic derivative, not in the numerics.
+
+**Step 3: check it.** A **[[central finite difference|finite-difference]]** nudges each input up and down by a tiny $\epsilon=10^{-6}\,\mathrm m$ and measures the slope directly: $\left[h(\hat{\mathbf x}+\epsilon\mathbf e_i)-h(\hat{\mathbf x}-\epsilon\mathbf e_i)\right]/2\epsilon$, where $\mathbf e_i$ is a vector with a $1$ in slot $i$ and zeros elsewhere. It gives the same four numbers; the biggest disagreement is $9.3\times10^{-12}$.
+
+**Sanity check.** The units are radians per meter, as a slope of angle against position should be. And $1/r = 0.00109\,\mathrm{rad/m}$ is the size of the whole row, $\sqrt{0.00051^2+0.00096^2}$: one meter of sideways motion at $919\,\mathrm m$ turns the bearing by about a thousandth of a radian.
 :::
+
+This check is how engineers catch a wrong Jacobian before it reaches a filter. Code the finite difference once, compare it with the hand-derived formula at a few random states, and treat any disagreement much bigger than the step size as a bug in the formula.
 
 ```python
 import numpy as np
@@ -79,32 +109,65 @@ print(np.max(np.abs(H_analytic(x0) - H_finite_diff(x0))))
 # 9.303408195736329e-12
 ```
 
-Two Jacobians appear in the key block, and they are computed the same way but play different roles. $\mathbf H_k$ tells the filter how sensitive this measurement is to each state component, near the current prediction — it decides which combinations of states this particular sensor can and cannot see, exactly as the linear $\mathbf H$ did, only now that sensitivity itself changes from one estimate to the next. $\mathbf F_{k-1}$ plays the corresponding role for the dynamics: it tells the filter how a small error in yesterday's estimate grows (or shrinks) by today. A nonlinear $\mathbf f$ typically has an $\mathbf F$ that depends on the state itself, so unlike the time-invariant $\mathbf F$ of the constant-velocity model, an EKF's process-noise-covariance recursion $\mathbf P_k^-=\mathbf F_{k-1}\mathbf P_{k-1}^+\mathbf F_{k-1}^{\mathsf T}+\mathbf Q_{k-1}$ uses a *different* $\mathbf F_{k-1}$ nearly every cycle.
+The two Jacobians are built the same way but do different jobs. $\mathbf H_k$ says how sensitive this reading is to each part of the state, near the prediction. It decides which combinations of the state this sensor can see, as the linear $\mathbf H$ did — but now that sensitivity changes from one estimate to the next. $\mathbf F_{k-1}$ says how a small error in the last estimate grows or shrinks by now. For a curved $\mathbf f$, $\mathbf F$ depends on the state, so the covariance step $\mathbf P_k^-=\mathbf F_{k-1}\mathbf P_{k-1}^+\mathbf F_{k-1}^{\mathsf T}+\mathbf Q_{k-1}$ uses a *different* $\mathbf F_{k-1}$ almost every cycle.
 
 ::: example A pendulum's Jacobian, and how fast it changes
-A simple pendulum of length $L$ obeys $\ddot\theta = -(g_0/L)\sin\theta$. With state $\mathbf x=(\theta,\omega)^{\mathsf T}$, $\dot{\mathbf x}=\mathbf f(\mathbf x)=(\omega,\ -(g_0/L)\sin\theta)^{\mathsf T}$, and the Jacobian is
+A swinging pendulum of length $L$ obeys $\ddot\theta = -(g_0/L)\sin\theta$. Here $\theta$ is the angle from straight down and $\ddot\theta$ ("theta double dot") is its angular acceleration. A [[pendulum|pendulum-model]] is the classic small test problem for nonlinear filters.
+
+**Step 1: write it as a state.** Use $\mathbf x=(\theta,\omega)^{\mathsf T}$, with $\omega$ ("omega") the swing rate. Then
+
+$$
+\dot{\mathbf x}=\mathbf f(\mathbf x)=\begin{pmatrix}\omega \\ -(g_0/L)\sin\theta\end{pmatrix}.
+$$
+
+**Step 2: take the slopes.** The top row depends only on $\omega$, with slope $1$. The bottom row depends only on $\theta$; the derivative of $\sin\theta$ is $\cos\theta$. So
+
 $$
 \mathbf F(\mathbf x) = \frac{\partial \mathbf f}{\partial \mathbf x} = \begin{pmatrix}0 & 1\\ -(g_0/L)\cos\theta & 0\end{pmatrix}.
 $$
-Take $L=1\,\mathrm m$, $g_0=9.80665\,\mathrm{m/s^2}$. At $\theta_0=5^\circ$, $F_{21}=-(g_0/L)\cos 5^\circ = -9.76933\,\mathrm{s^{-2}}$; at $\theta_0=60^\circ$, $F_{21}=-4.90333\,\mathrm{s^{-2}}$; at $\theta_0=90^\circ$, $F_{21}=0$ exactly, since $\cos90^\circ=0$. The single derivative that governs how a nearby error grows changes by more than a factor of two, and passes through zero, over the same $90^\circ$ of swing a real pendulum-like attitude motion might cover in one orbit of an unstable spacecraft. A filter that computed $\mathbf F$ once and reused it for many cycles would be using a stale local slope in a region where the true slope has already changed sign.
+
+**Step 3: numbers.** Take $L=1\,\mathrm m$ and $g_0=9.80665\,\mathrm{m/s^2}$. The bottom-left entry, $F_{21}$, is:
+
+- at $\theta=5^\circ$: $-9.80665\cos 5^\circ = -9.76933\,\mathrm{s^{-2}}$;
+- at $\theta=60^\circ$: $-9.80665 \times 0.5 = -4.903325\,\mathrm{s^{-2}}$;
+- at $\theta=90^\circ$: exactly $0$, because $\cos 90^\circ = 0$.
+
+**What it means.** $F_{21}$ is the restoring pull on a small error. Over one quarter of a swing it halves and then vanishes. A filter that worked out $\mathbf F$ once and reused it would be steering by a slope that is no longer true.
 :::
 
-## First-order truncation error
+## What the straight line leaves out: first-order truncation error
 
-Every derivative-based approximation drops something, and Taylor's theorem says exactly what. For a scalar $h$ and a perturbation $\boldsymbol\delta = \mathbf x-\hat{\mathbf x}$,
+Zooming in always drops something. **[[Taylor's theorem|taylor-name]]** says exactly what. Write $\boldsymbol\delta = \mathbf x-\hat{\mathbf x}$ ("delta") for how far the truth sits from the estimate. For a single-output $h$,
 
 $$
-h(\mathbf x) = h(\hat{\mathbf x}) + \mathbf H\boldsymbol\delta + \underbrace{\tfrac12\boldsymbol\delta^{\mathsf T}\nabla^2h(\hat{\mathbf x})\,\boldsymbol\delta + O(\|\boldsymbol\delta\|^3)}_{\text{first-order truncation error}},
+h(\mathbf x) = h(\hat{\mathbf x}) + \mathbf H\boldsymbol\delta + \underbrace{\tfrac12\boldsymbol\delta^{\mathsf T}\nabla^2h(\hat{\mathbf x})\,\boldsymbol\delta + O(\|\boldsymbol\delta\|^3)}_{\text{first-order truncation error}}.
 $$
 
-with $\mathbf H=\nabla h(\hat{\mathbf x})^{\mathsf T}$ as before. The EKF keeps the first two terms and calls the result the innovation's mean; the bracketed remainder is real, it does not vanish because the filter ignores it, and it is what the name "first-order truncation error" refers to — the filter is *first-order accurate*, exact only in the limit $\boldsymbol\delta\to \mathbf 0$. The remainder's size depends on two things a GNC engineer can actually reason about: how curved $h$ is near $\hat{\mathbf x}$ (how large $\nabla^2h$ is), and how large the actual spread of the state is (how big $\boldsymbol\delta$ typically gets, which the filter's own $\mathbf P$ reports).
+The first term is the value at the estimate. The second is the straight-line correction, with $\mathbf H=\nabla h(\hat{\mathbf x})^{\mathsf T}$, the row of slopes. The rest is the bend. $\nabla^2 h$ ("the Hessian of h") is the table of second derivatives — how fast the slopes themselves change — and $O(\|\boldsymbol\delta\|^3)$, read "order delta cubed", means "terms that shrink at least as fast as the cube of the distance".
 
-::: example The bearing sensor's truncation error, exactly
-Continue the bearing-sensor example, at $\hat{\mathbf x}$ with $r_0=919.30\,\mathrm m$, $\theta_0=27.959^\circ$. Perturb purely in the **cross-range** direction (perpendicular to the line of sight), $\mathbf x = \hat{\mathbf x}+s\,\hat{\mathbf u}_\perp$. This particular direction has a closed form: writing the position as a complex number, $x+iy = e^{i\theta_0}(r_0+is)$ exactly, so the true bearing is $\theta_0+\arctan(s/r_0)$ — no approximation. The first-order (linear) prediction is $\theta_0+s/r_0$, since $H=1/r_0$ for a pure cross-range offset. The truncation error is therefore the exact, closed-form remainder of the arctangent series,
+The EKF keeps the first two terms and throws away the rest. That leftover is the **first-order truncation error**. It is real, and it does not vanish because the filter ignores it. The filter is **first-order accurate**: exact only in the limit where $\boldsymbol\delta$ goes to zero. How big the leftover gets depends on two things you can reason about:
+
+- how sharply $h$ curves near the estimate (the size of $\nabla^2 h$), and
+- how far the truth usually sits from the estimate (the size of $\boldsymbol\delta$), which the filter's own $\mathbf P$ reports.
+
+::: example The bearing sensor's truncation error
+Go back to the bearing sensor at $\hat{\mathbf x}$, where $r_0=919.30\,\mathrm m$ and the bearing is $\theta_0=27.959^\circ$. Move the target a distance $s$ purely **[[cross-range|cross-range-picture]]** — sideways, at right angles to the line of sight.
+
+**Step 1: the exact answer.** Sideways by $s$ at distance $r_0$ makes a right triangle, so the true bearing is exactly $\theta_0+\arctan(s/r_0)$. No approximation.
+
+**Step 2: the straight-line answer.** For a sideways move, the slope of bearing is $1/r_0$, so the linear prediction is $\theta_0+s/r_0$.
+
+**Step 3: the difference.** The truncation error is $\arctan(s/r_0)-s/r_0$. The arctangent's own series is $\arctan u = u - u^3/3 + u^5/5 - \dots$, so
+
 $$
-\arctan(s/r_0)-s/r_0 = -\tfrac13(s/r_0)^3+O\!\left((s/r_0)^5\right),
+\arctan(s/r_0)-s/r_0 = -\tfrac13(s/r_0)^3+O\!\left((s/r_0)^5\right).
 $$
-**cubic**, not quadratic, in the offset — the quadratic term vanishes by symmetry for a perturbation exactly perpendicular to the line of sight. Numerically, at $s=150\,\mathrm m$ ($s/r_0=0.1632$): true bearing $=0.649717\,\mathrm{rad}$, linear prediction $=0.651142\,\mathrm{rad}$, truncation error $=-1.425\,\mathrm{mrad}$, against a cubic-term prediction of $-\tfrac13(0.1632)^3=-1.448\times10^{-3}\,\mathrm{rad}$ — matching to two significant figures, the small remaining gap being the next (fifth-order) term in the series, not yet negligible at this $s/r_0$. At $s=10\,\mathrm m$ the same error is only $-4.29\times10^{-7}\,\mathrm{rad}$: fifteen times smaller $s$ gives roughly $15^3\approx3400$ times smaller error, exactly the cubic scaling. A perturbation purely **along** the line of sight, by contrast, changes $r$ but not $\theta$ at all — the true and linear predictions agree exactly, to machine precision, at every offset tested up to $150\,\mathrm m$, because $H$ already captures all of the (zero) first-order sensitivity in that direction and there is no curvature left over to truncate.
+
+It starts at the *cube* of the offset, not the square. The squared term cancels by symmetry: moving left or right by the same amount turns the bearing by equal amounts in opposite directions, so the error has no lopsided, squared part.
+
+**Step 4: numbers.** At $s=150\,\mathrm m$, $s/r_0=0.1632$. The true bearing is $0.649717\,\mathrm{rad}$, the straight line says $0.651142\,\mathrm{rad}$, and the error is $-1.425\,\mathrm{mrad}$ (milliradians, thousandths of a radian). The cubic term alone predicts $-\tfrac13(0.16317)^3=-1.448\times10^{-3}\,\mathrm{rad}$. Close; the small gap is the next, fifth-power term. At $s=10\,\mathrm m$ the error is only $-4.29\times10^{-7}\,\mathrm{rad}$.
+
+**Sanity check.** Fifteen times less offset gave about $1425/0.429 \approx 3300$ times less error, close to $15^3 = 3375$. That is cubic scaling. And a move purely *along* the line of sight changes the distance but not the direction at all, so there the straight line is exact — the code confirms zero error to machine precision.
 :::
 
 ```python
@@ -126,75 +189,134 @@ for s in [10, 30, 60, 100, 150]:
 # 150 -1.42535904e-03  -1.44805986e-03
 ```
 
-::: example How truncation error grows with the trajectory's own nonlinearity
-Truncation error does not only grow with the *size* of the perturbation — it also grows with how nonlinear the *nominal* trajectory already is. Take the pendulum again and ask a different question: starting exactly at $(\theta_0,0)$, how well does the linearized map $\Phi(\Delta t)=\exp(\mathbf F(\theta_0)\Delta t)$ (built once, at the start of a $\Delta t=1\,\mathrm s$ interval) predict where a *nearby* trajectory, started $\delta\theta_0$ away, actually ends up — compared with numerically integrating both trajectories exactly and taking the difference? With $\delta\theta_0=2^\circ$ held fixed:
+::: example The pendulum: bend, and a slope gone stale
+Now ask how well straight lines predict where a *nearby* pendulum ends up. Start one pendulum at rest at $\theta_0$ and a second one $\delta\theta_0=2^\circ$ further out. After $\Delta t = 1\,\mathrm s$, about half a swing, measure how far apart they are, $\Delta\theta$. Compare two straight-line predictions:
 
-| $\theta_0$ | true $\Delta\theta$ after 1 s | linear-STM prediction | truncation error |
+- **$\mathbf F$ frozen at the start**: work out $\mathbf F(\theta_0)$ once and use the [[state transition matrix|stm-meaning]] $\exp(\mathbf F(\theta_0)\,\Delta t)$ for the whole second.
+- **$\mathbf F$ following the swing**: chain together many tiny straight-line steps, each using $\mathbf F$ at the first pendulum's angle at that moment.
+
+Errors are prediction minus truth, in millidegrees ($1\,\mathrm{mdeg} = 0.001^\circ$):
+
+| $\theta_0$ | true $\Delta\theta$ after 1 s | error, $\mathbf F$ frozen | error, $\mathbf F$ following |
 | --- | --- | --- | --- |
-| $5^\circ$ | $-1.99974^\circ$ | $-1.99974^\circ$ | $0.001\ \mathrm{mdeg}$ |
-| $30^\circ$ | $-1.98045^\circ$ | $-1.94853^\circ$ | $31.913\ \mathrm{mdeg}$ |
-| $60^\circ$ | $-1.76284^\circ$ | $-1.20008^\circ$ | $562.766\ \mathrm{mdeg}$ |
-| $90^\circ$ | $-0.97634^\circ$ | $2.00000^\circ$ | $2976.335\ \mathrm{mdeg}$ |
+| $5^\circ$ | $-1.99974^\circ$ | $0.001\ \mathrm{mdeg}$ | $-0.054\ \mathrm{mdeg}$ |
+| $30^\circ$ | $-1.98045^\circ$ | $31.9\ \mathrm{mdeg}$ | $-2.20\ \mathrm{mdeg}$ |
+| $60^\circ$ | $-1.76284^\circ$ | $563\ \mathrm{mdeg}$ | $-14.2\ \mathrm{mdeg}$ |
+| $90^\circ$ | $-0.97634^\circ$ | $2976\ \mathrm{mdeg}$ | $-40.2\ \mathrm{mdeg}$ |
 
-At $\theta_0=5^\circ$ the frozen linear model is nearly exact — the truncation is a fraction of a thousandth of a degree. For exactly the same $2^\circ$ nudge, the linearization error is already $2976.335/31.913\approx93$ times larger at $\theta_0=90^\circ$ than at $\theta_0=30^\circ$, and by $\theta_0=90^\circ$ — where $F_{21}=0$ makes the frozen STM predict *no* restoring effect at all — the error has grown to nearly $3^\circ$, on the order of the perturbation itself: the frozen linear model has lost essentially all predictive value there. Nothing about the perturbation changed; only the curvature of $\sin\theta$ at the point being linearized about did. This is the mechanism to hold onto for the rest of this module: an EKF is not "accurate" or "inaccurate" in the abstract — it is accurate near where its own Jacobian was evaluated, and the size of that region shrinks wherever the true dynamics or measurement curve sharply.
+(The true gap is negative because after half a swing the outer pendulum is on the other side.)
+
+**Reading the right-hand column.** This is pure truncation error: the straight line is re-aimed at every instant, and all that is lost is the bend. It is tiny near the bottom and grows about $740$ times from $5^\circ$ to $90^\circ$, only because $\sin\theta$ curves more over the $2^\circ$ gap there.
+
+**Reading the frozen column.** It is far worse at large angles. At $90^\circ$, the frozen $F_{21}=0$ says there is no pull back at all, so it predicts the gap stays $+2^\circ$. The truth is $-0.98^\circ$. The error, nearly $3^\circ$, is bigger than the nudge itself. Most of this is not bend; it is a slope that went stale as the pendulum swung. The next lesson is about fixing exactly that.
 :::
+
+```python
+import numpy as np
+from scipy.integrate import solve_ivp
+from scipy.linalg import expm
+
+g0 = 9.80665
+def rhs(t, y):  # pendulum plus its along-the-swing transition matrix
+    th, om = y[:2]; Phi = y[2:].reshape(2, 2)
+    F = np.array([[0, 1], [-g0*np.cos(th), 0]])
+    return np.concatenate([[om, -g0*np.sin(th)], (F @ Phi).ravel()])
+
+d = np.radians(2.0)
+for t0 in [5, 30, 60, 90]:
+    th = np.radians(t0)
+    y = solve_ivp(rhs, [0, 1], [th, 0, 1, 0, 0, 1], method='DOP853', rtol=1e-12, atol=1e-12).y[:, -1]
+    y2 = solve_ivp(rhs, [0, 1], [th + d, 0, 1, 0, 0, 1], method='DOP853', rtol=1e-12, atol=1e-12).y[:, -1]
+    true_gap = y2[0] - y[0]
+    frozen = (expm(np.array([[0, 1], [-g0*np.cos(th), 0]])) @ [d, 0])[0]
+    follow = (y[2:].reshape(2, 2) @ [d, 0])[0]
+    print(t0, np.degrees(true_gap), 1000*np.degrees(frozen - true_gap), 1000*np.degrees(follow - true_gap))
+# 5  -1.99974  0.0008   -0.054
+# 30 -1.98045  31.913   -2.195
+# 60 -1.76284  562.766  -14.204
+# 90 -0.97634  2976.335 -40.174
+```
 
 ::: key First-order truncation error
 The EKF keeps the constant and linear terms of a Taylor expansion of $\mathbf f$ and $\mathbf h$ about the current estimate and drops the rest. The dropped remainder is $O(\|\boldsymbol\delta\|^2)$ in general (cubic in special symmetric directions, as the bearing example shows) and grows with both the size of the state spread $\boldsymbol\delta$ and the local curvature of $\mathbf f$ or $\mathbf h$. Nothing in the filter's own reported $\mathbf P$ accounts for this term — it is gone entirely.
 :::
 
-## Why the evaluation point is the whole story
-
-Look again at where $\mathbf F_{k-1}$ and $\mathbf H_k$ are evaluated in the key block: at $\hat{\mathbf x}_{k-1}^+$ and $\hat{\mathbf x}_k^-$, the filter's own estimates. A linear Kalman filter's $\mathbf F$ and $\mathbf H$ do not depend on the state at all, so this question never arises there — the matrices are fixed, correct, and identical whether the filter's current guess is close to the truth or badly wrong. An EKF has no such luxury. Its Jacobians are only as good as the point they are evaluated at, and the only point available is the filter's own, possibly wrong, current belief. If $\hat{\mathbf x}_k^-$ happens to sit somewhere the true curvature is severe, or far from where the true state actually is, $\mathbf H_k$ measures the sensitivity *there*, not at the truth — and every downstream quantity in the update, $\mathbf S_k$, $\mathbf K_k$, $\mathbf P_k^+$, inherits that mismatch silently, with no warning flag anywhere in the algebra. This single fact — linearizing about the estimate, never the truth, because the truth is exactly the one thing a filter never has — is the thread the rest of this module pulls on: the next lesson extends the recipe to continuous time and to relinearizing more than once per cycle, and the one after it shows a real filter breaking because of precisely this gap.
-
-::: warning Do not confuse "linearize the covariance" with "linearize the state"
-A common first-implementation bug is to propagate the *mean* through $\mathbf F\hat{\mathbf x}$ instead of through $\mathbf f(\hat{\mathbf x})$ — treating the EKF as if it were a linear Kalman filter with a state-dependent $\mathbf F$. This throws away exactly the accuracy the EKF is designed to keep: the mean update is supposed to use the *true* nonlinear function, with linearization confined entirely to how the *covariance* transforms. Propagating the mean linearly too turns a first-order-accurate filter into a much cruder one, and the error compounds silently because nothing in the covariance update reveals that the mean itself is now wrong.
+::: note Why the leftover starts at the square
+Taylor's theorem for one variable says $h(\hat x+\delta) = h(\hat x) + h'(\hat x)\,\delta + \tfrac12 h''(\xi)\,\delta^2$ for some point $\xi$ between $\hat x$ and $\hat x+\delta$. The straight line matches the first two terms exactly, so what is left is exactly $\tfrac12 h''(\xi)\,\delta^2$. If the bend $h''$ is at most some number $M$ near the estimate, the leftover is at most $\tfrac12 M\delta^2$. Halve the distance and the error drops to a quarter. Only when $h''$ happens to be zero at the estimate — as for a sideways move on the bearing sensor — does the leftover start one power higher, at $\delta^3$.
 :::
 
-::: warning A Jacobian derived once is not a Jacobian derived forever
-Because $\mathbf F$ and $\mathbf H$ generally depend on the state, a Jacobian that was correct at initialization can be badly wrong ten seconds later if the state has moved through a region of different curvature — as the pendulum's $F_{21}$ swinging from $-9.77$ to $0$ to $-4.90\,\mathrm{s^{-2}}$ shows. Every cycle needs its own evaluation, at the current estimate, not a cached value from a more convenient earlier state.
+## Why the evaluation point is the whole story
+
+Look once more at where $\mathbf F_{k-1}$ and $\mathbf H_k$ are worked out: at $\hat{\mathbf x}_{k-1}^+$ and $\hat{\mathbf x}_k^-$, the filter's own guesses.
+
+A linear Kalman filter never faces this question. Its $\mathbf F$ and $\mathbf H$ do not depend on the state. They are fixed and correct whether the current guess is close to the truth or badly off. An EKF has no such luxury. Its slopes are only as good as the point they are taken at, and the only point it has is its own belief, which may be wrong.
+
+Suppose the prediction sits where the true curve bends sharply, or far from where the truth really is. Then $\mathbf H_k$ measures the sensitivity *there*, not at the truth. Every later number in the update — $\mathbf S_k$, $\mathbf K_k$, $\mathbf P_k^+$ — inherits the mismatch, and nothing in the algebra raises a flag. Linearizing about the estimate, never the truth, is the thread the rest of this module pulls on.
+
+::: warning Linearize the covariance, not the mean
+A common first-implementation bug predicts the *mean* with $\mathbf F\hat{\mathbf x}$ instead of $\mathbf f(\hat{\mathbf x})$, as if the EKF were a linear filter with a changing $\mathbf F$. That throws away the accuracy the EKF is built to keep. The mean should go through the *true* nonlinear function; the straight-line stand-in is only for how the *covariance* changes. The error builds silently, because nothing in the covariance update shows that the mean is now wrong.
+:::
+
+::: warning A Jacobian worked out once is not good forever
+Because $\mathbf F$ and $\mathbf H$ usually depend on the state, a Jacobian that was right at start-up can be badly wrong ten seconds later, once the state has moved somewhere with a different bend. The pendulum's $F_{21}$ went from $-9.77$ to $-4.90$ to $0\,\mathrm{s^{-2}}$ in a quarter swing. Every cycle needs its own Jacobian, at the current estimate — never a stored one from an easier moment.
 :::
 
 ## Check yourself
 
 ::: check
-Write the EKF predict step for a general nonlinear $\mathbf f$, and state precisely which parts use $\mathbf f$ itself and which parts use $\mathbf F$.
+Write the EKF predict step for a general nonlinear $\mathbf f$. Say exactly which part uses $\mathbf f$ itself and which part uses $\mathbf F$.
 :::
 
 ::: answer
-$\hat{\mathbf x}_k^- = \mathbf f(\hat{\mathbf x}_{k-1}^+,\mathbf u_{k-1})$ uses the true nonlinear function directly — no linearization anywhere in the mean update. $\mathbf P_k^- = \mathbf F_{k-1}\mathbf P_{k-1}^+\mathbf F_{k-1}^{\mathsf T}+\mathbf Q_{k-1}$ uses only the Jacobian $\mathbf F_{k-1}=\partial\mathbf f/\partial\mathbf x$ evaluated at $\hat{\mathbf x}_{k-1}^+$; the covariance is transformed as though $\mathbf f$ were the linear map $\mathbf F_{k-1}$ near that point, which is the filter's one approximation.
+The mean: $\hat{\mathbf x}_k^- = \mathbf f(\hat{\mathbf x}_{k-1}^+,\mathbf u_{k-1})$. This uses the true nonlinear function, with no straight-line approximation.
+
+The covariance: $\mathbf P_k^- = \mathbf F_{k-1}\mathbf P_{k-1}^+\mathbf F_{k-1}^{\mathsf T}+\mathbf Q_{k-1}$. This uses only the Jacobian $\mathbf F_{k-1}=\partial\mathbf f/\partial\mathbf x$, worked out at $\hat{\mathbf x}_{k-1}^+$. The covariance is moved as if $\mathbf f$ were the straight-line map $\mathbf F_{k-1}$ near that point. That is the filter's one approximation.
 :::
 
 ::: check
-For $h(\mathbf x)=\sqrt{x^2+y^2}$ (a range-only sensor, in place of the bearing sensor's $\operatorname{atan2}$), derive the Jacobian $\mathbf H$ with respect to $\mathbf x=(x,y,\dot x,\dot y)^{\mathsf T}$.
+A range-only sensor reads $h(\mathbf x)=\sqrt{x^2+y^2}$ instead of the bearing. Find its Jacobian $\mathbf H$ with respect to $\mathbf x=(x,y,\dot x,\dot y)^{\mathsf T}$.
 :::
 
 ::: answer
-$\partial h/\partial x = x/\sqrt{x^2+y^2}=x/r$ and $\partial h/\partial y=y/r$, by the chain rule on $r=(x^2+y^2)^{1/2}$; the velocity components do not appear in $h$, so both of those partials are zero. $\mathbf H(\mathbf x) = (x/r,\ \ y/r,\ \ 0,\ \ 0)$ — a unit vector pointing from the observer toward the target, exactly the direction along which range actually changes fastest, which is the geometric picture worth keeping alongside the algebra.
+Write $r=(x^2+y^2)^{1/2}$. By the chain rule, $\partial r/\partial x = \tfrac12(x^2+y^2)^{-1/2}\cdot 2x = x/r$, and in the same way $\partial r/\partial y = y/r$. The speeds do not appear in $h$, so those two slopes are zero:
+
+$$
+\mathbf H(\mathbf x) = (x/r,\ \ y/r,\ \ 0,\ \ 0).
+$$
+
+The position part is a unit vector pointing from the observer toward the target — the direction in which the range changes fastest. That picture is worth keeping next to the algebra.
 :::
 
 ::: check
-Explain, without redoing the arithmetic, why a perturbation purely along the line of sight produced zero truncation error in the bearing-sensor example, while a perturbation purely across it produced a nonzero (cubic) error.
+Without redoing any arithmetic, explain why a move purely along the line of sight gave zero truncation error for the bearing sensor, while a sideways move gave a nonzero, cubic error.
 :::
 
 ::: answer
-Bearing depends only on the *direction* to the target, not its range, so moving the target along the line already occupied changes $r$ but leaves $\theta$ completely unchanged — the function is exactly constant along that direction, so both its first derivative and every higher derivative along that direction are zero, and the linear approximation is exact, not merely close. Moving across the line of sight is the direction bearing is actually sensitive to; $H$ captures the *first* derivative of that sensitivity exactly, but $\theta_0+\arctan(s/r_0)$ is not itself linear in $s$, so something is necessarily left over — here, by the symmetry of a perpendicular offset, the something starts at third order rather than second.
+A bearing sensor reads only direction. Sliding the target along the line it already sits on changes the distance but not the direction, so the bearing is exactly constant in that direction. Every slope and every bend along that direction is zero, and the straight line is exact, not merely close.
+
+Sideways is the direction the bearing really responds to. $\mathbf H$ captures the first slope exactly, but $\theta_0+\arctan(s/r_0)$ is not a straight line in $s$, so something is left over. Because left and right are symmetric, the square term cancels and the leftover starts at the cube.
 :::
 
 ::: check
-A different sensor has a measurement Jacobian whose magnitude is ten times larger at the filter's current estimate than it was one cycle ago, with the state's uncertainty $\mathbf P$ essentially unchanged. What does this imply about the innovation covariance $\mathbf S_k$ and the gain $\mathbf K_k$, and why might that be dangerous if the Jacobian's new, larger value is itself inaccurate?
+At a new estimate, a sensor's Jacobian is ten times larger than one cycle ago, while $\mathbf P$ is almost the same. What happens to $\mathbf S_k$ and $\mathbf K_k$? Why is that dangerous if the new, larger Jacobian is itself inaccurate?
 :::
 
 ::: answer
-$\mathbf S_k=\mathbf H_k\mathbf P_k^-\mathbf H_k^{\mathsf T}+\mathbf R_k$ grows roughly with $H^2$, so a tenfold larger $|\mathbf H_k|$ inflates the $\mathbf H_k\mathbf P_k^-\mathbf H_k^{\mathsf T}$ term roughly a hundredfold (before $\mathbf R_k$ is added), which in turn changes $\mathbf K_k=\mathbf P_k^-\mathbf H_k^{\mathsf T}\mathbf S_k^{-1}$ and how aggressively the update trusts the new measurement. If this new, larger Jacobian is itself only a first-order approximation evaluated at a poorly-placed estimate — exactly the truncation-error concern this lesson raises — the filter is computing a large, confident correction from a local slope that may not represent the true sensitivity at all, which is precisely the mechanism the next lesson in this module examines as a cause of divergence.
+$\mathbf S_k=\mathbf H_k\mathbf P_k^-\mathbf H_k^{\mathsf T}+\mathbf R_k$ contains $\mathbf H$ twice. Ten times larger $\mathbf H$ makes the $\mathbf H_k\mathbf P_k^-\mathbf H_k^{\mathsf T}$ part about $10^2 = 100$ times larger, before $\mathbf R_k$ is added. That changes $\mathbf K_k=\mathbf P_k^-\mathbf H_k^{\mathsf T}\mathbf S_k^{-1}$, and with it how hard the update leans on the reading and how much $\mathbf P$ shrinks.
+
+If that larger Jacobian is only a straight-line guess taken at a badly placed estimate, the filter is making a large, confident decision from a slope that may not describe the real sensor at all. Lesson 3 of this module shows this exact mechanism making a filter diverge.
 :::
 
 ::: check
-Sketch what happens to the pendulum's truncation-error table if $\delta\theta_0$ is halved from $2^\circ$ to $1^\circ$ at every value of $\theta_0$, without recomputing anything numerically.
+In the pendulum table, suppose the nudge $\delta\theta_0$ is halved from $2^\circ$ to $1^\circ$. Predict what happens to each error column. (Recomputed, the $30^\circ$, $60^\circ$ and $90^\circ$ rows become $16.5$, $285$ and $1498\,\mathrm{mdeg}$ for the frozen column and $-0.53$, $-3.50$ and $-9.95\,\mathrm{mdeg}$ for the following column.)
 :::
 
 ::: answer
-The dominant, leading-order part of the truncation error scales with $\delta\theta_0^2$ for a generic (non-symmetric) perturbation direction, since it is the first term the linearization drops in the Taylor expansion. Halving $\delta\theta_0$ should therefore cut every entry in the truncation-error column by roughly a factor of four, while the *ratio* between entries at different $\theta_0$ — driven entirely by how much $\sin\theta$ curves at each point, not by the size of the perturbation — stays close to what it was, so $\theta_0=90^\circ$ should still show an error roughly $93$ times larger than at $\theta_0=30^\circ$ (the $\theta_0=5^\circ$ entry is already so close to zero that its exact ratio to the others is not the stable part of the comparison).
+**Following column.** This is pure truncation error, which starts at the square of the offset. Halving the nudge should cut it to about a quarter. It does: $-2.20 \to -0.53$, $-14.2 \to -3.50$, $-40.2 \to -9.95$, each close to a factor of four.
+
+**Frozen column.** This error is mostly a wrong slope, not a bend. A wrong slope times a nudge gives an error proportional to the nudge itself, so halving the nudge should only halve it. It does: $31.9 \to 16.5$, $563 \to 285$, $2976 \to 1498$.
+
+So the two columns fail in different ways. Shrinking the uncertainty fixes truncation error fast, but it only slowly fixes a stale Jacobian. The tiny $5^\circ$ entries are too close to zero to show a clean pattern.
 :::
 
 ## Summary
@@ -203,9 +325,104 @@ The dominant, leading-order part of the truncation error scales with $\delta\the
 | --- | --- |
 | Nonlinear model | $\mathbf x_k=\mathbf f(\mathbf x_{k-1},\mathbf u_{k-1})+\mathbf w_{k-1}$, $\mathbf z_k=\mathbf h(\mathbf x_k)+\mathbf v_k$; noise assumptions unchanged from the linear Kalman filter |
 | EKF predict | $\hat{\mathbf x}_k^-=\mathbf f(\hat{\mathbf x}_{k-1}^+,\mathbf u_{k-1})$ (nonlinear); $\mathbf P_k^-=\mathbf F_{k-1}\mathbf P_{k-1}^+\mathbf F_{k-1}^{\mathsf T}+\mathbf Q_{k-1}$ (linearized) |
-| EKF update | $\boldsymbol\nu_k=\mathbf z_k-\mathbf h(\hat{\mathbf x}_k^-)$ (nonlinear); $\mathbf K_k,\mathbf P_k^+$ formulas identical in form to the linear filter, built from $\mathbf H_k$ |
-| Jacobians | $\mathbf F_{k-1}=\partial\mathbf f/\partial\mathbf x$ at $\hat{\mathbf x}_{k-1}^+$; $\mathbf H_k=\partial\mathbf h/\partial\mathbf x$ at $\hat{\mathbf x}_k^-$ — always at the current **estimate**, never the unknown truth |
-| Truncation error | The Taylor remainder the EKF drops: $O(\|\boldsymbol\delta\|^2)$ generically, growing with both perturbation size and local curvature of $\mathbf f$ or $\mathbf h$ |
-| Bearing-sensor example | $\mathbf H=(-y/r^2,\ x/r^2,\ 0,\ 0)$; cross-range truncation error is exactly cubic, $-\tfrac13(s/r_0)^3$; along-range error is exactly zero |
+| EKF update | $\boldsymbol\nu_k=\mathbf z_k-\mathbf h(\hat{\mathbf x}_k^-)$ (nonlinear); $\mathbf K_k$ and $\mathbf P_k^+$ have the same form as the linear filter, built from $\mathbf H_k$ |
+| Jacobians | $\mathbf F_{k-1}=\partial\mathbf f/\partial\mathbf x$ at $\hat{\mathbf x}_{k-1}^+$; $\mathbf H_k=\partial\mathbf h/\partial\mathbf x$ at $\hat{\mathbf x}_k^-$ — always at the current estimate, never the unknown truth |
+| Truncation error | The Taylor leftover the EKF drops: $O(\|\boldsymbol\delta\|^2)$ in general, growing with the spread and with the local bend of $\mathbf f$ or $\mathbf h$ |
+| Bearing sensor | $\mathbf H=(-y/r^2,\ x/r^2,\ 0,\ 0)$; sideways error is cubic, $-\tfrac13(s/r_0)^3$; along-the-line error is exactly zero |
+| Stale Jacobian | Freezing $\mathbf F$ while the state moves gives an error proportional to the offset — usually much worse than the truncation error |
 
-The next lesson keeps this same recipe but asks two further questions: what happens between measurements, when the dynamics are integrated in continuous time rather than advanced in one discrete jump, and what happens if the filter is allowed to relinearize more than once per measurement instead of settling for a single evaluation of $\mathbf H_k$.
+The next lesson keeps this recipe and asks two more questions. What happens *between* readings, when the motion runs in continuous time instead of one jump? And what if the filter re-aims its straight line more than once for a single reading?
+
+::: context apollo-origin From Apollo to your phone
+In 1960, Stanley Schmidt's group at NASA's Ames Research Center was working out how Apollo could navigate between the Earth and the Moon. Rudolf Kalman had recently published his filter, which assumed straight-line models. Orbits are not straight lines, so Schmidt's team linearized the equations around the current best trajectory estimate — the step at the heart of this lesson. That work helped carry the Kalman filter into the Apollo guidance computer. Since then the same idea has spread to aircraft inertial navigation, satellite GPS receivers, drones and the motion sensors in phones.
+:::
+
+::: context jensen-bend Why a bend moves the average
+Picture the curve $y = x^2$. Take two equally likely values, $x=-1$ and $x=+1$. Their average is $0$, and $f(0)=0$. But both of them map to $y=1$, so the average output is $1$. A curve that bends upward lifts the average output above the output at the average input. Mathematicians call this Jensen's inequality.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
+  <line x1="30" y1="150" x2="330" y2="150" stroke="#6c7a93" stroke-width="1.5"/>
+  <line x1="180" y1="20" x2="180" y2="160" stroke="#6c7a93" stroke-width="1.5"/>
+  <path d="M 60 30 Q 180 270 300 30" fill="none" stroke="#1d6fd1" stroke-width="2.5"/>
+  <circle cx="120" cy="120" r="5" fill="#1f2a44"/>
+  <circle cx="240" cy="120" r="5" fill="#1f2a44"/>
+  <line x1="120" y1="120" x2="240" y2="120" stroke="#b4232c" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <circle cx="180" cy="120" r="5" fill="#b4232c"/>
+  <circle cx="180" cy="150" r="5" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="112" y="167" font-size="12" fill="#1f2a44">−1</text>
+  <text x="235" y="167" font-size="12" fill="#1f2a44">+1</text>
+  <text x="188" y="113" font-size="12" fill="#b4232c">average of f = 1</text>
+  <text x="188" y="143" font-size="12" fill="#1f2a44">f(average) = 0</text>
+  <text x="275" y="55" font-size="12" fill="#1d6fd1">y = x²</text>
+</svg>
+```
+:::
+
+::: context jacobi-name Named after Jacobi
+The Jacobian is named after Carl Gustav Jacob Jacobi, a German mathematician of the early 1800s who studied these tables of partial derivatives and their determinants. Engineers use the word loosely: "the Jacobian" can mean the matrix itself or, in other fields, its determinant. In filtering it always means the matrix. You met the same object in the least-squares module, where Gauss-Newton needs the slope of each residual with respect to each unknown, and you will meet it again as the reset Jacobian of the error-state filter later in this module.
+:::
+
+::: context atan2-recall Why atan2 and not arctan
+Plain $\arctan(y/x)$ cannot tell the point $(1,1)$ from $(-1,-1)$: both give $y/x = 1$. The two-argument $\operatorname{atan2}(y,x)$ looks at the signs of $x$ and $y$ separately and returns the correct angle in all four quadrants, from $-\pi$ to $\pi$. The trigonometry module covers it in full. Its slope, though, is the same smooth formula everywhere except the origin, which is why the bearing Jacobian is so tidy.
+:::
+
+::: context finite-difference Why nudge both ways
+A one-sided difference, $[h(x+\epsilon)-h(x)]/\epsilon$, is off by an amount proportional to $\epsilon$ times the bend. Nudging both ways and dividing by $2\epsilon$ cancels that first error, leaving one proportional to $\epsilon^2$. With $\epsilon = 10^{-6}$ that is tiny. Do not make $\epsilon$ too small, though: subtracting two almost-equal numbers loses digits to rounding, so there is a best step size, often around $10^{-5}$ to $10^{-6}$ of the variable's size.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">
+  <path d="M 30 170 Q 180 170 330 35" fill="none" stroke="#1f2a44" stroke-width="2.5"/>
+  <line x1="130" y1="164.6" x2="300" y2="72.8" stroke="#1d6fd1" stroke-width="2"/>
+  <line x1="130" y1="159.2" x2="290" y2="72.8" stroke="#f2b880" stroke-width="2.5"/>
+  <line x1="180" y1="140.3" x2="300" y2="64.7" stroke="#b4232c" stroke-width="1.8" stroke-dasharray="6 4"/>
+  <circle cx="150" cy="148.4" r="4" fill="#f2b880" stroke="#1f2a44"/>
+  <circle cx="270" cy="83.6" r="4" fill="#f2b880" stroke="#1f2a44"/>
+  <circle cx="210" cy="121.4" r="4.5" fill="#1d6fd1"/>
+  <text x="140" y="184" font-size="11" fill="#1f2a44">x − ε</text>
+  <text x="200" y="184" font-size="11" fill="#1f2a44">x</text>
+  <text x="258" y="184" font-size="11" fill="#1f2a44">x + ε</text>
+  <line x1="12" y1="18" x2="36" y2="18" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="42" y="22" font-size="11" fill="#1f2a44">true slope at x</text>
+  <line x1="12" y1="36" x2="36" y2="36" stroke="#f2b880" stroke-width="2.5"/>
+  <text x="42" y="40" font-size="11" fill="#1f2a44">nudge both ways: parallel</text>
+  <line x1="12" y1="54" x2="36" y2="54" stroke="#b4232c" stroke-width="1.8" stroke-dasharray="6 4"/>
+  <text x="42" y="58" font-size="11" fill="#1f2a44">nudge one way: too steep</text>
+</svg>
+```
+:::
+
+::: context pendulum-model Why a pendulum keeps showing up
+A pendulum is the smallest system with a truly curved motion rule: the pull back is $\sin\theta$, not $\theta$. Near the bottom it behaves like a straight-line system, and far from it, it does not, so you can dial the nonlinearity up and down by choosing the starting angle. The same kind of sine-shaped restoring pull appears in the gravity-gradient torque that swings a long satellite back toward pointing at Earth, which is one reason it is a favorite test problem.
+:::
+
+::: context taylor-name Taylor's idea
+Brook Taylor published this expansion in 1715: near any point, a smooth function equals its value there, plus slope times distance, plus half the bend times distance squared, and so on. Each extra term is a better fit over a wider patch. The EKF stops after the slope term. The unscented Kalman filter, later in this module, captures more of the bend without ever writing a second derivative.
+:::
+
+::: context cross-range-picture Along the line of sight and across it
+The observer sits at the origin and looks at the target along the line of sight. Moving the target along that line (orange) changes its range but not its bearing. Moving it across the line (red) turns the bearing by $\arctan(s/r_0)$, which is close to, but a little less than, $s/r_0$.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">
+  <circle cx="30" cy="170" r="5" fill="#1f2a44"/>
+  <text x="14" y="187" font-size="11" fill="#1f2a44">observer</text>
+  <line x1="30" y1="170" x2="330" y2="10" stroke="#6c7a93" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <circle cx="246" cy="55" r="5" fill="#1d6fd1"/>
+  <text x="252" y="72" font-size="11" fill="#1d6fd1">target</text>
+  <line x1="246" y1="55" x2="304" y2="24" stroke="#f2b880" stroke-width="3"/>
+  <polygon points="304,24 293,26 298,34" fill="#f2b880"/>
+  <text x="290" y="50" font-size="11" fill="#1f2a44">range only</text>
+  <line x1="246" y1="55" x2="218" y2="3" stroke="#b4232c" stroke-width="2.5"/>
+  <polygon points="218,3 217,15 226,11" fill="#b4232c"/>
+  <line x1="30" y1="170" x2="218" y2="3" stroke="#b4232c" stroke-width="1.2"/>
+  <text x="240" y="20" font-size="11" fill="#b4232c">across by s</text>
+  <text x="48" y="120" font-size="11" fill="#1f2a44">bearing turns</text>
+  <text x="140" y="120" font-size="11" fill="#1f2a44">r₀</text>
+</svg>
+```
+:::
+
+::: context stm-meaning What a state transition matrix does
+For a straight-line system $\dot{\mathbf x} = \mathbf F\mathbf x$ with fixed $\mathbf F$, the state after time $\Delta t$ is $\exp(\mathbf F\Delta t)\,\mathbf x$. That matrix, $\boldsymbol\Phi$ ("phi"), is the state transition matrix: it carries any small difference forward in time. When $\mathbf F$ changes along the path, $\boldsymbol\Phi$ has to be built up piece by piece, solving $\dot{\boldsymbol\Phi}=\mathbf F(t)\boldsymbol\Phi$. The covariance rides on the same matrix, $\mathbf P \to \boldsymbol\Phi\mathbf P\boldsymbol\Phi^{\mathsf T}$, so a wrong $\boldsymbol\Phi$ means a wrong $\mathbf P$.
+:::
