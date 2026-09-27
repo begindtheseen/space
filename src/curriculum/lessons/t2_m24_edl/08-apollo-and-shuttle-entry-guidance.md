@@ -162,7 +162,7 @@ The Shuttle's reference **drag-versus-energy** profile was shaped to respect the
 To track it, the guidance commanded bank-angle **magnitude**. A steeper bank reduces the vertical lift, so the vehicle sinks into denser air and its drag rises. A shallower bank does the opposite. The bank-angle **sign** was flipped whenever the heading error toward the runway grew past a deadband — the reversal logic of lesson 7.
 
 ::: key Shuttle entry guidance
-It tracked a drag acceleration profile scheduled against specific energy rather than against time, which made the guidance robust to atmospheric dispersion, with bank reversals triggered by a crossrange deadband.
+It tracked a reference drag-acceleration profile built in segments against velocity and energy rather than time, which made it robust to atmospheric dispersion, with bank reversals triggered by a crossrange deadband.
 :::
 
 Compare the two. Apollo *predicts* a miss distance and computes a correction to null it. The Shuttle *tracks* a pre-shaped reference at every instant, and because range-to-go follows from the profile, holding the profile is the same as flying the right range. That is a difference in guidance philosophy — predictor-corrector versus reference-tracking — more than in physics. Both modulate the same bank angle to add or remove vertical lift.

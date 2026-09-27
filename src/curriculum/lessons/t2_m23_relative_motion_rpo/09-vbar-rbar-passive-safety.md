@@ -260,7 +260,7 @@ Adding cross-track motion a quarter-cycle out of step, $z = A_z\cos nt$, means t
 | $\ddot x(0)=3n^2x_0+2n\dot y_0$ | Radial acceleration when thrust is lost — explains both bars |
 | R-bar, missed burn from 200 m at 0.1 m/s | Dips to 193.5 m (6.5 m inside), leaves fast; braking $3n^2x_0$ does it |
 | V-bar, same test | Dips to 162.2 m (37.8 m inside), leaves slowly |
-| R-bar cost | Continuous thrust against the gradient; plume pointed at the target |
+| R-bar cost | Continuous thrust against the gradient; long thruster firings close to the target |
 | Closing rate | A lower rate reduces the dip on both bars |
 | Radial bias | Upward bias reduces the V-bar dip; downward bias increases it |
 | Best single CAM here | A retrograde burn that stops the closing beats an equal upward push |

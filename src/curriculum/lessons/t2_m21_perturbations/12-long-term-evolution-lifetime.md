@@ -64,9 +64,9 @@ No single sentence like "$J_2$ is the dominant perturbation" or "third-body pull
 ::: key Which perturbation matters where
 $J_2 \propto r^{-4}$ (relative importance $\propto r^{-2}$); third body $\propto r$ (grows with altitude); drag falls off exponentially with altitude and matters only in low orbit; SRP is nearly constant with altitude near Earth.
 
-At $400\,\mathrm{km}$: two-body ≈ 8.7 m/s² · $J_2$ ≈ 1.2 × 10⁻² · higher geopotential harmonics ≈ 10⁻⁵ · drag ≈ 10⁻⁶ to 10⁻⁵ (solar-cycle dependent) · lunar third body ≈ 10⁻⁶ · solar third body ≈ 5 × 10⁻⁷ · SRP ≈ 10⁻⁷. In short, $J_2 \gg$ higher harmonics $\gtrsim$ drag $\gtrsim$ lunisolar $\gg$ SRP, with drag's exact place uncertain by more than a factor of ten.
+At $400\,\mathrm{km}$: two-body ≈ 8.7 m/s² · $J_2$ ≈ 1.2 × 10⁻² · higher geopotential harmonics ≈ a few × 10⁻⁵ · drag ≈ 10⁻⁷ to 10⁻⁵ (solar-cycle and B dependent) · lunar third body ≈ 10⁻⁶ · solar third body ≈ 5 × 10⁻⁷ · SRP ≈ 10⁻⁷. In short, $J_2 \gg$ higher harmonics $\gtrsim$ drag $\gtrsim$ lunisolar $\gg$ SRP, with drag's exact place uncertain by more than a factor of ten.
 
-At GEO: two-body ≈ 0.22 m/s² · $J_2$ ≈ 10⁻⁵ · lunar third body ≈ 7 × 10⁻⁶ · solar third body ≈ 3 × 10⁻⁶ · SRP ≈ 10⁻⁷ to 10⁻⁶ · drag negligible. In short, $J_2 \approx$ lunisolar $\gg$ SRP, drag absent. A single eccentric orbit can pass through both regimes every revolution.
+At GEO: two-body ≈ 0.22 m/s² · $J_2$ ≈ 10⁻⁵ · lunar third body ≈ 7–9 × 10⁻⁶ · solar third body ≈ 3 × 10⁻⁶ · SRP ≈ 10⁻⁷ to 10⁻⁶ · drag negligible. In short, $J_2 \approx$ lunisolar $\gg$ SRP, drag absent. A single eccentric orbit can pass through both regimes every revolution.
 :::
 
 (The key's GEO lunar value, $7\times10^{-6}$, is the first lesson's tidal approximation $2\mu_3 r/d^3$. The table's $8.68\times10^{-6}$ is the exact worst case, with the Moon straight overhead.)

@@ -90,7 +90,7 @@ export const CODING: Module[] = [
         lang: 'bash',
         starter: 'grep -H "MISS_DISTANCE_M" runs/*.log | # ...continue the pipeline\n',
         solution:
-          "grep -H 'MISS_DISTANCE_M' runs/*.log \\\n  | awk -F'[: ]+' '{print $1 \":\" $3}' \\\n  | sort -t: -k2 -g -r \\\n  | head -10\n",
+          "grep -H 'MISS_DISTANCE_M' runs/*.log \\\n  | awk -F'[: ]+' '{print $1 \":\" $NF}' \\\n  | sort -t: -k2 -g -r \\\n  | head -10\n",
         hours: 1,
       },
       {
@@ -143,13 +143,13 @@ export const CODING: Module[] = [
         id: 'lnx01_c7',
         front: 'What is `xargs` for?',
         back:
-          'It converts data on stdin into command-line arguments. Use `-0` with `find -print0` so filenames containing spaces or newlines survive, and `-n`/`-P` to batch and parallelise.',
+          'It converts data on stdin into command-line arguments. Use `-0` with `find -print0` so filenames containing spaces or newlines survive, and `-n`/`-P` to batch and parallelize.',
       },
       {
         id: 'lnx01_c8',
         front: 'Why does a job started with `&` still die when you close the terminal?',
         back:
-          'Closing the terminal sends SIGHUP to the foreground process group. `nohup`, `disown`, `setsid` or, best, running inside tmux detaches the job from that terminal lifecycle.',
+          'Closing the terminal sends SIGHUP to the shell (and the foreground group), and bash passes it on to every job it owns. `nohup`, `disown`, `setsid` or, best, running inside tmux detaches the job from that terminal lifecycle.',
       },
       {
         id: 'lnx01_c9',
@@ -394,7 +394,7 @@ export const CODING: Module[] = [
         id: 'lnx02_c1',
         front: 'What does each part of `set -euo pipefail` do?',
         back:
-          '-e exits on the first command that returns non-zero, -u makes an unset variable an error instead of an empty string, -o pipefail makes a pipeline return the first non-zero status instead of only the last command status.',
+          '-e exits on the first command that returns non-zero, -u makes an unset variable an error instead of an empty string, -o pipefail makes a pipeline return the status of the rightmost command that failed instead of only the last command status.',
       },
       {
         id: 'lnx02_c2',
@@ -2082,13 +2082,13 @@ export const CODING: Module[] = [
         id: 'py01_c12',
         front: 'Which of `str`, `list`, `tuple`, `dict`, `set` are mutable?',
         back:
-          'list, dict and set are mutable; str and tuple are immutable. Immutable objects can be dict keys and can be safely shared; mutable ones cannot and cannot.',
+          'list, dict and set are mutable; str and tuple are immutable. Immutable objects can be dict keys and can be safely shared; mutable ones cannot be dict keys, and sharing them lets one change show up everywhere.',
       },
       {
         id: 'py01_c13',
         front: 'What is the difference between `is` and `==`?',
         back:
-          '`is` compares object identity, `==` compares value. Use `is` only for None, True, False and sentinels; small-int and string interning makes `is` appear to work for values, then fail in production data.',
+          '`is` compares object identity, `==` compares value. Use `is` only for None, True, False and sentinels; small-integer caching and string interning make `is` appear to work for values, then fail in production data.',
       },
     ],
     quiz: [
@@ -2366,7 +2366,7 @@ export const CODING: Module[] = [
         id: 'py02_c6',
         front: 'Why does a decorator need functools.wraps?',
         back:
-          'Without it the wrapper replaces the original __name__, __doc__, __module__ and __wrapped__, which breaks help(), tracebacks, pytest test collection and any introspection-based tooling.',
+          "Without it the wrapper's own __name__, __doc__ and __module__ hide the original's, and there is no __wrapped__ pointing back to it. That breaks help(), tracebacks, pytest fixture injection and marks, and any tool that inspects signatures.",
       },
       {
         id: 'py02_c7',
@@ -2378,7 +2378,7 @@ export const CODING: Module[] = [
         id: 'py02_c8',
         front: 'dataclass vs plain class',
         back:
-          'A dataclass generates __init__, __repr__ and optionally __eq__ and ordering from annotated fields, so a record type costs three lines. Use frozen=True for value semantics; use a plain class when behaviour dominates over data.',
+          'A dataclass generates __init__, __repr__ and __eq__ (and ordering with order=True) from annotated fields, so a record type costs three lines. Use frozen=True for value semantics; use a plain class when behavior dominates over data.',
       },
       {
         id: 'py02_c9',
@@ -2429,7 +2429,7 @@ export const CODING: Module[] = [
       },
       {
         id: 'py02_q2',
-        q: 'A decorator is applied but pytest no longer collects the test functions it wraps. Likely cause?',
+        q: 'A decorator is applied to test functions, and now their fixtures are not injected and their marks are lost. Likely cause?',
         choices: [
           'Missing functools.wraps, so names and metadata were lost',
           'The decorator returns None',
@@ -2438,7 +2438,7 @@ export const CODING: Module[] = [
         ],
         answer: 0,
         explain:
-          'Collection and reporting rely on __name__ and the wrapped signature. wraps copies that metadata across.',
+          "pytest reads the test's signature to inject fixtures and reads its __dict__ for marks. functools.wraps sets __wrapped__ (so the real signature is visible) and copies __name__, __doc__ and __dict__ onto the wrapper.",
         b: 0.6,
         bloom: 'analyze',
       },
@@ -4801,7 +4801,7 @@ export const CODING: Module[] = [
         id: 'cpp01_c5',
         front: 'int8_t x = 200; what happens?',
         back:
-          'The value does not fit, so it is converted; since C++20 the conversion is defined as the value modulo 2^8, so x holds -56, and with -Wconversion the compiler warns. The lesson is to pick a type wide enough for the range, which is why flight code uses explicit fixed-width types.',
+          'The value does not fit, so it is converted; since C++20 the conversion is defined as the value modulo 2^8, so x holds -56, and compilers warn (g++ with -Wconversion; clang++ by default). The lesson is to pick a type wide enough for the range, which is why flight code uses explicit fixed-width types.',
       },
       {
         id: 'cpp01_c6',
@@ -4837,7 +4837,7 @@ export const CODING: Module[] = [
         id: 'cpp01_c11',
         front: 'Why compile with -Wall -Wextra -Werror?',
         back:
-          'Most C++ defects the compiler can see are reported as warnings, not errors. Treating them as errors is what turns the compiler into your first static analyser, and a warning-free pedantic build is a Power-of-Ten requirement.',
+          'Most C++ defects the compiler can see are reported as warnings, not errors. Treating them as errors is what turns the compiler into your first static analyzer, and a warning-free pedantic build is a Power-of-Ten requirement.',
       },
       {
         id: 'cpp01_c12',
@@ -5044,7 +5044,7 @@ export const CODING: Module[] = [
         starter:
           '#include <cstdint>\n#include <cstddef>\n#include <cstring>\n#include <cstdio>\n\nstruct Packet {\n    std::uint8_t id;\n    std::uint32_t t_ms;\n    std::uint16_t flags;\n    double value;\n};\n\nint main() {\n    std::printf("%zu\\n", sizeof(Packet));\n    // TODO: offsets, reordered struct, serialise()\n    return 0;\n}\n',
         solution:
-          '#include <cstdint>\n#include <cstddef>\n#include <cstring>\n#include <cstdio>\n\nstruct Packet {           // 24 bytes: 1 + 3 pad + 4 + 2 + 6 pad + 8\n    std::uint8_t id;\n    std::uint32_t t_ms;\n    std::uint16_t flags;\n    double value;\n};\n\nstruct PacketPacked {     // 16 bytes: 8 + 4 + 2 + 1 + 1 pad\n    double value;\n    std::uint32_t t_ms;\n    std::uint16_t flags;\n    std::uint8_t id;\n};\n\n// Shifting is what makes the image little-endian on every host. A memcpy of\n// the field copies the HOST byte order, which only looks right on a\n// little-endian machine.\nstatic void put_u16(std::uint8_t* out, std::uint16_t v) {\n    for (int i = 0; i < 2; ++i) out[i] = std::uint8_t(v >> (8 * i));\n}\nstatic void put_u32(std::uint8_t* out, std::uint32_t v) {\n    for (int i = 0; i < 4; ++i) out[i] = std::uint8_t(v >> (8 * i));\n}\nstatic void put_f64(std::uint8_t* out, double v) {\n    std::uint64_t bits;\n    std::memcpy(&bits, &v, 8);   // type pun only; the shifts below fix the order\n    for (int i = 0; i < 8; ++i) out[i] = std::uint8_t(bits >> (8 * i));\n}\n\n// 15-byte little-endian wire image, independent of struct layout and of host\n// byte order.\nvoid serialise(const Packet& p, std::uint8_t* out) {\n    std::size_t k = 0;\n    out[k] = p.id;              k += 1;\n    put_u32(out + k, p.t_ms);   k += 4;\n    put_u16(out + k, p.flags);  k += 2;\n    put_f64(out + k, p.value);  k += 8;  // k == 15\n}\n\nint main() {\n    std::printf("%zu\\n", sizeof(Packet));        // 24\n    std::printf("%zu\\n", offsetof(Packet, t_ms)); // 4\n    std::printf("%zu\\n", offsetof(Packet, value));// 16\n    std::printf("%zu\\n", sizeof(PacketPacked));   // 16\n\n    Packet p{0x2a, 0x11223344, 0xbeef, 1.0};\n    std::uint8_t wire[15];\n    serialise(p, wire);\n    for (std::size_t i = 0; i < sizeof wire; ++i) std::printf("%02x ", wire[i]);\n    std::printf("\\n");  // 2a 44 33 22 11 ef be 00 00 00 00 00 00 f0 3f\n    return 0;\n}\n',
+          '#include <cstdint>\n#include <cstddef>\n#include <cstring>\n#include <cstdio>\n\nstruct Packet {           // 24 bytes: 1 + 3 pad + 4 + 2 + 6 pad + 8\n    std::uint8_t id;\n    std::uint32_t t_ms;\n    std::uint16_t flags;\n    double value;\n};\n\nstruct PacketOrdered {    // 16 bytes: 8 + 4 + 2 + 1 + 1 pad\n    double value;\n    std::uint32_t t_ms;\n    std::uint16_t flags;\n    std::uint8_t id;\n};\n\n// Shifting is what makes the image little-endian on every host. A memcpy of\n// the field copies the HOST byte order, which only looks right on a\n// little-endian machine.\nstatic void put_u16(std::uint8_t* out, std::uint16_t v) {\n    for (int i = 0; i < 2; ++i) out[i] = std::uint8_t(v >> (8 * i));\n}\nstatic void put_u32(std::uint8_t* out, std::uint32_t v) {\n    for (int i = 0; i < 4; ++i) out[i] = std::uint8_t(v >> (8 * i));\n}\nstatic void put_f64(std::uint8_t* out, double v) {\n    std::uint64_t bits;\n    std::memcpy(&bits, &v, 8);   // type pun only; the shifts below fix the order\n    for (int i = 0; i < 8; ++i) out[i] = std::uint8_t(bits >> (8 * i));\n}\n\n// 15-byte little-endian wire image, independent of struct layout and of host\n// byte order.\nvoid serialise(const Packet& p, std::uint8_t* out) {\n    std::size_t k = 0;\n    out[k] = p.id;              k += 1;\n    put_u32(out + k, p.t_ms);   k += 4;\n    put_u16(out + k, p.flags);  k += 2;\n    put_f64(out + k, p.value);  k += 8;  // k == 15\n}\n\nint main() {\n    std::printf("%zu\\n", sizeof(Packet));        // 24\n    std::printf("%zu\\n", offsetof(Packet, t_ms)); // 4\n    std::printf("%zu\\n", offsetof(Packet, value));// 16\n    std::printf("%zu\\n", sizeof(PacketOrdered));  // 16\n\n    Packet p{0x2a, 0x11223344, 0xbeef, 1.0};\n    std::uint8_t wire[15];\n    serialise(p, wire);\n    for (std::size_t i = 0; i < sizeof wire; ++i) std::printf("%02x ", wire[i]);\n    std::printf("\\n");  // 2a 44 33 22 11 ef be 00 00 00 00 00 00 f0 3f\n    return 0;\n}\n',
         hours: 3,
       },
     ],
@@ -5089,7 +5089,7 @@ export const CODING: Module[] = [
         id: 'cpp02_c7',
         front: 'What is struct padding and why does a wire format not use the struct?',
         back:
-          'The compiler inserts padding so each member meets its alignment requirement, and the amounts differ by ABI and compiler. Serialise field by field with memcpy in a defined order and endianness instead of memcpy-ing the whole struct.',
+          "The compiler inserts padding so each member meets its alignment requirement, and the amounts differ by ABI and compiler. Serialize field by field in a defined order, placing each byte with shifts so the endianness is fixed (use memcpy only to get a float's bit pattern into an integer), instead of memcpy-ing the whole struct.",
       },
       {
         id: 'cpp02_c8',

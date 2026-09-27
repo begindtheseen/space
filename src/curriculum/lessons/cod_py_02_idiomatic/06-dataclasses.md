@@ -411,7 +411,7 @@ A dataclass is a **record**: data with a little behavior. When behavior dominate
 There is no rule against methods on a dataclass. The test is whether "these fields, compared field by field, printed field by field" is a true description of the type. If it is, use a dataclass. If you do not want the generated equality, `@dataclass(eq=False)` turns it off.
 
 ::: key
-A dataclass generates `__init__`, `__repr__` and optionally `__eq__` and ordering from annotated fields, so a record type costs three lines. Use `frozen=True` for value semantics; use a plain class when behavior dominates over data.
+A dataclass generates `__init__`, `__repr__` and `__eq__` (and ordering with `order=True`) from annotated fields, so a record type costs three lines. Use `frozen=True` for value semantics; use a plain class when behavior dominates over data.
 :::
 
 The other tool to know is **[[`typing.NamedTuple`|namedtuple]]**. It gives you an unchangeable record that is also a tuple, so it can be unpacked (`t, alt, v = state`) and indexed (`state[0]`). Use it when you want that tuple behavior. Use a frozen dataclass when you do not, which is more often than people expect: a `State` that can be unpacked into three variables is a `State` somebody will unpack in the wrong order.

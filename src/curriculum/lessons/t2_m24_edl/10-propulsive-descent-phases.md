@@ -37,7 +37,7 @@ Entry burn: sheds speed before the dense atmosphere, trading propellant for a la
 On a real Falcon 9 flight the list has one more item at the front, and only on some flights. Lesson 13 covers it in detail.
 
 ::: key Falcon 9 booster return phases
-Boostback (RTLS only) reverses the downrange velocity. Entry burn slows the stage before the dense atmosphere, cutting peak heating and dynamic pressure. Aerodynamic descent steers with grid fins. Landing burn is a single-engine hoverslam with throttling to null the residual error.
+Boostback (full on RTLS, partial or none on droneship landings) reverses or trims the downrange velocity. Entry burn slows the stage before the dense atmosphere, cutting peak heating and dynamic pressure. Aerodynamic descent steers with grid fins. Landing burn is a single-engine hoverslam with throttling to null the residual error.
 :::
 
 (RTLS stands for "return to launch site". A **hoverslam** is the name for a landing burn that cannot hover and must bring speed and height to zero at the same instant.)
@@ -240,7 +240,7 @@ So the propellant saved is not free. It is paid for directly out of the structur
 | Aerodynamic guidance | Unpowered, grid-fin-steered descent through hypersonic to transonic flow; removes energy by drag at no propellant cost |
 | $\bar q = \tfrac12\rho v^2$ through this phase | Falls in the worked example ($27.5 \to 12.0\ \mathrm{kPa}$) because speed's fall outweighs density's rise |
 | Landing burn | Final propulsive approach to touchdown; one shot, cannot hover (lesson 12) |
-| Falcon 9 return | Boostback (RTLS only), entry burn, grid-fin descent, single-engine landing burn |
+| Falcon 9 return | Boostback (full on RTLS, partial or none on droneship), entry burn, grid-fin descent, single-engine landing burn |
 | Energy-budget trade | More free (aerodynamic) braking saves propellant but demands more thermal and structural margin; more propulsive braking costs payload but eases the airframe |
 
 The next lesson looks at what the stage actually measures to fly the end of this sequence: the downward-looking sensors a terminal descent depends on, which neither a capsule's entry nor an orbital rendezvous needs in the same way.

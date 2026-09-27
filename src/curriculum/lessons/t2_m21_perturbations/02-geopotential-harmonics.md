@@ -255,7 +255,7 @@ High-precision work — the GPS ground segment, or orbit determination from lase
 $$
 U(r,\phi) = \frac{\mu}{r}\left[1 - \sum_{n\ge2} J_n\left(\frac{R_E}{r}\right)^n P_n(\sin\phi)\right], \qquad \mathbf{a} = \nabla U .
 $$
-$J_2 = 1.08263 \times 10^{-3}$ (more precisely $1.082\,626\,68\times10^{-3}$) is the oblateness term of the geopotential — the equatorial bulge. It is about a thousand times larger than any other harmonic coefficient. Its Cartesian acceleration is
+$J_2 = 1.08263 \times 10^{-3}$ (more precisely $1.082\,626\,68\times10^{-3}$) is the oblateness term of the geopotential — the equatorial bulge. It is several hundred times larger than any other harmonic coefficient (about 430× $J_3$). Its Cartesian acceleration is
 $$
 \mathbf{a}_{J_2} = \frac{3}{2}\frac{J_2\mu R_E^2}{r^4}\left[\frac{x}{r}\Big(5\frac{z^2}{r^2}-1\Big),\ \frac{y}{r}\Big(5\frac{z^2}{r^2}-1\Big),\ \frac{z}{r}\Big(5\frac{z^2}{r^2}-3\Big)\right].
 $$

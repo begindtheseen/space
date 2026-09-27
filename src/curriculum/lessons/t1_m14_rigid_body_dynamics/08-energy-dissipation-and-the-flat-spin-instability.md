@@ -242,7 +242,7 @@ That is tiny: a torque of $17\,\mathrm{\mu N\,m}$ (millionths of a newton meter)
 :::
 
 ::: key Explorer 1 and the origin of the major-axis rule
-Explorer 1 (1958) was spun about its minor axis — its long, slender direction — and its flexible whip antennas dissipated energy. With $\lVert\mathbf{H}\rVert$ conserved and $T$ falling, the only possible end state was a spin about the axis of maximum inertia, and the satellite entered a flat spin within a few orbits. It was the first flight demonstration that a passively stabilized spacecraft must spin about its major axis.
+Explorer 1 (1958) was spun about its minor axis — its long, slender direction — and its flexible whip antennas dissipated energy. With $\lVert\mathbf{H}\rVert$ conserved and $T$ falling, the only possible end state was a spin about the axis of maximum inertia, and the satellite entered a flat spin within its first few orbits (a few hours). It was the first flight demonstration that a passively stabilized spacecraft must spin about its major axis.
 :::
 
 The explanation was published within months by [[two Stanford researchers|bracewell-garriott]].

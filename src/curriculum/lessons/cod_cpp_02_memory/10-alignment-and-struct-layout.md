@@ -192,7 +192,7 @@ The number 15 is the size the protocol wants. Even so, there are three reasons n
 The answer with none of these problems is to keep your in-memory struct naturally aligned and **serialize field by field** — copy each field, one at a time, into a byte buffer, in the order and byte order the protocol specifies. That costs a few lines and works on every compiler and every processor. Lesson 11 builds it.
 
 ::: key
-Serialise field by field with memcpy in a defined order and endianness instead of memcpy-ing the whole struct. `alignas(N)` can raise alignment but never lower it or remove padding; `__attribute__((packed))` removes padding but is non-standard, misaligns members, and does not fix byte order.
+Serialize field by field in a defined order, placing each byte with shifts so the endianness is fixed (use memcpy only to get a float's bit pattern into an integer), instead of memcpy-ing the whole struct. `alignas(N)` can raise alignment but never lower it or remove padding; `__attribute__((packed))` removes padding but is non-standard, misaligns members, and does not fix byte order.
 :::
 
 ::: warning

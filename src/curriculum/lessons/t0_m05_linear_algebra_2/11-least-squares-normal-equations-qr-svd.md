@@ -41,7 +41,7 @@ Two things recommend it. It is the cheapest, by about a factor of two. And $\mat
 One thing condemns it. By Lesson 10, $\kappa(\mathbf{A}^\mathsf{T}\mathbf{A}) = \kappa(\mathbf{A})^2$, and the damage happens in the *forming*, before any solver runs. Small singular values get lost in the round-off of the products: $\sigma_{\min}^2$ can sink below the rounding level of $\sigma_{\max}^2$ even when $\sigma_{\min}$ itself is stored perfectly well. The error in $\mathbf{x}$ is about $\kappa(\mathbf{A})^2\varepsilon$, where $\varepsilon = 2.2\times 10^{-16}$ is float64's precision.
 
 ::: warning Never compute an explicit inverse
-$\mathbf{x} = (\mathbf{A}^\mathsf{T}\mathbf{A})^{-1}\mathbf{A}^\mathsf{T}\mathbf{b}$ is how the answer is *written* — even in this module's exercise — not how it should be computed. Forming the inverse takes about three times the work of the Cholesky factorization, is less accurate, and destroys any sparsity the matrix had. Write `cho_solve(cho_factor(C), d)` or `np.linalg.solve(C, d)`, and form the inverse only when you truly need every entry of the covariance matrix.
+$\mathbf{x} = (\mathbf{A}^\mathsf{T}\mathbf{A})^{-1}\mathbf{A}^\mathsf{T}\mathbf{b}$ is how the answer is *written*, not how it should be computed. Forming the inverse takes about three times the work of the Cholesky factorization, is less accurate, and destroys any sparsity the matrix had. Write `cho_solve(cho_factor(C), d)` or `np.linalg.solve(C, d)`, and form the inverse only when you truly need every entry of the covariance matrix.
 :::
 
 ## Method 2: QR

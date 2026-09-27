@@ -163,7 +163,7 @@ def ranges_vec(v0, angles_rad, g=9.80665):
 Both return the same array. The second is many times faster for $10^5$ samples, and the reason is worth understanding, not memorising:
 
 ::: key
-A per-sample Python loop is slow in a 100k-run Monte Carlo because the CPython interpreter pays type dispatch and object overhead on every iteration — each `th` is a **[[boxed|boxed-objects]]** Python object, each `*` looks up what multiplication means for that object, each result is allocated. NumPy pushes the loop into compiled C over a contiguous buffer, typically 50–200× faster.
+A per-sample Python loop is slow in a 100k-run Monte Carlo because the CPython interpreter pays type dispatch and object overhead on every iteration — each `th` is a **[[boxed|boxed-objects]]** Python object, each `*` looks up what multiplication means for that object, each result is allocated. NumPy pushes the loop into compiled C over a contiguous buffer, typically tens to hundreds of times faster.
 :::
 
 **CPython** is the standard Python program that reads and runs your code line by line — the **interpreter**. **Type dispatch** is the step where it asks "what kind of thing is this, and what does `*` mean for it?" In the loop it asks that question a hundred thousand times. NumPy asks once.
@@ -395,7 +395,7 @@ But the estimator then forms differences, sums of squares and matrix inverses. I
 | dtypes | `float64` (53 bits, about 16 digits), `float32` (24 bits, about 7 digits), `int64` wraps | `np.finfo(np.float64).eps` $= 2.22 \times 10^{-16}$ |
 | float32 vs float64 | float32 ulp at Earth radius $= 0.5\,\mathrm{m}$; float64 ulp $\approx 9.3 \times 10^{-10}\,\mathrm{m}$ | GNC works in float64 |
 | NaN / inf | `np.isnan`, `np.nanmean`, `np.isclose`, `np.errstate(invalid="raise")` | `nan != nan` |
-| Vectorise | ufuncs `np.sin(a)`, reductions `a.mean(axis=0)`, `np.percentile(a, 99.87)` | 50–200× over a Python loop |
+| Vectorise | ufuncs `np.sin(a)`, reductions `a.mean(axis=0)`, `np.percentile(a, 99.87)` | tens to hundreds of times over a Python loop |
 | Broadcasting | compare shapes right to left; equal or 1; stretch 1s | `(3,1)` with `(1,5)` → `(3,5)` |
 | New axis | `a[:, None]`, `a[None, :]` | outer product `s[:, None] * s[None, :]` |
 | Products | `*` elementwise; `a @ b` matrix / dot; `np.cross`, `np.linalg.norm(V, axis=1)` | `(3,) @ (3,)` is a scalar |

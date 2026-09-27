@@ -46,7 +46,7 @@ A **grid fin** is a lattice of thin, crossing plates set in a frame, like an ice
 The price is drag, and a dip near Mach 1. A lattice has far more surface rubbing the air than a plate, so its drag is higher — which, on a booster trying to slow down, is welcome. And between about Mach 0.8 and 1.2 the flow inside the cells **chokes**: shock waves form straight across the cells and the passages jam. Drag jumps, and the fin's control effect falls into a **transonic bucket** before recovering above about Mach 1.5. A booster slowing through Mach 1 has to ride out that dip with less authority.
 
 ::: key
-Grid fins provide aerodynamic control authority during a booster's unpowered supersonic descent, where the engines are off. The lattice form stays efficient across transonic and supersonic Mach with a short chord, keeps hinge moments low, and stows flat against the body.
+Grid fins provide aerodynamic control authority during a booster's unpowered supersonic descent, where the engines are off. The lattice form works well subsonic and supersonic (above ~Mach 1.5), with a transonic dip near Mach 0.8–1.2, has a short chord, keeps hinge moments low, and stows flat against the body.
 :::
 
 "Stays efficient across transonic Mach" should be read with the bucket in mind: the effect dips near Mach 1 but comes back, where a flat fin's keeps shrinking.

@@ -171,7 +171,7 @@ Notice that `wraps` is itself a decorator — one that takes an argument, `fn`. 
 This is not optional. There is no situation in which you want a decorator that wipes out its target's identity. A reviewer will ask about a missing `wraps` before reading anything else in the decorator.
 
 ::: key
-Why does a decorator need functools.wraps? Without it the wrapper replaces the original `__name__`, `__doc__`, `__module__` and `__wrapped__`, which breaks `help()`, tracebacks, pytest test collection and any introspection-based tooling.
+Why does a decorator need functools.wraps? Without it the wrapper's own `__name__`, `__doc__` and `__module__` hide the original's, and there is no `__wrapped__` pointing back to it. That breaks `help()`, tracebacks, pytest fixture injection and marks, and any tool that inspects signatures.
 
 `@decorator` above `def f` means `f = decorator(f)`. `@functools.wraps(fn)` on the wrapper copies `__name__`, `__doc__`, `__module__`, `__qualname__` and `__annotations__`, and sets `__wrapped__` so that `inspect.signature` still reports the real parameters.
 :::
