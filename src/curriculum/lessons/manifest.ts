@@ -3995,6 +3995,33 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_py_09_packaging/03-pyproject-and-backends.md"
     },
     {
+      "id": "l04-editable-installs",
+      "title": "Editable installs and what they really do",
+      "minutes": 22,
+      "covers": [
+        "Editable installs and what they actually do"
+      ],
+      "file": "cod_py_09_packaging/04-editable-installs.md"
+    },
+    {
+      "id": "l05-wheels-and-sdists",
+      "title": "Wheels, source distributions and manylinux",
+      "minutes": 24,
+      "covers": [
+        "Wheels versus source distributions; manylinux"
+      ],
+      "file": "cod_py_09_packaging/05-wheels-and-sdists.md"
+    },
+    {
+      "id": "l06-entry-points",
+      "title": "Console entry points for command-line tools",
+      "minutes": 20,
+      "covers": [
+        "Console entry points for command-line tools"
+      ],
+      "file": "cod_py_09_packaging/06-entry-points.md"
+    },
+    {
       "id": "l07-version-pinning",
       "title": "Version pinning, ranges and lockfiles",
       "minutes": 22,
@@ -10561,13 +10588,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_09_packaging": {
-    "covered": 7,
+    "covered": 10,
     "total": 13,
     "complete": false,
     "missing": [
-      "Editable installs and what they actually do",
-      "Wheels versus source distributions; manylinux",
-      "Console entry points for command-line tools",
       "venv, pip, uv, conda and when each is the right answer",
       "Sphinx and NumPy-style docstrings; README that lets a stranger run it",
       "Publishing internally versus on PyPI; private indexes"
