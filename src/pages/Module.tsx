@@ -18,7 +18,8 @@
    material they do not have the prerequisites for.
    ========================================================================== */
 import { PLACEMENT_SKILLS } from '@/curriculum/placement'
-import { moduleTest, practiceFor, testLocks } from '@/learn/modules'
+import { moduleTest, practiceFor } from '@/learn/modules'
+import { creditedLessonKeys, lessonCredit, moduleCredit, moduleLocks } from '@/learn/credit'
 import type { LearnLesson } from '@/learn/types'
 import { GateScreen, PracticeSection } from './LearnMastery'
 import { testedOutKeys } from '@/engine/placement'
@@ -122,7 +123,8 @@ function statusOf(state: LearnerState, module: Module, now: Date): Status {
   const lessons = module.lessons ?? []
   return {
     lessons: lessons.length,
-    lessonsRead: lessons.filter((l) => !!state.read[lessonKey(module.id, l.id)]).length,
+    // A lesson mastered in Learn to code counts as read: she does not have to learn it twice.
+    lessonsRead: lessons.filter((l) => !!state.read[lessonKey(module.id, l.id)] || !!lessonCredit(module.id, l.id, state.learn)).length,
     lessonMinutes: lessons.reduce((a, l) => a + l.minutes, 0),
     atoms: atoms.length,
     cards: module.cards?.length ?? 0,
@@ -174,7 +176,7 @@ function ModuleView({ module }: { module: Module }) {
   const markStudied = () => setState((s) => markRead(s, module.id, new Date()))
 
   // A module that builds on one whose test is not passed stays shut: the test is how you show you are ready.
-  const testLock = testLocks(module, state.learn)
+  const testLock = moduleLocks(module, state.learn)
   if (testLock.length) return <TestLocked module={module} locks={testLock} />
 
   const test = moduleTest(module.id)
@@ -317,9 +319,25 @@ function ModuleView({ module }: { module: Module }) {
 
 /** The module's last step: its test, and what passing it opens. */
 function ModuleTestCard({ module, test, passed }: { module: Module; test: LearnLesson; passed: boolean }) {
-  const { dag } = useLearner()
+  const { dag, state } = useLearner()
   const opens = dag.childrenOf(module.id)
   const g = test.gate!
+  const fromLearn = passed ? null : moduleCredit(module.id, state.learn)
+  if (fromLearn) {
+    return (
+      <div className="lm-win" style={{ marginBottom: 'var(--gap)' }}>
+        <IconCheck size={16} />
+        <span className="grow">
+          <strong>Module test: counts as passed.</strong> You mastered {fromLearn.map((t) => t.name).join(' and ')} in Learn to code, gates and all, and
+          that covers everything this module tests. You can still sit it.
+        </span>
+        <Button variant="ghost" size="sm" onClick={() => navigate(`/module/${module.id}?test=1`)}>
+          Sit it anyway
+          <IconArrowRight size={13} />
+        </Button>
+      </div>
+    )
+  }
   return (
     <div className={passed ? 'lm-win' : 'lm-gate-result'} style={{ marginBottom: 'var(--gap)' }}>
       {passed ? <IconCheck size={16} /> : null}
@@ -450,7 +468,12 @@ function Learn({
   const hasLessons = lessons.length > 0
   // Lessons the placement test showed she already knows: still open, not "up next".
   const testedOut = testedOutKeys(PLACEMENT_SKILLS, state.placement)
-  const firstUnread = lessons.find((l) => !state.read[lessonKey(module.id, l.id)] && !testedOut.has(lessonKey(module.id, l.id)))
+  // Lessons she already mastered in Learn to code: open, counted, never "up next".
+  const credited = creditedLessonKeys(state.learn)
+  const firstUnread = lessons.find((l) => {
+    const key = lessonKey(module.id, l.id)
+    return !state.read[key] && !testedOut.has(key) && !credited.has(key)
+  })
   const coverage = lessonCoverage(module.id)
 
   return (
@@ -556,7 +579,8 @@ function Learn({
           />
           <div className="sect" style={{ paddingTop: 6, paddingBottom: 6 }}>
             {lessons.map((l, i) => {
-              const done = !!state.read[lessonKey(module.id, l.id)]
+              const fromLearn = credited.has(lessonKey(module.id, l.id))
+              const done = !!state.read[lessonKey(module.id, l.id)] || fromLearn
               const skipped = !done && testedOut.has(lessonKey(module.id, l.id))
               return (
                 <button
@@ -572,7 +596,15 @@ function Learn({
                     <span className="lesson__title">{l.title}</span>
                     <span className="lesson__meta">
                       {l.minutes} min
-                      {skipped ? ' · tested out' : !done && firstUnread?.id === l.id ? ' · up next' : done ? ' · read' : ''}
+                      {fromLearn && !state.read[lessonKey(module.id, l.id)]
+                        ? ' · mastered in Learn to code'
+                        : skipped
+                          ? ' · tested out'
+                          : !done && firstUnread?.id === l.id
+                            ? ' · up next'
+                            : done
+                              ? ' · read'
+                              : ''}
                     </span>
                   </span>
                   <IconChevronRight size={14} style={{ color: 'var(--ink-5)', flex: 'none' }} />
@@ -1063,6 +1095,8 @@ function UnlocksCard({ dag, module }: { dag: ReturnType<typeof useLearner>['dag'
 
 function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }) {
   const practiceSet = practiceFor(module.id, lesson.id)
+  const { state: learner } = useLearner()
+  const fromLearn = lessonCredit(module.id, lesson.id, learner.learn)
   const { state, setState } = useLearner()
   const lessons = module.lessons ?? []
   const index = lessons.findIndex((l) => l.id === lesson.id)
@@ -1164,6 +1198,22 @@ function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }
         </div>
       </div>
 
+      {fromLearn ? (
+        <div className="lm-win" style={{ marginBottom: 'var(--gap)' }}>
+          <IconCheck size={16} />
+          <span className="grow">
+            You mastered this in Learn to code:{' '}
+            {fromLearn.map((l, i) => (
+              <span key={l.id}>
+                {i ? ', ' : ''}
+                <a href={`#/learn/${l.id}`}>{l.title}</a>
+              </span>
+            ))}
+            . It counts as read and its practice is optional. Skim it for what the module adds, or move on.
+          </span>
+        </div>
+      ) : null}
+
       <Card index={0}>
         <div className="sect reader__body" ref={readerRef}>
           {error ? (
@@ -1192,7 +1242,7 @@ function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }
 
       {body !== null && practiceLangs(module).length ? <TryItHere langs={practiceLangs(module)} saveKey={`try:${module.id}`} /> : null}
 
-      {body !== null && practiceSet ? <PracticeSection key={practiceSet.id} lesson={practiceSet} /> : null}
+      {body !== null && practiceSet ? <PracticeSection key={practiceSet.id} lesson={practiceSet} optional={!!fromLearn} /> : null}
 
       <div className="reader__nav">
         <Button variant="ghost" size="md" onClick={() => go(prev)} disabled={!prev}>

@@ -40,7 +40,8 @@ import { Markdown } from '@/lib/markdown'
 import { navigate, useRoute } from '@/lib/router'
 import { TerminalChallenge } from './LearnTerminal'
 import { GateView, PracticeSection, RetestBanner, RetestView } from './LearnMastery'
-import { courseMastered, gateOf, lessonMastered, lockedBy, practiceDone, practiceTotal } from '@/learn/practice'
+import { courseMastered, gateOf, lessonMastered, practiceDone, practiceTotal } from '@/learn/practice'
+import { courseLock } from '@/learn/credit'
 import './learn.css'
 import './pages.css'
 
@@ -59,7 +60,7 @@ export function Learn({ lessonId }: { lessonId?: string }) {
 /** A lesson or gate, unless its course is still locked behind an earlier course's gate. */
 function Guarded({ found }: { found: { track: LearnTrack; lesson: LearnLesson; index: number } }) {
   const { state } = useLearner()
-  const lock = lockedBy(found.track, ladderOf(found.track), state.learn)
+  const lock = courseLock(found.track, state.learn)
   if (lock) return <LockedCourse track={found.track} lock={lock} />
   if (found.lesson.gate) return <GateView key={found.lesson.id} track={found.track} lesson={found.lesson} />
   return <LessonView key={found.lesson.id} track={found.track} lesson={found.lesson} index={found.index} />
@@ -395,7 +396,7 @@ function LockedCourse({ track, lock }: { track: LearnTrack; lock: { track: Learn
 
 function CourseView({ track }: { track: LearnTrack }) {
   const { state } = useLearner()
-  const lock = lockedBy(track, ladderOf(track), state.learn)
+  const lock = courseLock(track, state.learn)
   const done = passedCount(track, state.learn)
   const total = track.lessons.length
   const next = nextLesson(track, state.learn)
@@ -427,7 +428,7 @@ function CourseView({ track }: { track: LearnTrack }) {
               className="lm-ladder__step"
               data-here={t.id === track.id}
               data-done={passedCount(t, state.learn) === t.lessons.length}
-              data-locked={!!lockedBy(t, ladderOf(track), state.learn)}
+              data-locked={!!courseLock(t, state.learn)}
             >
               <span className="lm-ladder__n">{i + 1}</span>
               {t.subject ? t.title : LEVEL_LABEL[t.level]}

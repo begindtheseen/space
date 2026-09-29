@@ -11,6 +11,7 @@ import { lessonsFor, loadLessonBody, moduleById, MODULES } from '@/curriculum'
 import type { IndexedNote } from '@/curriculum/lessons/notesIndex'
 import { PLACEMENT_SKILLS } from '@/curriculum/placement'
 import { testedOutKeys } from '@/engine/placement'
+import { creditedLessonKeys } from '@/learn/credit'
 import type { LearnerState } from '@/engine/state'
 import type { CardHit, LibraryLesson } from '@/lib/explain'
 
@@ -21,6 +22,7 @@ export function libraryKeys(state: LearnerState, here: { moduleId: string; lesso
   const keys = new Map<string, number>()
   for (const [key, at] of Object.entries(state.read)) keys.set(key, Date.parse(at) || 0)
   for (const key of testedOutKeys(PLACEMENT_SKILLS, state.placement)) if (!keys.has(key)) keys.set(key, 0)
+  for (const key of creditedLessonKeys(state.learn)) if (!keys.has(key)) keys.set(key, 0)
   const own = lessonsFor(here.moduleId)
   const at = own.findIndex((l) => l.id === here.lessonId)
   for (const l of own.slice(0, Math.max(0, at))) {

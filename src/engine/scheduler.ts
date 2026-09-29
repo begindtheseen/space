@@ -14,7 +14,7 @@
 
    Everything below is derived from those three rules.
    ========================================================================== */
-import { testLocks } from '@/learn/modules'
+import { moduleLocks, moduleTestPassed } from '@/learn/credit'
 import type { Module } from '@/curriculum/types'
 import { itemId } from '@/curriculum/types'
 import { Dag, MASTERY_THRESHOLD } from './graph'
@@ -111,7 +111,12 @@ export function masteryMap(
   now: Date = new Date(),
 ): Map<string, number> {
   const out = new Map<string, number>()
-  for (const m of modules) out.set(m.id, moduleMastery(state, m, now))
+  for (const m of modules) {
+    const mast = moduleMastery(state, m, now)
+    // A module whose test she passed (or earned in Learn to code) is shown mastered: that is what the test proves.
+    // Its cards still come round on schedule, so what she knows stays known.
+    out.set(m.id, moduleTestPassed(m.id, state.learn) ? Math.max(mast, MASTERY_THRESHOLD) : mast)
+  }
   return out
 }
 
@@ -184,7 +189,7 @@ export function rankFrontier(
   now: Date = new Date(),
 ): Candidate[] {
   // A module behind an unpassed module test is not ready, whatever its prerequisites' mastery says.
-  const frontier = dag.frontier(mastery).filter((m) => !testLocks(m, state.learn).length)
+  const frontier = dag.frontier(mastery).filter((m) => !moduleLocks(m, state.learn).length)
   const maxUnlocks = Math.max(1, ...frontier.map((m) => dag.descendants(m.id).size))
 
   const out = frontier.map((m) => {

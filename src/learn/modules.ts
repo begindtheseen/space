@@ -58,9 +58,13 @@ export function findModuleLesson(id: string): { track: LearnTrack; lesson: Learn
 }
 
 /** The prerequisite modules whose test has not been passed yet: what keeps a module locked. */
-export function testLocks(module: { prereqs: string[] }, passed: Record<string, string>): { moduleId: string; test: LearnLesson }[] {
+export function testLocks(
+  module: { prereqs: string[] },
+  passed: Record<string, string>,
+  credited: (moduleId: string) => boolean = () => false,
+): { moduleId: string; test: LearnLesson }[] {
   return module.prereqs.flatMap((moduleId) => {
     const test = moduleTest(moduleId)
-    return test && !passed[test.id] ? [{ moduleId, test }] : []
+    return test && !passed[test.id] && !credited(moduleId) ? [{ moduleId, test }] : []
   })
 }

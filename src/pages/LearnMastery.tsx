@@ -21,6 +21,7 @@ import { useLearner } from '@/hooks/useLearner'
 import { buildProgram, gradeRun } from '@/learn/grade'
 import { findLesson as findCourseLesson } from '@/learn/index'
 import { findModuleLesson } from '@/learn/modules'
+import { courseCredit } from '@/learn/credit'
 import { editorLang, runLearn, warmUp } from '@/learn/platform'
 import {
   RETEST_DAYS,
@@ -214,7 +215,7 @@ const TRIES_BEFORE_SOLUTION = 3
 
 type PracticeItem = { kind: 'problem'; ex: LearnExercise } | { kind: 'question'; q: LearnQuestion }
 
-export function PracticeSection({ lesson }: { lesson: LearnLesson }) {
+export function PracticeSection({ lesson, optional = false }: { lesson: LearnLesson; optional?: boolean }) {
   const { state, setState } = useLearner()
   const items = useMemo<PracticeItem[]>(
     () => [...lesson.practice.map((ex) => ({ kind: 'problem' as const, ex })), ...(lesson.quiz ?? []).map((q) => ({ kind: 'question' as const, q }))],
@@ -266,7 +267,9 @@ export function PracticeSection({ lesson }: { lesson: LearnLesson }) {
         <div>
           <div className="lm-challenge__label">Practice</div>
           <p className="lm-practice__why">
-            {allDone
+            {optional && !allDone
+              ? 'Optional: you already mastered this in Learn to code. Try a problem or two if you want the module’s angle on it.'
+              : allDone
               ? 'Everything here solved: this lesson is mastered. It will come back as a re-test in a few days.'
               : `Passing the lesson once shows you followed it. These ${total} ${questions && lesson.practice.length ? 'problems and questions' : questions ? 'questions' : 'problems'}, on the same idea with new data and new twists, are how it sticks.`}
           </p>
@@ -382,14 +385,26 @@ function clock(ms: number): string {
 /** A course's mastery gate in Learn to code. */
 export function GateView({ track, lesson }: { track: LearnTrack; lesson: LearnLesson }) {
   const { state } = useLearner()
+  const fromModules = state.learn[lesson.id] ? null : courseCredit(track.id, state.learn)
   return (
+    <>
+      {fromModules ? (
+        <div className="lm-win lm-flow" style={{ marginTop: 18 }}>
+          <IconCheck size={16} />
+          <span className="grow">
+            This gate counts as passed: you passed the module test{fromModules.length > 1 ? 's' : ''} that cover everything in {track.name}. The next course is
+            open. You can still sit it below.
+          </span>
+        </div>
+      ) : null}
     <GateScreen
       lesson={lesson}
       kicker="Mastery gate"
       back={{ href: `#/learn/${track.id}`, label: track.title }}
       markLang={track.lang}
       passedText={courseMastered(track, state.learn) ? `${track.name} is mastered.` : 'Gate passed, so the next course is open. This course counts as mastered once every lesson’s practice is done too.'}
-    />
+      />
+    </>
   )
 }
 

@@ -9536,7 +9536,7 @@ export const CODING: Module[] = [
     quiz: [
       {
         id: 'rs01_q1',
-        q: 'What happens on `let x: u8 = 250; let y = x + 10;` in a release build?',
+        q: '`x` is a `u8` read from a sensor at run time, and it holds 250. What does `let y = x + 10;` do in a release build?',
         choices: [
           'Compile error',
           'Panic at runtime',
@@ -9545,7 +9545,7 @@ export const CODING: Module[] = [
         ],
         answer: 2,
         explain:
-          'Release builds wrap by default while debug builds panic. Flight code should use checked_add or wrapping_add so the behavior is explicit and identical in both.',
+          'Release builds wrap by default while debug builds panic. (Written with constants, as `let x: u8 = 250; x + 10`, it would not compile at all: the compiler sees the overflow.) Flight code should use checked_add or wrapping_add so the behavior is explicit and identical in both.',
         b: 0.7,
         bloom: 'apply',
       },

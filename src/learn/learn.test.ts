@@ -6,6 +6,7 @@ import { LEARN_LANGS } from './platform'
 import { run as runShell } from '@/lib/shell'
 import { LessonFormatError, parseTrack } from './parse'
 import { asLesson, gradedUnits } from './practice'
+import { courseProblems } from './validate'
 import { LEVELS, type LearnLesson } from './types'
 import { noteRefs, notePicture, pictureProblem, splitNotes } from '@/lib/contextNotes'
 
@@ -438,6 +439,12 @@ const WRITTEN_BEFORE_NOTES = new Set<string>([
 ])
 const LEARN_NOTES_MIN = 3
 const LEARN_NOTES_MAX = 10
+
+describe('degree courses', () => {
+  it('every Computer Science course meets every rule in validate.ts', () => {
+    expect(TRACKS.filter((t) => t.subject).flatMap(courseProblems)).toEqual([])
+  })
+})
 
 describe('context notes in Learn to code', () => {
   it('holds every course not written before the rule to it', () => {

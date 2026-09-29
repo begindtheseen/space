@@ -274,11 +274,16 @@ export function coerceRetests(raw: unknown): Record<string, Retest> {
  * its ladder, that has not been passed. Nothing when it is open. The gate of
  * the course she is on is always open, so she can test out of what she knows.
  */
-export function lockedBy(track: LearnTrack, ladder: LearnTrack[], passed: Record<string, string>): { track: LearnTrack; gate: LearnLesson } | undefined {
+export function lockedBy(
+  track: LearnTrack,
+  ladder: LearnTrack[],
+  passed: Record<string, string>,
+  credited: (t: LearnTrack) => boolean = () => false,
+): { track: LearnTrack; gate: LearnLesson } | undefined {
   for (const t of ladder) {
     if (t.id === track.id) return undefined
     const gate = gateOf(t)
-    if (gate && !passed[gate.id]) return { track: t, gate }
+    if (gate && !passed[gate.id] && !credited(t)) return { track: t, gate }
   }
   return undefined
 }

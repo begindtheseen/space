@@ -14,6 +14,7 @@ import type { Dag } from '@/engine/graph'
 import { TRACKS, currentTrack, findLesson, ladderOf, nextLesson } from '@/learn'
 import { PLACEMENT_SKILLS } from '@/curriculum/placement'
 import { lessonKeyOf, planFor, testedOutKeys } from '@/engine/placement'
+import { creditedLessonKeys } from '@/learn/credit'
 
 export function focusInputs(state: LearnerState, dag: Dag, now: Date = new Date()): FocusInputs {
   const modules = dag.all()
@@ -58,6 +59,8 @@ export function focusInputs(state: LearnerState, dag: Dag, now: Date = new Date(
   // A lesson she tested out of counts as done for choosing what comes next;
   // it is still there to read.
   const testedOut = testedOutKeys(PLACEMENT_SKILLS, state.placement)
+  // Mastered in Learn to code counts as known here too.
+  for (const key of creditedLessonKeys(state.learn)) testedOut.add(key)
   const unread = (moduleId: string) =>
     lessonsFor(moduleId).find((l) => !state.read[lessonKey(moduleId, l.id)] && !testedOut.has(lessonKey(moduleId, l.id)))
 

@@ -75,6 +75,12 @@ export const ROADMAPS: Roadmap[] = [
     steps: ['python', 'sql', 'bash', 'git'],
   },
   {
+    id: 'cs-degree',
+    title: 'Computer Science degree',
+    blurb: 'What a computer science bachelor\u2019s teaches, taught to mastery: a first language learned properly, the command line and git, then data structures and algorithms with proofs and costs, systems, and the courses that follow. Every course ends in a gate you must pass to go on.',
+    steps: ['python', 'python-intermediate', 'bash', 'git', 'python-advanced', 'cs-dsa1', 'cpp', 'cpp-intermediate', 'sql', 'sql-intermediate'],
+  },
+  {
     id: 'software',
     title: 'Software Engineer',
     blurb: 'The ground every software job stands on: one language learned properly, the command line and git, SQL, and then C++ to see what the machine is really doing.',

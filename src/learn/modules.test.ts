@@ -35,7 +35,7 @@ describe('module practice and tests', () => {
   })
 
   it('a module stays locked until the test of each prerequisite that has one is passed', () => {
-    const withTest = MODULE_TRACKS.map((t) => t.module!).find((id) => MODULES.some((m) => m.prereqs.includes(id)))
+    const withTest = MODULE_TRACKS.map((t) => t.module!).find((id) => moduleTest(id) && MODULES.some((m) => m.prereqs.includes(id)))
     if (!withTest) return
     const child = MODULES.find((m) => m.prereqs.includes(withTest))!
     const test = moduleTest(withTest)!
