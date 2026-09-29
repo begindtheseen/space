@@ -378,7 +378,7 @@ function LockedCourse({ track, lock }: { track: LearnTrack; lock: { track: Learn
         </div>
         <h1>Pass the {lock.track.name} gate first</h1>
         <p className="lm-practice__why">
-          {track.name} builds on everything in {lock.track.name}. Its mastery gate is where you show you have it: problems you have not seen and questions on how and why it works, in one sitting. Pass it and this course opens.
+          {track.name} builds on everything in {lock.track.name}. Its mastery gate is where you show you have it: problems you have not seen and questions on how and why it works, in one sitting. Pass it and this course opens. You can sit it whenever you feel ready, even if you finished that course before gates existed: nothing you already did has to be redone.
         </p>
         <div className="lm-help__row">
           <button type="button" className="ide-run" onClick={() => navigate(`/learn/${lock.gate.id}`)}>
