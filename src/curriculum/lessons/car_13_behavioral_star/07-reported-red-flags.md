@@ -1,100 +1,117 @@
 ---
 id: l07-reported-red-flags
 title: "The four reported red flags"
-minutes: 24
+minutes: 22
 covers:
   - "reported red flags: blaming others, vagueness, inflated contribution, inability to name a real failure"
 ---
 
-This module names four behavioural red flags: blaming others, vagueness, inflated contribution, and the inability to name a real failure. It calls them *reported*, and that word is worth taking seriously. They are not quoted from a published rubric, and this module does not tell you how any of them is recorded, weighted or discussed after you leave the room. What it does say is how they are read — all four, together, as an unwillingness to be accountable.
+Picture a lamp lying broken on the living-room floor, and four kids who each give a different answer to "what happened?" The first says, "The lamp got knocked over." The second says, "Stuff happened, it was kind of a mess." The third says, "I fixed it all by myself" — when really their mom did most of the gluing. The fourth says, "I never break anything."
 
-That single heading over four quite different behaviours is the interesting part, and it is worth reconstructing rather than memorising, because the mechanism tells you how to audit your own answers.
+Four very different answers, with one thing in common: afterward, you still cannot say who is responsible for what. That shared effect is the idea of this lesson.
 
-Think about what an interviewer is trying to end up with: a description of what you are responsible for. Each of the four flags destroys that description in a different way. Blaming moves the cause of an outcome outside you. Vagueness removes the detail that would let anyone attach responsibility to anyone. Inflation attaches responsibility to you that the record does not support. And an inability to name a failure denies that there is anything you are answerable for at all. Different behaviours, one effect: after the answer, nobody can say what you own.
+This module names four **red flags** — warning signs in a behavioral answer: blaming others, vagueness, inflated contribution, and the inability to name a real failure. It calls them *reported*, and the word matters. They are not quoted from a published **[[rubric|rubric]]**, and this module does not say how any of them is recorded, weighted or discussed after you leave. It does say how they are read: all four, together, as an unwillingness to be **[[accountable|accountable]]** — willing to own what you did and what happened because of it.
+
+## One effect, four ways to cause it
+
+Why do four different behaviors share one heading? The interviewer is trying to leave with a description of what you are responsible for, and each flag wrecks that description in its own way.
+
+- **Blaming** moves the cause of an outcome outside you.
+- **Vagueness** removes the detail that would let anyone attach responsibility to anyone.
+- **Inflation** attaches responsibility to you that the record does not support.
+- **No failure** denies that there is anything you are answerable for at all.
 
 ::: key
-The reported behavioural red flags are blaming others for a failure; vague answers with no specifics; inflating your contribution on a team project; and being unable to name a genuine failure. All four are read as an unwillingness to be accountable.
+The reported behavioral red flags are blaming others for a failure; vague answers with no specifics; inflating your contribution on a team project; and being unable to name a genuine failure. All four are read as an unwillingness to be accountable.
 :::
 
-This lesson takes them one at a time, then gives you an audit you can run on your own recordings, which is the only place several of these are visible.
+Below, we take them one at a time, then build an audit — a checklist you run on recordings of yourself.
 
-## Blaming others, including when you do not mean to
+## Blaming others, even when you do not mean to
 
-Almost nobody intends this one. It arrives through grammar and through placement.
+Almost nobody blames on purpose. It sneaks in through grammar and placement.
 
-**The passive voice.** "The interface was changed without notice", "mistakes were made", "the schedule slipped." Each names an event with no agent, and in an account of something that went wrong, an absent agent reads as a deliberately absent agent.
+**The passive voice.** The **[[passive voice|passive-voice]]** is a way of building a sentence that leaves out who did the thing. "The interface was changed without notice." "Mistakes were made." "The schedule slipped." In a story about something that went wrong, a missing doer sounds like one being hidden on purpose.
 
-**The in-fairness clause.** A true piece of context, attached to the fault, softening it: "I missed it — though in fairness the documentation was out of date." The context may be entirely accurate. Its function in the sentence is to share the fault out, and the listener hears the function rather than the accuracy.
+**The in-fairness clause.** This is a true piece of background, attached to your fault to soften it: "I missed it — though in fairness the documentation was out of date." The background may be accurate. But its job in the sentence is to share the fault out, and the listener hears the job, not the accuracy.
 
-**The last position.** Whatever ends the story is what it concludes. A single factual mention of an external cause in the middle of an account is ordinary; the same sentence at the end is the moral of the story. If your failure story's final clause is about someone else, it is a blaming story regardless of what the earlier sentences said.
+**The last position.** Whatever ends a story is its conclusion. One factual mention of an outside cause in the middle is ordinary; the same sentence at the end becomes the moral. If your failure story's final clause is about someone else, it is a blaming story, whatever came before.
 
-The audit for this one is mechanical: write the story out, and for each sentence, ask whether its subject is you or something else. A story about your own failure in which most sentences have an external subject has told the listener where you put the cause.
+The check is mechanical. Write the story out and, for each sentence, ask whether the **subject** — the person or thing doing the verb — is you. If most sentences in a story about *your own* failure have some other subject, you have told the listener where you put the cause.
 
-## Vagueness, and the three species of it
+## Vagueness, in three kinds
 
-**The abstraction.** "I optimised the data pipeline", "I improved the controller", "I worked on verification." These name a category of work rather than work. They are comfortable to say because they are unfalsifiable and take no effort to recall, and they convey almost nothing.
+**The abstraction.** "I optimized the data pipeline." "I worked on verification." These name a *category* of work, not the work. They feel safe, because nobody can prove them wrong, and they tell the listener almost nothing.
 
-**The missing number.** Covered in full three lessons back: without a quantity, a baseline and a standard, the Result is an impression.
+**The missing number.** Lesson 3 covered this in full. Without a quantity, a baseline to compare against, and a standard, a Result is only an impression.
 
-**The unnamed decision.** The subtlest one. A story can be full of technical specifics and still contain no moment where you chose between two things — a narrated sequence of steps, every one concrete, and no visible judgement. This kind of vagueness is invisible to the person telling it, because it feels detailed.
+**The unnamed decision.** A story can be full of technical detail and still have no moment where you chose between two things — concrete steps, no visible judgment. The teller cannot see this one, because it *feels* detailed.
 
-The fix for all three is the same ladder, applied in order: name the object, name the decision, name the measurement. "I optimised the pipeline" becomes "the dispersion campaign was the bottleneck, so I had to decide between parallelising the existing Python and rewriting the inner loop in C++; I profiled first, found that most of the time was in the integrator rather than in the setup, and rewrote that alone."
+The fix for all three is one ladder, climbed in order: **name the object, name the decision, name the measurement.** "I optimized the pipeline" becomes: "The dispersion campaign was the bottleneck, so I had to decide between running the existing Python code in parallel and rewriting the inner loop in C++. I profiled first — measured where the time went — and found most of it was in the integrator — the part that steps the simulation forward in time — not the setup. So I rewrote that alone."
 
-There is one honest source of vagueness, which is confidentiality. Work belonging to a previous employer sometimes cannot be described at the object level. The way to be non-specific without triggering this flag is to keep the *structure* — the decision, the alternatives, the criterion, the outcome's shape — and abstract only the object, while saying plainly that you are doing so. This track's past-project module treats the boundary in full.
+There is one honest reason to be vague: **[[confidentiality|confidentiality]]**. Work for a previous employer sometimes cannot be named. Then keep the *structure* — the decision, the alternatives, the rule you chose by, the shape of the outcome — hide only the object, and say plainly that you are doing so. This track's past-project module covers where that line sits.
 
 ## Inflated contribution
 
-This one is a risk specifically for candidates who have taken the advice in this module's second lesson too far. The Action section has to be in the first person singular, and the honest way to do that is to narrow each claim until it is exactly true. Rewriting a team's work as your own is the other way, and it is fragile in a way that is worth being precise about.
+This is a risk for people who took lesson 2 too far. The Action must be told with *I*, not *we*. The honest way is to narrow each claim until it is exactly true. Rewriting the team's work as your own is the other way, and it breaks in a predictable place.
 
-An inflated claim does not fail at the moment it is made. It fails two questions later. A claim you own genuinely has an unbounded amount of detail behind it — why that approach, what you rejected, what surprised you, what you would do differently — and a claim you have annexed runs out of detail almost immediately, usually at the question about the alternatives you considered. The gap between a candidate's fluency about the rest of her story and her thinness on one particular claim is the observable thing.
+An inflated claim does not fail when you make it. It fails two questions later. A claim you truly own has endless detail behind it: why that approach, what you rejected, what surprised you, what you would change. A borrowed claim runs out almost at once — usually at the question about alternatives. The interviewer notices the gap between your fluency on the rest of the story and your thinness on that one claim.
 
-The disproportion is what makes this a bad trade. A modest, precisely attributed contribution costs you very little; being caught overstating one costs you the credibility of everything else you said, because the listener now has to re-evaluate all of it.
+The trade is lopsided. A modest, precisely credited contribution costs you little. Being caught overstating one costs the believability of everything else.
 
 ## Being unable to name a real failure
 
-The previous lesson covered what a usable failure story contains. What belongs here is the reading: an answer that produces no real failure is grouped with blaming and with inflation, under accountability, rather than being treated as a minor evasion.
+Lesson 5 covered what a usable failure story contains. Here, the point is how a missing one is read: grouped with blaming and inflation, under accountability — not as a small dodge.
 
-Two cases are worth separating. The first is the candidate who has a failure and is protecting it — the disguised strength, the trivial consequence. The second is the candidate early enough in her work that nothing has visibly gone wrong yet, which feels like an honest position and is usually a failure of search rather than of history. Small failures count: a check you skipped, a result you reported with more confidence than it deserved, a week spent on the wrong thing because you did not ask a question. The one answer with no defensible version is *I cannot think of one*.
+Two cases are worth separating. In the first, the candidate *has* a failure and is protecting it — the **[[disguised strength|disguised-strength]]**, or the failure with a trivial consequence. In the second, she is early enough in her work that nothing has visibly gone wrong yet. That feels honest, but it is usually a failure of searching, not of history.
 
-::: warning Two of these flags are only visible in a recording
-Blaming and vagueness live in grammar, and grammar is the part of a story that changes between the page and the mouth. A written answer with no passive voice and a clean Action section can come out, under mild pressure, with three external subjects and a category noun where a decision should be. You will not catch that by rereading your notes. Record the answer, play it back, and audit the transcript.
+Small failures count: a skipped check, a result reported with more confidence than it deserved, a week lost because you did not ask a question. The one answer with no defensible version is *I cannot think of one*.
+
+::: warning Two of these flags only show up in a recording
+Blaming and vagueness live in grammar, and grammar is the part of a story that changes between the page and your mouth. A clean written answer can come out, under mild pressure, with three outside subjects and a category word where a decision should be. Rereading notes will not catch that. Record yourself answering, play it back, and audit the **[[transcript|transcript]]**.
 :::
 
 ## The audit
 
-Run this on a transcript of yourself answering, not on the draft you wrote. Six counts, five minutes.
+Run this on a transcript of yourself speaking, not on the draft you wrote. Six counts, five minutes.
 
-1. **Plural pronouns in the Action.** Target: near zero, with any that remain deliberate.
-2. **Sentences whose subject is not you, in a story about your own responsibility.** A couple is normal. A majority is the blaming flag.
+1. **Plural pronouns in the Action** (*we*, *us*, *our*). Target: near zero, any left deliberate.
+2. **Sentences whose subject is not you**, in a story about your own responsibility. A couple is normal. A majority is the blaming flag.
 3. **Numbers.** At least one, with a baseline and a standard attached.
 4. **Named decisions.** At least one place where you chose between two options and said why.
-5. **Erasing verbs.** *Helped*, *involved in*, *worked on*, *supported*, *part of*. Target zero.
-6. **Evaluations with no measurement behind them.** *Well*, *a lot better*, *successfully*, *great*. Each one is either upgraded to a measurement or cut.
+5. **[[Erasing verbs|erasing-verbs]]** — verbs that hide what you did: *helped*, *involved in*, *worked on*, *supported*, *part of*. Target: zero.
+6. **Evaluations with no measurement behind them**: *well*, *a lot better*, *successfully*, *great*. Upgrade each to a measurement, or cut it.
 
 ::: example One answer, three flags, diagnosed line by line
 The question: *Tell me about a project that did not go smoothly.*
 
-**The answer, as recorded — seven sentences, a hundred and twenty-nine words:**
+**The answer, as recorded — seven sentences, 128 words:**
 
-"So this was the avionics integration on the club satellite. We were quite far behind by that point, mostly because the hardware arrived late and the previous software lead had left without documenting the interface. I was brought in to help with the estimator side. We got the sensor fusion working reasonably well in the end, and I was involved in most of the debugging. There were some issues with the magnetometer that took a while to resolve — the calibration data we were given turned out to be wrong. Overall we managed to get it integrated before the deadline and the system performed a lot better than it had been. It was a good learning experience and I think the team did a great job under the circumstances."
+"So this was the avionics integration on the club satellite. We were quite far behind by that point, mostly because the hardware arrived late and the previous software lead had left without documenting the interface. I was brought in to help with the estimator side. We got the sensor fusion working reasonably well in the end, and I was involved in most of the debugging. There were some issues with the [[magnetometer|magnetometer]] that took a while to resolve — the calibration data we were given turned out to be wrong. Overall we managed to get it integrated before the deadline and the system performed a lot better than it had been. It was a good learning experience and I think the team did a great job under the circumstances."
 
-**The audit.** Four instances of the first person plural and three of the singular, of which two are *was brought in to help* and *was involved in* — both erasing verbs, so the answer contains no sentence in which the candidate does anything. Two sentences place the cause outside her, carrying three external causes between them: late hardware, an undocumented interface, and wrong calibration data. Zero numbers. Zero named decisions. Four evaluative phrases with nothing behind them: *reasonably well*, *a lot better*, *a good learning experience*, *a great job*.
+**The audit, count by count.**
 
-**Three flags, and where each one sits.** Blaming: the three external causes arrive early and are never balanced by anything the candidate got wrong. Vagueness: the whole answer is abstractions — *the estimator side*, *most of the debugging*, *some issues* — with no decision and no measurement. Inability to name a failure: the question asked what did not go smoothly, and the answer describes a project that went fine considering.
+- Pronouns: four *we*, three *I*. Two of the *I*s are *was brought in to help* and *was involved in* — erasing verbs — and the third is *I think*. No sentence has her doing anything.
+- Outside subjects: two sentences carry three outside causes — late hardware, an undocumented interface, wrong calibration data.
+- Numbers: zero.
+- Named decisions: zero.
+- Evaluations with nothing behind them: four — *reasonably well*, *a lot better*, *a good learning experience*, *a great job*.
+
+**Three flags.** Blaming: the outside causes are never balanced by anything she got wrong. Vagueness: *the estimator side*, *most of the debugging*, *some issues* — no decision, no measurement. No failure: asked what did not go smoothly, she describes a project that went fine, considering.
 
 **The repair, same events:**
 
 "The magnetometer calibration on our club satellite was wrong, and I lost about three weeks before I worked out why. I owned the attitude estimator; another member owned the hardware bring-up.
 
-My estimate had a slow yaw drift I could not get rid of. I assumed the problem was my filter, because that was the part I had written — I spent two weeks re-deriving the measurement model and tightening the process noise, and I got nowhere. What I should have done in the first week is the thing I eventually did: take the sensor outside, rotate it through a full circle by hand, and plot the raw magnetometer vector. It traced an ellipse offset from the origin, which is hard-iron and soft-iron distortion, and the calibration numbers we had been handed did not correct for it.
+My estimate had a slow yaw drift I could not get rid of. I assumed the problem was my filter, because that was the part I had written — I spent two weeks re-deriving the measurement model and tightening the process noise, and I got nowhere. What I should have done in the first week is the thing I eventually did: take the sensor outside, rotate it through a full circle by hand, and plot the raw magnetometer vector. It traced an ellipse offset from the origin, which is [[hard-iron and soft-iron distortion|hard-soft-iron]], and the calibration numbers we had been handed did not correct for it.
 
 I recalibrated from that data and the drift went away — the yaw error settled from about eight degrees at the end of a run to under one. What I changed permanently is that I now check the raw measurement before I debug the estimator that consumes it, because two weeks of that was me trusting an input I had never looked at."
 
-**What the repair does:** puts the fault in the first sentence, keeps the external cause — the calibration data really was wrong — as one factual clause rather than as the conclusion, names a decision and the wrong assumption behind it, and closes on a measured outcome and a change. The other person is mentioned once, neutrally, by role.
+**What the repair does.** The fault is in the first sentence. The outside cause — the calibration really was wrong — is one factual clause, not the conclusion. A decision and the wrong assumption behind it are named. It closes on a measured outcome (eight degrees down to under one, the big drop a fixed calibration should give) and a change in how she works. The other person appears once, neutrally, by role.
 :::
 
 ::: example An inflated claim meeting its second follow-up
-**Candidate:** "I designed the momentum management scheme for our cubesat — the wheel desaturation logic using the magnetorquers."
+**Candidate:** "I designed the [[momentum management|momentum-management]] scheme for our cubesat — the wheel desaturation logic using the magnetorquers."
 
 **Interviewer:** "Nice. What set your desaturation threshold?"
 
@@ -102,39 +119,37 @@ I recalibrated from that data and the drift went away — the yaw error settled 
 
 **Interviewer:** "Which disturbance dominated at your altitude?"
 
-**Candidate:** "I would have to check — gravity gradient, I think, or possibly aerodynamic. It was a while ago."
+**Candidate:** "I would have to check — [[gravity gradient|gravity-gradient]], I think, or possibly aerodynamic. It was a while ago."
 
-**What just happened.** Nothing dramatic, and the damage is done. The first answer was structural rather than specific, the second was a phrase rather than a number, and the third produced a hesitation on a question that the person who actually sized the scheme would answer without pausing, because the dominant torque is the thing that sizing exercise is about. The interviewer has learned something, and it is not that the candidate is ignorant of attitude control — it is that this particular claim is larger than the work behind it.
+**What just happened.** Nothing dramatic — and the damage is done. The first answer gave a structure, not a specific. The second gave a phrase, not a number. The third hesitated on a question the person who sized the scheme would answer instantly, because finding the dominant torque is what sizing is *about*. The interviewer has not learned that the candidate is ignorant of attitude control — only that this claim is bigger than the work behind it.
 
-**The version that costs nothing:** "I did not design the desaturation scheme — a teammate did. What I did was the momentum budget it was sized against: I computed the worst-case gravity-gradient torque two independent ways, a numerical scan over attitudes and the closed-form bound, and they matched to four figures, which is how we knew the number we were sizing to was not an artefact of one assumed attitude. What surprised me was the ratio between the worst case and a representative case, which is itself sizing information — and it is why I would push for the scan rather than a single assumed attitude next time."
+**The version that costs nothing:** "I did not design the desaturation scheme — a teammate did. What I did was the momentum budget it was sized against: I computed the worst-case gravity-gradient torque two independent ways, a numerical scan over attitudes and the closed-form bound, and they matched to four figures, which is how we knew the number we were sizing to was not an artifact of one assumed attitude. What surprised me was the ratio between the worst case and a representative case, which is itself sizing information — and it is why I would push for the scan rather than a single assumed attitude next time."
 
-**Why this is stronger than the inflated claim would have been even if unchallenged:** it is precise, it is defensible to any depth, it credits the teammate in passing, and it contains a specific technical judgement that only the person who did the work would produce. A narrower true claim, told well, beats a broader one told thinly — and it never has to be defended.
+**Why this beats the inflated claim, even unchallenged:** it is precise, defensible to any depth, credits the teammate in passing, and holds a technical judgment only the person who did the work would produce. A narrower true claim, told well, beats a broader one told thinly — and it never has to be defended.
 :::
 
 ## What is not a red flag
 
-Worth stating plainly, because the four above can make candidates over-correct into anxiety about everything.
+A small result, a modest scope, or saying *I do not know* is not a red flag — this track spends two lessons on doing the last one well, in the screens and past-project modules, because it is a normal, respectable move. A career change, a gap, a self-taught background: none of these is on the list, and the next lesson handles all three.
 
-A small result is not a red flag. A modest scope is not a red flag. Saying *I do not know* is not a red flag — this track devotes two separate lessons to doing it well, in the screens module and in the past-project module, precisely because it is a normal and respectable move. A career change, a gap, a self-taught background: none of these is on the list, and the next lesson deals with all three.
-
-The list is about accountability, not about the size of your history. What it asks is that the account you give of your own work be one a listener could check.
+The list is about accountability, not the size of your history. It asks only that your account of your work be one a listener could check.
 
 ## Check yourself
 
 ::: check
-Why does this module group four different behaviours under a single reading — an unwillingness to be accountable — when vagueness and inflation look like opposites?
+Why does this module group four different behaviors under one reading — an unwillingness to be accountable — when vagueness and inflation look like opposites?
 :::
 
 ::: answer
-Because they have the same effect on what the listener ends up with. The round is trying to establish what you are responsible for, and each behaviour destroys that in its own way: blaming moves the cause outside you, vagueness removes the detail that would let responsibility be attached to anyone, inflation attaches to you responsibility the record does not support, and refusing a failure denies there is anything to be answerable for. Vagueness and inflation are opposite errors about the size of a claim, but both leave the account unreliable as a description of your own work, which is the property the round depends on.
+Because they have the same effect. The round is trying to establish what you are responsible for, and each behavior destroys that differently: blaming moves the cause outside you, vagueness removes the detail that would let responsibility be attached to anyone, inflation attaches responsibility to you that the record does not support, and refusing a failure denies there is anything to answer for. Vagueness and inflation are opposite errors about the *size* of a claim, but both leave the account unreliable as a description of your work — the thing the round depends on.
 :::
 
 ::: check
-A candidate's failure story contains exactly one sentence about an external cause, and it is the last sentence. Why does the position matter?
+A candidate's failure story contains exactly one sentence about an outside cause, and it is the last sentence. Why does the position matter?
 :::
 
 ::: answer
-Because the final clause of a story is its conclusion, whatever the earlier sentences did. A single factual mention of an external cause in the middle is ordinary and often necessary for the story to make sense; the same sentence at the end tells the listener what to take away, and what they take away is that the failure was mostly circumstantial. The fix is not to delete the fact but to move it: state it once where it belongs chronologically, and end on your own share and the change you made.
+Because the final clause of a story is its conclusion. A factual mention of an outside cause in the middle is ordinary, often needed for the story to make sense. At the end, it tells the listener the failure was mostly circumstances. The fix is not to delete the fact but to move it: state it once where it belongs in time order, and end on your own share and the change you made.
 :::
 
 ::: check
@@ -142,40 +157,169 @@ You are describing work for a previous employer and cannot name the system, the 
 :::
 
 ::: answer
-Keep the structure and abstract only the object. The decision you faced, the alternatives, the criterion you chose between them, the shape of the outcome and what you changed afterwards are usually all sayable without disclosing anything — "I had to choose between two estimator architectures under a fixed compute budget, and the deciding factor was that one of them degraded gracefully when a sensor dropped out" describes a judgement without describing a product. Say explicitly that you are abstracting and why. An interviewer who works under the same constraints reads that as professional conduct; what they cannot read charitably is an answer that is vague and does not say why it is vague.
+Keep the structure and hide only the object. The decision you faced, the alternatives, the rule you used to choose, the shape of the outcome and what you changed afterward can usually all be said without disclosing anything. For example: "I had to choose between two estimator designs under a fixed computing budget, and the deciding factor was that one of them degraded gracefully when a sensor dropped out." That describes a judgment without describing a product. Say out loud that you are abstracting, and why. An interviewer under the same rules reads that as professional; what they cannot read kindly is vagueness with no reason given.
 :::
 
 ::: check
-Why is an inflated contribution described here as failing two questions later rather than at the moment it is made?
+Why is an inflated contribution described here as failing two questions later, not at the moment it is made?
 :::
 
 ::: answer
-Because a claim is not checkable on its face — what distinguishes a true one is the depth of detail behind it. Genuine ownership carries an unbounded supply: the alternatives you rejected, what surprised you, what you would change. An annexed claim runs out quickly, and the usual place it runs out is the question about alternatives, because considering alternatives is something only the person who made the decision did. The observable signal is the disproportion between a candidate's fluency everywhere else and her thinness on one claim, and by then the cost is not the claim but the credibility of the rest of the answer.
+Because a claim cannot be checked on its face — what separates a true one is the depth of detail behind it. Real ownership comes with an endless supply: the alternatives you rejected, what surprised you, what you would change. A borrowed claim runs out quickly, and it usually runs out at the question about alternatives, because weighing alternatives is something only the person who made the decision did. The signal is the mismatch between her fluency elsewhere and her thinness on one claim — and by then the cost is the believability of the rest of the answer.
 :::
 
 ::: check
-Run the audit on this sentence and say what you would need in order to repair it: "I worked on the verification side and we managed to get everything checked out successfully before the deadline."
+Run the audit on this sentence and say what you would need to repair it: "I worked on the verification side and we managed to get everything checked out successfully before the deadline."
 :::
 
 ::: answer
-It fails four of the six counts. An erasing verb — *worked on* — so no work is described; one plural pronoun in what should be an Action; no number; no named decision; and two unsupported evaluations, *everything checked out* and *successfully*. To repair it you would need: which checks were yours to design or run, what each one had to demonstrate, what the acceptance criterion was, and what the checks returned. "I wrote the three verification cases the propagator had to pass: an analytic two-body orbit reproduced to one part in ten thousand over ten periods, an energy-conservation check, and a step-size convergence study — the convergence study is the one that found my default step was too coarse above forty kilometres" is the same event, audited clean.
+Count by count: (1) a plural *we* in what should be Action — fail. (2) Outside subjects — does not really apply; this is not a failure story. (3) No number — fail. (4) No named decision — fail. (5) An erasing verb, *worked on* — fail. (6) Two unsupported evaluations, *everything checked out* and *successfully* — fail. Five of the six counts fail.
+
+To repair it you need: which checks were yours, what each had to show, the pass rule, and what the checks returned. Here is the same event, audited clean: "I wrote the three verification cases the propagator had to pass: an analytic [[two-body orbit|two-body-orbit]] reproduced to one part in ten thousand over ten periods, an energy-conservation check, and a step-size convergence study — the convergence study is the one that found my default step was too coarse above forty kilometers."
 :::
 
 ::: check
-A candidate genuinely cannot think of a failure with a real consequence, because her work so far is coursework and personal projects. What should she do, and what should she not do?
+A candidate truly cannot think of a failure with a real consequence, because her work so far is coursework and personal projects. What should she do, and what should she not do?
 :::
 
 ::: answer
-She should search harder before concluding that the history is empty: a check she skipped, a result she reported with more confidence than it deserved, a week spent on the wrong thing because she did not ask a question, a piece of work someone else had to redo. Small failures with honest consequences are perfectly usable, and stating the size accurately is part of the answer — "the consequence was that I lost the last two weeks of the project and shipped without the validation I had planned" is a real cost. What she should not do is answer *I cannot think of one*, which this module groups with blaming and inflation, nor invent a large failure, which collapses under the same follow-ups that catch an inflated success.
+Search harder before deciding her history is empty: a check she skipped, a result she reported with more confidence than it deserved, a week spent on the wrong thing because she did not ask a question, a piece of work someone else had to redo. Small failures with honest consequences are usable, stated at their real size. "The consequence was that I lost the last two weeks of the project and shipped without the validation I had planned" is a real cost. What she should *not* do is answer *I cannot think of one*, which this module groups with blaming and inflation. Nor should she invent a big failure; it collapses under the same follow-ups that catch an inflated success.
 :::
 
 ## Summary
 
 | Flag | How it shows up | What removes it |
 | --- | --- | --- |
-| Blaming others | Passive voice; in-fairness clauses; an external cause in the last sentence | One factual mention, placed chronologically; the end belongs to your share |
-| Vagueness | Category nouns; no number; no decision | Name the object, the decision, the measurement |
-| Inflated contribution | A claim that thins out two questions later | Narrow each claim until it is exactly true, and attribute the rest |
+| Blaming others | Passive voice; in-fairness clauses; an outside cause in the last sentence | One factual mention, placed in time order; the ending belongs to your share |
+| Vagueness | Category words; no number; no decision | Name the object, the decision, the measurement |
+| Inflated contribution | A claim that thins out two questions later | Narrow each claim until it is exactly true, and credit the rest |
 | No real failure | Disguised strength; trivial consequence; "I cannot think of one" | A small honest failure, stated at its real size |
+| All four | Read as an unwillingness to be accountable | An account a listener could check |
 
-Two of the four are visible only in a recording, because they live in grammar that changes between the page and the mouth; the six-count audit is the tool. The next lesson takes the things that are *not* on this list but feel as though they should be: the theme you have no story for, a gap in your history, a career change, and a self-taught background.
+Two flags show up only in a recording, because they live in grammar; the six-count audit catches them. The next lesson takes the things that are *not* on this list but feel as though they should be: the theme you have no story for, a gap in your history, a career change, and a self-taught background.
+
+::: context rubric A scoring sheet, written down in advance
+A rubric is a scoring guide: a list of what an answer should contain, often with points for each part. Teachers use them to grade essays so that two graders give similar marks. Many companies use something similar for interviews, so that different interviewers judge candidates on the same things. This module does not know what any company's actual rubric says. That is why it calls the red flags *reported* — they come from people describing what interviewers notice, not from a published scoring sheet. The word comes from the Latin for "red": scribes copying medieval books wrote their headings and instructions in red ink.
+:::
+
+::: context accountable Where "accountable" comes from
+The word is built from *account*, which goes back through old French to a word meaning "to count" or "to reckon up." To be accountable was first to be the person who must give an account — to list, item by item, what you did with the money or goods in your care. The interview meaning is surprisingly close to the old one. An accountable answer is an itemized one: this part was mine, this is what I did, this is what happened because of it. Every red flag in this lesson is a way of handing over an account that cannot be added up.
+:::
+
+::: context passive-voice The sentence with the doer missing
+In an **active** sentence, the subject does the verb: "I changed the interface." Turn it **passive** and the thing that was acted on moves to the front: "The interface was changed." Now the doer can quietly vanish. You *could* add "by me" at the end, but people almost never do.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <text x="10" y="20" font-size="12" font-weight="700" fill="#1f2a44">Active</text>
+  <rect x="10" y="28" width="50" height="30" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="35" y="48" font-size="13" text-anchor="middle" fill="#1f2a44">I</text>
+  <rect x="66" y="28" width="80" height="30" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="106" y="48" font-size="13" text-anchor="middle" fill="#1f2a44">changed</text>
+  <rect x="152" y="28" width="120" height="30" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="212" y="48" font-size="13" text-anchor="middle" fill="#1f2a44">the interface</text>
+  <text x="10" y="84" font-size="12" font-weight="700" fill="#1f2a44">Passive</text>
+  <rect x="10" y="92" width="120" height="30" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="70" y="112" font-size="13" text-anchor="middle" fill="#1f2a44">the interface</text>
+  <rect x="136" y="92" width="110" height="30" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="191" y="112" font-size="13" text-anchor="middle" fill="#1f2a44">was changed</text>
+  <rect x="252" y="92" width="60" height="30" fill="#fff" stroke="#b4232c" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="282" y="112" font-size="12" text-anchor="middle" fill="#b4232c">by ?</text>
+</svg>
+```
+
+The passive voice is not wrong. Scientists use it all the time ("the sample was heated"). It becomes a problem only in a story about blame, where the missing doer is the whole point.
+:::
+
+::: context confidentiality Why some work cannot be described
+When you join a company you usually sign an agreement not to share its private information. It is often called an **NDA**, said "en-dee-ay," short for non-disclosure agreement. In aerospace there is a second layer: some technical data is export-controlled by law, which in the United States means rules such as ITAR (said "eye-tar"). So a candidate may truly be forbidden to name a system, a number or a customer. Interviewers at these companies live under the same rules. They expect you to protect a former employer's information, and they respect a candidate who does it openly — it tells them you would protect theirs too.
+:::
+
+::: context disguised-strength The failure that is secretly a brag
+"My biggest weakness is that I care too much." "I failed because I worked too hard." These are **disguised strengths**: a compliment to yourself, dressed up as a confession. Interviewers hear them constantly, and they read them as a refusal to answer the question. The test is simple: does the story contain something you actually got wrong, which a colleague could have watched you get wrong? If the only fault in it is that you were too dedicated, it is not a failure story. It is the fourth red flag, wearing a costume.
+:::
+
+::: context transcript Turning your voice into text
+A transcript is a written copy of what was said, word for word. Making one is easy now: record yourself on a phone answering a practice question, then run the recording through any speech-to-text tool, or type it out by hand. Typing it yourself is slower but useful, because you hear every *um*, every *we* and every "so basically" as you go. Engineers do the same thing with test data: you do not trust your memory of how a run went, you look at the log. A transcript is the log of your answer.
+:::
+
+::: context erasing-verbs Verbs that make you disappear
+Compare "I helped with the filter" with "I wrote the filter's measurement update." The first tells the listener only that you were near the filter. You might have written all of it, or fetched coffee for the person who did. *Helped*, *supported*, *was involved in*, *worked on* and *was part of* all do this: they place you in the room without saying what your hands did. That is why the audit calls them erasing verbs. The fix is to replace each one with the verb for the actual job — wrote, derived, tested, measured, chose, fixed.
+:::
+
+::: context magnetometer A compass that reports numbers
+A magnetometer measures the direction and strength of the magnetic field around it — a compass that outputs numbers instead of pointing a needle. Small satellites use one to sense which way they are facing relative to Earth's magnetic field. Earth's field is weak: at the surface it is roughly 25 to 65 microtesla, and in low orbit it is weaker still. That weakness is why a nearby battery, motor or steel screw can easily spoil the reading, and why calibration matters so much.
+:::
+
+::: context hard-soft-iron The circle that should have been there
+Spin a perfect magnetometer slowly through a full circle, flat, and the sideways part of its reading traces a circle centered on zero. Real hardware bends that picture in two ways. **Hard iron** — a magnet or magnetized part riding along — adds a fixed field, which slides the whole circle off-center. **Soft iron** — metal that bends the field passing through it — squashes the circle into an ellipse.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <line x1="40" y1="100" x2="320" y2="100" stroke="#6c7a93" stroke-width="1"/>
+  <line x1="140" y1="10" x2="140" y2="190" stroke="#6c7a93" stroke-width="1"/>
+  <circle cx="140" cy="100" r="60" fill="none" stroke="#1d6fd1" stroke-width="2"/>
+  <ellipse cx="200" cy="80" rx="85" ry="50" fill="none" stroke="#b4232c" stroke-width="2" stroke-dasharray="6 4"/>
+  <circle cx="140" cy="100" r="3" fill="#1f2a44"/>
+  <circle cx="200" cy="80" r="3" fill="#b4232c"/>
+  <line x1="140" y1="100" x2="197" y2="81" stroke="#b4232c" stroke-width="1.5"/>
+  <text x="148" y="118" font-size="11" fill="#1f2a44">zero</text>
+  <text x="46" y="170" font-size="12" fill="#1d6fd1">perfect sensor: circle</text>
+  <text x="236" y="160" font-size="12" fill="#b4232c">real sensor:</text>
+  <text x="236" y="175" font-size="12" fill="#b4232c">shifted ellipse</text>
+  <text x="206" y="76" font-size="11" fill="#b4232c">offset</text>
+</svg>
+```
+
+Calibration measures the offset and the squash, then undoes both so the circle comes back.
+:::
+
+::: context momentum-management Emptying a spinning wheel
+Many satellites point themselves with **reaction wheels**: heavy wheels inside that spin up one way so the satellite turns the other way. Small outside torques keep pushing the satellite, and the wheels fight back by spinning faster and faster. Eventually a wheel nears its top speed — it is **saturated**, like a sponge that cannot soak up more. **Desaturation**, also called momentum dumping, bleeds that speed off. On a cubesat this is often done with **magnetorquers**: coils of wire that act as electromagnets and push against Earth's magnetic field. Momentum management is the plan for when and how hard to do that.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
+  <line x1="40" y1="130" x2="340" y2="130" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="40" y1="130" x2="40" y2="15" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="40" y1="30" x2="340" y2="30" stroke="#b4232c" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="336" y="24" font-size="11" text-anchor="end" fill="#b4232c">wheel speed limit</text>
+  <polyline points="40,120 130,50 150,110 240,50 260,110 330,60" fill="none" stroke="#1d6fd1" stroke-width="2.5"/>
+  <text x="50" y="52" font-size="11" fill="#1d6fd1">spins up</text>
+  <text x="142" y="124" font-size="11" fill="#1f2a44">dump</text>
+  <text x="252" y="124" font-size="11" fill="#1f2a44">dump</text>
+  <text x="190" y="148" font-size="12" text-anchor="middle" fill="#1f2a44">time</text>
+  <text x="32" y="80" font-size="12" text-anchor="middle" fill="#1f2a44" transform="rotate(-90 32 80)">wheel speed</text>
+</svg>
+```
+
+The threshold is the height where each dump starts: low enough to leave margin below the limit.
+:::
+
+::: context gravity-gradient Why gravity twists a long satellite
+Gravity gets weaker with distance. So the end of a satellite nearer Earth is pulled slightly harder than the far end. If the satellite is tilted, that small difference makes a twist — a **torque** — that tries to line its long axis up with the direction to Earth's center.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">
+  <path d="M 20 180 Q 180 150 340 180" fill="none" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="90" y="176" font-size="12" text-anchor="middle" fill="#1d6fd1">Earth</text>
+  <line x1="180" y1="20" x2="180" y2="150" stroke="#6c7a93" stroke-width="1" stroke-dasharray="4 3"/>
+  <line x1="140" y1="45" x2="220" y2="125" stroke="#1f2a44" stroke-width="6"/>
+  <circle cx="140" cy="45" r="10" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <circle cx="220" cy="125" r="10" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="140" y1="57" x2="140" y2="77" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="140,83 135,74 145,74" fill="#b4232c"/>
+  <line x1="220" y1="137" x2="220" y2="165" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="220,171 215,162 225,162" fill="#b4232c"/>
+  <text x="30" y="70" font-size="12" fill="#b4232c">far end: weaker pull</text>
+  <text x="236" y="150" font-size="12" fill="#b4232c">near end:</text>
+  <text x="236" y="164" font-size="12" fill="#b4232c">stronger pull</text>
+  <text x="188" y="30" font-size="11" fill="#6c7a93">toward Earth's center</text>
+</svg>
+```
+
+For a 3U cubesat (about $4\,\mathrm{kg}$, $10 \times 10 \times 34\,\mathrm{cm}$) at $400\,\mathrm{km}$, the worst case, $\tfrac{3\mu}{2r^3}\,|I_z - I_y|$, is about $7 \times 10^{-8}\,\mathrm{N\,m}$ — tiny, but it never stops.
+:::
+
+::: context two-body-orbit The orbit with an exact answer
+A **two-body orbit** pretends the universe holds only Earth and the spacecraft, with Earth a perfect sphere. That problem has an exact, pencil-and-paper solution: the spacecraft traces the same ellipse forever. Real orbits are nudged by Earth's bulge, the Moon, the Sun and the air, so no simple formula fits them. That is exactly why the two-body case is the first test for any orbit **propagator** — the program that steps a spacecraft forward in time. If your code cannot reproduce the one answer known exactly, nothing it says about harder cases can be trusted. The GNC modules later in this course lean on exactly this kind of check.
+:::
