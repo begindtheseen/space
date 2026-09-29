@@ -18,22 +18,22 @@ Picture hiking downhill in thick fog to find the lowest point in a valley. You s
 
 Every method in this module — shooting, collocation, pseudospectral, iLQR — is a local method. It walks downhill from where you start it and stops in the first low spot it reaches.
 
-::: example Two clean solves, one five times worse
-Lesson 12 steered an ascent by iLQR: a $1000\,\mathrm{kg}$ vehicle with $15\,000\,\mathrm{N}$ of thrust, pitch angle $\theta$ measured from vertical, $50\,\mathrm{s}$ of burn, aiming for $h = 7000\,\mathrm{m}$, $v_x = 400\,\mathrm{m/s}$, $v_h = 120\,\mathrm{m/s}$. The cost is a soft quadratic penalty on missing those three numbers plus a running penalty $\tfrac12\theta^2$ on the pitch. From a constant $30^\circ$ guess, the cost fell from $53\,332$ to $290.58$, ending at $(h, v_x, v_h) = (6973.5,\ 362.5,\ 151.8)$.
+::: example Two clean solves, one a hundred times worse
+Lesson 12 steered an ascent by iLQR: a $1000\,\mathrm{kg}$ vehicle with $15\,000\,\mathrm{N}$ of thrust, pitch angle $\theta$ measured from vertical, $50\,\mathrm{s}$ of burn, aiming for $h = 6000\,\mathrm{m}$, $v_x = 480\,\mathrm{m/s}$, $v_h = 170\,\mathrm{m/s}$. The cost is a soft quadratic penalty on missing those three numbers plus a running penalty $\tfrac12\theta^2$ on the pitch. Call it run A: from a constant $30^\circ$ guess, the cost fell from $67.29$ to $11.7399$ in $14$ iterations, ending at $(h, v_x, v_h) = (5989.6,\ 478.7,\ 176.3)$.
 
-**Run B.** Same problem, same code, same settings. The only change: the guess is a constant $390^\circ$ instead of $30^\circ$. That is one [[full extra turn|angle-wrap]] — the thrust points in *exactly* the same direction. So the first rollout flies the identical trajectory. Its cost, $54\,483.78$, is higher only because the pitch penalty sees a bigger number.
+**Run B.** Same problem, same code, same settings. The only change: the guess is a constant $390^\circ$ instead of $30^\circ$. That is one [[full extra turn|angle-wrap]] — the thrust points in *exactly* the same direction. So the first rollout flies the identical trajectory. Its cost, $1218.74$, is higher only because the pitch penalty sees a bigger number.
 
-**Check that difference.** $390^\circ$ is $6.807\,\mathrm{rad}$ and $30^\circ$ is $0.524\,\mathrm{rad}$. The penalty over $50\,\mathrm{s}$ differs by $\tfrac12 \times 50 \times (6.807^2 - 0.524^2) = 25 \times 46.06 = 1151.5$, and $54\,483.78 - 53\,332.32 = 1151.46$. It matches.
+**Check that difference.** $390^\circ$ is $6.807\,\mathrm{rad}$ and $30^\circ$ is $0.524\,\mathrm{rad}$. The penalty over $50\,\mathrm{s}$ differs by $\tfrac12 \times 50 \times (6.807^2 - 0.524^2) = 25 \times 46.06 = 1151.5$, and $1218.74 - 67.29 = 1151.45$. It matches.
 
-**The run.** The iteration behaves perfectly. The cost falls to $1868.6$ after the first step, $1517.1$ by iteration $20$, $1486.9$ by iteration $100$, and settles at $1462.45$. The end state is $(6974.8,\ 362.6,\ 152.2)$ — within $0.3\,\%$ of run A's on all three targets.
+**The run.** The iteration behaves perfectly. The cost falls to $1186.33$ after the first step and $1176.99$ by iteration $10$, and settles at $1176.75$ after $46$ iterations. The end state is $(5933.8,\ 436.7,\ 190.7)$. That is not run A's end state. The altitude agrees to within $1\,\%$, but $v_x$ is $42\,\mathrm{m/s}$ slower and $v_h$ is $14\,\mathrm{m/s}$ faster. Against the target, run B misses by $66\,\mathrm{m}$, $43\,\mathrm{m/s}$ and $21\,\mathrm{m/s}$, where run A missed by $10\,\mathrm{m}$, $1\,\mathrm{m/s}$ and $6\,\mathrm{m/s}$. Still, nothing about it looks broken: a soft target is allowed to miss, and nothing in run B's log says by how much it should.
 
-**The verdict.** Read on its own, run B looks completely trustworthy: smooth convergence, a sensible end state, no warnings. Its cost is $1462.45/290.58 \approx 5.03$ times the cost run A found. The solver cannot unwind the extra turn, because turning the pitch back through $360^\circ$ a little at a time would mean pointing the engine sideways and down along the way, which costs far more than it saves. It is stuck in a hollow.
+**The verdict.** Read on its own, run B looks completely trustworthy: smooth convergence, an end state in the right neighborhood, no warnings. Its cost is $1176.75/11.7399 \approx 100.2$ times the cost run A found. The solver cannot unwind the extra turn, because turning the pitch back through $360^\circ$ a little at a time would mean pointing the engine sideways and down along the way, which costs far more than it saves. It is stuck in a hollow. Lesson 12 found the same trap from other starts: $-30^\circ$ ends at $127.74$ ($10.9$ times run A) and $150^\circ$ at $749.70$ ($63.9$ times).
 
 **Sanity check.** A guess that flies the identical trajectory led to a different answer. Nothing about the physics changed; only where the solver started.
 :::
 
 ::: warning A converged log shows a stationary point, not the best one
-A clean log certifies that the necessary conditions hold near the returned answer. It certifies nothing about whether a different trajectory, reachable only from a different start, does better. The defense used across this field is redundancy: solve from several *physically different* starting guesses — a different pitch program, a different coast-and-burn split, a continuation path from another direction (lesson 15) — and compare the costs. Also look at the answer, not only the log: run B's pitch starts near $367^\circ$ and ends near $845^\circ$. A pitch above $360^\circ$ is a red flag that no convergence test will raise for you.
+A clean log certifies that the necessary conditions hold near the returned answer. It certifies nothing about whether a different trajectory, reachable only from a different start, does better. The defense used across this field is redundancy: solve from several *physically different* starting guesses — a different pitch program, a different coast-and-burn split, a continuation path from another direction (lesson 15) — and compare the costs. Also look at the answer, not only the log: run B's pitch starts at $307^\circ$, then climbs from $365^\circ$ to $425^\circ$. A pitch above $360^\circ$ is a red flag that no convergence test will raise for you.
 :::
 
 ## Badly posed terminal constraints
@@ -182,11 +182,11 @@ Steps 1 to 4 look for loud problems and inconsistencies. Only step 5 can catch t
 ## Check yourself
 
 ::: check
-Runs A and B of the ascent both converged smoothly and both ended within a fraction of a percent of the same state. With only those two facts, and no cost numbers, could you tell which was the better answer?
+Runs A and B of the ascent both converged smoothly, and both ended near the target: the altitudes agree within $1\,\%$, though run B's speeds are off by $43$ and $21\,\mathrm{m/s}$. With only the logs and the end states, and no cost numbers, could you tell which was the better answer?
 :::
 
 ::: answer
-No. Smooth convergence and a sensible end state are properties of having found *a* local optimum, not a *good* one, and both runs have them. The only way to tell them apart is what neither log shows on its own: the converged cost, compared against a second run from a different starting guess.
+Not with confidence. Smooth convergence and a plausible end state are properties of having found *a* local optimum, not a *good* one, and both runs have them. Run A lands closer to the target, but with a soft target that proves little: a solver may trade a bigger miss for cheaper steering, so a closer end state can come with a higher total cost. The only way to tell them apart is what neither log shows on its own: the converged cost, compared against a second run from a different starting guess.
 :::
 
 ::: check
@@ -230,7 +230,7 @@ $8 \times 927.64 = 7421\,\mathrm{s}$. Propellant burned: $0.005665 \times 7421 \
 | Unbounded multipliers | Multipliers grow, or differ between runs with the same trajectory | Usually near-redundant constraints: $\mu \propto 1/\delta$ with a lever of size $\delta$ |
 | Infeasible restoration | "r" iterations, inf_pr stalls above zero; "Restoration Failed!" or "local infeasibility" | Scale, check the guess, relax constraints, do a budget check; then conclude infeasible |
 | Mesh-induced ringing | A smeared ramp, bound-to-bound chatter or overshoot near a switch | Interpolated-defect estimate; refine or break the mesh at the junction; check the switching function |
-| Ascent example | Cost $290.58$ vs $1462.45$ from guesses $30^\circ$ and $390^\circ$ | A factor of about $5$ invisible in either log |
+| Ascent example | Cost $11.7399$ vs $1176.75$ from guesses $30^\circ$ and $390^\circ$ | A factor of about $100$ invisible in either log |
 | Restoration example | $t_f = 2$: $155\,\mathrm{m/s}$ available vs $891\,\mathrm{m/s}$ needed; least violation $0.0468$ | Honestly reported failure, not a false success |
 
 Every method this module built exists to get a real vehicle from where it is to where it needs to be, with its failures visible rather than hidden. The next module, convex guidance, takes the powered-descent problem this module kept returning to and rewrites it — by a trick called lossless convexification — as a [[convex problem|convex-bridge]]. There, the quiet failure disappears: a convex problem has no false hollows, the solver finishes in a predictable number of iterations, and when the problem is infeasible it proves it.
