@@ -242,7 +242,7 @@ A team is building Level A flight control software. For each tool, decide the cr
 
 **Tool 1: Embedded Coder generates the flight code**, and the team plans to verify the code with other tools rather than trust the generator. The generator's output goes into the flight software, so it is Criteria 1. But the team does not claim credit from it; every file is checked downstream. So it is not relied on, and no qualification is needed for it, as long as the downstream checks are qualified.
 
-**Tool 2: a code inspection tool** compares each generated file with the model, and its report replaces the manual line-by-line code review. It could miss an error, and its output is used to drop a verification activity. Criteria 2, Level A: TQL-4.
+**Tool 2: a code inspection tool** compares each generated file with the model, and its report replaces the manual line-by-line code review. It could miss an error, and it automates exactly the review it replaces, taking no credit for any other activity: Criteria 3, TQL-5. If the project also used its report to drop some *other* work, say part of the low-level testing, that extra credit would make it Criteria 2, and TQL-4 at Level A.
 
 **Tool 3: Simulink Coverage** reports structural coverage of the model tests. It could miss an uncovered branch. Criteria 3: TQL-5.
 
