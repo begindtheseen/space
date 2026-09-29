@@ -26,6 +26,8 @@ export interface ExplainSeed {
   paragraph: string
   /** The highlight came from code or terminal text, so a word like `sort` there is a command. */
   inCode?: boolean
+  /** The language tag of the code block it came from (`python`, `cpp`, `sql`, `bash`), when there is one. */
+  lang?: string
 }
 
 /** A lesson Explain may quote from. */

@@ -47,7 +47,8 @@ function seedFrom(selection: Selection, container: HTMLElement): ExplainSeed | n
   const block = el?.closest(BLOCKS)
   const paragraph = block && container.contains(block) ? readableText(block) : text
   const inCode = !!el?.closest('code, pre, .term, .terminal')
-  return { selection: text.slice(0, MAX_CHARS), paragraph: paragraph.slice(0, 2000), inCode }
+  const lang = el?.closest<HTMLElement>('[data-lang]')?.dataset.lang ?? (el?.closest('.term, .terminal') ? 'bash' : undefined)
+  return { selection: text.slice(0, MAX_CHARS), paragraph: paragraph.slice(0, 2000), inCode, lang }
 }
 
 export function SelectionAsk({ container, onAsk }: { container: RefObject<HTMLElement | null>; onAsk: (seed: ExplainSeed) => void }) {
