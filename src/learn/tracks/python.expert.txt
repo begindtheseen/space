@@ -2235,6 +2235,12 @@ list(flatten([]))
 => []
 --- check test | tally returns (count, total) when sent None
 (lambda g: (next(g), g.send(4), g.send(6), raises(StopIteration, lambda: g.send(None))))(tally())[3]
+--- check case | tally's StopIteration carries (count, total)
+(lambda g: (next(g), g.send(4), g.send(6), stop_value(lambda: g.send(None))))(tally())[3]
+=> (2, 10)
+--- check case | tally with nothing sent returns (0, 0)
+(lambda g: (next(g), stop_value(lambda: g.send(None))))(tally())[1]
+=> (0, 0)
 --- check case | collect gathers one result per finished tally
 (lambda res: (lambda g: (next(g), g.send(1), g.send(2), g.send(None), g.send(5), g.send(None), res)[-1])(collect(res)))([])
 => [(2, 3), (1, 5)]

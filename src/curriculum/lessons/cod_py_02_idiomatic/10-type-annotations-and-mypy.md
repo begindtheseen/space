@@ -379,7 +379,7 @@ def g(x: int) -> int:
 
 ```bash
 python3 -m mypy untyped.py
-# untyped.py:6: error: Unsupported operand types for + ("int" and "str")  [operator]
+# untyped.py:7: error: Unsupported operand types for + ("int" and "str")  [operator]
 # Found 1 error in 1 file (checked 1 source file)
 ```
 
