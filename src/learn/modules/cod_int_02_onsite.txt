@@ -1,0 +1,2831 @@
+@track python
+@course mod-cod_int_02_onsite
+@module cod_int_02_onsite
+@title The SpaceX onsite: practice and test
+
+=== int02-l01 | Practice: The process end to end, and the ITAR gate
+--- for
+l01-the-process-and-the-itar-gate
+
++++ practice | The average gap between touchpoints
+--- task
+A recruiter tells you how many touchpoints the process has and how many weeks it will take. Write a function `mean_gap_days(touchpoints, weeks)` that returns the average number of days between one touchpoint and the next, assuming they are spread evenly over the whole span.
+
+- A week is 7 days. The first touchpoint starts the clock and the last one ends it.
+- Return a float, for example `mean_gap_days(9, 4)` gives `3.5`.
+- With fewer than two touchpoints there is no gap at all: raise `ValueError`.
+--- starter
+def mean_gap_days(touchpoints, weeks):
+    pass
+--- solution
+def mean_gap_days(touchpoints, weeks):
+    """Average days between consecutive touchpoints spread evenly over the span."""
+    if touchpoints < 2:
+        raise ValueError("at least two touchpoints are needed for a gap")
+    return weeks * 7 / (touchpoints - 1)
+--- hint
+Count the gaps, not the touchpoints. Think of fence posts and the spaces between them.
+--- hint
+n touchpoints have n - 1 gaps. Divide the span in days by that.
+--- check case | Seven touchpoints over six weeks
+mean_gap_days(7, 6)
+=> 7.0
+--- check case | Nine touchpoints over four weeks
+mean_gap_days(9, 4)
+=> 3.5
+--- check case | Two touchpoints: one gap, the whole span
+mean_gap_days(2, 1)
+=> 7.0
+--- check test | One touchpoint, or none, raises ValueError
+raises(ValueError, lambda: mean_gap_days(1, 4)) and raises(ValueError, lambda: mean_gap_days(0, 4))
+
++++ practice | When to start preparing
+--- task
+Your preparation needs `total_hours` hours, and you can give it at most `max_per_week` hours a week. The process itself lasts `process_weeks` weeks, and you prepare during it too. Write `start_weeks_before(total_hours, max_per_week, process_weeks)`: the smallest whole number of weeks before the recruiter's first call that you must start, so the work fits without any week going over the limit.
+
+- Return `0` when the weeks of the process alone are enough.
+- A part of a week counts as a whole week: 5.3 weeks of work need 6 weeks.
+- `max_per_week` of zero or less raises `ValueError`.
+
+For example, 80 hours at 10 hours a week need 8 weeks. A 4 week process leaves 4 weeks to do beforehand, so `start_weeks_before(80, 10, 4)` returns `4`.
+--- starter
+def start_weeks_before(total_hours, max_per_week, process_weeks):
+    pass
+--- solution
+import math
+
+
+def start_weeks_before(total_hours, max_per_week, process_weeks):
+    """Whole weeks of preparation needed before the process starts."""
+    if max_per_week <= 0:
+        raise ValueError("max_per_week must be positive")
+    weeks_needed = math.ceil(total_hours / max_per_week)
+    return max(0, weeks_needed - process_weeks)
+--- hint
+First work out how many weeks the whole job needs at the weekly limit, rounding up. Then take away the weeks the process gives you.
+--- hint
+`math.ceil` rounds up. The answer cannot go below zero, so take the larger of zero and your difference.
+--- check case | Two modules at 10 hours a week over a 4 week process
+start_weeks_before(80, 10, 4)
+=> 4
+--- check case | A part week counts as a whole one
+start_weeks_before(80, 15, 4)
+=> 2
+--- check case | The process alone is enough
+start_weeks_before(40, 10, 6)
+=> 0
+--- check case | Exactly divisible hours do not round up
+start_weeks_before(90, 10, 4)
+=> 5
+--- check test | Nothing to do, and a bad limit
+start_weeks_before(0, 10, 4) == 0 and raises(ValueError, lambda: start_weeks_before(40, 0, 4))
+
++++ practice | The gate before the score
+--- task
+After a round of take-homes, each candidate is a dictionary like `{"name": "Ada", "us_person": True, "score": 91}`. Write `advance(candidates, threshold)` that returns the names of the candidates who move on.
+
+- A candidate moves on only if `us_person` is `True` **and** the score is at least `threshold`. The gate is pass or fail: no score, however high, makes up for failing it.
+- Return the names with the highest score first. Candidates with equal scores keep their input order.
+- No candidates, or nobody passing, gives `[]`.
+--- starter
+def advance(candidates, threshold):
+    pass
+--- solution
+def advance(candidates, threshold):
+    """Names that pass the eligibility gate and the score bar, best score first."""
+    passing = [c for c in candidates if c["us_person"] and c["score"] >= threshold]
+    passing.sort(key=lambda c: c["score"], reverse=True)
+    return [c["name"] for c in passing]
+--- hint
+Filter first on both conditions, then sort what is left by score.
+--- hint
+Python's sort is stable, so `sort(key=..., reverse=True)` keeps equal scores in their input order.
+--- check case | The top scorer is not a US person and does not move on
+advance([{"name": "Ada", "us_person": True, "score": 80}, {"name": "Lin", "us_person": False, "score": 99}, {"name": "Sam", "us_person": True, "score": 92}], 75)
+=> ["Sam", "Ada"]
+--- check case | Equal scores keep their order, and the threshold counts as a pass
+advance([{"name": "Ada", "us_person": True, "score": 70}, {"name": "Kai", "us_person": True, "score": 85}, {"name": "Mo", "us_person": True, "score": 70}], 70)
+=> ["Kai", "Ada", "Mo"]
+--- check case | Nobody passes
+advance([{"name": "Lin", "us_person": False, "score": 99}, {"name": "Ada", "us_person": True, "score": 50}], 60)
+=> []
+--- check case | No candidates
+advance([], 60)
+=> []
+
++++ practice | Gaps from real dates
+--- task
+Your calendar holds the dates of your touchpoints as text like `"2026-03-02"` (year, month, day). They may be out of order, and two touchpoints can fall on the same day. Write `gap_days(dates)` that returns the gaps between consecutive touchpoints in days, as a list of whole numbers in time order.
+
+- Sort the dates by time first.
+- Two touchpoints on the same day give a gap of `0`.
+- Fewer than two dates give `[]`.
+- Month ends and leap years must come out right, so work with real dates, not with the digits.
+--- starter
+def gap_days(dates):
+    pass
+--- solution
+from datetime import date
+
+
+def gap_days(dates):
+    """Days between consecutive touchpoints, in time order."""
+    days = sorted(date.fromisoformat(d) for d in dates)
+    return [(b - a).days for a, b in zip(days, days[1:])]
+--- hint
+`datetime.date.fromisoformat` turns `"2026-03-02"` into a date. Subtracting two dates gives a gap whose `.days` is a whole number.
+--- hint
+Sort the dates, then pair each one with the next: `zip(days, days[1:])`.
+--- check case | Out of order, across a month end
+gap_days(["2026-02-02", "2026-01-20", "2026-01-30"])
+=> [10, 3]
+--- check case | A leap year has a 29th of February
+gap_days(["2028-02-27", "2028-03-01"])
+=> [3]
+--- check case | Two touchpoints on one day
+gap_days(["2026-05-04", "2026-05-11", "2026-05-04"])
+=> [0, 7]
+--- check case | One date has no gaps
+gap_days(["2026-05-04"])
+=> []
+
++++ practice | The screen that lets a pending card through
+--- task
+A screening script decides whether a written status counts as US person status. It should say yes only when the status, with the spaces at both ends removed and ignoring capital letters, is exactly one of these six phrases:
+
+```
+us citizen
+citizen
+green card
+lawful permanent resident
+refugee
+asylee
+```
+
+Instead it also lets through `"pending green card"` and `"non-citizen"`. Find the line that does it and fix `itar_ok(status)` so it returns `True` or `False` as described.
+--- starter
+ELIGIBLE = ["us citizen", "citizen", "green card", "lawful permanent resident", "refugee", "asylee"]
+
+
+def itar_ok(status):
+    status = status.strip().lower()
+    for phrase in ELIGIBLE:
+        if phrase in status:
+            return True
+    return False
+--- solution
+ELIGIBLE = {"us citizen", "citizen", "green card", "lawful permanent resident", "refugee", "asylee"}
+
+
+def itar_ok(status):
+    """True only for a status that is exactly one of the eligible phrases."""
+    return status.strip().lower() in ELIGIBLE
+--- hint
+`phrase in status` is true whenever the phrase appears anywhere inside the text, so it matches part of a longer status.
+--- hint
+Compare the whole cleaned-up status with the list, instead of searching inside it.
+--- check case | Case and outer spaces do not matter
+itar_ok("  Green Card ")
+=> True
+--- check case | A pending application is not a green card
+itar_ok("pending green card")
+=> False
+--- check case | Not a citizen
+itar_ok("non-citizen")
+=> False
+--- check test | Asylee passes; a work visa and a long pending phrase do not
+itar_ok("Asylee") and not itar_ok("H-1B work visa") and not itar_ok("green card application pending")
+
++++ question | Why software roles are gated too
+--- ask
+Essentially all roles need US person status, including software and simulation roles that never touch a rocket. Why?
+--- choice
+Software engineers are often moved onto hardware teams later, so the company checks everyone up front.
+--- choice correct
+The controlled part is the technical data, not only the hardware. Showing it to someone who is not a US person counts as an export, even inside a US office.
+--- choice
+It is a company preference for citizens that the hiring team can relax for a strong candidate.
+--- choice
+The rule applies only in offices on government sites, and most engineering happens there.
+--- why
+Under ITAR, sharing controlled technical information with a person who may not receive it is an export, whether it happens by email, on a whiteboard or in a code review, and wherever the building is. Simulation and flight software engineers see exactly that information, so the gate reaches them too. It is a legal requirement, which is why the team cannot waive it for a strong candidate.
+
+=== int02-l02 | Practice: The systems C++ round
+--- for
+l02-the-systems-cpp-round
+
++++ practice | Cache lines a walk touches
+--- task
+A two-dimensional array of `rows` by `cols` elements, each `elem_bytes` bytes, is stored row-major starting at address 0: row 0 in full, then row 1, and so on. The processor fetches memory in cache lines of `line_bytes` bytes; the line an address falls in is `address // line_bytes`.
+
+Write `line_changes(rows, cols, order, elem_bytes=8, line_bytes=64)`. It walks every element once, row by row when `order` is `"row"` and column by column when it is `"col"`, and returns how many accesses land on a different cache line from the access just before them. The very first access counts as one.
+
+For example, a 4 by 16 array of doubles is 4 rows of 128 bytes. A row walk changes line 8 times; a column walk changes line on every one of its 64 accesses.
+
+Any other `order` raises `ValueError`.
+--- starter
+def line_changes(rows, cols, order, elem_bytes=8, line_bytes=64):
+    pass
+--- solution
+def line_changes(rows, cols, order, elem_bytes=8, line_bytes=64):
+    """Accesses that land on a different cache line from the one before."""
+    if order == "row":
+        cells = ((i, j) for i in range(rows) for j in range(cols))
+    elif order == "col":
+        cells = ((i, j) for j in range(cols) for i in range(rows))
+    else:
+        raise ValueError(f"order must be 'row' or 'col', got {order!r}")
+    changes = 0
+    last = None
+    for i, j in cells:
+        line = (i * cols + j) * elem_bytes // line_bytes
+        if line != last:
+            changes += 1
+            last = line
+    return changes
+--- hint
+Element `(i, j)` of a row-major array sits at index `i * cols + j`, so its address is that index times `elem_bytes`.
+--- hint
+Generate the cells in the walk's order, compute each one's line, and count the times it differs from the previous line.
+--- check case | 4 by 16 doubles, row walk
+line_changes(4, 16, "row")
+=> 8
+--- check case | 4 by 16 doubles, column walk
+line_changes(4, 16, "col")
+=> 64
+--- check case | Short rows share lines, even walking down a column
+line_changes(4, 3, "col")
+=> 6
+--- check case | Two rows per line of 4-byte floats, column walk
+line_changes(8, 8, "col", elem_bytes=4)
+=> 32
+--- check test | One element, and a bad order
+line_changes(1, 1, "row") == 1 and raises(ValueError, lambda: line_changes(2, 2, "diagonal"))
+
++++ practice | Two threads, one tally
+--- task
+Two threads, A and B, each add one to a shared counter that starts at 0. Neither uses a lock, so each increment is three separate steps: **read** the counter into the thread's own register, **add** one to the register, **write** the register back to the counter. After a write, that thread's next step is a read again.
+
+Write `run_schedule(schedule)`. The schedule is a string of the letters `A` and `B`; each letter runs the next step of that thread. Return the counter's final value. An increment whose write has not happened yet has not changed the counter.
+
+For example, `"AAABBB"` runs the two increments one after the other and gives 2, while `"ABABAB"` has both threads read 0 and gives 1.
+
+Any letter other than `A` or `B` raises `ValueError`.
+--- starter
+def run_schedule(schedule):
+    pass
+--- solution
+def run_schedule(schedule):
+    """Final counter after interleaving the read, add and write steps."""
+    counter = 0
+    register = {"A": 0, "B": 0}
+    step = {"A": 0, "B": 0}
+    for t in schedule:
+        if t not in register:
+            raise ValueError(f"unknown thread {t!r}")
+        if step[t] == 0:
+            register[t] = counter
+        elif step[t] == 1:
+            register[t] += 1
+        else:
+            counter = register[t]
+        step[t] = (step[t] + 1) % 3
+    return counter
+--- hint
+Keep, for each thread, its register and which of the three steps it will do next.
+--- hint
+Only the write step changes the shared counter, and it writes the thread's register, whatever the counter holds by then.
+--- check case | One after the other
+run_schedule("AAABBB")
+=> 2
+--- check case | Both read before either writes
+run_schedule("ABABAB")
+=> 1
+--- check case | B finishes in the middle of A, and A overwrites it
+run_schedule("AABBBA")
+=> 1
+--- check case | Three increments with no overlap, then an unfinished one
+run_schedule("AAAAAABBBAB")
+=> 3
+--- check test | Nothing run, and a bad letter
+run_schedule("") == 0 and raises(ValueError, lambda: run_schedule("ABX"))
+
++++ practice | A pool instead of new
+--- task
+A control loop must not allocate while it runs, so every buffer comes from a pool made once at startup. Write a class `Pool`:
+
+- `Pool(capacity)` makes `capacity` slots, numbered from 0, all free. The pool never grows.
+- `acquire()` hands out a free slot's number, or returns `None` when none is free. The slot released most recently comes back first; slots never used yet come out in increasing order.
+- `release(i)` gives slot `i` back. A number outside the pool raises `IndexError`. Releasing a slot that is already free raises `ValueError`: that is a double delete.
+- `free_count()` returns how many slots are free.
+--- starter
+class Pool:
+    def __init__(self, capacity):
+        pass
+--- solution
+class Pool:
+    """A fixed set of slots handed out and returned, with no growth."""
+
+    def __init__(self, capacity):
+        self._in_use = [False] * capacity
+        self._free = list(range(capacity - 1, -1, -1))  # a stack: slot 0 on top
+
+    def acquire(self):
+        if not self._free:
+            return None
+        i = self._free.pop()
+        self._in_use[i] = True
+        return i
+
+    def release(self, i):
+        if not 0 <= i < len(self._in_use):
+            raise IndexError(f"slot {i} is not in the pool")
+        if not self._in_use[i]:
+            raise ValueError(f"slot {i} is already free: double release")
+        self._in_use[i] = False
+        self._free.append(i)
+
+    def free_count(self):
+        return len(self._free)
+--- hint
+A list used as a stack gives "most recently released first" for free: push on release, pop on acquire.
+--- hint
+Keep a separate list of booleans that says which slots are in use, so a double release can be caught.
+--- check case | Hands out every slot, then nothing
+(lambda p: [p.acquire() for _ in range(4)])(Pool(3))
+=> [0, 1, 2, None]
+--- check case | The slot released last comes back first
+(lambda p: (p.acquire(), p.acquire(), p.acquire(), p.release(0), p.release(2), p.acquire(), p.acquire(), p.free_count())[5:])(Pool(3))
+=> (2, 0, 0)
+--- check test | Releasing a free slot is a double release
+(lambda p: (p.acquire(), p.release(0), raises(ValueError, lambda: p.release(0)))[2])(Pool(2))
+--- check test | A slot never handed out is already free
+raises(ValueError, lambda: Pool(2).release(1))
+--- check test | A slot outside the pool
+raises(IndexError, lambda: Pool(2).release(5)) and raises(IndexError, lambda: Pool(2).release(-1))
+--- check case | An empty pool
+(lambda p: (p.acquire(), p.free_count()))(Pool(0))
+=> (None, 0)
+
++++ practice | The overflow check that never fires
+--- task
+Someone ported a C++ overflow check to a Python model of 32-bit signed integers. `add_i32(a, b)` should return `a + b` when the true sum fits in a 32-bit signed integer (from minus 2 to the power 31 up to 2 to the power 31 minus 1), and raise `OverflowError` when it does not.
+
+Instead it raises on ordinary sums like `5 + -3`, and it never catches a sum that really is too big. Fix it.
+--- starter
+INT_MIN, INT_MAX = -2**31, 2**31 - 1
+
+
+def add_i32(a, b):
+    s = a + b
+    if s < a:  # from C: "if the sum went down, it wrapped"
+        raise OverflowError("int32 overflow")
+    return s
+--- solution
+INT_MIN, INT_MAX = -2**31, 2**31 - 1
+
+
+def add_i32(a, b):
+    """a + b, or OverflowError if the true sum does not fit in 32 signed bits."""
+    s = a + b
+    if not INT_MIN <= s <= INT_MAX:
+        raise OverflowError("int32 overflow")
+    return s
+--- hint
+`s < a` is true whenever `b` is negative. And a Python integer never wraps, so a huge sum is never smaller than `a`.
+--- hint
+Check the true sum against the two limits directly.
+--- check case | A negative addend is fine
+add_i32(5, -3)
+=> 2
+--- check test | One past the top overflows
+raises(OverflowError, lambda: add_i32(2**31 - 1, 1))
+--- check test | One past the bottom overflows
+raises(OverflowError, lambda: add_i32(-2**31, -1))
+--- check case | The limits themselves fit
+(add_i32(2**31 - 1, 0), add_i32(-2**31, 2**31 - 1))
+=> (2147483647, -1)
+
++++ question | A move from a const object
+--- ask
+What does this program print?
+
+```cpp
+#include <cstdio>
+#include <utility>
+
+struct Frame {
+    Frame() = default;
+    Frame(const Frame&) { std::puts("copy"); }
+    Frame(Frame&&) noexcept { std::puts("move"); }
+};
+
+int main() {
+    const Frame a{};
+    Frame b = std::move(a);
+    Frame c = std::move(b);
+}
+```
+
+Type the two words it prints, in order, separated by a space.
+--- answer
+copy move
+copy, move
+copy then move
+copy and move
+--- why
+`std::move` is only a cast to an rvalue reference. On the `const` object `a` it gives a `const Frame&&`, which the move constructor cannot take, because moving needs to change the source. So the copy constructor is chosen, silently: "copy". `b` is not const, so `std::move(b)` really does pick the move constructor: "move".
+
++++ question | The size of an object with virtual functions
+--- ask
+On a typical 64-bit Linux build, where a pointer is 8 bytes and a `double` is 8 bytes, what is `sizeof(Wheel)`?
+
+```cpp
+struct Wheel {
+    virtual ~Wheel() = default;
+    virtual double torque() const { return 0.0; }
+    double speed;
+};
+```
+
+Type the number of bytes.
+--- answer
+16
+16 bytes
+--- why
+In the scheme every major compiler uses, each object of a class with virtual functions carries one hidden pointer, the vptr, to its class's table. That is 8 bytes however many virtual functions there are, because the table itself is shared by the whole class. Add the 8-byte `double` and the object is 16 bytes. (The layout is implementation-defined; this is the common scheme to describe.)
+
+=== int02-l03 | Practice: Live debugging
+--- for
+l03-live-debugging
+
++++ practice | Which index was read
+--- task
+An AddressSanitizer report says where a bad access landed, relative to a heap block, in a line like:
+
+```
+0x503000000060 is located 0 bytes after 32-byte region [0x503000000040,0x503000000060)
+```
+
+The phrase can be `after`, `inside of` or `before`. Write `bad_index(line, elem_bytes)` that returns the array index the code touched, for an array of elements of `elem_bytes` bytes that starts at the region's first byte.
+
+- `located N bytes after M-byte region`: the access is at byte offset M + N.
+- `located N bytes inside of M-byte region`: it is at byte offset N.
+- `located N bytes before M-byte region`: it is at byte offset minus N.
+- The index is the byte offset divided by `elem_bytes`, rounded down. A byte offset of minus 8 with 8-byte elements is index `-1`.
+- A line with none of these shapes raises `ValueError`.
+--- starter
+def bad_index(line, elem_bytes):
+    pass
+--- solution
+import re
+
+PATTERN = re.compile(r"located (\d+) bytes (after|inside of|before) (\d+)-byte region")
+
+
+def bad_index(line, elem_bytes):
+    """The array index an ASan location line points at."""
+    m = PATTERN.search(line)
+    if not m:
+        raise ValueError(f"not an ASan location line: {line!r}")
+    n, where, size = int(m.group(1)), m.group(2), int(m.group(3))
+    if where == "after":
+        offset = size + n
+    elif where == "inside of":
+        offset = n
+    else:
+        offset = -n
+    return offset // elem_bytes
+--- hint
+A regular expression with three groups can pull out N, the word, and M in one go.
+--- hint
+Turn each shape into a byte offset from the start of the block, then use floor division by the element size.
+--- check case | Just past the end of ten doubles
+bad_index("0x502000000090 is located 0 bytes after 80-byte region [0x502000000040,0x502000000090)", 8)
+=> 10
+--- check case | Four bytes past the end of ten ints
+bad_index("0x60200000003c is located 4 bytes after 40-byte region [0x602000000010,0x602000000038)", 4)
+=> 11
+--- check case | Inside a freed block of two ints
+bad_index("0x502000000014 is located 4 bytes inside of 8-byte region [0x502000000010,0x502000000018)", 4)
+=> 1
+--- check case | Just before the start
+bad_index("0x503000000038 is located 8 bytes before 64-byte region [0x503000000040,0x503000000080)", 8)
+=> -1
+--- check test | A line that is not a location raises ValueError
+raises(ValueError, lambda: bad_index("SUMMARY: AddressSanitizer: heap-buffer-overflow", 8))
+
++++ practice | Bisect the crash
+--- task
+A test run of `n` cases crashes somewhere. `crashes(k)` runs the first `k` cases (k from 1 to n) and returns `True` if that run crashed. Once a run of k cases crashes, every longer run crashes too.
+
+Write `first_crashing_case(n, crashes)` that returns the 0-based index of the case that makes the run crash: the smallest `k` for which `crashes(k)` is true, minus one. If even the full run does not crash, return `None`.
+
+Each call to `crashes` is a slow test run, so call it at most `ceil(log2(n)) + 1` times: 12 times for 2000 cases.
+--- starter
+def first_crashing_case(n, crashes):
+    pass
+--- solution
+def first_crashing_case(n, crashes):
+    """Index of the first case that makes the run crash, by bisection."""
+    if not crashes(n):
+        return None
+    lo, hi = 1, n  # crashes(hi) is known to be true
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if crashes(mid):
+            hi = mid
+        else:
+            lo = mid + 1
+    return lo - 1
+--- hint
+Check the full run once. If it crashes, the answer lies between 1 and n, and each test can halve that range.
+--- hint
+Keep two ends, `lo` and `hi`, where `crashes(hi)` is known to be true. Test the middle and move one end to it.
+--- check case | Case 1336 of 2000, found in few runs
+(lambda calls: (first_crashing_case(2000, lambda k: (calls.append(k), k >= 1337)[1]), len(calls) <= 12))([])
+=> (1336, True)
+--- check case | The very first case crashes
+first_crashing_case(50, lambda k: True)
+=> 0
+--- check case | Only the last case crashes
+first_crashing_case(64, lambda k: k == 64)
+=> 63
+--- check case | Nothing crashes
+first_crashing_case(10, lambda k: False)
+=> None
+--- check case | A single case
+first_crashing_case(1, lambda k: True)
+=> 0
+
++++ practice | A lookup that adds nothing
+--- task
+`channels` maps a channel id to its scale factor. `readings` is a list of `(channel_id, raw)` pairs. Write `scale_readings(channels, readings)` that returns a list with `raw * scale` for each reading, in order, or `None` for a reading whose channel is not known.
+
+- Looking up an unknown id must never add it to `channels`. The caller may pass a `collections.defaultdict`, which adds a key whenever you read it with square brackets.
+- A known channel whose scale is `0.0` gives `0.0`, not `None`.
+--- starter
+def scale_readings(channels, readings):
+    pass
+--- solution
+def scale_readings(channels, readings):
+    """raw * scale per reading, or None for an unknown channel; never inserts."""
+    out = []
+    for channel_id, raw in readings:
+        if channel_id in channels:
+            out.append(raw * channels[channel_id])
+        else:
+            out.append(None)
+    return out
+--- hint
+This is the `std::map` trap in Python: `d[key]` on a defaultdict inserts a default value, just as `operator[]` does on a map.
+--- hint
+Test membership with `in` first, which never inserts. Do not test the scale's truth value, because `0.0` is false.
+--- check case | Known and unknown channels
+scale_readings({4: 0.01, 7: 2.0}, [(4, 250.0), (5, 250.0), (7, 3.0)])
+=> [2.5, None, 6.0]
+--- check case | A defaultdict gains no keys
+(lambda d: (scale_readings(d, [(4, 250.0), (9, 1.0)]), sorted(d)))(__import__("collections").defaultdict(float, {4: 0.01}))
+=> ([2.5, None], [4])
+--- check case | A zero scale is still a known channel
+scale_readings({3: 0.0}, [(3, 12.0)])
+=> [0.0]
+--- check case | No readings
+scale_readings({4: 0.01}, [])
+=> []
+
++++ practice | Cleared faults that stay
+--- task
+`open_faults(faults)` should return a new list of the fault records whose `"cleared"` is `False`, in their original order, and leave the list it was given unchanged. Each record is a dictionary such as `{"code": 3, "cleared": True}`.
+
+Instead, when two cleared faults sit next to each other, the second one stays in the result, and the caller's list is changed. Fix it.
+--- starter
+def open_faults(faults):
+    for f in faults:
+        if f["cleared"]:
+            faults.remove(f)
+    return faults
+--- solution
+def open_faults(faults):
+    """The faults not yet cleared, as a new list; the input is left alone."""
+    return [f for f in faults if not f["cleared"]]
+--- hint
+Removing an item shifts everything after it one place left, but the loop's position still moves on by one, so the next item is skipped. It is the same mistake as growing a vector while a range-for walks it.
+--- hint
+Build a new list of the items to keep instead of removing from the one you are walking.
+--- check case | Two cleared faults in a row
+[f["code"] for f in open_faults([{"code": 1, "cleared": True}, {"code": 2, "cleared": True}, {"code": 3, "cleared": False}])]
+=> [3]
+--- check case | The caller's list is unchanged
+(lambda fs: (open_faults(fs), len(fs))[1])([{"code": 1, "cleared": True}, {"code": 2, "cleared": False}])
+=> 2
+--- check case | Everything cleared
+open_faults([{"code": 5, "cleared": True}, {"code": 6, "cleared": True}])
+=> []
+--- check case | Nothing to check
+open_faults([])
+=> []
+
++++ practice | A leak check from an allocation log
+--- task
+A test harness logs every allocation, one event per line:
+
+```
+new 0x10 800 process
+new 0x20 64 parser
+delete 0x10
+```
+
+`new <address> <bytes> <site>` allocates a block; `delete <address>` frees the live block at that address. An address can be used again after it is freed. Blank lines are ignored but still count when numbering lines.
+
+Write `audit(log)`, where `log` is a list of lines, returning a dictionary:
+
+- `"leaked_bytes"` and `"leaked_blocks"`: the total size and number of blocks still live at the end;
+- `"by_site"`: a dictionary from each site that leaked to its leaked bytes;
+- `"bad_deletes"`: the line numbers, counting from 1, of every `delete` whose address is not live at that moment (a double delete, or an address never allocated). A bad delete changes nothing else.
+
+A `new` at an address that is already live never happens.
+--- starter
+def audit(log):
+    pass
+--- solution
+def audit(log):
+    """Leaks and bad deletes from a list of allocation log lines."""
+    live = {}  # address -> (bytes, site)
+    bad_deletes = []
+    for n, line in enumerate(log, start=1):
+        parts = line.split()
+        if not parts:
+            continue
+        if parts[0] == "new":
+            _, address, size, site = parts
+            live[address] = (int(size), site)
+        elif parts[0] == "delete":
+            if parts[1] in live:
+                del live[parts[1]]
+            else:
+                bad_deletes.append(n)
+    by_site = {}
+    for size, site in live.values():
+        by_site[site] = by_site.get(site, 0) + size
+    return {
+        "leaked_bytes": sum(size for size, _ in live.values()),
+        "leaked_blocks": len(live),
+        "by_site": by_site,
+        "bad_deletes": bad_deletes,
+    }
+--- hint
+Keep a dictionary of the live blocks, keyed by address. A `new` adds an entry and a `delete` removes one.
+--- hint
+Whatever is left in the dictionary at the end has leaked. Group it by site with a second dictionary.
+--- check case | Three buffers from one site, one freed
+audit(["new 0x10 800 process", "new 0x20 800 process", "delete 0x10", "new 0x30 800 process"])
+=> {"leaked_bytes": 1600, "leaked_blocks": 2, "by_site": {"process": 1600}, "bad_deletes": []}
+--- check case | A double delete and an unknown address, with a blank line counted
+audit(["new 0x10 64 parser", "delete 0x10", "", "delete 0x10", "delete 0x99"])
+=> {"leaked_bytes": 0, "leaked_blocks": 0, "by_site": {}, "bad_deletes": [4, 5]}
+--- check case | An address used again after it was freed
+audit(["new 0x10 32 log", "delete 0x10", "new 0x10 48 telemetry", "new 0x20 16 log"])
+=> {"leaked_bytes": 64, "leaked_blocks": 2, "by_site": {"telemetry": 48, "log": 16}, "bad_deletes": []}
+--- check case | An empty log
+audit([])
+=> {"leaked_bytes": 0, "leaked_blocks": 0, "by_site": {}, "bad_deletes": []}
+
++++ question | The line that never appeared
+--- ask
+A program prints `starting frame loop` with `printf`, runs for a while, then dies with a segmentation fault. You run it as `./sim | tee run.log`, and `starting frame loop` is not in `run.log`. What does that tell you?
+--- choice
+The crash happened before the `printf` ran, so the bug is earlier in the program.
+--- choice correct
+Very little: output to a pipe is held in a buffer and written later, and a crash throws the buffer away. The line may well have run. Use the backtrace, or print to `stderr`, instead.
+--- choice
+`tee` only saves output that ends in a newline, so the line was dropped whatever happened.
+--- choice
+The segmentation fault corrupted the file, so `run.log` cannot be trusted at all.
+--- why
+To a terminal, the C library flushes standard output at every newline. To a pipe or a file, it flushes only when the buffer fills or the program exits normally, and a crash is not a normal exit. So a missing line is not evidence that the line never ran. The backtrace from gdb has no such problem, and `stderr` is not buffered this way.
+
+=== int02-l04 | Practice: Designing a simulation system and a telemetry pipeline
+--- for
+l04-designing-sim-and-telemetry-systems
+
++++ practice | Size the stream
+--- task
+Numbers come first in a design round. Write `stream_size(satellites, channels, bytes_per_value, hz=1.0)` for a fleet in which every satellite sends every channel `hz` times a second, each value taking `bytes_per_value` bytes. Return a tuple of three numbers:
+
+1. the fleet's bytes per second;
+2. the same rate in megabits per second (1 byte is 8 bits, 1 megabit is 1,000,000 bits), rounded to 1 decimal place;
+3. terabytes per day (1 day is 86,400 s, 1 TB is 10 to the power 12 bytes), rounded to 2 decimal places.
+
+For example, `stream_size(6000, 500, 4)` gives `(12000000.0, 96.0, 1.04)`.
+--- starter
+def stream_size(satellites, channels, bytes_per_value, hz=1.0):
+    pass
+--- solution
+def stream_size(satellites, channels, bytes_per_value, hz=1.0):
+    """Fleet data rate: bytes per second, megabits per second, terabytes per day."""
+    bytes_per_s = satellites * channels * bytes_per_value * hz
+    mbit_per_s = round(bytes_per_s * 8 / 1e6, 1)
+    tb_per_day = round(bytes_per_s * 86_400 / 1e12, 2)
+    return (bytes_per_s, mbit_per_s, tb_per_day)
+--- hint
+Multiply the four factors for bytes per second. Everything else is a unit conversion of that one number.
+--- hint
+Megabits: times 8, divided by a million. Terabytes a day: times 86,400, divided by 10 to the power 12.
+--- check case | 6000 satellites, 500 channels of 4 bytes
+stream_size(6000, 500, 4)
+=> (12000000.0, 96.0, 1.04)
+--- check case | 2000 satellites, 1000 two-byte channels at 10 Hz
+stream_size(2000, 1000, 2, 10)
+=> (40000000, 320.0, 3.46)
+--- check case | 24 satellites, 50 channels of 8 bytes
+stream_size(24, 50, 8)
+=> (9600.0, 0.1, 0.0)
+--- check case | No satellites
+stream_size(0, 500, 4)
+=> (0.0, 0.0, 0.0)
+
++++ practice | How many cases fit the night
+--- task
+A nightly Monte Carlo has a window of `window_min` minutes on `cores` cores. Each case simulates `sim_s` seconds of flight at `steps_per_s` steps a second, and each step costs `us_per_step` microseconds of one core. Write `cases_per_night(window_min, cores, sim_s, steps_per_s, us_per_step)` that returns how many whole cases fit in the window.
+
+- All inputs are whole numbers. Work in whole microseconds so no rounding creeps in.
+- A case that would not finish does not count, so round down.
+- If `sim_s`, `steps_per_s` or `us_per_step` is zero or less, raise `ValueError`.
+
+For example, one simulated day at 100 steps a second and 2 microseconds a step costs 17,280,000 microseconds. A 60 minute window on 64 cores fits 13333 such cases.
+--- starter
+def cases_per_night(window_min, cores, sim_s, steps_per_s, us_per_step):
+    pass
+--- solution
+def cases_per_night(window_min, cores, sim_s, steps_per_s, us_per_step):
+    """Whole cases that finish inside the window, counted in microseconds."""
+    if sim_s <= 0 or steps_per_s <= 0 or us_per_step <= 0:
+        raise ValueError("every per-case factor must be positive")
+    budget_us = window_min * 60 * 1_000_000 * cores
+    per_case_us = sim_s * steps_per_s * us_per_step
+    return budget_us // per_case_us
+--- hint
+Work out the whole budget in core-microseconds and the cost of one case in microseconds.
+--- hint
+Integer division `//` rounds down and never goes through a float.
+--- check case | An hour on 64 cores
+cases_per_night(60, 64, 86400, 100, 2)
+=> 13333
+--- check case | Five minutes on one core
+cases_per_night(5, 1, 86400, 100, 2)
+=> 17
+--- check case | A window too short for one case
+cases_per_night(0, 64, 86400, 100, 2)
+=> 0
+--- check test | A zero cost per step raises ValueError
+raises(ValueError, lambda: cases_per_night(60, 64, 86400, 100, 0))
+
++++ practice | Gaps and duplicates per satellite
+--- task
+Frames arrive from overlapping ground stations as `(satellite, seq)` pairs, in arrival order. `seq` is a 16-bit sequence counter: it counts up by one per frame and wraps from 65535 back to 0.
+
+Write `link_report(frames)` that returns a dictionary from each satellite to a tuple `(accepted, duplicates, missing)`:
+
+- A satellite's first frame is accepted.
+- A frame whose `seq` equals the last accepted `seq` for that satellite is a duplicate and is dropped.
+- Any other frame is accepted, and `(seq - last - 1)` taken modulo 65536 frames are counted as missing.
+- Frames never arrive out of order apart from duplicates. No frames give `{}`.
+
+For example, frames with counters 65534 and then 1 are missing 65535 and 0: two frames.
+--- starter
+def link_report(frames):
+    pass
+--- solution
+def link_report(frames):
+    """Accepted, duplicate and missing frame counts per satellite."""
+    last = {}
+    report = {}
+    for sat, seq in frames:
+        accepted, duplicates, missing = report.get(sat, (0, 0, 0))
+        if sat not in last:
+            accepted += 1
+        elif seq == last[sat]:
+            duplicates += 1
+            report[sat] = (accepted, duplicates, missing)
+            continue
+        else:
+            accepted += 1
+            missing += (seq - last[sat] - 1) % 65536
+        last[sat] = seq
+        report[sat] = (accepted, duplicates, missing)
+    return report
+--- hint
+Keep two dictionaries: the last accepted counter per satellite, and the running totals per satellite.
+--- hint
+The modulo handles the wrap: `(1 - 65534 - 1) % 65536` is 2.
+--- check case | Two satellites interleaved, with a duplicate and a gap
+link_report([("s1", 10), ("s2", 500), ("s1", 11), ("s1", 11), ("s2", 503), ("s1", 12)])
+=> {"s1": (3, 1, 0), "s2": (2, 0, 2)}
+--- check case | The counter wraps
+link_report([("s7", 65534), ("s7", 1)])
+=> {"s7": (2, 0, 2)}
+--- check case | Wrapping exactly onto zero misses nothing
+link_report([("s7", 65535), ("s7", 0), ("s7", 0)])
+=> {"s7": (2, 1, 0)}
+--- check case | No frames
+link_report([])
+=> {}
+
++++ practice | Zero is not a tolerance
+--- task
+A regression check compares tonight's results with trusted ones. `baseline` and `current` map channel names to numbers. A channel is out of tolerance when the absolute difference is more than `atol + rtol * abs(baseline value)`. A channel in `baseline` that is missing from `current` is reported too. `regressions(baseline, current, rtol, atol)` returns the names that fail, sorted.
+
+Instead, a pointing error of `1e-15` against a baseline of exactly `0.0` is flagged, and a missing channel crashes the check. Fix it.
+--- starter
+def regressions(baseline, current, rtol, atol):
+    bad = []
+    for name, b in baseline.items():
+        c = current[name]
+        if abs(c - b) > rtol * abs(b):
+            bad.append(name)
+    return sorted(bad)
+--- solution
+def regressions(baseline, current, rtol, atol):
+    """Channels that moved out of tolerance, or went missing, sorted by name."""
+    bad = []
+    for name, b in baseline.items():
+        if name not in current:
+            bad.append(name)
+        elif abs(current[name] - b) > atol + rtol * abs(b):
+            bad.append(name)
+    return sorted(bad)
+--- hint
+A relative tolerance times zero is zero, so against a zero baseline nothing is allowed to move at all. That is what the absolute tolerance is for.
+--- hint
+Check whether the name is in `current` before reading it, and add `atol` to the allowed difference.
+--- check case | Rounding noise against zero passes
+regressions({"pointing_err": 0.0, "fuel_kg": 512.3}, {"pointing_err": 1e-15, "fuel_kg": 512.3000001}, 1e-6, 1e-9)
+=> []
+--- check case | A real change is caught
+regressions({"pointing_err": 0.0, "fuel_kg": 512.3}, {"pointing_err": 0.0, "fuel_kg": 515.0}, 1e-6, 1e-9)
+=> ["fuel_kg"]
+--- check case | A missing channel is reported, and the names are sorted
+regressions({"wheel_rpm": 3000.0, "bus_v": 28.0, "att_err": 0.1}, {"wheel_rpm": 3100.0, "att_err": 0.1}, 1e-3, 1e-6)
+=> ["bus_v", "wheel_rpm"]
+
++++ practice | Minute summaries for the dashboard
+--- task
+A dashboard cannot redraw from one-second data, so the pipeline keeps a summary per minute. Write `minute_summary(samples)`, where `samples` is a list of `(t, value)` pairs, `t` in seconds, in any order.
+
+Return a list of tuples `(minute_start, count, low, mean, high)`, one per minute that has samples, sorted by `minute_start`:
+
+- `minute_start` is `t` rounded down to a whole multiple of 60, as an `int`. A sample at exactly `t = 60.0` belongs to the minute starting at 60.
+- `count`, `low` and `high` are the number of samples, their smallest and their largest value; `mean` is their average rounded to 3 decimal places.
+- Minutes with no samples are left out. No samples give `[]`.
+--- starter
+def minute_summary(samples):
+    pass
+--- solution
+import math
+
+
+def minute_summary(samples):
+    """Count, low, mean and high per minute that has samples."""
+    minutes = {}
+    for t, value in samples:
+        start = int(math.floor(t / 60)) * 60
+        minutes.setdefault(start, []).append(value)
+    return [
+        (start, len(vals), min(vals), round(sum(vals) / len(vals), 3), max(vals))
+        for start, vals in sorted(minutes.items())
+    ]
+--- hint
+Group the values into a dictionary keyed by the minute they fall in, then summarize each group.
+--- hint
+`math.floor(t / 60) * 60` is the start of the minute, and sorting the dictionary's items puts the minutes in order.
+--- check case | Two minutes, samples out of order, one on the boundary
+minute_summary([(61.0, 5.0), (0.5, 2.0), (59.999, 4.0), (60.0, 1.0), (30.0, 3.0)])
+=> [(0, 3, 2.0, 3.0, 4.0), (60, 2, 1.0, 3.0, 5.0)]
+--- check case | An empty minute is left out
+minute_summary([(10.0, 20.5), (130.0, 21.5), (140.0, 22.0)])
+=> [(0, 1, 20.5, 20.5, 20.5), (120, 2, 21.5, 21.75, 22.0)]
+--- check case | The mean is rounded
+minute_summary([(1.0, 1.0), (2.0, 1.0), (3.0, 2.0)])
+=> [(0, 3, 1.0, 1.333, 2.0)]
+--- check case | No samples
+minute_summary([])
+=> []
+
++++ question | The last digits that change
+--- ask
+Your nightly campaign seeds every case correctly, but the cases run on 16 threads, and each thread adds its case's result into one shared running total, under a lock, as soon as the case finishes. Two runs with the same base seed give totals that differ in the last few digits. Why?
+--- choice
+The lock is not enough: it is still a data race, so the result is undefined.
+--- choice correct
+Floating-point addition is not associative. The cases finish in a different order each run, so the additions happen in a different order and round differently.
+--- choice
+The seeds are drawn from the wall clock, so the cases themselves differ.
+--- choice
+Sixteen threads overflow the float, which wraps around.
+--- why
+With a lock there is no data race, and the seeds are fine, so every case gives the same number every time. But (a + b) + c and a + (b + c) can round differently in floating point, and thread timing decides the order. To be deterministic, store each case's result in its own slot and add them in case order at the end.
+
+=== int02-l05 | Practice: Verifying flight software and surviving faults
+--- for
+l05-verification-and-fault-tolerant-computers
+
++++ practice | At least k of n
+--- task
+Write `p_at_least(k, n, p)`: the probability that at least `k` of `n` independent strings fail, when each fails with probability `p`.
+
+- Exactly `i` of `n` fail with probability `comb(n, i) * p**i * (1 - p)**(n - i)`, where `comb(n, i)` is the number of ways to choose which `i` fail (`math.comb`). Add these up for `i` from `k` to `n`.
+- `k` of zero or less gives exactly `1.0`; `k` greater than `n` gives `0.0`.
+- `p` outside the range 0 to 1 raises `ValueError`.
+--- starter
+def p_at_least(k, n, p):
+    pass
+--- solution
+from math import comb
+
+
+def p_at_least(k, n, p):
+    """Chance that at least k of n independent units fail, each with chance p."""
+    if not 0.0 <= p <= 1.0:
+        raise ValueError("p must be between 0 and 1")
+    if k <= 0:
+        return 1.0
+    if k > n:
+        return 0.0
+    return sum(comb(n, i) * p**i * (1 - p) ** (n - i) for i in range(k, n + 1))
+--- hint
+Each count of failures from k up to n is a separate pattern that cannot happen together with the others, so their chances add.
+--- hint
+Handle the edge values of k before the sum, so they come out exactly.
+--- check test | Two or more of three at p = 0.01
+abs(p_at_least(2, 3, 0.01) - 0.000298) < 1e-12
+--- check test | All three at p = 0.01
+abs(p_at_least(3, 3, 0.01) - 1e-6) < 1e-15
+--- check case | At least one of two coins
+p_at_least(1, 2, 0.5)
+=> 0.75
+--- check case | The edges of k
+(p_at_least(0, 3, 0.2), p_at_least(4, 3, 0.2))
+=> (1.0, 0.0)
+--- check test | A probability above one raises ValueError
+raises(ValueError, lambda: p_at_least(1, 3, 1.5))
+
++++ practice | Losing command
+--- task
+Three flight strings each fail at a constant rate of `rate_per_h` failures per hour, independently. Write two functions:
+
+- `p_string(rate_per_h, hours)`: the chance one string fails during a flight of `hours` hours, `1 - e**(-rate_per_h * hours)`. For small values, compute it with `math.expm1`, which keeps the precision that `1 - math.exp(...)` loses.
+- `p_loss(rate_per_h, hours, healthy_needed)`: the chance that fewer than `healthy_needed` strings are left healthy at the end of the flight, which is when the actuators lose command. `healthy_needed` must be 1, 2 or 3; anything else raises `ValueError`.
+
+For example, needing one healthy string means command is lost only when all three fail.
+--- starter
+def p_string(rate_per_h, hours):
+    pass
+
+
+def p_loss(rate_per_h, hours, healthy_needed):
+    pass
+--- solution
+import math
+from math import comb
+
+
+def p_string(rate_per_h, hours):
+    """Chance one string fails during the flight, at a constant failure rate."""
+    return -math.expm1(-rate_per_h * hours)
+
+
+def p_loss(rate_per_h, hours, healthy_needed):
+    """Chance that fewer than healthy_needed of three strings survive."""
+    if healthy_needed not in (1, 2, 3):
+        raise ValueError("healthy_needed must be 1, 2 or 3")
+    p = p_string(rate_per_h, hours)
+    k = 3 - healthy_needed + 1  # this many failures loses command
+    return sum(comb(3, i) * p**i * (1 - p) ** (3 - i) for i in range(k, 4))
+--- hint
+`math.expm1(x)` is `e**x - 1`, so `1 - e**(-y)` is `-math.expm1(-y)`.
+--- hint
+Fewer than h healthy out of 3 means at least 3 - h + 1 failures. Then add up the binomial terms from there to 3.
+--- check test | One string over ten hours at 1e-4 per hour
+__import__("math").isclose(p_string(1e-4, 10), 9.995001666250085e-4, rel_tol=1e-9)
+--- check test | Only the product of rate and time matters
+__import__("math").isclose(p_string(2e-5, 50), p_string(1e-4, 10), rel_tol=1e-9)
+--- check test | Needing two healthy strings
+__import__("math").isclose(p_loss(1e-4, 10, 2), 2.9950047e-6, rel_tol=1e-6)
+--- check test | Needing one, and needing all three
+__import__("math").isclose(p_loss(1e-4, 10, 1), 9.985012e-10, rel_tol=1e-6) and __import__("math").isclose(p_loss(1e-4, 10, 3), 0.0029955045, rel_tol=1e-6)
+--- check test | Zero or four healthy strings raise ValueError
+raises(ValueError, lambda: p_loss(1e-4, 10, 0)) and raises(ValueError, lambda: p_loss(1e-4, 10, 4))
+
++++ practice | Which conditions are shown
+--- task
+A decision takes `n` conditions and returns true or false. For MC/DC, a condition is **shown** by a test set when the set holds two tests that differ only in that condition and give different outcomes.
+
+Write `mcdc_shown(decision, n, tests)`:
+
+- `decision` is a function taking `n` booleans as separate arguments, such as `lambda a, b, c: a and (b or c)`.
+- `tests` is a list of tuples of `n` values, each `0`, `1`, `False` or `True`.
+- Return a list of `n` booleans: for each condition, in order, whether the set shows it.
+--- starter
+def mcdc_shown(decision, n, tests):
+    pass
+--- solution
+def mcdc_shown(decision, n, tests):
+    """For each condition, whether some pair of tests shows it alone changes the outcome."""
+    vectors = [tuple(bool(x) for x in t) for t in tests]
+    outcome = {v: bool(decision(*v)) for v in vectors}
+    shown = []
+    for i in range(n):
+        found = False
+        for a in vectors:
+            b = a[:i] + (not a[i],) + a[i + 1:]
+            if b in outcome and outcome[a] != outcome[b]:
+                found = True
+                break
+        shown.append(found)
+    return shown
+--- hint
+For a test `a` and a condition `i`, the only partner that can show `i` is `a` with just position `i` flipped. Is that partner in the set?
+--- hint
+Turn every test into a tuple of booleans first, so `1` and `True` compare equal, and keep the outcomes in a dictionary.
+--- check case | Four tests show all three conditions
+mcdc_shown(lambda a, b, c: a and (b or c), 3, [(1, 1, 0), (0, 1, 0), (1, 0, 0), (1, 0, 1)])
+=> [True, True, True]
+--- check case | Two tests show only the first condition
+mcdc_shown(lambda a, b, c: a and (b or c), 3, [(1, 1, 0), (0, 1, 0)])
+=> [True, False, False]
+--- check case | A flip that does not change the outcome shows nothing
+mcdc_shown(lambda a, b, c: a and (b or c), 3, [(1, 1, 1), (1, 1, 0)])
+=> [False, False, False]
+--- check case | Booleans and a two-condition or
+mcdc_shown(lambda a, b: a or b, 2, [(False, False), (True, False), (False, True)])
+=> [True, True]
+
++++ practice | The valve that held
+--- task
+An actuator controller receives one command from each of three strings, as a tuple `(s1, s2, s3)`. A string that found its cores disagreeing sends nothing, shown as `None`. Under the rule "act on two that agree", `judge(cmds)` should return a value that at least two strings sent, or `None` (hold) when no two sent the same value. Two missing commands never count as agreement.
+
+When string 2 goes silent and strings 1 and 3 both send 5, the valve should move to 5. Instead it holds. Fix it.
+--- starter
+def judge(cmds):
+    a, b, c = cmds
+    if a is not None and a == b:
+        return a
+    if b is not None and b == c:
+        return b
+    return None
+--- solution
+def judge(cmds):
+    """A command sent by at least two strings, or None to hold."""
+    a, b, c = cmds
+    if a is not None and (a == b or a == c):
+        return a
+    if b is not None and b == c:
+        return b
+    return None
+--- hint
+List every pair of strings that could agree. There are three pairs; how many does the code check?
+--- hint
+Strings 1 and 3 agreeing is the missing pair.
+--- check case | String 2 silent, 1 and 3 agree
+judge((5, None, 5))
+=> 5
+--- check case | String 1 silent
+judge((None, 7, 7))
+=> 7
+--- check case | Two silent strings do not agree on anything
+judge((None, None, 5))
+=> None
+--- check case | All silent
+judge((None, None, None))
+=> None
+--- check case | All three agree
+judge((3, 3, 3))
+=> 3
+
++++ practice | The smallest MC/DC set
+--- task
+Write `mcdc_minimum(decision, n)`: the size of the smallest set of test vectors that shows every one of the `n` conditions, in the MC/DC sense (two tests that differ only in that condition and give different outcomes). Try all `2**n` possible vectors, and search sets of size 2, then 3, and so on.
+
+- `decision` takes `n` booleans as separate arguments. `n` is at most 4.
+- If some condition can never change the outcome on its own, no set can show it: return `None`.
+
+For example, `a or b` needs 3 tests, and `a and b and c and d` needs 5.
+--- starter
+def mcdc_minimum(decision, n):
+    pass
+--- solution
+from itertools import combinations, product
+
+
+def shows_all(decision, n, tests):
+    """True if every condition has a pair in tests that differs only there and flips the outcome."""
+    have = set(tests)
+    for i in range(n):
+        if not any(
+            (a[:i] + (not a[i],) + a[i + 1:]) in have
+            and bool(decision(*a)) != bool(decision(*(a[:i] + (not a[i],) + a[i + 1:])))
+            for a in tests
+        ):
+            return False
+    return True
+
+
+def mcdc_minimum(decision, n):
+    """Size of the smallest MC/DC test set, or None if a condition is masked."""
+    rows = list(product([False, True], repeat=n))
+    if not shows_all(decision, n, rows):
+        return None
+    for size in range(2, len(rows) + 1):
+        if any(shows_all(decision, n, subset) for subset in combinations(rows, size)):
+            return size
+    return None
+--- hint
+First check whether the full set of all vectors shows every condition. If it does not, no smaller set can, so return `None` at once.
+--- hint
+`itertools.product([False, True], repeat=n)` lists the vectors and `itertools.combinations(rows, size)` lists the sets of each size. Return the first size that works.
+--- check case | The thruster rule a and (b or c)
+mcdc_minimum(lambda a, b, c: a and (b or c), 3)
+=> 4
+--- check case | Two conditions joined by or
+mcdc_minimum(lambda a, b: a or b, 2)
+=> 3
+--- check case | Four conditions joined by and
+mcdc_minimum(lambda a, b, c, d: a and b and c and d, 4)
+=> 5
+--- check case | A condition that never matters
+mcdc_minimum(lambda a, b: a, 2)
+=> None
+--- check case | Exclusive or: every flip changes the outcome
+mcdc_minimum(lambda a, b: a != b, 2)
+=> 3
+
++++ question | Only on the flight processor
+--- ask
+A controller passes every model-in-the-loop and software-in-the-loop run. On the processor-in-the-loop bench, built with the flight compiler for the flight processor, one gain calculation comes out wrong. Which kind of cause is the PIL rung designed to expose?
+--- choice
+A wrong control law: the gain was designed badly in the model.
+--- choice
+A sign flipped while turning the model into code.
+--- choice correct
+A compiler or processor effect: a number format, word size or optimization that behaves differently on the flight chip than on the desktop.
+--- choice
+A sensor cable wired to the wrong pin.
+--- why
+Each rung closes a gap the one below leaves open. A bad control law would already fail in MIL, and a coding slip in SIL, because SIL runs the same code on a desktop. PIL is the first rung where the flight compiler and the flight processor are used, so differences in number formats, integer sizes or optimization show up there. A miswired cable needs the real hardware and wiring, which only HIL has.
+
+=== int02-l06 | Practice: Domain rounds and Fermi estimates
+--- for
+l06-domain-rounds-and-fermi-estimates
+
++++ practice | Gains from a spec
+--- task
+A spacecraft axis obeys `J * theta_ddot = u` with the PD law `u = -kp * theta - kd * theta_dot`. Write `pd_design(J, wn, zeta)` that returns a dictionary for a chosen natural frequency `wn` (rad/s) and damping ratio `zeta`:
+
+- `"kp"`: `J * wn**2`, rounded to 3 decimal places;
+- `"kd"`: `2 * zeta * wn * J`, rounded to 3 decimal places;
+- `"settle_s"`: the 2 percent settling time `4 / (zeta * wn)`, rounded to 1 decimal place;
+- `"overshoot"`: the peak overshoot as a fraction, `e**(-pi * zeta / sqrt(1 - zeta**2))` for `zeta` below 1, and `0.0` when `zeta` is 1 or more, rounded to 4 decimal places.
+
+If `J`, `wn` or `zeta` is zero or less, raise `ValueError`.
+--- starter
+def pd_design(J, wn, zeta):
+    pass
+--- solution
+import math
+
+
+def pd_design(J, wn, zeta):
+    """PD gains, settling time and overshoot for a chosen wn and zeta."""
+    if J <= 0 or wn <= 0 or zeta <= 0:
+        raise ValueError("J, wn and zeta must all be positive")
+    if zeta < 1:
+        overshoot = math.exp(-math.pi * zeta / math.sqrt(1 - zeta**2))
+    else:
+        overshoot = 0.0
+    return {
+        "kp": round(J * wn**2, 3),
+        "kd": round(2 * zeta * wn * J, 3),
+        "settle_s": round(4 / (zeta * wn), 1),
+        "overshoot": round(overshoot, 4),
+    }
+--- hint
+Match the closed loop, `theta_ddot + (kd / J) theta_dot + (kp / J) theta = 0`, with the standard form `theta_ddot + 2 zeta wn theta_dot + wn**2 theta = 0`.
+--- hint
+The overshoot formula has a square root of `1 - zeta**2`, so treat `zeta` of 1 or more separately.
+--- check case | A small satellite, half damped
+pd_design(200, 0.2, 0.5)
+=> {"kp": 8.0, "kd": 40.0, "settle_s": 40.0, "overshoot": 0.163}
+--- check case | Critically damped: no overshoot
+pd_design(1000, 0.05, 1.0)
+=> {"kp": 2.5, "kd": 100.0, "settle_s": 80.0, "overshoot": 0.0}
+--- check case | Lightly damped
+pd_design(50, 1.0, 0.2)
+=> {"kp": 50.0, "kd": 20.0, "settle_s": 20.0, "overshoot": 0.5266}
+--- check test | A zero or negative input raises ValueError
+raises(ValueError, lambda: pd_design(0, 0.1, 0.7)) and raises(ValueError, lambda: pd_design(100, 0.1, -0.7))
+
++++ practice | Spec from gains
+--- task
+An interviewer hands you the gains instead and asks how the loop will behave. Write `pd_spec(J, kp, kd)` that returns the tuple `(wn, zeta)` for the axis `J * theta_ddot = u` with `u = -kp * theta - kd * theta_dot`, each rounded to 4 decimal places.
+
+- `wn` is `sqrt(kp / J)` and `zeta` is `kd / (2 * sqrt(kp * J))`.
+- If `J` or `kp` is zero or less, the loop has no natural frequency: raise `ValueError`.
+--- starter
+def pd_spec(J, kp, kd):
+    pass
+--- solution
+import math
+
+
+def pd_spec(J, kp, kd):
+    """Natural frequency and damping ratio of a PD loop on one axis."""
+    if J <= 0 or kp <= 0:
+        raise ValueError("J and kp must be positive")
+    wn = math.sqrt(kp / J)
+    zeta = kd / (2 * math.sqrt(kp * J))
+    return (round(wn, 4), round(zeta, 4))
+--- hint
+Read the two gain formulas backwards: `kp = J * wn**2` gives `wn`, and `kd = 2 * zeta * wn * J` then gives `zeta`.
+--- hint
+Substituting `wn = sqrt(kp / J)` into `zeta = kd / (2 * wn * J)` simplifies to `kd / (2 * sqrt(kp * J))`.
+--- check case | Back from the half-damped design
+pd_spec(200, 8, 40)
+=> (0.2, 0.5)
+--- check case | Critically damped
+pd_spec(50, 2, 20)
+=> (0.2, 1.0)
+--- check case | No derivative gain at all
+pd_spec(10, 40, 0)
+=> (2.0, 0.0)
+--- check test | Zero stiffness or zero inertia raises ValueError
+raises(ValueError, lambda: pd_spec(100, 0, 5)) and raises(ValueError, lambda: pd_spec(0, 5, 5))
+
++++ practice | One significant figure
+--- task
+A Fermi answer is given to one significant figure: a single non-zero digit, then zeros. Write `one_sig(x)` that rounds `x` that way.
+
+- 37 becomes 40, 2834 becomes 3000, 96 becomes 100 (the carry adds a digit), 0.0062 becomes 0.006.
+- Negative numbers keep their sign: -0.00047 becomes -0.0005.
+- Zero stays zero.
+- A value exactly halfway may round either way; the checks never use one.
+--- starter
+def one_sig(x):
+    pass
+--- solution
+import math
+
+
+def one_sig(x):
+    """x rounded to one significant figure."""
+    if x == 0:
+        return 0
+    digits = -int(math.floor(math.log10(abs(x))))
+    return round(x, digits)
+--- hint
+The position of the first significant digit is `floor(log10(abs(x)))`: 1 for 37, 3 for 2834, minus 3 for 0.0062.
+--- hint
+`round(x, n)` with a negative `n` rounds to tens, hundreds and so on. Use minus the position you found.
+--- check case | Tens and thousands
+(one_sig(37), one_sig(2834), one_sig(5713))
+=> (40, 3000, 6000)
+--- check case | A carry adds a digit
+one_sig(96)
+=> 100
+--- check case | Small numbers
+(one_sig(0.0062), one_sig(0.00096))
+=> (0.006, 0.001)
+--- check case | A negative number and a single digit
+(one_sig(-0.00047), one_sig(7))
+=> (-0.0005, 7)
+--- check case | Zero
+one_sig(0)
+=> 0
+
++++ practice | The delay in the wrong unit
+--- task
+A pure time delay of `tau` seconds costs `omega * tau` **radians** of phase at frequency `omega` (rad/s). `delay_phase_deg(omega, tau)` should return that lag in degrees, and `margin_left(margin_deg, omega, tau)` the phase margin left after it.
+
+For a loop crossing over at 8 rad/s with 25 ms of delay, the lag should be about 11.46 degrees. Instead the code reports a tiny fraction of a degree, so every loop looks safe. Fix it.
+--- starter
+import math
+
+
+def delay_phase_deg(omega, tau):
+    return omega * tau * math.pi / 180
+
+
+def margin_left(margin_deg, omega, tau):
+    return margin_deg - delay_phase_deg(omega, tau)
+--- solution
+import math
+
+
+def delay_phase_deg(omega, tau):
+    """Phase lag in degrees that a delay of tau seconds adds at omega rad/s."""
+    return math.degrees(omega * tau)
+
+
+def margin_left(margin_deg, omega, tau):
+    """Phase margin in degrees after the delay's lag is taken off."""
+    return margin_deg - delay_phase_deg(omega, tau)
+--- hint
+The product `omega * tau` is already in radians. Which way does the conversion to degrees go?
+--- hint
+Degrees are radians times 180 over pi, or `math.degrees`.
+--- check case | 8 rad/s with 25 ms of delay
+round(delay_phase_deg(8, 0.025), 2)
+=> 11.46
+--- check case | A 35 degree margin after that delay
+round(margin_left(35, 8, 0.025), 2)
+=> 23.54
+--- check case | A slow loop barely notices
+round(margin_left(45, 0.5, 0.01), 2)
+=> 44.71
+--- check case | No delay, no lag
+delay_phase_deg(10, 0.0)
+=> 0.0
+
++++ practice | A Fermi range
+--- task
+In a Fermi estimate, each factor has a low and a high value you believe. Write `fermi_range(factors)`, where `factors` is a list of `(low, high)` pairs to multiply together. Return a tuple `(low, high, estimate)`:
+
+- `low` is the product of all the lows and `high` the product of all the highs, each rounded to 3 significant figures (`float(f"{x:.3g}")` does that).
+- `estimate` is the geometric mean, `sqrt(low * high)` of the unrounded products, rounded to one significant figure as in `one_sig` (write that too).
+- A factor that is to be divided by goes in as its reciprocal, so every factor multiplies.
+- An empty list, or a pair where `low` is not above zero or `high` is below `low`, raises `ValueError`.
+--- starter
+def one_sig(x):
+    pass
+
+
+def fermi_range(factors):
+    pass
+--- solution
+import math
+
+
+def one_sig(x):
+    """x rounded to one significant figure."""
+    if x == 0:
+        return 0
+    return round(x, -int(math.floor(math.log10(abs(x)))))
+
+
+def fermi_range(factors):
+    """Low, high and geometric-mean estimate of a product of uncertain factors."""
+    if not factors:
+        raise ValueError("no factors")
+    low = high = 1.0
+    for lo, hi in factors:
+        if lo <= 0 or hi < lo:
+            raise ValueError(f"bad factor ({lo}, {hi})")
+        low *= lo
+        high *= hi
+    estimate = one_sig(math.sqrt(low * high))
+    return (float(f"{low:.3g}"), float(f"{high:.3g}"), estimate)
+--- hint
+Multiply the lows together and the highs together in one loop, checking each pair as you go.
+--- hint
+The geometric mean sits in the middle on a log scale, which is the right middle when the range spans a factor of several.
+--- check case | Visible satellites: 4000 to 8000, times a fraction 0.004 to 0.008
+fermi_range([(4000, 8000), (0.004, 0.008)])
+=> (16.0, 64.0, 30)
+--- check case | Three factors
+fermi_range([(300, 500), (2, 4), (0.5, 1)])
+=> (300.0, 2000.0, 800)
+--- check case | A factor known exactly
+fermi_range([(86400, 86400), (1, 3)])
+=> (86400.0, 259000.0, 100000)
+--- check test | Empty, zero and backwards factors raise ValueError
+raises(ValueError, lambda: fermi_range([])) and raises(ValueError, lambda: fermi_range([(0, 5)])) and raises(ValueError, lambda: fermi_range([(5, 2)]))
+
++++ question | A drag coefficient from the wrong speed
+--- ask
+To estimate drag at Mach 1.1 near max-q, a candidate uses a drag coefficient measured on the same body at Mach 0.5, and the standard dynamic pressure formula. Compared with the real drag, the estimate is most likely:
+--- choice
+About right, because the drag coefficient depends only on the body's shape.
+--- choice correct
+Too low, because the drag coefficient rises sharply near Mach 1, where shock waves form.
+--- choice
+Too high, because dynamic pressure already includes the effect of Mach number.
+--- choice
+Too high, because drag falls once a body passes the speed of sound.
+--- why
+The drag coefficient is not a constant: it changes with Mach number and climbs steeply in the transonic region, peaking a little above Mach 1. Dynamic pressure, one half rho v squared, contains only density and speed. So a subsonic coefficient used at Mach 1.1 underestimates drag right where loads and control margin are tightest. That is why real trajectories use a table of drag coefficient against Mach.
+
+=== int02-l07 | Practice: The technical presentation
+--- for
+l07-the-technical-presentation
+
++++ practice | Does the talk fit
+--- task
+Write `plan_talk(slide_seconds, limit_s=720, wpm=140)` for a talk planned slide by slide. `slide_seconds` lists the seconds you plan for each slide. Return a tuple `(total_s, over_s, words)`:
+
+- `total_s` is the sum of the seconds;
+- `over_s` is how many seconds the plan runs over `limit_s`, or `0` if it fits;
+- `words` is a list with the number of words each slide gets when you speak at `wpm` words a minute, rounded to the nearest whole word.
+--- starter
+def plan_talk(slide_seconds, limit_s=720, wpm=140):
+    pass
+--- solution
+def plan_talk(slide_seconds, limit_s=720, wpm=140):
+    """Total time, time over the limit, and words per slide at the speaking rate."""
+    total = sum(slide_seconds)
+    over = max(0, total - limit_s)
+    words = [round(wpm * s / 60) for s in slide_seconds]
+    return (total, over, words)
+--- hint
+Words for a slide are the speaking rate per minute times the slide's minutes, which are its seconds over 60.
+--- hint
+`max(0, total - limit_s)` keeps the overrun from going negative.
+--- check case | A short title slide, two long slides, nine normal ones
+plan_talk([30, 60, 60, 75, 60, 60, 60, 60, 75, 60, 60, 60])
+=> (720, 0, [70, 140, 140, 175, 140, 140, 140, 140, 175, 140, 140, 140])
+--- check case | Three extra slides run over
+plan_talk([60] * 15)[:2]
+=> (900, 180)
+--- check case | A slower speaker
+plan_talk([90, 30], wpm=130)
+=> (120, 0, [195, 65])
+--- check case | No slides
+plan_talk([])
+=> (0, 0, [])
+
++++ practice | How many runs
+--- task
+The rule of three says that zero failures in N runs puts the failure rate below about 3 divided by N, at about 95 percent confidence. Write the exact version: `runs_needed(p, confidence=0.95)` returns the smallest number of runs N for which zero failures would happen with probability `(1 - p)**N` no greater than `1 - confidence`, if the true failure rate were `p`.
+
+- `p` must be above 0 and at most 1, and `confidence` above 0 and below 1; otherwise raise `ValueError`.
+- `p` of 1 needs a single run.
+- For a very small `p` the answer can be millions, so work it out with logarithms, then make sure the result is the smallest N that works.
+--- starter
+def runs_needed(p, confidence=0.95):
+    pass
+--- solution
+import math
+
+
+def runs_needed(p, confidence=0.95):
+    """Smallest N with (1 - p)**N <= 1 - confidence."""
+    if not 0 < p <= 1 or not 0 < confidence < 1:
+        raise ValueError("need 0 < p <= 1 and 0 < confidence < 1")
+    if p == 1:
+        return 1
+    alpha = 1 - confidence
+    n = max(1, math.ceil(math.log(alpha) / math.log(1 - p)))
+    while n > 1 and (1 - p) ** (n - 1) <= alpha:  # guard against rounding in the logs
+        n -= 1
+    while (1 - p) ** n > alpha:
+        n += 1
+    return n
+--- hint
+Take logarithms of `(1 - p)**N <= alpha`: `N * log(1 - p) <= log(alpha)`. Both logarithms are negative, so dividing flips the inequality.
+--- hint
+Round the quotient up, then step N down or up by one while the condition says a neighbor is the true smallest.
+--- check case | A 0.3 percent rate: close to the rule of three's 1000
+runs_needed(0.003)
+=> 998
+--- check case | A 1 percent rate, at 95 and at 99 percent confidence
+(runs_needed(0.01), runs_needed(0.01, 0.99))
+=> (299, 459)
+--- check case | Large rates need few runs
+(runs_needed(0.5), runs_needed(1.0))
+=> (5, 1)
+--- check test | Millions of runs, found quickly and exactly
+(lambda n: (1 - 1e-6) ** n <= 0.05 < (1 - 1e-6) ** (n - 1))(runs_needed(1e-6))
+--- check test | Zero rate and a confidence of one raise ValueError
+raises(ValueError, lambda: runs_needed(0)) and raises(ValueError, lambda: runs_needed(0.01, 1.0))
+
++++ practice | Speed and period at the whiteboard
+--- task
+A panel asks where the orbital numbers on your slide come from. Write `circular_orbit(alt_km, mu=3.986e14, r_earth_km=6371.0)` for a circular orbit `alt_km` kilometres above the ground. Return a tuple `(speed, period)`:
+
+- `speed` in m/s is `sqrt(mu / r)`, rounded to the nearest whole number, where `r` is the distance from Earth's centre in metres;
+- `period` in minutes is one lap, `2 * pi * r / speed` with the unrounded speed, divided by 60, rounded to 1 decimal place.
+
+A negative altitude raises `ValueError`.
+--- starter
+def circular_orbit(alt_km, mu=3.986e14, r_earth_km=6371.0):
+    pass
+--- solution
+import math
+
+
+def circular_orbit(alt_km, mu=3.986e14, r_earth_km=6371.0):
+    """Speed in m/s and period in minutes of a circular orbit."""
+    if alt_km < 0:
+        raise ValueError("altitude must not be negative")
+    r = (r_earth_km + alt_km) * 1000.0
+    v = math.sqrt(mu / r)
+    period_min = 2 * math.pi * r / v / 60
+    return (round(v), round(period_min, 1))
+--- hint
+The radius is measured from Earth's centre, so add Earth's radius, and convert kilometres to metres before using `mu`.
+--- hint
+One lap is the circumference, `2 * pi * r`, covered at speed `v`.
+--- check case | A 550 km constellation shell
+circular_orbit(550)
+=> (7589, 95.5)
+--- check case | A higher orbit is slower and longer
+circular_orbit(1200)
+=> (7256, 109.3)
+--- check case | Geostationary height: one lap a day
+circular_orbit(35786)
+=> (3075, 1435.7)
+--- check test | Below the ground raises ValueError
+raises(ValueError, lambda: circular_orbit(-10))
+
++++ practice | Sources that do not count
+--- task
+Every number on a slide needs a stated source: `derived`, `measured`, `cited` or `assumed`. A deck is a list of slides; each slide is a dictionary with a list `"numbers"` of `(value, source)` pairs. `unsourced(slides)` should return `(slide_number, value)` for every number without a valid source, in order, with slides numbered from 1 as the audience sees them. Sources ignore capital letters and spaces at both ends, and `None` or an empty text is no source.
+
+Instead, slide numbers start at 0, and a source typed as `"Cited "` is reported as missing. Fix it.
+--- starter
+BINS = {"derived", "measured", "cited", "assumed"}
+
+
+def unsourced(slides):
+    missing = []
+    for i, slide in enumerate(slides):
+        for value, source in slide["numbers"]:
+            if source in BINS:
+                continue
+            missing.append((i, value))
+    return missing
+--- solution
+BINS = {"derived", "measured", "cited", "assumed"}
+
+
+def unsourced(slides):
+    """(slide number from 1, value) for each number without a valid source."""
+    missing = []
+    for i, slide in enumerate(slides, start=1):
+        for value, source in slide["numbers"]:
+            if source and source.strip().lower() in BINS:
+                continue
+            missing.append((i, value))
+    return missing
+--- hint
+`enumerate` takes a `start` argument.
+--- hint
+Clean the source up before looking it up, and check it is not `None` first, because `None` has no `.strip()`.
+--- check case | Slide numbers from 1, and a messy but valid source
+unsourced([{"numbers": [(7.67, "derived")]}, {"numbers": [(0.3, "Cited "), (0.05, None)]}])
+=> [(2, 0.05)]
+--- check case | Words that are not a source
+unsourced([{"numbers": [(120, "it just works"), (4, "")]}, {"numbers": [(3, "MEASURED")]}])
+=> [(1, 120), (1, 4)]
+--- check case | Slides with no numbers
+unsourced([{"numbers": []}, {"numbers": []}])
+=> []
+
++++ practice | The honest results line
+--- task
+A results slide should state what a Monte Carlo study really shows. Write `results_line(outcomes)`, where `outcomes` is a list of booleans, `True` for a run that passed. With `n` runs and `k` failures, return exactly one of these texts:
+
+- no failures and at least 30 runs: `0 of N runs failed; below P% at about 95% confidence`, where P is 300 divided by N (the rule of three, as a percentage);
+- no failures and fewer than 30 runs: `0 of N runs failed; too few runs for a bound`;
+- some failures: `K of N runs failed (P%)`, where P is 100 times K divided by N.
+
+Write P rounded to two significant figures, with no trailing zeros and no exponent: `0.3`, `0.43`, `0.15`, `33`, `100`. No runs at all raises `ValueError`.
+--- starter
+def results_line(outcomes):
+    pass
+--- solution
+def pct(x):
+    """x to two significant figures, written plainly."""
+    return format(float(f"{x:.2g}"), "g")
+
+
+def results_line(outcomes):
+    """The honest one-line summary of a batch of pass/fail runs."""
+    n = len(outcomes)
+    if n == 0:
+        raise ValueError("no runs")
+    k = outcomes.count(False)
+    if k:
+        return f"{k} of {n} runs failed ({pct(100 * k / n)}%)"
+    if n < 30:
+        return f"0 of {n} runs failed; too few runs for a bound"
+    return f"0 of {n} runs failed; below {pct(300 / n)}% at about 95% confidence"
+--- hint
+Count the failures with `outcomes.count(False)`, then pick one of the three texts.
+--- hint
+`f"{x:.2g}"` rounds to two significant figures but can write `1e+02`. Turning that back into a float and formatting it with `"g"` writes `100`.
+--- check case | A thousand clean runs
+results_line([True] * 1000)
+=> "0 of 1000 runs failed; below 0.3% at about 95% confidence"
+--- check case | Seven hundred clean runs
+results_line([True] * 700)
+=> "0 of 700 runs failed; below 0.43% at about 95% confidence"
+--- check case | Three failures in two thousand
+results_line([False] * 3 + [True] * 1997)
+=> "3 of 2000 runs failed (0.15%)"
+--- check case | Every run failed
+results_line([False] * 4)
+=> "4 of 4 runs failed (100%)"
+--- check test | Too few clean runs, and no runs at all
+results_line([True] * 20) == "0 of 20 runs failed; too few runs for a bound" and raises(ValueError, lambda: results_line([]))
+
++++ question | The spread you picked
+--- ask
+Your conclusion slide rests on a 5 percent spread in engine thrust that you chose because you had no data. A panel member asks, "Why 5 percent?" Which answer is strongest?
+--- choice
+"It's the standard value, everyone uses it."
+--- choice
+"The simulator is validated, so the input spread doesn't really matter."
+--- choice correct
+"It's assumed; I had no thrust data. If it were 10 percent, I'd expect the miss rate to rise, and rerunning the 1,000 cases at 10 percent would settle it in about an hour."
+--- choice
+"I can remove that slide if it is a problem."
+--- why
+The strong answer uses the moves from the lesson: say which bin the number is in (assumed), bound the damage (what changes if it is off by a sensible amount), and say what would settle it. "Everyone uses it" claims a citation you cannot name, "validated" claims success without evidence, and backing away from the slide abandons the conclusion instead of defending it.
+
+=== int02-l08 | Practice: Behavioral themes and saying what you did
+--- for
+l08-behavioural-themes-and-ownership
+
++++ practice | How much of the day is behavioral
+--- task
+Write `behavioral_range(rounds, minutes_each, low=0.30, high=0.50)` that returns a tuple `(low_minutes, high_minutes)`: the minutes of an onsite of `rounds` rounds, each `minutes_each` minutes long, that are behavioral at the low and the high end of the reported share. Round both to 1 decimal place.
+
+If `low` is greater than `high`, or either is outside the range 0 to 1, raise `ValueError`.
+--- starter
+def behavioral_range(rounds, minutes_each, low=0.30, high=0.50):
+    pass
+--- solution
+def behavioral_range(rounds, minutes_each, low=0.30, high=0.50):
+    """Behavioral minutes of the onsite at the low and high share."""
+    if not 0 <= low <= high <= 1:
+        raise ValueError("need 0 <= low <= high <= 1")
+    total = rounds * minutes_each
+    return (round(low * total, 1), round(high * total, 1))
+--- hint
+Work out the whole onsite in minutes first, then take each share of it.
+--- hint
+A chained comparison, `0 <= low <= high <= 1`, checks all three conditions at once.
+--- check case | Six rounds of 50 minutes
+behavioral_range(6, 50)
+=> (90.0, 150.0)
+--- check case | Five rounds of 55 minutes
+behavioral_range(5, 55)
+=> (82.5, 137.5)
+--- check case | A different share
+behavioral_range(4, 45, 0.4, 0.6)
+=> (72.0, 108.0)
+--- check test | A backwards range, and a share above one
+raises(ValueError, lambda: behavioral_range(4, 45, 0.6, 0.4)) and raises(ValueError, lambda: behavioral_range(4, 45, 0.3, 1.5))
+
++++ practice | How big was the slip
+--- task
+A failure story about a unit slip needs the size of the mistake. Write `unit_slip(value, meant, read_as)`, where a number `value` was typed meaning the unit `meant` but the code read it in the unit `read_as`. The units are `"deg"` and `"rad"`. Return a tuple `(factor, effective)`:
+
+- `factor` is how many times larger the quantity the code used is than the one you meant;
+- `effective` is the quantity the code used, written in the unit you meant.
+
+Round both to 4 significant figures (`float(f"{x:.4g}")`). Using the same unit gives `(1.0, value)`. Any other unit raises `ValueError`.
+
+For example, `unit_slip(0.5, "deg", "rad")` is `(57.3, 28.65)`: 0.5 rad is about 28.65 degrees.
+--- starter
+def unit_slip(value, meant, read_as):
+    pass
+--- solution
+import math
+
+TO_RAD = {"deg": math.pi / 180, "rad": 1.0}
+
+
+def unit_slip(value, meant, read_as):
+    """How many times too big a mistyped angle was, and its size in the meant unit."""
+    if meant not in TO_RAD or read_as not in TO_RAD:
+        raise ValueError("units must be 'deg' or 'rad'")
+    factor = TO_RAD[read_as] / TO_RAD[meant]
+    effective = value * factor
+    return (float(f"{factor:.4g}"), float(f"{effective:.4g}"))
+--- hint
+Convert both units to radians. The factor is the size of one "read" unit divided by the size of one "meant" unit.
+--- hint
+The code used `value` read units, which is `value * factor` meant units.
+--- check case | Degrees read as radians
+unit_slip(0.5, "deg", "rad")
+=> (57.3, 28.65)
+--- check case | A rate of 2 degrees per second read as radians
+unit_slip(2, "deg", "rad")
+=> (57.3, 114.6)
+--- check case | Radians read as degrees: far too small
+unit_slip(0.1, "rad", "deg")
+=> (0.01745, 0.001745)
+--- check test | Same unit, and an unknown unit
+unit_slip(3.0, "rad", "rad") == (1.0, 3.0) and raises(ValueError, lambda: unit_slip(1, "deg", "grad"))
+
++++ practice | Inflated or deflated
+--- task
+Your project record says who did each part, as a dictionary from a verb to `"me"`, `"team"` or `"library"`. The six verbs are `modeled`, `coded`, `analyzed`, `tuned`, `tested` and `debugged`. In rehearsal you list the verbs you said "I" for.
+
+Write `audit_claim(claimed, record)` that returns `{"inflated": [...], "deflated": [...]}`:
+
+- `inflated`: verbs you claimed that the record does not give to `"me"`, including verbs the record does not mention at all;
+- `deflated`: verbs the record gives to `"me"` that you did not claim;
+- both lists sorted alphabetically; verbs compared ignoring capitals and spaces at both ends;
+- a verb that is not one of the six, in either argument, raises `ValueError`.
+--- starter
+def audit_claim(claimed, record):
+    pass
+--- solution
+VERBS = {"modeled", "coded", "analyzed", "tuned", "tested", "debugged"}
+
+
+def clean(verb):
+    v = verb.strip().lower()
+    if v not in VERBS:
+        raise ValueError(f"not one of the six verbs: {verb!r}")
+    return v
+
+
+def audit_claim(claimed, record):
+    """Verbs claimed but not yours, and verbs yours but not claimed."""
+    said = {clean(v) for v in claimed}
+    mine = {clean(v) for v, who in record.items() if who == "me"}
+    for v in record:
+        clean(v)
+    return {"inflated": sorted(said - mine), "deflated": sorted(mine - said)}
+--- hint
+Build two sets of cleaned verbs: the ones you said, and the ones the record gives to you. Set difference does the rest.
+--- hint
+Validate every verb in the record too, not only the ones given to you.
+--- check case | Claiming a library's work, and forgetting your tests
+audit_claim(["coded", "Modeled", "tuned"], {"modeled": "library", "coded": "me", "tuned": "me", "tested": "me"})
+=> {"inflated": ["modeled"], "deflated": ["tested"]}
+--- check case | A verb the record never mentions is inflated
+audit_claim(["debugged"], {"coded": "team"})
+=> {"inflated": ["debugged"], "deflated": []}
+--- check case | An honest claim
+audit_claim([" coded", "tested "], {"coded": "me", "tested": "me", "analyzed": "team"})
+=> {"inflated": [], "deflated": []}
+--- check test | An unknown verb raises ValueError
+raises(ValueError, lambda: audit_claim(["architected"], {})) and raises(ValueError, lambda: audit_claim([], {"designed": "me"}))
+
++++ practice | What a failure story is missing
+--- task
+A failure story has four parts: the defect, what it cost, how it was found, and what you changed. Write `missing_parts(story)`, where `story` is a dictionary that may have the keys `"defect"`, `"cost"`, `"found"` and `"changed"`, each a text.
+
+Return the names of the missing parts, in that order. A part is missing when its key is absent, its value is `None`, or its text is empty or only spaces. The cost also counts as missing when it contains no digit at all, because a cost with no number is not a cost the listener can picture.
+--- starter
+def missing_parts(story):
+    pass
+--- solution
+PARTS = ["defect", "cost", "found", "changed"]
+
+
+def missing_parts(story):
+    """The parts of a failure story that are absent or empty, in order."""
+    missing = []
+    for part in PARTS:
+        text = story.get(part) or ""
+        if not text.strip():
+            missing.append(part)
+        elif part == "cost" and not any(ch.isdigit() for ch in text):
+            missing.append(part)
+    return missing
+--- hint
+`story.get(part) or ""` turns a missing key and `None` into an empty text in one step.
+--- hint
+`any(ch.isdigit() for ch in text)` tells you whether the text has a number in it.
+--- check case | A complete story
+missing_parts({"defect": "pitch spread typed in degrees, read as radians", "cost": "two days, 200 of 1000 runs failed", "found": "a teammate's histogram", "changed": "unit suffixes and a spread test"})
+=> []
+--- check case | A cost with no number, and no change
+missing_parts({"defect": "a units bug", "cost": "it wasted some time", "found": "review", "changed": "   "})
+=> ["cost", "changed"]
+--- check case | A scrubbed story has only a defect
+missing_parts({"defect": "I care too much about quality", "found": None})
+=> ["cost", "found", "changed"]
+--- check case | Nothing at all
+missing_parts({})
+=> ["defect", "cost", "found", "changed"]
+
++++ practice | The spread that came out 57 times too wide
+--- task
+A dispersion sampler should draw `n` pitch-angle errors from a normal distribution with mean 0 and a standard deviation of `sigma_deg` **degrees**, and return them in **radians** as a NumPy array of `float64`, using `np.random.default_rng(seed)`.
+
+The histogram of its samples is about 57 times too wide. Fix `pitch_samples_rad(sigma_deg, n, seed)`.
+--- starter
+import numpy as np
+
+
+def pitch_samples_rad(sigma_deg, n, seed):
+    rng = np.random.default_rng(seed)
+    return rng.normal(0.0, sigma_deg, n)
+--- solution
+import numpy as np
+
+
+def pitch_samples_rad(sigma_deg, n, seed):
+    """n pitch errors in radians, drawn with a spread of sigma_deg degrees."""
+    rng = np.random.default_rng(seed)
+    return rng.normal(0.0, np.deg2rad(sigma_deg), n).astype(np.float64)
+--- hint
+The standard deviation passed to `normal` is in whatever unit the samples come out in.
+--- hint
+Convert the spread to radians before drawing: `np.deg2rad`.
+--- check test | The spread of 10,000 samples is 0.5 degrees in radians, within 5 percent
+abs(float(pitch_samples_rad(0.5, 10000, 7).std()) / float(__import__("numpy").deg2rad(0.5)) - 1) < 0.05
+--- check test | The same seed gives the same samples
+bool((pitch_samples_rad(0.5, 100, 3) == pitch_samples_rad(0.5, 100, 3)).all())
+--- check case | Length and type
+(lambda a: (len(a), str(a.dtype)))(pitch_samples_rad(2.0, 25, 1))
+=> (25, "float64")
+
++++ question | Owning it without taking the blame
+--- ask
+A Monte Carlo study you ran gave a wrong margin because a teammate's input file had thrust in pounds instead of newtons. Asked about it in an interview, which answer shows ownership?
+--- choice
+"It was my study, so it was entirely my fault."
+--- choice
+"The input file was wrong. That was my teammate's part, so there wasn't much I could do."
+--- choice correct
+"The input file had thrust in pounds. I owned the study, so I added a unit check that makes any file like it fail loudly, and reran the 500 cases."
+--- choice
+"Nothing really went wrong; we caught it before anyone used the number."
+--- why
+Ownership is not blame-taking. The honest answer says plainly what caused the problem, then says what you did about it: a specific check that stops it happening again. Taking all the blame is not true, passing it on shows no ownership, and the last answer scrubs the failure out of the story.
+
+=== int02-l09 | Practice: STAR stories and the questions you ask
+--- for
+l09-star-stories-and-your-questions
+
++++ practice | How long it takes to say
+--- task
+Write `speaking_seconds(text, wpm=140)` that returns how long `text` takes to say at `wpm` words a minute, in seconds, rounded to the nearest whole second. Words are separated by any blank space, including new lines. An empty text takes 0 seconds.
+--- starter
+def speaking_seconds(text, wpm=140):
+    pass
+--- solution
+def speaking_seconds(text, wpm=140):
+    """Seconds to say text at wpm words a minute, rounded."""
+    return round(len(text.split()) * 60 / wpm)
+--- hint
+`text.split()` with no argument splits on any run of blank space and ignores it at the ends.
+--- hint
+Seconds are words divided by words per minute, times 60.
+--- check case | 280 words is the two-minute ceiling
+speaking_seconds(" ".join(["word"] * 280))
+=> 120
+--- check case | 233 words is about 100 seconds
+speaking_seconds(" ".join(["word"] * 233))
+=> 100
+--- check case | New lines and extra spaces are not words
+speaking_seconds("I   reran\nthe case\n\n at half the step ", wpm=60)
+=> 8
+--- check case | An empty text
+speaking_seconds("")
+=> 0
+
++++ practice | Words to cut
+--- task
+Write `words_to_cut(text, target_s=100, wpm=140)`: how many words must come out of `text` so it can be said in at most `target_s` seconds at `wpm` words a minute. The number of words that fit is `wpm * target_s / 60` rounded down. Return `0` if the text already fits.
+--- starter
+def words_to_cut(text, target_s=100, wpm=140):
+    pass
+--- solution
+def words_to_cut(text, target_s=100, wpm=140):
+    """Words to remove so text fits in target_s seconds."""
+    fits = wpm * target_s // 60
+    return max(0, len(text.split()) - fits)
+--- hint
+Work out how many words fit in the target time, rounding down so the result is never over time.
+--- hint
+The answer is the word count minus that, but never below zero.
+--- check case | A 300-word draft, 100-second target
+words_to_cut(" ".join(["word"] * 300))
+=> 67
+--- check case | Already short enough
+words_to_cut(" ".join(["word"] * 200))
+=> 0
+--- check case | A two-minute target
+words_to_cut(" ".join(["word"] * 300), target_s=120)
+=> 20
+--- check case | A faster speaker fits more
+words_to_cut(" ".join(["word"] * 300), wpm=150)
+=> 50
+
++++ practice | Is the bank ready
+--- task
+Each story in your bank is a dictionary: `"title"` (text), `"themes"` (a list of theme names), `"has_number"` (a boolean) and `"failure"` (`None`, `"caused"` or `"missed"`). The four themes are `mission`, `ownership`, `ambiguity` and `failure`.
+
+Write `bank_report(stories)` that returns a dictionary:
+
+- `"count"`: the number of stories;
+- `"size_ok"`: `True` when there are 6 to 8 stories;
+- `"missing_themes"`: the themes no story covers, in the order listed above. A story whose `"failure"` is not `None` covers `failure`, whatever its themes list says;
+- `"no_number"`: the titles of stories without a number, in input order;
+- `"failure_ok"`: `True` when at least one story is about a defect you caused and at least one about a defect you missed.
+--- starter
+def bank_report(stories):
+    pass
+--- solution
+THEMES = ["mission", "ownership", "ambiguity", "failure"]
+
+
+def bank_report(stories):
+    """Whether a STAR story bank covers the themes and the failure stories."""
+    covered = set()
+    for s in stories:
+        covered.update(s["themes"])
+        if s["failure"] is not None:
+            covered.add("failure")
+    kinds = {s["failure"] for s in stories}
+    return {
+        "count": len(stories),
+        "size_ok": 6 <= len(stories) <= 8,
+        "missing_themes": [t for t in THEMES if t not in covered],
+        "no_number": [s["title"] for s in stories if not s["has_number"]],
+        "failure_ok": "caused" in kinds and "missed" in kinds,
+    }
+--- hint
+Collect every theme any story covers into one set, adding `failure` for stories that have a failure kind.
+--- hint
+The set of failure kinds across the bank tells you at once whether both `caused` and `missed` appear.
+--- check case | A small bank with no failure story
+bank_report([{"title": "Diverging runs", "themes": ["ownership", "ambiguity"], "has_number": True, "failure": None}, {"title": "Why I built it", "themes": ["mission"], "has_number": False, "failure": None}])
+=> {"count": 2, "size_ok": False, "missing_themes": ["failure"], "no_number": ["Why I built it"], "failure_ok": False}
+--- check case | A failure kind covers the failure theme
+bank_report([{"title": s, "themes": ["ownership"], "has_number": True, "failure": f} for s, f in [("a", "caused"), ("b", "missed"), ("c", None), ("d", None), ("e", None), ("f", None)]])
+=> {"count": 6, "size_ok": True, "missing_themes": ["mission", "ambiguity"], "no_number": [], "failure_ok": True}
+--- check case | Two defects you caused, none you missed
+bank_report([{"title": "x", "themes": ["failure", "mission", "ambiguity", "ownership"], "has_number": True, "failure": "caused"}, {"title": "y", "themes": [], "has_number": True, "failure": "caused"}])["failure_ok"]
+=> False
+--- check case | An empty bank
+bank_report([])
+=> {"count": 0, "size_ok": False, "missing_themes": ["mission", "ownership", "ambiguity", "failure"], "no_number": [], "failure_ok": False}
+
++++ practice | Splitting the word budget
+--- task
+A STAR story of `total_words` words is split across Situation, Task, Action and Result by whole-number percentages, by default 15, 10, 50 and 25. Write `star_split(total_words, percents=(15, 10, 50, 25))` that returns a dictionary with the keys `"situation"`, `"task"`, `"action"` and `"result"`, whose whole-number values add up to exactly `total_words`.
+
+- First give each part its exact share rounded down: `total_words * percent // 100`.
+- Then hand out the words still left over, one at a time, to the parts whose exact share had the largest remainder. When remainders tie, the order of preference is Action, Result, Situation, Task.
+- Percentages that do not add up to 100 raise `ValueError`.
+
+For example, 230 words gives 34, 23, 115 and 57, with one word left; Situation and Result tie on the remainder, and Result wins the tie, so it gets 58.
+--- starter
+def star_split(total_words, percents=(15, 10, 50, 25)):
+    pass
+--- solution
+PARTS = ["situation", "task", "action", "result"]
+TIE_ORDER = {"action": 0, "result": 1, "situation": 2, "task": 3}
+
+
+def star_split(total_words, percents=(15, 10, 50, 25)):
+    """Whole words per STAR part, adding up to total_words exactly."""
+    if sum(percents) != 100:
+        raise ValueError("percentages must add up to 100")
+    exact = {p: total_words * pct for p, pct in zip(PARTS, percents)}
+    split = {p: e // 100 for p, e in exact.items()}
+    left = total_words - sum(split.values())
+    order = sorted(PARTS, key=lambda p: (-(exact[p] % 100), TIE_ORDER[p]))
+    for p in order[:left]:
+        split[p] += 1
+    return split
+--- hint
+Work in whole numbers: `total_words * percent` is the exact share times 100, so `// 100` rounds it down and `% 100` is its remainder.
+--- hint
+Sort the parts by remainder, largest first, breaking ties with the preference order, and give one extra word to each of the first few.
+--- check case | 220 words divides exactly
+star_split(220)
+=> {"situation": 33, "task": 22, "action": 110, "result": 55}
+--- check case | 230 words: a tie that Result wins
+star_split(230)
+=> {"situation": 34, "task": 23, "action": 115, "result": 58}
+--- check case | A tiny story: two words handed out
+star_split(7)
+=> {"situation": 1, "task": 1, "action": 3, "result": 2}
+--- check test | Zero words, and percentages that do not add up
+star_split(0) == {"situation": 0, "task": 0, "action": 0, "result": 0} and raises(ValueError, lambda: star_split(100, (20, 20, 50, 20)))
+
++++ practice | The accidental we
+--- task
+When you rehearse, every "we" in the Action part should become "I" or a stated boundary. `count_we(text)` should return how many times the word "we" appears in `text`: as a whole word, in any capitals, including inside contractions such as "we'd" and "We've".
+
+Instead it also counts the letters "we" inside words such as "were", "weekly" and "owe". Fix it.
+--- starter
+def count_we(text):
+    return text.lower().count("we")
+--- solution
+import re
+
+
+def count_we(text):
+    """Times the word "we" appears as a word of its own, in any capitals."""
+    return len(re.findall(r"\bwe\b", text, flags=re.IGNORECASE))
+--- hint
+Counting a substring does not know where words begin and end.
+--- hint
+A regular expression with word boundaries, `\b`, on both sides matches only the whole word. The apostrophe in "we'd" is not a word character, so a boundary falls there.
+--- check case | Words that only contain the letters
+count_we("We were west of the owl's weekly site, and we tried again")
+=> 2
+--- check case | Contractions count
+count_we("We'd rerun it, then we've added a test")
+=> 2
+--- check case | No we at all
+count_we("I halved the step and the runs converged")
+=> 0
+--- check case | An empty text
+count_we("")
+=> 0
+
++++ question | The question for the simulation interviewer
+--- ask
+At the end of a round with the simulation team, which question does the most for you?
+--- choice
+"What's the culture like on the team?"
+--- choice
+"Do you use Python or C++?"
+--- choice correct
+"When a nightly result shifts after a code change, how do you decide whether it's a real regression or noise, and how is that tolerance written down?"
+--- choice
+"How much time off do engineers get?"
+--- why
+A good question is specific, shows you have done this kind of work, and opens a conversation. The regression-tolerance question comes straight from a problem your own capstones made you solve, and its answer leads to follow-ups. The culture and language questions are generic, the language question is answered by the job posting, and time off belongs with the recruiter.
+
+=== int02-test | The SpaceX onsite: module test
+--- teach
+The test covers the whole module: memory, ownership and threads from the systems C++ round, finding bugs from their reports, designing and sizing simulation and telemetry systems, verification and the three-string flight computer, the GNC domain topics and Fermi reasoning, defending a technical talk, and the behavioral themes. Its ten problems are new, most combine several lessons, and there are no hints; twelve questions after them check that you know why. To get ready, redo the practice problems of the lessons that felt hardest without the hints, and reread the worked examples in lessons 2, 3, 5 and 6.
+--- gate
+pass 7
+questions 10
+minutes 112
+
++++ problem | A tiny address sanitizer
+--- task
+Write `sanitize(events)`, a small model of what AddressSanitizer and its leak check report. `events` is a list of tuples, run in order:
+
+- `("new", name, nbytes)` allocates a block of `nbytes` bytes under `name`. A name may be used again after its block is deleted; that is a fresh block.
+- `("delete", name)` frees the live block called `name`.
+- `("read", name, offset, size)` and `("write", name, offset, size)` touch `size` bytes starting at byte `offset` of the block.
+
+Like ASan, stop at the first error and return its text:
+
+- deleting or touching a name whose block was deleted and not allocated again: `"double delete of NAME"` for a delete, `"use after free of NAME"` for a read or write;
+- deleting or touching a name never allocated: `"unknown block NAME"`;
+- a read or write with `offset` below 0 or `offset + size` beyond the block's size: `"overflow on NAME at OFFSET"`.
+
+If every event is fine, return `"leak: B bytes in N blocks"` for the blocks still live at the end, or `"clean"` if there are none.
+--- starter
+def sanitize(events):
+    pass
+--- solution
+def sanitize(events):
+    """The first memory error in the events, or the leak summary at the end."""
+    live = {}  # name -> size
+    freed = set()
+    for event in events:
+        kind, name = event[0], event[1]
+        if kind == "new":
+            live[name] = event[2]
+            freed.discard(name)
+            continue
+        if name not in live:
+            if name in freed:
+                return f"double delete of {name}" if kind == "delete" else f"use after free of {name}"
+            return f"unknown block {name}"
+        if kind == "delete":
+            del live[name]
+            freed.add(name)
+        else:
+            offset, size = event[2], event[3]
+            if offset < 0 or offset + size > live[name]:
+                return f"overflow on {name} at {offset}"
+    if live:
+        return f"leak: {sum(live.values())} bytes in {len(live)} blocks"
+    return "clean"
+--- check case | Reading a packet after shutdown freed it
+sanitize([("new", "pkt", 16), ("write", "pkt", 0, 4), ("delete", "pkt"), ("read", "pkt", 0, 4)])
+=> "use after free of pkt"
+--- check case | The loop that reads one past the end
+sanitize([("new", "temps", 32), ("read", "temps", 24, 8), ("read", "temps", 32, 8)])
+=> "overflow on temps at 32"
+--- check case | Deleting twice
+sanitize([("new", "buf", 800), ("delete", "buf"), ("delete", "buf")])
+=> "double delete of buf"
+--- check case | An early return that leaks three buffers
+sanitize([("new", "b1", 800), ("new", "b2", 800), ("new", "b3", 800), ("new", "cfg", 64), ("delete", "cfg")])
+=> "leak: 2400 bytes in 3 blocks"
+--- check case | A name used again after a delete, then everything freed
+sanitize([("new", "latest", 16), ("delete", "latest"), ("new", "latest", 16), ("read", "latest", 8, 8), ("delete", "latest")])
+=> "clean"
+--- check case | Stops at the first error, before a later one
+sanitize([("read", "ghost", 0, 1), ("new", "a", 8), ("delete", "a"), ("delete", "a")])
+=> "unknown block ghost"
+--- check test | A negative offset overflows, and the last byte is fine
+sanitize([("new", "v", 8), ("read", "v", -8, 8)]) == "overflow on v at -8" and sanitize([("new", "v", 8), ("read", "v", 7, 1)]) == "leak: 8 bytes in 1 blocks"
+
++++ problem | Row walk, column walk, and a real cache
+--- task
+A two-dimensional array of `rows` by `cols` elements of `elem_bytes` bytes is stored row-major from address 0. It is walked once, every element, row by row (`order` `"row"`) or column by column (`"col"`). The processor has a cache that holds `cache_lines` lines of `line_bytes` bytes, starts empty, and when full throws out the line used least recently. An access to a line not in the cache is a miss; the line is then brought in.
+
+Write `cache_misses(rows, cols, order, cache_lines, elem_bytes=8, line_bytes=64)` that returns the number of misses. The line an address falls in is `address // line_bytes`. A `cache_lines` below 1, or an unknown `order`, raises `ValueError`.
+
+For example, walking a 64 by 64 array of doubles column by column misses 512 times with a 64-line cache, but 4096 times, on every access, with a 63-line cache.
+--- starter
+def cache_misses(rows, cols, order, cache_lines, elem_bytes=8, line_bytes=64):
+    pass
+--- solution
+from collections import OrderedDict
+
+
+def cache_misses(rows, cols, order, cache_lines, elem_bytes=8, line_bytes=64):
+    """Misses of a least-recently-used cache while walking a row-major array."""
+    if cache_lines < 1:
+        raise ValueError("the cache needs at least one line")
+    if order == "row":
+        cells = ((i, j) for i in range(rows) for j in range(cols))
+    elif order == "col":
+        cells = ((i, j) for j in range(cols) for i in range(rows))
+    else:
+        raise ValueError(f"unknown order {order!r}")
+    cache = OrderedDict()
+    misses = 0
+    for i, j in cells:
+        line = (i * cols + j) * elem_bytes // line_bytes
+        if line in cache:
+            cache.move_to_end(line)
+        else:
+            misses += 1
+            cache[line] = True
+            if len(cache) > cache_lines:
+                cache.popitem(last=False)
+    return misses
+--- check case | A row walk misses once per line, even with a one-line cache
+cache_misses(64, 64, "row", 1)
+=> 512
+--- check case | A column walk with room for a whole column of lines
+cache_misses(64, 64, "col", 64)
+=> 512
+--- check case | One line fewer and every access misses
+cache_misses(64, 64, "col", 63)
+=> 4096
+--- check case | Short rows that share lines
+cache_misses(4, 3, "col", 1)
+=> 6
+--- check case | Short rows and a two-line cache
+cache_misses(4, 3, "col", 2)
+=> 2
+--- check test | A cache with no lines, and an unknown order
+raises(ValueError, lambda: cache_misses(2, 2, "row", 0)) and raises(ValueError, lambda: cache_misses(2, 2, "zigzag", 4))
+
++++ problem | Frames decoded with the schema they carry
+--- task
+Ground stations deliver raw frames as tuples `(sat, seq, version, payload)`, where `payload` is `bytes`. Stations overlap, so the same `(sat, seq)` can arrive more than once. `schemas` maps a schema version to a list of fields `(channel, fmt, scale)`, packed back to back in the payload in that order; `fmt` is a `struct` format for one value, such as `">h"`, and the channel's value is the raw number times `scale`, rounded to 6 decimal places.
+
+Write `decode_all(frames, schemas)` that returns a dictionary:
+
+- `"rows"`: one dictionary per decoded frame, in arrival order, with the keys `"sat"`, `"seq"` and `"schema"` and then one key per channel;
+- `"duplicates"`: how many frames repeated a `(sat, seq)` already decoded;
+- `"unknown_schema"`: the `(sat, seq)` of frames whose version is not in `schemas`;
+- `"bad_length"`: the `(sat, seq)` of frames whose payload is not exactly the length the schema needs.
+
+A frame with an unknown schema or a bad length is not decoded, and does not count as seen, so a good copy arriving later is decoded.
+--- starter
+import struct
+
+
+def decode_all(frames, schemas):
+    pass
+--- solution
+import struct
+
+
+def decode_all(frames, schemas):
+    """Decode each frame with its own schema version; count and set aside the rest."""
+    rows, unknown, bad = [], [], []
+    seen = set()
+    duplicates = 0
+    for sat, seq, version, payload in frames:
+        if (sat, seq) in seen:
+            duplicates += 1
+            continue
+        fields = schemas.get(version)
+        if fields is None:
+            unknown.append((sat, seq))
+            continue
+        if len(payload) != sum(struct.calcsize(fmt) for _, fmt, _ in fields):
+            bad.append((sat, seq))
+            continue
+        row = {"sat": sat, "seq": seq, "schema": version}
+        offset = 0
+        for channel, fmt, scale in fields:
+            (raw,) = struct.unpack_from(fmt, payload, offset)
+            row[channel] = round(raw * scale, 6)
+            offset += struct.calcsize(fmt)
+        rows.append(row)
+        seen.add((sat, seq))
+    return {"rows": rows, "duplicates": duplicates, "unknown_schema": unknown, "bad_length": bad}
+--- check case | Two schema versions side by side
+(lambda s: decode_all([("s1", 1, 1, __import__("struct").pack(">hH", -1234, 28100)), ("s2", 9, 2, __import__("struct").pack(">hiH", 2150, -3000, 27950))], s)["rows"])({1: [("temp_c", ">h", 0.01), ("volt", ">H", 0.001)], 2: [("temp_c", ">h", 0.01), ("wheel_rpm", ">i", 1.0), ("volt", ">H", 0.001)]})
+=> [{"sat": "s1", "seq": 1, "schema": 1, "temp_c": -12.34, "volt": 28.1}, {"sat": "s2", "seq": 9, "schema": 2, "temp_c": 21.5, "wheel_rpm": -3000.0, "volt": 27.95}]
+--- check case | The same frame from two stations
+(lambda s, f: {k: v for k, v in decode_all([f, f, f], s).items() if k != "rows"})({1: [("temp_c", ">h", 0.01), ("volt", ">H", 0.001)]}, ("s1", 4, 1, __import__("struct").pack(">hH", 100, 28000)))
+=> {"duplicates": 2, "unknown_schema": [], "bad_length": []}
+--- check case | An unknown version and a short payload are set aside
+(lambda s: {k: v for k, v in decode_all([("s1", 5, 3, b"\x00\x01\x02\x03"), ("s1", 6, 1, b"\x00\x01\x02")], s).items()})({1: [("temp_c", ">h", 0.01), ("volt", ">H", 0.001)]})
+=> {"rows": [], "duplicates": 0, "unknown_schema": [("s1", 5)], "bad_length": [("s1", 6)]}
+--- check case | A good copy after a bad one is still decoded
+(lambda s: [r["seq"] for r in decode_all([("s1", 7, 1, b"\x00"), ("s1", 7, 1, __import__("struct").pack(">hH", 0, 0))], s)["rows"]])({1: [("temp_c", ">h", 0.01), ("volt", ">H", 0.001)]})
+=> [7]
+--- check case | No frames
+decode_all([], {})
+=> {"rows": [], "duplicates": 0, "unknown_schema": [], "bad_length": []}
+
++++ problem | A campaign you can rerun
+--- task
+The starter's `fly(rng)` is one dispersed case: it draws from the NumPy generator it is given and returns the peak structural load in kN. Build the harness around it:
+
+- `campaign(base_seed, n)` returns the list of the `n` cases' loads, case `k` flown with the generator `np.random.default_rng([base_seed, k])`, for `k` from 0 to `n - 1`.
+- `rerun(base_seed, k)` flies case `k` alone and returns exactly the load it had in the campaign.
+- `report(loads, limit)` returns a dictionary: `"over"`, the indices of loads strictly above `limit`, ascending; `"worst"`, a tuple of the index of the largest load (the first, if several tie) and that load rounded to 2 decimal places; and `"bound"`, `3 / len(loads)` when no load is over the limit, otherwise `None`. An empty list raises `ValueError`.
+
+Do not change `fly`.
+--- starter
+import numpy as np
+
+
+def fly(rng):
+    """One dispersed case: the peak load in kN."""
+    thrust = rng.normal(1.0, 0.02)
+    gust = rng.normal(0.0, 1.0)
+    return 120.0 * thrust + 8.0 * abs(gust)
+
+
+def campaign(base_seed, n):
+    pass
+
+
+def rerun(base_seed, k):
+    pass
+
+
+def report(loads, limit):
+    pass
+--- solution
+import numpy as np
+
+
+def fly(rng):
+    """One dispersed case: the peak load in kN."""
+    thrust = rng.normal(1.0, 0.02)
+    gust = rng.normal(0.0, 1.0)
+    return 120.0 * thrust + 8.0 * abs(gust)
+
+
+def rerun(base_seed, k):
+    """Case k alone, with the seed derived from the base seed and the case number."""
+    return fly(np.random.default_rng([base_seed, k]))
+
+
+def campaign(base_seed, n):
+    """Every case's load, each case seeded independently."""
+    return [rerun(base_seed, k) for k in range(n)]
+
+
+def report(loads, limit):
+    """Cases over the limit, the worst case, and a rule-of-three bound if none failed."""
+    if not loads:
+        raise ValueError("no cases")
+    over = [k for k, load in enumerate(loads) if load > limit]
+    worst = max(range(len(loads)), key=lambda k: loads[k])
+    return {
+        "over": over,
+        "worst": (worst, round(loads[worst], 2)),
+        "bound": None if over else 3 / len(loads),
+    }
+--- check test | Case 17 rerun alone matches the campaign
+campaign(11, 50)[17] == rerun(11, 17)
+--- check test | The same base seed gives the same campaign; another does not
+campaign(11, 20) == campaign(11, 20) and campaign(11, 20) != campaign(12, 20)
+--- check test | Each case uses the generator seeded from the base seed and the case number
+rerun(5, 3) == fly(__import__("numpy").random.default_rng([5, 3]))
+--- check case | Loads over the limit and the worst case
+report([130.0, 151.5, 149.99, 151.5, 150.0], 150.0)
+=> {"over": [1, 3], "worst": (1, 151.5), "bound": None}
+--- check case | Nothing over: a rule-of-three bound
+report([100.0, 120.0, 110.0], 150.0)
+=> {"over": [], "worst": (1, 120.0), "bound": 1.0}
+--- check test | The report of a real campaign agrees with reruns
+(lambda r: r["over"] == [k for k in range(200) if rerun(11, k) > 145.0])(report(campaign(11, 200), 145.0))
+--- check test | An empty campaign cannot be reported
+campaign(11, 0) == [] and raises(ValueError, lambda: report([], 150.0))
+
++++ problem | A traceability matrix
+--- task
+Write `trace(requirements, code, tests)` that audits the links between requirements, code and tests.
+
+- `requirements` is a list of requirement ids, such as `["R1", "R2"]`.
+- `code` maps each code unit's name to the list of requirement ids it implements.
+- `tests` maps each test's name to a tuple `(requirement ids it verifies, passed)`, where `passed` is a boolean.
+
+Return a dictionary:
+
+- `"untested"`: requirements no test verifies, in the order of `requirements`;
+- `"failing"`: requirements with at least one failing test, in that order;
+- `"unimplemented"`: requirements no code unit implements, in that order;
+- `"orphan_code"`: code units that implement no id from `requirements`, sorted by name;
+- `"unknown_refs"`: every `(name, id)` pair where a code unit or a test names an id that is not in `requirements`, sorted.
+--- starter
+def trace(requirements, code, tests):
+    pass
+--- solution
+def trace(requirements, code, tests):
+    """Gaps in the requirement-to-code-to-test links."""
+    known = set(requirements)
+    tested, failing, implemented = set(), set(), set()
+    unknown = []
+    for name, ids in code.items():
+        implemented.update(i for i in ids if i in known)
+        unknown.extend((name, i) for i in ids if i not in known)
+    for name, (ids, passed) in tests.items():
+        tested.update(i for i in ids if i in known)
+        if not passed:
+            failing.update(ids)
+        unknown.extend((name, i) for i in ids if i not in known)
+    return {
+        "untested": [r for r in requirements if r not in tested],
+        "failing": [r for r in requirements if r in failing],
+        "unimplemented": [r for r in requirements if r not in implemented],
+        "orphan_code": sorted(name for name, ids in code.items() if not known & set(ids)),
+        "unknown_refs": sorted(unknown),
+    }
+--- check case | A small flight module with one gap of each kind
+trace(["R1", "R2", "R3"], {"attitude.cpp": ["R1"], "parser.cpp": ["R2", "R9"], "debug_dump.cpp": []}, {"test_step": (["R1"], True), "test_parse": (["R2"], False), "test_old": (["R7"], True)})
+=> {"untested": ["R3"], "failing": ["R2"], "unimplemented": ["R3"], "orphan_code": ["debug_dump.cpp"], "unknown_refs": [("parser.cpp", "R9"), ("test_old", "R7")]}
+--- check case | Everything linked and passing
+trace(["R1", "R2"], {"a.cpp": ["R1", "R2"]}, {"t1": (["R1"], True), "t2": (["R2", "R1"], True)})
+=> {"untested": [], "failing": [], "unimplemented": [], "orphan_code": [], "unknown_refs": []}
+--- check case | A unit that implements only unknown ids is an orphan
+trace(["R1"], {"legacy.cpp": ["R0"]}, {})
+=> {"untested": ["R1"], "failing": [], "unimplemented": ["R1"], "orphan_code": ["legacy.cpp"], "unknown_refs": [("legacy.cpp", "R0")]}
+--- check case | Nothing at all
+trace([], {}, {})
+=> {"untested": [], "failing": [], "unimplemented": [], "orphan_code": [], "unknown_refs": []}
+
++++ problem | Three strings and a judge
+--- task
+Model the reported flight computer frame by frame. Each frame is a list of three entries, one per string. An entry is a pair `(core1, core2)` of the command each core computed, or `None` for a string that is down.
+
+- A string sends its command only when its two cores agree exactly. Otherwise it sends nothing.
+- The actuator's judge follows `rule`. With `"two"`, it acts on a value that at least two strings sent. With `"any"`, it acts when at least one command arrives and all the commands that arrive are equal.
+- When the judge does not act, the actuator holds its last command. Before the first command it holds `0.0`.
+
+Write `fly_frames(frames, rule)` that returns a tuple: the list of the actuator's command after each frame, and the number of frames in which it held. Any other `rule` raises `ValueError`.
+--- starter
+def fly_frames(frames, rule):
+    pass
+--- solution
+def fly_frames(frames, rule):
+    """Actuator commands per frame, and how many frames it held, for three fail-silent strings."""
+    if rule not in ("two", "any"):
+        raise ValueError(f"unknown rule {rule!r}")
+    current = 0.0
+    commands = []
+    held = 0
+    for frame in frames:
+        sent = [pair[0] for pair in frame if pair is not None and pair[0] == pair[1]]
+        value = None
+        if rule == "two":
+            for v in sent:
+                if sent.count(v) >= 2:
+                    value = v
+                    break
+        elif sent and all(v == sent[0] for v in sent):
+            value = sent[0]
+        if value is None:
+            held += 1
+        else:
+            current = value
+        commands.append(current)
+    return (commands, held)
+--- check case | A bit flip in one core of string 2 changes nothing
+fly_frames([[(1.0, 1.0), (1.0, 1.0), (1.0, 1.0)], [(2.0, 2.0), (2.0, 2.5), (2.0, 2.0)]], "two")
+=> ([1.0, 2.0], 0)
+--- check case | Two faulty strings in one frame: two-agree holds
+fly_frames([[(1.0, 1.0), (1.0, 1.0), (1.0, 1.0)], [(2.0, 9.0), (2.0, 2.0), None]], "two")
+=> ([1.0, 1.0], 1)
+--- check case | Two faulty strings in one frame: any command acts
+fly_frames([[(1.0, 1.0), (1.0, 1.0), (1.0, 1.0)], [(2.0, 9.0), (2.0, 2.0), None]], "any")
+=> ([1.0, 2.0], 0)
+--- check case | Healthy strings that disagree make "any" hold
+fly_frames([[(3.0, 3.0), (4.0, 4.0), None]], "any")
+=> ([0.0], 1)
+--- check case | Everything silent from the start holds zero
+fly_frames([[None, None, None], [(1.0, 2.0), (1.0, 2.0), (1.0, 2.0)]], "two")
+=> ([0.0, 0.0], 2)
+--- check test | No frames, and an unknown rule
+fly_frames([], "two") == ([], 0) and raises(ValueError, lambda: fly_frames([], "majority"))
+
++++ problem | Check a loop design
+--- task
+Write `design_loop(J, wn, zeta, delay_s, margin_deg, bend_hz)` that designs a PD attitude loop and checks it against two rules. Return a dictionary:
+
+- `"kp"` and `"kd"`: the PD gains for the axis `J * theta_ddot = u`, each rounded to 3 decimal places;
+- `"lag_deg"`: the phase the delay `delay_s` costs at the crossover frequency, in degrees, rounded to 2 decimal places. Take the crossover frequency to be `wn`;
+- `"margin_left"`: `margin_deg` minus the unrounded lag, rounded to 2 decimal places;
+- `"bend_ratio"`: the first bending frequency, `bend_hz` in hertz turned into rad/s, divided by `wn`, rounded to 1 decimal place;
+- `"ok"`: `True` only if the unrounded margin left is at least 30 degrees and the unrounded bending ratio is at least 5.
+
+If `J`, `wn` or `zeta` is zero or less, raise `ValueError`.
+--- starter
+def design_loop(J, wn, zeta, delay_s, margin_deg, bend_hz):
+    pass
+--- solution
+import math
+
+
+def design_loop(J, wn, zeta, delay_s, margin_deg, bend_hz):
+    """PD gains plus the delay and bending checks for one attitude axis."""
+    if J <= 0 or wn <= 0 or zeta <= 0:
+        raise ValueError("J, wn and zeta must be positive")
+    lag = math.degrees(wn * delay_s)
+    left = margin_deg - lag
+    ratio = 2 * math.pi * bend_hz / wn
+    return {
+        "kp": round(J * wn**2, 3),
+        "kd": round(2 * zeta * wn * J, 3),
+        "lag_deg": round(lag, 2),
+        "margin_left": round(left, 2),
+        "bend_ratio": round(ratio, 1),
+        "ok": left >= 30 and ratio >= 5,
+    }
+--- check case | A slow satellite loop far from its bending mode
+design_loop(500, 0.1, 0.707, 0.05, 50, 0.5)
+=> {"kp": 5.0, "kd": 70.7, "lag_deg": 0.29, "margin_left": 49.71, "bend_ratio": 31.4, "ok": True}
+--- check case | A fast loop whose delay eats the margin
+design_loop(20, 10, 0.6, 0.04, 45, 20)
+=> {"kp": 2000.0, "kd": 240.0, "lag_deg": 22.92, "margin_left": 22.08, "bend_ratio": 12.6, "ok": False}
+--- check case | Enough margin, but too close to the bending mode
+design_loop(1000, 2.0, 0.7, 0.01, 50, 1.2)
+=> {"kp": 4000.0, "kd": 2800.0, "lag_deg": 1.15, "margin_left": 48.85, "bend_ratio": 3.8, "ok": False}
+--- check test | A zero natural frequency raises ValueError
+raises(ValueError, lambda: design_loop(500, 0, 0.7, 0.01, 50, 1.0))
+
++++ problem | Max-q and the throttle window
+--- task
+A launcher's ascent is a list of samples `(t, alt_m, v)`: time in s, altitude in m and speed in m/s, in time order. Use the density model `rho = rho0 * exp(-alt_m / H)` with `rho0 = 1.225` kg per cubic metre and `H = 8500` m, and the dynamic pressure `q = 0.5 * rho * v**2` in pascals.
+
+Write `max_q(samples, rho0=1.225, H=8500.0)` that returns a dictionary:
+
+- `"t"`: the time of the sample with the largest `q` (the first, if several tie);
+- `"q"`: that largest `q`, rounded to the nearest whole pascal, as an `int`;
+- `"window"`: a tuple `(t_start, t_end)`, the times of the first and last sample of the unbroken run of samples around the peak whose `q` is at least 90 percent of the peak. The engines would throttle down through this window.
+
+No samples raise `ValueError`.
+--- starter
+def max_q(samples, rho0=1.225, H=8500.0):
+    pass
+--- solution
+import math
+
+
+def max_q(samples, rho0=1.225, H=8500.0):
+    """Time and size of peak dynamic pressure, and the run of samples within 10% of it."""
+    if not samples:
+        raise ValueError("no samples")
+    q = [0.5 * rho0 * math.exp(-alt / H) * v**2 for _, alt, v in samples]
+    peak = max(range(len(q)), key=lambda i: q[i])
+    floor = 0.9 * q[peak]
+    lo = peak
+    while lo > 0 and q[lo - 1] >= floor:
+        lo -= 1
+    hi = peak
+    while hi < len(q) - 1 and q[hi + 1] >= floor:
+        hi += 1
+    return {"t": samples[peak][0], "q": int(round(q[peak])), "window": (samples[lo][0], samples[hi][0])}
+--- check case | A climb whose pressure rises and falls
+max_q([(0, 0, 0), (30, 3000, 200), (50, 7000, 330), (60, 9500, 400), (70, 12500, 480), (80, 16000, 570), (100, 24000, 800)])
+=> {"t": 70, "q": 32428, "window": (50, 80)}
+--- check case | The peak is the last sample
+max_q([(0, 0, 50), (10, 500, 150), (20, 1500, 260)])
+=> {"t": 20, "q": 34707, "window": (20, 20)}
+--- check case | A flat top gives a wide window
+max_q([(0, 0, 100), (10, 0, 300), (20, 0, 300), (30, 0, 290), (40, 0, 100)])
+=> {"t": 10, "q": 55125, "window": (10, 30)}
+--- check test | No samples raise ValueError
+raises(ValueError, lambda: max_q([]))
+
++++ problem | Review a deck before the panel does
+--- task
+A deck is a list of slides, each a dictionary with `"seconds"` (planned time), `"job"` (one of `problem`, `model`, `method`, `verification`, `results`, `conclusion`), `"numbers"` (a list of `(value, source)` pairs) and `"notes"` (what you plan to say). Write `review(slides, limit_s=720)` that returns a list of issue texts, in this order:
+
+1. `"over time by S s"` if the total planned time is more than `limit_s`;
+2. `"missing job: JOB"` for every one of the six jobs no slide has, in the order listed above;
+3. `"slide I: unsourced VALUE"` for every number whose source is not `derived`, `measured`, `cited` or `assumed` (ignoring capitals and spaces at both ends; `None` is no source), slide by slide, numbers in order;
+4. `"slide I: claims it just works"` for every slide whose notes contain "just works" or "works fine", in any capitals.
+
+Slides are numbered from 1. Write `VALUE` the way `str` writes the value. A deck with nothing wrong gives `[]`.
+--- starter
+def review(slides, limit_s=720):
+    pass
+--- solution
+JOBS = ["problem", "model", "method", "verification", "results", "conclusion"]
+BINS = {"derived", "measured", "cited", "assumed"}
+
+
+def review(slides, limit_s=720):
+    """Issues a panel would find in a planned deck, in a fixed order."""
+    issues = []
+    total = sum(s["seconds"] for s in slides)
+    if total > limit_s:
+        issues.append(f"over time by {total - limit_s} s")
+    present = {s["job"] for s in slides}
+    issues += [f"missing job: {job}" for job in JOBS if job not in present]
+    for i, s in enumerate(slides, start=1):
+        for value, source in s["numbers"]:
+            if not (source and source.strip().lower() in BINS):
+                issues.append(f"slide {i}: unsourced {value}")
+    for i, s in enumerate(slides, start=1):
+        notes = s["notes"].lower()
+        if "just works" in notes or "works fine" in notes:
+            issues.append(f"slide {i}: claims it just works")
+    return issues
+--- check case | A deck with a problem of every kind
+review([{"seconds": 400, "job": "problem", "numbers": [], "notes": "why margin matters"}, {"seconds": 200, "job": "model", "numbers": [(0.3, "Cited"), (5, None)], "notes": ""}, {"seconds": 180, "job": "results", "numbers": [(7.67, "derived")], "notes": "The integrator just works."}])
+=> ["over time by 60 s", "missing job: method", "missing job: verification", "missing job: conclusion", "slide 2: unsourced 5", "slide 3: claims it just works"]
+--- check case | A clean six-slide deck
+review([{"seconds": 120, "job": j, "numbers": [(1.5, " measured ")], "notes": "checked against the analytic case"} for j in ["problem", "model", "method", "verification", "results", "conclusion"]])
+=> []
+--- check case | Exactly on time is not over, and "Works fine" is caught
+review([{"seconds": 360, "job": j, "numbers": [], "notes": "It WORKS FINE"} for j in ["problem", "model"]] + [{"seconds": 0, "job": j, "numbers": [(2, "guess")], "notes": ""} for j in ["method", "verification", "results", "conclusion"]])
+=> ["slide 3: unsourced 2", "slide 4: unsourced 2", "slide 5: unsourced 2", "slide 6: unsourced 2", "slide 1: claims it just works", "slide 2: claims it just works"]
+--- check case | An empty deck is missing every job
+review([])
+=> ["missing job: problem", "missing job: model", "missing job: method", "missing job: verification", "missing job: results", "missing job: conclusion"]
+
++++ problem | Check a STAR story
+--- task
+A written story has one line per part, each starting with its label: `S:`, `T:`, `A:` and `R:`, in that order. Blank lines may appear anywhere and are ignored. Write `check_story(text, wpm=140)` that returns a list of issue texts.
+
+- If the non-blank lines are not exactly four lines starting with `S:`, `T:`, `A:` and `R:` in that order, return `["not STAR"]` and nothing else.
+- Otherwise count words (runs of non-blank characters) in each part, without the label, and add these issues in this order:
+  1. `"too long: N s"` if saying all the parts' words at `wpm` words a minute takes more than 120 seconds, with N the seconds rounded to the nearest whole second;
+  2. `"action too short"` if the Action has fewer than 40 percent of all the words;
+  3. `"we in action: N"` if the Action contains the word "we" as a whole word in any capitals, N times (contractions such as "we'd" count);
+  4. `"result has no number"` if the Result contains no digit.
+
+A story with nothing wrong gives `[]`.
+--- starter
+def check_story(text, wpm=140):
+    pass
+--- solution
+import re
+
+LABELS = ["S:", "T:", "A:", "R:"]
+
+
+def check_story(text, wpm=140):
+    """Issues with a STAR story written one labelled line per part."""
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    if len(lines) != 4 or any(not line.startswith(label) for line, label in zip(lines, LABELS)):
+        return ["not STAR"]
+    parts = [line[len(label):] for line, label in zip(lines, LABELS)]
+    words = [len(p.split()) for p in parts]
+    total = sum(words)
+    issues = []
+    seconds = total * 60 / wpm
+    if seconds > 120:
+        issues.append(f"too long: {round(seconds)} s")
+    if words[2] < 0.4 * total:
+        issues.append("action too short")
+    we = len(re.findall(r"\bwe\b", parts[2], flags=re.IGNORECASE))
+    if we:
+        issues.append(f"we in action: {we}")
+    if not any(ch.isdigit() for ch in parts[3]):
+        issues.append("result has no number")
+    return issues
+--- check case | A good story
+check_story("S: My ascent simulator ran 2000 cases and 14 diverged.\nT: I owned it.\n\nA: I reran one case at half the step, suspected the fixed step, tried adaptive and halving on 200 cases, and chose adaptive.\nR: Zero of 2000 diverged.")
+=> []
+--- check case | Mostly scenery, a we, and no number
+check_story("S: Our team had a big simulator with many parts that were slow and hard to use for everyone involved.\nT: Make it better.\nA: We fixed it.\nR: Everyone was happy.")
+=> ["action too short", "we in action: 1", "result has no number"]
+--- check case | Parts out of order
+check_story("T: I owned it.\nS: It diverged.\nA: I fixed it.\nR: 0 failures.")
+=> ["not STAR"]
+--- check case | A missing part
+check_story("S: It diverged.\nA: I fixed it.\nR: 0 failures.")
+=> ["not STAR"]
+--- check case | Far too long, and we'd counts
+check_story("S: x\nT: y\nA: " + " ".join(["step"] * 290) + " and we'd rerun, then We checked\nR: 3 fixes")
+=> ["too long: 129 s", "we in action: 2"]
+
++++ question | A pending application
+--- ask
+A candidate has applied for a green card and expects it within the year. They hold a temporary work visa today. What should they expect at the recruiter screen for a SpaceX engineering role?
+--- choice
+The pending application counts, because the green card is on its way.
+--- choice
+It depends on the role: simulation and software roles are exempt.
+--- choice correct
+They are not yet a US person. The status must actually have been granted, so they should settle it before applying.
+--- choice
+The team can ask for an exception if the take-home is strong.
+--- why
+US person status means a citizen, a lawful permanent resident (a granted green card), or a protected individual such as a refugee or asylee. A pending application and a work visa are neither. The requirement covers essentially all roles, because the work is export-controlled, and it is a legal gate, so no score and no team can waive it. That is why it is confirmed at the very first stage.
+
++++ question | Destructors at closing braces
+--- ask
+What does this program print?
+
+```cpp
+#include <cstdio>
+
+struct Guard {
+    const char* name;
+    ~Guard() { std::printf("%s ", name); }
+};
+
+int main() {
+    Guard a{"a"};
+    {
+        Guard b{"b"};
+        Guard c{"c"};
+    }
+    Guard d{"d"};
+}
+```
+
+Type the four letters in the order they are printed, separated by spaces.
+--- answer
+c b d a
+cbda
+c, b, d, a
+c,b,d,a
+--- why
+A destructor runs automatically when its object goes out of scope, and objects in one scope are destroyed in the reverse order of their construction. At the inner closing brace, `c` goes first and then `b`. At the end of `main`, `d` goes before `a`. This is RAII at work: no line asks for the cleanup, and it happens at predictable points.
+
++++ question | Counting owners
+--- ask
+What does this program print?
+
+```cpp
+#include <cstdio>
+#include <memory>
+#include <utility>
+
+int main() {
+    auto s = std::make_shared<int>(5);
+    auto t = s;
+    {
+        auto u = t;
+        auto v = std::make_unique<int>(7);
+        std::printf("%ld ", s.use_count());
+    }
+    auto w = std::move(t);
+    std::printf("%ld\n", s.use_count());
+}
+```
+
+Type the two numbers, separated by a space.
+--- answer
+3 2
+3, 2
+3,2
+--- why
+Inside the block, `s`, `t` and `u` all own the integer, so the count is 3; the `unique_ptr` `v` has nothing to do with it. At the closing brace `u` is destroyed, bringing the count to 2. Moving `t` into `w` transfers ownership without touching the count: `t` becomes empty and `w` takes its place, so it stays 2. That is why a move of a `shared_ptr` is cheaper than a copy, which would need an atomic increment.
+
++++ question | An atomic counter that still loses counts
+--- ask
+Two threads each run this loop, then `main` joins them and prints `frames`.
+
+```cpp
+std::atomic<int> frames{0};
+
+void worker() {
+    for (int i = 0; i < 100000; ++i)
+        frames = frames + 1;
+}
+```
+
+What can it print?
+--- choice
+Always 200000, because `frames` is `std::atomic`.
+--- choice correct
+Sometimes less than 200000: `frames + 1` is an atomic read and `frames = ...` a separate atomic write, so the other thread can write in between and one update is lost. `++frames` or `fetch_add` makes the whole increment one atomic step.
+--- choice
+Anything at all: it is a data race and therefore undefined behavior, just as with a plain `int`.
+--- choice
+Nothing: it does not compile, because `std::atomic` has no `+` operator.
+--- why
+`std::atomic` makes each single operation on the variable indivisible. Here there are two: a load (the conversion inside `frames + 1`) and a store (the assignment). Another thread's whole increment can land between them, and its update is overwritten, the same lost update as the whiteboard tally. Because every access is atomic, it is not a data race and not undefined, just wrong. It compiles because the atomic converts to `int` when read.
+
++++ question | The crash that a printf cures
+--- ask
+A telemetry decoder crashes only in the optimized build. When you add a `printf` near the suspect line, the crash goes away. What is the best reading of this, and the next step?
+--- choice
+The compiler's optimizer has a bug. Build without optimization and ship that.
+--- choice
+The `printf` fixed a timing problem. Keep it in and move on.
+--- choice correct
+It is very likely undefined behavior, such as an out-of-bounds read or use after free, whose symptom moves with code layout. Rebuild with `-g -fsanitize=address,undefined`, reproduce, and read the first report.
+--- choice
+Output buffering is hiding the crash. Print to `stderr` and the bug will show itself.
+--- why
+A bug that appears and disappears when unrelated code changes is the classic sign of undefined behavior: the compiler assumes it never happens, so what the program actually does depends on layout and optimization. A crash that vanishes without an explanation is still there, hidden. Sanitizers check how the answer was reached and stop at the exact line, which is why they are the next step, not guessing.
+
++++ question | Sizing a smaller fleet
+--- ask
+A fleet of 3000 satellites each sends 1000 channels, two bytes a value, twice a second. Which is closest to the data it produces?
+--- choice
+About 100 GB a day, about 36 TB a year
+--- choice correct
+About 1 TB a day, about 0.4 PB a year
+--- choice
+About 10 TB a day, about 4 PB a year
+--- choice
+About 1 GB a day, about 0.4 TB a year
+--- why
+3000 times 1000 times 2 bytes times 2 per second is 12,000,000 bytes a second, 12 MB/s. A day is 86,400 s, so that is about 1.04 times 10 to the power 12 bytes, about 1 TB a day, and times 365 about 0.38 PB a year. Twelve million bytes and six million values a second still mean batched writes and a hot store plus a compressed archive.
+
++++ question | What keeps a campaign reproducible
+--- ask
+Which of these does **not** break bit-for-bit reproducibility of a seeded Monte Carlo campaign?
+--- choice correct
+Running cases on many cores in whatever order they finish, when each case's generator is seeded from the base seed and its case number and its result goes into its own slot.
+--- choice
+Drawing every case's random numbers from one shared generator, in the order the threads happen to reach it.
+--- choice
+Seeding the generator from the wall clock at the start of each night.
+--- choice
+Adding each case's result into a single floating-point total as soon as the case finishes.
+--- why
+Determinism needs the same inputs to give identical outputs. A seed derived from the base seed and the case number makes each case independent of timing, and a slot per case keeps the results in case order. A shared generator hands numbers out in thread-timing order, a clock seed changes every night, and summing in finishing order changes the rounding.
+
++++ question | MC/DC for two pairs
+--- ask
+How many test cases does a minimal MC/DC test set need for this decision, with four conditions?
+
+$$
+\text{fire} = (A \land B) \lor (C \land D)
+$$
+
+Type the number.
+--- answer
+5
+five
+--- why
+For N conditions, MC/DC needs at least N + 1 tests, and for this decision that minimum can be met: 5 tests. One such set is A B C D = 1001, 0101, 1101, 1011 and 1010. 1001 does not fire. Setting A alone from 0101 to 1101 makes it fire, which shows A. From 1001, setting B alone (1101) makes it fire, which shows B, and setting C alone (1011) makes it fire, which shows C. From 1010, which does not fire, setting D alone (1011) makes it fire, which shows D. Five vectors cover all four conditions, against 16 for exhaustive testing.
+
++++ question | Two strings silent at once
+--- ask
+In one frame, two of the three strings each see their cores disagree and go silent. The third sends a good command. What does the actuator's judge do?
+--- choice
+It acts on the command under either rule, because a silent string never lies.
+--- choice correct
+Under "act on two that agree" it holds its last command; under "act on any command that arrives" it acts on the good one.
+--- choice
+It holds under either rule, because one string cannot be trusted.
+--- choice
+It asks the remaining string's two cores to vote again.
+--- why
+Fail-silent strings never send a wrong command, so one arriving command is trustworthy. A judge that needs two agreeing commands cannot act with only one, so it holds; a judge that acts on any arriving command keeps flying. That is the difference between the two probabilities in the lesson: losing command when two or more strings fail (about 3 in a million in the illustration) versus only when all three fail (about 1 in a billion). It is why you must say which rule you assume.
+
++++ question | Same gains, heavier vehicle
+--- ask
+A PD attitude loop was tuned for inertia J. Propellant loading doubles the inertia, and the gains are left unchanged. What happens to the natural frequency and the damping ratio?
+--- choice
+The natural frequency halves; the damping ratio stays the same.
+--- choice correct
+Both fall by a factor of the square root of 2, about 1.41: the loop is slower and less damped, so it overshoots more.
+--- choice
+Neither changes, because the gains are what set the response.
+--- choice
+The natural frequency falls and the damping ratio rises, so it creeps more slowly.
+--- why
+From kp = J times wn squared, wn is the square root of kp over J, so doubling J divides it by the square root of 2. From kd = 2 zeta wn J, zeta is kd over 2 times the square root of kp times J, so it also falls by the square root of 2. Lower damping means more overshoot. Gains carry the design's assumptions about the vehicle, which is why they are scheduled with mass properties.
+
++++ question | Zero failures in 1500 runs
+--- ask
+Your dispersed study ran 1500 cases with no failures. Using the rule of three, below what failure rate can you say the truth lies, at about 95 percent confidence? Give it as a percentage.
+--- answer
+0.2%
+0.2
+0.2 %
+0.2 percent
+0.20%
+0.002
+--- why
+Zero failures in N independent runs bound the failure rate below about 3 divided by N at roughly 95 percent confidence: 3 / 1500 = 0.002, which is 0.2 percent. The honest slide adds the condition "given the dispersions I used", because the bound covers only the inputs that were scattered.
+
++++ question | What you did on the team project
+--- ask
+Asked "What did you do on the C++ GNC application?", which answer is strongest?
+--- choice
+"We built a real-time GNC application in C++ that ran the control loop at 100 Hz."
+--- choice
+"I built the flight software for it."
+--- choice correct
+"I coded the attitude module and the message parser, about 600 lines, and wrote their 40 unit tests. The matrix maths is Eigen's, and the architecture was the team's. I also traced a missed deadline to an allocation inside the loop."
+--- choice
+"Honestly, I mostly helped out wherever I was needed."
+--- why
+The panel is hiring you, so they need the boundary between your work and everyone else's. The strong answer names the verbs (coded, tested, debugged), gives numbers someone could check, and states plainly what was a library's or the team's. The first answer hides you behind "we", the second inflates one module into "the flight software", and the last deflates real work into nothing specific.

@@ -1,7 +1,7 @@
 @track cpp
 @course cs-sys
 @subject Computer Science
-@requires cpp-intermediate
+@requires cpp-intermediate cs-org
 @level advanced
 @title Systems Programming
 @name Systems Programming: C-style C++, memory, allocators, bits, linking and files
