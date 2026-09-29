@@ -2575,6 +2575,15 @@ close
 ?? Three outcomes need `if`, `elif` and `else`.
 --- check source | Uses else for everything below 60
 \belse\s*:
+--- check source | Sets "pass" when the score is 70 or more
+(score\s*>=\s*70|70\s*<=\s*score|score\s*>\s*69)[\s\S]*label\s*=\s*["']pass["']
+?? The first question is `score >= 70`, and under it `label = "pass"`.
+--- check source | Sets "close" when the score is 60 or more
+(score\s*>=\s*60|60\s*<=\s*score|score\s*>\s*59)[\s\S]*label\s*=\s*["']close["']
+?? The `elif` asks `score >= 60`, and under it `label = "close"`.
+--- check source | Sets "fail" for everything else
+\belse\s*:\s*\n\s+label\s*=\s*["']fail["']
+?? Under `else:` goes `label = "fail"`.
 
 +++ practice | Low battery warning
 --- task
@@ -5949,7 +5958,7 @@ Think of `try` as a fork in the road. If every line inside it works, Python skip
 :::
 
 ::: context fail-loudly A rocket lost to one unhandled error
-On 4 June 1996, the first Ariane 5 rocket broke up about 37 seconds after lift-off. Its navigation software, reused from the smaller Ariane 4, tried to squeeze a measurement into a 16-bit whole number. Ariane 5 flew faster, the value was too big to fit, and the conversion raised an error that nothing handled. The navigation computer shut down (its backup had failed the same way a moment earlier), and the rocket veered off course and destroyed itself. Engineers still teach it as the reason to check ranges and to decide ahead of time what happens when something goes wrong.
+On 4 June 1996, the first Ariane 5 rocket broke up about 40 seconds after lift-off. Its navigation software, reused from the smaller Ariane 4, tried to squeeze a measurement into a 16-bit whole number. Ariane 5 flew faster, the value was too big to fit, and the conversion raised an error that nothing handled. The navigation computer shut down (its backup had failed the same way a moment earlier), and the rocket veered off course and destroyed itself. Engineers still teach it as the reason to check ranges and to decide ahead of time what happens when something goes wrong.
 :::
 
 ::: context bare-except Why a catch-everything is dangerous

@@ -3062,7 +3062,7 @@ The name comes from the fast-forward button on a music or video player: you skip
   <circle cx="130" cy="40" r="10" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
   <circle cx="240" cy="40" r="10" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
   <text x="130" y="20" font-size="11" text-anchor="middle" fill="#1f2a44">Start the project</text>
-  <text x="240" y="20" font-size="11" text-anchor="middle" fill="#1f2a44">Add the engine</text>
+  <text x="240" y="20" font-size="11" text-anchor="middle" fill="#1f2a44">Add the new ending</text>
   <text x="130" y="68" font-size="12" text-anchor="middle" font-weight="bold" fill="#1d6fd1">main</text>
   <text x="240" y="68" font-size="12" text-anchor="middle" font-weight="bold" fill="#b4232c">new-ending</text>
   <text x="12" y="124" font-size="12" fill="#6c7a93">After</text>
@@ -3070,7 +3070,7 @@ The name comes from the fast-forward button on a music or video player: you skip
   <circle cx="130" cy="120" r="10" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
   <circle cx="240" cy="120" r="10" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
   <text x="130" y="100" font-size="11" text-anchor="middle" fill="#1f2a44">Start the project</text>
-  <text x="240" y="100" font-size="11" text-anchor="middle" fill="#1f2a44">Add the engine</text>
+  <text x="240" y="100" font-size="11" text-anchor="middle" fill="#1f2a44">Add the new ending</text>
   <line x1="140" y1="146" x2="200" y2="146" stroke="#6c7a93" stroke-width="2" stroke-dasharray="4 3"/>
   <polygon points="200,141 210,146 200,151" fill="#6c7a93"/>
   <text x="240" y="150" font-size="12" text-anchor="middle" font-weight="bold" fill="#1d6fd1">main</text>

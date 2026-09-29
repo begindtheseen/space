@@ -2613,7 +2613,8 @@ A **`LEFT JOIN`** does that (its [[longer name|outer-join]] is `LEFT OUTER JOIN`
 ```sql
 SELECT u.email, r.id
 FROM users u
-LEFT JOIN requests r ON r.user_id = u.id;
+LEFT JOIN requests r ON r.user_id = u.id
+ORDER BY u.email, r.id;
 ```
 
 | email | id |
@@ -3005,7 +3006,8 @@ The second tool swaps a `NULL` for a value you choose. **`COALESCE(x, 0)`** give
 SELECT u.email, SUM(r.cost_usd) AS spend
 FROM users u
 LEFT JOIN requests r ON r.user_id = u.id
-GROUP BY u.id, u.email;
+GROUP BY u.id, u.email
+ORDER BY u.email;
 ```
 
 sam's `spend` comes back `NULL`. Wrap the sum in [[this new function|coalesce-word]] to show 0 instead:
@@ -3014,7 +3016,8 @@ sam's `spend` comes back `NULL`. Wrap the sum in [[this new function|coalesce-wo
 SELECT u.email, COALESCE(SUM(r.cost_usd), 0) AS spend
 FROM users u
 LEFT JOIN requests r ON r.user_id = u.id
-GROUP BY u.id, u.email;
+GROUP BY u.id, u.email
+ORDER BY u.email;
 ```
 
 | email | spend |
