@@ -331,7 +331,7 @@ There is one more detail. `std::lower_bound` counts comparisons, not steps. On a
 | `stable_sort` | no | random access | $O(n \log n)$ with a buffer, $O(n \log^2 n)$ without |
 | `nth_element` | no | random access | $O(n)$ average |
 | `partial_sort` | no | random access | about $O(n \log m)$ for $m$ sorted |
-| `find`, `find_if` | no | forward (any) | $O(n)$ |
+| `find`, `find_if` | no | input (any) | $O(n)$ |
 | `lower_bound`, `upper_bound` | yes | forward (best with random access) | $O(\log n)$ |
 | `binary_search` | yes | forward (best with random access) | $O(\log n)$, returns only `bool` |
 
