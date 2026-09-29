@@ -1,0 +1,1878 @@
+@track python
+@course mod-cod_mat_01_core
+@module cod_mat_01_core
+@title MATLAB core language: practice and test
+
+=== mat01-l01 | Practice: The MATLAB desktop
+--- for
+l01-the-matlab-desktop
+
++++ question | Where ans ends up
+--- ask
+You type these four lines at the Command Window, one after another:
+
+```matlab
+>> a = 4;
+>> a^2 + 1
+>> b = ans * 2;
+>> ans - 7
+```
+
+What value does `ans` hold at the end? Type the number.
+--- answer
+10
+--- why
+Only results that you do not name go into `ans`. Line 2 has no name, so `ans` becomes $4^2 + 1 = 17$. Line 3 names its result `b`, so `b` is 34 and `ans` is left alone at 17. Line 4 has no name again, so `ans` becomes $17 - 7 = 10$. Reading `ans` inside a line does not change it; only a new unnamed result does.
+
++++ question | Which lines print
+--- ask
+A script holds these four lines:
+
+```matlab
+x = 3.14159;
+y = x * 2
+x + y;
+disp(y)
+```
+
+When you run it, which lines show something in the Command Window?
+--- choice
+All four, because a script always echoes every line it runs.
+--- choice
+Lines 2, 3 and 4, because a result with no name is always shown.
+--- choice correct
+Lines 2 and 4 only. Line 3 ends in a semicolon, so its result goes quietly into `ans`.
+--- choice
+Line 4 only, because a script needs `disp` to print anything.
+--- why
+The semicolon is what hides the echo, whether the result has a name or not. Line 1 and line 3 end in semicolons, so they print nothing, although line 3 still stores 9.4248 in `ans`. Line 2 has no semicolon, so MATLAB echoes `y = 6.2832`. `disp(y)` prints the value without its name. A script behaves exactly as if you had typed its lines at the prompt.
+
++++ question | A loop counter called i
+--- ask
+While testing a loop, you type `i = 5` at the prompt. Later in the same session you type:
+
+```matlab
+>> z = 3 + 2*i
+```
+
+What is `z`? Type the value.
+--- answer
+13
+--- why
+MATLAB uses `i` for the imaginary unit $\sqrt{-1}$, but a variable beats a built-in name. Your `i = 5` hides the imaginary unit, so `2*i` is 10 and `z` is 13, a real number. `which i` would tell you that `i` is now a variable, and `clear i` brings the imaginary unit back. This is why MATLAB code that means the imaginary unit writes `1i` or `2i` with the number joined to the letter: that form is always imaginary, whatever variables exist.
+
++++ question | Digits that were only hidden
+--- ask
+In the default `format short`, you type:
+
+```matlab
+>> r = 6778.137
+% r = 6.7781e+03
+>> d = r - 6778
+```
+
+What does MATLAB show for `d`? Type the number as MATLAB shows it, or with fewer trailing zeros.
+--- answer
+0.1370
+0.137
+.137
+--- why
+The echo `6.7781e+03` rounds the number to five significant figures for the screen, but `r` still stores every digit of 6778.137. Subtracting 6778 leaves 0.137, which `format short` shows as `0.1370`. If the display had really thrown the digits away, `d` would be 0.1. The display format changes how numbers look, never what is stored.
+
++++ question | A script MATLAB cannot find
+--- ask
+A teammate sends you `load_flight.m`, and you save it in `C:\work\gnc`. Your Current Folder is `C:\Users\you\Documents`. You type `load_flight` and get:
+
+```text
+Unrecognized function or variable 'load_flight'.
+```
+
+`which load_flight` answers `'load_flight' not found.` What fixes it?
+--- choice
+Rename the file `load_flight.mlx`, because only live scripts can be run by name.
+--- choice correct
+Change the Current Folder to `C:\work\gnc`, or add that folder to the search path with `addpath`.
+--- choice
+Type `import load_flight` first, as you would in Python.
+--- choice
+Run it as `load_flight.m`, because MATLAB needs the extension.
+--- why
+MATLAB looks for a name in the workspace, then in the Current Folder, then along the search path. The file sits in neither folder MATLAB searches, so the name means nothing to it. Standing in the right folder, or running `addpath('C:\work\gnc')`, makes the name findable, and `which load_flight` will then print the file's path. MATLAB has no `import` step for scripts, and adding the extension does not help it find a file in a folder it never searches.
+
++++ question | A script and a variable with one name
+--- ask
+Your Current Folder holds a script `g.m` whose only line is `disp("hello")`. At the prompt you type:
+
+```matlab
+>> g = 9.81;
+>> g * 2
+>> clear g
+>> g
+```
+
+What do the second and fourth lines do?
+--- choice
+The second line runs the script and prints `hello`, because files are checked before variables. The fourth line errors.
+--- choice correct
+The second line gives `ans = 19.6200`. The fourth line runs the script and prints `hello`.
+--- choice
+Both lines give 19.62, because `clear g` only clears the screen.
+--- choice
+The first line errors, because a variable may not share its name with a file.
+--- why
+When you type a name, MATLAB checks the workspace first, then the Current Folder, then the search path, and the first match wins. While the variable `g` exists, `g` means 9.81, so `g * 2` is 19.62. `clear g` deletes the variable (`clc` is the one that clears the screen), so the next `g` falls through to the file `g.m`, and the script runs. MATLAB allows the clash without complaint, which is exactly why it causes confusing bugs.
+
+=== mat01-l02 | Practice: Everything is a matrix
+--- for
+l02-everything-is-a-matrix
+
++++ question | Counting a stepped range
+--- ask
+How many elements does `3:4:30` have? Type the number.
+--- answer
+7
+--- why
+The range starts at 3 and goes up in steps of 4 as far as it can without passing 30: 3, 7, 11, 15, 19, 23, 27. The next would be 31, past the stop. The formula agrees: $\lfloor (30 - 3)/4 \rfloor + 1 = \lfloor 6.75 \rfloor + 1 = 7$. The stop value 30 is not in the range, because it is not a whole number of steps from 3.
+
++++ question | The count linspace needs
+--- ask
+You want time samples every $0.02\,\mathrm{s}$ from $t = 1\,\mathrm{s}$ to $t = 3\,\mathrm{s}$, both ends included, built with `linspace(1, 3, n)`. What must `n` be? Type the number.
+--- answer
+101
+--- why
+The span is $3 - 1 = 2\,\mathrm{s}$, and $2 / 0.02 = 100$ gaps. With both ends included, 100 gaps need 101 points, the fencepost rule. Check with the spacing formula: $(3 - 1)/(101 - 1) = 0.02$. Writing `n = 100` gives a spacing of $2/99 \approx 0.0202\,\mathrm{s}$, so every sample after the first drifts a little off the intended times.
+
++++ question | Gluing blocks together
+--- ask
+What is `size(C)` after these lines? Type the two numbers.
+
+```matlab
+A = zeros(2, 3);
+B = ones(2, 1);
+C = [A B; 5*ones(1, 4)];
+```
+--- answer
+3 4
+3x4
+3 by 4
+3-by-4
+[3 4]
+3, 4
+--- why
+Inside the brackets, the space in `A B` joins side by side first: a 2-by-3 and a 2-by-1 have the same number of rows, so they make a 2-by-4. The semicolon then stacks a 1-by-4 row underneath, which fits because both have 4 columns. The result has 3 rows and 4 columns. Had the last piece been `5*ones(1, 3)`, MATLAB would have stopped with a dimensions error.
+
++++ question | A matrix with no columns
+--- ask
+`M = zeros(3, 0)` makes a matrix with 3 rows and no columns. What are `size(M)`, `numel(M)` and `length(M)`?
+--- choice
+`[3 0]`, 0 and 3, because `length` returns the larger dimension.
+--- choice correct
+`[3 0]`, 0 and 0, because `length` is 0 for any empty matrix.
+--- choice
+`[3 1]`, 3 and 3, because MATLAB never makes a dimension zero.
+--- choice
+`[0 0]`, 0 and 0, because every empty matrix is 0-by-0.
+--- why
+An empty matrix can still have a shape: `zeros(3, 0)` is 3-by-0, so `size` reports `[3 0]`. It holds $3 \times 0 = 0$ numbers, so `numel` is 0. `length` is the largest dimension for a matrix with elements, but it is defined as 0 for any empty one. So a loop `for k = 1:length(M)` safely runs zero times, and `isempty(M)` is true.
+
++++ question | Three rows that should have been columns
+--- ask
+A logger hands you the three accelerometer axes as row vectors `ax`, `ay` and `az`, each 1-by-500. A teammate builds the sample matrix with `imu = [ax ay az]` and expects one row per sample and one column per axis. What does the line really make, and what should it be?
+--- choice
+It makes the intended 500-by-3 matrix, because MATLAB turns rows into columns when it concatenates.
+--- choice
+It stops with an error, because rows cannot be joined side by side.
+--- choice correct
+It makes one long 1-by-1500 row. Write `imu = [ax; ay; az]'`, which stacks the rows into a 3-by-500 and then transposes it.
+--- choice
+It makes a 3-by-500 matrix. Write `imu = reshape([ax ay az], 3, 500)` to get the right shape.
+--- why
+A space inside brackets joins side by side, and three 1-by-500 rows side by side are one 1-by-1500 row. The data is all there, but in the wrong shape, so `imu(2, :)` would fail. Stacking with semicolons gives a 3-by-500 with one row per axis, and the transpose turns it into 500-by-3. `[ax' ay' az']` works too. The `reshape` choice is wrong because it fills 3 rows down the columns, so the first column would hold `ax(1)`, `ax(2)` and `ax(3)`, three samples of one axis.
+
++++ question | Axes in rows
+--- ask
+A ground-test file stores gyro data as `D`, a 3-by-500 matrix: row 1 is the roll rate, row 2 pitch and row 3 yaw, and each column is one sample. Which line gives the mean rate of each axis?
+--- choice
+`mean(D)`
+--- choice correct
+`mean(D, 2)`
+--- choice
+`mean(D(:))`
+--- choice
+`mean(D, 1)`
+--- why
+`mean` works down dimension 1, the columns, unless told otherwise. Here each column is one sample, so `mean(D)` and `mean(D, 1)` both give 500 numbers, each mixing the three axes of one sample. `mean(D, 2)` works along each row and gives a 3-by-1 column: one mean per axis. `mean(D(:))` averages all 1500 numbers into one value. Before you pick a dimension, ask which way the samples run.
+
+=== mat01-l03 | Practice: Reaching inside a matrix
+--- for
+l03-indexing
+
++++ question | Counting back from end
+--- ask
+`v = [5 10 15 20 25 30 35]`. What does `v(end-3:end-1)` give? Type the numbers separated by spaces.
+--- answer
+20 25 30
+[20 25 30]
+20, 25, 30
+--- why
+`v` has 7 elements, so `end` is 7 and the range is `4:6`. MATLAB ranges include both ends, so that is positions 4, 5 and 6, holding 20, 25 and 30. The last element, 35, is left out because the range stops at `end-1`.
+
++++ question | The last three, from Python
+--- ask
+A Python script takes the last three samples of a list with `x[-3:]`. Which MATLAB expression gives the same three samples in the same order?
+--- choice
+`x(end-3:end)`
+--- choice
+`x(-3:end)`
+--- choice correct
+`x(end-2:end)`
+--- choice
+`x(end:-1:end-2)`
+--- why
+The last three positions are `end-2`, `end-1` and `end`, so the range is `end-2:end`, which includes both ends. `end-3:end` has four elements, the classic off-by-one. Negative indices are errors in MATLAB. `end:-1:end-2` picks the right three samples but backwards.
+
++++ question | A column of a reshaped matrix
+--- ask
+What is `sum(M(:, 3))` after `M = reshape(1:12, 3, 4)`? Type the number.
+--- answer
+24
+--- why
+`reshape` fills down the columns, so `M` has columns `[1; 2; 3]`, `[4; 5; 6]`, `[7; 8; 9]` and `[10; 11; 12]`. Column 3 is 7, 8 and 9, which add to 24. If you pictured `M` filled row by row, as NumPy fills it, the rows would be 1 to 4, 5 to 8 and 9 to 12, column 3 would hold 3, 7 and 11, and you would answer 21. Check one small case by hand whenever you translate a reshape.
+
++++ question | A missing reading in a mask
+--- ask
+A sensor log has one reading that was never recorded:
+
+```matlab
+v = [3 NaN -2 0 5];
+n = nnz(v > 0) + nnz(v <= 0)
+```
+
+What is `n`? Type the number.
+--- answer
+4
+--- why
+`v > 0` is true for 3 and 5, and `v <= 0` is true for -2 and 0. Every comparison with `NaN` is false, as in Python, so the `NaN` passes neither test and is counted by neither. The two counts add to 4, not 5. A mask like `v(~(v > 0))` would keep the `NaN` along with -2 and 0. When data can hold `NaN`, remove it first with `v(~isnan(v))`, or test for it on its own.
+
++++ question | A filter that errors
+--- ask
+To keep readings between 0 and 5, a teammate writes:
+
+```matlab
+v = [4 -2 7 0 -5 3];
+ok = v(v > 0 && v < 5);
+```
+
+The second line stops with an error. Why, and what is the fix?
+--- choice
+A mask cannot combine two tests. Use `v(v > 0)` and then `ok(ok < 5)`.
+--- choice correct
+`&&` only works on single true-or-false values, and `v > 0` is a whole array. Use `&`, which works element by element: `v(v > 0 & v < 5)`.
+--- choice
+The comparisons need brackets around them: `v((v > 0) && (v < 5))`.
+--- choice
+Logical indexing needs `find`: `v(find(v > 0 && v < 5))`.
+--- why
+`&&` and `||` short-circuit, so they need a single true-or-false value on each side, and MATLAB refuses an array there. The element-wise `&` compares the two masks position by position and gives `[1 0 0 0 0 1]`, so `ok` is `[4 3]`. Brackets change nothing, and `find` does not help because the error happens before `find` runs. Save `&&` and `||` for `if` and `while` conditions.
+
++++ question | The first moment any sensor ran hot
+--- ask
+`T` holds three temperature sensors, one column each, sampled once per second from $t = 0$:
+
+```matlab
+T = [70 75 72
+     78 82 79
+     85 90 81
+     88 91 84];
+[r, c] = find(T > 80, 1)
+```
+
+You want the first sample at which any sensor read above 80. What does this line give, and does it answer the question?
+--- choice
+`r = 2, c = 2`. Yes: sample 2, at $t = 1\,\mathrm{s}$, sensor 2.
+--- choice correct
+`r = 3, c = 1`. No: `find` searches down the columns, so it found sensor 1's first hot reading. The first hot sample is sample 2, which `[r, c] = find(T' > 80, 1)` gives as `c = 2`.
+--- choice
+`r = 3, c = 1`. Yes: `find` searches along the rows, so row 3 is the first hot sample.
+--- choice
+It returns empty, because `find` with two outputs needs a vector.
+--- why
+`find` counts in column-major order, down column 1, then down column 2, and so on. Column 1 first passes 80 at row 3 (85), so that is the first match, even though sensor 2 read 82 one sample earlier, in row 2. Transposing makes each column one sample, so the column-order search now walks through time: `find(T' > 80, 1)` stops at sample 2, where sensor 2 reads 82, and returns `r = 2` (the sensor) and `c = 2` (the sample). Sample 2 is at $t = (2 - 1) \times 1 = 1\,\mathrm{s}$.
+
+=== mat01-l04 | Practice: Element-wise versus matrix operations
+--- for
+l04-element-wise-versus-matrix
+
++++ question | A row times a column
+--- ask
+What is `[1 -1 2] * [3; 4; 0.5]`? Type the number.
+--- answer
+0
+--- why
+A 1-by-3 row times a 3-by-1 column is a matrix product whose inside sizes match, and its result is 1-by-1: the dot product. $1 \cdot 3 + (-1) \cdot 4 + 2 \cdot 0.5 = 3 - 4 + 1 = 0$. The element-wise `.*` would need both to have the same shape; with this row and column it would stretch them into a 3-by-3 table instead.
+
++++ question | The same two vectors, both orders
+--- ask
+`u = [1; 2; 3]` is a column and `w = [4 5]` is a row. What happens with `u * w` and with `w * u`?
+--- choice
+Both stop with an error, because the vectors have different lengths.
+--- choice
+Both give a single number, their dot product.
+--- choice correct
+`u * w` gives a 3-by-2 matrix. `w * u` stops with an error, because the inside sizes are 2 and 3.
+--- choice
+`u * w` stops with an error, and `w * u` gives a 2-by-3 matrix.
+--- why
+Write the sizes side by side. `u * w` is $(3 \times 1)(1 \times 2)$: the inside numbers are both 1, so it works, and the outside numbers give a 3-by-2 result, each entry $u_i w_j$. `w * u` is $(1 \times 2)(3 \times 1)$: the inside numbers 2 and 3 differ, so the product is not defined. Matrix products care about order; a dot product needs two vectors of the same length.
+
++++ question | Squares, then a matrix product
+--- ask
+What is `y` after these lines? Type the number.
+
+```matlab
+x = [1 2 3];
+y = x.^2 * x';
+```
+--- answer
+36
+--- why
+`x.^2` squares each element: `[1 4 9]`, still a 1-by-3 row. `x'` is the column `[1; 2; 3]`. A 1-by-3 row times a 3-by-1 column is their dot product: $1 \cdot 1 + 4 \cdot 2 + 9 \cdot 3 = 1 + 8 + 27 = 36$, which is the sum of the cubes. Powers go before products, so the dot applies to `x` alone.
+
++++ question | An inverse and a table of reciprocals
+--- ask
+`D = [2 0; 0 4]`. What is `D.^-1`?
+--- choice
+`[0.5 0; 0 0.25]`, the same as the inverse `D^-1`.
+--- choice correct
+`[0.5 Inf; Inf 0.25]`, because each zero becomes 1/0.
+--- choice
+An error, because a matrix with zeros in it has no inverse.
+--- choice
+`[-2 0; 0 -4]`, because the power flips each sign.
+--- why
+The dot makes the power act on each element, so every entry becomes its reciprocal: $1/2$, $1/4$, and $1/0$, which MATLAB gives as `Inf` with no error. The matrix inverse `D^-1` is `[0.5 0; 0 0.25]`: for a matrix with numbers only on the diagonal, the inverse happens to take the reciprocal of those numbers and keep the zeros. That is why the two can look alike on a small test and then differ badly as soon as the matrix has zeros or entries off the diagonal.
+
++++ question | A rotation that works on three samples only
+--- ask
+`C` is a 3-by-3 direction cosine matrix and `V` holds velocities, one sample per row, so it is N-by-3. To turn every velocity into the other frame, a teammate writes `W = C * V`. On a three-sample test log it runs and gives wrong numbers. On a real log of 1000 samples it errors. What is the fix?
+--- choice
+`W = C .* V`, because each sample must be multiplied separately.
+--- choice correct
+`W = (C * V')'`, or the same thing written `W = V * C'`.
+--- choice
+`W = C' * V`, because the rotation must be transposed first.
+--- choice
+`W = V .* C'`, which multiplies matching entries.
+--- why
+`C * V` needs V to have 3 rows, so it only runs when there happen to be exactly 3 samples, and then it mixes the samples together. Transposing `V` makes each sample a column (3-by-N), `C` turns every column, and the final transpose puts samples back into rows. Since $(\mathbf{C}\mathbf{V}^{\mathsf{T}})^{\mathsf{T}} = \mathbf{V}\mathbf{C}^{\mathsf{T}}$, the shorter form is the same. The element-wise choices multiply entries one by one, which is not a rotation at all; each rotated component is a sum of products.
+
++++ question | A quarter turn, two ways
+--- ask
+`R = [0 -1; 1 0]` turns a vector a quarter turn, 90 degrees. Which statement about `R^2` and `R.^2` is right?
+--- choice
+Both are `[0 1; 1 0]`, because every entry is 0, 1 or -1.
+--- choice correct
+`R^2` is `[-1 0; 0 -1]`, a half turn. `R.^2` is `[0 1; 1 0]`, which swaps the two components and is not a rotation.
+--- choice
+`R^2` is `[0 1; 1 0]`, a half turn, and `R.^2` stops with an error.
+--- choice
+`R^2` is `[1 0; 0 1]`, because a rotation squared is the identity.
+--- why
+`R^2` is `R*R`: top-left $0 \cdot 0 + (-1) \cdot 1 = -1$, top-right $0 \cdot (-1) + (-1) \cdot 0 = 0$, and so on, giving `[-1 0; 0 -1]`, which points every vector the opposite way: two quarter turns make a half turn. `R.^2` squares each entry, and $(-1)^2 = 1$, so the minus sign vanishes. Its determinant is $0 \cdot 0 - 1 \cdot 1 = -1$, not $+1$, which marks a mirror image rather than a turn. It takes four quarter turns, `R^4`, to get back to the identity.
+
+=== mat01-l05 | Practice: Backslash and linear systems
+--- for
+l05-backslash-and-linear-systems
+
++++ question | A two-by-two solve
+--- ask
+What is `x(1)` after these lines? Type the number.
+
+```matlab
+A = [4 -2; 1 1];
+b = [2; 5];
+x = A \ b;
+```
+--- answer
+2
+--- why
+`A \ b` solves $4x_1 - 2x_2 = 2$ and $x_1 + x_2 = 5$. From the second, $x_1 = 5 - x_2$. Put that in the first: $20 - 4x_2 - 2x_2 = 2$, so $x_2 = 3$ and $x_1 = 2$. Check with the residual: $4 \cdot 2 - 2 \cdot 3 = 2$ and $2 + 3 = 5$, so `A*x - b` is zero.
+
++++ question | Dividing from the right
+--- ask
+What does `x = [7 11] / [1 2; 3 4]` do?
+--- choice
+It divides element by element and stops with an error, because the sizes differ.
+--- choice
+It solves $\mathbf{A}\mathbf{x} = \mathbf{b}$ for a column and gives `[-3; 5]`.
+--- choice correct
+It solves $\mathbf{x}\mathbf{A} = \mathbf{b}$ for a row `x` and gives `[2.5 1.5]`.
+--- choice
+It computes the least-squares scale factor between the row and the matrix, a single number.
+--- why
+The slash puts the matrix on the right of the unknown, so `x` is a 1-by-2 row with $x_1 \cdot 1 + x_2 \cdot 3 = 7$ and $x_1 \cdot 2 + x_2 \cdot 4 = 11$. Solving gives $x_2 = 1.5$ and $x_1 = 2.5$; check: $2.5 + 4.5 = 7$ and $5 + 6 = 11$. `[-3; 5]` is what `[1 2; 3 4] \ [7; 11]` gives, the other problem. Order matters because matrix products do not commute.
+
++++ question | Fitting a parabola
+--- ask
+`t` and `y` are column vectors of 50 measurements. You want the least-squares fit $y \approx c_1 + c_2 t + c_3 t^2$. Which line builds the matrix `M` for `c = M \ y`?
+--- choice
+`M = [1 t t^2];`
+--- choice correct
+`M = [ones(size(t)) t t.^2];`
+--- choice
+`M = [ones(size(t)) t t*t];`
+--- choice
+`M = [ones(size(t)); t; t.^2];`
+--- why
+Each measurement gives one equation, so `M` needs one row per sample and one column per unknown: a column of ones for $c_1$, the times for $c_2$, and the squared times for $c_3$. That makes a 50-by-3 tall matrix, and backslash returns the least-squares fit. `t^2` and `t*t` are matrix products of a 50-by-1 column with itself, which is an error; the square of each time needs `.^`. A lone `1` cannot sit beside a 50-row column. Semicolons stack the pieces into one 150-by-1 column, which is not the system you meant.
+
++++ question | A right-hand side typed as a row
+--- ask
+`A` is 2-by-2 and you type `x = A \ [13 14]`. What happens?
+--- choice
+MATLAB turns the row into a column and solves the system.
+--- choice correct
+It stops with an error: the right-hand side must have as many rows as `A`, and `[13 14]` has one row.
+--- choice
+It returns a least-squares answer, because the system is no longer square.
+--- choice
+It returns the element-wise ratios of the row to the diagonal of `A`.
+--- why
+`A \ b` solves $\mathbf{A}\mathbf{x} = \mathbf{b}$, so `b` must have one row per equation: 2 here. A 1-by-2 row has only one row, so MATLAB reports that the sizes do not fit. Nothing is turned around for you. Type `[13; 14]`, or write `[13 14]'`. Checking `size` of both sides before a solve catches this at once.
+
++++ question | Backslash with the pieces swapped
+--- ask
+To solve $\mathbf{A}\mathbf{x} = \mathbf{b}$ with `A = [2 1; 1 3]` and `b = [13; 14]`, a teammate types `x = b \ A`. What happens?
+--- choice
+It stops with an error, because `b` is not square.
+--- choice
+It gives the right answer `[5; 3]`, because backslash does not care about order.
+--- choice correct
+It runs with no error and returns a 1-by-2 row: the least-squares answer to $\mathbf{b}\mathbf{X} = \mathbf{A}$, a different problem.
+--- choice
+It gives the inverse of `A` times `b`, the same as `inv(A)*b`.
+--- why
+Backslash solves for the unknown on the right of whatever is on its left, so `b \ A` treats `b`, a 2-by-1 column, as the coefficient matrix and `A` as the right-hand side. That is a tall system with one unknown per column of `A`, and backslash quietly returns its least-squares fit, about `[0.1096 0.1507]`. No error, and a result of the wrong shape. The fix is `x = A \ b`; reading it as "A under b" matches the equation $\mathbf{A}\mathbf{x} = \mathbf{b}$.
+
++++ question | Five hundred right-hand sides
+--- ask
+A calibration must solve $\mathbf{A}\mathbf{x} = \mathbf{b}$ for one 2000-by-2000 matrix `A` and 500 different right-hand sides. Version 1 loops and calls `A \ b` once per right-hand side. Version 2 puts the 500 right-hand sides as the columns of `B` and calls `X = A \ B` once, which factors `A` once and then does two triangle solves per column. Roughly how much less arithmetic does version 2 do?
+--- choice
+About the same, because each column still needs its own solve.
+--- choice
+About 3 times less, the same saving as backslash over `inv`.
+--- choice correct
+About 300 times less.
+--- choice
+Version 2 does more, because it solves a bigger system.
+--- why
+Factoring costs about $\tfrac{2}{3}n^3 = \tfrac{2}{3} \cdot 8 \times 10^9 \approx 5.3 \times 10^9$ operations, and each pair of triangle solves about $2n^2 = 8 \times 10^6$. Version 1 factors 500 times: about $500 \times 5.3 \times 10^9 \approx 2.7 \times 10^{12}$. Version 2 factors once and does 500 cheap solves: about $5.3 \times 10^9 + 500 \times 8 \times 10^6 \approx 9.3 \times 10^9$. The ratio is about 290. The factoring is the expensive part, so do it once.
+
+=== mat01-l06 | Practice: Control flow and preallocation
+--- for
+l06-control-flow-and-preallocation
+
++++ question | Tripling until it passes 100
+--- ask
+What is `steps` after this loop? Type the number.
+
+```matlab
+n = 1;
+steps = 0;
+while n < 100
+    n = n * 3;
+    steps = steps + 1;
+end
+```
+--- answer
+5
+--- why
+Each pass triples `n`: 3, 9, 27, 81, 243. After the fourth pass `n` is 81, still below 100, so the condition is true again and a fifth pass runs, making `n` 243. Now `n < 100` is false and the loop stops with `steps` at 5. A `while` tests its condition before every pass, never in the middle of one.
+
++++ question | A loop over a matrix
+--- ask
+What is `total` after this loop? Type the number.
+
+```matlab
+total = 0;
+for col = [1 2 3; 4 5 6]
+    total = total + col(2);
+end
+```
+--- answer
+15
+--- why
+A `for` loop walks through the columns of whatever sits after the `=`. This matrix has three columns, `[1; 4]`, `[2; 5]` and `[3; 6]`, so the loop runs three times, and each time `col(2)` is the bottom number: 4, 5 and 6. They add to 15. With a row vector each column is one number, which is why loops over `1:n` feel like Python; a matrix gives you whole columns.
+
++++ question | An if on a whole vector
+--- ask
+What does this print? Type the letter.
+
+```matlab
+v = [3 -1 4];
+if v
+    disp("A")
+elseif any(v < 0)
+    disp("B")
+else
+    disp("C")
+end
+```
+--- answer
+A
+--- why
+An `if` on an array is true when every element is nonzero. All three of 3, -1 and 4 are nonzero, so the first branch runs and prints A, even though one element is negative. Many readers expect B. Write `if all(v > 0)` or `if any(v < 0)` to say what you mean; then the test reads the way it behaves.
+
++++ question | Changing the loop counter
+--- ask
+What are `count` and `k` after this loop?
+
+```matlab
+count = 0;
+for k = 1:5
+    k = k + 10;
+    count = count + 1;
+end
+```
+--- choice
+`count` is 1 and `k` is 11, because `k` jumped past the end of the range.
+--- choice correct
+`count` is 5 and `k` is 15.
+--- choice
+`count` is 5 and `k` is 5, because the change inside the body is undone.
+--- choice
+The loop stops with an error, because the loop variable may not be assigned.
+--- why
+Each pass takes the next value from the range `1:5`, whatever the body did to `k` on the previous pass. So the loop still runs five times and `count` is 5. On the last pass `k` starts as 5 and the body makes it 15, and that is the value left behind after the loop. Changing the loop variable is legal but confusing; use a different name for the changed value.
+
++++ question | A preallocated history that lies
+--- ask
+A simulation preallocates and fills a height history, stopping when the vehicle lands:
+
+```matlab
+maxSteps = 1000;
+h = zeros(1, maxSteps);
+h(1) = 100;
+for k = 2:maxSteps
+    h(k) = h(k-1) - 2.2;
+    if h(k) <= 0
+        break
+    end
+end
+avgHeight = mean(h);
+```
+
+It lands at step 47, yet `avgHeight` comes out near 2.3 m, far too low. What is the bug?
+--- choice
+The loop should be a `while` loop; `break` does not work inside `for`.
+--- choice correct
+`h` still holds 953 unused zeros after the landing, and `mean` counts them. Trim with `h = h(1:k)` after the loop.
+--- choice
+`zeros(1, maxSteps)` should be `zeros(maxSteps)`, so there is room for every step.
+--- choice
+`h(k-1)` reads past the start of the array on the first pass.
+--- why
+Preallocating to a safe upper bound is right, but the slots the loop never wrote are still zeros, and they look like real heights. After `break`, `k` holds the last index written, so `h = h(1:k)` keeps only the flight. The true mean over the 47 samples is about 49 m. Filling with `NaN(1, maxSteps)` instead of zeros makes the problem visible, because `mean` then returns `NaN` instead of a wrong but believable number. `zeros(maxSteps)` would make a 1000-by-1000 matrix.
+
++++ question | Stopping at the right sample
+--- ask
+`fuel = [12 15 9 20 8]` is the propellant used in each burn, in kg. You want `k` to end as the burn at which the running total first passes 50 kg. Which loop leaves `k` equal to 4? All start with `total = 0;` and, for the `while` loops, `k = 0;`.
+
+Loop A:
+
+```matlab
+while total <= 50 && k < numel(fuel)
+    k = k + 1;
+    total = total + fuel(k);
+end
+```
+
+Loop B:
+
+```matlab
+for k = 1:numel(fuel)
+    total = total + fuel(k);
+    if total > 50
+        continue
+    end
+end
+```
+
+Loop C:
+
+```matlab
+while total <= 50 || k < numel(fuel)
+    k = k + 1;
+    total = total + fuel(k);
+end
+```
+
+Loop D:
+
+```matlab
+for k = 1:numel(fuel)
+    if total > 50
+        break
+    end
+    total = total + fuel(k);
+end
+```
+--- choice correct
+Loop A
+--- choice
+Loop B
+--- choice
+Loop C
+--- choice
+Loop D
+--- why
+The running total is 12, 27, 36, 56, so the answer is burn 4. Loop A stops as soon as the total passes 50, with `k` at 4, and its second test stops it at the last burn if the total never gets there. Loop B uses `continue`, which only skips the rest of one pass, so the loop runs to the end and leaves `k` at 5. Loop C joins its tests with or, so it keeps going while either is true and also ends at 5. Loop D checks before adding, so it notices the total one pass late and breaks with `k` at 5: an off-by-one.
+
+=== mat01-l07 | Practice: Structs, cells, tables and text
+--- for
+l07-structs-cells-tables-strings
+
++++ question | Rates from a struct array
+--- ask
+What does the last line give? Type the number.
+
+```matlab
+s = struct('name', {'IMU', 'GPS', 'Baro'}, 'rate', {200, 10, 50});
+max([s.rate]) - min([s.rate])
+```
+--- answer
+190
+--- why
+Passing cell arrays to `struct` makes one element per cell, so `s` is a 1-by-3 struct array. `s.rate` produces one value per element, and the square brackets gather them into the numeric row `[200 10 50]`. Its largest value minus its smallest is $200 - 10 = 190$.
+
++++ question | Braces, then an index
+--- ask
+What is the value of the last line? Type the number.
+
+```matlab
+c = {'LOX', [1 2 3], 9.81};
+v = c{2};
+v(end) + numel(c)
+```
+--- answer
+6
+--- why
+Braces take out the contents of a cell, so `v` is the numeric row `[1 2 3]` and `v(end)` is 3. `numel(c)` counts the cells, not what is inside them: there are 3. So the answer is $3 + 3 = 6$. Had the second line been `v = c(2)`, `v` would be a 1-by-1 cell, and `v(end) + 3` would fail, because arithmetic is not defined for cells.
+
++++ question | High and not boosting
+--- ask
+A table `T` has seven rows. Its `alt` column is `[2; 8; 15; 24; 31; 29; 22]` (km) and its `phase` column is categorical, holding boost, boost, boost, coast, coast, descent, descent. What does this give? Type the number.
+
+```matlab
+nnz(T.alt > 20 & T.phase ~= 'boost')
+```
+--- answer
+4
+--- why
+`T.alt > 20` is true for rows 4 to 7 (24, 31, 29, 22). `T.phase ~= 'boost'` is also true for rows 4 to 7, because a categorical compares with text by its label. The element-wise `&` keeps rows where both hold: rows 4, 5, 6 and 7, so `nnz` counts 4. This is logical indexing from lesson 3, working on table columns because `T.alt` and `T.phase` are ordinary column arrays.
+
++++ question | Joining char and joining strings
+--- ask
+What is `numel(x) + numel(y)`? Type the number.
+
+```matlab
+x = ['ab' 'cde'];
+y = ["ab" "cde"];
+```
+--- answer
+7
+--- why
+Square brackets around char arrays glue the letters into one char array, `'abcde'`, with one element per letter: 5. Square brackets around strings make a string array with one element per piece of text: `["ab" "cde"]` is 1-by-2, so 2. The total is 7. `strlength(y)` would give `[2 3]`, the letters in each string.
+
++++ question | A comparison that only fails sometimes
+--- ask
+A logging function holds this test, where `sensor` is a char array such as `'imu'`, `'gps'` or `'baro'`:
+
+```matlab
+if sensor == 'gps'
+    rate = 10;
+end
+```
+
+It works for `'imu'` and `'gps'` but stops with an error for `'baro'`. Why, and what is the fix?
+--- choice
+`'baro'` is not a valid MATLAB name. Rename the sensor.
+--- choice correct
+`==` on char compares letter by letter, so the two sides must have the same length, and `'baro'` has 4 letters. Use `strcmp(sensor, 'gps')`, or store the names as strings.
+--- choice
+`if` cannot test text. Convert with `double(sensor)` first.
+--- choice
+`if` cannot test a whole array. Write `if all(sensor == 'gps')`.
+--- why
+A char array is an array of letters, so `'imu' == 'gps'` compares three pairs and gives `[0 0 0]`, which `if` reads as false. `'baro' == 'gps'` has four letters against three, and MATLAB stops with a size error. `strcmp` compares two pieces of text of any length and returns one true-or-false value. With strings in double quotes, `==` compares whole pieces of text. Wrapping the test in `all` changes nothing, because the size error happens inside `==` before `all` runs.
+
++++ question | Scaling every field by name
+--- ask
+What is `p.cd` after these lines? Type the number.
+
+```matlab
+p.mass = 1200;
+p.cd = 0.3;
+p.area = 1.1;
+f = fieldnames(p);
+for k = 1:numel(f)
+    p.(f{k}) = 2 * p.(f{k});
+end
+```
+--- answer
+0.6
+0.6000
+.6
+--- why
+`fieldnames(p)` returns a 3-by-1 cell array of the field names as text. `f{k}` takes out the k-th name with braces, and `p.(name)` reaches the field whose name is stored in that text, a dynamic field name. So the loop doubles every field in turn: `mass` becomes 2400, `cd` becomes 0.6 and `area` becomes 2.2. Writing `p.(f(k))` with round brackets would fail, because it passes a cell, not text.
+
+=== mat01-l08 | Practice: Printing, saving and loading
+--- for
+l08-printing-and-files
+
++++ question | Zeros in front
+--- ask
+What text does `sprintf('%06.2f', 3.14159)` return? Type it without quotes.
+--- answer
+003.14
+--- why
+`%06.2f` means a fixed-point number with 2 decimals, at least 6 characters wide, padded with zeros instead of spaces. Rounded to 2 decimals the number is `3.14`, which is 4 characters, counting the decimal point. Two zeros in front make it 6 wide: `003.14`. The width counts every character, not only the digits before the point.
+
++++ question | One blank, a matrix of values
+--- ask
+What does this print? Type it exactly, with no spaces.
+
+```matlab
+fprintf('%d,', [1 2 3; 4 5 6])
+```
+--- answer
+1,4,2,5,3,6,
+--- why
+The format spec has one blank, so `fprintf` recycles it once per value, and it reads a matrix in column-major order: down column 1 (1, 4), then column 2 (2, 5), then column 3 (3, 6). Each value is followed by the comma from the template, including the last, and nothing adds a new line. To print the rows in reading order, pass the transpose.
+
++++ question | Two ways to load
+--- ask
+What are `a` and `b` after these lines?
+
+```matlab
+t = 1:5;
+save('run.mat', 't')
+t = 0;
+S = load('run.mat');
+a = numel(t);
+load('run.mat')
+b = numel(t);
+```
+--- choice
+`a` is 5 and `b` is 5, because both loads bring back the saved `t`.
+--- choice correct
+`a` is 1 and `b` is 5.
+--- choice
+`a` is 1 and `b` is 1, because `load` never replaces a variable that already exists.
+--- choice
+`a` is 5 and `b` is 1.
+--- why
+`S = load('run.mat')` puts the file's variables into the struct `S`, so the saved row is `S.t` and the workspace `t` is still 0, one element. The bare `load('run.mat')` pours the file's variables straight into the workspace, replacing `t` with the 5-element row without a word. That silent replacement is why the struct form is the safe one in scripts.
+
++++ question | More values than a whole pass
+--- ask
+What does `fprintf('%d %d\n', [1 2 3])` print?
+--- choice
+`1 2` on one line, then `3 0` on the next, because the missing value is filled with zero.
+--- choice correct
+`1 2` on one line, then `3` on the next with no new line after it, so the next output continues on that line.
+--- choice
+Only `1 2`, because the 3 does not fill a whole pass and is dropped.
+--- choice
+An error, because the number of values is not a multiple of the number of blanks.
+--- why
+`fprintf` recycles the template until the values run out. The first pass uses 1 and 2 and ends with `\n`. The second pass prints 3 and then meets a blank with no value left, so it stops right there, before reaching the `\n`. Nothing is filled in and nothing errors. When a table printout ends with the prompt glued to its last line, count your blanks against your values.
+
++++ question | A number glued into char text
+--- ask
+A report line is built like this:
+
+```matlab
+apo = 152.43;
+disp(['Apogee: ' apo ' m'])
+```
+
+What does it show, and what is the fix?
+--- choice
+`Apogee: 152.43 m`. It works, because square brackets turn numbers into text.
+--- choice
+An error, because a number and char text cannot share one array.
+--- choice correct
+`Apogee: ` then one odd symbol, then ` m`, because MATLAB turns 152.43 into the character with that code. Use `num2str(apo)` inside the brackets, or build a string with `"Apogee: " + apo + " m"`.
+--- choice
+`Apogee: apo m`, because the variable name is inserted instead of its value.
+--- why
+A char array is secretly an array of character codes. Joining a number into it with square brackets does not write the number's digits; it adds one character whose code is that number, here code 152, which is not a letter you can read. `num2str` converts the number into the digits `'152.43'` first. With a string, `+` does that conversion for you.
+
++++ question | A log file with one run in it
+--- ask
+A script writes three runs to one log file:
+
+```matlab
+for run = 1:3
+    fid = fopen('campaign_log.txt', 'w');
+    fprintf(fid, 'run %d: miss %.1f m\n', run, miss(run));
+    fclose(fid);
+end
+```
+
+Afterwards the file holds only the line for run 3. Why, and what is the fix?
+--- choice
+`fclose` deletes the file's contents. Leave it out.
+--- choice correct
+Opening with `'w'` replaces any old file, so each pass throws away the previous line. Open the file once before the loop and close it once after.
+--- choice
+`fprintf` to a file always overwrites. Use `sprintf` instead.
+--- choice
+The format spec needs `\t` instead of `\n` so the lines are kept apart.
+--- why
+The `'w'` mode means write, replacing any old file, and it acts every time `fopen` runs. Opening and closing inside the loop therefore empties the file three times, and only the last line survives. With `fopen` before the loop and `fclose` after it, all three `fprintf` calls write into one open file, one line each. `fclose` only closes the file; it does not erase what was written.
+
+=== mat01-l09 | Practice: Scripts, functions and workspaces
+--- for
+l09-scripts-functions-workspaces
+
++++ question | A function that changes its input
+--- ask
+The file `triple.m` holds:
+
+```matlab
+function y = triple(x)
+    x = 3 * x;
+    y = x + 1;
+end
+```
+
+At the prompt you type `x = 2; y = triple(x);`. What is `x + y` now? Type the number.
+--- answer
+9
+--- why
+The function gets its own workspace with its own `x`, a copy of the value 2. It changes that copy to 6 and returns $6 + 1 = 7$. The caller's `x` is untouched and still 2. So `x + y` is $2 + 7 = 9$. Having the same name inside and outside the function does not link the two variables.
+
++++ question | Catching one output of two
+--- ask
+The file `lowHigh.m` holds:
+
+```matlab
+function [lo, hi] = lowHigh(v)
+    lo = min(v);
+    hi = max(v);
+end
+```
+
+What is `r` after `r = lowHigh([4 9 1])`? Type the number.
+--- answer
+1
+--- why
+A function with several outputs hands them back in the order the declaration lists them. When the caller asks for only one, it gets the first, `lo`, the smallest value: 1. To get only the second, write `[~, r] = lowHigh([4 9 1])`, where the tilde skips the first output.
+
++++ question | A struct passed to a function
+--- ask
+The file `setMass.m` holds:
+
+```matlab
+function p = setMass(p, m)
+    p.mass = m;
+end
+```
+
+A script runs:
+
+```matlab
+cfg.mass = 100;
+setMass(cfg, 250);
+disp(cfg.mass)
+```
+
+What does it print? Type the number.
+--- answer
+100
+--- why
+A struct is passed by value, like an array. The function changes its own copy and returns it, but the script never assigns the result, so the change is lost. `cfg` still holds 100. The fix is `cfg = setMass(cfg, 250);`. A Python programmer expects the dictionary-like struct to change in place; in MATLAB it does not.
+
++++ question | A variable named like a function
+--- ask
+Your Current Folder holds the function file `stage_dv.m`. At the prompt you had earlier typed `stage_dv = 5;`. Now you type `stage_dv(348, 111670, 19000)`. What happens?
+--- choice
+The function runs, because a function call with inputs always goes to the file.
+--- choice correct
+MATLAB treats the line as indexing into your variable and stops with an index error, because variables are looked up before files.
+--- choice
+MATLAB asks which of the two you meant.
+--- choice
+The variable is replaced by the function's result.
+--- why
+MATLAB decides what a name means in a fixed order: a variable in the current workspace first, then functions in the current file, the current folder and the path. Your variable `stage_dv` wins, so the brackets are read as indices, and position 348 does not exist in a 1-by-1 variable. `which stage_dv` would report a variable. `clear stage_dv` removes it and brings the function back.
+
++++ question | A file whose names disagree
+--- ask
+A teammate saves this code in a file called `dv.m`:
+
+```matlab
+function out = deltaV(isp, m0, mf)
+    out = isp * 9.80665 * log(m0 / mf);
+end
+```
+
+Calling `deltaV(300, 5000, 2000)` fails with "Unrecognized function or variable 'deltaV'". Why?
+--- choice
+`log` needs to be written `ln` for the natural logarithm.
+--- choice
+Functions must be called with square brackets around the output.
+--- choice correct
+MATLAB finds functions by file name, so this one is called `dv`. Rename the file `deltaV.m` so the two names match.
+--- choice
+The function needs `global isp m0 mf` before it can use its inputs.
+--- why
+When the file name and the name on the `function` line differ, MATLAB goes by the file name: `dv(300, 5000, 2000)` would work, and `deltaV` is unknown. The Editor's code checker flags the mismatch. Keep the two identical so nobody has to guess. `log` is MATLAB's natural logarithm, and the inputs are already in the function's workspace.
+
++++ question | A script inside a function inside a script
+--- ask
+Three files are in the Current Folder:
+
+```matlab
+% s1.m (a script)
+x = x + 1;
+z = f(x);
+```
+
+```matlab
+% f.m
+function y = f(x)
+    s2;
+    y = x + 1;
+end
+```
+
+```matlab
+% s2.m (a script)
+x = x * 10;
+```
+
+At the prompt you type `x = 2; s1`. What are `x` and `z` in the base workspace afterwards?
+--- choice
+`x` is 30 and `z` is 31, because every script works in the base workspace.
+--- choice correct
+`x` is 3 and `z` is 31.
+--- choice
+`x` is 3 and `z` is 4, because `s2` cannot reach the function's variables.
+--- choice
+`x` is 2 and `z` is 31, because a script cannot change the base workspace.
+--- why
+`s1` runs from the prompt, so it works in the base workspace and makes `x` 3 there. `f(3)` gets a fresh workspace with its own `x` equal to 3. `s2` is a script run by `f`, so it runs in the caller's workspace, which is `f`'s, and makes that `x` 30. `f` returns $30 + 1 = 31$, which becomes `z`. The base `x` stays 3. A script runs in the workspace of whatever ran it, which is only usually the base.
+
+=== mat01-l10 | Practice: Local, nested and anonymous functions, and function handles
+--- for
+l10-function-handles-and-closures
+
++++ question | Two inputs, one expression
+--- ask
+What does the last line give? Type the numbers separated by spaces.
+
+```matlab
+g = @(x, y) x.^2 - y;
+g(3, [1 2])
+```
+--- answer
+8 7
+[8 7]
+8, 7
+--- why
+The anonymous function takes two inputs. With `x` equal to 3 and `y` equal to `[1 2]`, it computes $3^2 = 9$ and subtracts each element of `y`: $9 - 1 = 8$ and $9 - 2 = 7$. A scalar minus a row works element by element, so the answer is the row `[8 7]`.
+
++++ question | A handle that calls a handle
+--- ask
+What does the last line give? Type the number.
+
+```matlab
+f = @(x) x + 1;
+g = @(x) f(x) * 2;
+f = @(x) x + 100;
+g(1)
+```
+--- answer
+4
+--- why
+When `g` is made, it captures the value of every outside variable it mentions, and `f` is one of them. At that moment `f` is the handle that adds 1. Making a new `f` later changes the workspace variable, not the copy inside `g`. So `g(1)` is $(1 + 1) \times 2 = 4$, not $(1 + 100) \times 2 = 202$. A handle is a value like any other, and it is captured the same way.
+
++++ question | Why arrayfun forgives a missing dot
+--- ask
+`arrayfun(@(k) k^2, 1:4)` returns `[1 4 9 16]`, but `integral(@(t) t^2, 0, 1)` stops with an error. Why the difference?
+--- choice
+`arrayfun` adds the missing dot to the expression for you.
+--- choice correct
+`arrayfun` calls the handle once per element, so `k` is always one number and `k^2` is fine. `integral` calls it with a whole vector of points at once, and the matrix power of a row is not defined.
+--- choice
+`integral` only accepts handles to functions stored in files.
+--- choice
+`k` and `t` are treated differently because `t` is reserved for time.
+--- why
+The expression `k^2` is a matrix power, which is fine for a single number and an error for a row. `arrayfun` feeds the elements in one at a time and collects the answers, so it never passes a row. `integral` passes many points in one call for speed and expects one answer per point back. Writing `.^` inside anonymous functions makes the same handle work in both places.
+
++++ question | A handle made too early
+--- ask
+A script runs these lines in this order:
+
+```matlab
+qfun = @(v) 0.5 * rho * v.^2;
+rho = 1.225;
+qfun(100)
+```
+
+What happens on the last line?
+--- choice
+It returns 6125, because `rho` exists by the time the handle is called.
+--- choice correct
+It stops with "Unrecognized function or variable 'rho'", because `rho` did not exist when the handle was made.
+--- choice
+It returns 0, because a missing variable counts as zero.
+--- choice
+The first line stops with an error, because `rho` is not defined yet.
+--- why
+An anonymous function captures values at the moment it is made. When the first line ran there was no variable `rho`, so MATLAB took `rho` to be the name of a function to look up later. Defining a variable afterwards does not reach inside the handle, and when it runs, no function called `rho` exists. Make the handle after its variables, and rebuild it if they change.
+
++++ question | A gain sweep that sweeps nothing
+--- ask
+A script tries three controller gains:
+
+```matlab
+Kp = 0.8;
+ctrl = @(e) Kp * e;
+gains = [0.5 1.0 2.0];
+u = zeros(1, 3);
+for k = 1:3
+    Kp = gains(k);
+    u(k) = ctrl(2);
+end
+```
+
+It prints `u = 1.6 1.6 1.6`. What is wrong, and what is a fix?
+--- choice
+`u` should be grown with `u(end+1)` instead of preallocated.
+--- choice
+The loop variable `k` hides the gain. Rename it.
+--- choice correct
+`ctrl` captured `Kp = 0.8` when it was made, and changing `Kp` later does not reach it. Build `ctrl` inside the loop after setting `Kp`, or make the gain an input: `ctrl = @(e, Kp) Kp * e`.
+--- choice
+`Kp * e` needs a dot, `Kp .* e`, to use the new gain.
+--- why
+Every call to `ctrl` uses the captured 0.8, so each result is $0.8 \times 2 = 1.6$. There is no error and no warning, which is what makes this bug dangerous in a trade study. Rebuilding the handle after each change, or passing the gain in explicitly, makes every call say which gain it means. The preallocation and the loop are fine.
+
++++ question | An accumulator with two handles
+--- ask
+The file `makeAcc.m` holds:
+
+```matlab
+function [inc, get] = makeAcc()
+    total = 0;
+    inc = @add;
+    get = @report;
+    function add(x)
+        total = total + x;
+    end
+    function t = report()
+        t = total;
+    end
+end
+```
+
+What does the last line give? Type the number.
+
+```matlab
+[inc, get] = makeAcc();
+inc(5);
+inc(2);
+[inc2, get2] = makeAcc();
+inc2(100);
+get()
+```
+--- answer
+7
+--- why
+`add` and `report` are nested functions, so their handles share the parent's workspace and keep it alive after `makeAcc` returns. The first call to `makeAcc` makes one workspace with its own `total`; `inc` adds 5 and then 2, and `get` reads the same `total`: 7. The second call makes a separate workspace with a separate `total`, so `inc2(100)` does not touch the first one. Nested handles share live variables; anonymous handles copy values.
+
+=== mat01-l11 | Practice: Checking what goes into a function
+--- for
+l11-validating-inputs
+
++++ question | A default filled by nargin
+--- ask
+The file `scaleBy.m` holds:
+
+```matlab
+function y = scaleBy(x, k)
+    if nargin < 2
+        k = 10;
+    end
+    y = k * x;
+end
+```
+
+What is `scaleBy(3) + scaleBy(3, 2)`? Type the number.
+--- answer
+36
+--- why
+The first call passes one input, so `nargin` is 1, the `if` runs and `k` becomes 10: the result is 30. The second call passes two inputs, so `nargin` is 2 and the given `k` of 2 is kept: the result is 6. The total is 36. A missing input simply does not exist in the function's workspace until the code creates it.
+
++++ question | A cell passed whole or unpacked
+--- ask
+The file `countArgs.m` holds:
+
+```matlab
+function n = countArgs(varargin)
+    n = numel(varargin);
+end
+```
+
+What is `a + b`? Type the number.
+
+```matlab
+c = {1, 2, 3, 4};
+a = countArgs(c);
+b = countArgs(c{:});
+```
+--- answer
+5
+--- why
+`countArgs(c)` passes one input, the cell array itself, so `varargin` holds one cell and `a` is 1. `c{:}` turns the cell array into a comma-separated list, as if you had typed `countArgs(1, 2, 3, 4)`, so `b` is 4. The total is 5. Braces with a colon unpack; round brackets or the bare name pass the container.
+
++++ question | Handing the extras on
+--- ask
+A helper builds a label from a format and any number of values:
+
+```matlab
+function s = label(fmt, varargin)
+    % one line goes here
+end
+```
+
+Which line makes `label('%s at %d Hz', 'IMU', 200)` return `'IMU at 200 Hz'`?
+--- choice
+`s = sprintf(fmt, varargin);`
+--- choice correct
+`s = sprintf(fmt, varargin{:});`
+--- choice
+`s = sprintf(fmt, varargin(:));`
+--- choice
+`s = sprintf(fmt, [varargin{:}]);`
+--- why
+`varargin` is a cell array holding `'IMU'` and `200`. `sprintf` wants the values themselves, one per input, and `varargin{:}` gives exactly that. Passing `varargin` or `varargin(:)` hands over a cell array, which `sprintf` cannot format. `[varargin{:}]` glues the extras into one array; joining `'IMU'` with 200 turns the number into a single character, so the text comes out wrong.
+
++++ question | Which call gets through
+--- ask
+A function begins:
+
+```matlab
+function out = f(n)
+    arguments
+        n (1,1) double {mustBePositive, mustBeInteger}
+    end
+    out = n;
+end
+```
+
+Which call passes every check?
+--- choice
+`f([])`, because value rules pass on an empty array.
+--- choice
+`f(0)`
+--- choice
+`f(2.5)`
+--- choice correct
+`f(int8(7))`
+--- why
+The size check comes first, and `[]` is 0-by-0, not 1-by-1, so it fails there; value rules pass on empty input, but a size rule does not. 0 fails `mustBePositive` and 2.5 fails `mustBeInteger`. `int8(7)` is a different number type, but it can be converted, so the arguments block turns it into the double 7, which is a positive whole number.
+
++++ question | A default that never arrives
+--- ask
+A function starts like this:
+
+```matlab
+function tw = ratio(thrust, mass, g)
+    if nargin < 2
+        g = 9.80665;
+    end
+    tw = thrust / (mass * g);
+end
+```
+
+`ratio(7.6e6, 549e3)` stops with an error that `g` is not defined. What is the fix?
+--- choice
+Declare `global g` at the top of the function.
+--- choice correct
+The test must be `nargin < 3`: with two inputs passed, `nargin` is 2, so the default is never set.
+--- choice
+Replace `nargin` with `nargout`.
+--- choice
+Move the `if` block below the line that computes `tw`.
+--- why
+`nargin` counts the inputs the caller passed. The default for the third input must run whenever fewer than three were passed, so the test is `nargin < 3`. With `nargin < 2`, a two-input call skips the block and `g` never exists. An arguments block with `g (1,1) double = 9.80665` avoids this kind of off-by-one entirely.
+
++++ question | Calling a function with options
+--- ask
+A function begins:
+
+```matlab
+function y = f(data, opts)
+    arguments
+        data (:,3) double
+        opts.Gain (1,1) double = 1
+    end
+    y = opts.Gain * data;
+end
+```
+
+`D` is a 100-by-3 matrix. Which call works?
+--- choice
+`f(D, 2)`
+--- choice
+`f(Gain=2, D)`
+--- choice
+`f(D, "Gain", [1 2])`
+--- choice correct
+`f(D, "Gain", 2)`
+--- why
+`Gain` is a name-value option, so the caller must name it: `"Gain", 2`, or `Gain=2` in R2021a and later. A bare `2` is not a name. Name-value options always come after the positional inputs, so `f(Gain=2, D)` is not allowed. `[1 2]` fails the `(1,1)` size check. The call that works gives the name, then a scalar value, after the data.
+
+=== mat01-l12 | Practice: Classes in MATLAB, and handle versus value
+--- for
+l12-classdef-handle-and-value
+
++++ question | Copying a value object
+--- ask
+`Pt` is a value class with one property `x` and a constructor that sets it. What is `a.x` at the end? Type the number.
+
+```matlab
+a = Pt(1);
+b = a;
+b.x = 5;
+```
+--- answer
+1
+--- why
+A value class copies on assignment, like a number. `b = a` makes an independent object, and setting `b.x` changes only that copy. `a.x` stays 1. With a handle class, `b` would be a second name for the same object and `a.x` would be 5.
+
++++ question | The same function, two kinds of tank
+--- ask
+`TankV` is the `FuelTank` class from the lesson written without `< handle`, and `FuelTank` is the handle version. Both have a `Mass` property. A function holds:
+
+```matlab
+function resetTank(t)
+    t.Mass = 0;
+end
+```
+
+A script runs `tv = TankV(300); resetTank(tv);` and `th = FuelTank(300); resetTank(th);`. What are `tv.Mass` and `th.Mass`?
+--- choice
+0 and 0, because the function sets the property directly.
+--- choice correct
+300 and 0.
+--- choice
+0 and 300.
+--- choice
+300 and 300, because functions always get copies.
+--- why
+The value object arrives as a copy, so the function empties its own copy and returns nothing; the caller's `tv` still holds 300. The handle object arrives as a reference to the one tank, so setting `Mass` through it changes the caller's tank to 0. Same code, different result: that is the whole handle-versus-value choice.
+
++++ question | A property that refuses a value
+--- ask
+`Burn` is a value class whose property is declared `DeltaV (1,1) double {mustBeNonnegative} = 0`. What happens here?
+
+```matlab
+b = Burn();
+b.DeltaV = 12;
+b.DeltaV = -1;
+```
+--- choice
+The last line sets `DeltaV` to -1; validators only run in the constructor.
+--- choice
+The last line sets `DeltaV` to 0, the nearest allowed value.
+--- choice correct
+The last line stops with an error, and `b.DeltaV` keeps the value 12.
+--- choice
+The second line stops with an error, because 12 is not the default.
+--- why
+Property validation runs on every assignment, wherever it happens, not only in the constructor. -1 breaks `mustBeNonnegative`, so MATLAB refuses the assignment with an error and leaves the property as it was, 12. Nothing is rounded or clipped for you. That is how a class guards its own data.
+
++++ question | Deleting a shared tank
+--- ask
+What does the last line give? Type the two values separated by a space.
+
+```matlab
+a = FuelTank(500);
+b = a;
+c = FuelTank(500);
+delete(a)
+[isvalid(b) isvalid(c)]
+```
+--- answer
+0 1
+[0 1]
+0, 1
+--- why
+`b = a` copies the reference, so `a` and `b` name one tank. `delete(a)` destroys that tank, so every name that reaches it now points at a deleted object, and `isvalid(b)` is false. `c` was built by its own constructor call, a separate tank, so it is still valid. Deleting through one name deletes for all of them.
+
++++ question | A step that goes nowhere
+--- ask
+A simulation uses this class:
+
+```matlab
+classdef Integrator
+    properties
+        X = 0
+        V = 1
+    end
+    methods
+        function step(obj, dt)
+            obj.X = obj.X + obj.V * dt;
+        end
+    end
+end
+```
+
+After `s = Integrator(); s.step(0.1); s.step(0.1);`, `s.X` is still 0. What is a correct fix?
+--- choice
+Write `obj.X += obj.V * dt` so the change sticks.
+--- choice correct
+Either make it `classdef Integrator < handle`, or have `step` return `obj` and call it as `s = s.step(0.1);`.
+--- choice
+Call it as `step(s, 0.1)` instead of `s.step(0.1)`.
+--- choice
+Give `X` the validator `mustBeFinite` so MATLAB saves the new value.
+--- why
+`Integrator` is a value class, so `step` receives a copy, changes the copy and throws it away, with no error. The two cures are the two kinds of class: a handle class, where `obj` reaches the caller's object, or a value class whose changing methods return `obj` and whose callers assign it back. The two call forms mean the same thing, and a validator only checks values.
+
++++ question | A struct holding a tank
+--- ask
+What are `sc.tank.Mass` and `sc.name` at the end? `FuelTank` is the handle class from the lesson.
+
+```matlab
+sc.name = "A";
+sc.tank = FuelTank(400);
+sc2 = sc;
+sc2.name = "B";
+sc2.tank.drain(5, 20);
+```
+--- choice
+400 and "A", because copying the struct copied the tank too.
+--- choice correct
+300 and "A".
+--- choice
+300 and "B", because `sc` and `sc2` are the same struct.
+--- choice
+400 and "B".
+--- why
+A struct is a value, so `sc2 = sc` makes a separate struct, and changing `sc2.name` leaves `sc.name` as "A". But the `tank` field holds a reference to a handle object, and copying the struct copies only the reference. Both structs reach the same tank, and draining $5 \times 20 = 100\,\mathrm{kg}$ through `sc2` leaves 300 kg for `sc` too. A value container does not make the handles inside it into values.
+
+=== mat01-l13 | Practice: Profiling and making code fast
+--- for
+l13-profiling-and-speed
+
++++ question | A stopwatch someone else reset
+--- ask
+You time a script like this:
+
+```matlab
+tic
+prepareData();     % this function calls tic and toc itself
+runSim();
+t = toc;
+```
+
+`t` comes out much smaller than the time you waited. Why, and what is the fix?
+--- choice
+`toc` rounds down to whole seconds. Use `timeit` instead.
+--- choice correct
+`tic` with no output starts one shared stopwatch, and the `tic` inside `prepareData` restarted it. Use your own timer: `id = tic; ... t = toc(id);`.
+--- choice
+The Profiler was on and slowed the clock.
+--- choice
+`toc` only measures the last function called.
+--- why
+A plain `tic` resets the single stopwatch that every plain `toc` reads. When `prepareData` ran its own `tic`, your start time was lost, and your `toc` measured only from inside `prepareData`. Taking an output from `tic` gives a timer id that belongs to you alone, and `toc(id)` reads it whatever other code does.
+
++++ question | Four workers on a 90 percent loop
+--- ask
+The Profiler shows that 90% of a script's run time is in a loop that could be a `parfor`, and the other 10% cannot be split. About how much faster can 4 workers make it, and what is the limit with any number of workers?
+--- choice
+4 times with 4 workers, and no limit.
+--- choice correct
+About 3.1 times with 4 workers, and never more than 10 times.
+--- choice
+About 3.6 times with 4 workers, and never more than 9 times.
+--- choice
+About 1.3 times with 4 workers, because the serial part runs 4 times.
+--- why
+Amdahl's law with $p = 0.9$ and $N = 4$: $S = 1/(0.1 + 0.9/4) = 1/(0.1 + 0.225) = 1/0.325 \approx 3.08$. The serial 10% still takes its full time. As $N$ grows, $0.9/N$ shrinks toward zero and the speedup approaches $1/0.1 = 10$, however many workers you buy.
+
++++ question | The same total with no loop
+--- ask
+`p` is a row of power readings, some negative, sampled every `dt` seconds. This loop adds up the energy from the positive readings only:
+
+```matlab
+total = 0;
+for k = 1:numel(p)
+    if p(k) > 0
+        total = total + p(k) * dt;
+    end
+end
+```
+
+Which line gives the same `total`?
+--- choice
+`total = sum(p > 0) * dt;`
+--- choice correct
+`total = sum(p(p > 0)) * dt;`
+--- choice
+`total = sum(p * (p > 0)) * dt;`
+--- choice
+`total = sum(p) * dt;`
+--- why
+Logical indexing `p(p > 0)` keeps the positive readings, `sum` adds them, and one multiply by `dt` finishes the job. `sum(p > 0) * dt` counts the positive samples, which gives the time spent positive, not the energy. `p * (p > 0)` is a matrix product of two rows, which is an error; `p .* (p > 0)` would have worked. `sum(p)` lets the negative readings cancel some of the positive ones.
+
++++ question | A loop that cannot be split
+--- ask
+Which of these loops can **not** be written as a `parfor`?
+--- choice
+`for k = 1:n, total = total + x(k)^2; end`
+--- choice
+`for k = 1:n, y(k) = sqrt(k) * c; end`, with `y` preallocated.
+--- choice correct
+`for k = 2:n, x(k) = 2 * x(k-1); end`
+--- choice
+`for k = 1:n, z(k) = simulate(k); end`, with `z` preallocated.
+--- why
+`parfor` runs iterations in no fixed order on different workers, so no iteration may use another's result. `x(k) = 2 * x(k-1)` reads the value the previous iteration wrote, so it must run in order. A running total is a reduction, which `parfor` combines at the end. `y(k)` and `z(k)` are sliced outputs, one slot per iteration, and `c` is only read. The chained loop can still be fast: preallocated, the JIT makes it quick.
+
++++ question | timeit given the wrong thing
+--- ask
+To time a simulation, a teammate writes `t = timeit(mySim(params))` and gets an error. What is wrong?
+--- choice
+`timeit` only works on functions with no inputs.
+--- choice correct
+`mySim(params)` runs once right there, and its result, not a function, is handed to `timeit`. Pass a handle instead: `t = timeit(@() mySim(params))`.
+--- choice
+`timeit` must be called after `profile on`.
+--- choice
+`params` must be declared `global` so `timeit` can see it.
+--- why
+`timeit` needs something it can call several times, a function handle. Writing `mySim(params)` calls the function immediately and passes its output. `@() mySim(params)` is an anonymous function with no inputs that captures `params`, so `timeit` can run it as often as it likes and return the median time.
+
++++ question | A pool for a quick loop
+--- ask
+A dispersion study runs 500 cases, and each case takes about 0.002 seconds. Starting a parallel pool on your machine takes about 20 seconds. Should you make the loop a `parfor`?
+--- choice
+Yes: 8 workers make it 8 times faster.
+--- choice correct
+No: the whole loop takes about 1 second on one core, less than the pool takes to start. Keep it a plain preallocated loop, or vectorize it.
+--- choice
+Yes, but only if the output array is grown with `end+1`.
+--- choice
+No, because `parfor` cannot run more than 100 iterations.
+--- why
+$500 \times 0.002 = 1$ second of real work. Starting the pool alone costs 20 seconds, and sending work to the workers costs more on every batch. `parfor` pays off when each iteration is heavy, seconds rather than milliseconds, and there are many of them. Growing arrays is not allowed in a `parfor` anyway.
+
+=== mat01-l14 | Practice: Plotting flight data and lining up time
+--- for
+l14-plotting-and-timetables
+
++++ question | Tile five of six
+--- ask
+After `tiledlayout(2, 3)`, where on the figure is the axes made by `nexttile(5)`?
+--- choice
+The top row, on the right.
+--- choice correct
+The bottom row, in the middle.
+--- choice
+The bottom row, on the left.
+--- choice
+The middle column, because tiles are numbered down the columns.
+--- why
+Tiles are numbered across the rows: 1, 2 and 3 on the top row, then 4, 5 and 6 on the bottom row. Tile 5 is the second tile of the bottom row, the middle one. `subplot(2, 3, 5)` counts the same way. This is the one place where MATLAB counts across rows rather than down columns.
+
++++ question | A point on a logarithmic grid
+--- ask
+`f = logspace(0, 4, 9)`. What is `f(3)`? Type the number.
+--- answer
+10
+--- why
+`logspace(0, 4, 9)` makes 9 points from $10^0$ to $10^4$, evenly spaced in the exponent. The exponents go from 0 to 4 in 8 equal steps of 0.5: 0, 0.5, 1, 1.5, and so on. The third exponent is 1, so `f(3)` is $10^1 = 10$. Two points per decade is coarse; a smooth Bode-style curve wants many more.
+
++++ question | Resampling onto odd seconds
+--- ask
+A timetable `TT` has row times 0, 2 and 4 seconds and one variable with values 10, 20 and 50. What values does `retime(TT, seconds([1 3])', m)` give with the method `m` equal to `'previous'`, and with `'linear'`?
+--- choice
+`'previous'` gives 20 and 50; `'linear'` gives 15 and 35.
+--- choice correct
+`'previous'` gives 10 and 20; `'linear'` gives 15 and 35.
+--- choice
+`'previous'` gives 10 and 20; `'linear'` gives 15 and 30.
+--- choice
+Both give 15 and 35, because `retime` always interpolates.
+--- why
+`'previous'` takes the latest sample at or before each new time: at 1 s that is the 0 s sample, 10; at 3 s it is the 2 s sample, 20. `'linear'` draws a straight line between the neighbors: halfway from 10 to 20 is 15, and halfway from 20 to 50 is 35. The method is your choice, and it changes the numbers.
+
++++ question | Rows in a time range
+--- ask
+A timetable holds one row per second, with row times 0, 1, 2, and so on up to 60 seconds. How many rows does `TT(timerange(seconds(10), seconds(20)), :)` keep? Type the number.
+--- answer
+10
+--- why
+`timerange` keeps rows from the start time up to, but not including, the end time. So it keeps 10, 11, and so on to 19 seconds: 10 rows. The 20-second row is left out. That half-open rule means two ranges such as 10 to 20 and 20 to 30 never count the same row twice.
+
++++ question | Three runs, one line
+--- ask
+A script plots three simulation runs on one axes:
+
+```matlab
+figure
+for r = 1:3
+    plot(t, alt(:, r))
+end
+legend('run 1', 'run 2', 'run 3')
+```
+
+Only one line appears, and the legend warns about extra entries. What is the fix?
+--- choice
+Call `figure` inside the loop so each run gets a window.
+--- choice correct
+Put `hold on` before the loop, so each `plot` adds to the axes instead of replacing what is there, and `hold off` after it.
+--- choice
+Use `nexttile` before each `plot`.
+--- choice
+Pass `'LineWidth', 1.5` so the hidden lines become visible.
+--- why
+By default each `plot` call clears the axes and draws only its own line, so after the loop only run 3 is left, and the legend has three names for one line. `hold on` keeps what is drawn and adds to it. A new figure or a new tile per run would show all three, but not on one axes, which is what the task asked for.
+
++++ question | Replaying what the flight computer saw
+--- ask
+`imu` is a timetable logged at 200 Hz and `gps` one logged at 5 Hz. For a replay of the flight software, you want the GPS altitude as the flight computer had it at each IMU time. Which call?
+--- choice correct
+`synchronize(imu, gps, 'first', 'previous')`
+--- choice
+`synchronize(gps, imu, 'first', 'previous')`
+--- choice
+`synchronize(imu, gps, 'first', 'nearest')`
+--- choice
+`synchronize(imu, gps)`
+--- why
+`'first'` puts the result on the first timetable's times, so `imu` must come first. `'previous'` takes the latest GPS sample at or before each IMU time, which is exactly what existed on board at that moment. `'nearest'` can pick a GPS sample from slightly in the future, fine for analysis but not a faithful replay. With no arguments, `synchronize` uses every time stamp from both timetables and leaves the gaps missing instead of filling them.
+
+=== mat01-test | MATLAB core language: module test
+--- teach
+The test covers the whole module: the desktop and how MATLAB finds a name, building and reshaping matrices, indexing and masks, element-wise versus matrix operations, backslash and conditioning, loops and preallocation, structs, cells, tables and text, printing and files, scripts, functions and workspaces, handles and closures, input validation, handle and value classes, profiling and parallel speedup, and plotting and timetables. Most questions combine two or more lessons: you trace code by hand, find why it fails, or pick the real reason. To get ready, redo the practice questions of the lessons that felt hard, and work each program out on paper before you answer.
+--- gate
+questions 13
+minutes 25
+
++++ question | Two squares of one matrix
+--- ask
+What is `P(2,2) - Q(2,2)`? Type the number.
+
+```matlab
+A = reshape(1:9, 3, 3)';
+P = A^2;
+Q = A.^2;
+```
+--- answer
+56
+--- why
+`reshape(1:9, 3, 3)` fills down the columns, and the transpose turns that into the rows `[1 2 3]`, `[4 5 6]` and `[7 8 9]`. `A.^2` squares each entry, so `Q(2,2)` is $5^2 = 25$. `A^2` is the matrix product `A*A`, so `P(2,2)` is row 2 dotted with column 2: $4 \cdot 2 + 5 \cdot 5 + 6 \cdot 8 = 8 + 25 + 48 = 81$. The difference is 56. Both run without error on a square matrix, which is why the missing or extra dot survives review.
+
++++ question | Differences from Python
+--- ask
+A Python function takes the differences between neighboring samples of a list `x` of length `n`:
+
+```python
+out = []
+for i in range(1, n):
+    out.append(x[i] - x[i-1])
+```
+
+Which MATLAB version gives the same values?
+--- choice
+`out = zeros(1, n-1); for k = 1:n-1, out(k) = x(k) - x(k-1); end`
+--- choice correct
+`out = zeros(1, n-1); for k = 2:n, out(k-1) = x(k) - x(k-1); end`
+--- choice
+`out = zeros(1, n); for k = 2:n, out(k) = x(k) - x(k-1); end`
+--- choice
+`out = zeros(1, n-1); for k = 1:n, out(k) = x(k+1) - x(k); end`
+--- why
+Python's `range(1, n)` visits 1 to $n - 1$, the second element to the last, which in MATLAB's counting are positions 2 to $n$. The loop must therefore run `k = 2:n`, and the result has $n - 1$ slots, so the $k$-th difference goes in slot $k - 1$. Starting at `k = 1` asks for `x(0)`, an error. `zeros(1, n)` leaves a stray 0 in slot 1. Running `k = 1:n` with `x(k+1)` reads past the end. The built-in `diff(x)` does the same job in one call.
+
++++ question | Digits you can trust
+--- ask
+A 400-by-400 system has `cond(A)` of about $10^{11}$. You solve it with `x = A \ b`, and `norm(A*x - b)` is about $10^{-15}$. About how many significant digits of `x` can you trust? Type the number.
+--- answer
+5
+about 5
+five
+5 digits
+--- why
+A `double` carries about 16 significant digits, and a condition number of $10^{k}$ can cost about $k$ of them, so expect about $16 - 11 = 5$. The tiny residual only says that `x` satisfies the equations as well as `double` arithmetic can; on a touchy system, very different `x` values all satisfy the equations that well. Backslash cannot beat the condition number, but unlike `inv(A)*b` it adds no avoidable error on top.
+
++++ question | A list of names built one at a time
+--- ask
+A script builds 20,000 file names:
+
+```matlab
+names = {};
+for k = 1:20000
+    names = [names, {sprintf('run_%05d.csv', k)}];
+end
+```
+
+It is slow, and the time roughly quadruples when the count doubles. Why, and what is the fix?
+--- choice
+`sprintf` is slow. Build the names with `num2str` instead.
+--- choice
+Cell arrays are always slow. Store the names in a numeric matrix.
+--- choice correct
+Each pass copies the whole growing cell array into a new one, so the work grows like $n^2$. Preallocate with `names = cell(1, 20000)` and fill `names{k} = ...`.
+--- choice
+The loop should be a `parfor`, so the names are built in parallel.
+--- why
+`[names, {...}]` makes a new cell array one element longer and copies every old element into it, just as `x(end+1)` can for numbers: about $n(n-1)/2$ copies, which is quadratic, and quadratic work quadruples when $n$ doubles. `cell(1, n)` makes all the slots at once, and filling by index is linear. A `parfor` cannot grow an array at all. Text of different lengths cannot live in a numeric matrix, which is why a cell array is the right container here.
+
++++ question | Codes, not letters
+--- ask
+What does this print? Type it with a single space between the numbers.
+
+```matlab
+fprintf('%d ', 'AB')
+```
+--- answer
+65 66
+--- why
+A char array is an array of character codes, and `%d` is a numeric conversion, so `fprintf` prints each code as a number. `'A'` is 65 and `'B'` is 66. The template has one blank, so it is recycled once per letter, each time followed by a space. `%s` would have printed `AB`. The same fact explains why `double('282')` gives codes rather than the number 282.
+
++++ question | Round brackets or braces on a table
+--- ask
+`T` is a table with a numeric variable `alt`. What are `class(x)` and `class(y)`?
+
+```matlab
+x = T(1:2, 'alt');
+y = T{1:2, 'alt'};
+```
+--- choice
+Both are `'double'`, because `alt` holds numbers.
+--- choice
+Both are `'table'`, because they were taken from a table.
+--- choice correct
+`x` is a `'table'` and `y` is a `'double'`.
+--- choice
+`x` is a `'double'` and `y` is a `'cell'`, as with cell arrays.
+--- why
+Round brackets keep the container: `T(rows, vars)` returns a smaller table, with its variable names. Braces open it: `T{rows, vars}` returns the contents as a plain array, here a 2-by-1 double ready for arithmetic. It is the same rule as for cell arrays, where `c(k)` is a cell and `c{k}` is what the cell holds. `T.alt(1:2)` would also give the doubles.
+
++++ question | A handle that carries a variable in
+--- ask
+The file `applyTo.m` holds:
+
+```matlab
+function r = applyTo(f, x)
+    r = f(x);
+end
+```
+
+A script runs:
+
+```matlab
+g0 = 9.81;
+w = @(m) m * g0;
+r = applyTo(w, 100)
+```
+
+What is `r`? Type the number.
+--- answer
+981
+--- why
+`applyTo` has its own workspace and cannot see the script's `g0`. It does not need to: when `w` was made, it captured the value 9.81 inside itself. The handle arrives as an ordinary input and carries its captured value with it, so `f(100)` is $100 \times 9.81 = 981$. This is how solvers such as `fzero` and `ode45` get your parameters without you passing them one by one.
+
++++ question | Handles made in a loop
+--- ask
+What does the last line give? Type the number.
+
+```matlab
+hs = cell(1, 3);
+gain = 1;
+for k = 1:3
+    gain = gain * 2;
+    hs{k} = @(x) gain * x + k;
+end
+gain = 100;
+h = hs{2};
+h(1)
+```
+--- answer
+6
+--- why
+Each handle captures the current values of `gain` and `k` when its line runs. On the second pass `gain` has been doubled twice, to 4, and `k` is 2, so `hs{2}` computes $4x + 2$. Setting `gain` to 100 after the loop changes only the workspace. So `h(1)` is $4 + 2 = 6$. In Python, three lambdas made the same way would all see the final values.
+
++++ question | Defaults and an option
+--- ask
+The file `pad.m` holds:
+
+```matlab
+function out = pad(x, n, opts)
+    arguments
+        x (1,:) double
+        n (1,1) double {mustBeInteger, mustBeNonnegative} = 2
+        opts.Value (1,1) double = 0
+    end
+    out = [x, opts.Value * ones(1, n)];
+end
+```
+
+What is `sum(pad([1 2 3], Value=7))`? Type the number.
+--- answer
+20
+--- why
+The call gives `x` and the option `Value`, but not `n`, so `n` takes its default of 2. `opts.Value * ones(1, 2)` is `[7 7]`, and joining it after `x` makes `[1 2 3 7 7]`. The sum is $6 + 14 = 20$. Name-value options come after the positional inputs, so leaving out `n` does not make MATLAB read `Value` as `n`.
+
++++ question | Hits counted by value and by handle
+--- ask
+A class and a function:
+
+```matlab
+classdef Tracker
+    properties
+        Hits = 0
+    end
+    methods
+        function obj = hit(obj)
+            obj.Hits = obj.Hits + 1;
+        end
+    end
+end
+```
+
+```matlab
+function t = processAll(t, n)
+    for k = 1:n
+        t.hit();
+    end
+end
+```
+
+What is `t.Hits` after `t = processAll(Tracker(), 3);`? And what would it be if the first line were `classdef Tracker < handle`, with nothing else changed?
+--- choice
+3 and 3.
+--- choice correct
+0 as written, and 3 as a handle class.
+--- choice
+3 as written, and 0 as a handle class.
+--- choice
+0 and 0, because `processAll` returns its input unchanged.
+--- why
+As a value class, `t.hit()` works on a copy and returns the changed copy, which nobody assigns, so every call is lost and `processAll` returns an object with 0 hits. Inside a function this silent loss is easy to miss. As a handle class, `t` is a reference, so each `t.hit()` changes the one shared object even though its return value is ignored, and the returned `t` reaches that same object with 3 hits. For the value class, the loop body must be `t = t.hit();`.
+
++++ question | A clamp with no loop
+--- ask
+This loop clamps a signal `x` to the band from `-L` to `L` and counts how many samples it had to change:
+
+```matlab
+y = zeros(size(x));
+n = 0;
+for k = 1:numel(x)
+    if abs(x(k)) > L
+        n = n + 1;
+    end
+    y(k) = min(max(x(k), -L), L);
+end
+```
+
+Which vectorized pair gives the same `y` and `n`?
+--- choice
+`y = x; y(abs(x) > L) = L;` and `n = nnz(abs(x) > L);`
+--- choice correct
+`y = min(max(x, -L), L);` and `n = nnz(abs(x) > L);`
+--- choice
+`y = min(max(x, -L), L);` and `n = sum(abs(x) >= L);`
+--- choice
+`y = min(max(x, -L), L);` and `n = numel(find(x > L));`
+--- why
+`max` and `min` work element by element on a whole array against a scalar, so one line clamps every sample. `abs(x) > L` marks the samples outside the band, and `nnz` counts them. The first choice sets clipped negative samples to `+L`, losing their sign. `>=` also counts samples sitting exactly on the limit, which the loop did not change. `find(x > L)` misses the samples below `-L`.
+
++++ question | More workers for the same script
+--- ask
+A campaign script spends 30% of its time reading CSV files, which cannot be split, and 70% in a `parfor` loop. You move from 8 workers to 64. What happens to the speedup?
+--- choice
+It goes from about 8 to about 64 times.
+--- choice
+It goes from about 5.6 to about 45 times.
+--- choice correct
+It goes from about 2.6 to about 3.2 times, and can never pass about 3.3; the CSV reading is the part to attack.
+--- choice
+It gets worse, because more workers always slow a script down.
+--- why
+Amdahl's law with $p = 0.7$: for 8 workers $S = 1/(0.3 + 0.7/8) = 1/0.3875 \approx 2.6$, and for 64 workers $S = 1/(0.3 + 0.7/64) \approx 1/0.311 \approx 3.2$. The limit is $1/0.3 \approx 3.3$. Eight times the workers bought about 25% more speed. Profiling the serial 30% and shrinking it, for example by saving the parsed data once in a `.mat` file, is worth far more.
+
++++ question | Lining up a slow sensor by interpolation
+--- ask
+Timetable `A` has row times 0, 1, 2 and 3 seconds. Timetable `B` has two rows: 10 at 0.4 seconds and 30 at 1.9 seconds. In `C = synchronize(A, B, 'first', 'linear')`, what is `B`'s value in the row at 1 second? Type the number.
+--- answer
+18
+--- why
+`'first'` keeps `A`'s row times, and `'linear'` draws a straight line between `B`'s neighboring samples. From 0.4 s to 1.9 s the value climbs 20 over 1.5 s. At 1 s, 0.6 s have passed, which is $0.6 / 1.5 = 0.4$ of the way, so the value is $10 + 0.4 \times 20 = 18$. With `'previous'` the row would hold 10, the latest sample at or before 1 s, and with `'nearest'` also 10, since 0.4 s is closer than 1.9 s.
+
++++ question | A band with a gap in it
+--- ask
+A quick-look figure shades the stretch where dynamic pressure `q` is at or above a limit `L`:
+
+```matlab
+tb = [t(find(q >= L, 1)), t(find(q >= L, 1, 'last'))];
+xregion(ax(k), tb(1), tb(2));
+```
+
+On one flight, `q` is above the limit from 10 s to 20 s, dips below it, and rises above it again from 30 s to 35 s. What does the figure show?
+--- choice
+Two bands, 10 to 20 s and 30 to 35 s, because `find` returns every stretch.
+--- choice correct
+One band from 10 s to 35 s, which wrongly shades the dip between 20 s and 30 s.
+--- choice
+One band from 10 s to 20 s, because `find` stops at the first stretch.
+--- choice
+Nothing, because `find` with `'last'` returns an empty result when there are two stretches.
+--- why
+`find(q >= L, 1)` gives the first sample at or above the limit, at 10 s, and `find(..., 1, 'last')` gives the last one, at 35 s. The code shades everything in between, including the ten seconds when `q` was below the limit. Code that uses only the first and last matches assumes one unbroken stretch. To shade each stretch, find where the mask switches on and off, for example with `diff` of the mask, and draw one band per pair.
+
++++ question | A script that works once
+--- ask
+A driver script, run from the prompt, contains these lines:
+
+```matlab
+data = [3 7 5];
+max = max(data);
+fprintf('peak %d\n', max);
+```
+
+The first run prints `peak 7`. Running the script a second time, in the same session, stops with an error on the second line. Why?
+--- choice
+`fprintf` changed `data` during the first run.
+--- choice correct
+The first run left a variable called `max` in the base workspace. On the second run `max(data)` means indexing that variable with 3, 7 and 5, and it has only one element.
+--- choice
+A script can only be run once per session unless it starts with `clear`.
+--- choice
+`max` is a reserved word, so the line is always illegal; the first run only worked by luck.
+--- why
+A script runs in the base workspace, so every variable it makes stays there afterwards. On the first run `max` was still the built-in function. The assignment then created a variable `max` holding 7, and variables come before functions when MATLAB looks up a name. On the second run `max(data)` asks for elements 3, 7 and 5 of a 1-by-1 variable, which is an index error. Name the result `peak` instead; running the script after `clear` would also have exposed the problem at once.
+
++++ question | A transposed table of pairs
+--- ask
+What is the second line this prints? Type it exactly.
+
+```matlab
+fprintf('%d-%d\n', [1 2 3; 4 5 6]')
+```
+--- answer
+3-4
+--- why
+The transpose makes the 3-by-2 matrix `[1 4; 2 5; 3 6]`. `fprintf` reads it in column-major order: 1, 2, 3, then 4, 5, 6. The template takes two values per pass, so the lines are `1-2`, `3-4` and `5-6`. The transpose trick prints one line per original row only when the template has as many blanks as the matrix has columns. Here the rows have 3 numbers and the template takes 2, so the pairs run across the rows.
