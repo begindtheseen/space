@@ -274,7 +274,7 @@ bye
 
 - **Traps are not inherited by subshells.** The exception: `set -E` makes the `ERR` trap inherited by functions, command substitutions and subshells (lesson 02), and `set -T` does the same for the `DEBUG` and `RETURN` traps.
 - **`ERR`** fires on any command that would trigger `set -e`. It is the place to log where a script died: `trap 'echo "failed at line $LINENO: $BASH_COMMAND" >&2' ERR`.
-- **A failing command inside the handler matters.** In bash, a handler that ends with a failed command does not change the exit status. But under `set -e`, a failed command *inside* the handler stops the handler on the spot — skipping the rest of the cleanup — and the script exits 1, even if it had succeeded. Only an explicit `exit N` in the handler sets the status on purpose. So end a cleanup handler with `return 0`, add `|| true` to steps that may fail, or save `st=$?` on the first line and finish with `exit "$st"`.
+- **A failing command inside the handler matters.** In bash, a handler that ends with a failed command does not change the exit status. But under `set -e`, a failed command *inside* the handler stops the handler on the spot — skipping the rest of the cleanup — and the script exits with that command's status (1 for `false` or a `grep` with no match, 2 for an `ls` of a missing file), even if it had succeeded. Only an explicit `exit N` in the handler sets the status on purpose. So end a cleanup handler with `return 0`, add `|| true` to steps that may fail, or save `st=$?` on the first line and finish with `exit "$st"`.
 
 That last point is easy to check:
 
@@ -344,7 +344,7 @@ Why each line sits where it does:
 - `cleanup` saves `$?` on its first line, because every later command overwrites it.
 - It ends with `return 0`, so a failed `rm` cannot change the script's exit status.
 - `-E` makes the `ERR` trap fire inside `main` too, which is how the second run named line 21.
-- `${0##*/}` is the script's name with its folder stripped off (lesson 04), so messages say `driver.sh`, not `./bin/driver.sh`.
+- `${0##*/}` is the script's name with its folder stripped off (lesson 06), so messages say `driver.sh`, not `./bin/driver.sh`.
 - `main "$@"` at the very bottom means nothing runs while bash is still reading the file. A truncated download or a half-saved edit then fails to parse, rather than running half a script.
 :::
 
@@ -418,10 +418,10 @@ wrote out/summary.csv
 
 ```text
 chan,mean
-BUS_VOLTS,28.028
-GYRO_X_DPS,0.183
-TANK_PSI,310.200
-WHEEL_RPM,4205.970
+BUS_VOLTS,28.017
+GYRO_X_DPS,0.164
+TANK_PSI,310.332
+WHEEL_RPM,4208.751
 ```
 
 `mktemp "${out}.XXXXXX"` makes a file whose name ends in six random characters in place of the `X`s. (The `awk` line averages each channel; lesson 10 explains it.) If the `awk` fails, the trap removes the temporary file, and `out/summary.csv` keeps what it had — last run's results, or nothing at all. Both are honest.
@@ -568,7 +568,7 @@ Three ways to avoid it:
 | `long_cmd & wait "$!"` | let a caught signal interrupt at once | a foreground command delays the handler |
 | `trap -p [SIG]` | show the installed handler | confirms what a sourced library did |
 | `trap … ERR` with `set -E` | report where the script died | `$LINENO` and `$BASH_COMMAND` |
-| failure inside a handler | under `set -e`, stops it and exits 1 | guard risky steps; end with `return 0` |
+| failure inside a handler | under `set -e`, stops it and exits with that command's status | guard risky steps; end with `return 0` |
 | one handler per signal | a second `trap` replaces the first | collect paths in an array instead |
 | record child pids, `kill "${pids[@]}"` | otherwise they are adopted by pid 1 and keep running | `kill 0` signals the whole process group |
 | write to `mktemp "$out.XXXXXX"`, then `mv` | an atomic replace within one filesystem | a crash leaves the old file, not half a new one |

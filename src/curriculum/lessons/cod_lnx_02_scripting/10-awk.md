@@ -207,7 +207,7 @@ awk -F'[= ]+' '$4=="BUS_VOLTS" {s+=$6; n++} END {printf "bus mean over %d sample
 ```
 
 ```text
-bus mean over 100 samples = 27.990
+bus mean over 100 samples = 28.017
 ```
 
 `s+=$6` (read "s plus-equals dollar six") adds to a running total. The bus runs at 28 V, and the first command reported 7.0 — a quarter of the truth, because one line in four is a bus reading. Without knowing the answer, 7.0 would not look absurd. **Count what you sum**: add to your own counter in the same rule that adds to the total, and divide by that.
@@ -383,6 +383,8 @@ awk '/^#/ {next} {print "kept:", $0}' etc/sim.conf
 kept: vehicle = falcon9-s1
 kept: dt      = 0.002
 kept: horizon = 18.0
+kept: seed    = 100000
+kept: outdir  = results/2026-04-02
 ```
 
 The comment line matched `/^#/` ("starts with #"), so `next` skipped the print. Past about three lines, put the program in a file and run `awk -f prog.awk data`, or in a here-document with a quoted delimiter:
