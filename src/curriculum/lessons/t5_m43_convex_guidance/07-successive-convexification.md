@@ -55,7 +55,7 @@ $$
 
 **Step 3: what really happens.** Average the two quaternions, rescale to length one, and rotate: $\mathbf{u}(\mathbf{q}_{\text{mid}}) = (0.7160,\,0.0092,\,5.9571)$.
 
-**Step 4: compare.** The two differ by $0.0505\,\mathrm{m/s^2}$. That is not rounding noise. It is the curve showing itself, between two attitudes only $15°$ apart.
+**Step 4: compare.** The two differ by $0.0505\,\mathrm{m/s^2}$. That is not rounding noise; it is the curve showing itself.
 
 **Sanity check.** Both thrust vectors still have length $6$ (for example, $0.2393^2+0.5983^2+5.9653^2 \approx 36$), as a pure rotation must keep them. The straight-line average has length about $5.95$, a bit shorter — the average of two arrows on a sphere always falls inside it.
 :::
@@ -149,9 +149,15 @@ Since none of this bends into an exact convex form, SCvx does not try to convert
 4. **Update** the reference to the new solution (subject to the safeguards the next lesson builds) and **repeat** until the reference stops changing.
 :::
 
-Some words in that box need unpacking. The **reference trajectory** $(\bar{\mathbf{x}}(t),\bar{\mathbf{u}}(t))$ is the current best guess at the whole flight: states and controls at every moment. On the first pass it is often crude — a straight line from the start to the landing pad. The matrices $\mathbf{A}(t)$ and $\mathbf{B}(t)$ are the Jacobians of the dynamics with respect to the state and the control, evaluated along the reference. The vector $\mathbf{c}(t)$ is the leftover constant that makes the linear model exact on the reference itself. Because the reference changes over the flight, these matrices are **time-varying**: different at every node.
+Some words in that box need unpacking. The **reference trajectory** $(\bar{\mathbf{x}}(t),\bar{\mathbf{u}}(t))$ is the current best guess at the whole flight: states and controls at every moment. The first one is often crude, such as a straight line to the pad. The matrices $\mathbf{A}(t)$ and $\mathbf{B}(t)$ are the Jacobians of the dynamics with respect to the state and the control, evaluated along the reference. The vector $\mathbf{c}(t)$ is the leftover constant that makes the linear model exact on the reference itself. Because the reference changes over the flight, these matrices are **time-varying**: different at every node.
 
-Step 2 is the zero-order-hold discretization from the flight-time lesson, done once per step because $\mathbf{A}$ and $\mathbf{B}$ change from node to node. The result is one update equation per step, $\mathbf{x}_{k+1}=\mathbf{A}_k\mathbf{x}_k+\mathbf{B}_k\mathbf{u}_k+\mathbf{c}_k$, where $k$ counts the nodes.
+Step 2 extends the flight-time lesson's zero-order hold. For a linear system $\dot{\mathbf{x}} = \mathbf{A}\mathbf{x}+\mathbf{B}\mathbf{u}$ with the control held over a step of length $\Delta t$, stack the two matrices into one bigger one and take its **matrix exponential** (the matrix version of $e^x$):
+
+$$
+\exp\!\left(\begin{pmatrix}\mathbf{A} & \mathbf{B}\\ \mathbf{0} & \mathbf{0}\end{pmatrix}\Delta t\right) = \begin{pmatrix}\mathbf{A}_k & \mathbf{B}_k\\ \mathbf{0} & \mathbf{I}\end{pmatrix}.
+$$
+
+Read the exact step matrices off the top row. For the falling point mass this gives back the familiar $\Delta t$ and $\tfrac12\Delta t^2$ terms. Here it is redone at every step, because $\mathbf{A}$ and $\mathbf{B}$ change from node to node (real codes integrate the matrices along the reference, which handles change within a step too). The result is one update per step, $\mathbf{x}_{k+1}=\mathbf{A}_k\mathbf{x}_k+\mathbf{B}_k\mathbf{u}_k+\mathbf{c}_k$, where $k$ counts the nodes.
 
 Now hold on to step 3. *That* solve is a genuine second-order cone program, with every guarantee this module has established: a global optimum of the linearized subproblem, reached in a bounded number of interior-point iterations. What SCvx gives up lives entirely in the loop *around* that solve. The linearized subproblem is not the real problem. It is the real problem's best straight-line guess at the current reference. Solving it exactly tells you nothing certified about the true, curved problem until the loop has converged — and nothing in the loop's construction proves that it will.
 
@@ -161,13 +167,11 @@ This is the easiest mistake to make with SCvx. Every SOCP inside the loop finish
 
 ## What the loop keeps, and what it gives up
 
-It helps to lay the trade out side by side.
-
 What SCvx **keeps**: every inner solve is convex. It is fast, it has an iteration bound, and it always returns either an answer or a clear "infeasible". The machinery from the first half of the module — cones, the SOCP form, the solver — is reused unchanged.
 
-What SCvx **gives up**: any promise about the outer loop. It might need three passes or thirty. It might settle on a trajectory that is locally good but not the global best, because it follows the terrain from wherever the first guess started, like the fog-bound walker from lesson one. It might wander without settling. In flight, that means a budget for the number of passes and a plan for what to fly if the budget runs out — the real-time lesson later in this module takes that up.
+What SCvx **gives up**: any promise about the outer loop. It might need three passes or thirty. It might settle on a locally good trajectory that is not the global best, like the fog-bound walker from lesson one. It might wander without settling. In flight, that means a budget for the number of passes and a plan for what to fly if the budget runs out — the real-time lesson later in this module takes that up.
 
-Why accept the trade at all? Because the alternative for a 6-DoF landing is a general nonlinear solver, which has all the same weaknesses *and* an inner solve with no iteration bound. SCvx keeps as much certainty as the problem allows, and pushes the uncertainty into one place — the loop — where it can be watched, measured and managed.
+Why accept the trade? The alternative for a 6-DoF landing is a general nonlinear solver, with all the same weaknesses *and* no iteration bound inside. SCvx keeps as much certainty as the problem allows, and pushes the uncertainty into one place — the loop — where it can be watched, measured and managed.
 
 ## Check yourself
 
@@ -208,7 +212,7 @@ Which of the four steps of the SCvx loop comes with a certificate, and which ste
 :::
 
 ::: answer
-Step 3, the SOCP solve, is certified: it reaches the global optimum of the linearized subproblem in a bounded number of iterations, with a duality gap to prove it. Step 4, updating the reference and repeating, is where the guarantee is lost. Nothing proves that the chain of references settles down, how many passes it needs, or that where it settles is the true best trajectory. (Step 1 is where the error enters — the linear model is only a local guess — and step 4 is where that error can pile up across passes.)
+Step 3, the SOCP solve, is certified: it reaches the global optimum of the linearized subproblem in a bounded number of iterations, with a duality gap to prove it. Step 4, updating the reference and repeating, is where the guarantee is lost. Nothing proves that the chain of references settles down, how many passes it needs, or that where it settles is the true best trajectory.
 :::
 
 ## Summary
