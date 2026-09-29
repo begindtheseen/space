@@ -1,41 +1,37 @@
 ---
 id: l12-gusto-real-time-scvx
 title: GuSTO, and running SCvx in real time
-minutes: 27
+minutes: 26
 covers:
   - GuSTO and the broader sequential convex programming convergence theory
   - "Real-time implementation: solver code generation, iteration bounds, warm starting, and fixed-point considerations"
 ---
 
-Think about two promises a friend could make about a big jigsaw puzzle. The first: "I will finish it eventually." The second: "I will finish it before dinner." The first promise is worth something. It means your friend will not give up halfway or jam pieces in so badly that the puzzle can never be done. But if guests arrive at seven and the puzzle is on the dining table, only the second promise matters.
+Think about two promises a friend could make about a big jigsaw puzzle. The first: "I will finish it eventually." The second: "I will finish it before dinner." The first is worth something: your friend will not give up halfway. But if guests arrive at seven and the puzzle is on the dining table, only the second one matters.
 
-A landing rocket needs both kinds of promise from its guidance. Lesson 1 showed that a single convex solve gives both at once: it reaches the global optimum, and it does so in a number of iterations that can be bounded before flight. Lessons 7 to 11 then built **successive convexification** (SCvx), the loop that handles attitude and logic, and were honest that the loop gives up that clean pair of guarantees.
+A landing rocket needs both from its guidance. Lesson 1 showed that one convex solve gives both: the global optimum, in an iteration count bounded before flight. Lessons 7 to 11 built **successive convexification** (SCvx), the loop that handles attitude and logic, and admitted that it gives up that clean pair.
 
-This lesson takes the two promises one at a time. First: what can actually be *proven* about the SCvx loop? Here you will meet the convergence theory of **sequential convex programming** — the family name for "solve a convex model, update it, repeat" — and one member of that family, **GuSTO**, built around a proof. Second: what does it take to make the loop answer *before the deadline*, on a flight computer? That is the engineering of real-time implementation: counting the cost, exploiting structure, generating solver code, capping iterations, warm starting, and fitting the numbers into a fixed-point format.
+This lesson takes the two promises in turn. First, what can be *proven* about the loop: the convergence theory of **sequential convex programming** — the family name for "solve a convex model, update it, repeat" — including one member built around a proof, **GuSTO**. Second, what it takes to answer *before the deadline* on a flight computer: counting the cost, exploiting structure, generating solver code, capping iterations, warm starting, and fixed-point numbers.
 
 ## What the convergence theory proves
 
-Picture a marble rolling around a hilly landscape, one nudge at a time. Make one rule: a nudge only counts if it lowers the marble by a real, measurable amount. The ground has a lowest point somewhere, so the marble cannot keep dropping by real amounts forever. Its total drop is limited. So sooner or later the nudges must get tiny — and a marble that can no longer find a way down is sitting on a flat spot.
+Picture a marble nudged around a hilly landscape, with one rule: a nudge only counts if it lowers the marble by a real amount. The ground has a bottom, so the total drop is limited, and sooner or later the nudges must get tiny. A marble that can no longer find a way down is sitting on a flat spot.
 
-That is the whole logic of the convergence proofs for SCvx-type methods. Each accepted step must lower the cost by a real amount (the $\rho$ test from lessons 8 and 9 makes sure of that). The cost cannot fall forever. So the steps must shrink, and the loop must settle on a flat spot.
-
-Notice what the marble picture does *not* say. It does not say the flat spot is the lowest point on the map — it might be a hollow halfway up a hill, exactly the danger lesson 1 opened with. And it does not say how many nudges it takes.
+That is the logic of the convergence proofs for SCvx-type methods. The $\rho$ test of lessons 8 and 9 makes every accepted step lower the cost by a real amount, the cost cannot fall forever, so the loop must settle on a flat spot. Notice what the picture does *not* say: that the flat spot is the lowest point on the map (it might be a hollow halfway up a hill, the danger lesson 1 opened with), or how many nudges it takes.
 
 ### The precise words
 
-A **[[stationary point|stationary-point]]** of an optimization problem is a point where the **first-order necessary conditions** hold: no small move that keeps the constraints satisfied lowers the cost, to first order. For a problem with constraints, those conditions are called the **KKT conditions** (read "K-K-T", after Karush, Kuhn and Tucker, who wrote them down). Every optimum is a stationary point. Not every stationary point is an optimum — some are poor local minima, and some are saddles.
+A **[[stationary point|stationary-point]]** is a point where the **first-order necessary conditions** hold: no small move that keeps the constraints satisfied lowers the cost, to first order. With constraints, these are the **KKT conditions** (read "K-K-T", after Karush, Kuhn and Tucker). Every optimum is a stationary point; not every stationary point is an optimum.
 
 Two results matter here.
 
 - **SCvx itself has a proof.** Yuanqi Mao, Michael Szmuk and Behçet Açıkmeşe showed in 2016 that, under stated assumptions (smooth dynamics and constraints, and a penalty weight $w$ large enough that the $\ell_1$ penalty is exact), the accepted iterates converge to a stationary point of the *original* non-convex problem, from any starting reference. Near such a point, the convergence is fast.
-- **[[GuSTO|gusto-origin]]** — Guaranteed Sequential Trajectory Optimization — is a close cousin, published in 2019 by Riccardo Bonalli, Abhishek Cauligi, Andrew Bylard and Marco Pavone at Stanford. It runs the same loop: linearize about a reference, solve a convex subproblem, test the step, update. What it changes is the bookkeeping. State constraints (a keep-out zone, say) are moved into the cost as penalties whose weight is raised when they are violated. The trust region is still resized by an accept-or-reject test. And the whole analysis is done in continuous time, using the **Pontryagin maximum principle** from lesson 2. Its theorem: under stated assumptions — among them that the control enters the dynamics linearly, as thrust does — the iterates converge to a trajectory that satisfies the maximum principle's necessary conditions for the original problem.
+- **[[GuSTO|gusto-origin]]** — Guaranteed Sequential Trajectory Optimization — is a close cousin, published in 2019 by Riccardo Bonalli, Abhishek Cauligi, Andrew Bylard and Marco Pavone at Stanford. It runs the same loop — linearize, solve a convex subproblem, test the step, update — with different bookkeeping. State constraints (a keep-out zone, say) move into the cost as penalties whose weight is raised when they are violated; the trust region is still resized by an accept-or-reject test; and the analysis is done in continuous time with **Pontryagin's principle** from lesson 2 (called the maximum or the minimum principle, depending on the sign convention). Its theorem: under stated assumptions — among them that the control enters the dynamics linearly, as thrust does — the iterates converge to a trajectory satisfying that principle's necessary conditions for the original problem.
 
-Both methods judge steps with a **merit function**: one number that combines the true cost with penalties for every broken rule. In lesson 9 that was $J$, the penalized true cost. The proofs are, at heart, careful versions of the marble argument applied to that one number.
-
-GuSTO's continuous-time view also gives it a practical bonus. Because its limit satisfies the maximum principle, the multipliers a convex solver returns can serve as a starting guess for an **indirect** (shooting) method, which then polishes the answer quickly. Speed and a proof, borrowed from each other.
+Both methods judge steps with a **merit function**: one number combining the true cost with penalties for every broken rule — lesson 9's penalized true cost $J$. The proofs are careful versions of the marble argument applied to that number. GuSTO's continuous-time view adds a bonus: the multipliers (dual variables) a convex solver returns approximate the costates, so they can seed an **indirect** (shooting) method, which then polishes the answer quickly.
 
 ::: key What the convergence theory buys, precisely
-SCvx (Mao, Szmuk and Açıkmeşe, 2016) and GuSTO (Bonalli, Cauligi, Bylard and Pavone, 2019) both carry proofs: under stated regularity assumptions, the iterates converge to a stationary point — a KKT point, or a point satisfying the maximum principle — of the original non-convex problem. That is a guarantee about reaching *a* stationary point, not the global optimum. And it says nothing about how many iterations that takes on a given problem. It is the promise "I will finish eventually", not "I will finish before dinner".
+SCvx (Mao, Szmuk and Açıkmeşe, 2016) and GuSTO (Bonalli, Cauligi, Bylard and Pavone, 2019) both carry proofs: under stated regularity assumptions, the iterates converge to a stationary point — a KKT point, or a point satisfying the maximum principle — of the original non-convex problem. Not the global optimum, and with no count of iterations for a given problem: "I will finish eventually", not "before dinner".
 :::
 
 ::: note Why it has to be true: the descent argument
@@ -49,22 +45,18 @@ Add up all the accepted steps. The actual reductions add to at most $J_{\text{st
 
 Could the loop stall by rejecting forever? No: as the trust region shrinks, the linear model gets more accurate (its error falls with the square of the step, lesson 7), so $\rho$ climbs toward $1$ and a step is eventually accepted.
 
-Finally, what does "predicted reduction near zero, at a trust region that is not collapsing" mean? The convex model, which matches the true problem's slopes at the reference, can find no direction that lowers the cost. That is the first-order condition: a stationary point. The full proofs handle the fine print (limits, subsequences, the exact penalty), but this is the engine inside them.
+Finally, a predicted reduction near zero means the convex model, which matches the true problem's slopes at the reference, finds no direction that lowers the cost: the first-order condition, a stationary point. The full proofs handle the fine print (limits, subsequences, the exact penalty), but this is their engine.
 :::
 
 ## Why lesson 1's certificate does not carry over whole
 
-Lesson 1 built its entire case for convexity on two guarantees from one SOCP solve: a global optimum, and an iteration count bounded before the flight computer ever sees real data. SCvx — GuSTO included — keeps neither in that strong form.
+Lesson 1's case for convexity rested on two guarantees from one SOCP solve: a global optimum, and an iteration count bounded before flight. SCvx — GuSTO included — keeps neither in that strong form. Each *subproblem* still has the full SOCP guarantee; the *loop* does not. Nothing bounds, before flight, how many outer passes a given dispersed starting state will need, and the convergence proofs do not supply that bound. The answer is the one model predictive control uses for a re-solved optimization that might not finish in time, applied one level up:
 
-Each *subproblem* inside the loop still has the full SOCP guarantee. The *loop itself* does not. Nothing bounds, from first principles and before flight, how many outer passes a given dispersed starting state will need. The convergence proofs do not supply that bound either.
-
-The answer is the one model predictive control uses for an optimization re-solved every cycle that might not finish in time, now applied one level up. It has two parts.
-
-1. **An iteration cap, sized from data.** Run a **dispersion campaign**: thousands of simulated landings with scattered starting states, winds and engine performance. Record how many outer passes each case needs to bring the virtual control below a threshold and pass the true-dynamics check. Take the worst case, not the average, and multiply by a safety factor.
-2. **A certified fallback** for any case that would exceed the cap. Hold the last *accepted* trajectory — it has already passed the true-dynamics check — and re-plan on the next cycle. Or drop to a simpler guidance law the vehicle's mode logic trusts: a 3-DoF lossless-convexification solve that ignores attitude, or a closed-form polynomial law. Which fallback is right depends on the vehicle, but there must be one, written down, and tested.
+1. **An iteration cap, sized from data.** Run a **dispersion campaign**: thousands of simulated landings with scattered starting states, winds and engine performance. Record the outer passes each case needs to bring virtual control below a threshold and pass the true-dynamics check. Take the worst case, not the average, times a safety factor.
+2. **A certified fallback** for any case that would exceed the cap. Hold the last *accepted* trajectory (it already passed the true-dynamics check) and re-plan next cycle, or drop to a simpler law the mode logic trusts: a 3-DoF lossless-convexification solve that ignores attitude, or a closed-form polynomial law. Whichever it is, it must be written down and tested.
 
 ::: example Sizing a cap, and finding it does not fit
-These numbers are made up for illustration, but the steps are the real ones. Suppose a campaign of $1000$ cold-started cases (each starting from a straight-line guess) finds that the worst case needed $12$ outer passes, counting rejected passes, since a rejected pass costs a full solve too. With a safety factor of $1.5$, the cap is
+The numbers are made up; the steps are real. Suppose $1000$ cold-started cases (each from a straight-line guess) show a worst case of $12$ outer passes, counting rejected passes, which cost a full solve too. With a safety factor of $1.5$, the cap is
 
 $$
 12 \times 1.5 = 18 \text{ passes}.
@@ -76,14 +68,14 @@ $$
 18 \times 69\,\mathrm{ms} = 1242\,\mathrm{ms} \approx 1.24\,\mathrm{s}.
 $$
 
-With a re-plan budget of $1\,\mathrm{s}$, that does not fit. Now suppose in-flight re-plans start from the previous cycle's answer instead of from scratch, and a second campaign finds a worst case of $3$ passes. The cap becomes $3 \times 1.5 = 4.5$, rounded up to $5$, and the worst case is $5 \times 69 = 345\,\mathrm{ms}$ — inside the budget with room to spare.
+That misses a $1\,\mathrm{s}$ re-plan budget. Now let in-flight re-plans start from the previous cycle's answer, and suppose a second campaign finds a worst case of $3$ passes. The cap becomes $3 \times 1.5 = 4.5$, rounded up to $5$, and the worst case is $5 \times 69 = 345\,\mathrm{ms}$ — inside the budget with room to spare.
 
-**Sanity check.** The cold start did not become unnecessary; it moved. It can run once, before ignition, with more time. The lesson of the example is that the cap and the warm-start policy have to be designed together.
+**Sanity check.** The cold start did not vanish; it moved to once before ignition, where there is more time. The cap and the warm-start policy have to be designed together.
 :::
 
 ## What one subproblem really costs
 
-To know whether the loop fits, count the arithmetic. A **[[flop|flop]]** is one floating-point operation: one multiply or one add of two decimal numbers. A computer's speed for this kind of work is quoted in flops per second.
+To know whether the loop fits, count the arithmetic in **[[flops|flop]]** — floating-point operations, one multiply or add of two decimal numbers each.
 
 Take the 6-DoF subproblem of lesson 10, with $N$ time steps ($N+1$ nodes). Count its unknowns, $n$:
 
@@ -93,7 +85,7 @@ Take the 6-DoF subproblem of lesson 10, with $N$ time steps ($N+1$ nodes). Count
 
 That gives $n = 14(N+1) + 32N$. Now count the equality constraints, $m$: $14N$ dynamics rows, $N+1$ linearized quaternion-length rows (one per node), and $27$ boundary rows ($14$ fixing the start, $13$ fixing the target — the final mass is left free). So $m = 14N + (N+1) + 27$.
 
-An interior-point solver's main job at each Newton step is solving one linear system of size $M = n + m$ (the **KKT system**). Solved the plain way, as a dense matrix, that costs about $\tfrac{2}{3}M^3$ flops. This is exactly what this module's teaching solver does.
+Each Newton step of an interior-point solver solves one linear system of size $M = n + m$ (the **KKT system**). Solved as a dense matrix — what this module's teaching solver does — that costs about $\tfrac{2}{3}M^3$ flops.
 
 | $N$ | $n$ | $m$ | $M=n+m$ | flops per Newton step |
 | --- | --- | --- | --- | --- |
@@ -134,16 +126,14 @@ $$
 
 Even at $3\,\mathrm{GFLOP/s}$ it is $15.4\,\mathrm{s}$.
 
-**Sanity check.** Powered-descent guidance typically re-plans once or twice a second, with a faster feedback controller tracking the plan in between. So the dense approach is about $50$ to $90$ times too slow, before counting any margin. No node count in the table rescues it.
+**Sanity check.** Powered-descent guidance typically re-plans once or twice a second, with a faster controller tracking the plan in between. So the dense approach is about $45$ to $90$ times too slow, before any margin.
 :::
 
 That number is not a verdict on SCvx. It is a verdict on solving it the way a teaching code does.
 
 ## The structure that saves it
 
-A dense solve treats every unknown as if it might interact with every other. In this problem they do not. The dynamics row for step $k$ involves only $\mathbf{x}_k$, $\mathbf{u}_k$, $\mathbf{x}_{k+1}$ and $\boldsymbol{\nu}_k$ — one step's worth of neighbors. Picture a long line of people passing buckets: each person only touches the person on either side. Write the KKT matrix with the unknowns in time order and almost all of it is zero, except for a **[[band|banded-matrix]]** of blocks along the diagonal. A matrix like that is **sparse**, and it has a special name: **banded**.
-
-A factorization that knows the band is there only works inside it. Its cost grows roughly like $N b^3$, where $b$ is the block size per node, instead of like $M^3$. It grows *linearly* in the number of nodes, not cubically in the total size.
+A dense solve treats every unknown as if it might interact with every other. Here they do not. Picture a line of people passing buckets: each touches only the person on either side. The dynamics row for step $k$ involves only $\mathbf{x}_k$, $\mathbf{u}_k$, $\mathbf{x}_{k+1}$ and $\boldsymbol{\nu}_k$. Order the unknowns in time and the KKT matrix is almost all zeros — it is **sparse** — except for a **[[band|banded-matrix]]** of blocks along the diagonal: it is **banded**. A factorization that works only inside the band costs roughly $N b^3$, with $b$ the block size per node, instead of $M^3$ — *linear* in the number of nodes.
 
 ::: example How much the band buys
 At $N = 10$, $M = 652$, so each node's block holds about $b = 652/10 \approx 65$ unknowns.
@@ -154,42 +144,40 @@ At $N = 10$, $M = 652$, so each node's block holds about $b = 652/10 \approx 65$
 
 **One cold-started run of $10$ passes:** about $0.69\,\mathrm{s}$. **A warm-started re-plan of $2$ passes:** about $0.14\,\mathrm{s}$.
 
-**Sanity check.** At $N = 20$ the dense-to-banded ratio grows to about $270$, because one cost grows like $N^3$ and the other like $N$. The constant in front of $N b^3$ depends on the exact factorization, so treat these as order-of-magnitude figures. The order of magnitude is the point: it is the difference between "nowhere near real time" and "fits".
+**Sanity check.** At $N = 20$ the ratio grows to about $270$, since one cost grows like $N^3$ and the other like $N$. The constant in front of $N b^3$ depends on the factorization, so these are order-of-magnitude figures — and the order of magnitude is the difference between "nowhere near real time" and "fits".
 :::
 
 ### Generating the solver
 
-The second big saving comes from noticing that every SCvx subproblem has the *same shape*. The same variables, the same pattern of which constraint touches which variable, every pass and every guidance cycle. Only the numbers inside change: the Jacobians, the reference, the current state.
-
-That is exactly the situation **[[solver code generation|code-generation]]** is built for. Instead of shipping a general-purpose solver that discovers the problem's structure at run time, a tool reads the problem's fixed shape once, on the ground, and writes a custom solver in plain C for that shape alone. The generated code:
+The second saving comes from noticing that every SCvx subproblem has the *same shape*: the same variables and the same pattern of which constraint touches which variable, every pass and every cycle. Only the numbers change — the Jacobians, the reference, the current state. That is the situation **[[solver code generation|code-generation]]** is built for. Instead of a general-purpose solver that discovers the structure at run time, a tool reads the fixed shape once, on the ground, and writes a custom solver in plain C for that shape alone. The generated code:
 
 - works out the sparsity pattern and the elimination order offline, once;
 - adds a small fixed **regularization** (a tiny number on the diagonal) instead of searching for pivots at run time, so the steps taken are the same every time;
 - uses memory laid out in advance — no memory requested while flying;
 - runs loops with fixed lengths, so its worst-case time can be measured and bounded.
 
-All the principles that make a 3-DoF landing SOCP flight-ready apply to *each* SCvx subproblem unchanged. Real tools that do this include CVXGEN (for quadratic programs) and ECOS (a small embedded solver for SOCPs).
+These apply to *each* SCvx subproblem exactly as to a 3-DoF landing SOCP. Real tools include CVXGEN (for quadratic programs) and ECOS (a small embedded SOCP solver).
 
 ## Warm starting means three different things
 
 To **warm start** is to begin a computation from a previous answer instead of from scratch. In an SCvx guidance system the phrase gets used for three different things, and only two of them help.
 
-1. **Inside one run, pass to pass.** The accepted answer of pass $k$ becomes the reference for pass $k+1$. This is not an option; it is the definition of SCvx.
-2. **Between guidance cycles.** The previous cycle's converged trajectory, shifted forward in time, becomes the first reference of the new cycle. The vehicle has barely moved from the plan in half a second, so this reference is already close, and the loop needs far fewer passes than from a straight-line guess. This is the saving the cap example depended on.
-3. **Inside the solver.** Starting the interior-point method itself at the previous subproblem's optimal point. This is the one that disappoints.
+1. **Pass to pass.** The accepted answer of pass $k$ becomes the reference for pass $k+1$ — the definition of SCvx, not an option.
+2. **Cycle to cycle.** The previous cycle's trajectory, shifted forward in time, becomes the new cycle's first reference. The vehicle has barely left the plan in half a second, so the loop needs far fewer passes than from a straight-line guess. The cap example depended on this.
+3. **Inside the solver.** Starting the interior-point method at the previous subproblem's optimum. This one disappoints.
 
 ::: warning Solver warm starts do not help interior-point methods much
-It is tempting to hand the interior-point solver the previous pass's optimum as its starting point. But an optimum sits on the boundary of its cones, where the barrier is infinite. Nudging it back inside typically lands far from the new problem's **central path** (the curve the method follows to the answer), and little is saved. First-order methods such as ADMM warm start far better, which is one reason they are studied for onboard use. The information that really carries over lives in meanings 1 and 2: a better *reference*, not a better solver starting point. Expecting the solver to warm start well because the *algorithm* reuses the previous answer is a mix-up worth naming before it costs someone a week of debugging.
+It is tempting to start the interior-point solver at the previous pass's optimum. But an optimum sits on the boundary of its cones, where the barrier is infinite. Nudging it back inside typically lands far from the new problem's **central path** (the curve the method follows to the answer), and little is saved. (First-order methods such as ADMM warm start far better, one reason they are studied for onboard use.) What really carries over is meanings 1 and 2: a better *reference*, not a better solver starting point. Do not expect the solver to warm start well merely because the *algorithm* reuses the previous answer.
 :::
 
 ## Fitting the numbers into fixed point
 
-Some flight computers, especially older or radiation-hardened ones, favor **[[fixed-point arithmetic|fixed-point]]**: every number is stored as a whole number of tiny equal steps, like a ruler marked only in millimeters. A ruler like that measures a house and a grain of sand with the *same* spacing. The house is fine. The sand grain rounds to zero or one millimeter.
+Some flight computers, especially older or low-power ones, use **[[fixed-point arithmetic|fixed-point]]**: every number is stored as a whole number of tiny equal steps, like a ruler marked only in millimeters. It measures a house fine, but a grain of sand rounds to zero or one millimeter.
 
-An SCvx subproblem puts numbers of very different natural size into one linear system: quaternion parts near $1$, body rates of hundredths of a radian per second, positions of tens to thousands of meters, and a virtual-control penalty weight $w$ that is *deliberately* huge. One shared fixed-point format either wastes precision on the small numbers or overflows on the large ones.
+An SCvx subproblem mixes very different sizes in one linear system: quaternion parts near $1$, body rates of hundredths of a radian per second, positions of tens to thousands of meters, and a *deliberately* huge penalty weight $w$. One shared format either wastes precision on the small numbers or overflows on the large ones.
 
 ::: example The range one subproblem spans
-Take lesson 10's landing: a body rate of $0.015\,\mathrm{rad/s}$, a position of $28\,\mathrm{m}$, a thrust acceleration $\sigma$ of $5\,\mathrm{m/s^2}$, quaternion parts of order $1$. Add a virtual-control weight of $w = 2\times10^4$, a typical size.
+Lesson 10's landing has a body rate of $0.015\,\mathrm{rad/s}$, a position of $28\,\mathrm{m}$, $\sigma = 5\,\mathrm{m/s^2}$ and quaternion parts near $1$. Add a typical virtual-control weight, $w = 2\times10^4$.
 
 **Largest over smallest:**
 
@@ -197,14 +185,14 @@ $$
 \frac{2\times10^4}{0.015} \approx 1.33\times10^6.
 $$
 
-**In bits.** Each binary digit doubles the range, so the number of bits needed is $\log_2(1.33\times10^6) \approx 20.3$ — call it $21$ bits just to hold both ends of the range, before any arithmetic.
+**In bits.** Each binary digit doubles the range, so the number of bits needed is $\log_2(1.33\times10^6) \approx 20.3$ — call it $21$ bits only to hold both ends of the range, before any arithmetic.
 
-**Compare the formats.** A $16$-bit signed format has $15$ bits for the size of a number ($2^{15} = 32768$ steps), nowhere near enough. A $32$-bit signed format has $31$ bits, and this spread alone eats about two-thirds of them, leaving roughly $10$ bits — about three decimal digits — for the smallest quantity.
+**Compare.** A $16$-bit signed format has $15$ bits ($2^{15} = 32768$ steps): nowhere near enough. A $32$-bit one has $31$; the spread eats two-thirds, leaving about $10$ bits — three decimal digits — for the smallest quantity.
 
-**Sanity check.** Three digits on a body rate of $0.015\,\mathrm{rad/s}$ means steps of about $0.00001\,\mathrm{rad/s}$ at best, and that is before a single multiply has rounded anything.
+**Sanity check.** That is steps of about $0.015/2^{10} \approx 1.5\times10^{-5}\,\mathrm{rad/s}$ on the body rate, before a single multiply has rounded anything.
 :::
 
-The standard fix is **[[non-dimensionalization|nondimensional]]**: divide each variable by a characteristic size so that everything the solver sees is of order $1$. Positions get divided by a characteristic length, rates by a characteristic rate, and the penalty weight is chosen in the *scaled* problem's own units. Then the answer is scaled back afterwards. This is not a tidiness step; it is the difference between a problem the hardware can represent and one that silently loses its small numbers to rounding. And it needs revisiting every time a new kind of state joins the problem — each arrives with its own natural units.
+The standard fix is **[[non-dimensionalization|nondimensional]]**: divide each variable by a characteristic size (positions by a length, rates by a rate) so everything the solver sees is of order $1$, choose the penalty weight in the *scaled* units, and scale the answer back afterwards. It is not tidiness; it decides whether the hardware can represent the problem at all. And it needs revisiting whenever a new kind of state joins the problem, since each arrives with its own natural units.
 
 ## Check yourself
 
@@ -215,7 +203,7 @@ A flight-software review asks: "Does GuSTO give SCvx the same certification stat
 ::: answer
 No. The 3-DoF solve's certification rests on convexity: any local optimum is global, and the iteration count is bounded by a theorem before the data is seen.
 
-GuSTO's guarantee — like SCvx's own convergence proof — is different in kind. It proves that the iterates converge to *a* stationary point of a still non-convex problem. It gives no bound on how many outer passes that takes for a given case, and no promise that the stationary point is the best one. That upgrades the loop from "works well in testing" to "proven to converge, at an unknown rate". That is real progress, but it is not the certificate lesson 1 built. The missing bound is supplied instead by an iteration cap sized from a dispersion campaign, plus a fallback.
+GuSTO's guarantee — like SCvx's own proof — is different in kind: the iterates converge to *a* stationary point of a still non-convex problem, with no bound on how many passes that takes and no promise that the point is the best one. That upgrades the loop from "works well in testing" to "proven to converge, at an unknown rate" — real progress, but not lesson 1's certificate. The missing bound comes instead from a data-sized iteration cap plus a fallback.
 :::
 
 ::: check
@@ -225,7 +213,7 @@ The 6-DoF subproblem has virtual controls and their helper variables, which the 
 ::: answer
 Sparsity comes from *which variables appear together in the same row*, not from how many kinds of variable exist.
 
-The dynamics-with-virtual-control row at step $k$ still involves only $\mathbf{x}_k$, $\mathbf{u}_k$, $\mathbf{x}_{k+1}$ and $\boldsymbol{\nu}_k$ — a local, step-to-neighbor coupling, as banded as the 3-DoF dynamics row. The band is wider, because the state has $14$ numbers instead of $7$ and virtual control adds its own block. The epigraph and trust-region constraints are even more local: each touches one node's or one step's variables only. More kinds of variable widened the band. They did not turn a banded problem into a dense one.
+The dynamics-with-virtual-control row at step $k$ still involves only $\mathbf{x}_k$, $\mathbf{u}_k$, $\mathbf{x}_{k+1}$ and $\boldsymbol{\nu}_k$ — a step-to-neighbor coupling, as banded as the 3-DoF dynamics row, only wider (the state has $14$ numbers instead of $7$, and virtual control adds a block). The epigraph and trust-region constraints are even more local, each touching one node or one step. More kinds of variable widened the band; they did not make the problem dense.
 :::
 
 ::: check
@@ -233,9 +221,7 @@ The dense-cost example found $46.2\,\mathrm{s}$ at $1\,\mathrm{GFLOP/s}$ for a $
 :::
 
 ::: answer
-One pass from an arbitrary reference is exactly the case the SCvx lessons warned about: one linearization, used once, with no chance for the trust region to shrink toward a trustworthy step or for the virtual control and true-dynamics check to show whether the linearization was any good.
-
-Capping at one pass does not produce a fast, trustworthy answer. It produces the output of a single unchecked linear approximation — the naive one-shot linearization that lesson 7 showed going wrong with the square of the distance from the reference. The honest fixes are the ones in this lesson: sparse, code-generated subproblems; a node count and pass cap sized from dispersion data; warm starting between cycles; and a certified fallback for the cases that still do not finish.
+One pass from an arbitrary reference is one linearization, used once, with no chance for the trust region to shrink toward a trustworthy step or for the virtual control and true-dynamics check to show whether the linearization was any good. It is the naive one-shot linearization that lesson 7 showed going wrong with the square of the distance from the reference — fast, but untrustworthy. The honest fixes are this lesson's: sparse, code-generated subproblems; a node count and pass cap sized from dispersion data; warm starting between cycles; and a certified fallback.
 :::
 
 ::: check
@@ -243,9 +229,7 @@ Explain why the virtual-control penalty weight being deliberately large makes th
 :::
 
 ::: answer
-A large weight does its job by making the penalty term enormous compared with the fuel term whenever virtual control is not zero. That size gap is what forces virtual control toward zero instead of letting the optimizer trade it cheaply against fuel.
-
-But carry that same size gap into a fixed-point format with one shared scale. Either the small quantities — the fuel cost, or a nearly converged virtual control — lose most of their precision to rounding, or the large one overflows the range. That is the exact failure non-dimensionalization exists to prevent, and it is sharper here because the weight's whole purpose is to be large compared with everything else in the same objective.
+A large weight works by making the penalty term enormous compared with the fuel term whenever virtual control is not zero; that size gap is what forces virtual control toward zero. Carry the same gap into a fixed-point format with one shared scale, and either the small quantities (the fuel cost, or a nearly converged virtual control) lose their precision to rounding, or the large one overflows. The weight's whole purpose is to be large compared with everything else in the objective, so it widens exactly the range the format cannot hold.
 :::
 
 ::: check
@@ -255,7 +239,7 @@ A dispersion campaign of warm-started re-plans finds a worst case of $4$ passes.
 ::: answer
 The cap is $4 \times 1.5 = 6$ passes. The worst case is $6 \times 69 = 414\,\mathrm{ms}$, which is under $500\,\mathrm{ms}$, with $86\,\mathrm{ms}$ to spare.
 
-That spare time is not all free. Each pass also needs the true nonlinear re-simulation that computes $\rho$, and the Jacobians must be rebuilt about each new reference. Both cost time on every pass, rejected ones included. The budget only closes if the measured worst case of the *whole* pass — linearize, solve, re-simulate, decide — fits, not only the solve.
+That spare time is not all free. Every pass, rejected ones included, also rebuilds the Jacobians and runs the true re-simulation that computes $\rho$. The budget closes only if the measured worst case of the *whole* pass — linearize, solve, re-simulate, decide — fits.
 :::
 
 ## Summary
