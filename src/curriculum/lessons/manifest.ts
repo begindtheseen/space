@@ -10601,7 +10601,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-mesh-refinement",
       "title": "Mesh refinement from an interpolated-defect error estimate",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "Mesh refinement driven by an interpolated-defect error estimate"
       ],
@@ -10610,7 +10610,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-ilqr-shooting-flavoured",
       "title": "iLQR and DDP as the shooting-flavoured alternative",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "Differential dynamic programming and iLQR as the shooting-flavoured alternative"
       ],
@@ -10645,8 +10645,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l16-tooling",
-      "title": "Tooling: automatic differentiation and the trajectory-optimisation stack",
-      "minutes": 17,
+      "title": "Tooling: automatic differentiation and the trajectory-optimization stack",
+      "minutes": 21,
       "covers": [
         "Tooling: CasADi with IPOPT, GPOPS-II, PSOPT, Dymos/OpenMDAO, PyOMO, ACADO, trajax"
       ],
@@ -10655,7 +10655,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l17-failure-modes",
       "title": "Failure modes: infeasibility, multipliers, ringing and bad constraints",
-      "minutes": 20,
+      "minutes": 26,
       "covers": [
         "Failure modes: infeasible restoration, unbounded multipliers, mesh-induced control ringing, badly posed terminal constraints"
       ],
@@ -10666,7 +10666,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-certification-and-the-problem",
       "title": "Why powered-descent guidance must be convex",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "The certification argument: why onboard guidance demands a solver with a convergence guarantee and a bounded iteration count, and why a general NLP cannot give one",
         "The minimum-fuel powered descent problem and its four non-convexities: the lower thrust bound, mass-depletion dynamics, thrust pointing, and logic-triggered constraints"
@@ -10676,7 +10676,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-lossless-convexification-thrust-bound",
       "title": "Lossless convexification of the thrust bound",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "Why the thrust magnitude constraint rho_min <= ||T|| <= rho_max is non-convex — the feasible set is an annulus with the origin removed",
         "Lossless convexification: the slack variable Gamma with ||T|| <= Gamma and rho_min <= Gamma <= rho_max, and the proof sketch via the maximum principle that the relaxation is tight"
@@ -10686,7 +10686,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-change-of-variables-and-socp",
       "title": "The change of variables, convex mass bounds, and the SOCP",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "The change of variables u = T/m, sigma = Gamma/m, z = ln m, and how it makes the translational dynamics exactly linear",
         "The second-order-expanded mass bounds that keep the transformed thrust bounds convex",
@@ -10697,7 +10697,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-gfold-two-stage-guidance",
       "title": "G-FOLD: the two-stage guidance law, and its flight",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "G-FOLD (Guidance for Fuel-Optimal Large Diverts) and the two-stage minimum-landing-error then minimum-fuel solve",
         "The JPL/Masten Xombie flight demonstrations of G-FOLD and what they proved"
@@ -10707,7 +10707,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-glideslope-velocity-pointing-cones",
       "title": "Glideslope, velocity, and pointing as cones",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "Glideslope, velocity, and thrust-pointing constraints as cones"
       ],
@@ -10716,7 +10716,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-flight-time-and-discretization",
       "title": "Flight time and what discretization preserves",
-      "minutes": 22,
+      "minutes": 18,
       "covers": [
         "Flight time as the one non-convex parameter, and solving it by a line search over an inner SOCP",
         "Discrete-time lossless convexification and what survives discretisation"
@@ -10726,7 +10726,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-successive-convexification",
       "title": "Successive convexification: the idea and its price",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "Successive convexification (SCvx): linearise about a reference, solve, update, repeat"
       ],
@@ -10735,7 +10735,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-trust-regions-virtual-control",
       "title": "Trust regions and virtual control",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "Trust regions and artificial unboundedness; virtual control (virtual buffers) and artificial infeasibility"
       ],
@@ -10744,7 +10744,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-scvx-algorithm-free-final-time",
       "title": "Assembling SCvx, and free final time by dilation",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "The convergence ratio rho and the accept/reject/resize rule",
         "Free-final-time formulation by time dilation, and the notation clash with the thrust slack"
@@ -10754,7 +10754,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-6dof-powered-descent",
       "title": "A 6-DoF powered descent, run end to end",
-      "minutes": 24,
+      "minutes": 28,
       "covers": [
         "6-DoF powered descent with quaternion attitude inside the optimization"
       ],
@@ -10763,7 +10763,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-state-triggered-constraints",
       "title": "State-triggered constraints",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "State-triggered constraints for logic in the loop, and compound STCs"
       ],
@@ -10772,7 +10772,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-gusto-real-time-scvx",
       "title": "GuSTO, and running SCvx in real time",
-      "minutes": 22,
+      "minutes": 26,
       "covers": [
         "GuSTO and the broader sequential convex programming convergence theory",
         "Real-time implementation: solver code generation, iteration bounds, warm starting, and fixed-point considerations"
@@ -10782,7 +10782,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-falcon9-starship-architecture",
       "title": "Where this flies — Falcon 9 and Starship",
-      "minutes": 19,
+      "minutes": 23,
       "covers": [
         "How all of this maps onto a Falcon 9 entry burn / aero phase / landing burn architecture, and onto Starship landing"
       ],
