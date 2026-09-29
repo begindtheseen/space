@@ -24,41 +24,37 @@ import { PlaygroundEmbed, type Graded } from '@/components/ide/Embed'
 import { useLessonCode } from '@/components/ide/lessonCode'
 import { ExplainPanel } from '@/components/ExplainPanel'
 import { SelectionAsk } from '@/components/SelectionAsk'
-import {
-  CertificateMark,
-  IdePanel,
-  IdeWindow,
-  LangMark,
-  RunButton,
-  TerminalView,
-  TestCases,
-} from '@/components/ide'
-import { IconArrowRight, IconCheck, IconChevronLeft, IconClock, IconFlame, IconRefresh } from '@/components/icons'
+import { CertificateMark, LangMark } from '@/components/ide'
+import { IconArrowRight, IconCheck, IconChevronLeft, IconClock, IconFlame } from '@/components/icons'
 import { Bar, Button } from '@/components/ui'
-import { markLearned } from '@/engine/apply'
+import { markPracticed } from '@/engine/apply'
 import { useLearner } from '@/hooks/useLearner'
-import { buildProgram, gradeRun, lessonShell } from '@/learn/grade'
+import { buildProgram, gradeRun } from '@/learn/grade'
 import { LEARN_LANGS } from '@/learn/platform'
 import { stuckHelp } from '@/learn/stuck'
 import { MASTERY, ROADMAPS, currentTrack, findLesson, langName, nextLesson, passedCount, streak, trackFor, tracksFor } from '@/learn/index'
 import { editorLang, runLearn, warmUp } from '@/learn/platform'
-import { LEVEL_LABEL, type CheckResult, type LearnGrade, type LearnLesson, type LearnTrack, type Roadmap } from '@/learn/types'
+import { LEVEL_LABEL, type CheckResult, type LearnLesson, type LearnTrack, type Roadmap } from '@/learn/types'
 import { onExplainRequested } from '@/lib/ctxBus'
 import type { ExplainSeed, LibraryLesson } from '@/lib/explain'
-import type { ShellState } from '@/lib/shell'
 import { Markdown } from '@/lib/markdown'
 import { navigate, useRoute } from '@/lib/router'
+import { TerminalChallenge } from './LearnTerminal'
+import { GateView, PracticeSection, RetestBanner, RetestView } from './LearnMastery'
+import { courseMastered, gateOf, lessonMastered, practiceDone } from '@/learn/practice'
 import './learn.css'
 import './pages.css'
 
 export function Learn({ lessonId }: { lessonId?: string }) {
   if (!lessonId) return <LearnHome />
+  if (lessonId === 'retests') return <RetestView />
   const goal = lessonId.startsWith('roadmap-') ? ALL_ROADMAPS.find((r) => `roadmap-${r.id}` === lessonId) : undefined
   if (goal) return <RoadmapView roadmap={goal} />
   const track = trackFor(lessonId)
   if (track) return <CourseView track={track} />
   const found = findLesson(lessonId)
   if (!found) return <LearnHome missing={lessonId} />
+  if (found.lesson.gate) return <GateView key={found.lesson.id} track={found.track} lesson={found.lesson} />
   return <LessonView key={found.lesson.id} track={found.track} lesson={found.lesson} index={found.index} />
 }
 
@@ -106,6 +102,8 @@ function LearnHome({ missing }: { missing?: string }) {
         </div>
         <h1 className="rm-hero__title">Choose where you want to end up. Each roadmap lines up the courses that get you there, one step at a time.</h1>
       </header>
+
+      <RetestBanner />
 
       {!Object.keys(state.read).length ? (
         <a className="lm-brief" href="#/briefing">
@@ -374,7 +372,8 @@ function CourseView({ track }: { track: LearnTrack }) {
         </span>
         <div style={{ minWidth: 0 }} className="grow">
           <div className="page-head__kicker">
-            {LEVEL_LABEL[track.level]} · {total} lessons <Streak />
+            {LEVEL_LABEL[track.level]} · {total} lessons
+            {gateOf(track) ? (courseMastered(track, state.learn) ? ' · Mastered' : ' · ends in a mastery gate') : ''} <Streak />
           </div>
           <h1 className="h-page">{track.name}</h1>
           <p className="page-head__sub">{track.blurb}</p>
@@ -411,8 +410,16 @@ function CourseView({ track }: { track: LearnTrack }) {
                 <span className="lm-outline__n" aria-hidden="true">
                   {ok ? <IconCheck size={13} /> : i + 1}
                 </span>
-                <span className="lm-outline__title">{l.title}</span>
-                {ok ? <span className="lm-outline__tag">Passed</span> : here ? <span className="lm-outline__tag lm-outline__tag--next">Next</span> : null}
+                <span className="lm-outline__title">{l.gate ? `Mastery gate: ${l.title}` : l.title}</span>
+                {l.gate ? (
+                  ok ? <span className="lm-outline__tag">Passed</span> : <span className="lm-outline__tag">{l.gate.problems.length} unseen problems · {l.gate.minutes} min</span>
+                ) : ok && l.practice.length ? (
+                  <span className="lm-outline__tag">{lessonMastered(l, state.learn) ? 'Mastered' : `Practice ${practiceDone(l, state.learn)}/${l.practice.length}`}</span>
+                ) : ok ? (
+                  <span className="lm-outline__tag">Passed</span>
+                ) : here ? (
+                  <span className="lm-outline__tag lm-outline__tag--next">Next</span>
+                ) : null}
               </a>
             </li>
           )
@@ -467,10 +474,10 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
   useEffect(() => warmUp(lesson.lang), [lesson.lang])
 
   const onPassed = useCallback(() => {
-    setState((s) => markLearned(s, lesson.id))
+    setState((s) => markPracticed(s, lesson, lesson.id))
     setPassedNow(true)
     requestAnimationFrame(() => winRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }))
-  }, [lesson.id, setState])
+  }, [lesson, setState])
 
   const onGraded = useCallback((passed: boolean, results: CheckResult[]) => {
     setLastResults(results)
@@ -519,7 +526,11 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
         <div className="lm-text__kicker">
           <LangMark lang={track.lang} size={18} />
           Lesson {index + 1} of {track.lessons.length}
-          {passedBefore ? <span className="lm-passed-tag">Passed</span> : null}
+          {lessonMastered(lesson, state.learn) && lesson.practice.length ? (
+            <span className="lm-passed-tag">Mastered</span>
+          ) : passedBefore ? (
+            <span className="lm-passed-tag">Passed</span>
+          ) : null}
         </div>
         <h1 className="lm-text__title">{lesson.title}</h1>
 
@@ -567,7 +578,9 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
             <div className="lm-win">
               <IconCheck size={16} />
               <span className="grow">
-                {next
+                {lesson.practice.length && !lessonMastered(lesson, state.learn)
+                  ? `Lesson passed. Now the practice below: ${lesson.practice.length} problems on the same idea, and the lesson is mastered.`
+                  : next
                   ? `Lesson passed. Next: ${next.title}`
                   : nextCourse
                     ? `That is the whole ${track.name} course. Next: ${nextCourse.name}.`
@@ -643,6 +656,8 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
           ) : null}
         </div>
 
+        {(passedBefore || passedNow) && lesson.practice.length ? <PracticeSection lesson={lesson} /> : null}
+
         <div className="lm-nav">
           {prev ? (
             <Button variant="ghost" size="sm" onClick={() => navigate(`/learn/${prev.id}`)}>
@@ -662,64 +677,6 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
       </article>
       <SelectionAsk container={textRef} onAsk={setAsking} />
       {asking ? <ExplainPanel seed={asking} here={here} extra={passedHere} lang={lesson.lang} onClose={closeAsk} /> : null}
-    </div>
-  )
-}
-
-/** A Terminal or Git challenge: the practice shell, a Check button, and the checks as test cases. */
-function TerminalChallenge({
-  lesson,
-  onPass,
-  onGraded,
-}: {
-  lesson: LearnLesson
-  onPass: () => void
-  onGraded: (passed: boolean, results: CheckResult[]) => void
-}) {
-  const [shell, setShell] = useState<ShellState>(() => lessonShell(lesson))
-  const [key, setKey] = useState(0)
-  const [grade, setGrade] = useState<LearnGrade | null>(null)
-  const [running, setRunning] = useState(false)
-
-  const check = async () => {
-    setRunning(true)
-    setGrade(null)
-    try {
-      const result = await runLearn(lesson, '', { shell })
-      const g = gradeRun(lesson, '', result)
-      setGrade(g)
-      onGraded(g.passed, g.results)
-      if (g.passed) onPass()
-    } finally {
-      setRunning(false)
-    }
-  }
-  const reset = () => {
-    setShell(lessonShell(lesson))
-    setKey((k) => k + 1)
-    setGrade(null)
-  }
-
-  return (
-    <div className="embed">
-      <IdeWindow
-        lang="bash"
-        file="~/project"
-        right={
-          <button type="button" className="ide__tool" onClick={reset} title="Start this lesson over">
-            <IconRefresh size={13} />
-            Reset
-          </button>
-        }
-      >
-        <TerminalView key={key} shell={shell} onShell={setShell} height={300} banner="Practice terminal for this lesson. Type help to see the commands." />
-        <div className="lm-termbar">
-          <RunButton onClick={() => void check()} running={running} label="Check" />
-        </div>
-        <IdePanel tabs={[{ id: 'tests', label: 'Test cases', ...(grade ? { mark: grade.passed ? ('pass' as const) : ('fail' as const) } : {}) }]} active="tests" onTab={() => {}}>
-          <TestCases results={grade?.results ?? null} empty="Do the challenge in the terminal, then press Check." />
-        </IdePanel>
-      </IdeWindow>
     </div>
   )
 }

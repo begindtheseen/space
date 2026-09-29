@@ -31,6 +31,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends xvfb
       - run: npm ci --legacy-peer-deps
+      # The lesson checker (src/learn/solutions.test.ts) runs every Python problem on CPython: the same
+      # Python as the app's Pyodide, with the packages lessons may import.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Python packages lessons may import
+        run: pip install numpy
       - name: Typecheck
         run: npx tsc -b
       - name: Unit tests

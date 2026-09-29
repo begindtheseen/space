@@ -92,6 +92,14 @@ jobs:
           [[ "${skip:-}" == "true" ]] || echo "Releasing ${tag}"
       - run: npm ci --legacy-peer-deps
         if: steps.meta.outputs.skip != 'true'
+      # The lesson checker runs every Python problem on CPython, as CI does.
+      - uses: actions/setup-python@v5
+        if: steps.meta.outputs.skip != 'true'
+        with:
+          python-version: '3.14'
+      - name: Python packages lessons may import
+        if: steps.meta.outputs.skip != 'true'
+        run: pip install numpy
       - name: Stamp the version into package.json
         if: steps.meta.outputs.skip != 'true'
         run: npm version "${{ steps.meta.outputs.version }}" --no-git-tag-version --allow-same-version --ignore-scripts

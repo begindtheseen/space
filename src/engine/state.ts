@@ -9,6 +9,7 @@ import { coercePlacement, type PlacementResult } from './placement'
 import type { Memory } from './fsrs'
 import { newCard } from './fsrs'
 import { coerceParked, coerceRun, type FocusRun, type ParkedNote } from './focus'
+import { coerceGates, coerceRetests, type GateRecord, type Retest } from '@/learn/practice'
 import {
   coerceLive,
   coerceMedia,
@@ -160,6 +161,13 @@ export interface LearnerState {
    * Like the workbench, nothing here feeds mastery or the review queue.
    */
   learn: Record<string, string>
+  /**
+   * Learn mode's mastery gates: every sitting of each course's gate, keyed by
+   * the gate's lesson id. Passing one also marks the gate in `learn`.
+   */
+  learnGates: Record<string, GateRecord>
+  /** Learn mode's re-tests: when each mastered lesson comes back, keyed by lesson id. */
+  learnRetests: Record<string, Retest>
   goals: Goals
   settings: Settings
   /**
@@ -249,6 +257,8 @@ export function newLearnerState(now: Date = new Date()): LearnerState {
     pinned: [],
     read: {},
     learn: {},
+    learnGates: {},
+    learnRetests: {},
     goals: { ...DEFAULT_GOALS },
     settings: { ...DEFAULT_SETTINGS },
     media: {},
@@ -285,6 +295,8 @@ export function migrateState(raw: unknown, now: Date = new Date()): LearnerState
     pinned: Array.isArray(r.pinned) ? r.pinned.filter((s) => typeof s === 'string') : [],
     read: isRecordOf(r.read, 'string') ? { ...r.read } : {},
     learn: isRecordOf(r.learn, 'string') ? { ...r.learn } : {},
+    learnGates: coerceGates(r.learnGates),
+    learnRetests: coerceRetests(r.learnRetests),
     goals: { ...base.goals, ...pickGoals(r.goals) },
     settings: { ...base.settings, ...pickSettings(r.settings) },
     media: {},

@@ -5,6 +5,7 @@ import { givesAway } from './giveaway'
 import { LEARN_LANGS } from './platform'
 import { run as runShell } from '@/lib/shell'
 import { LessonFormatError, parseTrack } from './parse'
+import { asLesson } from './practice'
 import { LEVELS, type LearnLesson } from './types'
 import { noteRefs, notePicture, pictureProblem, splitNotes } from '@/lib/contextNotes'
 
@@ -18,6 +19,7 @@ const lesson = (over: Partial<LearnLesson>): LearnLesson => ({
   solution: '',
   hints: [],
   checks: [],
+  practice: [],
   ...over,
 })
 
@@ -50,12 +52,26 @@ describe('the tracks', () => {
   it('every lesson teaches, sets a task, has a solution and a hint, and checks something real', () => {
     for (const t of TRACKS) {
       for (const l of t.lessons) {
+        if (l.gate) {
+          // A gate says what it covers; its problems are graded like lessons but come with no hints.
+          expect(l.teach.length, l.id).toBeGreaterThan(40)
+          for (const p of l.gate.problems) {
+            expect(p.task.length, p.id).toBeGreaterThan(20)
+            expect(p.checks.some((c) => c.kind !== 'source'), p.id).toBe(true)
+          }
+          continue
+        }
         expect(l.teach.length, l.id).toBeGreaterThan(80)
         expect(l.task.length, l.id).toBeGreaterThan(20)
         expect(l.solution.trim().length, l.id).toBeGreaterThan(0)
         expect(l.hints.length, l.id).toBeGreaterThan(0)
         // A lesson graded only on its source text would be a string match.
         expect(l.checks.some((c) => c.kind !== 'source'), l.id).toBe(true)
+        for (const p of l.practice) {
+          expect(p.task.length, p.id).toBeGreaterThan(20)
+          expect(p.hints.length, p.id).toBeGreaterThan(0)
+          expect(p.checks.some((c) => c.kind !== 'source'), p.id).toBe(true)
+        }
       }
     }
   })
@@ -432,6 +448,8 @@ describe('context notes in Learn to code', () => {
     it(`${t.id}: notes are complete, at the end of the explanation, and safe`, () => {
       for (const l of t.lessons) {
         const where = `${t.id} ${l.id}`
+        for (const p of [...l.practice, ...(l.gate?.problems ?? [])]) expect(noteRefs(p.task), `${p.id}: marks go in the explanation, not a problem`).toEqual([])
+        if (l.gate) continue // a gate is an exam, not an explanation: no notes
         const { body, notes } = splitNotes(l.teach)
         const refs = noteRefs(body)
         expect([...new Set(refs)].filter((id) => !notes.has(id)), `${where}: marked phrases with no note`).toEqual([])
@@ -471,7 +489,10 @@ const GIVES_AWAY = new Set<string>([])
 describe('examples leave the task to her', () => {
   const lessons = TRACKS.flatMap((t) => t.lessons)
   it('no example shows the answer word for word, or as a template to fill in', () => {
-    for (const l of lessons) if (!GIVES_AWAY.has(l.id)) expect(givesAway(l), `${l.id}: the example gives the answer away`).toBeNull()
+    for (const l of lessons) if (!GIVES_AWAY.has(l.id) && !l.gate) expect(givesAway(l), `${l.id}: the example gives the answer away`).toBeNull()
+  })
+  it('no practice problem can be copied from the lesson\'s examples either', () => {
+    for (const l of lessons) for (const p of l.practice) expect(givesAway(asLesson(l, p)), `${p.id}: the lesson's example gives this practice problem away`).toBeNull()
   })
   it('the list of lessons still to fix has no stale entries', () => {
     const ids = new Set(lessons.map((l) => l.id))

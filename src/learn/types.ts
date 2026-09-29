@@ -57,6 +57,37 @@ export type LearnCheck =
    */
   | (CheckBase & { kind: 'type-error'; code: string })
 
+/**
+ * One graded problem that is not the lesson's main task: a practice problem
+ * after it, or a problem in a course's mastery gate. It runs and grades
+ * exactly like a lesson, in the lesson's language and on its database.
+ */
+export interface LearnExercise {
+  /** `<lesson id>.p1`, `<gate id>.g3`: progress and saved code are keyed by it. */
+  id: string
+  title: string
+  task: string
+  starter: string
+  solution: string
+  hints: string[]
+  checks: LearnCheck[]
+  stdin?: string
+  schema?: string
+}
+
+/**
+ * A course's mastery gate: problems she has not seen, no hints and no
+ * solutions, a time limit, and a pass mark. Passing it is what makes a course
+ * mastered rather than merely finished.
+ */
+export interface LearnGate {
+  /** Problems she must pass in one sitting. */
+  pass: number
+  /** The sitting's length. */
+  minutes: number
+  problems: LearnExercise[]
+}
+
 export interface LearnLesson {
   /** Stable across releases: progress and saved code are keyed by it. */
   id: string
@@ -75,6 +106,10 @@ export interface LearnLesson {
   stdin?: string
   /** SQL: the tables the lesson starts with. */
   schema?: string
+  /** Graded problems after the main task, on the same idea with new data. */
+  practice: LearnExercise[]
+  /** Set on a course's mastery gate, which has no task of its own. */
+  gate?: LearnGate
 }
 
 /** Where a course sits on the way from first line to expert. */
