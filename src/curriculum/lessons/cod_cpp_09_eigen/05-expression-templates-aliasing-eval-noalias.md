@@ -102,7 +102,7 @@ Matrix products read different entries too, but they are safe by default thanks 
 Why is `a = a * b` hazardous? The product reads `a` while writing it. Eigen inserts a temporary for matrix products by default to be safe, but for expressions that read other positions of the destination (a transpose, overlapping blocks) you must call `.eval()` yourself.
 :::
 
-"Coefficient-wise expressions" here means the ones that pull from other positions of the destination, like the transpose and the blocks above; a plain entry-by-entry sum is fine. **`.eval()`** is the fix: it forces the part of the expression it is attached to into a real temporary matrix before any writing starts. You pay for one copy; you get a correct answer.
+The expressions that go wrong are the ones that read other positions of the destination, like the transpose and the overlapping blocks above; a plain entry-by-entry sum, which reads each position only to write that same position, is fine. **`.eval()`** is the fix: it forces the part of the expression it is attached to into a real temporary matrix before any writing starts. You pay for one copy; you get a correct answer.
 
 ::: example a = a.transpose(), in debug and in release
 ```cpp fragment

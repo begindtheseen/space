@@ -11,7 +11,7 @@ Picture an egg carton and a machine that lifts eggs two at a time. Its gripper h
 
 A modern processor is that machine, and the eggs are numbers. It can load two or four `double`s in one go, but its fastest loads expect the group to start at an address that is a neat multiple of the group size. Eigen arranges this for you inside its small fixed-size types, and most of the time you never think about it. This lesson covers the few places where you must: a class that holds such a type as a member, a container of them, and code built for older C++ standards.
 
-The second half of the lesson turns a promise into a proof. Earlier in this module you saw that fixed-size types allocate nothing, and the real-time module said steady-state flight code must never touch the heap. Saying so in a code review is a promise. A test that crashes the moment anything allocates is a proof, and it keeps being a proof after the next person refactors the code. Eigen has a switch for exactly this.
+The second half of the lesson turns a promise into a proof. Earlier in this module you saw that fixed-size types allocate nothing, and flight software's own rule, which the real-time module after this one builds on, is that steady-state code must never touch the heap. Saying so in a code review is a promise. A test that crashes the moment anything allocates is a proof, and it keeps being a proof after the next person refactors the code. Eigen has a switch for exactly this.
 
 ## Doing several numbers at once
 
