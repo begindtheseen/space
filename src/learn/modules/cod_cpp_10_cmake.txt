@@ -1,0 +1,1550 @@
+@track python
+@course mod-cod_cpp_10_cmake
+@module cod_cpp_10_cmake
+@title CMake and the C++ build system: practice and test
+
+=== cpp10-l01 | Practice: Why CMake, and a first project
+--- for
+l01-why-cmake-and-a-first-project
+
++++ question | Two mistakes, two commands
+--- ask
+A new project has two mistakes. In `CMakeLists.txt`, a command is misspelled:
+
+```cmake
+add_executible(burn_timer main.cpp)
+```
+
+In `main.cpp`, the semicolon after `return 0` is missing. You run `cmake -S . -B build`, fix whatever it reports, and then run `cmake --build build`. Which command reports which mistake?
+--- choice correct
+`cmake -S . -B build` stops on the misspelled command ("Unknown CMake command"). The missing semicolon is only found by `cmake --build build`, when the compiler finally reads `main.cpp`.
+--- choice
+`cmake -S . -B build` reports both, because configure checks every file of the project.
+--- choice
+`cmake --build build` reports both, because configure only writes files and never checks anything.
+--- choice
+Neither: CMake guesses that `add_executible` means `add_executable`, and the compiler adds the missing semicolon with a warning.
+--- why
+Configure runs `CMakeLists.txt` as a script, so a command CMake does not know stops it at once, with the line number. It never opens `main.cpp`: no source file is compiled until the build step runs the compiler. So a clean configure only says that the CMake file makes sense. Mistakes in your C++ show up at `cmake --build`.
+
++++ question | The build folder that kept its settings
+--- ask
+You configure a folder for timing:
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+```
+
+A week later you add a source file to `CMakeLists.txt` and run only:
+
+```bash
+cmake -S . -B build
+cmake --build build
+```
+
+With GCC, which optimization and assert flags is the new file compiled with?
+--- choice
+None: without `-DCMAKE_BUILD_TYPE` the build type is empty, so there is no `-O` and no `-DNDEBUG`.
+--- choice
+`-g`, because Debug is the default whenever the build type is not given on the command line.
+--- choice
+The new file gets no flags, while the old files keep `-O3 -DNDEBUG`, so the program mixes two build types.
+--- choice correct
+`-O3 -DNDEBUG`: the folder's `CMakeCache.txt` still holds `CMAKE_BUILD_TYPE=Release` from the first configure.
+--- why
+Every `-D` you pass is written into the build folder's cache, and later configures of that folder read it back. The second configure reset nothing: the whole folder, old files and new, is still Release. That is usually what you want, but it means a folder can carry a choice made long ago. To be sure what a folder holds, read its `CMakeCache.txt`, or delete the folder and configure it again.
+
++++ question | A minimum that is too low
+--- ask
+A project starts with `cmake_minimum_required(VERSION 3.20)` and is configured with CMake 3.28. Policy CMP0083 was added in CMake 3.14, and CMP0135 in CMake 3.24. What does this print?
+
+```cmake
+cmake_policy(GET CMP0083 a)
+cmake_policy(GET CMP0135 b)
+message(STATUS "CMP0083='${a}' CMP0135='${b}'")
+```
+--- choice
+`CMP0083='NEW' CMP0135='NEW'`, because CMake 3.28 knows both fixes.
+--- choice correct
+`CMP0083='NEW' CMP0135=''`: only the policies up to 3.20 are set to NEW. CMP0135 is left unset, so CMake uses its OLD behavior.
+--- choice
+`CMP0083='' CMP0135=''`, because a policy is only set when you call `cmake_policy(SET ...)` yourself.
+--- choice
+Nothing: configure stops, because CMake 3.28 refuses to run a file that asks for 3.20.
+--- why
+The minimum does two jobs. It rejects an older CMake, and it sets every policy introduced up to that version to NEW. CMP0083 (3.14) is below 3.20, so it is NEW. CMP0135 (3.24) is above it, so it stays unset, and unset means the OLD behavior, even though the CMake you are running knows the fix. A newer CMake runs a file with a lower minimum without complaint. Raise the number to the version your team really uses and you get every fix up to there.
+
++++ question | Where the assert still fires
+--- ask
+`main.cpp` holds `assert(dt_s > 0.0);`, and the program is always given `dt_s = 0.0`. With GCC, the project is configured five times into five folders: with `-DCMAKE_BUILD_TYPE=Debug`, with `Release`, with `RelWithDebInfo`, with `MinSizeRel`, and with no build type at all. In which builds does the program stop at the assert?
+--- choice
+Only in Debug.
+--- choice
+In Debug and RelWithDebInfo, because both carry debug information.
+--- choice correct
+In Debug, and in the build with no build type.
+--- choice
+In none of them, because CMake adds `-DNDEBUG` unless you ask for Debug.
+--- why
+An `assert` disappears only when `NDEBUG` is defined. Release, RelWithDebInfo and MinSizeRel all add `-DNDEBUG`; debug information (`-g`) has nothing to do with it. An empty build type adds no flags at all: no `-O`, no `-g` and no `-DNDEBUG`. So the assert survives there too, in a program that is also unoptimized. An empty build type is not a quiet Release.
+
++++ question | Release that runs like Debug
+--- ask
+A benchmark script configures its build folder like this:
+
+```bash
+cmake -S . -B build/bench -DCMAKE_BUILD_TYPE=Relase
+cmake --build build/bench
+```
+
+Configure and build succeed with no warning. But the filter runs about ten times slower than in a colleague's Release build, and a test `assert` still fires. What is wrong?
+--- choice
+Nothing in the commands; the colleague must be using a newer compiler.
+--- choice
+`build/bench` is inside `build`, and CMake applies the build type only to a folder named `build`.
+--- choice
+The build type must be written in lower case, `release`, or CMake ignores it.
+--- choice correct
+`Relase` is misspelled. CMake has default flags only for its four known build types, so an unknown name gets none: no `-O3` and no `-DNDEBUG`.
+--- why
+CMake picks the optimization and assert flags by looking up the build type's name. `Relase` is not Debug, Release, RelWithDebInfo or MinSizeRel, so nothing is found and nothing is added: the same as an empty build type, unoptimized and with every `assert` on. CMake does not treat the unknown name as an error. Running `cmake --build build/bench --verbose` shows the real compile command, and the missing `-O3 -DNDEBUG` is plain to see.
+
++++ question | A Makefile that forgets
+--- ask
+A teammate ran `cmake .` in the project's top folder, the one holding `CMakeLists.txt`. Then he opened the generated `Makefile` and added `-O2` to the compile line. It worked until he added a new file to `CMakeLists.txt`: now `-O2` is gone, and `git status` lists `CMakeCache.txt`, `CMakeFiles/`, `Makefile` and `cmake_install.cmake` as new files. What should he do?
+--- choice correct
+Delete the generated files from the source folder, configure out of source with `cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo` (which gives `-O2`), and put `build/` in `.gitignore`. Never edit the generated `Makefile`.
+--- choice
+Commit the `Makefile`, so that his edit is kept in git and cannot be lost again.
+--- choice
+Add `CMakeCache.txt` to `.gitignore`, and redo the `-O2` edit in the `Makefile` after every change to `CMakeLists.txt`.
+--- choice
+Run `rm -rf build`, then configure again with `cmake .`.
+--- why
+The `Makefile` is CMake's output. It is rewritten every time a `CMakeLists.txt` changes, so hand edits are thrown away. Optimization is chosen with the build type: RelWithDebInfo adds `-O2 -g -DNDEBUG`, Release adds `-O3 -DNDEBUG`. The in-source build is the second problem: CMake's files are mixed in with his own, and one of them will soon be committed. With `-B build`, every generated file lives in one folder that one `.gitignore` line hides and one delete cleans. `rm -rf build` does nothing here, because his generated files are not in `build`.
+
+=== cpp10-l02 | Practice: Targets, libraries and executables
+--- for
+l02-targets-libraries-and-executables
+
++++ question | The file on disk
+--- ask
+On Linux, a `CMakeLists.txt` holds:
+
+```cmake
+add_library(telemetry SHARED src/decode.cpp src/frames.cpp)
+```
+
+What is the name of the one library file this line makes in the build folder? Type the file name.
+--- answer
+libtelemetry.so
+build/libtelemetry.so
+--- why
+The target is called `telemetry`, and on Linux CMake turns it into `lib` + name + an ending that depends on the kind: `.so` for `SHARED`, `.a` for `STATIC`. Both source files are compiled and linked into that single `libtelemetry.so`. The target name is a CMake name, not a file name: the same line gives `telemetry.dll` on Windows, and CMake picks the right spelling for each system.
+
++++ question | One switch, three libraries
+--- ask
+A project defines three libraries:
+
+```cmake
+add_library(nav src/ekf.cpp)
+add_library(logbook STATIC src/logbook.cpp)
+add_library(units INTERFACE)
+```
+
+It is configured with `-DBUILD_SHARED_LIBS=ON` and built. Which library files appear in the build folder?
+--- choice
+`libnav.so`, `liblogbook.so` and `libunits.so`: the switch makes every library shared.
+--- choice
+`libnav.a`, `liblogbook.a` and `libunits.a`, because the switch only matters for installed libraries.
+--- choice correct
+`libnav.so` and `liblogbook.a`, and nothing at all for `units`.
+--- choice
+Only `libnav.so`: `logbook` is skipped, because `STATIC` conflicts with the switch.
+--- why
+`BUILD_SHARED_LIBS` only decides for libraries that leave their kind out. `nav` says nothing, so it obeys the switch and becomes shared. `logbook` says `STATIC` outright, and an explicit kind always wins. `units` is an INTERFACE library: it has no sources and is never built, so it has no file at all, only usage requirements. That is why flight libraries usually write their kind: a packager's switch cannot turn them shared by accident.
+
++++ question | A header-only function that is not inline
+--- ask
+A header-only library is declared with `add_library(quat INTERFACE)` and an INTERFACE include folder. Its header:
+
+```cpp
+#pragma once
+namespace quat {
+struct Q { double w, x, y, z; };
+
+double dot(const Q& a, const Q& b) {
+    return a.w * b.w + a.x * b.x + a.y * b.y + a.z * b.z;
+}
+}  // namespace quat
+```
+
+The program `attitude_app` has two source files, `main.cpp` and `control.cpp`. Both include this header and call `quat::dot`, and the program links `quat`. What happens?
+--- choice
+Configure fails, because an INTERFACE library may not hold function definitions.
+--- choice correct
+The link fails with "multiple definition of `quat::dot`". Each source file compiles its own ordinary copy of `dot`. Marking it `inline` (or `constexpr`) fixes it.
+--- choice
+It builds and runs: an INTERFACE library is compiled once, so `dot` exists only once.
+--- choice
+`main.cpp` fails to compile with "redefinition of `dot`", because the header is included twice.
+--- why
+An INTERFACE library compiles nothing; its header is compiled inside every file that includes it. `#pragma once` stops a header being pasted twice into the *same* file, but `main.cpp` and `control.cpp` are two translation units, and each gets its own full definition of `dot`. Two ordinary definitions break the one-definition rule, and the linker says so. An `inline` or `constexpr` function is allowed in many files: the copies become weak symbols (`W` in `nm`), and the linker keeps one.
+
++++ question | The line an INTERFACE library accepts
+--- ask
+A header-only library is declared with `add_library(frames INTERFACE)`. Which one of these lines does CMake accept for it?
+--- choice correct
+`target_link_libraries(frames INTERFACE Eigen3::Eigen)`
+--- choice
+`target_include_directories(frames PRIVATE include)`
+--- choice
+`target_compile_features(frames PUBLIC cxx_std_20)`
+--- choice
+`target_compile_definitions(frames PRIVATE FRAMES_FAST=1)`
+--- why
+An INTERFACE library is never built, so there is no "me" for a setting to apply to. `PRIVATE` means only "me", and `PUBLIC` means "me and my users", so both are refused with "may only set INTERFACE properties on INTERFACE targets". `INTERFACE` means "my users only", which is all this target can have. Linking Eigen with `INTERFACE` is exactly right when the headers use Eigen types: every user of `frames` receives Eigen's include folder too.
+
++++ question | The folder that was renamed
+--- ask
+`gnc` is a `SHARED` library, and `orbit_report` links it. Straight after the build, `./build/orbit_report` runs fine. Then you rename the folder with `mv build build-old`, and:
+
+```text
+$ ./build-old/orbit_report
+./build-old/orbit_report: error while loading shared libraries: libgnc.so: cannot open shared object file: No such file or directory
+```
+
+`libgnc.so` is still right there in `build-old`. Why does the program not find it?
+--- choice
+It should find it: the loader always searches the folder the program is in, so something else must be broken.
+--- choice
+`mv` changed the permissions of `libgnc.so`, so the loader may no longer read it.
+--- choice
+The program was linked statically, and a static program cannot open any `.so`.
+--- choice correct
+At link time CMake wrote the full path of the build folder into the program as the place to look for `libgnc.so`. That folder no longer exists. Rebuild in the new folder, link `gnc` statically, or install both properly.
+--- why
+A shared library is found at every start-up, by the dynamic loader. It searches the places recorded in the program, then the system folders. CMake recorded the absolute path of the build folder (the `-Wl,-rpath` on the link line) so the program runs from the build tree. Rename the folder and that path points nowhere, so `main` never runs and the exit code is 127. The loader does not search the program's own folder unless told to. A missing `.so` is always a start-up error, never a build error.
+
++++ question | What the linker takes from an archive
+--- ask
+`libgnc.a` holds four object files:
+
+- `orbit.o` defines `orbit_speed`
+- `drag.o` defines `drag_force`, which calls `log_msg`
+- `logbook.o` defines `log_msg`
+- `ekf.o` defines `ekf_step`
+
+A program's `main` calls only `drag_force`, and the program links `gnc`, a `STATIC` library. Which members of the archive end up inside the program?
+--- choice
+All four: linking a static library copies the whole archive into the program.
+--- choice
+Only `drag.o`, because `main` calls nothing else.
+--- choice correct
+`drag.o` and `logbook.o`.
+--- choice
+None of them: a static library is loaded when the program starts.
+--- why
+The linker pulls in only the archive members that define a symbol the program still needs. `main` needs `drag_force`, so `drag.o` comes in. `drag.o` needs `log_msg`, so `logbook.o` comes in too. Nothing needs `orbit_speed` or `ekf_step`, so those members stay out. Running `nm -C` on the program would show `drag_force` and `log_msg` as `T`, and nothing else from `gnc`. After linking, the archive is not needed at all.
+
+=== cpp10-l03 | Practice: Usage requirements, PUBLIC, PRIVATE and INTERFACE
+--- for
+l03-usage-requirements-public-private-interface
+
++++ question | Reading the keywords back from the flags
+--- ask
+`nav_app` links the library `gnc`. From `compile_commands.json`:
+
+- `gnc`'s own file, `guidance.cpp`, is compiled with `-DGNC_SIM=1`. `nav_app`'s `main.cpp` is not.
+- `main.cpp` is compiled with `-DGNC_FRAME=ECI`. `guidance.cpp` is not.
+
+Which keywords did `target_compile_definitions(gnc ...)` use for the two names?
+--- choice
+Both `PUBLIC`.
+--- choice correct
+`GNC_SIM` is `PRIVATE`, and `GNC_FRAME` is `INTERFACE`.
+--- choice
+`GNC_SIM` is `INTERFACE`, and `GNC_FRAME` is `PRIVATE`.
+--- choice
+`GNC_SIM` is `PRIVATE`, and `GNC_FRAME` is `PUBLIC`.
+--- why
+Read each flag by where it landed. On the library's own file only: that is `PRIVATE`, "for me alone". On the consumer only: that is `INTERFACE`, "for my users alone". `PUBLIC` would have put `GNC_FRAME` on both lines. An `INTERFACE` definition on a compiled library is rarer, but it fits a macro that only the users' side reads, for example one tested in a public header that `gnc`'s own `.cpp` files never include.
+
++++ question | A link that skips a step
+--- ask
+```cmake
+add_library(B STATIC b.cpp)
+target_include_directories(B PUBLIC b/include)
+
+add_library(A STATIC a.cpp)
+target_link_libraries(A INTERFACE B)
+
+add_executable(P main.cpp)
+target_link_libraries(P PRIVATE A)
+```
+
+Which of the three targets `B`, `A` and `P` have their files compiled with `-Ib/include`? Type the target names.
+--- answer
+B P
+P B
+B and P
+P and B
+B, P
+P, B
+B,P
+P,B
+B and P only
+only B and P
+--- why
+`B` sets its folder `PUBLIC`, so `B`'s own files get it. `A` links `B` with `INTERFACE`, which means "do not use it to build me, but hand it to my users". So `a.cpp` is compiled without it. `P` is a user of `A`, and receives everything `A` hands on, which now includes `B`'s folder. So `B` and `P` get the flag, and `A`, in the middle, does not. That is right only if `a.cpp` never includes `B`'s headers; if it did, the link should be `PUBLIC`.
+
++++ question | C++20 kept to itself
+--- ask
+`gnc`'s public header:
+
+```cpp
+#pragma once
+#include <span>
+
+namespace gnc {
+double mean(std::span<const double> samples);
+}  // namespace gnc
+```
+
+and its `CMakeLists.txt`:
+
+```cmake
+add_library(gnc STATIC src/stats.cpp)
+target_include_directories(gnc PUBLIC include)
+target_compile_features(gnc PRIVATE cxx_std_20)
+
+add_executable(ground_tool apps/ground_tool.cpp)
+target_link_libraries(ground_tool PRIVATE gnc)
+```
+
+GCC 13 compiles as C++17 unless told otherwise, and `std::span` is C++20. What happens when you build?
+--- choice
+Configure fails, because `target_compile_features` may not be `PRIVATE` on a static library.
+--- choice correct
+`gnc` builds. `ground_tool` fails with "'span' is not a member of 'std'", reported inside `gnc`'s header, because `ground_tool` is compiled as C++17. The feature should be `PUBLIC`.
+--- choice
+`gnc` itself fails to compile, because `PRIVATE` features apply only to consumers.
+--- choice
+Everything builds, because the stronger standard always wins across a link.
+--- why
+The header is compiled again inside every file that includes it, with that file's flags. `PRIVATE` gave C++20 to `stats.cpp` only, so `ground_tool.cpp` meets `std::span` as C++17 and the error appears in the library's header: the fingerprint of a requirement that is too private. "The stronger standard wins" is true only when the requirement reaches the consumer, which needs `PUBLIC` here. With `PUBLIC`, the consumer is compiled as C++20, or gets a clear message if its compiler cannot do C++20.
+
++++ question | A private link that still reaches the linker
+--- ask
+```cmake
+add_library(logbook STATIC logbook.cpp)
+target_include_directories(logbook PUBLIC logbook/include)
+
+add_library(gnc STATIC guidance.cpp)
+target_link_libraries(gnc PRIVATE logbook)
+
+add_executable(nav_app main.cpp)
+target_link_libraries(nav_app PRIVATE gnc)
+```
+
+`guidance.cpp` calls functions from `logbook`. No public header of `gnc` mentions `logbook`. What do `nav_app`'s compile line and link line contain?
+--- choice
+Neither mentions `logbook`: `PRIVATE` hides it completely, so the link fails with undefined references to the logbook functions.
+--- choice
+Both: the compile line gets `-Ilogbook/include` and the link line gets `liblogbook.a`.
+--- choice
+The compile line gets `-Ilogbook/include`, but the link line does not list `liblogbook.a`.
+--- choice correct
+The compile line has no `-Ilogbook/include`, but the link line lists `liblogbook.a` after `libgnc.a`.
+--- why
+A static library is only a bag of object files. It cannot link its own dependencies, so `libgnc.a` still holds calls into `logbook` when the program is linked. CMake knows this and passes `logbook` to the final link as a link-only dependency (recorded as `$<LINK_ONLY:logbook>`). The compile side stays private: `main.cpp` never sees `logbook`'s folder, which is correct because it never includes its headers. A shared `libgnc.so` records its own dependencies, so there a `PRIVATE` link really stays inside.
+
++++ question | It builds here and nowhere else
+--- ask
+The top `CMakeLists.txt` of the `gnc` repository holds:
+
+```cmake
+include_directories(extern/mathlib/include)
+
+add_library(gnc STATIC src/guidance.cpp)
+target_include_directories(gnc PUBLIC include)
+```
+
+`gnc`'s public header includes `<mathlib/vec3.hpp>`. Everything in this repository, `gnc`'s own tests included, builds. The simulation team adds `gnc` to their project with `add_subdirectory(gnc)` and links it. Their `main.cpp` fails with "mathlib/vec3.hpp: No such file or directory", reported inside `gnc/guidance.hpp`. Why, and what is the fix?
+--- choice correct
+`include_directories` only reaches targets in its own folder and below, so everything in `gnc`'s repository got the folder, and that hid the missing requirement. The simulation's folder is not below it. Give `mathlib` a target that carries its include folder, link `gnc` to it `PUBLIC`, and delete the global line.
+--- choice
+The simulation team should copy the `include_directories` line into their own top file.
+--- choice
+`gnc`'s `include` folder should be `PRIVATE`, so the simulation stops reading `gnc/guidance.hpp`.
+--- choice
+`add_subdirectory` passes no usage requirements, so the simulation must use `find_package(gnc)` instead.
+--- why
+A directory-wide setting belongs to a folder, not to a target, so it never travels with `gnc`. Inside the repository every target sat below that line, so no build of `gnc`'s own could show the bug. A consumer outside the folder gets `gnc`'s real usage requirements, and those never mentioned `mathlib`. Copying the global line into every consumer spreads the problem. With a `PUBLIC` link to a `mathlib` target, the folder reaches every user of `gnc`, from `add_subdirectory` or from an installed package.
+
++++ question | The macro that changed a struct
+--- ask
+`gnc`'s public header:
+
+```cpp
+#pragma once
+#ifndef GNC_MAX_THRUSTERS
+#define GNC_MAX_THRUSTERS 8
+#endif
+
+namespace gnc {
+struct ThrusterTable {
+    double duty[GNC_MAX_THRUSTERS];
+    int count;
+};
+void fill_table(ThrusterTable& t);
+}  // namespace gnc
+```
+
+The library sets `target_compile_definitions(gnc PRIVATE GNC_MAX_THRUSTERS=12)`. `nav_app` links `gnc`, makes a `ThrusterTable` on the stack and calls `fill_table`. Everything compiles and links without a warning. What is wrong when it runs?
+--- choice
+Nothing: definitions are copied to every file of the program, so both sides see 12.
+--- choice
+The linker would have reported a "multiple definition" of `ThrusterTable`, so the build cannot have succeeded.
+--- choice correct
+`fill_table` was compiled seeing 12 slots, and `nav_app` seeing 8, so the two disagree about the struct's size. `fill_table` writes past the end of `nav_app`'s smaller table and corrupts the stack, with no error at all. The definition must be `PUBLIC`.
+--- choice
+It is harmless: `nav_app` simply ignores the four extra slots.
+--- why
+The header fills in a default of 8 whenever the macro is missing, so `nav_app`, which never received the `PRIVATE` definition, compiles happily. `gnc`'s code thinks a table is 104 bytes, with `count` at byte 96. `nav_app` gives it a 72-byte table, with `count` at byte 64. The linker only matches names, not layouts, so nothing catches it. Any macro a public header tests is part of the interface and must reach every consumer with the same value: `PUBLIC`.
+
+=== cpp10-l04 | Practice: Generator expressions and build configurations
+--- for
+l04-generator-expressions-and-configurations
+
++++ question | Two compilers and two configurations
+--- ask
+You want `-fno-omit-frame-pointer` on `gnc` only when the compiler is GCC or Clang *and* the configuration is Debug or RelWithDebInfo, with single-config and multi-config generators alike. Which line does that?
+--- choice correct
+`target_compile_options(gnc PRIVATE "$<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-fno-omit-frame-pointer>")`
+--- choice
+`target_compile_options(gnc PRIVATE "$<$<OR:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-fno-omit-frame-pointer>")`
+--- choice
+`target_compile_options(gnc PRIVATE "$<IF:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>,-fno-omit-frame-pointer>")`
+--- choice
+An `if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang" AND CMAKE_BUILD_TYPE MATCHES "Debug|RelWithDebInfo")` block around a plain `target_compile_options` line.
+--- why
+Two yes-or-no questions joined by "and" is `$<AND:...,...>`, and `$<condition:text>` gives the flag only when the answer is 1. `OR` would also add the flag for MSVC in Debug, a compiler that does not know it. The `IF` line gives `1` or `0` for GCC and Clang, and the flag itself for every other compiler: backwards. The `if()` block runs at configure time, when a multi-config generator has no build type yet, so it adds nothing in any configuration there.
+
++++ question | How many report files
+--- ask
+A project writes a small report with:
+
+```cmake
+file(GENERATE OUTPUT "flags-$<CONFIG>.txt" CONTENT "config = $<CONFIG>\n")
+```
+
+It is configured once with `-G "Ninja Multi-Config"`, with the generator's default list of configurations. How many report files does CMake write? Type the number.
+--- answer
+3
+three
+3 files
+three files
+--- why
+A generator expression is filled in once per configuration, at generate time. Ninja Multi-Config writes build rules for its default configurations, Debug, Release and RelWithDebInfo, so CMake writes `flags-Debug.txt`, `flags-Release.txt` and `flags-RelWithDebInfo.txt`. With a single-config generator and `-DCMAKE_BUILD_TYPE=MinSizeRel`, there is one configuration and one file, `flags-MinSizeRel.txt`.
+
++++ question | A generator expression with no build type
+--- ask
+```cmake
+target_compile_definitions(gnc PRIVATE
+  $<$<CONFIG:Debug>:GNC_CHECK_LEVEL=2>
+  $<IF:$<CONFIG:Release>,GNC_FAST=1,GNC_FAST=0>)
+```
+
+The project is configured with plain `cmake -S . -B build` (Unix Makefiles, no build type) and built. Which definitions does `gnc` get?
+--- choice
+`GNC_CHECK_LEVEL=2` and `GNC_FAST=0`, because Debug is the default configuration.
+--- choice
+`GNC_FAST=1` only, because an empty build type is a release build.
+--- choice
+None: configure stops, because `$<CONFIG>` needs a build type.
+--- choice correct
+`GNC_FAST=0` only.
+--- why
+With a single-config generator the configuration is whatever `CMAKE_BUILD_TYPE` holds, and here it is empty. So "is it Debug?" is `0` and "is it Release?" is `0` too. The first line adds nothing, and the `IF` takes its else branch, `GNC_FAST=0`. Nothing fails; you just get a build that is neither Debug nor Release, unoptimized and without the Debug checks. Always give a single-config folder a build type.
+
++++ question | Apple's compiler
+--- ask
+A Debug build on a Mac uses Apple's own Clang, which CMake identifies as `AppleClang`. What does this expression give? Type the result exactly.
+
+```cmake
+$<IF:$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:GNU,Clang>>,-Og,-O2>
+```
+--- answer
+-O2
+O2
+--- why
+Work from the inside out. "Is it Debug?" gives `1`. "Is the compiler GNU or Clang?" gives `0`, because Apple's Clang has its own ID, `AppleClang`, and the compiler test compares names, not families. `$<AND:1,0>` is `0`, so the `IF` takes its else value, `-O2`. To include it, list it: `$<CXX_COMPILER_ID:GNU,Clang,AppleClang>`.
+
++++ question | Warnings that never arrived
+--- ask
+```cmake
+target_compile_options(gnc PRIVATE "$<$<CXX_COMPILER_ID:GCC>:-Wall;-Wextra;-Wconversion>")
+```
+
+The project builds with g++ 13. CMake prints no error, but none of the three warning flags appears on any compile line. Why?
+--- choice
+Generator expressions are not allowed in `target_compile_options`, so CMake silently drops the line.
+--- choice correct
+CMake's ID for GCC is `GNU`, not `GCC`. The test compares the ID with the text `GCC`, never matches, gives `0`, and the flags disappear. Write `$<CXX_COMPILER_ID:GNU>`.
+--- choice
+`-Wconversion` is unknown to g++ 13, so CMake removes the whole list.
+--- choice
+The semicolons should be spaces; with semicolons the three flags cancel each other.
+--- why
+Compiler IDs are fixed words that CMake chooses: `GNU`, `Clang`, `AppleClang`, `MSVC` and a few more. A generator expression does not know that you meant a compiler; it compares text, and a wrong name is simply "no". That makes a misspelled ID a silent bug. Reading the real compile command (`compile_commands.json` or `--verbose`) is how you catch it. Semicolons inside the quotes are right: they split the result into three separate flags.
+
++++ question | A check level decided twice
+--- ask
+`gnc`'s public header holds `inline constexpr int check_level = GNC_CHECK_LEVEL;`, and its `CMakeLists.txt` says:
+
+```cmake
+target_compile_definitions(gnc PUBLIC
+  $<IF:$<CONFIG:Debug>,GNC_CHECK_LEVEL=2,GNC_CHECK_LEVEL=0>)
+```
+
+`gnc` is built in Release and installed; only that Release `libgnc.a` is installed. A consumer builds its own program in Debug and links it. Which check level does the consumer's `main.cpp` see, and which did the code inside `libgnc.a` use?
+--- choice
+0 on both sides: the exported file stores the value chosen when `gnc` was built.
+--- choice
+2 on both sides: the library is compiled again for the consumer's configuration.
+--- choice correct
+`main.cpp` sees 2, because the blank is filled in during the consumer's Debug build. The code inside `libgnc.a` was compiled with 0, when `gnc` was built in Release. One program, two answers.
+--- choice
+Neither: the consumer's configure fails, because a generator expression cannot be exported.
+--- why
+A configuration expression goes out with an exported target unevaluated, so each consumer fills it in for its own configuration: its Debug `main.cpp` gets level 2. But the library's own machine code was fixed the day it was compiled, in Release, with level 0. So the same `check_level` means 2 in one part of the program and 0 in another. A `PUBLIC` definition that changes with the configuration is safe only when both sides really are built in the same configuration.
+
+=== cpp10-l05 | Practice: Dependencies, find_package and FetchContent
+--- for
+l05-dependencies-find-package-and-fetchcontent
+
++++ question | Optional by accident
+--- ask
+```cmake
+find_package(Eigen3 3.3 NO_MODULE)
+
+add_executable(orbit main.cpp)
+target_link_libraries(orbit PRIVATE Eigen3::Eigen)
+```
+
+This is configured on a build server that has no Eigen installed. What happens?
+--- choice
+`find_package` stops at once with "Could not find a configuration file for package Eigen3".
+--- choice
+Configure succeeds, and the linker later fails with "cannot find -lEigen3::Eigen".
+--- choice
+Everything builds, because Eigen is header-only and the compiler finds it by itself.
+--- choice correct
+`find_package` does not stop. It sets `Eigen3_FOUND` to false and carries on, and CMake then fails at the `target_link_libraries` line: `Eigen3::Eigen` "was not found". Adding `REQUIRED` would stop at the real cause, the missing package.
+--- why
+Without `REQUIRED`, a missing package is not an error; that is for optional dependencies, where the project tests `Eigen3_FOUND`. Nothing tests it here, so the first sign of trouble is the link line. Thanks to the `::` in its name, CMake knows `Eigen3::Eigen` must be a target and stops with a clear message instead of passing it to the linker. `REQUIRED` moves the error to the line that really went wrong.
+
++++ question | Declared, but never made available
+--- ask
+```cmake
+include(FetchContent)
+FetchContent_Declare(
+  fmt
+  GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+  GIT_TAG        0c9fce2ffefecfdce794e1859584e25877b7b592  # 11.0.2
+)
+
+add_executable(telemetry main.cpp)
+target_link_libraries(telemetry PRIVATE fmt::fmt)
+```
+
+A fresh build folder is configured. What happens?
+--- choice correct
+Nothing is downloaded, and CMake stops: `fmt::fmt` "was not found". `FetchContent_Declare` only records what to get; `FetchContent_MakeAvailable(fmt)` is the line that downloads it and creates its targets.
+--- choice
+fmt is downloaded during configure and `fmt::fmt` is created, because declaring it is enough.
+--- choice
+fmt is downloaded later, during `cmake --build`, the first time the linker needs it.
+--- choice
+Configure succeeds, and the link fails with "cannot find -lfmt::fmt".
+--- why
+FetchContent works in two steps. The declaration says what and which exact version. `FetchContent_MakeAvailable` downloads it into `build/_deps` if needed and runs fmt's own `CMakeLists.txt`, which is what defines `fmt::fmt`. Without that call there is no target, and the double colon makes CMake say so at configure time rather than leave a puzzle for the linker.
+
++++ question | A new prefix that was ignored
+--- ask
+You once configured a build folder with `-DCMAKE_PREFIX_PATH=/opt/fmt-9`, and `find_package(fmt REQUIRED CONFIG)` found fmt 9.1.0. Now fmt 11 is installed under `/opt/fmt-11`, and you run:
+
+```bash
+cmake -S . -B build -DCMAKE_PREFIX_PATH=/opt/fmt-11
+```
+
+Configure succeeds, but the program is still built against fmt 9.1.0. Why?
+--- choice
+`CMAKE_PREFIX_PATH` is only read the first time a folder is configured.
+--- choice
+fmt 11 is not compatible with a request for fmt, so CMake fell back to version 9.
+--- choice correct
+The first configure stored the folder it found in the cache variable `fmt_DIR`. `find_package` checks `fmt_DIR` first, finds a good config file still there, and never searches the new prefix. Delete the build folder, or remove `fmt_DIR` from its cache.
+--- choice
+The system prefixes are searched before `CMAKE_PREFIX_PATH`, and fmt 9 is in `/usr`.
+--- why
+`<Name>_DIR` is the first place `find_package` looks, and once a package is found, its folder is saved there so later configures skip the search. That is fast, and here it is a trap: your new `-D` changed `CMAKE_PREFIX_PATH`, but the search it steers never ran. It is the same lesson as the build type: the cache remembers. A fresh build folder rules the cache out.
+
++++ question | A lab with no network
+--- ask
+The team clones its repository on a connected machine with `git clone --recurse-submodules`, and carries the checkout into a test lab that has no internet access, no package cache and no libraries installed. There it configures a fresh build folder. Which way of getting GoogleTest still configures?
+--- choice
+`FetchContent`, pinned to a commit hash, because a pinned commit never changes.
+--- choice correct
+A git submodule in `extern/googletest`, added with `add_subdirectory`.
+--- choice
+vcpkg, with a `vcpkg.json` and a `builtin-baseline`, because the baseline pins every version.
+--- choice
+`find_package(GTest REQUIRED)`, because CMake searches the system prefixes.
+--- why
+A pin decides *which* code you get, not *where it comes from*. FetchContent downloads into each fresh build folder, so it needs the network at configure time, pinned or not. vcpkg also downloads during configure unless its cache is filled. `find_package` only finds what is installed, and nothing is. The submodule's files came along in the checkout, since `--recurse-submodules` fetched the pinned commit, so `add_subdirectory` builds it with no network. That is why air-gapped build rooms like submodules.
+
++++ question | Eigen that cannot be found
+--- ask
+A machine has Eigen installed, with its config file at `/usr/share/eigen3/cmake/Eigen3Config.cmake`. A project says:
+
+```cmake
+find_package(eigen3 3.3 REQUIRED NO_MODULE)
+```
+
+and configure fails with:
+
+```text
+Could not find a package configuration file provided by "eigen3" with any
+of the following names:
+
+  eigen3Config.cmake
+  eigen3-config.cmake
+```
+
+What is wrong?
+--- choice correct
+The package name must match the authors' spelling, capital letters included: `Eigen3`. The file names CMake looks for are built from the name you wrote, and neither matches `Eigen3Config.cmake`.
+--- choice
+`NO_MODULE` should be removed, so that CMake uses its find module instead.
+--- choice
+`/usr` is not searched by default; configure with `-DCMAKE_PREFIX_PATH=/usr/share/eigen3`.
+--- choice
+Version 3.3 is too old for the installed Eigen 3.4, so the file was rejected.
+--- why
+The error lists exactly the two file names CMake tried: `<name>Config.cmake` and `<lowercase-name>-config.cmake`. Eigen installs `Eigen3Config.cmake`, which is neither. `/usr` is a system prefix, so no hint is needed, and a request for at least 3.3 accepts 3.4; a rejected version gives a different message that names the file and its version. Writing `find_package(Eigen3 3.3 REQUIRED NO_MODULE)` finds it.
+
++++ question | Installed first, and too old
+--- ask
+```cmake
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        f8d7d77c06936315286eb55f8de22cd23c188571  # v1.14.0
+  FIND_PACKAGE_ARGS NAMES GTest
+)
+FetchContent_MakeAvailable(googletest)
+```
+
+On the build server, which has no GoogleTest installed, every test compiles. On a developer's laptop, which has GoogleTest 1.10 installed by the operating system, a test that uses a feature added in 1.14 fails to compile. Why, and what is a fix?
+--- choice
+The commit hash is wrong on the laptop's copy of git, so it downloaded an older release.
+--- choice
+FetchContent always prefers the newest copy it can find, and 1.14 is broken on laptops.
+--- choice
+The laptop reused an old `build/_deps` folder; deleting it would fetch 1.14.
+--- choice correct
+`FIND_PACKAGE_ARGS` tries `find_package(GTest)` first. With no minimum version, the laptop's 1.10 is accepted and nothing is downloaded, while the server finds nothing and fetches the pinned 1.14. Put the minimum version into `FIND_PACKAGE_ARGS` (`FIND_PACKAGE_ARGS 1.14 NAMES GTest`), or force the download with `FETCHCONTENT_TRY_FIND_PACKAGE_MODE=NEVER`.
+--- why
+"Use the installed copy if there is one" is only safe if you say which copies are good enough. The pin in `GIT_TAG` applies only when FetchContent downloads; an installed copy is used as it is. So two machines built the same commit against two different GoogleTests. A minimum version makes `find_package` refuse 1.10 and fall back to the pinned download.
+
+=== cpp10-l06 | Practice: A project layout a stranger can build, and ctest
+--- for
+l06-project-layout-and-ctest
+
++++ question | One folder too deep
+--- ask
+The header is at `include/gnc/angles.hpp`, but the library says:
+
+```cmake
+target_include_directories(gnc PUBLIC ${PROJECT_SOURCE_DIR}/include/gnc)
+```
+
+Which include line now works in a program that links `gnc`?
+--- choice
+Both `#include <gnc/angles.hpp>` and `#include <angles.hpp>`.
+--- choice
+Only `#include <gnc/angles.hpp>`: CMake always adds the parent folder as well.
+--- choice correct
+Only `#include <angles.hpp>`. The library's name has dropped out of every include line, so another library's `angles.hpp` can now collide with it. Point the folder at `include`.
+--- choice
+Neither, because a folder name may not appear in `target_include_directories`.
+--- why
+The compiler joins each `-I` folder with the text in the angle brackets. `include/gnc` plus `angles.hpp` finds the file; `include/gnc` plus `gnc/angles.hpp` looks for `include/gnc/gnc/angles.hpp`, which does not exist. The extra `gnc` folder is there so that users write the library's name in every include, like a family name. With `-I` pointing at `include`, `<gnc/angles.hpp>` works and a bare `<angles.hpp>` does not.
+
++++ question | Picking tests by name
+--- ask
+A build folder has these seven tests:
+
+```text
+Angles.DegToRadRightAngle
+Angles.WrapKeepsSmallAngles
+Angles.WrapFoldsLargeAngles
+Angles.WrapMapsMinusPiToPlusPi
+Gains.HighBandsStayFinite
+Gains.NegativeBandUsesFirstGain
+demo_runs
+```
+
+How many of them does this run? Type the number.
+
+```bash
+ctest -R "^Angles\.Wrap|Band" -E "Minus|Stay"
+```
+--- answer
+3
+three
+3 tests
+three tests
+--- why
+`-R` keeps the names that match: `^Angles\.Wrap` (starts with "Angles.Wrap") picks the three Wrap tests, and `Band` picks both Gains tests. That is five. `-E` then drops any name that matches `Minus` or `Stay`: `WrapMapsMinusPiToPlusPi` and `HighBandsStayFinite` go. Left: `WrapKeepsSmallAngles`, `WrapFoldsLargeAngles` and `NegativeBandUsesFirstGain`. Both flags take regular expressions, and they match any part of the name unless you anchor them with `^`.
+
++++ question | Tests switched off, but still required
+--- ask
+The root `CMakeLists.txt`:
+
+```cmake
+include(CTest)
+add_subdirectory(src)
+add_subdirectory(tests)
+```
+
+`tests/CMakeLists.txt` starts with `find_package(GTest REQUIRED)`. A user who only wants the library, and has no GoogleTest, configures with `-DBUILD_TESTING=OFF`. Configure still fails with "Could not find ... GTest". Why, and what is the fix?
+--- choice
+`include(CTest)` should be `enable_testing()`, which is what reads `BUILD_TESTING`.
+--- choice correct
+`BUILD_TESTING` is only an option; nothing in this project reads it, so `tests/` is still added and still demands GoogleTest. Wrap the line: `if(BUILD_TESTING)`, then `add_subdirectory(tests)`, then `endif()`.
+--- choice
+`BUILD_TESTING` is read at build time, so the user should pass it to `cmake --build` instead.
+--- choice
+The user must install GoogleTest; a project that has tests cannot be configured without it.
+--- why
+`include(CTest)` calls `enable_testing()` and creates the `BUILD_TESTING` switch, on by default. A switch does nothing until the project tests it. With the `if`, a user who turns testing off never enters `tests/`, so `find_package(GTest REQUIRED)` never runs and no test code is compiled. Keeping tests in their own folder is what makes this one `if` enough.
+
++++ question | A verdict read from the output
+--- ask
+```cmake
+add_test(NAME ekf_converges COMMAND ekf_check)
+set_tests_properties(ekf_converges PROPERTIES PASS_REGULAR_EXPRESSION "converged")
+```
+
+One day `ekf_check` prints `converged after 12 iterations`, then finds a bad covariance matrix, prints `ERROR: covariance not symmetric` and returns 1. What does CTest report?
+--- choice
+Failed, because any exit code other than 0 fails a test.
+--- choice correct
+Passed. With `PASS_REGULAR_EXPRESSION`, the output alone decides, and the exit code is ignored. Drop the property and let the exit code decide, or add `FAIL_REGULAR_EXPRESSION "ERROR"`.
+--- choice
+Failed, because the output contains the word ERROR.
+--- choice
+Not run, because a test with a pattern must also have a `TIMEOUT`.
+--- why
+`PASS_REGULAR_EXPRESSION` replaces the exit-code rule: if the output matches, the test passes. "converged" appeared, so the error that followed, and the exit code 1, count for nothing. Use the property for a program that cannot report failure through its exit code. For a program that can, the exit code is the stronger check. `FAIL_REGULAR_EXPRESSION` does the opposite: any match fails the test.
+
++++ question | A test that could not be found
+--- ask
+`tests/CMakeLists.txt` holds:
+
+```cmake
+add_test(NAME demo_runs COMMAND ./gnc_demo)
+```
+
+The program `gnc_demo` is defined in `apps/gnc_demo/CMakeLists.txt`, and it built fine. `ctest` in the build folder reports:
+
+```text
+Could not find executable ./gnc_demo
+...
+ 1/1 Test #1: demo_runs ........................***Not Run   0.00 sec
+```
+
+Why, and what is the fix?
+--- choice
+`gnc_demo` has not been built yet; run `cmake --build build` first.
+--- choice
+`enable_testing()` must also be called in `tests/CMakeLists.txt`.
+--- choice
+`./` is not allowed in a CMake file, so write the full path, for example `/home/you/gnc/build/apps/gnc_demo/gnc_demo`.
+--- choice correct
+A relative path is looked for from the folder the test runs in, `build/tests`, but the program is in `build/apps/gnc_demo`. Write the target's name, `COMMAND gnc_demo`, and CMake puts in the full path of the built program.
+--- why
+A test runs by default in the build folder that matches the `CMakeLists.txt` that registered it, here `build/tests`, where there is no `gnc_demo`. When `COMMAND` names a target, CMake replaces the name with wherever that target's program really ends up, in any build folder, on any machine. A hard-coded path would work only on one computer, which is the opposite of a layout a stranger can build.
+
++++ question | Testing code that lives in main
+--- ask
+A function `parse_frame` lives in `apps/telemetry_dump/main.cpp`, next to that program's `main`. You want GoogleTest tests for it in `tests/`, linked with `GTest::gtest_main`. Which change is right?
+--- choice correct
+Move `parse_frame` into the library: declare it in `include/gnc/telemetry.hpp`, define it in `src/telemetry.cpp`, list that file in `add_library(gnc ...)`, and let both the program and the tests link `gnc`.
+--- choice
+Add `apps/telemetry_dump/main.cpp` to the source list of the test program.
+--- choice
+Write `#include "../apps/telemetry_dump/main.cpp"` at the top of the test file.
+--- choice
+Copy `parse_frame` into the test file, so the test does not depend on the program.
+--- why
+Adding the program's `main.cpp` to the test's sources, or including it, brings its `main` into the test program, which already gets a `main` from `gtest_main`: the link fails with a multiple definition of `main`. A copy links, but the tests then check the copy, and copies drift apart from the code that ships. Keeping `main` thin, with the real work in the library, lets the program, the tests and a simulator all link the same compiled code.
+
+=== cpp10-l07 | Practice: CMake presets
+--- for
+l07-cmake-presets
+
++++ question | A button you cannot press
+--- ask
+A `CMakePresets.json` has a configure preset `base` with `"hidden": true`, and two presets, `debug` and `release`, that inherit from it. You run `cmake --preset base`. What happens?
+--- choice
+It configures `build/base` with base's generator and no build type.
+--- choice
+It configures every preset that inherits from `base`, one after another.
+--- choice correct
+CMake refuses with "Cannot use hidden preset", and lists the presets you can use: `debug` and `release`.
+--- choice
+It works, but prints a warning that the preset is hidden.
+--- why
+A hidden preset exists only to be inherited from. It never appears in `cmake --list-presets`, and it cannot be used on its own. That is on purpose: `base` holds shared pieces, such as the generator and the folder rule, but no build type, so using it alone would give exactly the unfinished build this file exists to prevent.
+
++++ question | Building before configuring
+--- ask
+On a fresh clone, with the lesson's presets file, the very first command someone types is:
+
+```bash
+cmake --build --preset release
+```
+
+What happens?
+--- choice correct
+It fails, because `build/release` does not exist yet. A build preset only names a configured folder to build; run `cmake --preset release` first, or use a workflow preset that chains both.
+--- choice
+The build preset notices that nothing is configured and runs the `release` configure preset first.
+--- choice
+It builds into `./build`, the default folder, since `release` has not been configured.
+--- choice
+It configures and builds in Debug, because Debug is the default when no configure step has run.
+--- why
+Each kind of preset drives one step. A configure preset creates and fills the build folder; a build preset's `configurePreset` field only says which folder to build. On a fresh clone that folder does not exist, and CMake says so ("is not a directory"). `cmake --workflow --preset` with a workflow preset is the one command that runs configure, build and test in order.
+
++++ question | A switch the preset stopped setting
+--- ask
+The `asan` configure preset used to hold `"cacheVariables": { "GNC_SANITIZE": "ON" }`. A teammate deletes that line, so `asan` now sets nothing beyond what it inherits from `debug`. You pull the change, run `cmake --preset asan` in your existing `build/asan` folder, and rebuild. Are the sanitizers on?
+--- choice
+No: `cmake --preset` rewrites the whole cache from the preset, so `GNC_SANITIZE` goes back to its default, OFF.
+--- choice
+Configure fails, because an option that is not in the preset has no value.
+--- choice
+They are off for the library and on for the tests, because only the tests are rebuilt.
+--- choice correct
+Yes. A preset passes only the variables it lists, like `-D` options. Nothing sets `GNC_SANITIZE` any more, so the folder's cache keeps the ON it already had. A fresh folder would get OFF.
+--- why
+Presets are stored `-D` options, and the cache remembers every `-D` a folder was ever given until something sets a new value. Removing a variable from a preset sets nothing, so the old value stays. Your folder and a fresh CI folder now build differently from the same preset. When a preset loses a setting, delete the build folders that were made with it.
+
++++ question | Two presets, one folder
+--- ask
+```json
+"configurePresets": [
+  {
+    "name": "debug",
+    "generator": "Ninja",
+    "binaryDir": "${sourceDir}/build",
+    "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+  },
+  {
+    "name": "release",
+    "generator": "Ninja",
+    "binaryDir": "${sourceDir}/build",
+    "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+  }
+]
+```
+
+A developer switches between `debug` and `release` many times a day. What happens?
+--- choice
+CMake refuses to read the file, because two presets may not share a folder.
+--- choice correct
+Both presets use the same `build` folder and the same cache. Each switch changes the build type in that one cache, which changes every compile command, so everything is recompiled every time, and the two builds never exist side by side.
+--- choice
+CMake puts each build type in its own subfolder of `build`, so both builds are kept.
+--- choice
+Nothing goes wrong: Ninja keeps the Debug and Release object files apart by itself.
+--- why
+One folder is one cache and one set of object files. The last `cmake --preset` wins, and flipping between `-g` and `-O3 -DNDEBUG` makes every object file out of date. Writing `"binaryDir": "${sourceDir}/build/${presetName}"`, ideally once in a hidden base preset, gives `build/debug` and `build/release`, each keeping its own compiled files, so switching costs nothing.
+
++++ question | Green, and testing nothing
+--- ask
+The presets use `"binaryDir": "${sourceDir}/build/${presetName}"`, and there are no test presets. The CI job runs:
+
+```bash
+cmake --preset release
+cmake --build --preset release
+ctest --test-dir build
+```
+
+The job has been green for a month. Then someone notices that a broken test never ran. Why, and what is the fix?
+--- choice
+CTest cannot read Ninja build folders, so it skips every test.
+--- choice
+A Release build leaves the tests out, because `-DNDEBUG` removes them.
+--- choice correct
+The tests are registered in `build/release`, but `ctest` looked in `build`, which has no test list. It printed "No tests were found!!!" and exited with 0, a success. Add a test preset with `"configurePreset": "release"` and `"noTestsAction": "error"`, and run `ctest --preset release`.
+--- choice
+`ctest` needs `-j` to start the tests on a CI server.
+--- why
+The folder rule put everything in `build/release`, and the old habit `--test-dir build` points one folder too high. Finding no tests is not an error by default, so the job passed while testing nothing. A test preset fixes both halves: `configurePreset` points at the right folder by name, and `noTestsAction` turns an empty run into a failure. Then the CI job presses exactly the buttons a developer presses.
+
++++ question | A shared preset built on a private one
+--- ask
+A teammate has a preset `my-fast` in his `CMakeUserPresets.json`, which is in `.gitignore`. He adds this to the committed `CMakePresets.json`:
+
+```json
+{ "name": "ci-fast", "inherits": "my-fast" }
+```
+
+On the CI server, the job runs `cmake --preset debug`, which has not changed. What happens?
+--- choice
+Only `ci-fast` fails; `debug` works as before.
+--- choice
+`ci-fast` quietly inherits from `debug` instead, since `my-fast` is missing.
+--- choice
+The CI server fetches `my-fast` from the teammate's machine through git.
+--- choice correct
+CMake cannot read the presets file at all, so every preset fails, `debug` included.
+--- why
+CMake reads the presets file as a whole before running any preset, and a preset that inherits from something it cannot reach makes the whole file invalid. On the CI server the user file does not exist, so nothing works. The rule runs one way: a personal preset may build on a shared one, never the reverse. The shared file must stand on its own on every machine that clones the repository.
+
+=== cpp10-l08 | Practice: Sanitizer, coverage and ccache builds
+--- for
+l08-sanitizer-coverage-and-ccache-builds
+
++++ question | Which half each flag belongs to
+--- ask
+An options target carries flags for a sanitizer build and a coverage build. Which split between `target_compile_options` and `target_link_options` is right?
+--- choice correct
+Compile: `-fsanitize=address,undefined`, `-fno-sanitize-recover=all`, `-fno-omit-frame-pointer`, `--coverage`, `-O0`. Link: `-fsanitize=address,undefined` and `--coverage`.
+--- choice
+Compile: `-fsanitize=address,undefined` and `--coverage`. Link: `-fno-omit-frame-pointer` and `-O0`.
+--- choice
+Link only, for every flag: the checks and counters are added when the program is linked.
+--- choice
+Compile only, for every flag: the linker takes whatever the object files ask for.
+--- why
+The compiler inserts the checks and the counters, so every instrumenting flag goes on the compile line, together with the flags that shape the machine code: keep the frame pointer, no optimization for clean line counts. The inserted code calls into a runtime library (the sanitizer runtime, or gcov's counter writer), and only the link flag pulls that library in. Leave it out and the link fails with undefined `__asan_`, `__ubsan_` or `__gcov_` names.
+
++++ question | Cached answers after a header change
+--- ask
+The base preset sets `CMAKE_CXX_COMPILER_LAUNCHER` to `ccache`, and the cache is warm from the last debug build. The project compiles five files: `angles.cpp`, `gains.cpp`, `apps/gnc_demo/main.cpp`, `test_angles.cpp` and `test_gains.cpp`. `angles.hpp` is included by `angles.cpp`, `main.cpp` and `test_angles.cpp`; `gains.hpp` by `gains.cpp` and `test_gains.cpp`, and by nothing else.
+
+You change a constant in `angles.hpp`, delete `build/debug`, and run `cmake --preset debug && cmake --build --preset debug`. How many of the five compiles are ccache hits? Type the number.
+--- answer
+2
+two
+2 hits
+two hits
+--- why
+ccache's fingerprint covers the source file, every header it includes, the flags and the compiler. The three files that include `angles.hpp` now have a different fingerprint, so they are misses and are compiled again. `gains.cpp` and `test_gains.cpp` see exactly what they saw before, with the same flags, so they are hits, even though the build folder was deleted. Deleting a folder does not empty ccache's cache; that is what makes a clean build cheap.
+
++++ question | A configuration CMake has no flags for
+--- ask
+The sanitizer build is a custom configuration:
+
+```cmake
+set(san_flags -fsanitize=address,undefined -fno-omit-frame-pointer)
+target_compile_options(gnc_build_options INTERFACE "$<$<CONFIG:Asan>:${san_flags}>")
+target_link_options(gnc_build_options INTERFACE "$<$<CONFIG:Asan>:${san_flags}>")
+```
+
+It is configured with `-DCMAKE_BUILD_TYPE=Asan`, and a test's compile line reads:
+
+```text
+/usr/bin/c++ -fsanitize=address,undefined -fno-omit-frame-pointer -o ... -c test_gains.cpp
+```
+
+A sanitizer report names the functions in its stack trace, but gives no file names or line numbers. Why?
+--- choice
+`-fno-omit-frame-pointer` throws the line numbers away to make the stack trace shorter.
+--- choice
+A generator expression strips `-g` from the compile line.
+--- choice correct
+`Asan` is not one of CMake's four build types, so it gets no default flags: no `-g` and no `-O` level. Without debug information the report cannot name lines. Add `-g` to the Asan flags, for example in `san_flags`.
+--- choice
+Sanitizers never print line numbers; you need a debugger for those.
+--- why
+Default flags come from `CMAKE_CXX_FLAGS_<CONFIG>`: `-g` for Debug, `-O3 -DNDEBUG` for Release, and so on. For a configuration name CMake has never heard of there is nothing, just as with an empty build type. The frame pointer gives the stack trace its chain of functions; mapping each one to a file and line needs the debug information that `-g` adds. The option-plus-preset form avoided this by inheriting from `debug`, which already brings `-g`.
+
++++ question | Coverage run twice
+--- ask
+In the coverage folder you run `ctest --preset coverage` twice without resetting the counters, then print the `lcov` summary. The tests always take the same paths. Compared with a single run, what changes?
+--- choice
+The percentages double, so line coverage can pass 100%.
+--- choice correct
+The percentages stay the same, because the same lines and branches were reached. Every count doubles, because the `.gcda` counters add up across runs.
+--- choice
+Nothing changes: each run overwrites the counters of the one before.
+--- choice
+The percentages fall, because the second run's counts are divided among more runs.
+--- why
+A `.gcda` file keeps adding to its counters every time the program runs. Running the same tests again reaches the same code, so the covered fraction does not move, but every count is twice as big. The real danger is when *different* runs mix in: an old test program, or a test deleted since, leaves counts behind, and code looks tested when nothing tests it any more. Reset with `lcov --zerocounters --directory build/coverage`, or start from a fresh folder, before each measured run.
+
++++ question | A sanitizer that watched the wrong code
+--- ask
+The options target is set up as in the lesson, and the tests link it:
+
+```cmake
+target_link_libraries(gnc_tests PRIVATE gnc gnc_build_options GTest::gtest_main)
+```
+
+But the line `target_link_libraries(gnc PRIVATE gnc_build_options)` was never added to `src/CMakeLists.txt`. `gains.cpp`, part of `gnc`, reads `kPitchGain[4]` from a four-element array. With the `asan` preset, every test passes. Why?
+--- choice correct
+The checks are inserted when a file is compiled. `gains.cpp` is compiled as part of `gnc`, which never received the sanitizer flags, so no check sits where the bad read happens. Only the test files were instrumented. Link `gnc` to `gnc_build_options` too.
+--- choice
+AddressSanitizer only checks memory from `new` and `malloc`, never a global array.
+--- choice
+`-fno-sanitize-recover=all` is missing, so the finding was printed but the test passed.
+--- choice
+A static library cannot be sanitized; `gnc` would have to be a shared library.
+--- why
+A sanitizer is only as wide as the files compiled with it. The runtime was linked into the test program, and the test files were instrumented, but the out-of-bounds read lives in `gains.cpp`, whose object file has no checks at all. This is why every target you ship must link the options target: the aim is to test the code that ships, instrumented. AddressSanitizer does catch global arrays (`global-buffer-overflow`), and UBSan's bounds check would too, when the file is compiled with them.
+
++++ question | A unity build that will not compile
+--- ask
+Two source files of `gnc` each hold a private constant:
+
+```cpp
+// src/pitch.cpp
+namespace { constexpr double kLimit = 0.35; }
+```
+
+```cpp
+// src/roll.cpp
+namespace { constexpr double kLimit = 0.50; }
+```
+
+The normal build is fine. Configured with `-DCMAKE_UNITY_BUILD=ON`, it fails with "redefinition of 'constexpr const double {anonymous}::kLimit'". What is going on?
+--- choice
+The normal build hides a one-definition-rule violation that the linker failed to report.
+--- choice
+ccache served an old object file that still holds the first `kLimit`.
+--- choice
+A unity build compiles with a different C++ standard, in which anonymous namespaces are shared.
+--- choice correct
+A unity build glues the `.cpp` files of a target into a few large files. An anonymous namespace is private to one translation unit, and now both files are one translation unit with two `kLimit`s. The normal build is correct C++; give the constants different names, such as `kPitchLimit` and `kRollLimit`.
+--- why
+Internal linkage, from an anonymous namespace or `static`, means "one per translation unit". In the normal build, `pitch.cpp` and `roll.cpp` are separate units, so each has its own `kLimit` and there is no clash. The unity build pastes them into one file, and the same name is defined twice. Unity builds can also hide a missing `#include`, because one file's includes leak into the next. That is why the lesson says to measure first and keep a normal build in CI.
+
+=== cpp10-l09 | Practice: Toolchain files and cross-compiling
+--- for
+l09-toolchain-files-and-cross-compiling
+
++++ question | What goes in the toolchain file
+--- ask
+Which set of lines belongs in a toolchain file for a Cortex-M4 flight controller?
+--- choice
+`set(CMAKE_SYSTEM_NAME Generic)`, `add_library(gnc STATIC src/pid.cpp)`, `-Wall -Wextra` in `CMAKE_CXX_FLAGS_INIT`, and `enable_testing()`.
+--- choice
+`set(CMAKE_CXX_COMPILER arm-none-eabi-g++)`, `set(GNC_SANITIZE ON)`, `--coverage` in `CMAKE_CXX_FLAGS_INIT`, and `set(CMAKE_BUILD_TYPE MinSizeRel)`.
+--- choice correct
+`set(CMAKE_SYSTEM_NAME Generic)`, `set(CMAKE_CXX_COMPILER arm-none-eabi-g++)`, the `-mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16` flags in `CMAKE_CXX_FLAGS_INIT`, and `set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)`.
+--- choice
+`project(gnc LANGUAGES CXX)`, `set(CMAKE_CXX_COMPILER arm-none-eabi-g++)`, and `target_compile_options(gnc PRIVATE -mcpu=cortex-m4)`.
+--- why
+A toolchain file describes the target machine and nothing else: its operating system (none), its compilers, the CPU flags every file must share, and where its libraries and packages live. The test: would a different project for the same chip want the line? Sources, warnings, tests, sanitizers, coverage and the build type are project or build choices; they live on targets and in presets. The CPU flags go in the toolchain file, once, so no file can be built with different ones.
+
++++ question | A toolchain file that forgot one line
+--- ask
+A toolchain file for an Arm board running Linux sets only `CMAKE_C_COMPILER`, `CMAKE_CXX_COMPILER` (to `arm-linux-gnueabihf-g++`) and `CMAKE_SYSROOT`. It does not set `CMAKE_SYSTEM_NAME`. The project is the lesson's, with its `if(CMAKE_CROSSCOMPILING)` block: `objcopy` in one branch, tests in the other. What happens?
+--- choice
+CMake sees an Arm compiler, sets `CMAKE_CROSSCOMPILING` to true by itself, and everything works.
+--- choice correct
+`CMAKE_CROSSCOMPILING` stays false, so the project takes the host branch: it tries to build the unit tests with the Arm compiler and register them with CTest, and never makes the `.bin`. Add `set(CMAKE_SYSTEM_NAME Linux)`.
+--- choice
+Configure stops at once with an error that `CMAKE_SYSTEM_NAME` is required.
+--- choice
+The `.bin` is made, and only the tests are skipped.
+--- why
+Setting `CMAKE_SYSTEM_NAME` yourself is the switch that turns cross-compiling on. Without it, CMake assumes the target is the machine it runs on, whatever compiler you name. So the project believes it can run its own programs, and CTest would try to start Arm test programs on an x86 laptop, which cannot run them. For a board with an operating system the value is that system, `Linux`; for bare metal it is `Generic`.
+
++++ question | Is the Arm compiler GNU?
+--- ask
+The project's `CMakeLists.txt` holds:
+
+```cmake
+target_compile_options(gnc PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wdouble-promotion>)
+```
+
+Is `gnc` compiled with `-Wdouble-promotion` in the `build-m4` folder, which uses `arm-none-eabi-g++`?
+--- choice
+No: CMake identifies a cross compiler by its target, as `ARM`.
+--- choice correct
+Yes. The cross compiler is GCC built for another processor, and CMake identifies it as `GNU`, as the configure line "The CXX compiler identification is GNU 13.2.1" shows.
+--- choice
+No: generator expressions are not evaluated when cross-compiling.
+--- choice
+Only if the toolchain file also lists `-Wdouble-promotion`.
+--- why
+The compiler ID names the compiler family, not the processor it builds for. `arm-none-eabi-g++` is GCC, so `$<CXX_COMPILER_ID:GNU>` is `1` and the flag is added on the target just as on the laptop. That flag suits this chip: it warns wherever a `float` is quietly turned into a slow, software-emulated `double`. The project stays target-free, and per-compiler settings still work.
+
++++ question | Flags that grow
+--- ask
+A toolchain file holds:
+
+```cmake
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mcpu=cortex-m4 -mthumb")
+```
+
+What is wrong with it?
+--- choice
+`CMAKE_CXX_FLAGS` may not be set in a toolchain file; configure fails.
+--- choice
+The flags reach only C files, because the variable is read after `project()`.
+--- choice
+`-mthumb` must come before `-mcpu`, or the compiler ignores it.
+--- choice correct
+The file is read at the start of configure and again inside every try-compile, so each read appends the flags once more to whatever it was given. Put fixed values in `CMAKE_CXX_FLAGS_INIT`, which CMake copies into the cache once.
+--- why
+A toolchain file must have no side effects: set fixed values and stop. Appending to a variable makes the result depend on how many times the file has run, and it runs many times. The `_INIT` variables exist for this: they are starting values, copied into `CMAKE_CXX_FLAGS` on the first configure, and a developer's own `-DCMAKE_CXX_FLAGS=...` goes after them instead of fighting them.
+
++++ question | A vendor library built the other way
+--- ask
+A sensor vendor supplies a prebuilt `libimu.a` for the Cortex-M4, compiled with `-mfloat-abi=soft`. The firmware uses the lesson's toolchain file, with `-mfloat-abi=hard`. The link fails with a message like "fin_controller uses VFP register arguments, libimu.a(imu.o) does not". Which fix is right?
+--- choice correct
+Get (or build) `libimu.a` with the same CPU flags as the toolchain file: `-mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16`.
+--- choice
+Add `-mfloat-abi=soft` to `fin_controller` alone, with `target_compile_options`, so it matches the vendor library.
+--- choice
+Set `CMAKE_FIND_ROOT_PATH_MODE_LIBRARY` to `BOTH`, so the linker can pick a host copy of `libimu.a`.
+--- choice
+Link `libimu.a` with `PUBLIC` instead of `PRIVATE`, so its flags reach the program.
+--- why
+With `hard`, floats are passed to functions in the FPU's registers; with `soft`, in ordinary registers. Code built one way cannot call code built the other way, so the linker refuses to mix them. Every piece of the program must agree on the CPU flags. Changing `fin_controller` alone makes it disagree with `gnc` instead. A host library is x86 code and useless on the chip, and a link keyword never changes how a prebuilt file was compiled.
+
++++ question | Two arrays and a RAM budget
+--- ask
+The flight program's `arm-none-eabi-size` report reads `text 3496`, `data 108`, `bss 508`. Two global arrays are added, both used by the controller, and the machine code does not otherwise change:
+
+```cpp
+float telemetry_log[4096];                           // starts at zero
+const float drag_table[512] = { /* 512 values */ };
+```
+
+A `float` is 4 bytes. How many bytes of RAM does the program now need? Type the number.
+--- answer
+17000
+17000 bytes
+17,000
+17,000 bytes
+17 000
+17 000 bytes
+--- why
+`telemetry_log` starts at zero, so it goes in `bss`: $4096 \times 4 = 16384$ bytes, making `bss` $508 + 16384 = 16892$. `drag_table` is `const`, a constant, so it lives in flash with the code: `text` grows by $512 \times 4 = 2048$ to $5544$, and it costs no RAM at all. RAM holds `data` plus `bss`: $108 + 16892 = 17000$ bytes. Flash holds `text` plus `data`: $5544 + 108 = 5652$ bytes. Forgetting `const` on a table like that would move it into `data`, using RAM as well as flash.
+
+=== cpp10-l10 | Practice: Install and export
+--- for
+l10-install-and-export
+
++++ question | Where each file lands
+--- ask
+```cmake
+include(GNUInstallDirs)
+
+add_library(gnc SHARED src/attitude.cpp)
+add_executable(gnc_cli apps/gnc_cli.cpp)
+target_link_libraries(gnc_cli PRIVATE gnc)
+
+install(TARGETS gnc gnc_cli EXPORT gncTargets
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+```
+
+On Linux, where `CMAKE_INSTALL_LIBDIR` is `lib` here, you run `cmake --install build --prefix stage`. Where do the shared library and the program land?
+--- choice
+`stage/lib/libgnc.so` and `stage/lib/gnc_cli`, because both are part of the same export set.
+--- choice
+`stage/bin/libgnc.so` and `stage/bin/gnc_cli`, because both are needed at run time.
+--- choice correct
+`stage/lib/libgnc.so` and `stage/bin/gnc_cli`.
+--- choice
+Nowhere yet: `install()` rules are carried out by `cmake --build`, not by `cmake --install`.
+--- why
+Each kind of output file has its own rule. On Linux a shared library is a `LIBRARY` file, a static library an `ARCHIVE` file, and a program a `RUNTIME` file. So `libgnc.so` follows the `LIBRARY` line to `lib`, and `gnc_cli` follows `RUNTIME` to `bin`. (On Windows a `.dll` counts as `RUNTIME`, which is why it goes next to the programs there.) `install()` only records rules; `cmake --install` carries them out.
+
++++ question | A stricter version rule
+--- ask
+`nav` 2.4.1 is installed, and its version file was written with `COMPATIBILITY SameMinorVersion`. Four consumers ask for `find_package(nav 2.3)`, `find_package(nav 2.4)`, `find_package(nav 2.4.3)` and `find_package(nav 2.5)`. Which requests accept the installed copy?
+--- choice correct
+Only 2.4.
+--- choice
+2.3 and 2.4.
+--- choice
+2.4 and 2.4.3.
+--- choice
+2.4, 2.4.3 and 2.5.
+--- why
+`SameMinorVersion` needs the major and minor numbers to match, and the installed version to be at least the one asked for. 2.3 has a different minor number, so it is refused even though 2.4.1 is newer. 2.4.3 matches 2.4, but 2.4.1 is older than 2.4.3, so it is refused. 2.5 is newer than what is installed. Only 2.4 passes. It is a stricter promise than `SameMajorVersion`: only bug-fix releases count as compatible.
+
++++ question | What the rule sheet carries
+--- ask
+`gnc` is exported with `install(EXPORT gncTargets ...)`. Its `CMakeLists.txt` holds:
+
+```cmake
+target_compile_definitions(gnc PUBLIC GNC_FRAME=ECI PRIVATE GNC_LOG_LEVEL=2)
+target_compile_options(gnc INTERFACE -ffast-math PRIVATE -Wall -Wextra)
+```
+
+Which of these appear in the generated `gncTargets.cmake`?
+--- choice
+Only `GNC_FRAME=ECI`: compile options are never exported.
+--- choice
+All four, because export copies the whole target.
+--- choice
+`GNC_FRAME=ECI` and `GNC_LOG_LEVEL=2`, because definitions are always exported and options never are.
+--- choice correct
+`GNC_FRAME=ECI` and `-ffast-math`, but not `GNC_LOG_LEVEL=2` and not `-Wall -Wextra`.
+--- why
+Export writes the usage requirements and nothing else: every `PUBLIC` and `INTERFACE` item, as `INTERFACE_COMPILE_DEFINITIONS` and `INTERFACE_COMPILE_OPTIONS`. The kind of setting does not matter; the keyword does. `PRIVATE` items were only for building `gnc`, so they stay behind. Here that means every consumer will be compiled with `-ffast-math`, a flag that changes floating-point results. That is a strong thing to force on other people's code, so it should be `INTERFACE` only if the headers truly need it.
+
++++ question | A package that was moved
+--- ask
+The lesson's `gnc` is installed into `stage`. Then the whole `stage` folder is moved to `/opt/gnc-1.2`, and a consumer is configured with `-DCMAKE_PREFIX_PATH=/opt/gnc-1.2`. It builds. A teammate's copy of `gnc` is the same, except that it writes:
+
+```cmake
+$<INSTALL_INTERFACE:/home/ci/stage/include>
+```
+
+What happens to his package after the same move?
+--- choice
+CMake refuses to install it, because an install path must be relative.
+--- choice correct
+The absolute path is written into `gncTargets.cmake` as it is, so consumers are told to search `/home/ci/stage/include`, which no longer holds the headers. The relative form is taken from `_IMPORT_PREFIX`, which is worked out from where the file is when it is loaded.
+--- choice
+It works too, because `CMAKE_PREFIX_PATH` rewrites every path inside the package.
+--- choice
+Both packages break, because an installed package can never be moved.
+--- why
+`$<INSTALL_INTERFACE:include>` is relative, so the exported file stores `${_IMPORT_PREFIX}/include`, and `_IMPORT_PREFIX` is computed from the file's own location each time a consumer loads it. Move the tree and the path follows. An absolute path is accepted, but it is frozen: after the move, a consumer's compiler searches a folder that no longer holds the headers. `CMAKE_PREFIX_PATH` only tells `find_package` where to find the config file; it does not edit what is inside.
+
++++ question | The namespace that went missing
+--- ask
+`gnc` has `add_library(gnc::gnc ALIAS gnc)`, and its own programs link `gnc::gnc` without trouble. But its export line is:
+
+```cmake
+install(EXPORT gncTargets DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gnc)
+```
+
+In a consumer, `find_package(gnc 1.2 REQUIRED)` succeeds, and then `target_link_libraries(guidance_app PRIVATE gnc::gnc)` fails with "Target guidance_app links to: gnc::gnc but the target was not found". Why?
+--- choice
+`find_package` must be given `CONFIG` before it creates any imported target.
+--- choice
+A static library is always imported under its plain name; only shared libraries get `gnc::gnc`.
+--- choice correct
+Without `NAMESPACE gnc::`, the exported file creates an imported target called plain `gnc`. The alias exists only inside `gnc`'s own build and is not exported. Add `NAMESPACE gnc::` to the `install(EXPORT ...)` line.
+--- choice
+The version file rejected 1.2, so `find_package` created no targets.
+--- why
+The export set is written with the target's real name, `gnc`, plus whatever `NAMESPACE` adds in front. With no namespace, consumers would have to link plain `gnc`, which loses the protection of the double colon. The alias `gnc::gnc` is how the project's own code spells the name the way outsiders will, but outsiders only see it when the export adds the same namespace. `find_package` succeeded, so the version was fine.
+
++++ question | A private dependency that still travels
+--- ask
+`gnc` is a `STATIC` library that uses fmt only inside its `.cpp` files, so it says `target_link_libraries(gnc PRIVATE fmt::fmt)`. Its config file has no `find_dependency` line. A consumer's `find_package(gnc)` works, but configure then fails:
+
+```text
+The link interface of target "gnc::gnc" contains:
+
+  fmt::fmt
+
+but the target was not found.
+```
+
+Why, when the link was `PRIVATE`?
+--- choice
+It is a CMake bug: a `PRIVATE` dependency is never supposed to be exported.
+--- choice
+Changing the link to `PUBLIC` removes the error, because `PUBLIC` dependencies are found automatically.
+--- choice
+The consumer must add `fmt::fmt` to its own `target_link_libraries` line.
+--- choice correct
+A static library cannot carry its own dependencies, so the final program must still link fmt. CMake exports it as `$<LINK_ONLY:fmt::fmt>`, and the consumer has no `fmt::fmt` target. Add `find_dependency(fmt)` to the config file, before it includes `gncTargets.cmake`.
+--- why
+`libgnc.a` still holds calls into fmt, and only the program's link can supply fmt's code. So the exported target lists fmt as link-only: no include folders reach the consumer, but the linker must see it. `fmt::fmt` is an imported target, and something on the consumer's side has to create it first; that is `find_dependency`'s job, and it also gives a clear error when fmt is missing. `PUBLIC` exports it too, with the same error. If `gnc` were a shared library, the `.so` would record fmt itself and no `find_dependency` would be needed.
+
+=== cpp10-test | CMake and the C++ build system: module test
+--- teach
+The test covers the whole module: build types and the cache, library kinds, usage requirements, generator expressions, dependencies, layout and CTest, presets, sanitizer, coverage and ccache builds, toolchain files, and install and export. Most questions combine two or more lessons: you predict what CMake will do, find why a build fails, or pick the real reason. To get ready, redo the practice questions of the lessons that felt hard, and follow each requirement, flag and file by hand before you answer.
+--- gate
+questions 13
+minutes 25
+
++++ question | A Release timing that was not
+--- ask
+A colleague wants a Release timing of the navigation filter. He runs:
+
+```bash
+cmake -S . -B build -G "Ninja Multi-Config" -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+and times the program that the build just made. Which configuration did he time?
+--- choice correct
+Debug. A multi-config generator ignores `CMAKE_BUILD_TYPE`, and a plain `cmake --build build` builds the first configuration in its list, Debug. He needs `cmake --build build --config Release`, and the program in `build/Release/`.
+--- choice
+Release, because he set `CMAKE_BUILD_TYPE` to Release.
+--- choice
+None: configure fails, because `CMAKE_BUILD_TYPE` may not be set with a multi-config generator.
+--- choice
+A build with no build type, so no optimization and no debug information.
+--- why
+A multi-config folder holds every configuration, chosen at build time with `--config`, so there is no single build type at configure time and the variable is simply not used. With no `--config`, Ninja Multi-Config builds its first configuration, Debug, into `build/Debug/`. The timing is of unoptimized code with every assert on. Always state the configuration beside a benchmark, and check which folder the program came from.
+
++++ question | A definition along a chain
+--- ask
+```cmake
+add_library(units INTERFACE)
+target_compile_definitions(units INTERFACE UNITS_SI=1)
+
+add_library(frames STATIC frames.cpp)
+target_link_libraries(frames PUBLIC units)
+
+add_library(nav STATIC nav.cpp)
+target_link_libraries(nav PRIVATE frames)
+
+add_executable(app main.cpp)
+target_link_libraries(app PRIVATE nav)
+```
+
+Which targets' source files are compiled with `-DUNITS_SI=1`?
+--- choice
+Only `frames`, because only `frames` links `units` directly.
+--- choice
+`frames`, `nav` and `app`, because every link passes requirements on.
+--- choice correct
+`frames` and `nav`.
+--- choice
+`units`, `frames`, `nav` and `app`.
+--- why
+`units` compiles nothing, so it has no files to compile. `frames` uses it and passes it on, because its link is `PUBLIC`: `frames` gets the definition, and so does anyone who uses `frames`. `nav` uses `frames`, so `nav.cpp` receives everything `frames` hands on, `UNITS_SI=1` included. But `nav` links `frames` `PRIVATE`, so the chain stops there: `app` gets nothing from `frames` or `units` on its compile line, although `libframes.a` still appears on its link line as a link-only dependency.
+
++++ question | The tests that hid the bug
+--- ask
+`gnc`'s public header uses `Eigen::Vector3d`, but the library says `target_link_libraries(gnc PRIVATE Eigen3::Eigen)`. The repository's own tests build and pass:
+
+```cmake
+add_executable(gnc_tests tests/test_attitude.cpp)
+target_link_libraries(gnc_tests PRIVATE gnc Eigen3::Eigen GTest::gtest_main)
+```
+
+After `gnc` is installed and exported, a downstream project that links only `gnc::gnc` fails with "Eigen/Geometry: No such file or directory", inside `gnc/attitude.hpp`. Why did the tests not catch it, and what fixes it?
+--- choice
+The CMake files are fine; the package is incomplete. Ship Eigen's headers inside `gnc`'s install tree, next to `gnc`'s own.
+--- choice correct
+The test program linked `Eigen3::Eigen` itself, so it got Eigen's include folder by its own route, not from `gnc`. Make the link `PUBLIC`, add `find_dependency(Eigen3 ...)` to the config file, and let the tests link only what a stranger would: `gnc` and GoogleTest.
+--- choice
+Installing drops every dependency, so no test can catch this. The downstream project must link `Eigen3::Eigen` itself.
+--- choice
+`gtest_discover_tests` runs the tests before `gnc` is installed. Run `ctest` after `cmake --install` instead.
+--- why
+A library's `PUBLIC` side is only tested by a consumer that gets everything through the library's target. The extra `Eigen3::Eigen` on the test line covered up the too-private link, so the mistake shipped. `PUBLIC` puts Eigen into the exported interface, and `find_dependency` makes sure `Eigen3::Eigen` exists on the consumer's side before `gncTargets.cmake` uses it. Asking every downstream project to link Eigen by hand is the hand-rolled wiring that export exists to replace.
+
++++ question | A FetchContent consumer's include folder
+--- ask
+`gnc` declares its include folder like this:
+
+```cmake
+target_include_directories(gnc PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+```
+
+A simulation project gets `gnc` with `FetchContent_Declare` and `FetchContent_MakeAvailable`, and links `gnc::gnc`. Which include folder is the simulation's program compiled with?
+--- choice correct
+`gnc`'s source include folder inside the simulation's build, `build/_deps/gnc-src/include`, because `gnc` is being built as part of the simulation's build.
+--- choice
+`include`, a path relative to the install prefix, because it links the namespaced name `gnc::gnc`.
+--- choice
+Both folders, one after the other.
+--- choice
+None: targets that come in through FetchContent carry no usage requirements.
+--- why
+FetchContent runs `gnc`'s own `CMakeLists.txt` inside the simulation's build, as `add_subdirectory` would. So `gnc` is built right here, `$<BUILD_INTERFACE:...>` keeps its path, and `${CMAKE_CURRENT_SOURCE_DIR}` is where the source was downloaded, under `_deps`. `$<INSTALL_INTERFACE:...>` is kept only in an installed package's exported file. The alias `gnc::gnc` is what lets the simulation write the same name either way.
+
++++ question | Four folders, four downloads
+--- ask
+A project fetches GoogleTest with `FetchContent_Declare` (pinned to a commit, no `FIND_PACKAGE_ARGS`) and `FetchContent_MakeAvailable`. Its presets have four configure presets, `debug`, `release`, `asan` and `coverage`, each with `"binaryDir": "${sourceDir}/build/${presetName}"`. On a fresh clone, all four are configured. How many times is GoogleTest downloaded? Type the number.
+--- answer
+4
+four
+4 times
+four times
+--- why
+FetchContent downloads into the build folder, `build/<preset>/_deps/googletest-src`, and makes it part of that folder's build. Four fresh folders mean four downloads, and GoogleTest is compiled four times too. The pinned commit makes all four copies identical, but it does not share them. This is the cost that pushes teams with many build folders or CI jobs toward a package manager with a binary cache.
+
++++ question | Every assertion passed
+--- ask
+The `asan` test preset sets `ASAN_OPTIONS` to `detect_leaks=1:abort_on_error=1`, and the tests are registered with `gtest_discover_tests`. One test allocates a buffer with `new[]` and never frees it; all of its `EXPECT` checks pass. What does `ctest --preset asan` report for that test, and what does `ctest --preset debug` report?
+--- choice
+Passed in both: GoogleTest printed "[  PASSED  ]" for the test, and that is what CTest reads.
+--- choice
+Failed in both, because a leak is undefined behavior.
+--- choice
+Passed with `asan`, because leak checks only run with `-fno-sanitize-recover=all`.
+--- choice correct
+Failed with `asan`: when the program ends, LeakSanitizer reports the leak and stops it with a nonzero exit code, and CTest judges by the exit code. Passed with `debug`, where nothing checks for leaks.
+--- why
+CTest reads one thing, the exit code. GoogleTest's own verdict is printed before the program ends, but the leak check runs at exit, and a leak changes the exit code, so the test fails in the sanitizer build. The debug build has no leak checker, so the same test passes. That is why the instrumented presets exist: the same targets and tests, with extra eyes that turn quiet bugs into failed tests.
+
++++ question | Configure-time questions that are fine
+--- ask
+The cross-compiling lesson's project uses `if(CMAKE_CROSSCOMPILING)` in its `CMakeLists.txt`, while the generator expressions lesson says never to write `if(CMAKE_BUILD_TYPE STREQUAL "Debug")`. Both are ordinary `if()` tests. Why is one fine and the other not?
+--- choice
+`CMAKE_CROSSCOMPILING` is a cache variable, and `if()` can only read cache variables reliably.
+--- choice
+`if(CMAKE_CROSSCOMPILING)` is actually evaluated at generate time, like a generator expression.
+--- choice correct
+Whether the build is a cross build is settled before `project()`, by the toolchain file, and is the same for the whole folder. The configuration may not be chosen until build time, with a multi-config generator, so it is not known while `if()` runs.
+--- choice
+There is no real difference; both break with multi-config generators.
+--- why
+`if()` runs during configure, so it can only decide things that are already known then. The toolchain file is read before the compiler is detected, so by the time your `if()` runs, cross or not is fixed for that build folder, and one folder never holds both. A multi-config folder holds Debug and Release at once, and the choice comes later with `--config`, so a configuration-dependent setting has to be a generator expression, filled in at generate time for each configuration.
+
++++ question | An Arm package that could not be found
+--- ask
+`gnc` was built with the Arm toolchain file and installed into `/opt/arm-libs`. A firmware project uses the same toolchain file, which sets `CMAKE_FIND_ROOT_PATH` to `/usr/lib/arm-none-eabi` and `CMAKE_FIND_ROOT_PATH_MODE_PACKAGE` to `ONLY`. It is configured with `-DCMAKE_PREFIX_PATH=/opt/arm-libs`, and `find_package(gnc REQUIRED)` fails. `/opt/arm-libs/lib/cmake/gnc/gncConfig.cmake` is there. Why?
+--- choice
+`find_package` never works when cross-compiling; the firmware must use FetchContent.
+--- choice correct
+With mode `ONLY`, every search path is looked for inside the root paths, so `/opt/arm-libs` becomes `/usr/lib/arm-none-eabi/opt/arm-libs`, which does not exist. Add `/opt/arm-libs` to `CMAKE_FIND_ROOT_PATH`.
+--- choice
+The package was installed for the host, because `cmake --install` ignores the toolchain file.
+--- choice
+`CMAKE_PREFIX_PATH` needs the full path of the config file's folder, `/opt/arm-libs/lib/cmake/gnc`.
+--- why
+`CMAKE_FIND_ROOT_PATH` means "pretend this folder is `/`", and `ONLY` means only those pretend roots are searched. Every other search path, `CMAKE_PREFIX_PATH` included, is joined onto each root, so your prefix is searched in the wrong place. Adding `/opt/arm-libs` as a root makes it a target folder, and `find_package(gnc)` finds the Arm copy. The same rule is what keeps the laptop's x86 packages out of the firmware.
+
++++ question | GoogleTest moved up a few lines
+--- ask
+In the lesson's cross-compiling project, someone moves `find_package(GTest REQUIRED)` out of the `else()` branch and up to just after `project()`, "so it is always found". The host build still works. Configuring the `m4-release` preset now fails with "Could not find ... GTest", although GoogleTest is installed on the laptop under `/usr`. Why?
+--- choice
+GoogleTest cannot be used with the MinSizeRel build type.
+--- choice correct
+The toolchain file sets `CMAKE_FIND_ROOT_PATH_MODE_PACKAGE` to `ONLY`, so only the target's folders are searched, and the laptop's GoogleTest, built for x86, is invisible, as it should be. Put the `find_package` back in the host-only branch.
+--- choice
+The toolchain file must list every package the project uses.
+--- choice
+`find_package` runs before the toolchain file is read, so it looked for the Arm compiler's GoogleTest.
+--- why
+The laptop's GoogleTest is an x86 library. Found for an Arm build, it would compile against the wrong machine's headers and fail to link, or worse. `ONLY` makes that impossible, and the error is the good outcome. The tests only run on the host, so everything about them, `find_package(GTest)` included, belongs inside `if(NOT CMAKE_CROSSCOMPILING)`, which is what the original `else()` branch was.
+
++++ question | A preset file that broke both builds
+--- ask
+A teammate adds a cross-compiling preset to the shared `CMakePresets.json`:
+
+```json
+{
+  "name": "m4-release",
+  "binaryDir": "build-m4",
+  "toolchainFile": "${CMAKE_SOURCE_DIR}/cmake/arm-none-eabi.cmake",
+  "cacheVariables": { "CMAKE_BUILD_TYPE": "MinSizeRel" }
+}
+```
+
+What happens when anyone runs `cmake --preset host-debug`, a preset he did not touch?
+--- choice
+It works; only `m4-release` fails when used.
+--- choice
+It works, and `m4-release` also works, because `CMAKE_SOURCE_DIR` is filled in with the source folder.
+--- choice
+It fails only on machines that do not have `arm-none-eabi-g++` installed.
+--- choice correct
+It fails. `${CMAKE_SOURCE_DIR}` is a CMake-language variable, not a preset macro, so CMake reports an invalid macro expansion and refuses to read the whole file. The preset should say `${sourceDir}`.
+--- why
+A preset file is read before any CMake code runs, and it understands only its own small set of macros: `${sourceDir}`, `${presetName}`, `$env{NAME}` and a few more. An unknown one makes the file invalid as a whole, so every preset fails, the host build included. That is harsh but safe: a half-read presets file would build something other than what the file says.
+
++++ question | A private header the tests need
+--- ask
+The `nav` library keeps a private helper header in `src/matrix_util.hpp`, and sets `target_include_directories(nav PUBLIC include PRIVATE src)`. A unit test wants to test the helpers directly with `#include "matrix_util.hpp"`. The test program links `nav` and fails with "matrix_util.hpp: No such file or directory". Which fix is best?
+--- choice correct
+Give only the test target the folder: `target_include_directories(nav_tests PRIVATE ${PROJECT_SOURCE_DIR}/src)`.
+--- choice
+Change `PRIVATE src` to `PUBLIC src` on `nav`, so the tests can see it.
+--- choice
+Move `matrix_util.hpp` into `include/nav/`, since anything a test uses is public.
+--- choice
+Add `include_directories(src)` at the top of the root `CMakeLists.txt`.
+--- why
+The `PRIVATE` folder reached `nav`'s own files and correctly stopped there, so linking `nav` does not bring it. Making it `PUBLIC`, or moving the header into `include/`, would hand a private helper to every consumer, and it could no longer change freely. A global `include_directories` leaks it to every target in the project. Only the test needs it, so only the test target gets it: the requirement stays on the one target that has it.
+
++++ question | Two copies of the same package
+--- ask
+`gnc` 1.2.0 is installed in `/home/you/stage`, and `gnc` 1.4.0 in `/usr/local`. Both were written with `COMPATIBILITY SameMajorVersion`. A consumer is configured with `-DCMAKE_PREFIX_PATH=/home/you/stage` in a fresh build folder and calls `find_package(gnc 1.3 REQUIRED)`. What happens?
+--- choice
+It fails: the first config file found, 1.2.0, is too old, and CMake stops there.
+--- choice
+It uses 1.2.0, because `CMAKE_PREFIX_PATH` always wins over the system prefixes.
+--- choice correct
+It uses 1.4.0 from `/usr/local`. CMake looks in `/home/you/stage` first, refuses 1.2.0 as older than 1.3, carries on to the system prefixes, and accepts 1.4.0.
+--- choice
+It fails because two copies were found, and CMake cannot choose.
+--- why
+`find_package` walks its places in order, and a version file can refuse a copy. A refused copy does not end the search; CMake keeps looking. The version file in `stage` answers "no", since $1.2.0 < 1.3$, so CMake moves on to `/usr/local`, where $1.4.0 \ge 1.3$ with the same major number. It fails only if no copy anywhere is good enough, and the error then lists every file it considered with its version.
+
++++ question | Which flag does it get
+--- ask
+```cmake
+option(GNC_SANITIZE "Build with AddressSanitizer" OFF)
+target_compile_options(gnc PRIVATE
+  "$<IF:$<AND:$<BOOL:${GNC_SANITIZE}>,$<NOT:$<CONFIG:Release>>>,-fsanitize=address,-O2>")
+```
+
+A folder is configured with `-DGNC_SANITIZE=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo`. Which of the two flags in the expression does `gnc` get? Type it exactly.
+--- answer
+-fsanitize=address
+fsanitize=address
+--- why
+`${GNC_SANITIZE}` is an ordinary variable, filled in while the file is read, so the expression holds `$<BOOL:ON>`, which is `1`. "Is it Release?" is `0` for RelWithDebInfo, and `$<NOT:0>` is `1`. `$<AND:1,1>` is `1`, so the `IF` gives its first value, `-fsanitize=address`. "Not Release" includes every other configuration, RelWithDebInfo among them, which is easy to miss when you only picture Debug and Release. The sanitizer also needs its link half, `target_link_options`, to link.
+
++++ question | The flight build and the assert
+--- ask
+The PID controller's `update` starts with `assert(dt_s > 0.0f);`. The `m4-release` preset builds the flight program with `CMAKE_BUILD_TYPE` set to `MinSizeRel`. On the board, a timing fault delivers `dt_s = 0` once. What happens in that call?
+--- choice correct
+MinSizeRel adds `-DNDEBUG`, so the assert is not in the flight program. The division by zero runs, the derivative becomes infinite or NaN, and the fin command comes out pinned at the limit or as NaN.
+--- choice
+The assert stops the program and reports the file and line, as in the host Debug tests.
+--- choice
+The compiler refuses to build an `assert` for a bare-metal target, so the fault was caught at build time.
+--- choice
+Nothing unusual: the clamp keeps the output inside the limit whatever the input.
+--- why
+MinSizeRel is `-Os -DNDEBUG`, and `NDEBUG` removes every `assert`, exactly as in Release. The host Debug tests would have stopped at it; the flown program never checks. With $dt = 0$, the derivative term is $\pm\infty$, or $0/0 = \text{NaN}$ when the error has not changed. The clamp pins an infinity to the limit, but every comparison with NaN is false, so a NaN passes straight through it. A check that protects the vehicle must be ordinary code that handles the fault, not an `assert`.
+
++++ question | A warning with a date on it
+--- ask
+A project starts with `cmake_minimum_required(VERSION 3.16)` and downloads a dependency with FetchContent from a `URL` with a `URL_HASH`. With CMake 3.28, every configure prints "CMake Warning (dev)": "The DOWNLOAD_EXTRACT_TIMESTAMP option was not given and policy CMP0135 is not set. The policy's OLD behavior will be used." CMP0135 was added in CMake 3.24, and the whole team and the CI servers run 3.28. What is the best fix?
+--- choice
+Configure with `-Wno-dev`, which removes the warning.
+--- choice
+Delete the build folder, because the cache is holding an old policy setting.
+--- choice
+Remove the `URL_HASH`, which is what triggers the policy check.
+--- choice correct
+Raise the minimum to the version everyone really runs, `cmake_minimum_required(VERSION 3.28)`. That sets CMP0135, and every other policy up to 3.28, to NEW.
+--- why
+The minimum decides which rulebook applies. At 3.16, CMP0135 is unset and the OLD behavior is used: extracted files keep the archive's old timestamps, so a changed download may not trigger a rebuild. Raising the minimum fixes this one and every other old behavior at once, and costs nothing when everyone already has 3.28. `-Wno-dev` hides the notice and keeps the old behavior. The hash is what makes the download trustworthy, and it is not what the warning is about.
+
++++ question | A package installed from the wrong folder
+--- ask
+The lesson's `gnc` links `gnc_build_options` as `$<BUILD_INTERFACE:gnc_build_options>`. To save time, someone runs `cmake --install build/asan --prefix stage`, installing `gnc` from the sanitizer build folder, and ships `stage` to another team. Their program links `gnc::gnc` in an ordinary build and fails with "undefined reference to `__asan_report_load8`". Why?
+--- choice
+The package's `gncConfig.cmake` is missing a `find_dependency(asan)` line.
+--- choice correct
+`libgnc.a` was compiled with the sanitizer, so its object files call into the sanitizer runtime. The link flag that brings the runtime was a build-tree-only requirement and was not exported, so their link has no runtime. Install from the release build instead: the instruments never ship.
+--- choice
+The other team's compiler is too old to read a sanitized library.
+--- choice
+`$<BUILD_INTERFACE:...>` should be `$<INSTALL_INTERFACE:...>`, so the sanitizer flags are exported with the package.
+--- why
+Installing copies whatever was built in that folder, and the objects in `build/asan` are instrumented. The compile flag put calls to `__asan_` functions into `libgnc.a`; only `-fsanitize=address` on the final link supplies them. `$<BUILD_INTERFACE:...>` kept the options target out of the export, correctly, so the consumer's link lacks it. Exporting the flags would force sanitizers onto someone else's program. A package should be built from the flight configuration, and sanitizer builds exist only to test.
