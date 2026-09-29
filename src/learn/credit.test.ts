@@ -62,6 +62,26 @@ describe('the credit map', () => {
     expect(bad).toEqual([])
   })
 
+  it('every overlap key names a real module lesson, lists real Learn lessons, and says what is new', () => {
+    const bad: string[] = []
+    for (const [key, { learn, newHere }] of Object.entries(CREDIT.overlap ?? {})) {
+      const [m, l, ...rest] = key.split('::')
+      if (!m || !l || rest.length) bad.push(`${key}: not "<module>::<lesson>"`)
+      else if (!moduleIds.has(m)) bad.push(`${key}: ${m} is not a module`)
+      else if (!lessonsFor(m).some((x) => x.id === l)) bad.push(`${key}: ${l} is not a lesson of ${m}`)
+      if (key in CREDIT.lessons) bad.push(`${key}: already fully credited, so no overlap entry`)
+      if (!learn.length) bad.push(`${key}: no Learn lessons`)
+      if (new Set(learn).size !== learn.length) bad.push(`${key}: a Learn lesson listed twice`)
+      for (const id of learn) {
+        const found = findLesson(id)
+        if (!found) bad.push(`${key}: ${id} is not a Learn lesson`)
+        else if (found.lesson.gate) bad.push(`${key}: ${id} is a gate, not a lesson`)
+      }
+      if (!newHere.trim()) bad.push(`${key}: newHere is empty`)
+    }
+    expect(bad).toEqual([])
+  })
+
   it('every course id names a real Learn course, exactly', () => {
     const bad: string[] = []
     const ids = [...Object.values(CREDIT.modules).flat(), ...Object.keys(CREDIT.courses)]
