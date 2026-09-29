@@ -16,13 +16,13 @@ A model that tracks both kinds of motion is called **[[6-DoF|six-dof-name]]** �
 
 The **state** is everything you need to know right now to predict what happens next. For the leaf-blower person it is: where you are, how fast you are going, how much fuel is left, which way you are leaning, and how fast you are tipping. The 6-DoF lander carries exactly those five things.
 
-- $\mathbf{r}$, the position ($3$ numbers, in metres).
+- $\mathbf{r}$, the position ($3$ numbers, in meters).
 - $\mathbf{v}$, the velocity ($3$ numbers, in m/s).
 - $z = \ln m$, the log-mass from lesson 3 ($1$ number).
 - $\mathbf{q} = (q_w, q_x, q_y, q_z)$, the **attitude quaternion** ($4$ numbers). Read it as "q". It records which way the vehicle is pointing. A **[[quaternion|quaternion-why]]** is a set of four numbers with length exactly $1$ that describes a rotation. The upright vehicle is $\mathbf{q} = (1, 0, 0, 0)$. A tilt by an angle $\theta$ about a unit axis $\hat{\mathbf{a}}$ is $\mathbf{q} = (\cos\tfrac{\theta}{2},\ \hat{\mathbf{a}}\sin\tfrac{\theta}{2})$ — note the half angle.
 - $\boldsymbol{\omega}$, the **body angular rate** ($3$ numbers, in rad/s). Read it "omega". It says how fast the vehicle is turning, measured about its own axes.
 
-That adds up to $3 + 3 + 1 + 4 + 3 = 14$ numbers. The **controls** — the things the guidance chooses — are four numbers: the mass-normalised thrust $\sigma$ (the thrust acceleration, in $\mathrm{m/s^2}$, the same $\sigma$ as lessons 3 to 6) and a commanded angular acceleration $\boldsymbol{\alpha}_{\text{cmd}}$ (in $\mathrm{rad/s^2}$).
+That adds up to $3 + 3 + 1 + 4 + 3 = 14$ numbers. The **controls** — the things the guidance chooses — are four numbers: the mass-normalized thrust $\sigma$ (the thrust acceleration, in $\mathrm{m/s^2}$, the same $\sigma$ as lessons 3 to 6) and a commanded angular acceleration $\boldsymbol{\alpha}_{\text{cmd}}$ (in $\mathrm{rad/s^2}$).
 
 ::: warning Two alphas
 In lesson 3, $\alpha = 1/(I_{sp} g_0)$ is the mass-flow constant. Here $\boldsymbol{\alpha}_{\text{cmd}}$ is a bold vector with a subscript, and it is an angular acceleration. They have nothing to do with each other. The lesson after this one uses a plain $\alpha$ a third way, for angle of attack. Read the subscript and the boldness every time.
@@ -63,7 +63,7 @@ The non-convexity did not disappear, though. It moved. In 3-DoF the hard part wa
 ::: key The 6-DoF model inside the optimization
 State ($14$): $\mathbf{r}, \mathbf{v}, z, \mathbf{q}, \boldsymbol{\omega}$. Control ($4$): $\sigma, \boldsymbol{\alpha}_{\text{cmd}}$.
 
-$\dot{\mathbf{v}} = \mathbf{R}(\mathbf{q})(0,0,\sigma)^\top + \mathbf{g}$ and $\dot{\mathbf{q}} = \tfrac12\Xi(\mathbf{q})\boldsymbol{\omega}$ are the two nonlinear equations; SCvx linearises them about a reference each iteration. The thrust magnitude is $\sigma$ exactly, so the lower thrust bound needs no relaxation.
+$\dot{\mathbf{v}} = \mathbf{R}(\mathbf{q})(0,0,\sigma)^\top + \mathbf{g}$ and $\dot{\mathbf{q}} = \tfrac12\Xi(\mathbf{q})\boldsymbol{\omega}$ are the two nonlinear equations; SCvx linearizes them about a reference each iteration. The thrust magnitude is $\sigma$ exactly, so the lower thrust bound needs no relaxation.
 :::
 
 ::: example Where a tilted vehicle's thrust goes
@@ -93,7 +93,7 @@ Start upright, $\mathbf{q} = (1, 0, 0, 0)$, turning at $\boldsymbol{\omega}_0 = 
 
 **Its length.** $\sqrt{1^2 + 0.015^2} = 1.000112$.
 
-The error is about $1.1 \times 10^{-4}$ per step: small, but it adds up over many steps and it makes $\mathbf{R}(\mathbf{q})$ stretch vectors slightly. The fix is to **[[renormalise|renormalise]]** — divide $\mathbf{q}$ by its length — after every propagation step, and to keep the optimizer's attitude close to the unit sphere with the trust region.
+The error is about $1.1 \times 10^{-4}$ per step: small, but it adds up over many steps and it makes $\mathbf{R}(\mathbf{q})$ stretch vectors slightly. The fix is to **[[renormalize|renormalize]]** — divide $\mathbf{q}$ by its length — after every propagation step, and to keep the optimizer's attitude close to the unit sphere with the trust region.
 
 **Sanity check.** The vehicle turned $0.015 \times 2 = 0.03\,\mathrm{rad}$, about $1.7°$. The quaternion's $x$ part is $0.015$, which is $\sin(0.015)$ to four places — half the angle, as the half-angle rule says.
 :::
@@ -123,11 +123,11 @@ The vehicle starts tilted, sliding and turning:
 
 It must reach the origin at rest, upright and not turning: $\mathbf{r}_N = \mathbf{0}$, $\mathbf{v}_N = \mathbf{0}$, $\mathbf{q}_N = (1, 0, 0, 0)$, $\boldsymbol{\omega}_N = \mathbf{0}$. The flight is cut into $N = 4$ to $6$ steps of $2\,\mathrm{s}$. The thrust bounds are convexified as before, and there is a bound on the commanded angular acceleration. The time step is fixed here; making the flight time free is the dilation trick of lesson 9, and it adds one more column to the same Jacobians.
 
-The first reference for SCvx is a **straight-line guess**, the simplest one with no right to be good: position, velocity and body rate go in straight lines from start to target, attitude slides toward upright (renormalised), and thrust stays at a constant, roughly hovering value. No real vehicle could fly it.
+The first reference for SCvx is a **straight-line guess**, the simplest one with no right to be good: position, velocity and body rate go in straight lines from start to target, attitude slides toward upright (renormalized), and thrust stays at a constant, roughly hovering value. No real vehicle could fly it.
 
 ## What the linear model forgets
 
-Before running the loop, it helps to see what the linearisation of the thrust direction actually looks like. Linearise $\mathbf{R}(\mathbf{q})(0,0,\sigma)^\top$ about the upright attitude, holding $\sigma$ fixed. The first-order model is
+Before running the loop, it helps to see what the linearization of the thrust direction actually looks like. Linearize $\mathbf{R}(\mathbf{q})(0,0,\sigma)^\top$ about the upright attitude, holding $\sigma$ fixed. The first-order model is
 
 $$
 \mathbf{R}(\mathbf{q})(0,0,\sigma)^\top \approx (2\sigma q_y,\ -2\sigma q_x,\ \sigma).
@@ -149,11 +149,11 @@ Hold $\sigma = 5.0\,\mathrm{m/s^2}$ and tilt about $y$ by $\theta$. The true thr
 **Sanity check.** Almost all the error is in the upward column: $5.000 - 4.330 = 0.670$ of the $0.676$ at $30°$. That is the cosine loss the linear model cannot see.
 :::
 
-This is why the trust region matters so much here. A reference that is upright and a candidate that tilts $30°$ are far apart, and the linear model lies by more than a metre per second every two seconds.
+This is why the trust region matters so much here. A reference that is upright and a candidate that tilts $30°$ are far apart, and the linear model lies by more than a meter per second every two seconds.
 
 ## What the first iterations actually do
 
-The next two examples are measurements, not hand calculations. They were recorded from one run of this module's own teaching solver: a dense **[[barrier method|barrier-method]]** written in plain Python, on a shared machine. The counts are what that run logged. The times are that machine's, and yours will differ. The terminal "error" is a single number that rolls the position miss (in metres) and the velocity miss (in m/s) into one norm, so read it as a size, not a distance.
+The next two examples are measurements, not hand calculations. They were recorded from one run of this module's own teaching solver: a dense **[[barrier method|barrier-method]]** written in plain Python, on a shared machine. The counts are what that run logged. The times are that machine's, and yours will differ. The terminal "error" is a single number that rolls the position miss (in meters) and the velocity miss (in m/s) into one norm, so read it as a size, not a distance.
 
 ::: example A reference the loop correctly refuses
 Run the $N = 6$ case with a generous starting trust region: $\Delta_{\mathbf{x}} = 40$ on the states and $\Delta_{\mathbf{u}} = 6$ on the controls ($\Delta$ is "delta", the trust-region radius of lesson 8). The point is to see what happens before the trust region is doing much restraining.
@@ -165,22 +165,22 @@ Run the $N = 6$ case with a generous starting trust region: $\Delta_{\mathbf{x}}
 **The outcome.** Two iterations, two honest rejections. In that run the radius kept shrinking and fell from $40$ to below $2$ before a step was accepted.
 :::
 
-This is not a failure of the method. It is the method working as designed on a hard first reference. The tilt table shows why: the linearisation error grows with the square of the distance from the reference, and $40$ units of state deviation is far past where it stays small. The trust-region rule's whole job is to notice this and correct it with no human in the loop. On this run it did.
+This is not a failure of the method. It is the method working as designed on a hard first reference. The tilt table shows why: the linearization error grows with the square of the distance from the reference, and $40$ units of state deviation is far past where it stays small. The trust-region rule's whole job is to notice this and correct it with no human in the loop. On this run it did.
 
 ::: example Necessary, and visibly not sufficient
 A second, smaller run uses $N = 4$ and a gentler start (smaller tilt, shorter reach). It accepts on its very first iteration. The virtual control falls to $3.7 \times 10^{-4}$ — essentially zero, the signal lessons 7 and 8 said to watch for.
 
 Now re-simulate that accepted candidate's controls through the true nonlinear dynamics anyway. The terminal error is $74.8$. Not small.
 
-**What happened.** Near-zero virtual control says the *linearised* dynamics were satisfied almost exactly. It says nothing about whether that linearisation, correct at the reference, stayed correct all the way out to where this trajectory actually went, over four steps whose errors pile on top of each other.
+**What happened.** Near-zero virtual control says the *linearized* dynamics were satisfied almost exactly. It says nothing about whether that linearization, correct at the reference, stayed correct all the way out to where this trajectory actually went, over four steps whose errors pile on top of each other.
 
-So: **virtual control near zero is necessary for trusting an iterate, and this run is direct evidence that it is not sufficient.** The true-dynamics check is not a formality added for rigour's sake. It is the check that catches exactly this case.
+So: **virtual control near zero is necessary for trusting an iterate, and this run is direct evidence that it is not sufficient.** The true-dynamics check is not a formality added for rigor's sake. It is the check that catches exactly this case.
 :::
 
 ::: warning What "the solve took 70 seconds" does and does not mean
 None of these times is a flight timing claim. The teaching solver re-factors a full dense matrix at every Newton step, runs uncompiled, and shares its machine — every choice real-time flight code rules out.
 
-What the numbers *do* show honestly is how much the Newton-step count swings with how well-posed a linearisation is: $10$ steps for an easy subproblem, $758$ for a harder one in this lesson's runs. So an SCvx subproblem's cost is not the steady, nearly data-independent number a single convex SOCP solve gives you. Lesson 12 works out what a sparse, code-generated version costs against a real guidance cycle.
+What the numbers *do* show honestly is how much the Newton-step count swings with how well-posed a linearization is: $10$ steps for an easy subproblem, $758$ for a harder one in this lesson's runs. So an SCvx subproblem's cost is not the steady, nearly data-independent number a single convex SOCP solve gives you. Lesson 12 works out what a sparse, code-generated version costs against a real guidance cycle.
 :::
 
 ## Reading the run as a whole
@@ -208,7 +208,7 @@ Why must the check re-simulate the *controls* of the accepted $N = 4$ candidate 
 :::
 
 ::: answer
-The candidate's *states* satisfy the linearised dynamics almost exactly by construction — that is what near-zero virtual control means. Reading them back only confirms that the linear model agrees with itself.
+The candidate's *states* satisfy the linearized dynamics almost exactly by construction — that is what near-zero virtual control means. Reading them back only confirms that the linear model agrees with itself.
 
 The candidate's *controls* are a real command sequence a vehicle could apply. Propagating them from the true initial state through the actual nonlinear, $\mathbf{R}(\mathbf{q})$-coupled dynamics is the only step in the whole pipeline that consults the real physics instead of a local model of it. The $74.8$ gap lives entirely in the difference between those two things. Checking states instead of re-simulating controls would have hidden it completely.
 :::
@@ -224,13 +224,13 @@ The *substance* would not change. Two genuinely bad candidate steps were correct
 :::
 
 ::: check
-A propagation code steps the attitude $20$ times with $\Delta t = 2\,\mathrm{s}$ at a steady rate $\|\boldsymbol{\omega}\| = 0.015\,\mathrm{rad/s}$, and never renormalises. Roughly how long does the quaternion end up? What goes wrong physically?
+A propagation code steps the attitude $20$ times with $\Delta t = 2\,\mathrm{s}$ at a steady rate $\|\boldsymbol{\omega}\| = 0.015\,\mathrm{rad/s}$, and never renormalizes. Roughly how long does the quaternion end up? What goes wrong physically?
 :::
 
 ::: answer
 Each step multiplies the length by $\sqrt{1 + (\Delta t\,\|\boldsymbol{\omega}\|/2)^2} = \sqrt{1 + 0.015^2} \approx 1.0001125$. After $20$ steps the length is about $1.0001125^{20} \approx 1.00225$.
 
-Written in its all-quadratic form, every entry of $\mathbf{R}(\mathbf{q})$ is a product of two quaternion components, so the matrix scales with the length squared. The thrust arrow comes out about $1.0045$ times too long ($1.00225^2 \approx 1.0045$) — roughly half a percent of phantom thrust that the vehicle does not have. Renormalising after every step removes it.
+Written in its all-quadratic form, every entry of $\mathbf{R}(\mathbf{q})$ is a product of two quaternion components, so the matrix scales with the length squared. The thrust arrow comes out about $1.0045$ times too long ($1.00225^2 \approx 1.0045$) — roughly half a percent of phantom thrust that the vehicle does not have. Renormalizing after every step removes it.
 :::
 
 ::: check
@@ -250,7 +250,7 @@ The trust region stops it. It keeps each iterate's attitude close to the referen
 | State / control | $14$ states ($\mathbf{r}, \mathbf{v}, z, \mathbf{q}, \boldsymbol{\omega}$); $4$ controls ($\sigma, \boldsymbol{\alpha}_{\text{cmd}}$) |
 | Nonlinear pieces | $\dot{\mathbf{v}} = \mathbf{R}(\mathbf{q})(0,0,\sigma)^\top + \mathbf{g}$ (quadratic in $\mathbf{q}$); $\dot{\mathbf{q}} = \tfrac12\Xi(\mathbf{q})\boldsymbol{\omega}$ (bilinear) |
 | Thrust bound | Magnitude is $\sigma$ exactly; the non-convexity moved from the thrust length to its direction |
-| Quaternion length | Exactly $1$ in continuous time ($\mathbf{q}^\top\Xi = \mathbf{0}$); a discrete step drifts by $\sqrt{1 + (\Delta t\|\boldsymbol{\omega}\|/2)^2}$, so renormalise |
+| Quaternion length | Exactly $1$ in continuous time ($\mathbf{q}^\top\Xi = \mathbf{0}$); a discrete step drifts by $\sqrt{1 + (\Delta t\|\boldsymbol{\omega}\|/2)^2}$, so renormalize |
 | Linear model's blind spot | $(2\sigma q_y, -2\sigma q_x, \sigma)$ misses the cosine loss; error grows with the square of the tilt |
 | Simplifications | Thrust fixed along the body axis (no gimbal); angular acceleration commanded directly (no inertia) |
 | $N = 6$, wide trust region | Iteration 1: $70\,\mathrm{s}$, $168$ Newton steps, rejected, error $54.7$. Iteration 2: $2.8\,\mathrm{s}$, $10$ steps, rejected, error $89.5$ |
@@ -285,16 +285,16 @@ A **degree of freedom** is one independent way something can move. A bead on a w
 ```
 :::
 
-::: context quaternion-why Why four numbers for three turns
-Three angles (roll, pitch, yaw) can describe any attitude, so why carry four numbers? Because every three-angle scheme has a **singularity**: an attitude where two of the angles line up and the formulas divide by zero. That is the famous "gimbal lock" that worried Apollo's navigators. A unit quaternion has no such point anywhere. The price is one extra number and one extra rule, length exactly $1$. The quaternion was invented by William Rowan Hamilton in 1843, and it is now the standard attitude representation in spacecraft flight software.
+::: context quaternion-why Why the half angle
+A tilt of $\theta$ puts $\cos\tfrac{\theta}{2}$ and $\sin\tfrac{\theta}{2}$ into the quaternion, not $\cos\theta$ and $\sin\theta$. The reason is that a quaternion rotates a vector by being multiplied in twice, once on each side ($\mathbf{q}\,\mathbf{v}\,\mathbf{q}^{*}$), so each side supplies half the turn. One odd result: $\mathbf{q}$ and $-\mathbf{q}$ give exactly the same attitude, because the two minus signs cancel. Flight software usually picks the one with $q_w \ge 0$ so that small rotations look like small numbers — and a $6°$ tilt gives $q_y = \sin 3° \approx 0.052$.
 :::
 
 ::: context body-frame Two sets of axes
 The **ground frame** is fixed to the landing site: $z$ up, $x$ downrange. The **body frame** is glued to the vehicle and turns with it: its $z$ axis runs up through the engine's thrust line. The engine always pushes along body $+z$, but gravity and the target are described in the ground frame. The rotation matrix $\mathbf{R}(\mathbf{q})$ is the translator between the two.
 :::
 
-::: context renormalise Pulling the quaternion back to length 1
-To **renormalise** means to divide a vector by its own length, so it has length exactly $1$ again. The picture: a sphere of radius $1$ holds every valid attitude. A straight-line step slides off along the tangent, a little outside the sphere. Renormalising pulls it straight back in toward the center until it lands on the surface. It changes the direction by a hair and the length back to exactly $1$.
+::: context renormalize Pulling the quaternion back to length 1
+To **renormalize** means to divide a vector by its own length, so it has length exactly $1$ again. The picture: a sphere of radius $1$ holds every valid attitude. A straight-line step slides off along the tangent, a little outside the sphere. Renormalizing pulls it straight back in toward the center until it lands on the surface. It changes the direction by a hair and the length back to exactly $1$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
@@ -307,7 +307,7 @@ To **renormalise** means to divide a vector by its own length, so it has length 
   <circle cx="251.4" cy="46.0" r="4" fill="#1d6fd1"/>
   <text x="120" y="16" font-size="12" fill="#1f2a44">q now</text>
   <text x="276" y="18" font-size="12" fill="#b4232c">after a step</text>
-  <text x="262" y="60" font-size="12" fill="#1d6fd1">renormalised</text>
+  <text x="262" y="60" font-size="12" fill="#1d6fd1">renormalized</text>
   <text x="100" y="150" font-size="12" fill="#1d6fd1">unit sphere, |q| = 1</text>
 </svg>
 ```
@@ -320,7 +320,7 @@ A **gimbal** is a pivot mount that lets an engine swivel a few degrees in two di
 :::
 
 ::: context cosine-loss Leaning costs lift
-Tilt a push of length $\sigma$ by an angle $\theta$ and only $\sigma\cos\theta$ of it points up. The straight-line model keeps the whole $\sigma$ pointing up. At small tilts the two nearly agree; at $30°$ the model is $0.67\,\mathrm{m/s^2}$ too optimistic. The picture is drawn to scale with $\sigma = 5$: the red arrow is the truth, the dashed arrow is what the linear model believes.
+Tilt a push of length $\sigma$ by an angle $\theta$ and only $\sigma\cos\theta$ of it points up. The straight-line model keeps the whole $\sigma$ pointing up. At small tilts the two nearly agree; at $30°$ the model is $0.67\,\mathrm{m/s^2}$ too optimiztic. The picture is drawn to scale with $\sigma = 5$: the red arrow is the truth, the dashed arrow is what the linear model believes.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">
