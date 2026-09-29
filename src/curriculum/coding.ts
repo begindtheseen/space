@@ -10046,7 +10046,7 @@ export const CODING: Module[] = [
         id: 'rs03_c7',
         front: 'What exactly is Ferrocene qualified for?',
         back:
-          'A qualified Rust toolchain certified by TUV SUD for ISO 26262 up to ASIL D, IEC 61508 up to SIL 3 and IEC 62304 Class C, with support for customer qualification towards DO-178C DAL C. In December 2025 a certified subset of the core library reached IEC 61508 SIL 2 and ISO 26262 ASIL B. It is open source and drop-in compatible with upstream rustc.',
+          'A qualified Rust toolchain certified by TUV SUD for ISO 26262 up to ASIL D, IEC 61508 up to SIL 3 and IEC 62304 Class C, with support for customer qualification towards DO-178C DAL C. A certified subset of the core library reached IEC 61508 SIL 2 in December 2025, and ISO 26262 ASIL B in the next release (Ferrocene 26.02.0). It is open source and drop-in compatible with upstream rustc.',
       },
       {
         id: 'rs03_c8',
