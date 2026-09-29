@@ -14,9 +14,9 @@ Here is the surprise. Every iteration of iLQR simulates the real nonlinear dynam
 
 ## Where iLQR sits on the map
 
-So far this module has met indirect shooting (guess the starting costates, integrate forward, fix the guess), direct shooting (the controls are the unknowns, a nonlinear-program solver adjusts them), and collocation and pseudospectral methods (states *and* controls are unknowns, tied together by defect constraints).
+So far this module has met indirect shooting (guess the starting costates, integrate forward), direct shooting (a solver adjusts the controls), and collocation and pseudospectral methods (states *and* controls are unknowns, tied by defect constraints).
 
-iLQR works in discrete time. The flight is cut into $N$ steps of length $\Delta t$ (read "delta t"). The unknowns are only the controls $\mathbf{u}_0, \dots, \mathbf{u}_{N-1}$, one per step. The states are never unknowns: they are always computed by running the dynamics forward from the known start $\mathbf{x}_0$. That forward simulation is called a **[[rollout|rollout]]** — run the model forward with a given control sequence and record where it goes.
+iLQR works in discrete time: $N$ steps of length $\Delta t$ (read "delta t"). The only unknowns are the controls $\mathbf{u}_0, \dots, \mathbf{u}_{N-1}$. The states are always computed by running the dynamics forward from the known start $\mathbf{x}_0$ — a **[[rollout|rollout]]**, the model run forward with a given control sequence.
 
 So iLQR is a shooting method in spirit. Its problem has the shape
 
@@ -28,7 +28,7 @@ $$
 
 The **stage cost** $\ell$ (read "ell") is the charge for each step. The **terminal cost** $\ell_f$ ("ell sub f") is the charge for where you end up. Here $\mathbf{f}$ is the one-step map: give it this step's state and control, and it returns the next state. This is a Bolza problem from lesson one, written in discrete time.
 
-Compared with collocation, there are no defect constraints, because every trajectory is simulated exactly, and no general-purpose solver: iLQR does its own linear algebra, step by step. It also has a limit built in. The end conditions are *soft* — a penalty in $\ell_f$ for missing — not hard equations.
+There are no defect constraints (every trajectory is simulated exactly) and no general-purpose solver: iLQR does its own linear algebra, step by step. And the end conditions are *soft* — a penalty in $\ell_f$ for missing — not hard equations.
 
 ## One iteration, in two sweeps
 
@@ -56,7 +56,7 @@ $$
 \end{aligned}
 $$
 
-Read $\mathbf{Q}_{uu}$ as "Q sub u u": the curvature of the model with respect to the control. The best change of control is where the model's slope in $\delta\mathbf{u}$ is zero. Solving that gives
+Read $\mathbf{Q}_{uu}$ as "Q sub u u", the model's curvature in the control. The best change of control is where the model's slope in $\delta\mathbf{u}$ is zero:
 
 $$
 \delta\mathbf{u} = \mathbf{k} + \mathbf{K}\,\delta\mathbf{x},
@@ -70,7 +70,7 @@ Little $\mathbf{k}$ is the **feedforward** correction: "change the plan by this 
 
 ### DDP or iLQR: one choice
 
-Look at the terms in brackets. They combine the value slope with the *second* derivatives of the dynamics — how the dynamics curve. Those are **[[tensors|tensor-word]]**, arrays with three indices.
+The terms in brackets combine the value slope with the *second* derivatives of the dynamics — how they curve. Those are **[[tensors|tensor-word]]**, arrays with three indices.
 
 ::: key DDP and iLQR differ by one choice
 **DDP** keeps the second-derivative terms $V'_x\!\cdot\!\mathbf{f}_{xx}$, $V'_x\!\cdot\!\mathbf{f}_{uu}$, $V'_x\!\cdot\!\mathbf{f}_{ux}$: a true Newton method on the trajectory, fast near the answer but expensive per iteration and prone to a non-bowl-shaped $\mathbf{Q}_{uu}$ far from it. **iLQR** drops them: a **[[Gauss-Newton|gauss-newton]]** method, cheaper and steadier early. Both carry the value slope $V_x$ backward from the known terminal value $V_x(N) = \partial\ell_f/\partial\mathbf{x}$.
@@ -86,7 +86,7 @@ $$
 \hat{\mathbf{x}}_{k+1} = \mathbf{f}(\hat{\mathbf{x}}_k, \hat{\mathbf{u}}_k).
 $$
 
-The hat marks the new candidate (read "x hat"). The number $\alpha$ ("alpha") between $0$ and $1$ is the **step length**: how much of the proposed change to take. Try $\alpha = 1$. If the new cost is not lower, halve $\alpha$ and try again. That loop is the **line search**. If the backward pass meets a $\mathbf{Q}_{uu}$ that is not positive — a saddle instead of a bowl — add a small number $\mu$ ("mu") to it before dividing. That is **regularization**.
+The hat marks the new candidate (read "x hat"). The number $\alpha$ ("alpha") between $0$ and $1$ is the **step length**: how much of the proposed change to take. Try $\alpha = 1$. If the new cost is not lower, halve $\alpha$ and try again. That loop is the **line search**. If the backward pass meets a $\mathbf{Q}_{uu}$ that is not positive definite — a saddle instead of a bowl — add a small number $\mu$ ("mu") to it before dividing. That is **regularization**.
 
 Two details matter. The rollout uses the real nonlinear model, so every candidate is a trajectory the vehicle could fly. And the feedback term is never scaled by $\alpha$: its job is to keep the new ride close to the old one, where the quadratic model was built.
 
@@ -103,11 +103,11 @@ $$
 \ell = \tfrac12\,\theta_k^2\,\Delta t .
 $$
 
-In words: missing the altitude by $100\,\mathrm{m}$, or either speed by $10\,\mathrm{m/s}$, costs as much as holding one radian of pitch for two seconds.
+In words: missing the altitude by $100\,\mathrm{m}$, or either speed by $10\,\mathrm{m/s}$, costs as much as holding one radian of pitch for one second.
 
-**Step 1: the lazy guess.** Hold $\theta = 30^\circ$ the whole way. The rollout ends at $h = 5567.89\,\mathrm{m}$, $v_x = 432.88\,\mathrm{m/s}$, $v_h = 259.44\,\mathrm{m/s}$ — far too steep, climbing too fast. The terminal part costs $60.43$ and the steering costs $\tfrac12 \times 50 \times (0.5236)^2 = 6.85$, for a total of $67.29$.
+**Step 1: the lazy guess.** Hold $\theta = 30^\circ$ the whole way. The rollout ends at $h = 5567.89\,\mathrm{m}$, $v_x = 432.88\,\mathrm{m/s}$, $v_h = 259.44\,\mathrm{m/s}$ — climbing too fast and not moving sideways fast enough. The terminal part costs $60.43$ and the steering costs $\tfrac12 \times 50 \times (0.5236)^2 = 6.85$, for a total of $67.29$.
 
-**Step 2: iterate.** The costs after each accepted iteration are $67.29 \to 13.16 \to 11.75 \to 11.74 \to \dots$. After just two iterations the cost is within $0.12\,\%$ of its final value. The loop stops after $14$ iterations, when an iteration improves the cost by less than one part in $10^{12}$. The final cost is $11.7399$. No guessed costate, no retries, no second starting guess.
+**Step 2: iterate.** The costs after each accepted iteration are $67.29 \to 13.16 \to 11.75 \to 11.74 \to \dots$. After just two iterations the cost is within $0.11\,\%$ of its final value. The loop stops after $14$ iterations, when an iteration improves the cost by less than one part in $10^{12}$. The final cost is $11.7399$. No guessed costate, no retries, no second starting guess.
 
 **Step 3: read the answer.** The pitch starts at $13.1^\circ$, reaches $29.2^\circ$ halfway, and ends at $72.7^\circ$: a smooth pitch-over, tipping steadily toward horizontal, which is what real ascents do. Burnout lands at $h = 5989.63\,\mathrm{m}$, $v_x = 478.70\,\mathrm{m/s}$, $v_h = 176.27\,\mathrm{m/s}$.
 
@@ -180,7 +180,7 @@ print(np.round(Vx0, 5))
 # [ 0.      -0.00104 -0.01299  0.01086 -0.01937]
 ```
 
-The last line prints $V_x$ at the start of the flight. Hold on to it; it comes back soon.
+The last line prints $V_x$ at the start of the flight; it comes back soon.
 
 What do DDP's extra terms change? Run the same ascent from the same guess with them kept. DDP creeps at first — $67.29 \to 50.01 \to 38.27 \to 33.34 \to 16.32 \to \dots$ — and needs $7$ iterations to get within $1\,\%$ of the answer, where iLQR needed $2$. Near the end it is quicker, meeting the tight stopping test $3$ iterations sooner, at the same cost, $11.7399$. That is the usual pattern, and why engineers usually pick iLQR: the early iterations are where the time goes.
 
@@ -188,20 +188,20 @@ What do DDP's extra terms change? Run the same ascent from the same guess with t
 
 Remember what made indirect shooting fragile. Lesson four guessed the costates at $t_0$ and integrated them *forward* with the states, and a tiny error in the guess grew along the way. For the orbit transfer the guess had to be right to about four significant figures, and a costate has no physical feel you could guess from. iLQR avoids every part of that trap.
 
-- **It never guesses a price.** Its price, the value slope $V_x$, starts at the end, where the terminal cost gives it exactly: $V_x(N) = \partial\ell_f/\partial\mathbf{x}$.
-- **It carries the price backward.** That is the direction in which a costate equation behaves well, as the note below explains. Shooting forces it to run the other way.
-- **Its forward pass steers.** The feedback gains $\mathbf{K}_k$ pull each new rollout back toward the nominal the whole time, so an error at step $k$ is corrected at step $k+1$ instead of being carried to the end.
+- **It never guesses a price.** Its price, $V_x$, starts at the end, where the terminal cost gives it exactly.
+- **It carries the price backward,** the direction in which a costate equation behaves well (see the note below).
+- **Its forward pass steers.** The gains $\mathbf{K}_k$ pull each rollout back toward the nominal, so an error at step $k$ is corrected at step $k+1$ instead of being carried to the end.
 
 ::: key Why iLQR sidesteps the shooting brittleness of indirect methods
 It is shooting: every iterate is a forward-simulated, dynamically feasible trajectory, exactly as in direct single shooting. It avoids shooting's ill-conditioning because the correction at every step comes from a **backward** recursion that starts from the known terminal value, and because the forward pass applies the feedback gains $\mathbf{K}_k$ at every step — rather than depending on a costate guessed once at $t_0$ and never corrected until the whole horizon has played out.
 :::
 
-The feedback is not decoration. Take it out of the code above — use $\hat{\mathbf{u}}_k = \bar{\mathbf{u}}_k + \alpha\mathbf{k}_k$ with no $\mathbf{K}$ term — and the very first iteration fails. Not one of twenty halvings of $\alpha$ lowers the cost. The reason: $\mathbf{k}$ was computed *assuming* the feedback would be applied. On its own, replayed open loop, it points uphill. (Its dot product with the true gradient of the cost is $+93.8$, positive, so it increases the cost.)
+The feedback is not decoration. Delete the $\mathbf{K}$ term from the code above and the very first iteration fails: not one of twenty halvings of $\alpha$ lowers the cost. The feedforward $\mathbf{k}$ was computed *assuming* the feedback would be applied; replayed open loop, it points uphill. (Its dot product with the true cost gradient is $+93.8$.)
 
 The basin is wide too. From a constant pitch of $0^\circ$, $45^\circ$, $60^\circ$, $90^\circ$, $120^\circ$, even $180^\circ$ (engine pointing straight down), iLQR lands on the same $11.7399$ in $14$ to $33$ iterations.
 
 ::: note Why backward is the safe direction for a price
-Take the simplest dynamics, $\dot{x} = a\,x$ with one state. The costate equation from lesson two is $\dot{\lambda} = -\partial H/\partial x = -a\,\lambda$. Its solution is $\lambda(t) = \lambda(t_f)\,e^{a(t_f - t)}$.
+Take the simplest dynamics, $\dot{x} = a\,x$ with one state and no running cost. The costate equation from lesson two is $\dot{\lambda} = -\partial H/\partial x = -a\,\lambda$. Its solution is $\lambda(t) = \lambda(t_f)\,e^{a(t_f - t)}$.
 
 Suppose the state is strongly damped, $a = -2\,\mathrm{s^{-1}}$. Forward in time, the state shrinks like $e^{-2t}$: well behaved. The costate is the mirror image. Integrated *forward* from a guessed $\lambda(0)$, it grows like $e^{+2t}$, so any error in the guess is multiplied by $e^{2t_f}$ — about $2.2\times10^{4}$ after $5\,\mathrm{s}$. Integrated *backward* from $t_f$, it shrinks like $e^{-2(t_f - t)}$, and errors shrink with it.
 
@@ -221,13 +221,13 @@ Now look at the backward pass at convergence. The plan no longer changes, so $\m
 ::: example The value slope, checked two ways
 The converged ascent printed $V_x(0) = (0,\ -0.00104,\ -0.01299,\ +0.01086,\ -0.01937)$, in the order $(x, h, v_x, v_h, m)$. Each entry is a shadow price: how much the best cost changes per unit of that starting state.
 
-**Step 1: downrange.** The first entry is exactly $0$. Nothing in the cost cares where along the ground you start, and nothing in the dynamics depends on it. A price of zero is right.
+**Step 1: downrange.** The first entry is exactly $0$. Neither the cost nor the dynamics care where along the ground you start, so a price of zero is right.
 
 **Step 2: altitude, by hand.** Starting $1\,\mathrm{m}$ higher changes nothing about the flight except that burnout is $1\,\mathrm{m}$ higher too. So the price is the slope of the terminal cost in $h$: the weight times the miss, $10^{-4}\times(5989.63 - 6000) = 10^{-4}\times(-10.37) = -0.001037$. That matches the printed $-0.00104$. Negative, because burnout is short of the target, so a head start helps.
 
 **Step 3: vertical speed, by hand.** Starting with $1\,\mathrm{m/s}$ more upward speed adds $1\,\mathrm{m/s}$ to burnout $v_h$ and, over $50\,\mathrm{s}$, $50\,\mathrm{m}$ to burnout altitude. Its price is $0.01\times6.272 + 10^{-4}\times(-10.372)\times50 = 0.06272 - 0.05186 = 0.01086$. That matches the printed $+0.01086$. Positive: burnout is already $6.27\,\mathrm{m/s}$ too fast upward, and that outweighs the altitude help.
 
-**Step 4: mass, by brute force.** No hand formula gives the mass price, because extra mass changes the acceleration all the way up. So re-solve the whole problem. Start from $m_0 = 1000.01\,\mathrm{kg}$ and from $999.99\,\mathrm{kg}$, run the complete iLQR solve from the lazy $30^\circ$ guess each time, and take the central difference of the two final costs:
+**Step 4: mass, by brute force.** Extra mass changes the acceleration all the way up, so no hand formula gives this price. Instead, run the complete iLQR solve from the lazy $30^\circ$ guess twice more, from $m_0 = 1000.01\,\mathrm{kg}$ and from $999.99\,\mathrm{kg}$, and take the central difference of the final costs:
 
 $$
 \frac{J^\star(1000.01) - J^\star(999.99)}{0.02} = -0.0193685
@@ -237,7 +237,7 @@ $$
 
 They agree to about four parts in a million. One number came from bookkeeping inside a single solve; the other from two black-box re-solves that never looked at $V_x$. (The nudge must be small: $\pm1\,\mathrm{kg}$ gives $-0.01822$, six percent off, because the best cost bends as $m_0$ changes.)
 
-**Sanity check.** A heavier rocket accelerates less, so it burns out slower. Here burnout is too fast upward, so slowing down helps and the mass price is negative. That fits.
+**Sanity check.** A heavier rocket burns out slower. Burnout is too fast upward, so slower helps: a negative mass price fits.
 :::
 
 ## What collocation still buys
@@ -254,7 +254,7 @@ None of this makes iLQR a replacement for direct transcription. Put the two side
 | Work per iteration | Grows linearly with $N$ | Linear too, but only if a sparse solver finds the band |
 | Returns a feedback policy? | Yes, the gains $\mathbf{K}_k$ | No, only the plan |
 
-The biggest gap is hard constraints: a gimbal limit on the pitch, a ceiling on dynamic pressure. A collocation NLP adds one inequality per node and hands it to the same solver. iLQR has no place for it in the backward pass. The fixes — a small box-constrained quadratic program at every step (control-limited DDP), an **[[augmented Lagrangian|augmented-lagrangian]]** wrapper around the whole solve, or a squashing function that maps an unbounded variable into the allowed range — each add iterations or distort the answer near the bound. That is the concrete version of the argument this module's exercises ask for: in a direct method, constraints are added declaratively, not re-derived.
+The biggest gap is hard constraints, such as a gimbal limit or a dynamic-pressure ceiling. Collocation adds one inequality per node; iLQR's backward pass has no place for one. The fixes — a small box-constrained quadratic program at every step (control-limited DDP), an **[[augmented Lagrangian|augmented-lagrangian]]** wrapper around the whole solve, or a squashing function that maps an unbounded variable into the allowed range — each add iterations or distort the answer near the bound. That is the concrete version of the argument this module's exercises ask for: in a direct method, constraints are added declaratively, not re-derived.
 
 The advantages are real too. Each iteration costs work proportional to $N$ with no sparse matrix to factor. The gains $\mathbf{K}_k$ are a ready-made feedback law around the plan. And a warm start from the last solution is natural, which makes iLQR a standard engine for **[[model predictive control|mpc]]**, where the problem is re-solved many times a second on board. The **[[trajax|trajax]]** library on this module's tools list is built around it.
 
@@ -281,7 +281,7 @@ The ascent's converged burnout altitude was $5989.63\,\mathrm{m}$, not the $6000
 :::
 
 ::: answer
-No. The target was a soft penalty in $\ell_f$, not a hard equation. The converged answer is the point where getting any closer to the target would cost more in steering (the $\tfrac12\theta^2$ term) than it saves in terminal penalty. With these weights, a $10.37\,\mathrm{m}$ altitude miss costs only $\tfrac12(10.37/100)^2 = 0.0054$, so it is not worth bending the pitch program further to close it.
+No. The target was a soft penalty, not a hard equation. The converged answer is where getting closer would cost more in steering (the $\tfrac12\theta^2$ term) than it saves in terminal penalty. A $10.37\,\mathrm{m}$ altitude miss costs only $\tfrac12(10.37/100)^2 = 0.0054$, not worth bending the pitch program to close.
 
 The evidence of convergence is elsewhere: the cost stopped changing to twelve digits, and the value slope passed independent checks. To land exactly on target, raise the terminal weights (the miss shrinks, but the problem gets stiffer and slower) or use a method with a hard terminal constraint, such as collocation or an augmented-Lagrangian iLQR.
 :::
@@ -291,7 +291,7 @@ Suppose the ascent needs a hard limit $|\theta| \le \theta_{\max}$ from the engi
 :::
 
 ::: answer
-In collocation, the change is one line: add $-\theta_{\max} \le \theta_k \le \theta_{\max}$ as a bound at every node. The same NLP solver that already handles every other constraint handles it. The defect equations do not change at all.
+In collocation, the change is one line: add $-\theta_{\max} \le \theta_k \le \theta_{\max}$ as a bound at every node, for the same NLP solver. The defects do not change.
 
 In iLQR, the closed-form step $\mathbf{k} = -\mathbf{Q}_{uu}^{-1}\mathbf{Q}_u$ is wrong whenever it would push $\theta$ past the bound. Control-limited DDP replaces it with a small box-constrained quadratic program at every step of every backward pass, and zeroes the feedback gain of a control sitting on its bound. The alternatives are an augmented-Lagrangian wrapper, or a squashed variable such as $\theta = \theta_{\max}\tanh(s)$. The constraint is native to one formulation and bolted onto the other.
 :::
@@ -303,17 +303,7 @@ The mass price $V_x(0)_{[m]} = -0.0193685$ matched a re-solved finite difference
 ::: answer
 The theory is about the algorithm's own bookkeeping: at convergence $\mathbf{Q}_u = \mathbf{0}$ and the value-slope recursion becomes the costate recursion. A wrong Jacobian, a sign slip or an unconverged run would corrupt the bookkeeping, and nothing inside the solve would notice.
 
-The finite difference treats the whole solve as a black box. It changes only the input ($m_0$), reads only the output (the best cost), and never sees $V_x$ or $\mathbf{K}_k$. If the two agree, the real optimized cost responds exactly as $V_x$ predicted. That is a check against the problem itself, not against the algorithm's opinion of itself.
-:::
-
-::: check
-A teammate's iLQR "never takes a step": on the first iteration, every value of $\alpha$ the line search tries makes the cost worse. Their forward pass is $\hat{\mathbf{u}}_k = \bar{\mathbf{u}}_k + \alpha\mathbf{k}_k$. What is wrong?
-:::
-
-::: answer
-The feedback term is missing. The feedforward $\mathbf{k}_k$ was computed from a quadratic model in which the later controls respond to state changes through $\mathbf{K}_k$. Replayed on its own, with no feedback, it is not the step the model asked for, and it need not even point downhill. On this lesson's ascent it points uphill: its dot product with the true cost gradient is $+93.8$, so no step length helps.
-
-The fix is $\hat{\mathbf{u}}_k = \bar{\mathbf{u}}_k + \alpha\mathbf{k}_k + \mathbf{K}_k(\hat{\mathbf{x}}_k - \bar{\mathbf{x}}_k)$, with the feedback term left unscaled by $\alpha$. It is also worth checking the Jacobians against finite differences, since a wrong derivative produces the same symptom.
+The finite difference treats the whole solve as a black box: it changes only the input ($m_0$), reads only the output (the best cost), and never sees $V_x$. Agreement means the real optimized cost responds exactly as $V_x$ predicted — a check against the problem itself, not the algorithm's opinion of itself.
 :::
 
 ## Summary
@@ -327,11 +317,11 @@ The fix is $\hat{\mathbf{u}}_k = \bar{\mathbf{u}}_k + \alpha\mathbf{k}_k + \math
 | Shooting character | Every iterate is a flyable rollout, like direct single shooting |
 | Why not brittle | No guessed price; prices carried backward (their stable direction); feedback in every rollout |
 | Ascent example | $30^\circ$ guess: cost $67.29 \to 13.16 \to 11.75 \to \dots \to 11.7399$ in $14$ iterations; pitch $13.1^\circ \to 72.7^\circ$ |
-| DDP on the same problem | $7$ iterations to within $1\,\%$ (iLQR: $2$); $3$ fewer to the tight stop; same cost |
+| DDP on the same problem | $7$ iterations to within $1\,\%$ (iLQR: $2$), same final cost |
 | Value slope = costate | $V_x(0) = (0, -0.00104, -0.01299, +0.01086, -0.01937)$; mass entry matches re-solves ($\pm0.01\,\mathrm{kg}$) to $4\times10^{-6}$ |
-| Collocation still wins at | Hard constraints, exact end conditions, free final time |
-| iLQR wins at | Linear-in-$N$ work without a sparse solver, feedback gains, fast warm starts for MPC |
-| Caveat | Local answers: $-30^\circ$ start gives $127.74$, wound-up angles |
+| Collocation wins at | Hard constraints, exact end conditions, free final time |
+| iLQR wins at | Linear-in-$N$ work, feedback gains, warm starts for MPC |
+| Caveat | Local answers: a $-30^\circ$ start gives $127.74$ |
 
 Everything so far has assumed that a transcribed problem, once handed to a general solver, is easy for it to chew through. The next three lessons take that assumption apart: first the sparsity pattern that decides how long each solver iteration takes, then the scaling that decides whether it converges at all, then the warm starts that get it moving fast.
 
@@ -340,7 +330,28 @@ Everything so far has assumed that a transcribed problem, once handed to a gener
 :::
 
 ::: context rollout A rollout is a simulation
-To **roll out** a plan is to run the simulator forward with that control sequence and see what happens. Nothing is optimized during a rollout; it is the truth test. The word came into control from game-playing programs, where "rolling out" a position meant playing the game forward to the end to see who wins. In iLQR every candidate plan is judged only after a rollout of the full nonlinear model, which is why every iterate is a trajectory the vehicle could fly.
+To **roll out** a plan is to run the simulator forward with that control sequence and see what happens. Nothing is optimized during a rollout; it is the truth test. The word came into control from game-playing programs, where "rolling out" a position meant playing the game forward to the end to see who wins. In iLQR every candidate plan is judged only after a rollout of the full nonlinear model, which is why every iterate is a trajectory the vehicle could fly. Here, to scale, are three rollouts of this lesson's ascent: the $30^\circ$ guess, the plan after one iteration, and the final answer.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <line x1="50" y1="170" x2="345" y2="170" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="50" y1="170" x2="50" y2="15" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="50" y1="31.5" x2="345" y2="31.5" stroke="#b4232c" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="56" y="26" font-size="11" fill="#b4232c">target altitude 6000 m</text>
+  <g font-size="11" fill="#1f2a44" text-anchor="end">
+    <text x="45" y="81.7">4 km</text><text x="45" y="127.8">2 km</text><text x="45" y="174">0</text>
+  </g>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="181.8" y="185">5 km</text><text x="313.6" y="185">10 km</text><text x="200" y="198">downrange</text>
+  </g>
+  <polyline points="50.0,170.0 51.6,169.4 56.4,167.5 64.5,164.3 76.0,159.5 91.0,153.2 109.4,145.1 131.5,135.2 157.2,123.3 186.8,109.3 220.2,93.0 257.6,74.4 299.0,53.1 321.3,41.5" fill="none" stroke="#6c7a93" stroke-width="2" stroke-dasharray="5 4"/>
+  <polyline points="50.0,170.0 50.8,169.1 53.4,166.4 58.1,161.9 65.0,155.4 74.7,147.0 87.5,136.7 104.0,124.6 124.7,110.8 150.3,95.5 181.0,78.9 217.6,61.1 260.6,42.7 285.0,33.7" fill="none" stroke="#f2b880" stroke-width="2.5"/>
+  <polyline points="50.0,170.0 50.7,169.1 53.1,166.3 57.2,161.6 63.4,155.0 72.1,146.3 83.5,135.5 98.2,122.8 117.0,108.2 140.4,92.2 169.5,75.0 204.9,57.4 247.6,40.1 271.8,31.8" fill="none" stroke="#1d6fd1" stroke-width="2.5"/>
+  <text x="300" y="80" font-size="11" fill="#6c7a93">30° guess</text>
+  <text x="235" y="110" font-size="11" fill="#1d6fd1">final</text>
+  <text x="196" y="44" font-size="11" fill="#1f2a44">after 1 iteration</text>
+</svg>
+```
 :::
 
 ::: context two-sweeps Backward for prices, forward for the plan
@@ -384,7 +395,7 @@ Here $\theta = 0$ means the rocket points straight up and $\theta = 90^\circ$ me
   <line x1="120" y1="160" x2="120" y2="20" stroke="#6c7a93" stroke-width="1.5" stroke-dasharray="5 4"/>
   <text x="126" y="28" font-size="11" fill="#6c7a93">vertical</text>
   <line x1="120" y1="160" x2="206.0" y2="37.1" stroke="#1f2a44" stroke-width="3"/>
-  <polygon points="206.0,37.1 194.6,43.2 204.4,50.1" fill="#1f2a44"/>
+  <polygon points="206.0,37.1 193.1,45.1 202.9,52.0" fill="#1f2a44"/>
   <text x="212" y="40" font-size="12" fill="#1f2a44">T</text>
   <line x1="120" y1="160" x2="206.0" y2="160" stroke="#1d6fd1" stroke-width="2.5"/>
   <text x="163" y="175" font-size="11" fill="#1d6fd1" text-anchor="middle">T sin θ (sideways)</text>
@@ -414,5 +425,24 @@ In **model predictive control** the vehicle solves a short optimal control probl
 :::
 
 ::: context angle-wrap Angles that wind up
-An angle of $361^\circ$ points in the same direction as $1^\circ$, but to the arithmetic they are different numbers: $6.30$ radians against $0.017$. A penalty like $\tfrac12\theta^2$ charges the first one about $140\,000$ times more. A gradient method moves the angle smoothly, so to get from $361^\circ$ down to $1^\circ$ it would have to pass through every angle in between, pointing the engine the wrong way. Common fixes are to penalize $1 - \cos\theta$ instead, which treats the two alike, or to steer with a unit thrust direction instead of an angle.
+An angle of $361^\circ$ points in the same direction as $1^\circ$, but to the arithmetic they are different numbers: $6.30$ radians against $0.017$. A penalty like $\tfrac12\theta^2$ charges the first one about $130\,000$ times more.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <line x1="120" y1="100" x2="120" y2="20" stroke="#6c7a93" stroke-width="1" stroke-dasharray="4 3"/>
+  <circle cx="120" cy="100" r="35" fill="none" stroke="#f2b880" stroke-width="2" stroke-dasharray="5 3"/>
+  <line x1="120" y1="100" x2="143.9" y2="34.2" stroke="#1d6fd1" stroke-width="3"/>
+  <polygon points="143.9,34.2 144.5,47.2 135.1,43.8" fill="#1d6fd1"/>
+  <circle cx="120" cy="100" r="3" fill="#1f2a44"/>
+  <text x="150" y="30" font-size="12" fill="#1d6fd1">thrust direction</text>
+  <text x="120" y="152" font-size="11" fill="#f2b880" text-anchor="middle">one extra full turn</text>
+  <g font-size="12" fill="#1f2a44">
+    <text x="200" y="80">θ = 20°: ½θ² = 0.061</text>
+    <text x="200" y="100">θ = 380°: ½θ² = 22.0</text>
+    <text x="200" y="125" font-size="11" fill="#6c7a93">same arrow, 361× the charge</text>
+  </g>
+</svg>
+```
+
+ A gradient method moves the angle smoothly, so to get from $361^\circ$ down to $1^\circ$ it would have to pass through every angle in between, pointing the engine the wrong way. Common fixes are to penalize $1 - \cos\theta$ instead, which treats the two alike, or to steer with a unit thrust direction instead of an angle.
 :::
