@@ -167,7 +167,7 @@ An airliner carries a **[[flight data recorder|flight-recorder]]**, the "black b
 
 The **reflog** (short for "reference log") is a list that Git keeps for HEAD and for each branch. Every time one of them moves — a commit, a reset, a switch, a merge, a stash — Git writes a line saying where it moved to, when, and why. It is stored in plain text files under `.git/logs/`.
 
-Here is the reflog of our orbit-sim repository after a few more commits (the stash work above plus three new commits, which we are about to lose on purpose):
+Here is the reflog of our orbit-sim repository after a few more commits (the stash work above plus four new commits, the last three of which we are about to lose on purpose):
 
 ```bash
 git reflog
@@ -552,5 +552,5 @@ The name `lost-found` comes from Unix. When a disk check program called `fsck` r
 :::
 
 ::: context rebase-preview The botched rebase
-The flashcard mentions "a botched rebase". **Rebase**, taught in the next module, rewrites a branch by replaying its commits on top of a different starting point, creating new commits with new hashes. If it goes wrong — a conflict resolved the wrong way, a commit accidentally dropped — the old commits are no longer on the branch. The reflog still has a line from right before the rebase started, often labeled `rebase (start)`, and `git reset --hard <branch>@{1}` or `HEAD@{n}` from that line takes you back to the branch exactly as it was.
+People often say the reflog can rescue "a botched rebase". **Rebase**, taught in the next module, rewrites a branch by replaying its commits on top of a different starting point, creating new commits with new hashes. If it goes wrong — a conflict resolved the wrong way, a commit accidentally dropped — the old commits are no longer on the branch. The reflog still has a line from right before the rebase started, often labeled `rebase (start)`, and `git reset --hard <branch>@{1}` or `HEAD@{n}` from that line takes you back to the branch exactly as it was.
 :::

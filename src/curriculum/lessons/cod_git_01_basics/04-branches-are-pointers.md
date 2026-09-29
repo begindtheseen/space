@@ -393,7 +393,7 @@ git branch -v
 
 Every branch from this lesson is there: `units-cleanup` from the `switch -c` demonstration still sits on `65bb526`, beside `main`.
 
-**`git branch -d <name>`** deletes a branch — which means deleting the sticky note, one small file. The commits stay. Git protects you with a check: if the branch has commits that no other branch contains, `-d` refuses:
+**`git branch -d <name>`** deletes a branch — which means deleting the sticky note, one small file. The commits stay. Git protects you with a check: if the branch is not merged into the branch you are on (or into its upstream, when it has one), `-d` refuses:
 
 ```bash
 git branch -d drag-model
@@ -404,7 +404,7 @@ error: the branch 'drag-model' is not fully merged.
 If you are sure you want to delete it, run 'git branch -D drag-model'
 ```
 
-"Not fully merged" means `4fff28f` is reachable only from `drag-model`. Delete the note and nothing would point at it. The capital `-D` deletes anyway. Use it only when you really want that work gone. Deleting a branch whose commits are already part of `main` is always safe, and `-d` allows it without complaint.
+"Not fully merged" means `4fff28f` is not part of the branch you are on, `main`. Here it is reachable only from `drag-model`, so deleting the note would leave nothing pointing at it. The check looks only at your current branch: a branch merged into some other branch but not into `main` is refused too. The capital `-D` deletes anyway. Use it only when you really want that work gone. Deleting a branch whose commits are already part of `main` is always safe, and `-d` allows it without complaint.
 
 ::: key What the branch commands touch
 `git branch <name>` writes one ref file; you stay where you are. `git switch <name>` rewrites `.git/HEAD` and makes the index and working tree match the branch tip. A commit moves only the branch HEAD names. `git branch -d` deletes a ref file, never a commit.

@@ -408,5 +408,5 @@ In September 1999, NASA's Mars Climate Orbiter was lost as it arrived at Mars. G
 :::
 
 ::: context text-sort Why text order fails for numbers
-Text sorting compares strings one character at a time, from the left, and stops at the first difference. For `v0.10.0` and `v0.2.0`, the first four characters `v0.` and then `1` versus `2` decide it: `1` comes first, so `v0.10.0` sorts before `v0.2.0`, even though 10 is bigger than 2. Version sorting instead splits out each run of digits and compares it as a whole number. The same trap catches file names like `run_9.csv` and `run_10.csv`, which is why many telemetry pipelines pad numbers with zeros: `run_0009.csv`, `run_0010.csv`.
+Text sorting compares strings one character at a time, from the left, and stops at the first difference. For `v0.10.0` and `v0.2.0`, the first three characters `v0.` match, and then `1` versus `2` decides it: `1` comes first, so `v0.10.0` sorts before `v0.2.0`, even though 10 is bigger than 2. Version sorting instead splits out each run of digits and compares it as a whole number. The same trap catches file names like `run_9.csv` and `run_10.csv`, which is why many telemetry pipelines pad numbers with zeros: `run_0009.csv`, `run_0010.csv`.
 :::
