@@ -1,0 +1,1338 @@
+@track python
+@course mod-cod_slk_03_architecture
+@module cod_slk_03_architecture
+@title Simulink architecture and Stateflow: practice and test
+
+=== slk03-l01 | Practice: Virtual and atomic subsystems
+--- for
+l01-virtual-and-atomic-subsystems
+
++++ question | Which order is still allowed
+--- ask
+A model has five Gain blocks and no delays. A feeds B, and B feeds C. Separately, D feeds E. You select B and E, press Ctrl+G, and then select **Treat as atomic unit** on the new subsystem S.
+
+Which of these sorted execution orders can Simulink use now?
+--- choice
+A, B, D, E, C
+--- choice correct
+A, D, B, E, C
+--- choice
+A, B, C, D, E
+--- choice
+D, E, A, B, C
+--- why
+All four orders respect the arrows, so all four were legal while S was virtual: flattening removes the box and B and E are sorted on their own. Atomic S takes one place in the order and runs start to finish, so B and E must sit next to each other. S also counts as direct feedthrough, so it can only run after both of its sources, A and D, and before C, which reads its output. Only A, D, then B and E together, then C does all of that.
+
++++ question | An overheat flag one step late
+--- ask
+A thermal monitor and a heater-cutoff block run in a 10 Hz model, so one step is 0.1 s. The monitor writes a data store `overtemp`, true when the battery temperature is above 80 °C. The cutoff block reads `overtemp` through a Data Store Read. No signal line joins them. In a test the temperature is $62 + 3k$ degrees at step $k$, starting at step 0 at time 0.
+
+The sorted order happens to put the reader before the writer. At what time, in seconds, does the cutoff block first see `overtemp` true?
+--- answer
+0.8
+0.8 s
+0.80
+0.80 s
+0.8s
+.8
+0.8 seconds
+--- why
+At step 6 the temperature is $62 + 18 = 80$, which is not above 80. At step 7 it is 83, so the monitor first writes true at step 7, at 0.7 s. With the reader first, on step 7 it reads the store before the monitor updates it and still sees step 6's false. It sees true on step 8, at 0.8 s. Nothing warns you: only the order moved the answer by one step. A signal line from the monitor to the cutoff block would force the right order.
+
++++ question | A delay or a checkbox
+--- ask
+An atomic subsystem in a 100 Hz attitude model holds two paths: a Unit Delay path and a Gain path. A feedback line outside it creates an artificial algebraic loop. Two fixes are proposed:
+
+- Engineer 1: add a Unit Delay to the outside feedback line.
+- Engineer 2: select **Minimize algebraic loop occurrences** on the subsystem.
+
+Which is the better fix, and why?
+--- choice
+Engineer 1: a Unit Delay is the standard way to break any algebraic loop, and it costs nothing.
+--- choice correct
+Engineer 2: the loop is artificial, since the math already has a delay in it, so asking Simulink to split the output calculation removes it without changing the model's dynamics. The extra Unit Delay would add a real one-step lag to the loop.
+--- choice
+Engineer 1: the Minimize option only works on virtual subsystems.
+--- choice
+Neither: an artificial algebraic loop can only be removed by deleting the subsystem.
+--- why
+From the solvers module, a Unit Delay at sample time $T_s$ costs $\omega T_s$ radians of phase at frequency $\omega$: it changes what the controller does. That is the right price for a genuine loop. Here the loop exists only because the atomic box hides the delay that is already inside it. Minimize algebraic loop occurrences lets Simulink compute the delayed output before the input is known. Leaving the subsystem virtual, if atomicity is not needed, works too.
+
++++ question | The loop no setting removes
+--- ask
+A subsystem has one input and one output. Outside it, the output goes through a Gain of 0.5 and back into the input. Which contents make the model an algebraic loop **even when the subsystem is virtual**?
+--- choice
+The input goes through a Unit Delay, then a Gain of 2, to the output.
+--- choice correct
+The input goes through a Gain of 2, then a Sum that adds a constant, to the output.
+--- choice
+The input goes through an Integrator to the output.
+--- choice
+The input goes through a Memory block to the output.
+--- why
+A genuine loop is one where every block around it has direct feedthrough. Gain and Sum both need their input now to produce their output now, and so does the outside Gain, so the sort has nowhere to start. Unit Delay, Integrator and Memory have no direct feedthrough: their output this step was settled before this step's input arrived, which gives the loop a starting point. Flattening a virtual box cannot remove a loop that is really in the math.
+
++++ question | Why Reusable function was refused
+--- ask
+Six identical atomic subsystems, PitchLimiter, are set to Function packaging **Reusable function**. Code generation stops and says the subsystem cannot be reused. Which block inside is the most likely reason?
+--- choice
+A Unit Delay that remembers the last output.
+--- choice correct
+A Data Store Write that sets the global data store `limit_active`.
+--- choice
+A Saturation block that clamps the output.
+--- choice
+A Gain whose value is 0.8.
+--- why
+A reusable function must be reentrant: everything it touches arrives through its arguments, so each call can be handed its own copy of the data. State is fine, because each instance's Unit Delay memory is passed in as an argument, like `wheel_state[i]` in the lesson's sketch. A write to one global data store is not: all six calls would share it. Pass the flag out through an Outport instead, and write the store outside the subsystem.
+
++++ question | When sharing starts to pay
+--- ask
+An atomic subsystem's body is 9 lines of C. Count code like this:
+
+- **Inline:** the 9 lines are pasted once per instance, with no calls.
+- **Reusable function:** one function of 9 lines plus a 3-line wrapper, and 1 line per instance to call it.
+
+What is the smallest number of identical instances for which Reusable function gives fewer lines than Inline? Type a whole number.
+--- answer
+2
+two
+--- why
+With $n$ instances, Inline is $9n$ lines and Reusable is $9 + 3 + n = 12 + n$. For $n = 1$: 9 against 13, so Inline wins, which is why a single instance is usually inlined. For $n = 2$: 18 against 14, and Reusable is already smaller. After that the gap grows by 8 lines per extra instance, because each new instance costs Inline a whole body but Reusable only one call.
+
+=== slk03-l02 | Practice: Conditional subsystems
+--- for
+l02-conditional-subsystems
+
++++ question | A timer that remembers
+--- ask
+An enabled subsystem integrates the constant 1, so its state grows by 1 for each second it runs. Its enable signal is positive from $t = 2$ to $5\,\mathrm{s}$, zero from 5 to $9\,\mathrm{s}$, and positive again from 9 to $12\,\mathrm{s}$. The Enable block has States when enabling set to **held**. The Outport has Output when disabled set to **reset**, with an Initial output of 0.
+
+What does the subsystem output at $t = 11\,\mathrm{s}$?
+--- answer
+5
+5 s
+5.0
+5 seconds
+--- why
+The first run counts $5 - 2 = 3$. While disabled, the output is reset, so it reads 0 from 5 to 9 s, but the **state** is held at 3. On re-enable at 9 s the state carries on from 3, and two seconds later it reads $3 + 2 = 5$. The two settings are independent: one decides what the output shows while switched off, the other what the states remember when switched back on.
+
++++ question | A pulse that starts high
+--- ask
+A triggered subsystem adds 1 to a count each time it runs. Its trigger signal is 1 for $0 \le t < 0.4\,\mathrm{s}$, then 0 for $0.4 \le t < 0.8\,\mathrm{s}$, and repeats with a period of 0.8 s. The stop time is 3.0 s. Trigger type is **either**.
+
+How many times does the subsystem run?
+--- answer
+7
+seven
+--- why
+Falling edges: 0.4, 1.2, 2.0 and 2.8 s, which is 4. Rising edges: 0.8, 1.6 and 2.4 s, which is 3; the next one, at 3.2 s, is after the stop time. The signal starting at 1 is not an edge, because nothing crossed zero at $t = 0$. So "either" gives $4 + 3 = 7$ runs. A triggered subsystem counts events, not elapsed time.
+
++++ question | What a triggered subsystem accepts
+--- ask
+A triggered subsystem runs on each rising edge of a frame pulse. Which block, placed inside it, is accepted?
+--- choice
+A Transfer Fcn low-pass filter.
+--- choice
+A Discrete Transfer Fcn with its sample time set to 0.01.
+--- choice correct
+A Unit Delay with its sample time set to -1.
+--- choice
+An Integrator with a saturation limit.
+--- why
+A triggered subsystem runs only at trigger moments, with no regular spacing. Continuous states, like those of a Transfer Fcn or an Integrator, need a solver visiting them at every step, so they are refused. A block with its own fixed sample time of 0.01 is refused too, because blocks inside must take their timing from the trigger. From the solvers module, a sample time of -1 means inherited: the Unit Delay then runs once per trigger and remembers the value from the previous trigger.
+
++++ question | A mode nobody listed
+--- ask
+A Switch Case block reads the guidance mode, with Case conditions `{1, [2 3]}` and **Show default case** turned off. Its two action subsystems feed a Merge. For a long time the mode is 2, then it becomes 4. What does the Merge output while the mode is 4?
+--- choice
+0, because no branch is running.
+--- choice correct
+The value case `[2 3]` last wrote, because Merge carries the most recently written input and nothing writes while no branch runs.
+--- choice
+An error: Switch Case must always run exactly one branch.
+--- choice
+The average of the two branches' last outputs.
+--- why
+With no default case, a value outside the list runs no action subsystem at all. Both Outports are held, as Merge requires, so nothing writes to the Merge, and it keeps the last value written: the `[2 3]` branch's output. Before any branch has ever run, it would show its Initial output. A frozen command with no warning is rarely what you want, so decide on purpose what an unlisted mode should do, usually with a default case.
+
++++ question | A per-burn timer that keeps counting
+--- ask
+An engineer wants an enabled subsystem to show the current burn's duration: 0 at each ignition, counting up during the burn. She sets Output when disabled to **reset** with Initial output 0 and leaves the rest at defaults. In a test with a 60 s first burn, the second burn's timer starts at 60. Which change fixes it?
+--- choice
+Set Output when disabled to held.
+--- choice
+Set the Initial output to -60.
+--- choice correct
+Set the Enable block's States when enabling to reset.
+--- choice
+Replace the enabled subsystem with a triggered one.
+--- why
+Output when disabled only decides what the output shows while the subsystem is switched off, which is why it read 0 during the coast. What the integrator remembers when the subsystem switches back on is the Enable block's States when enabling. Left at held, the state resumes from 60: a lifetime counter. Set to reset, the state returns to its initial condition at each ignition: a per-burn counter. A triggered subsystem could not hold the integrator at all.
+
++++ question | Four valves, one body
+--- ask
+A For Each subsystem models four valves. Each follows the discrete lag $y_{k+1} = y_k + \frac{T_s}{\tau}(u_k - y_k)$ with $T_s = 5\,\mathrm{ms}$. The time constants $\tau$ ("tau") are a partitioned mask parameter, $[0.010,\ 0.020,\ 0.025,\ 0.050]$ seconds. All four are commanded fully open ($u = 1$) from rest ($y_0 = 0$).
+
+What is the third element of the output vector after 3 steps? Give three decimal places.
+--- answer
+0.488
+.488
+0.4880
+--- why
+The partition hands iteration 3 its own $\tau = 0.025\,\mathrm{s}$, so $T_s/\tau = 0.005/0.025 = 0.2$. The gap to fully open shrinks by the factor $1 - 0.2 = 0.8$ each step, so $y_3 = 1 - 0.8^3 = 1 - 0.512 = 0.488$. The other elements are $1 - 0.5^3 = 0.875$, $1 - 0.75^3 \approx 0.578$ and $1 - 0.9^3 = 0.271$. Each iteration keeps its own state and gets its own parameter, and the four answers are concatenated into one vector.
+
+=== slk03-l03 | Practice: Masks, libraries and projects
+--- for
+l03-masks-libraries-and-projects
+
++++ question | Two masks deep
+--- ask
+A masked subsystem has a mask parameter `K` set to 4. Inside it sits a second masked block with a mask parameter `gain` set to 0.5. Inside that block, a Gain block has the value `K*gain`. A script has also left `K = 10` and `gain = 3` in the base workspace. The Gain's input is 2.
+
+What is the Gain's output?
+--- answer
+4
+4.0
+--- why
+Simulink searches from the inside out and stops at the first match. `gain` is found in the nearest mask workspace: 0.5. `K` is not in the inner mask, so the search goes one mask out and finds 4 there. The base-workspace values are never reached. So the output is $4 \times 0.5 \times 2 = 4$. With both names declared by masks, the stray variables cannot change the answer.
+
++++ question | A number that is really text
+--- ask
+A test script reads a masked valve's time constant and doubles it:
+
+```matlab
+blk = 'vehicle/RCS/ValveLag3';
+t = get_param(blk, 'tau');     % the dialog shows 0.025
+t2 = 2 * t;
+```
+
+`t2` does not come out as 0.05. Why?
+--- choice
+`get_param` returns the value in milliseconds.
+--- choice correct
+`get_param` returns the text typed in the dialog, such as '0.025', not a number. Doubling text doubles its character codes. Convert it first, for example with `str2double(t)`.
+--- choice
+The mask workspace is private, so a script can only read a copy that is rounded.
+--- choice
+`get_param` cannot read mask parameters; it returned an empty value.
+--- why
+A mask parameter's value is stored as the text in the dialog, because it may be an expression such as `1/40` or a variable name. `get_param` hands back that text, and `set_param` takes text too. Arithmetic on a character array works on the character codes, which gives a vector of meaningless numbers. Turn the text into a number before doing arithmetic on it.
+
++++ question | Changing one thruster without cutting the link
+--- ask
+A model has 12 linked blocks from the library block `RCSThruster`. Thruster 3 is mounted differently and needs a different thrust direction. Which change keeps its link active, so it still receives future library fixes?
+--- choice correct
+Type the new direction into Thruster 3's mask dialog, as a value of its mask parameter.
+--- choice
+Look under the mask and change the Constant block that holds the direction.
+--- choice
+Add a Gain block inside Thruster 3 to rotate the direction.
+--- choice
+Break the link, change the direction, and keep the result.
+--- why
+A linked block takes its contents from the library and keeps only its own mask parameter values. Changing a mask parameter is exactly what each instance is allowed to do, so the link stays resolved. Editing anything under the mask changes the contents, which belong to the library, so it needs a disabled link first. That creates the fork that misses the next fix. Breaking the link loses the library for good. If thrusters really differ, the difference should be a mask parameter.
+
++++ question | The fork a script cannot find
+--- ask
+Before each release, a script lists every block whose `LinkStatus` is `'inactive'`, so that forgotten local copies get restored. Last year someone **broke** the link on Thruster 9 and edited its contents. What does the script report for Thruster 9?
+--- choice
+It lists Thruster 9 as inactive, with its library block.
+--- choice correct
+Nothing: a broken link has `LinkStatus` `'none'`, like a block that was never linked, so the script cannot tell it came from the library.
+--- choice
+It reports Thruster 9 as `'unresolved'`.
+--- choice
+It restores Thruster 9 automatically.
+--- why
+A disabled link is a local copy that still remembers its library block, which is why a script can find it and why the Links Tool can restore or push it. A broken link forgets the library completely. It is an ordinary subsystem now, and nothing in its link status says where it came from. That makes breaking a link a much bigger decision than disabling one: the copy drops out of every search for stale forks.
+
++++ question | The initialization code with a side effect
+--- ask
+A masked valve block has this initialization code:
+
+```matlab
+if Ts <= 0 || tau <= 0
+    error('Ts and tau must be positive.');
+end
+a = Ts / tau;
+assignin('base', 'a', a);        % so the telemetry block can use it
+iconText = sprintf('lag %g ms', 1000*tau);
+```
+
+The model holds four copies with different `tau`. The telemetry block, outside the masks, shows a value of `a` that matches whichever valve was updated last. Which line is the bug?
+--- choice
+The `if` test, because it should use `&&` instead of `||`.
+--- choice
+`a = Ts / tau;`, because `a` should be computed by the blocks inside.
+--- choice correct
+The `assignin` line, which writes to the base workspace from mask code.
+--- choice
+The `sprintf` line, because icon text must be computed in the icon commands.
+--- why
+Mask code should read its own parameters and write its own mask workspace, nothing else. `assignin('base', ...)` writes one shared variable from four blocks, and initialization code runs on every update in an order you do not control, so the last one wins. The `||` test is right: stop if either value is not positive. If the telemetry block needs each valve's `a`, bring it out through a port.
+
++++ question | Two engineers, one model file
+--- ask
+The repository's `.gitattributes` marks `*.slx` as binary. Two engineers edit `VehicleSim.slx` on separate branches: one changes the sensor subsystem, the other the drag model. Merging the branches, Git reports a conflict on the file. What should the team do?
+--- choice
+Remove the binary mark, so Git can merge the two versions line by line.
+--- choice
+Accept whichever version Git keeps, and assume the other change was small.
+--- choice correct
+Use MATLAB's model comparison and merge tools from the project to combine the two sets of changes. Then split the model so sensors and aerodynamics live in separate files.
+--- choice
+Open both versions and copy one engineer's blocks into the other by eye, then commit without comparing.
+--- why
+An `.slx` file is a compressed archive, so a line-by-line merge could corrupt it; the binary mark exists to stop exactly that. Simulink's comparison and merge tools work on blocks, lines and parameters, so they can combine structural edits. The lasting fix is structural: give each component its own file, owned by one person, so the conflict never happens. That is the model reference lesson.
+
+=== slk03-l04 | Practice: Bus objects, bus blocks and C structs
+--- for
+l04-bus-objects
+
++++ question | By name or by index
+--- ask
+A signal `wheel_cmd` is a plain 4-element vector of wheel torques. During a test you want to replace only its second element with 0, leaving the other three untouched. Which block does that?
+--- choice
+Bus Assignment, choosing element 2.
+--- choice correct
+Assignment, with the index set to 2 and the index mode set to one-based.
+--- choice
+Bus Selector, choosing element 2.
+--- choice
+Bus Creator, with the zero wired into its second input.
+--- why
+`wheel_cmd` is a vector, not a bus: its elements have positions, not names. Assignment copies the vector and overwrites chosen positions, which is the job. Bus Assignment does the same thing by element name, on a bus. Bus Selector only reads elements out, and Bus Creator builds a new bus. Check the index mode: with zero-based counting, index 2 would be the third element.
+
++++ question | How big is the telemetry struct
+--- ask
+A nonvirtual bus has these elements, in this order: `flag` (uint8), `t` (double), `count` (uint16), `mode` (uint8). On the lesson's 64-bit processor a double takes 8 bytes and must start at a multiple of 8, a uint16 takes 2 bytes and must start at a multiple of 2, and a uint8 takes 1 byte. The struct's size is rounded up to a multiple of 8.
+
+What does `sizeof` give for the generated struct, in bytes?
+--- answer
+24
+24 bytes
+--- why
+`flag` takes byte 0. `t` must start at a multiple of 8, so bytes 1 to 7 are padding and `t` fills bytes 8 to 15. `count` fills 16 and 17, and `mode` takes 18, for 19 bytes. Rounding up to a multiple of 8 gives 24. Putting `t` first would give $8 + 2 + 1 + 1 = 12$, rounded to 16. The bus object's element order is the struct's field order, so it is a layout decision.
+
++++ question | A bus into a MATLAB Function block
+--- ask
+A Bus Creator bundles `pos`, `vel` and `mode` and feeds a MATLAB Function block that reads `nav.vel(3)`. The Bus Creator's Output data type is `Inherit: auto`. Updating the diagram fails at the MATLAB Function block's input. What is the fix?
+--- choice
+Replace the Bus Creator with a Mux, since MATLAB Function blocks only accept vectors.
+--- choice correct
+Define a bus object, say `NavBus`, and set the MATLAB Function block's input data type (and the Bus Creator's output) to `Bus: NavBus`.
+--- choice
+Make the bus nonvirtual with a Signal Conversion block, and leave the types at inherit.
+--- choice
+Rename the input `nav` to match the Bus Creator's block name.
+--- why
+A MATLAB Function block receives a bus as a MATLAB structure, and it compiles to code, so it must know the structure's fields, types and sizes in advance. A bus object is where that knowledge lives. A Mux would throw the names away and force one data type on all elements. A nonvirtual bus also needs a bus object, so asking for one without defining it does not help.
+
++++ question | Forcing the mode to 5
+--- ask
+In a test harness you use a Bus Assignment to force the `mode` element of a NavBus to 5. The bus object says `mode` is `uint8`. You wire a Constant block with the value 5, leaving all its settings at their defaults, into the Bus Assignment's `mode` input. What happens when you press Ctrl+D?
+--- choice
+It works: Simulink converts 5 to `uint8` automatically.
+--- choice correct
+The update stops with a data type mismatch: the Constant's output is a `double` by default, and a Bus Assignment's new value must match the element's type. Set the Constant's output data type to `uint8`.
+--- choice
+It works, but `mode` becomes a `double` in the output bus.
+--- choice
+Nothing happens until the simulation reaches the first step that uses `mode`.
+--- why
+From the first module, a signal is a `double` unless something says otherwise, and a Constant block is no exception. Bus Assignment replaces an element in place, so the new value must have the same type and size as the old one; otherwise the output would no longer match the bus object. The check runs when the diagram is updated, before any step, which is the point of a typed interface.
+
++++ question | Wires in the wrong order
+--- ask
+A bus object `AttBus` lists `q` (double, 4 elements), then `rate` (double, 3 elements), then `valid` (boolean). A Bus Creator has its Output data type set to `Bus: AttBus`. Its first input is wired to the 3-element rate signal, its second to the 4-element quaternion, its third to the valid flag. What happens?
+--- choice
+Simulink matches the inputs to the elements by their signal names, so it works.
+--- choice
+It runs, and the quaternion's first three values land in `rate`.
+--- choice correct
+Updating the diagram reports a dimension mismatch for `q`: the Bus Creator's inputs must match the bus object's elements in order, and a 3-element signal cannot fill a 4-element slot.
+--- choice
+It runs, and the extra quaternion element is dropped silently.
+--- why
+With a bus object on its output, a Bus Creator's inputs are checked against the elements in order: input 1 against `q`, input 2 against `rate`. The first input has 3 elements where `q` needs 4, so the update stops before any step. That is the contract working. Without a bus object, the Bus Creator would have built whatever arrived, and the swap would have surfaced later as wrong numbers.
+
++++ question | What reordering saves
+--- ask
+A telemetry bus becomes a C struct with its elements in this order: `mode` (uint8), `t` (double), `valid` (uint8), `temp` (single), `count` (uint16), `alt` (double). Each type must start at a multiple of its own size: 8 for a double, 4 for a single, 2 for a uint16, 1 for a uint8. The struct's size is rounded up to a multiple of 8.
+
+How many bytes smaller is the best possible ordering of these six elements than the order given?
+--- answer
+16
+16 bytes
+--- why
+Given order: `mode` at 0, padding to 8, `t` at 8 to 15, `valid` at 16, padding to 20, `temp` at 20 to 23, `count` at 24 and 25, padding to 32, `alt` at 32 to 39. That is 40 bytes. The data itself is $8 + 8 + 4 + 2 + 1 + 1 = 24$ bytes. Largest first, `t`, `alt`, `temp`, `count`, `mode`, `valid`, packs it with no gaps into 24 bytes, already a multiple of 8, so nothing can be smaller. The saving is $40 - 24 = 16$ bytes per struct, and a telemetry buffer holds many of them.
+
+=== slk03-l05 | Practice: Model reference
+--- for
+l05-model-reference
+
++++ question | Four wheels, one file
+--- ask
+A spacecraft uses four Model blocks that all name `ReactionWheel.slx`. The wheels are identical except for the axis each one spins about. How should the axis be given to each wheel?
+--- choice
+Copy `ReactionWheel.slx` four times, one file per axis.
+--- choice correct
+Declare the axis as a model argument of `ReactionWheel`, and set its value on each Model block.
+--- choice
+Put a variable `axis` in the base workspace and change it between runs.
+--- choice
+Turn each Model block into a subsystem so each can have its own contents.
+--- why
+Model arguments exist for exactly this: one file, one set of blocks, and a few numbers each instance sets for itself. Copying the file brings back the problem model reference solves, since a fix would have to be made four times. A base-workspace variable holds one value, so all four wheels would share it. Converting to subsystems loses separate compilation and the single file.
+
++++ question | A shared bus changes
+--- ask
+A vehicle model has six referenced models. Their compile times in seconds are: environment 30, aerodynamics 50, propulsion 40, dynamics 70, sensors 25, GNC 85. The thin top model takes 15. An engineer adds an element to the bus object `StateBus`, which types root ports of aerodynamics, dynamics and GNC, and changes nothing else.
+
+How many seconds does the next build take?
+--- answer
+220
+220 s
+220 seconds
+--- why
+A change to a bus object used at a model's ports changes that model's interface, so its saved build no longer matches and it must be compiled again. Aerodynamics, dynamics and GNC use `StateBus`, and the top model wires them: $50 + 70 + 85 + 15 = 220\,\mathrm{s}$. Environment, propulsion and sensors are reused. A full build would be 315 s, so the saving is smaller than for a change inside one component, which is why shared interfaces should stay stable.
+
++++ question | A data store that stops at the boundary
+--- ask
+The parent model VehicleSim has a Data Store Memory block `fault_flag`. A Data Store Read inside the GNC subsystem reads it. You run `convertToModelReference` on GNC, and the conversion fails. What is the best way forward?
+--- choice
+Copy the Data Store Memory block into the new GNC model as well.
+--- choice
+Set `AutoFix` to `true`; it will make the data store visible across the boundary.
+--- choice correct
+Make `fault_flag` a real input port of GNC. If a shared store is truly needed, define it as a global data store with a Simulink.Signal object instead of a Data Store Memory block.
+--- choice
+Leave GNC as a virtual subsystem, since data stores only work in virtual subsystems.
+--- why
+A referenced model is compiled on its own, so it cannot see a Data Store Memory block in its parent. A second Data Store Memory block would be a separate store with the same name, not the same data. Turning the hidden link into a port writes the interface down, and a port also fixes the order problem from lesson 1: the writer must run first. A Simulink.Signal object makes a global store both models can see, but the ordering caveat remains.
+
++++ question | Two rates at the boundary
+--- ask
+The referenced model Sensors has a root Inport with data type `double`, dimensions 3, and sample time 0.01 s. In the parent, the truth-motion signal feeding it is a 3-element `double` at 0.02 s. What happens, and what is the usual fix?
+--- choice
+Simulink quietly runs Sensors at 0.02 s instead.
+--- choice
+It runs, and Sensors reads each input value twice without any record.
+--- choice correct
+Updating the diagram reports a sample time mismatch at the Model block, before the simulation runs. Put a Rate Transition block between the two rates.
+--- choice
+Nothing, because only data type and dimensions are checked at a model boundary.
+--- why
+Sample time is part of a referenced model's interface, together with data type, dimensions and complexity. The saved build was made for 0.01 s, so a 0.02 s signal is reported at once. From the solvers module, a Rate Transition block moves data between rates on purpose, and because 0.02 is an integer multiple of 0.01 the transfer can be made deterministic.
+
++++ question | Three hundred files nobody wrote
+--- ask
+After running the vehicle simulation once, `git status` shows several hundred new and changed files, all under a folder `slprj`. A teammate who pulls them gets merge conflicts in files nobody edited. What went wrong?
+--- choice
+The project's startup files wrote temporary copies of every model.
+--- choice correct
+`slprj` is Simulink's build cache for the referenced models. It was committed; it should be listed in `.gitignore` and removed from the repository.
+--- choice
+`slprj` is the project definition, and two people edited it at once.
+--- choice
+Accelerator mode writes its results into the repository, so the Model blocks should be in Normal mode.
+--- why
+Separate compilation saves each referenced model's build in `slprj` so it can be reused. That folder is a product of building, regenerated on every machine, and it changes on every build. Committed, it causes conflicts over files nobody wrote and can hand a teammate a build that does not match the models. Despite its name, it has nothing to do with Projects. Ignore it; deleting it only costs one slow rebuild.
+
++++ question | How many runs pay for the build
+--- ask
+A Monte Carlo campaign could put its dynamics Model block in Accelerator mode. In Normal mode a run takes 30 s. In Accelerator mode a run takes 12 s, after a one-time build of 150 s.
+
+What is the smallest number of runs for which Accelerator mode finishes sooner in total?
+--- answer
+9
+nine
+9 runs
+--- why
+Each run saves $30 - 12 = 18\,\mathrm{s}$, and the build costs 150 s, so it pays back after $150/18 \approx 8.3$ runs. Checking whole runs: 8 runs take $8 \times 30 = 240\,\mathrm{s}$ in Normal and $150 + 8 \times 12 = 246\,\mathrm{s}$ in Accelerator, so Normal still wins. At 9 runs it is 270 against 258, and Accelerator wins. For one debugging run, Normal is faster and lets you look inside.
+
+=== slk03-l06 | Practice: Variants
+--- for
+l06-variants
+
++++ question | The one that must stay a run-time choice
+--- ask
+Which of these differences must stay a run-time decision in the flight code, rather than a variant?
+--- choice
+Whether the star tracker slot holds the real driver or a simulated sensor for the bench.
+--- choice
+Whether telemetry is the flight downlink packet or the packet plus extra logging for ground tests.
+--- choice correct
+Whether navigation uses the primary gyro or the backup gyro after the primary is declared failed in flight.
+--- choice
+Whether the environment model is a stub for unit tests or the full model.
+--- why
+A variant is for choices fixed before the code runs. Switching to the backup gyro happens during a flight, at a moment nobody can predict, so both paths must be in the flight code and the choice made while it runs: a Switch, an If block, or mode logic. The other three are properties of the build. Their unused choices have no business in the flight image, so they are variants.
+
++++ question | Two conditions true at once
+--- ask
+A Variant Subsystem for the GPS slot has three choices:
+
+| Choice | Variant control |
+|---|---|
+| GPS_Driver | `PLATFORM == 1` |
+| GPS_Replay | `PLATFORM ~= 1 && REPLAY == 1` |
+| GPS_Sim | `PLATFORM == 2` |
+
+The activation time is update diagram. You set `PLATFORM = 2` and `REPLAY = 1` and update the diagram. What happens?
+--- choice
+GPS_Replay is active, because it is listed before GPS_Sim.
+--- choice
+GPS_Sim is active, because `PLATFORM == 2` is the more specific condition.
+--- choice correct
+The update fails: GPS_Replay and GPS_Sim are both true, and a slot must hold exactly one choice.
+--- choice
+Both choices are built, and their outputs are added.
+--- why
+`PLATFORM ~= 1` is true for 2, so with `REPLAY = 1` both GPS_Replay and GPS_Sim are true. Variants have no order to fall back on: two true conditions are a design error, and Simulink says so. A fix that partitions the settings: GPS_Replay gets `PLATFORM == 2 && REPLAY == 1`, and GPS_Sim gets `PLATFORM == 2 && REPLAY == 0`.
+
++++ question | A bench model that drifted
+--- ask
+A Variant Model block holds `IMU_Driver.slx` and `IMU_Sim.slx`, with activation time update diagram and the flight choice active. The simulation engineer renames an element of `IMU_Sim`'s output bus by editing a bus object that only her model uses. Nobody notices for a month, until a bench build fails. Which change would have caught it the same day?
+--- choice
+Switching the activation time to startup.
+--- choice
+Adding a `(default)` choice.
+--- choice correct
+Typing both models' root Outports with one shared bus object, and switching the activation time to update diagram analyze all choices.
+--- choice
+Putting both models in Accelerator mode.
+--- why
+With update diagram, only the active choice is analyzed, so the inactive bench model can break quietly. Analyze all choices checks every choice on every update. A shared bus object at both models' root ports makes the slot's interface one definition, so a drift in either file becomes a mismatch against it. Startup would put both choices in the program without fixing the check, and a default choice only changes which choice wins.
+
++++ question | A typo and a default
+--- ask
+The IMU slot has two choices: IMU_Driver with `SENSOR_SRC == 1`, and IMU_Sim marked `(default)`. A release script meant to set `SENSOR_SRC = 1` sets `SENSOR_SRC = 11`. What happens on the flight build?
+--- choice
+The update fails, because no condition is true.
+--- choice correct
+It builds without an error, with IMU_Sim active: simulated rates in the flight image.
+--- choice
+IMU_Driver is active, because 11 starts with 1.
+--- choice
+Both choices are built, and the driver wins at run time.
+--- why
+`11 == 1` is false, so no named condition is true, and the default takes over. Without a default this typo would have stopped the build with a clear error. A default quietly turns an undefined setting into a working build, so choose it on purpose, usually the safe or flight choice, and never the bench choice.
+
++++ question | Bench code in the flight binary
+--- ask
+A team's IMU slot is a Variant Subsystem with IMU_Driver (14 KB) and IMU_Sim (9 KB), and the flight setting makes IMU_Driver the active choice. A reviewer measures the flight binary and finds the 9 KB of simulated IMU code in it. Which setting explains it?
+--- choice
+The activation time is update diagram.
+--- choice
+The activation time is update diagram analyze all choices.
+--- choice correct
+The activation time is startup.
+--- choice
+The variant conditions use Simulink.Variant objects instead of expressions.
+--- why
+With startup, every choice is compiled into the program and one is picked when it starts, so both are in memory. That suits a single test binary, not a flight build. Update diagram, with or without analyzing all choices, generates only the active choice. Code compile generates all of them in the source files, but the preprocessor removes the inactive ones before compiling. Simulink.Variant objects only give the conditions names.
+
++++ question | Code that can never run
+--- ask
+A flight computer build has three variant slots. Sizes in kilobytes:
+
+| Slot | Flight choice | Bench choice |
+|---|---|---|
+| Star tracker | driver, 22 | simulated sensor, 12 |
+| Telemetry | downlink, 8 | downlink plus logging, 11 |
+| Thrusters | valve drivers, 5 | plant interface, 7 |
+
+The slots use activation time startup, and the flight setting is chosen. How many kilobytes of the program can never legitimately run in flight?
+--- answer
+30
+30 KB
+30 kb
+30 kilobytes
+--- why
+With startup, every choice is in the program: $22 + 12 + 8 + 11 + 5 + 7 = 65\,\mathrm{KB}$. The flight choices are $22 + 8 + 5 = 35\,\mathrm{KB}$. The rest, $12 + 11 + 7 = 30\,\mathrm{KB}$, is bench code: dead code in flight, which standards require you to remove or justify, and which could run by mistake. With update diagram, the flight build would hold only the 35 KB.
+
+=== slk03-l07 | Practice: Data dictionaries and data objects
+--- for
+l07-data-dictionaries-and-data-objects
+
++++ question | Whichever script ran last
+--- ask
+Two setup scripts, `init_gnc.m` and `init_sensors.m`, both set `Ts`: one to 0.02, the other to 0.01. The model's results depend on which script someone ran last. The team moves all its variables into one data dictionary linked to the model. What changes about `Ts`?
+--- choice
+Nothing: the dictionary keeps whichever value was added last, like the base workspace.
+--- choice correct
+The dictionary holds one definition of `Ts`, saved in a file under version control, so every session gets the same value whatever order things were opened in. Changing it is a reviewed edit.
+--- choice
+The dictionary stores both values and the model picks the smaller one.
+--- choice
+`Ts` must now be typed into every block by hand.
+--- why
+The base workspace is order-dependent: it holds whatever the last script left behind. A dictionary is a file on disk with one definition per name, so the value no longer depends on a session's history, and a change to it has an author and a date. If the same name turns up in two dictionaries of one tree, Simulink reports the duplicate instead of choosing.
+
++++ question | One name, two dictionaries
+--- ask
+`vehicle.sldd` references `gnc.sldd` and `propulsion.sldd`, and both of those reference `interfaces.sldd`. The GNC team adds `Ts = 0.02` to `gnc.sldd`. The propulsion team, on the same day, adds `Ts = 0.02` to `propulsion.sldd`. The top model links `vehicle.sldd`. What happens when the top model is updated, and what is the right fix?
+--- choice
+It works, because both values are equal.
+--- choice
+The top model uses the GNC value, because GNC is referenced first.
+--- choice correct
+Simulink reports `Ts` as defined twice in the tree. Define it once, in the dictionary both components reference, `interfaces.sldd`, and delete the two copies.
+--- choice
+Rename one of them to `Ts2` and leave both.
+--- why
+Through `vehicle.sldd` both copies are visible, and a name must be defined once in a tree. Equal values today do not help: the day one team edits its copy, the two drift apart. A value both components share belongs in the dictionary both of them reference. Renaming one to `Ts2` keeps two sample times that should be one.
+
++++ question | A store two models share
+--- ask
+A Data Store Write inside `FDIR.slx` must set `mode_flag`, and a Data Store Read inside `GNC.slx` must read it. Both are referenced models under one top model. Which set-up makes them share one store?
+--- choice
+A Data Store Memory block named `mode_flag` inside each of the two models.
+--- choice
+A Data Store Memory block named `mode_flag` in the top model.
+--- choice correct
+A Simulink.Signal object named `mode_flag`, with its type and size, in a data dictionary both models can see, such as the shared `interfaces.sldd`.
+--- choice
+A Simulink.Parameter named `mode_flag` in each model's own dictionary.
+--- why
+A Data Store Memory block is local to its model: two of them are two stores, and one in the parent is invisible inside a referenced model. A Simulink.Signal object in a dictionary makes a global data store, usable by name from any model that sees that dictionary, with no Data Store Memory block. A Simulink.Parameter is a value that stays put during a run, not something blocks write. The order caveat from lesson 1 still applies: nothing forces the writer to run first.
+
++++ question | A limit that was crossed with no report
+--- ask
+A signal line `q_cmd` resolves to a Simulink.Signal object with `Max = 5` (deg/s). In a simulation the logged `q_cmd` reaches 7.2 deg/s, and Simulink says nothing. What is the most likely reason?
+--- choice
+Signal ranges are checked only when the model is updated, and the update passed.
+--- choice correct
+Signal ranges can only be checked during the run, and only when the Simulation range checking diagnostic is turned on. It is off.
+--- choice
+`Max` on a Simulink.Signal is only a comment for reviewers.
+--- choice
+The line should have been typed `single` for the range to apply.
+--- why
+A parameter's value is known before the run, so its Min and Max are checked when the model is updated. A signal's value is only known as the simulation computes it, so its range can only be checked during the run, and only with the Simulation range checking diagnostic on. With it on, the first step where `q_cmd` leaves its range is reported. Declaring a range and leaving the diagnostic off gives false comfort.
+
++++ question | A gain the test stand cannot find
+--- ask
+On the test stand, the team wants to change `Kp_roll` while the software runs. The tool cannot find a symbol `Kp_roll` in the flight program. The dictionary shows `Kp_roll` as a Simulink.Parameter with `Value = 0.6`, `DataType = 'single'` and `CoderInfo.StorageClass = 'Auto'`. What is the cause and the fix?
+--- choice
+The data type should be `double`; single-precision parameters are always inlined.
+--- choice correct
+With Auto, the code generator wrote 0.6 straight into the arithmetic, so no variable exists. Give it a storage class such as ExportedGlobal, regenerate and rebuild; then it is a named, tunable global.
+--- choice
+Use ImportedExtern, so the tool can define the variable itself.
+--- choice
+Add `Kp_roll` to the base workspace as well.
+--- why
+Auto lets the code generator inline a parameter as a literal: small, fast and frozen. Any storage class other than Auto keeps it as a real variable in memory. ExportedGlobal defines it in the generated code and declares it in a header, so a tool can find and write it. ImportedExtern would make the generated code expect someone else to define it, and nobody does, so linking would fail.
+
++++ question | How many names the top model sees
+--- ask
+A dictionary tree holds:
+
+- `interfaces.sldd`: 12 entries of its own.
+- `gnc.sldd`: 30 entries of its own; references `interfaces.sldd`.
+- `propulsion.sldd`: 18 entries of its own; references `interfaces.sldd`.
+- `vehicle.sldd`: 4 entries of its own; references `gnc.sldd` and `propulsion.sldd`.
+
+No name is defined twice, and base-workspace access is cleared. How many names can the top model, which links `vehicle.sldd`, use?
+--- answer
+64
+64 names
+--- why
+Everything in a referenced dictionary is visible through the one that references it, so the top model sees $4 + 30 + 18 + 12 = 64$ names. `interfaces.sldd` is reached through two paths but holds one set of definitions, so it counts once. The propulsion model, which links `propulsion.sldd`, sees only $18 + 12 = 30$, and none of the GNC gains: that is per-component scope.
+
+=== slk03-l08 | Practice: Stateflow states and transitions
+--- for
+l08-stateflow-states-and-transitions
+
++++ question | One wake-up, one move
+--- ask
+A chart's top level has a default transition into STANDBY. STANDBY has a transition `[pwr_ok]` that ends on the border of the superstate ACTIVE. Inside ACTIVE, the default transition points at WARMUP, and WARMUP has a transition `[temp > 20]` to READY. The inputs are the same on every wake-up: `pwr_ok` is true and `temp` is 25.
+
+After wake-up 1 (the second wake-up, counting the first as wake-up 0), which substate of ACTIVE is active? Type its name.
+--- answer
+WARMUP
+ACTIVE.WARMUP
+--- why
+Wake-up 0 only follows the default transitions: STANDBY. On wake-up 1 the chart takes STANDBY to ACTIVE. The arrow ends on ACTIVE's border, so ACTIVE's default transition makes WARMUP active in the same wake-up. Then the wake-up is over: one transition per wake-up, even though `temp > 20` is already true. READY becomes active on wake-up 2.
+
++++ question | An arrow that crosses the border
+--- ask
+A satellite chart has a superstate SCIENCE with substates IMAGING and DOWNLINK, and SCIENCE's default transition points at IMAGING. There is no history junction. A transition from the state HOLD is drawn across SCIENCE's border and ends on DOWNLINK itself. When it is taken, which states are active?
+--- choice
+SCIENCE and IMAGING, because entering SCIENCE always follows its default.
+--- choice correct
+SCIENCE and DOWNLINK: the arrow ends on DOWNLINK, and a substate can only be active while its parent is.
+--- choice
+DOWNLINK only; SCIENCE stays inactive because the arrow did not end on its border.
+--- choice
+None: a transition may not cross a superstate's border.
+--- why
+The default transition only decides when an arrow stops at the superstate's border and says nothing more. An arrow that ends on a substate names where to go, and it may cross the border to get there. Entering DOWNLINK makes its parent SCIENCE active as well, since a substate is never active without its parent.
+
++++ question | A pulse between wake-ups
+--- ask
+A chart runs every 0.1 s, waking at $t = 0, 0.1, 0.2, \dots$. Its input `sep_sw` is true only from $t = 0.23\,\mathrm{s}$ to $0.29\,\mathrm{s}$, and false at every other time. STAGE_SEP has the transition `[sep_sw]` to COAST. What does the chart do?
+--- choice
+It takes the transition at $t = 0.23\,\mathrm{s}$, the moment the switch closes.
+--- choice
+It takes the transition at $t = 0.3\,\mathrm{s}$, the first wake-up after the pulse.
+--- choice correct
+It never takes the transition: at the wake-ups at 0.2 and 0.3 s, `sep_sw` is false.
+--- choice
+It reports an error, because the input changed between wake-ups.
+--- why
+A chart only looks at its inputs when it wakes up. A condition that becomes true and false again between two wake-ups is never seen, and nothing reports it. That is one reason sequencers run fast enough to catch every change that matters, and why the chart's sample time, from the solvers module, is part of its design.
+
++++ question | How many states after the first wake-up
+--- ask
+A chart's top-level default transition points at the border of the superstate FLIGHT. FLIGHT's default transition points at the border of its substate ASCENT. ASCENT's default transition points at LIFTOFF. After the chart's very first wake-up, how many states are active?
+--- answer
+3
+three
+--- why
+On the first wake-up the chart follows the default transitions down, activating states as it goes, and stops. Entering FLIGHT follows FLIGHT's default into ASCENT, and entering ASCENT follows its default into LIFTOFF, all in that one wake-up. So FLIGHT, ASCENT and LIFTOFF are active: 3 states. Each level is its own exclusive group, and each needed its own default transition.
+
++++ question | The phase that has no way out
+--- ask
+An early ascent chart has the transition `[~engines_ok]` to SAFE drawn separately from each substate of ASCENT: one from LIFTOFF and one from PITCHOVER. Later someone adds a third substate, GRAVITY_TURN, with its own transitions but no arrow to SAFE. In a test the engines fail during the gravity turn, and the chart stays in GRAVITY_TURN. What is the fix a reviewer should ask for?
+--- choice
+Add a third `[~engines_ok]` arrow from GRAVITY_TURN.
+--- choice correct
+Replace the per-phase arrows with one `[~engines_ok]` transition from ASCENT's border to SAFE.
+--- choice
+Make SAFE a substate of GRAVITY_TURN.
+--- choice
+Give GRAVITY_TURN a history junction.
+--- why
+A third arrow fixes today's chart and leaves the same trap for the fourth phase. A transition from the superstate's border applies to whichever substate is active, including ones added later, and because the parent is tested before the child it wins over anything the phase wanted to do. One arrow is also one thing to review instead of one per phase.
+
++++ question | When the cruise begins
+--- ask
+A chart has a top-level default transition into PAD. PAD has `[go]` to the border of the superstate BOOST. Inside BOOST, the default transition points at IGNITE, IGNITE has `[thrust > 0.9]` to CLIMB, and CLIMB has `[alt > 500]` to CRUISE. BOOST's border has `[abort]` to HOLD, and `abort` stays false. The inputs on each wake-up:
+
+| Wake-up | go | thrust | alt (m) |
+|---|---|---|---|
+| 0 | false | 0 | 0 |
+| 1 | false | 0 | 0 |
+| 2 | true | 0.95 | 0 |
+| 3 | true | 0.95 | 550 |
+| 4 | true | 0.95 | 800 |
+
+On which wake-up does CRUISE first become active?
+--- answer
+4
+wake-up 4
+four
+--- why
+Wake-up 0: default into PAD. Wake-up 1: `go` is false, so PAD stays. Wake-up 2: PAD to BOOST, and BOOST's default enters IGNITE; `thrust > 0.9` is already true but is not tested this wake-up. Wake-up 3: BOOST's `[abort]` is tested first and is false, then IGNITE to CLIMB; `alt > 500` is already true but waits. Wake-up 4: CLIMB to CRUISE. Every link in the chain costs one wake-up, including the default entry.
+
+=== slk03-l09 | Practice: State actions, transition actions and parallel states
+--- for
+l09-actions-and-decomposition
+
++++ question | Default transitions in a parallel chart
+--- ask
+A spacecraft chart's top level has parallel (AND) decomposition with three states: POWER, THERMAL and COMMS. Inside POWER are three exclusive substates, inside THERMAL two, and inside COMMS two. How many default transitions does the chart need?
+--- answer
+3
+three
+--- why
+The top level is parallel: entering the chart makes POWER, THERMAL and COMMS all active, so there is nothing to choose and no default transition is needed there. Each of the three has an exclusive group inside, where exactly one substate must be chosen on entry, so each needs one default transition: 3 in all. Drawn as one exclusive machine, the same chart would need $3 \times 2 \times 2 = 12$ states instead of $3 + 2 + 2 = 7$.
+
++++ question | A log of one transition
+--- ask
+The chart is in state A and wakes with `go` true. Start with `log = 0`.
+
+```text
+A
+du: log = 10*log + 1;
+ex: log = 10*log + 2;
+
+transition A to B:  [go]{log = 10*log + 3;}/{log = 10*log + 4;}
+
+B
+en: log = 10*log + 5;
+du: log = 10*log + 6;
+```
+
+What is `log` at the end of this wake-up?
+--- answer
+3245
+--- why
+The order for taking a transition is: condition action, source exit, transition action, destination entry. That appends 3, then 2, then 4, then 5: 3245. A's during does not run, because a transition out of A was taken. B's during does not run either, because B was entered on this wake-up. The digits were chosen so that the order, not the numbering, gives the answer.
+
++++ question | Leaving from the border
+--- ask
+The chart is in ASCENT.GRAVITY_TURN and wakes with `abort` true. Start with `log = 0`.
+
+```text
+ASCENT border to SAFE:  [abort]/{log = 10*log + 9;}
+
+GRAVITY_TURN
+ex: log = 10*log + 7;
+
+ASCENT
+ex: log = 10*log + 5;
+
+SAFE
+en: log = 10*log + 2;
+```
+
+What is `log` at the end of this wake-up?
+--- answer
+7592
+--- why
+Leaving a superstate exits from the inside out: GRAVITY_TURN's exit runs first (7), then ASCENT's (5). Only then does the transition action run (9), and last SAFE's entry (2). That gives 7592. The substate is never left active inside an inactive parent, which is why the innermost exit comes first.
+
++++ question | A self-loop that zeroes a timer
+--- ask
+A state HOLDING has these actions:
+
+```text
+HOLDING
+en: t_hold = 0;
+du: t_hold = t_hold + 1;
+```
+
+It also has a transition from itself back to itself, `[new_cmd]`. The chart enters HOLDING on wake-up 0. `new_cmd` is true only on wake-up 5. What is `t_hold` at the end of wake-up 6?
+--- answer
+1
+one
+--- why
+Entry on wake-up 0 sets 0. During runs on wake-ups 1 to 4, reaching 4. On wake-up 5 the self-loop is taken: that is a real transition, so HOLDING's exit runs and then its entry runs again, setting `t_hold` back to 0, and during does not run. On wake-up 6 during runs once: 1. A self-loop means "leave and come back in", with everything entry does.
+
++++ question | The vent that opened anyway
+--- ask
+A propellant tank chart has this path out of PRESSURIZED:
+
+```text
+PRESSURIZED --[tank_p < 2.0]{open_vent = true;}--> (junction) --[vent_enabled]--> VENTING
+```
+
+The junction has no other way out. In a test with `tank_p` at 1.8 and `vent_enabled` false, the chart stays in PRESSURIZED, yet `open_vent` becomes true. What is the fix?
+--- choice
+Swap the two conditions, so `vent_enabled` is tested first but keep the action where it is.
+--- choice correct
+Move `open_vent = true;` into a transition action on the last segment, or into VENTING's entry action, so it runs only if the move really happens.
+--- choice
+Add a history junction to PRESSURIZED.
+--- choice
+Turn the condition action into a during action of PRESSURIZED.
+--- why
+A condition action runs the moment its condition is found true, even if the path later dead-ends and Stateflow backtracks. Here the first segment's condition is true, so the vent opens, then the junction finds no valid way out and no transition is taken. A transition action waits until the path reaches a state, and an entry action runs only when the state is entered. A during action would open the vent on every step, which is worse.
+
++++ question | Filter before sensor
+--- ask
+A chart's top level has two parallel states. FILTER has execution order 1 and SENSOR has order 2.
+
+```text
+SENSOR
+du: x = raw;
+
+FILTER
+du: y = 0.5*y + 0.5*x;
+```
+
+`x` and `y` are local data, both 0 after the first wake-up (wake-up 0). The input `raw` is 10 on wake-up 1 and every wake-up after. What is `y` at the end of wake-up 2?
+--- answer
+5
+5.0
+--- why
+Parallel states run one after the other in their order. On wake-up 1, FILTER runs first and uses the old `x = 0`, so `y` stays 0; then SENSOR sets `x = 10`. On wake-up 2, FILTER computes $0.5 \times 0 + 0.5 \times 10 = 5$. With SENSOR numbered first, `y` would be 5 after wake-up 1 and 7.5 after wake-up 2. Reading data a later parallel state writes costs one wake-up of delay.
+
+=== slk03-l10 | Practice: Temporal logic and events
+--- for
+l10-temporal-logic-and-events
+
++++ question | After, at 25 Hz
+--- ask
+A chart runs at 25 Hz. A state has the transition `[after(0.3, sec)]`. Counting the wake-up that enters the state as wake-up 0, on which wake-up is the transition taken?
+--- answer
+8
+eight
+wake-up 8
+--- why
+At 25 Hz the step is $h = 0.04\,\mathrm{s}$. The transition is taken on the first wake-up $j$ with $0.04\,j \ge 0.3$, so $j = \lceil 0.3/0.04 \rceil = \lceil 7.5 \rceil = 8$, at $0.32\,\mathrm{s}$. Wake-up 7 is at 0.28 s, not yet enough. The chart can only be late, by less than one step, never early.
+
++++ question | The event that is still allowed
+--- ask
+A team's modeling standard bans local events in flight charts. The chart must run the ValveDriver subsystem exactly once, at a definite point in its step. Which design fits the standard?
+--- choice
+A local event `RUN_VALVES` sent with `send(RUN_VALVES)` from the chart's during action.
+--- choice correct
+A function-call output event that calls ValveDriver, a function-call subsystem, at that point.
+--- choice
+A self-loop on the active state whose entry action sets a flag.
+--- choice
+A directed local event `send(RUN_VALVES, VALVES)` to a state named VALVES.
+--- why
+A function-call output event runs the named subsystem once, synchronously, and returns, like a function call in a program: it schedules work in Simulink and never re-enters the chart. A local event, directed or not, starts a nested run of the chart, which is what the standard bans. A self-loop would also restart every timer in the state.
+
++++ question | A timeout that never fires
+--- ask
+COAST has two transitions: `[after(30, sec)]` to ENTRY_BURN, and a self-loop `[new_eph]/{eph = eph_in;}` that loads new ephemeris data. New ephemeris arrives every 10 s. What happens to the timeout?
+--- choice
+It fires 30 s after COAST was first entered, as written.
+--- choice
+It fires after 40 s, one ephemeris update late.
+--- choice correct
+It never fires: each self-loop exits and re-enters COAST, which restarts `after` from zero every 10 s.
+--- choice
+It fires on the first update, because taking the self-loop counts as leaving.
+--- why
+Temporal operators count from the wake-up their associated state became active. A self-loop is a real exit and entry, so the clock goes back to zero every 10 s and never reaches 30. To update data without leaving the state, use an action in the state, for example `on` a condition or a during action, and keep self-loops for when you mean "start this state over".
+
++++ question | Duration on the fourth sample
+--- ask
+A chart runs at 25 Hz. The condition `C` becomes true on some wake-up and stays true. What does `duration(C)` return on the fourth consecutive wake-up where `C` is true, counting the first one as the first?
+--- answer
+0.12
+0.12 s
+.12
+0.120
+0.12 seconds
+--- why
+`duration(C)` is 0 on the first wake-up where `C` is true and grows by the step, $h = 0.04\,\mathrm{s}$, on each true wake-up after that: 0, 0.04, 0.08, 0.12. So the $N$-th consecutive sample shows $(N - 1)h$. A rule "true for 4 samples" is `duration(C) >= 0.12`, not 0.16. Since 0.12 sits exactly on a step, a threshold between samples, such as 0.10, avoids the floating-point knife edge.
+
++++ question | A hand-made timer
+--- ask
+In a 50 Hz chart, an engineer wants to leave WAIT after 0.5 s and writes:
+
+```text
+WAIT
+en: n = 0;
+du: n = n + 1;
+
+transition WAIT to NEXT:  [n > 25]
+```
+
+Counting the wake-up that enters WAIT as wake-up 0, on which wake-up is the transition taken?
+--- answer
+27
+wake-up 27
+--- why
+Each wake-up, the transition is tested before during runs. After wake-up $k$, `n` equals $k$, so on wake-up $j$ the test sees $n = j - 1$. It needs $j - 1 > 25$, so $j = 27$: at 0.54 s, two steps late. One step comes from testing before counting, the other from `>` where `>=` was meant. `[after(0.5, sec)]` fires on wake-up 25 and needs no counter.
+
++++ question | Five samples in a row
+--- ask
+Requirement: believe the separation switch `sep_sw` only after it has read true on 5 consecutive wake-ups of a 50 Hz chart. Which guard meets the requirement, and does it robustly?
+--- choice
+`[duration(sep_sw) >= 0.1]`
+--- choice correct
+`[duration(sep_sw) >= 0.07]`
+--- choice
+`[after(5, tick) && sep_sw]`
+--- choice
+`[every(5, tick) && sep_sw]`
+--- why
+On consecutive true samples `duration` reads 0, 0.02, 0.04, 0.06, 0.08, so the fifth sample shows 0.08. A threshold of 0.07 is false on the fourth sample and true on the fifth, with room on both sides for rounding. A threshold of 0.1 waits for the sixth sample. `after(5, tick)` counts wake-ups since entering the state, not how long the switch has held, so one true sample after the fifth wake-up passes. `every` samples only one wake-up in five.
+
+=== slk03-l11 | Practice: Transition order and mutually exclusive guards
+--- for
+l11-transition-order-and-mutual-exclusivity
+
++++ question | Where the guards overlap
+--- ask
+A state has three outgoing transitions: 1 `[v < 100]`, 2 `[v < 300]`, 3 `[v >= 50]`. For how many of the values $v = 20$, $75$, $150$ and $400$ are two or more guards true at once?
+--- answer
+3
+three
+--- why
+At 20, guards 1 and 2 are true. At 75, all three are. At 150, guards 2 and 3 are. At 400, only guard 3 is. So three of the four values have an overlap, and at each of them only the numbers decide which arrow wins. An exclusive version partitions $v$ into ranges that do not touch, such as `[v < 100]`, `[v >= 100 && v < 300]` and `[v >= 300]`, so every value lands in exactly one.
+
++++ question | Label rank in an old chart
+--- ask
+An old chart uses C as its action language, with **User specified state/transition execution order** turned off. A state has three outgoing transitions with the same parent: one labeled `[x > 0]`, one labeled `E[x > 0]`, and one with no label. The event `E` arrives and `x` is 3. Which transition is tested first?
+--- choice
+The one with no label, because it is always valid.
+--- choice
+The one labeled `[x > 0]`, because conditions come before events.
+--- choice correct
+The one labeled `E[x > 0]`: after hierarchy, implicit ordering ranks an event with a condition first, then an event alone, then a condition alone, then no label.
+--- choice
+Whichever arrow was drawn first.
+--- why
+Implicit ordering uses three tie-breakers in turn: hierarchy, label, then geometry. The three share a parent, so the label decides, and event plus condition outranks the others. Drawing order is what explicit ordering uses to number new transitions. With explicit ordering, you would read the numbers on the arrows instead.
+
++++ question | A counter across a dead end
+--- ask
+State S has two outgoing transitions. Transition 1 is `[x > 5]{c = c + 1;}` and leads to a junction whose only way out is `[y > 0]` to state A. Transition 2 is `[x > 2]{c = c + 10;}` and leads straight to state B. At the start of a wake-up, `c` is 0, `x` is 7 and `y` is -1. What is `c` at the end of the wake-up?
+--- answer
+11
+--- why
+Transition 1 is tested first. `x > 5` is true, so its condition action runs at once: `c` is 1. At the junction `y > 0` is false and there is no other segment, so Stateflow backtracks to S and tests transition 2. `x > 2` is true, its condition action runs, `c` is 11, and the chart goes to B. The two guards overlap at $x = 7$, and the abandoned path still left its mark on `c`.
+
++++ question | A failed sensor and a "not"
+--- ask
+ENTRY_BURN has two outgoing transitions: 1 `[speed <= 1300]` to DESCENT, and 2 `[~(speed <= 1300)]` to ABORT. The speed sensor fails and delivers NaN. What does the chart do?
+--- choice
+It stays in ENTRY_BURN, because every comparison with NaN is false.
+--- choice
+It goes to DESCENT, because transition 1 is tested first.
+--- choice correct
+It goes to ABORT: `speed <= 1300` is false for NaN, so `~(speed <= 1300)` is true.
+--- choice
+It reports a run-time error and stops.
+--- why
+Every ordered comparison with NaN is false, including `speed <= 1300`, and the "not" of false is true. So this pair is exclusive and always has one guard true, even for bad data. The version with `[speed > 1300]` as guard 2 would leave both guards false and keep the chart in the burn. Rewriting a guard with a "not" changes its behavior on bad data, so choose it on purpose, and let fault detection catch invalid data before the sequencer sees it.
+
++++ question | A proof that proves nothing
+--- ask
+An engineer checks STAGE_SEP's draft guards with the lesson's `overlaps` function, but writes her own filter of impossible rows:
+
+```python
+names = ['confirmed', 'timeout', 'sep_sw']
+possible = lambda confirmed, timeout, sep_sw: not (confirmed and timeout)
+draft = {'COAST':    lambda confirmed, timeout, sep_sw: confirmed,
+         'SEP_FAIL': lambda confirmed, timeout, sep_sw: timeout}
+print(overlaps(draft, names, possible))
+# []
+```
+
+Why is the empty list not a proof?
+--- choice
+Three conditions give only 8 rows, too few for a proof.
+--- choice correct
+The filter marks "confirmed and timed out" as impossible, but that row can happen: the switch can have held for 0.1 s on the same wake-up that 5 s have passed. It skips the one row where the guards overlap.
+--- choice
+`overlaps` only reports rows where all three guards are true.
+--- choice
+The guards should be written in MATLAB, not Python, for the check to count.
+--- why
+The `possible` filter is part of the argument. The real dependency is that `confirmed` needs `sep_sw` true now; nothing stops `confirmed` and `timeout` from being true together, and that is the overlap the lesson found. Marking a real row impossible hides the bug and prints a clean result. Every dependency needs a written reason that a reviewer checks as carefully as the guards.
+
++++ question | Counting overlaps on a test grid
+--- ask
+DESCENT has two outgoing transitions: 1 `[alt <= 2000]` to MAIN_CHUTE, and 2 `[speed > 300 && alt < 5000]` to ABORT. A test grid uses these values:
+
+- altitude in meters: 1500, 1999, 2000, 2001, 4999, 5000, 5001, 8000;
+- speed in m/s: 200, 299, 300, 301, 450.
+
+Of the 40 combinations, how many make both guards true?
+--- answer
+6
+six
+--- why
+Guard 1 needs altitude at most 2000: 1500, 1999 and 2000, three values, all of them also below 5000. Guard 2 also needs speed above 300: 301 and 450, two values. So $3 \times 2 = 6$ combinations overlap, and in each one only the numbering sends a fast vehicle to its main chute. The values at and around each threshold are the ones that find overlaps and gaps.
+
+=== slk03-l12 | Practice: A launch-vehicle mode sequencer with fault protection
+--- for
+l12-mode-sequencer-and-fdir
+
++++ question | Three in a row
+--- ask
+A persistence counter runs at 50 Hz with $N = 3$: add 1 on a bad sample, reset to 0 on a good one, declare a fault when it reaches 3. A valve position reads bad at 12.02 s and 12.04 s, good at 12.06 s, and bad from 12.08 s on. At what time, in seconds, is the fault declared?
+--- answer
+12.12
+12.12 s
+12.12s
+12.12 seconds
+--- why
+The counter reads 1 at 12.02, 2 at 12.04, and resets to 0 at 12.06. Then it reads 1 at 12.08, 2 at 12.10 and 3 at 12.12 s, where the fault is declared. The good sample threw away the first two bad ones, which is exactly what a consecutive counter is meant to do with a glitch.
+
++++ question | A connector that fails every third sample
+--- ask
+An up/down counter adds 1 on a bad sample and subtracts 1 on a good one, never going below 0, and trips at 4. A loose connector gives this pattern, starting from 0: bad, good, bad, bad, good, bad, bad, good, bad, bad. On which sample does it trip? Count the first sample as 1.
+--- answer
+10
+ten
+--- why
+The counter goes 1, 0, 1, 2, 1, 2, 3, 2, 3, 4, and trips on the 10th sample. A consecutive counter with $N = 4$ would never trip on this pattern, since no more than two bad samples ever come in a row. Choose the counter to match the faults you expect: intermittent faults need a counter that keeps its evidence.
+
++++ question | The sequencer numbered first
+--- ask
+The chart's three parallel states are renumbered: SEQUENCER is 1, ABORT_SUPERVISOR is 2 and FDIR is 3. On wake-up $k$ FDIR declares a second engine failed, so `n_out` becomes 2. When does the sequencer enter ABORT?
+--- choice
+On wake-up $k$, because all three regions act on the same wake-up.
+--- choice
+On wake-up $k + 1$, 0.02 s later at 50 Hz.
+--- choice correct
+On wake-up $k + 2$, 0.04 s later at 50 Hz.
+--- choice
+Never, because the supervisor is latched.
+--- why
+On wake-up $k$ FDIR runs last, so the supervisor and the sequencer have already run with `n_out` at 1. On wake-up $k + 1$ the sequencer runs first and sees `abort_req` still false; then the supervisor sees `n_out >= 2` and latches `abort_req`. On wake-up $k + 2$ the sequencer tests FLIGHT's border and goes to ABORT. Each reader placed before its writer costs a wake-up; ordering detection, decision, action gets all three on one wake-up.
+
++++ question | An engine that comes back
+--- ask
+In the lesson's engine monitor, engine 4 is declared failed at 70.08 s, so `n_out` is 1. At 80 s its pressure sensor reads normal again for a while, then reads low for good from 85 s on. What happens to `n_out`?
+--- choice
+It goes back to 0 at 80 s, then to 1 again at 85.08 s.
+--- choice
+It rises to 2 at 85.08 s, and the vehicle aborts.
+--- choice correct
+It stays at 1: `eng_failed(4)` is latched, and the test `~eng_failed(i)` skips engine 4, so it is never counted again.
+--- choice
+It stays at 1, but only because the counter is reset by the good samples.
+--- why
+Nothing in flight sets `eng_failed(i)` back to false, and the loop only looks at engines that have not failed. So a failed engine can neither recover in the logic nor be counted twice. Without that test, one flaky engine could be counted as two failures and trigger an abort with eight good engines. The good samples do reset `bad_count(4)`, but the loop never reaches that line for a failed engine.
+
++++ question | A counter with no reset
+--- ask
+A new engine monitor is reported to shut down healthy engines late in long flights. Its core is:
+
+```text
+for i = 1:9
+    if asc_powered && ~eng_failed(i)
+        if pc(i) < PC_MIN
+            bad_count(i) = bad_count(i) + 1;
+        end
+        if bad_count(i) >= N_PERSIST
+            eng_failed(i) = true;
+            eng_shutdown(i) = true;
+            n_out = n_out + 1;
+        end
+    end
+end
+```
+
+What is the bug?
+--- choice
+`n_out = n_out + 1;` should come before `eng_failed(i) = true;`.
+--- choice
+The loop should run from 0 to 8.
+--- choice correct
+There is no `else bad_count(i) = 0;`, so bad samples are never forgotten: five single glitches spread over minutes add up and trip the fault.
+--- choice
+`~eng_failed(i)` should be removed so failed engines keep being checked.
+--- why
+A persistence counter counts **consecutive** bad samples; a good sample must reset it. Without the reset, the counter only ever grows, so rare vibration glitches, each harmless, accumulate until the engine is declared failed. The lesson's one-sample glitch at 40 s would stay counted forever. MATLAB action language indexes from 1, so `1:9` is right.
+
++++ question | Adding a boostback phase
+--- ask
+The lesson's sequencer has 12 transitions, counted without the default transitions. The team adds a phase BOOSTBACK inside FLIGHT: the arrow from STAGE_SEP to COAST now goes from STAGE_SEP to BOOSTBACK, and a new arrow goes from BOOSTBACK to COAST. Nothing else changes. Counting the same way, how many transitions does the sequencer have now?
+--- answer
+13
+thirteen
+--- why
+One arrow was redirected, not added, and one arrow, BOOSTBACK to COAST, is new: $12 + 1 = 13$. No new abort arrow is needed, because FLIGHT's border arrow `[abort_req]` already covers every state inside FLIGHT, including BOOSTBACK. The nominal flight now covers PRELAUNCH to FLIGHT plus nine phase links, 10 of 13, and each failure path still needs its own run.
+
+=== slk03-test | Simulink architecture and Stateflow: module test
+--- teach
+The test covers the whole module: virtual, atomic and conditional subsystems, masks and libraries, bus objects and the C structs they become, model reference, variants, data dictionaries and storage classes, and Stateflow from states and actions to temporal logic, transition order and a mode sequencer with fault protection. Most questions combine two or more lessons, and you trace what a model or chart does, compute what it costs, or pick the real reason. To get ready, redo the practice questions of the lessons that felt hard, and trace every chart on paper, one wake-up at a time, before you answer.
+--- gate
+questions 13
+minutes 24
+
++++ question | An enable port that creates a loop
+--- ask
+A virtual subsystem holds two separate paths: In1 through a Unit Delay to Out1, and In2 through a Gain to Out2. Outside it, Out1 feeds In2 through another Gain, and In1 is computed from Out2. The model runs fine. An engineer then adds an Enable block inside, so the subsystem only runs while the engine is lit. Now Simulink reports an algebraic loop. Why?
+--- choice
+An Enable block has direct feedthrough from the enable signal to every output.
+--- choice
+Enabled subsystems hold their outputs, and a held output counts as a loop.
+--- choice correct
+An enabled subsystem is nonvirtual: it is sorted as one block, and since the Gain path has direct feedthrough, the whole box does. The feedback line around it now looks like an instant loop, an artificial one, although the math still has the delay in it.
+--- choice
+The Unit Delay stops working inside a conditional subsystem.
+--- why
+Every conditional subsystem is atomic, which is what lets it run as a unit only when told. Being one block in the sort, it can no longer let the delayed Out1 be computed before In2 is known. The loop appeared only when the box became real. Moving the delayed path out of the enabled subsystem, so the box holds only the path that needs enabling, removes it.
+
++++ question | A converted model that fails on a clean machine
+--- ask
+You convert the GNC subsystem of VehicleSim with `convertToModelReference`. It succeeds, and the simulation results match. A colleague clones the repository, starts a fresh MATLAB session, opens `GNC.slx` on its own, and gets errors about unknown data types such as `Bus: slBus1` at the root Inports. What went wrong, and what is the right fix?
+--- choice
+The slprj folder was not committed; commit it so the saved build travels with the model.
+--- choice correct
+The conversion wrote the new bus objects into the base workspace, which is not saved with anything. Rename them, save them into a data dictionary, such as a shared `interfaces.sldd`, and link both models to dictionaries that see it.
+--- choice
+Referenced models cannot use bus objects at their root ports; replace the buses with Mux blocks.
+--- choice
+She should open VehicleSim first, because a referenced model can only run inside its parent.
+--- why
+A boundary between models needs a bus object for every bus that crosses it, so the conversion made some, named by the tool, in the base workspace. They vanished with your session. A dictionary is a file under version control that the models name in their settings, so every machine gets the same contracts. Every referenced model can be opened and run alone, which is why her test is the right one. slprj is a cache and stays out of Git.
+
++++ question | The size of a nested struct
+--- ask
+Two bus objects become C structs. The inner one, `AttBus`, has `q` (single, 4 elements) then `valid` (uint8). The outer one, `NavBus`, has `t` (double), then `att` (of type `Bus: AttBus`), then `mode` (uint8).
+
+Each type starts at a multiple of its own size: 8 for a double, 4 for a single, 1 for a uint8. A struct must start at a multiple of the largest alignment among its fields, and its size is rounded up to a multiple of that same number. What does `sizeof(NavBus)` give, in bytes?
+--- answer
+32
+32 bytes
+--- why
+`AttBus`: `q` fills bytes 0 to 15, `valid` takes 16, making 17. Its largest alignment is 4, so its size rounds up to 20. `NavBus`: `t` fills 0 to 7; `att` needs a multiple of 4 and starts at 8, filling 8 to 27; `mode` takes 28, making 29. Its largest alignment is 8, so the size rounds up to 32. Of those 32 bytes, $8 + 16 + 1 + 1 = 26$ are data. Hand-written code must be compiled with the same header and target settings to agree on this layout.
+
++++ question | One set of C files, no bench code in flight
+--- ask
+A team wants to generate a single set of C source files that builds both the flight and the bench configurations, while making sure the flight binary contains no bench code. Which variant set-up does that?
+--- choice
+Activation time update diagram, with `SENSOR_SRC` as a plain number in the base workspace.
+--- choice correct
+Activation time code compile, with `SENSOR_SRC` as a Simulink.Parameter whose storage class makes it a C macro; each build defines the macro's value when compiling.
+--- choice
+Activation time startup, with `SENSOR_SRC` read from a file when the program starts.
+--- choice
+A Switch block driven by a Constant `SENSOR_SRC`.
+--- why
+With code compile, every choice is generated inside `#if` conditions on the macro, and the preprocessor keeps only the active one before the compiler sees it. So the source files hold both, and each binary holds one. Update diagram gives the smallest code but a separate generation per configuration. Startup and a Switch both put every choice into the program. Storage classes are how a data object decides what it becomes in C, here a macro.
+
++++ question | A junction, then the second arrow
+--- ask
+The chart is in FLIGHT.COAST. FLIGHT's border has `[abort]` to SAFE, and `abort` is false. Start with `log = 0`.
+
+```text
+COAST
+du: log = 10*log + 4;
+ex: log = 10*log + 5;
+
+transition 1: [alt < 70000]{log = 10*log + 1;}  to a junction
+    junction's only way out: [vz < -500]/{log = 10*log + 2;}  to ENTRY_BURN
+transition 2: [alt < 60000]/{log = 10*log + 3;}  to DESCENT
+
+ENTRY_BURN
+en: log = 10*log + 7;
+
+DESCENT
+en: log = 10*log + 8;
+```
+
+The inputs are `alt = 55000` and `vz = -300`. What is `log` at the end of the wake-up?
+--- answer
+1538
+--- why
+FLIGHT's border is tested first and is false. COAST's transition 1: `alt < 70000` is true, so its condition action runs, giving 1. At the junction `vz < -500` is false and there is no other segment, so the path dead-ends; the junction's transition action never runs. Stateflow backtracks and tests transition 2: true. Now COAST exits (15), the transition action runs (153), and DESCENT's entry runs (1538). COAST's during does not run, because a transition was taken.
+
++++ question | Slower chart, slower detection
+--- ask
+The engine monitor's persistence counter uses `N_PERSIST = 5`: a fault is declared on the fifth consecutive bad sample. To save processor time, the whole chart is moved from 50 Hz to 25 Hz, and nothing else changes. How long, in seconds, is it now from an engine's first bad sample to the fault being declared?
+--- answer
+0.16
+0.16 s
+.16
+0.160
+0.16 seconds
+--- why
+The fifth bad sample in a row comes four steps after the first. At 50 Hz that is $4 \times 0.02 = 0.08\,\mathrm{s}$; at 25 Hz it is $4 \times 0.04 = 0.16\,\mathrm{s}$. A counter counts wake-ups, like a temporal condition on `tick`, so changing the rate silently changes a time requirement. If the requirement is a time, write it in seconds, for example with `duration`, and recheck it whenever the rate changes.
+
++++ question | A linked block that stops sharing
+--- ask
+The library block `WheelLimit` is used four times in a model as linked blocks, and it is an atomic subsystem with Function packaging Reusable function. The generated code has one `WheelLimit` function called four times. Someone disables the link on the third wheel's block and changes a Gain inside it. After the next code generation, what does the code hold?
+--- choice
+Still one shared function, because all four blocks name the same library block.
+--- choice correct
+The third wheel's block is no longer identical to the other three, so it cannot share their function; the code gets a separate function or code for it, and the third wheel also stops receiving library fixes.
+--- choice
+Four separate functions, because disabling one link turns off reuse everywhere.
+--- choice
+No change, because a disabled link keeps the library contents until it is restored.
+--- why
+A reusable function is shared only by truly identical instances. A disabled link is a local copy, and once edited it differs from the library. So the fork shows up twice: in the code, as a separate copy, and in the model, as a block that misses the next library fix. Restore the link, or push the change into the library if every wheel should have it.
+
++++ question | Accelerator mode with a mid-campaign edit
+--- ask
+A campaign of 100 runs uses the dynamics model. In Normal mode a run takes 25 s. In Accelerator mode a run takes 10 s, but its build takes 60 s. After run 50 an engineer edits the dynamics model, which forces a new build before run 51. How many seconds does Accelerator mode save over Normal mode for the whole campaign?
+--- answer
+1380
+1380 s
+1,380
+1380 seconds
+--- why
+Normal: $100 \times 25 = 2500\,\mathrm{s}$. Accelerator: a build, 50 runs, another build, 50 more runs: $60 + 500 + 60 + 500 = 1120\,\mathrm{s}$. The saving is $2500 - 1120 = 1380\,\mathrm{s}$. The edit costs a second build because the saved build no longer matches the model; the unchanged models would still be reused. Each rebuild costs as much as about four runs' saving, so frequent edits shrink the gain.
+
++++ question | A thrust total for nine engines
+--- ask
+Nine engines are modeled with one For Each subsystem: each iteration computes one engine's thrust from its own state and a partitioned parameter. Guidance needs the total thrust of all nine. Where should the sum be computed?
+--- choice
+Inside the For Each subsystem, by adding each iteration's thrust to the previous iteration's.
+--- choice correct
+Outside, after the For Each subsystem: its output is the nine thrusts concatenated into one 9-element vector, and a Sum of elements adds them.
+--- choice
+In a data store that every iteration writes to.
+--- choice
+In a Merge block fed by the nine iterations.
+--- why
+For Each iterations are independent: nothing passes from one to the next, which is what gives each engine its own state. So a running sum cannot live inside. The iterations' outputs come out as one vector, and summing a vector is one block. A shared data store would bring back hidden order dependence, and a Merge keeps only the last value written, not a total. A loop that must carry data from pass to pass is a For Iterator subsystem.
+
++++ question | Three storage classes
+--- ask
+Choose storage classes for three pieces of data, in this order: (a) an aerodynamic limit table that must never change in flight and should sit in read-only memory; (b) a pitch gain the model defines and the ground team must be able to tune in flight; (c) a mode variable that the hand-written flight executive defines and the model only reads.
+--- choice correct
+(a) Const, (b) ExportedGlobal, (c) ImportedExtern
+--- choice
+(a) Auto, (b) ExportedGlobal, (c) ExportedGlobal
+--- choice
+(a) Const, (b) Auto, (c) ImportedExtern
+--- choice
+(a) Volatile, (b) ImportedExtern, (c) ExportedGlobal
+--- why
+Const makes a global marked `const`, which the linker can place in read-only memory. ExportedGlobal defines a named global, so a tuning tool can find and write it; Auto may inline the gain as a literal, freezing it. ImportedExtern uses a global that someone else defines, which is the executive's variable; ExportedGlobal there would define it a second time, and linking would fail. Volatile is for data changed behind the program's back, such as a hardware register.
+
++++ question | A mask, a dictionary and a stray variable
+--- ask
+A masked valve block has one mask parameter, `tau`, set to 0.05. A Gain inside it has the value `Ts/tau`. The model is linked to a data dictionary that defines `Ts = 0.01`, and base-workspace access is cleared. A script has also left `Ts = 0.02` in the base workspace. The Gain's input is 10. What is its output?
+--- answer
+2
+2.0
+--- why
+`tau` is found in the mask workspace: 0.05. `Ts` is not a mask parameter, so the search goes outward, and with base-workspace access cleared the model's names come from its dictionary: 0.01. The gain is $0.01/0.05 = 0.2$ and the output $0.2 \times 10 = 2$. With the stray 0.02 used instead, it would have been 4. Undeclared names fall through the mask; a dictionary with base access cleared decides where they land.
+
++++ question | Separation with exclusive guards
+--- ask
+STAGE_SEP, in a 50 Hz chart, has two outgoing transitions: 1 `[after(5, sec) && ~sep_sw]` to SEP_FAIL, and 2 `[duration(sep_sw) >= 0.1]` to COAST. The chart enters STAGE_SEP on wake-up 0. The separation switch closes on wake-up 248 and stays closed. On which wake-up is a transition taken? Count time in whole steps.
+--- answer
+253
+wake-up 253
+--- why
+`after(5, sec)` becomes true on wake-up $5/0.02 = 250$, but by then `sep_sw` is true, so guard 1 is false and stays false. `duration(sep_sw)` is 0 on wake-up 248 and grows by 0.02 per wake-up, reaching 0.1 five steps later, on wake-up 253, when the chart goes to COAST. The two guards need `sep_sw` false and true, so they can never both hold, and swapping their numbers would change nothing.
+
++++ question | Letting the vehicle out of ABORT
+--- ask
+A designer removes the latches: `abort_req` is recomputed every wake-up as `n_out >= 2 || hb_stale >= 5`, where `hb_stale` returns to 0 when the heartbeat resumes, and a new transition `[~abort_req]` goes from ABORT back to the border of FLIGHT. The guidance heartbeat is intermittent while the booster is in GRAVITY_TURN. Besides chattering in and out of ABORT, what else goes wrong?
+--- choice
+Nothing else: FLIGHT's history brings the booster back to GRAVITY_TURN.
+--- choice correct
+The transition ends on FLIGHT's border, so each return enters FLIGHT through its default transition, into LIFTOFF, and restarts LIFTOFF's timers: the booster runs its liftoff logic in the middle of the ascent.
+--- choice
+The chart reports an error, because a state may not have a transition back to a superstate.
+--- choice
+ABORT's entry action is skipped on each re-entry.
+--- why
+A transition into a superstate's border follows its default transition; nothing remembers the last substate unless a history junction does. Even with history, returning to the old activity automatically after a fault is rarely what you want. That is why ABORT and the fault flags are latched, with only an external reset able to clear them: a noisy signal can then neither pull the vehicle back into flight nor send it through its first phase again.
+
++++ question | During and every in one state
+--- ask
+A 50 Hz chart enters a state on wake-up 0 and leaves it on wake-up 20. The state's actions are:
+
+```text
+BURN
+du: x = x + 1;
+on every(3, tick): x = x + 10;
+```
+
+`x` is 0 when the state is entered, and nothing else changes it. What is `x` after the chart leaves the state?
+--- answer
+79
+--- why
+During runs only on wake-ups where the state stays active: not on wake-up 0, when it was entered, and not on wake-up 20, when it was left. That is wake-ups 1 to 19, 19 times. `on every(3, tick)` runs alongside during on wake-ups 3, 6, 9, 12, 15 and 18, 6 times, adding 60. So $x = 19 + 60 = 79$. The state was active on 21 wake-ups, but entry and exit took two of them.
+
++++ question | Variants and guards, the same rule
+--- ask
+Variant conditions and transition guards both have the rule "at most one should be true". What happens in each case when two are true at once?
+--- choice
+Both report an error when the model is updated.
+--- choice
+Both pick the first one listed, silently.
+--- choice correct
+Two true variant conditions stop the update with an error. Two true guards out of one source raise no error: the lower execution order number wins, and the behavior rests on an order a reader of the guards cannot see.
+--- choice
+Two true variant conditions build both choices; two true guards take both transitions.
+--- why
+A variant slot must hold exactly one part, and Simulink refuses to guess, so the mistake is caught before anything runs. A chart takes the first valid transition in number order, which is legal and silent. That is why guards must be made exclusive by construction, or their priority documented, and why tools like transition-conflict checks and Design Verifier exist: the chart itself will not complain.
+
++++ question | Navigation, then guidance, every step
+--- ask
+Each step, the navigation filter must run before guidance, and both must run only while the chart is in FLIGHT. Your team's standard bans local events. Which design states that order in the model, so the generated code keeps it?
+--- choice
+Put the two subsystems in one virtual subsystem, navigation drawn on the left, so it runs first.
+--- choice
+Make both enabled subsystems driven by an `in_flight` output of the chart, and trust the sorted order.
+--- choice correct
+Make both function-call subsystems, and have the chart's FLIGHT state call them with function-call output events, navigation first, then guidance.
+--- choice
+Have the chart send a local event to each subsystem in turn.
+--- why
+A function-call subsystem runs exactly when it is called, and the caller fixes the order, so "navigation, then guidance" is written in the model and carried into the code. A function-call output event runs its subsystem once and returns, without re-entering the chart, so it fits a no-local-events rule. Drawing position means nothing to a flattened virtual subsystem. Enabled subsystems run wherever the sort puts them, and a signal line from navigation to guidance is the only thing that would force the order there.
