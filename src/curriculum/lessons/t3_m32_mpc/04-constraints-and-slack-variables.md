@@ -333,7 +333,7 @@ Speed $x_2$ against time around the kick. The dashed red line is the $-0.5\,\mat
 :::
 
 ::: context penalty-shapes Why the straight-line charge wins
-The picture shows, for a slack $s \ge 0$, what violation *saves* (grey line, slope $\lambda^\star$) against what it *costs* under two charges. The straight-line charge $\rho s$ (blue) is steeper than the saving from the very start, so the best slack is zero. The squared charge $\sigma s^2$ (red) is flat at zero, so for small $s$ it costs less than it saves. The optimizer buys violation up to where saving minus cost is largest, at $s = \lambda^\star/(2\sigma)$ — here a third of the way along.
+The picture shows, for a slack $s \ge 0$, what violation *saves* (gray line, slope $\lambda^\star$) against what it *costs* under two charges. The straight-line charge $\rho s$ (blue) is steeper than the saving from the very start, so the best slack is zero. The squared charge $\sigma s^2$ (red) is flat at zero, so for small $s$ it costs less than it saves. The optimizer buys violation up to where saving minus cost is largest, at $s = \lambda^\star/(2\sigma)$ — here a third of the way along.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210" font-family="Inter, Arial, sans-serif">

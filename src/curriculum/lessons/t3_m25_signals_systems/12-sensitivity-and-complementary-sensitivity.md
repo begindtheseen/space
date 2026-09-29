@@ -342,7 +342,7 @@ The launch-vehicle loop of the first example, in decibels. $\lvert S\rvert$ (blu
 :::
 
 ::: context nyquist-closest The closest approach, drawn
-The polar plot of the first example's $L(j\omega)$ near the critical point $-1$ (only the part inside this window is drawn). The dashed circle around $-1$ has radius $0.932$, the modulus margin: the curve touches it at $4.36\,\mathrm{rad/s}$ and never gets closer. The grey circle is $\lvert L\rvert = 1$; where the curve crosses it is the gain crossover.
+The polar plot of the first example's $L(j\omega)$ near the critical point $-1$ (only the part inside this window is drawn). The dashed circle around $-1$ has radius $0.932$, the modulus margin: the curve touches it at $4.36\,\mathrm{rad/s}$ and never gets closer. The gray circle is $\lvert L\rvert = 1$; where the curve crosses it is the gain crossover.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 215" font-family="Inter, Arial, sans-serif">

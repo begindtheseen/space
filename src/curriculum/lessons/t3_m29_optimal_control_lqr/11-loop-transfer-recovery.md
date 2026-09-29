@@ -38,7 +38,7 @@ $$
 \mathbf{L}_{\text{LQG}}(j\omega) \;\longrightarrow\; \mathbf{K}(j\omega\mathbf{I}-\mathbf{A})^{-1}\mathbf{B} \qquad\text{as } q \to \infty .
 $$
 
-The mechanism: the estimator's own path, $(s\mathbf{I}-\mathbf{A}+\mathbf{B}\mathbf{K}+\mathbf{L}_q\mathbf{C})^{-1}\mathbf{L}_q\mathbf{C}$, tends to a **[[left inverse|left-inverse]]** of the plant's path from actuator to measurement, and the two cancel. That cancellation is the whole trick. It is also where the limit lives, because cancelling the plant means inverting it.
+The mechanism: the estimator's own path, $(s\mathbf{I}-\mathbf{A}+\mathbf{B}\mathbf{K}+\mathbf{L}_q\mathbf{C})^{-1}\mathbf{L}_q\mathbf{C}$, tends to a **[[left inverse|left-inverse]]** of the plant's path from actuator to measurement, and the two cancel. That cancellation is the whole trick. It is also where the limit lives, because canceling the plant means inverting it.
 
 ::: example Recovering Doyle's counterexample
 Take lesson 5's plant: $\mathbf{A} = \begin{bmatrix}1&1\\0&1\end{bmatrix}$, $\mathbf{B} = (0,1)^\top$, $\mathbf{C} = [1\ \ 0]$. The regulator comes from $\mathbf{Q} = 100\,\mathbf{1}\mathbf{1}^\top$ and $R = 1$, where $\mathbf{1}$ is the vector of ones. That gives $\mathbf{K} = (12.198,\ 12.198)$. The transfer function is $1/(s-1)^2$: square, and with no finite zeros, so minimum phase.
@@ -67,7 +67,7 @@ Three things. Only the first shows up on a Bode plot.
 
 **The control gets noisy.** The filter gain grows with $q$ — its largest entry like $\sqrt{q}$. Every bit of measurement noise is multiplied by that gain before it reaches the regulator, and the control signal picks it up directly.
 
-**The bandwidth leaves the model.** A recovered estimator with poles ten or a hundred times faster than the regulator is looking at frequencies where the rigid-body model is fiction: **[[flexible modes|flexible-modes]]**, sensor dynamics, aliasing above the Nyquist frequency of the real sampling. Recovering margin against modelling error by pushing the loop into a region where the model is *worse* is a bargain that can go the wrong way.
+**The bandwidth leaves the model.** A recovered estimator with poles ten or a hundred times faster than the regulator is looking at frequencies where the rigid-body model is fiction: **[[flexible modes|flexible-modes]]**, sensor dynamics, aliasing above the Nyquist frequency of the real sampling. Recovering margin against modeling error by pushing the loop into a region where the model is *worse* is a bargain that can go the wrong way.
 
 ::: example LTR on the attitude loop, in physical units
 Use the reaction-wheel axis of lesson 10: $\mathbf{K} = (91.673,\ 150.089)$ at $\omega_n = 0.874\,\mathrm{rad/s}$. The true disturbance torque intensity is $\mathbf{W}_0 = 4\times10^{-6}\,\mathrm{(N\,m)^2 s}$ entering through $\mathbf{G} = \mathbf{B}$. The star tracker gives $1$ arcsecond at $10\,\mathrm{Hz}$.
@@ -144,7 +144,7 @@ Explain why the process-noise inflation goes in the direction $\mathbf{B}\mathbf
 :::
 
 ::: answer
-The goal is to make the loop shape at the plant *input* match the state-feedback loop shape, and the plant input is the $\mathbf{B}$ direction. Telling the filter that a large unknown signal enters at the actuator makes it act, over the recovery bandwidth, like an inverse of the path from actuator to measurement. That is exactly the path that must be cancelled for the estimator to become invisible to the loop.
+The goal is to make the loop shape at the plant *input* match the state-feedback loop shape, and the plant input is the $\mathbf{B}$ direction. Telling the filter that a large unknown signal enters at the actuator makes it act, over the recovery bandwidth, like an inverse of the path from actuator to measurement. That is exactly the path that must be canceled for the estimator to become invisible to the loop.
 
 Scaling $\mathbf{W}_0$ up evenly makes the filter fast in every direction. That speeds it up but does not produce this particular cancellation, and for a general $\mathbf{W}_0$ the limit is not the LQR loop.
 
@@ -192,7 +192,7 @@ If the true cost gets worse with every increase in $q$, in what sense is LTR an 
 ::: answer
 It improves something the quadratic cost never measured. The LQG cost measures average performance *against the model you wrote down*: the assumed noise strengths and the assumed plant. LTR gives some of that up in exchange for tolerance to the model being wrong — actuator gain errors, lag you left out, misalignment. The cost functional does not price any of that.
 
-That is not a contradiction. It is the reason **[[robust control|robust-control]]** exists as its own subject. The honest framing for a review is: LQG minimises a nominal performance number, LTR buys robustness by handing some of that number back, and the exchange rate is what this lesson's tables measure. At $q = 10^2$ on the attitude loop, you get $12^\circ$ of phase margin for a factor of $3.6$ in nominal cost. If the uncertainty is real, that is a good trade. If the model really is accurate, it is pure loss.
+That is not a contradiction. It is the reason **[[robust control|robust-control]]** exists as its own subject. The honest framing for a review is: LQG minimizes a nominal performance number, LTR buys robustness by handing some of that number back, and the exchange rate is what this lesson's tables measure. At $q = 10^2$ on the attitude loop, you get $12^\circ$ of phase margin for a factor of $3.6$ in nominal cost. If the uncertainty is real, that is a good trade. If the model really is accurate, it is pure loss.
 :::
 
 ## Summary

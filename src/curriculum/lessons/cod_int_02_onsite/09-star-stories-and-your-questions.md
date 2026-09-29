@@ -9,7 +9,7 @@ covers:
 
 Think about telling a friend about a great game you played. You do not list every pass. You say where things stood ("we were down by one with two minutes left"), what you had to do ("I had to get the ball past their best defender"), what you did ("I faked left, cut right, and passed to Sam"), and how it ended ("Sam scored, and we won 3 to 2"). Your friend can picture it, and it takes under a minute.
 
-That shape is exactly what an interviewer wants when they say "tell me about a time when…". It has a name, **STAR**, and it is the tool that turns last lesson's behavioural themes into answers you can give on the day.
+That shape is exactly what an interviewer wants when they say "tell me about a time when…". It has a name, **STAR**, and it is the tool that turns last lesson's behavioral themes into answers you can give on the day.
 
 This lesson has three parts. First, how to build a STAR story that lands, with a before-and-after rewrite. Second, how to build a bank of six to eight of them from your capstones, map them to the themes, and time them to under two minutes. Third, the other half of the conversation: the questions *you* ask at the end, which are a test too.
 
@@ -62,7 +62,7 @@ Even people who know the rule slip into "we" in the Action part, because it feel
 
 ## Building the story bank
 
-A **[[story bank|story-bank]]** is a small set of prepared stories, each tagged with the themes it can answer. With six to eight good stories you can answer almost any behavioural question, because most questions are one of the four themes in different words.
+A **[[story bank|story-bank]]** is a small set of prepared stories, each tagged with the themes it can answer. With six to eight good stories you can answer almost any behavioral question, because most questions are one of the four themes in different words.
 
 Where do the stories come from? Your **capstones** — the larger projects that finish the modules of this track. You have built simulators, C++ applications, test suites, telemetry queries and CI pipelines. Each of those had a moment where something went wrong, a decision had to be made, or a number moved.
 
@@ -131,7 +131,7 @@ Sanity check: the Situation now gets about 14 seconds of speech. That is two sho
 Rehearse out loud, with a timer, and three times each. For eight stories at up to two minutes, one full pass is at most $8 \times 2 = 16$ minutes, so three passes is at most 48 minutes. That is less than an hour to be ready for a third to a half of the onsite. Few hours of preparation pay back as well.
 
 ::: warning Memorising word for word
-Do not memorise a script. A recited story sounds recited, and if you lose one word you lose the thread. Memorise the four parts and the numbers. Then tell it a little differently each time, the way you would retell the game to a different friend.
+Do not memorize a script. A recited story sounds recited, and if you lose one word you lose the thread. Memorize the four parts and the numbers. Then tell it a little differently each time, the way you would retell the game to a different friend.
 :::
 
 ## The questions you ask
@@ -299,7 +299,7 @@ You do not need inside knowledge to ask a good question. Every capstone left you
 :::
 
 ::: context capstones-again Where the answers live
-Everything in this module points back to the capstones. The presentation in lesson 7 is a capstone told in twelve slides. The stories here are capstones told in two minutes. The questions you ask come from puzzles the capstones made you solve. If the interview is ever weeks away and you are unsure what to study, the answer is to open the capstones again, find the numbers, and practise saying what you did.
+Everything in this module points back to the capstones. The presentation in lesson 7 is a capstone told in twelve slides. The stories here are capstones told in two minutes. The questions you ask come from puzzles the capstones made you solve. If the interview is ever weeks away and you are unsure what to study, the answer is to open the capstones again, find the numbers, and practice saying what you did.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">

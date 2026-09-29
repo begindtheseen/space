@@ -6,7 +6,7 @@ covers:
   - place value, big numbers and estimating
 ---
 
-A satellite in low orbit around Earth moves at about 7,670 [[metres every second|metres-per-second]]. The first stage of a Falcon 9 rocket carries about 411,000 kilograms of propellant and burns through it in about 162 seconds. The number that says how hard Earth pulls on everything near it is 398,600,000,000,000.
+A satellite in low orbit around Earth moves at about 7,670 [[meters every second|metres-per-second]]. The first stage of a Falcon 9 rocket carries about 411,000 kilograms of propellant and burns through it in about 162 seconds. The number that says how hard Earth pulls on everything near it is 398,600,000,000,000.
 
 Numbers like these are everywhere in this course. Before you can do anything clever with them, you need to be able to read them out loud, tell which of two is bigger at a glance, round them to something your head can hold, and guess roughly what an answer should be *before* you work it out.
 
@@ -87,7 +87,7 @@ Mathematicians write this with the **greater-than sign**: $7670 > 7607$. The wid
 
 ## Rounding whole numbers
 
-Nobody needs to know that a rocket weighs exactly 549,054 kg to understand that it is "about 550 tonnes". **Rounding** swaps a number for a nearby one that is easier to use. You round to a chosen place: the nearest ten, the nearest hundred, the nearest thousand, and so on.
+Nobody needs to know that a rocket weighs exactly 549,054 kg to understand that it is "about 550 metric tons". **Rounding** swaps a number for a nearby one that is easier to use. You round to a chosen place: the nearest ten, the nearest hundred, the nearest thousand, and so on.
 
 Picture the number line between 7,000 and 8,000. Where does 7,670 sit? Past the halfway mark, 7,500. So **[[its nearest thousand is 8,000|rounding-line]]**. Rounding means "which of the two neighbors is closer?"
 
@@ -165,17 +165,17 @@ Sometimes it pays to round to a *friendly* number rather than to the first digit
 
 **The exact answer** is $411{,}000 \div 162$, which is about 2,537 kg every second. The better estimate is only 37 kg off. The crude one is off by more than 500 kg — but it is still the right *size*, which is what an estimate is for.
 
-**Does that make sense?** About two and a half tonnes (a tonne is 1,000 kg) of propellant every second is an enormous flow, but a rocket engine is an enormous machine. The number is believable.
+**Does that make sense?** About two and a half metric tons (a metric ton is 1,000 kg) of propellant every second is an enormous flow, but a rocket engine is an enormous machine. The number is believable.
 :::
 
 ::: example Catching a calculator slip
-**The problem.** A satellite moves at 7,670 m/s. One trip around Earth takes about 92 minutes, which is 5,520 seconds. How far does it travel in one orbit? A classmate's calculator says 4,233,840 metres. Is that right?
+**The problem.** A satellite moves at 7,670 m/s. One trip around Earth takes about 92 minutes, which is 5,520 seconds. How far does it travel in one orbit? A classmate's calculator says 4,233,840 meters. Is that right?
 
-**Estimate first.** Round each number to its first digit: 7,670 becomes 8,000, and 5,520 becomes 6,000. Then $8 \times 6 = 48$, and there are six zeros, so the estimate is 48,000,000 metres.
+**Estimate first.** Round each number to its first digit: 7,670 becomes 8,000, and 5,520 becomes 6,000. Then $8 \times 6 = 48$, and there are six zeros, so the estimate is 48,000,000 meters.
 
 **Compare.** The classmate's answer has seven digits. The estimate has eight. That is a factor of ten apart — far more than rounding can explain. Something went wrong: they typed 552 instead of 5,520.
 
-**The exact answer** is $7670 \times 5520 = 42{,}338{,}400$ metres, about 42,300 kilometres (a kilometre is 1,000 metres). That is close to the distance once around a circle 6,771 km from Earth's center — the 6,371 km from the center to the ground, plus the 400 km the satellite flies above the ground. Everything fits.
+**The exact answer** is $7670 \times 5520 = 42{,}338{,}400$ meters, about 42,300 kilometers (a kilometer is 1,000 meters). That is close to the distance once around a circle 6,771 km from Earth's center — the 6,371 km from the center to the ground, plus the 400 km the satellite flies above the ground. Everything fits.
 :::
 
 The habit is worth saying plainly. **Estimate, then calculate, then compare.** If the two agree in size, you can trust the calculation. If they are a factor of ten apart, one of them is wrong, and it is usually the one with more button presses.
@@ -184,7 +184,7 @@ The habit is worth saying plainly. **Estimate, then calculate, then compare.** I
 - [Scientific notation and significant figures](#/module/t0_m01_algebra_precalc?lesson=l11-scientific-notation-and-significant-figures) writes 398,600,000,000,000 as $3.986 \times 10^{14}$. The 14 counts places, exactly the place value you learned here, and rounding returns as "how many digits are you allowed to keep?".
 - [Order-of-magnitude estimation](#/module/t0_m01_algebra_precalc?lesson=l12-fermi-estimation) turns estimating into a full engineering tool: sizing a whole rocket's propellant load from a photograph and a few round numbers.
 - [Signed numbers, fractions and ratios](#/module/t0_m01_algebra_precalc?lesson=l01-signed-numbers-and-fractions) works out the same 411,000 kg over 162 s burn rate — you now know it should come out near 2,500 kg every second.
-- [Units, conversions and dimensional analysis](#/module/t0_m01_algebra_precalc?lesson=l10-units-and-dimensional-analysis) multiplies and divides by 1,000 constantly (kilometres to metres, tonnes to kilograms), where counting zeros correctly is the whole job.
+- [Units, conversions and dimensional analysis](#/module/t0_m01_algebra_precalc?lesson=l10-units-and-dimensional-analysis) multiplies and divides by 1,000 constantly (kilometers to meters, metric tons to kilograms), where counting zeros correctly is the whole job.
 :::
 
 ## Check yourself
@@ -261,8 +261,8 @@ Only 410,994 kg has the right size. The other two are ten times too small and te
 
 Next lesson: the places keep going to the *right* of the ones, past a decimal point — tenths, hundredths, thousandths. That is where numbers like $9.80665\,\mathrm{m/s^2}$ live, and rounding them works exactly the same way.
 
-::: context metres-per-second How fast is 7,670 metres per second?
-"Metres per second", written m/s, means how many metres you cover in each second. A brisk walk is about 1.4 m/s, so the satellite is going about 5,500 times faster than you walk. In an hour, which is 3,600 seconds, it covers about 27,600 kilometres — enough to cross the United States in about ten minutes. It is the *sideways* speed, not height, that keeps a satellite from falling back to Earth; you will see exactly why in the orbits part of the course.
+::: context metres-per-second How fast is 7,670 meters per second?
+"Meters per second", written m/s, means how many meters you cover in each second. A brisk walk is about 1.4 m/s, so the satellite is going about 5,500 times faster than you walk. In an hour, which is 3,600 seconds, it covers about 27,600 kilometers — enough to cross the United States in about ten minutes. It is the *sideways* speed, not height, that keeps a satellite from falling back to Earth; you will see exactly why in the orbits part of the course.
 :::
 
 ::: context why-ten Why ten?

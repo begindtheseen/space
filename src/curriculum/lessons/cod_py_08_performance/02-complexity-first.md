@@ -3,7 +3,7 @@ id: l02-complexity-first
 title: Fix the algorithm before the details
 minutes: 24
 covers:
-  - 'Algorithmic complexity before micro-optimisation'
+  - 'Algorithmic complexity before micro-optimization'
 ---
 
 Picture a party where everyone shakes hands with everyone else, once. With 10 guests that is 45 handshakes. With 100 guests it is 4,950. Ten times the guests made about a hundred times the handshakes. Nobody got slower at shaking hands. The job itself grew faster than the party.
@@ -252,12 +252,12 @@ With 100,000 samples, a version that slices each window and calls `max` took, on
 
 ## Algorithm first, then the small stuff
 
-**Micro-optimisation** means making each step of the same algorithm cheaper: storing a method in a local variable, avoiding an attribute lookup, switching `x**2` to `x*x`, compiling the loop. These are real and sometimes worth doing. But each one divides the runtime by a constant, anywhere from a few percent to fifty times for a compiler. None of them changes the growth rate.
+**Micro-optimization** means making each step of the same algorithm cheaper: storing a method in a local variable, avoiding an attribute lookup, switching `x**2` to `x*x`, compiling the loop. These are real and sometimes worth doing. But each one divides the runtime by a constant, anywhere from a few percent to fifty times for a compiler. None of them changes the growth rate.
 
 Take the sliding maximum with 100,000 samples and $w = 10{,}000$. The slicing version does about $(n - w + 1) \times w \approx 9 \times 10^8$ comparisons. Even at a compiled speed of one nanosecond each, that is almost a second, and it grows with every doubling of $w$. The deque does at most $2 \times 10^5$ operations. Once you are on the right algorithm, then it is worth asking whether each step can be cheaper, and the later lessons on Numba and C++ are about exactly that.
 
 ::: key
-Fix the algorithm before tuning the steps. A different algorithm changes how the work grows with $n$; a micro-optimisation or a compiler only divides the same work by a constant. A runtime that grows faster than the input size points to an algorithmic problem, not a constant-factor one.
+Fix the algorithm before tuning the steps. A different algorithm changes how the work grows with $n$; a micro-optimization or a compiler only divides the same work by a constant. A runtime that grows faster than the input size points to an algorithmic problem, not a constant-factor one.
 :::
 
 ## Check yourself
@@ -319,7 +319,7 @@ No. The slicing version does about $(n - w + 1) \times w \approx 9.8 \times 10^5
 | Prefix sum | Running total $c_k$, with $c_0 = 0$ | Window sum $= c_{i+w} - c_i$, moving average in $O(n)$ |
 | Deque | Fast add and remove at both ends | `append`, `pop`, `popleft`, `dq[0]` all $O(1)$ |
 | Monotonic deque | Positions with decreasing values | Sliding maximum in $O(n)$: each position in once, out once |
-| Micro-optimisation | Cheaper steps, same algorithm | Divides time by a constant, never changes the growth |
+| Micro-optimization | Cheaper steps, same algorithm | Divides time by a constant, never changes the growth |
 
 The next lesson moves on to step four: once the algorithm is right, stop looping in Python and hand whole arrays to NumPy, and learn the one case where that backfires by using more memory than it saves time.
 

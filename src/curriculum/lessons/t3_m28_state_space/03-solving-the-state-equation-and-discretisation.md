@@ -376,7 +376,7 @@ Here one mode with a $1.2\,\mathrm{s}$ time constant gets three short kicks, at 
 :::
 
 ::: context zoh-staircase What a zero-order hold looks like
-The computer decides a new command only at each tick. Between ticks, the converter keeps putting out the last value, so a smooth command (grey) reaches the actuator as a staircase (blue). The dots are the values the computer chose. The staircase trails the smooth curve by about half a step on average — the hold lag this lesson counts later.
+The computer decides a new command only at each tick. Between ticks, the converter keeps putting out the last value, so a smooth command (gray) reaches the actuator as a staircase (blue). The dots are the values the computer chose. The staircase trails the smooth curve by about half a step on average — the hold lag this lesson counts later.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">

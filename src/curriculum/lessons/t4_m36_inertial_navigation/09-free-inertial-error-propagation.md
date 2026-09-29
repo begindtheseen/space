@@ -312,7 +312,7 @@ $$
 \delta x=92.4\times5060\approx4.68\times10^5\,\mathrm m ,
 $$
 
-about $468\,\mathrm{km}$. The cubic law gives $gbt^3/6=9.792\times1.454\times10^{-5}\times5060^3/6\approx3.07\times10^6\,\mathrm m$, about $3070\,\mathrm{km}$ — more than six times too large. After one full period the wobble has exactly cancelled, and only the secular drift remains.
+about $468\,\mathrm{km}$. The cubic law gives $gbt^3/6=9.792\times1.454\times10^{-5}\times5060^3/6\approx3.07\times10^6\,\mathrm m$, about $3070\,\mathrm{km}$ — more than six times too large. After one full period the wobble has exactly canceled, and only the secular drift remains.
 :::
 
 ## Summary

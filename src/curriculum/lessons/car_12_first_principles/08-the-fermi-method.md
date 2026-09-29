@@ -107,7 +107,7 @@ $$
 
 **Sanity check.** The accepted figure is about $5.15\times 10^{18}\,\mathrm{kg}$. The estimate is high by $5.27/5.15 = 1.023$ — two percent. Where do those two percent come from? Mostly mountains and high ground. The model puts the whole surface at sea level, but high ground has less air above it. That is a real reason you can name, not a fudge, and naming it is the strongest possible finish.
 
-**A second check that costs nothing.** $p_0/g = 101\,325/9.80665 = 10\,332\,\mathrm{kg/m^2}$ — about ten tonnes of air above every square meter. That is the same statement in a form worth remembering: the mass of the whole atmosphere is that number times the planet's area.
+**A second check that costs nothing.** $p_0/g = 101\,325/9.80665 = 10\,332\,\mathrm{kg/m^2}$ — about ten metric tons of air above every square meter. That is the same statement in a form worth remembering: the mass of the whole atmosphere is that number times the planet's area.
 
 **Uncertainty.** Under five percent. That is unusually tight for a Fermi problem, and it comes straight from a decomposition whose factors were all known quantities.
 :::
@@ -202,9 +202,9 @@ Estimate the mass of air in a hangar 100 m long, 80 m wide and 30 m high, and th
 
 **Density.** $1.2\,\mathrm{kg/m^3}$ at ordinary indoor conditions, good to a few percent.
 
-**Multiply.** $240\,000 \times 1.2 = 288\,000\,\mathrm{kg}$, about 290 tonnes.
+**Multiply.** $240\,000 \times 1.2 = 288\,000\,\mathrm{kg}$, about 290 metric tons.
 
-**Sanity check.** That is similar to the lift-off mass of a small launch vehicle, sitting invisibly inside the building. Surprising — and consistent with the ten-tonnes-per-square-meter anchor. The floor is $100 \times 80 = 8000\,\mathrm{m^2}$, so the whole air column above it is about $8000 \times 10\,332 \approx 82\,700$ t. The hangar holds $290/82\,700$, about a third of a percent, of its own air column. That is right for a 30 m building under an atmosphere whose **[[scale height|scale-height]]** is roughly 8 km: $30/8400 \approx 0.36$ percent.
+**Sanity check.** That is similar to the lift-off mass of a small launch vehicle, sitting invisibly inside the building. Surprising — and consistent with the ten-metric tons-per-square-meter anchor. The floor is $100 \times 80 = 8000\,\mathrm{m^2}$, so the whole air column above it is about $8000 \times 10\,332 \approx 82\,700$ t. The hangar holds $290/82\,700$, about a third of a percent, of its own air column. That is right for a 30 m building under an atmosphere whose **[[scale height|scale-height]]** is roughly 8 km: $30/8400 \approx 0.36$ percent.
 
 **Largest error.** The dimensions, if you paced them out — and above all the height, which is the hardest to judge by eye and the easiest to get wrong by fifty percent. The density is known far better.
 :::
@@ -264,7 +264,7 @@ So uncertainty grows only as the square root of the number of factors. Breaking 
 The next lesson applies all five moves to the space estimates this round actually asks: the energy cost of reaching orbit, the power a communications satellite radiates, how many satellites are overhead, and how many launches a constellation needs.
 
 ::: context fermi-trinity Fermi and the scraps of paper
-Enrico Fermi, an Italian-American physicist, was famous for answering questions on the spot with rough, reasoned numbers. At the first atomic bomb test in July 1945, he dropped small scraps of paper as the blast wave passed, watched how far they were pushed, and estimated the explosion's size at around ten thousand tonnes of TNT. The official figure, worked out later with instruments, was roughly twice that — the right order of magnitude from a handful of paper. He also liked to ask students questions like how many piano tuners work in Chicago, which is why these puzzles carry his name.
+Enrico Fermi, an Italian-American physicist, was famous for answering questions on the spot with rough, reasoned numbers. At the first atomic bomb test in July 1945, he dropped small scraps of paper as the blast wave passed, watched how far they were pushed, and estimated the explosion's size at around ten thousand metric tons of TNT. The official figure, worked out later with instruments, was roughly twice that — the right order of magnitude from a handful of paper. He also liked to ask students questions like how many piano tuners work in Chicago, which is why these puzzles carry his name.
 :::
 
 ::: context geometric-mean The middle on a ruler that multiplies

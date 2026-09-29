@@ -3,7 +3,7 @@ id: l05-normal-force-and-static-margin
 title: Normal force, center of pressure and static margin
 minutes: 24
 covers:
-  - normal force, centre of pressure vs centre of gravity, static margin
+  - normal force, center of pressure vs center of gravity, static margin
 ---
 
 Throw a dart at a board and it flies point-first, even if your throw was a little crooked. The feathers at the back catch the air, and the air pushes the tail back in line. Now try throwing the dart backward, feathers first. It flips around in the air almost at once. Same dart, same air. The only difference is *where* the air pushes compared with where the weight is.
@@ -99,7 +99,7 @@ Multiply by $\pi/180$ to get $23.0\ \mathrm{kN}$ per degree.
 
 **Compare with theory.** With the bare slender-body value $C_{N\alpha} = 2$, everything halves: 23 kN at $2^\circ$. The gap between 2 and 4 is the gap between an ideal cone-cylinder and a real vehicle with a flared fairing and separated cross-flow. It is measured in wind tunnels, not derived.
 
-**Sanity check.** 46 kN is the weight of a 4.7-tonne truck, pushing sideways on a 380-tonne vehicle. Big enough to bend it, small next to its weight.
+**Sanity check.** 46 kN is the weight of a 4.7-metric ton truck, pushing sideways on a 380-metric ton vehicle. Big enough to bend it, small next to its weight.
 :::
 
 ## The center of pressure
@@ -177,7 +177,7 @@ $$
 SM = \frac{x_{cp} - x_{cg}}{d},
 $$
 
-measured in **[[calibres|calibres]]** (body diameters). Substituting $x_{cg} - x_{cp} = -d\,SM$ into the moment gives $M_{cg} = -N\, d\, SM$. Then put in $N = N_\alpha \alpha$ and ask how the moment changes with $\alpha$:
+measured in **[[calibers|calibres]]** (body diameters). Substituting $x_{cg} - x_{cp} = -d\,SM$ into the moment gives $M_{cg} = -N\, d\, SM$. Then put in $N = N_\alpha \alpha$ and ask how the moment changes with $\alpha$:
 
 $$
 M_\alpha \equiv \frac{\partial M_{cg}}{\partial \alpha} = -\,\bar{q}\, S\, d\, C_{N\alpha}\, SM, \qquad
@@ -194,22 +194,22 @@ Now read off the two cases:
 "Static" means we only ask which way the first push goes, not how the motion plays out; the next lesson does that.
 
 ::: key
-Static margin: $SM = (x_{cp} - x_{cg})/d$ in calibres, with $x$ measured from the nose. Positive — centre of pressure aft of the centre of mass — is statically stable, because a disturbance produces a restoring moment. The pitching-moment slope is $C_{m\alpha} = -C_{N\alpha}\,SM$.
+Static margin: $SM = (x_{cp} - x_{cg})/d$ in calibers, with $x$ measured from the nose. Positive — center of pressure aft of the center of mass — is statically stable, because a disturbance produces a restoring moment. The pitching-moment slope is $C_{m\alpha} = -C_{N\alpha}\,SM$.
 :::
 
 ::: example Model rocket versus booster
 **The model rocket.** A hobby rocket has its center of pressure, fins included, 0.62 m from the nose, found with a **[[Barrowman|barrowman]]**-style calculation. Its center of gravity is 0.55 m from the nose and its diameter is 5 cm. So
 
 $$
-SM = \frac{0.62 - 0.55}{0.05} = \frac{0.07}{0.05} = +1.4\ \text{calibres}.
+SM = \frac{0.62 - 0.55}{0.05} = \frac{0.07}{0.05} = +1.4\ \text{calibers}.
 $$
 
-Comfortably stable: the hobbyist's rule of thumb is one to two calibres. Hold it at an angle in a breeze and it swings nose-into-wind.
+Comfortably stable: the hobbyist's rule of thumb is one to two calibers. Hold it at an angle in a breeze and it swings nose-into-wind.
 
 **The booster.** The 70 m booster from the fairing example has, from its wind-tunnel data, a center of pressure 18 m from the nose at Mach 1.5 and small $\alpha$. Its center of gravity in the max-Q window is 44 m from the nose. So
 
 $$
-SM = \frac{18 - 44}{3.66} = \frac{-26}{3.66} = -7.1\ \text{calibres}.
+SM = \frac{18 - 44}{3.66} = \frac{-26}{3.66} = -7.1\ \text{calibers}.
 $$
 
 **Its moment slope.** At $\bar{q} = 31.3\ \mathrm{kPa}$ with $C_{N\alpha} = 4$, $N_\alpha = 1.317 \times 10^6$ N/rad from the first example. The lever arm is $x_{cg} - x_{cp} = 26$ m. So
@@ -237,13 +237,13 @@ Now put the pieces together.
 
 - On a finless slender body, normal force is made where the cross-section changes: at the nose and the fairing shoulder. That is the front.
 - The mass sits where the propellant and engines are. That is the back.
-- So $x_{cp}$ is forward, $x_{cg}$ is aft, and $SM$ is negative by several calibres.
+- So $x_{cp}$ is forward, $x_{cg}$ is aft, and $SM$ is negative by several calibers.
 - Any angle of attack produces a moment that increases the angle of attack.
 
 The vehicle is statically unstable in pitch, and — because it is round — in yaw too.
 
 ::: key
-A boosting launch vehicle is statically unstable in pitch because it is a slender body with its centre of pressure well forward (near the nose and payload fairing) and its centre of mass far aft over the full tanks and engines, and it carries no tail fins. Any $\alpha$ produces a moment that increases $\alpha$, so the TVC loop must actively stabilise it.
+A boosting launch vehicle is statically unstable in pitch because it is a slender body with its center of pressure well forward (near the nose and payload fairing) and its center of mass far aft over the full tanks and engines, and it carries no tail fins. Any $\alpha$ produces a moment that increases $\alpha$, so the TVC loop must actively stabilize it.
 :::
 
 Fins would fix this, as they fix a model rocket. But they come at a price:
@@ -259,7 +259,7 @@ With $x$ measured from the nose, $SM = (x_{cp} - x_{cg})/d$ is positive when sta
 :::
 
 ::: warning Static margin is a snapshot
-Both points move during flight. $x_{cp}$ moves with Mach number and angle of attack; $x_{cg}$ moves as propellant drains. The static margin at lift-off, at max-Q and at staging can differ by a calibre or more. On top of that, the moment slope $M_\alpha$ grows and shrinks with $\bar{q}$. A single static margin for a vehicle is true only for one moment of its flight.
+Both points move during flight. $x_{cp}$ moves with Mach number and angle of attack; $x_{cg}$ moves as propellant drains. The static margin at lift-off, at max-Q and at staging can differ by a caliber or more. On top of that, the moment slope $M_\alpha$ grows and shrinks with $\bar{q}$. A single static margin for a vehicle is true only for one moment of its flight.
 :::
 
 ## Check yourself
@@ -291,7 +291,7 @@ A vehicle has $x_{cp} = 12\ \mathrm{m}$ and $x_{cg} = 27\ \mathrm{m}$ from the n
 :::
 
 ::: answer
-**Static margin.** $SM = (12 - 27)/3 = -15/3 = -5.0$ calibres.
+**Static margin.** $SM = (12 - 27)/3 = -15/3 = -5.0$ calibers.
 
 **Moment slope.** $C_{m\alpha} = -C_{N\alpha}\, SM = -3.5 \times (-5.0) = +17.5$ per radian. Two minus signs make a plus.
 
@@ -303,7 +303,7 @@ Propellant drains from a forward tank first, moving the center of gravity back b
 :::
 
 ::: answer
-**New static margin.** The center of gravity moves from 44 to 47 m, so $SM = (18 - 47)/3.66 = -29/3.66 = -7.9$ calibres, down from $-7.1$. More unstable.
+**New static margin.** The center of gravity moves from 44 to 47 m, so $SM = (18 - 47)/3.66 = -29/3.66 = -7.9$ calibers, down from $-7.1$. More unstable.
 
 **Moment.** The lever arm $x_{cg} - x_{cp}$ grows from 26 to 29 m. At fixed $\bar{q}$ and $\alpha$ the destabilizing moment $N(x_{cg} - x_{cp})$ grows by $29/26 = 1.115$, about 12 %.
 
@@ -334,10 +334,10 @@ The Saturn V's small fins were an escape aid, not a stability fix.
 | $C_{N\alpha} = 2$ per rad | ideal cone-cylinder; real launchers 2–4 per rad on core area |
 | $x_{cp}$ | center of pressure; $\tfrac{2}{3}L_n$ for a cone; moves with $M$ and $\alpha$ |
 | $x_{cg}$ | center of gravity; 55–70 % of the length from the nose at lift-off |
-| $SM = (x_{cp} - x_{cg})/d$ | static margin in calibres; positive is stable |
+| $SM = (x_{cp} - x_{cg})/d$ | static margin in calibers; positive is stable |
 | $M_{cg} = N(x_{cg} - x_{cp}) = -N d\, SM$ | aerodynamic pitching moment about the center of gravity |
 | $C_{m\alpha} = -C_{N\alpha} SM$ | moment slope; positive means unstable |
-| Launch vehicle | cp forward (fairing), cg aft (tanks, engines), no fins: $SM$ several calibres negative |
+| Launch vehicle | cp forward (fairing), cg aft (tanks, engines), no fins: $SM$ several calibers negative |
 
 The next lesson turns this destabilizing moment into motion: an unstable pole whose time-to-double is about a second, and the thrust vector control loop that has to close around it.
 
@@ -440,15 +440,15 @@ A **couple** is a pair of equal and opposite forces that do not act along the sa
 :::
 
 ::: context calibres A unit borrowed from gunnery
-**Calibre** (spelled caliber in most American writing) is the inside diameter of a gun barrel — and so the diameter of the shell or bullet that fits it. Gunners measured barrel lengths "in calibres" (a 50-calibre barrel is fifty bores long), and rocketry kept the habit of measuring lengths in diameters.
+**Caliber** (spelled caliber in most American writing) is the inside diameter of a gun barrel — and so the diameter of the shell or bullet that fits it. Gunners measured barrel lengths "in calibers" (a 50-caliber barrel is fifty bores long), and rocketry kept the habit of measuring lengths in diameters.
 
-Measuring static margin in body diameters makes it fair to compare a 5 cm model rocket with a 3.66 m booster. One calibre on the model is 5 cm; on the booster it is 3.66 m. The model's $+1.4$ and the booster's $-7.1$ can then be set side by side.
+Measuring static margin in body diameters makes it fair to compare a 5 cm model rocket with a 3.66 m booster. One caliber on the model is 5 cm; on the booster it is 3.66 m. The model's $+1.4$ and the booster's $-7.1$ can then be set side by side.
 :::
 
 ::: context barrowman The model-rocket method
 In 1966 and 1967 James Barrowman, then a young engineer at NASA's Goddard Space Flight Center, worked out a short set of formulas for the center of pressure of a finned rocket: a nose, a body, maybe a shoulder or boat-tail, and fins. It is slender-body theory plus a fin formula, simple enough to do by hand.
 
-The **Barrowman equations** are still what model-rocket design programs use to check a rocket is stable before it flies. Hobbyists are told to aim for one to two calibres.
+The **Barrowman equations** are still what model-rocket design programs use to check a rocket is stable before it flies. Hobbyists are told to aim for one to two calibers.
 :::
 
 ::: context gimbal Steering by swiveling the engine

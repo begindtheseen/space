@@ -61,7 +61,7 @@ $$\det e^{\mathbf{A}t} = \prod_i e^{\lambda_i t} = e^{t\sum_i\lambda_i} = e^{\op
 
 This is never zero, which proves invertibility a second way. It also tells you how the system **[[squeezes volumes|trace-volume]]** in state space. An undamped mechanical system has $\operatorname{tr}\mathbf{A} = 0$ and keeps volumes the same; a damped one has a negative trace and shrinks them.
 
-**Similarity.** If $\mathbf{A} = \mathbf{T}\mathbf{B}\mathbf{T}^{-1}$ for some invertible $\mathbf{T}$, then $\mathbf{A}^k = \mathbf{T}\mathbf{B}^k\mathbf{T}^{-1}$ for every $k$, because every inner $\mathbf{T}^{-1}\mathbf{T}$ cancels. Summing the series gives $e^{\mathbf{A}t} = \mathbf{T}e^{\mathbf{B}t}\mathbf{T}^{-1}$. This is the whole basis of the diagonalisation method below.
+**Similarity.** If $\mathbf{A} = \mathbf{T}\mathbf{B}\mathbf{T}^{-1}$ for some invertible $\mathbf{T}$, then $\mathbf{A}^k = \mathbf{T}\mathbf{B}^k\mathbf{T}^{-1}$ for every $k$, because every inner $\mathbf{T}^{-1}\mathbf{T}$ cancels. Summing the series gives $e^{\mathbf{A}t} = \mathbf{T}e^{\mathbf{B}t}\mathbf{T}^{-1}$. This is the whole basis of the diagonalization method below.
 
 ::: warning The exponential of a sum
 $e^{\mathbf{A}+\mathbf{B}} = e^{\mathbf{A}}e^{\mathbf{B}}$ holds only when $\mathbf{A}\mathbf{B} = \mathbf{B}\mathbf{A}$. To see why, expand both sides as far as the squared terms. The left has $\tfrac{1}{2}(\mathbf{A}+\mathbf{B})^2 = \tfrac{1}{2}(\mathbf{A}^2 + \mathbf{A}\mathbf{B} + \mathbf{B}\mathbf{A} + \mathbf{B}^2)$. The right has $\tfrac{1}{2}\mathbf{A}^2 + \mathbf{A}\mathbf{B} + \tfrac{1}{2}\mathbf{B}^2$. They differ by $\tfrac{1}{2}(\mathbf{A}\mathbf{B} - \mathbf{B}\mathbf{A})$, which is zero only if the matrices commute. **[[Rotations|rotations-order]]** are the everyday case: two rotations about different axes do not commute, so you cannot exponentiate them separately and multiply. The same trap comes back in disguise when $\mathbf{A}$ changes with time, below.
@@ -69,7 +69,7 @@ $e^{\mathbf{A}+\mathbf{B}} = e^{\mathbf{A}}e^{\mathbf{B}}$ holds only when $\mat
 
 ## Computing the exponential by hand
 
-### Diagonalisable matrices
+### Diagonalizable matrices
 
 If $\mathbf{A} = \mathbf{V}\boldsymbol{\Lambda}\mathbf{V}^{-1}$ as in Lesson 1, the similarity property gives
 
@@ -111,7 +111,7 @@ A matrix is **nilpotent** if some power of it is exactly zero. Then the series h
 
 $$\mathbf{A} = \begin{pmatrix} 0 & 1 \\ 0 & 0 \end{pmatrix}, \qquad \mathbf{A}^2 = \mathbf{0}, \qquad e^{\mathbf{A}t} = \mathbf{I} + \mathbf{A}t = \begin{pmatrix} 1 & t \\ 0 & 1 \end{pmatrix}.$$
 
-With $\mathbf{x} = (p, v)^\mathsf{T}$, position and velocity, this says $p(t) = p_0 + v_0 t$ and $v(t) = v_0$: coasting at constant speed, as it should. Notice that this matrix is defective — it has no diagonalisation — and yet its exponential is the easiest one in the lesson. The series definition does not care about eigenvectors.
+With $\mathbf{x} = (p, v)^\mathsf{T}$, position and velocity, this says $p(t) = p_0 + v_0 t$ and $v(t) = v_0$: coasting at constant speed, as it should. Notice that this matrix is defective — it has no diagonalization — and yet its exponential is the easiest one in the lesson. The series definition does not care about eigenvectors.
 
 A three-state chain (position, velocity, acceleration) has $\mathbf{A}^3 = \mathbf{0}$, so $e^{\mathbf{A}t} = \mathbf{I} + \mathbf{A}t + \tfrac{1}{2}\mathbf{A}^2 t^2$. The $\tfrac{1}{2}\mathbf{A}^2t^2$ term produces the familiar $\tfrac{1}{2}at^2$ of school physics.
 
@@ -196,7 +196,7 @@ Treat the held input as extra state that does not change: stack $(\mathbf{x}, \m
 
 ## Computing the exponential numerically
 
-Diagonalisation is the right tool for understanding and for small hand problems. But libraries do not use it by default, for three reasons. A defective matrix has no $\mathbf{V}^{-1}$ at all. A *nearly* defective one has an ill-conditioned $\mathbf{V}$ (Lesson 10) that magnifies rounding errors. And the eigen-decomposition itself costs more than the alternative.
+Diagonalization is the right tool for understanding and for small hand problems. But libraries do not use it by default, for three reasons. A defective matrix has no $\mathbf{V}^{-1}$ at all. A *nearly* defective one has an ill-conditioned $\mathbf{V}$ (Lesson 10) that magnifies rounding errors. And the eigen-decomposition itself costs more than the alternative.
 
 The plain Taylor series is not the default either, and the reason is worth seeing. Take the ordinary number $e^{-10}$, whose true value is $4.540\times 10^{-5}$. The terms $(-10)^k/k!$ alternate in sign and **[[grow before they shrink|term-sizes]]**: they climb until $k \approx 10$, where the term is $10^{10}/10! = 2756$, and only then start to fall. So the running totals swing wildly through the thousands:
 
@@ -268,7 +268,7 @@ Let $\mathbf{A} = \begin{pmatrix} 0 & 1 \\ 0 & 0 \end{pmatrix}$ and $\mathbf{B} 
 ::: answer
 **The product.** Both matrices square to zero, so $e^{\mathbf{A}} = \mathbf{I} + \mathbf{A} = \begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$ and $e^{\mathbf{B}} = \mathbf{I} + \mathbf{B} = \begin{pmatrix} 1 & 0 \\ 1 & 1 \end{pmatrix}$. Their product is $\begin{pmatrix} 2 & 1 \\ 1 & 1 \end{pmatrix}$.
 
-**The sum.** $\mathbf{A} + \mathbf{B} = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}$ is symmetric, with eigenvalues $\pm 1$ and eigenvectors $(1, 1)$ and $(1, -1)$. Diagonalising gives
+**The sum.** $\mathbf{A} + \mathbf{B} = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}$ is symmetric, with eigenvalues $\pm 1$ and eigenvectors $(1, 1)$ and $(1, -1)$. Diagonalizing gives
 
 $$e^{\mathbf{A}+\mathbf{B}} = \begin{pmatrix} \cosh 1 & \sinh 1 \\ \sinh 1 & \cosh 1 \end{pmatrix} = \begin{pmatrix} 1.543 & 1.175 \\ 1.175 & 1.543 \end{pmatrix},$$
 
@@ -309,7 +309,7 @@ You implement scaling and squaring with the rule $\|\mathbf{A}\Delta t\|/2^s \le
 | Derivative | $\frac{d}{dt}e^{\mathbf{A}t} = \mathbf{A}e^{\mathbf{A}t}$, so $\mathbf{x}(t) = e^{\mathbf{A}t}\mathbf{x}(0)$ solves $\dot{\mathbf{x}} = \mathbf{A}\mathbf{x}$ |
 | Properties | $e^{\mathbf{A}(t+s)} = e^{\mathbf{A}t}e^{\mathbf{A}s}$; $(e^{\mathbf{A}t})^{-1} = e^{-\mathbf{A}t}$; $\det e^{\mathbf{A}t} = e^{\operatorname{tr}(\mathbf{A})t}$ |
 | Sum rule | $e^{\mathbf{A}+\mathbf{B}} = e^{\mathbf{A}}e^{\mathbf{B}}$ only if $\mathbf{A}\mathbf{B} = \mathbf{B}\mathbf{A}$ |
-| Diagonalisable | $e^{\mathbf{A}t} = \mathbf{V}\operatorname{diag}(e^{\lambda_i t})\mathbf{V}^{-1}$ |
+| Diagonalizable | $e^{\mathbf{A}t} = \mathbf{V}\operatorname{diag}(e^{\lambda_i t})\mathbf{V}^{-1}$ |
 | Nilpotent | series stops; double integrator gives $\begin{pmatrix} 1 & t \\ 0 & 1 \end{pmatrix}$ |
 | Skew-symmetric | $e^{[\mathbf{k}\times]\theta} = \mathbf{I} + \sin\theta[\mathbf{k}\times] + (1-\cos\theta)[\mathbf{k}\times]^2$, a rotation |
 | Jordan block | $e^{(\lambda\mathbf{I}+\mathbf{N})t} = e^{\lambda t}(\mathbf{I} + \mathbf{N}t)$, the $t e^{\lambda t}$ term |
@@ -343,7 +343,7 @@ An **EKF**, or extended Kalman filter, estimates a nonlinear system by linearizi
 :::
 
 ::: context zoh-picture What a zero-order hold looks like
-The smooth grey curve is what a controller would like to command. The computer only updates its output once per step $\Delta t$ (the dots), and holds each value flat until the next update — a staircase. "Zero-order" means each piece is a polynomial of degree zero: a constant. The $\boldsymbol{\Gamma}$ formula is exact for that staircase, which is why the discrete model matches the real hardware.
+The smooth gray curve is what a controller would like to command. The computer only updates its output once per step $\Delta t$ (the dots), and holds each value flat until the next update — a staircase. "Zero-order" means each piece is a polynomial of degree zero: a constant. The $\boldsymbol{\Gamma}$ formula is exact for that staircase, which is why the discrete model matches the real hardware.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">

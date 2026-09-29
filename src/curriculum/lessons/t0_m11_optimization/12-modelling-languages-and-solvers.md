@@ -3,7 +3,7 @@ id: l12-modelling-languages-and-solvers
 title: "Modeling languages and solvers: CVXPY, ECOS, SCS, OSQP, Clarabel"
 minutes: 22
 covers:
-  - "modelling languages and solvers: CVXPY, ECOS, SCS, OSQP, Clarabel"
+  - "modeling languages and solvers: CVXPY, ECOS, SCS, OSQP, Clarabel"
 ---
 
 Think of a vending machine that only takes exact coins. It does not care which snack you want in words. It wants the right coins in the right slots. A conic solver is like that. It does not read mathematics. It reads four things: a cost vector, a matrix, a right-hand side, and a list saying which rows belong to which cone. The landing problem of lesson 6, with its three kinds of cone and hundred time steps, has to be turned into those four objects before any algorithm from lesson 9 can touch it.

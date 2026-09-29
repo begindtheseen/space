@@ -3,13 +3,13 @@ id: l02-lagrange-and-kkt
 title: "Rules in the way: Lagrange multipliers and the KKT conditions"
 minutes: 19
 covers:
-  - constrained optimisation and Lagrange multipliers
+  - constrained optimization and Lagrange multipliers
   - KKT conditions
 ---
 
 The last lesson walked downhill with nothing in the way. Real guidance problems are mostly things in the way. A landing burn must end at the pad with zero velocity — those are equality constraints. The engine cannot push harder than its rated thrust, the vehicle must stay above the glide slope, and the throttle cannot drop below its minimum — those are inequality constraints. The propellant cost is almost an afterthought. The physics lives in the constraints, and the best answer is usually pressed up against several of them at once.
 
-Think of a hiker told to stay on a marked trail. The lowest point *of the trail* is usually not the bottom of the valley. It is a spot where the trail would have to leave the valley floor to go any lower. At that spot the ground's pull downhill is not zero; it is exactly cancelled by the trail pushing back.
+Think of a hiker told to stay on a marked trail. The lowest point *of the trail* is usually not the bottom of the valley. It is a spot where the trail would have to leave the valley floor to go any lower. At that spot the ground's pull downhill is not zero; it is exactly canceled by the trail pushing back.
 
 This lesson turns that picture into conditions a constrained minimizer must satisfy, called the **Karush–Kuhn–Tucker (KKT) conditions**. They replace "the gradient is zero" with "the gradient is balanced by the constraints". The balancing numbers are the **Lagrange multipliers**, and they are more than bookkeeping: a multiplier is the price of a constraint — the propellant one more newton of thrust would have saved. Every solver later in the module, from interior-point methods to IPOPT, is at heart a way of finding a point that satisfies KKT.
 

@@ -344,7 +344,7 @@ A Givens rotation turns a vector in only one plane — two coordinates at a time
 :::
 
 ::: context error-plot The three methods, degree by degree
-Relative error of each method on the polynomial test, degree $3$ to $20$, on a logarithmic scale: each gridline is a factor of $10{,}000$. QR (dark blue) and the SVD (light blue) hug the grey $\kappa\varepsilon$ line from below. The normal equations (red) climb twice as steeply, because they pay $\kappa^2$.
+Relative error of each method on the polynomial test, degree $3$ to $20$, on a logarithmic scale: each gridline is a factor of $10{,}000$. QR (dark blue) and the SVD (light blue) hug the gray $\kappa\varepsilon$ line from below. The normal equations (red) climb twice as steeply, because they pay $\kappa^2$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">

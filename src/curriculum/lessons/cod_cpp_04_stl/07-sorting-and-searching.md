@@ -59,7 +59,7 @@ g++ 13 buries the reason deep inside the library, but the first error line names
 The comparison must behave like `<`, not like `<=`. The precise name is a **[[strict weak ordering|strict-weak]]**: comparing an element with itself must return false, and if `a` comes before `b` and `b` before `c`, then `a` must come before `c`. Two elements where neither comes before the other count as **equivalent** — tied.
 
 ::: warning Never sort with <=
-`std::sort(v.begin(), v.end(), [](int a, int b) { return a <= b; })` breaks the rule, because it says every element comes before itself. That is undefined behaviour. It may seem to work on a small test, and then, on a large range with many equal values, read past the end of the array and crash. If you want "largest first", use `>` or `std::greater<>{}`. Never add the `=`.
+`std::sort(v.begin(), v.end(), [](int a, int b) { return a <= b; })` breaks the rule, because it says every element comes before itself. That is undefined behavior. It may seem to work on a small test, and then, on a large range with many equal values, read past the end of the array and crash. If you want "largest first", use `>` or `std::greater<>{}`. Never add the `=`.
 :::
 
 ## std::stable_sort: keep the ties in order
@@ -69,7 +69,7 @@ Picture a stack of mail you sort by zip code. Two letters to the same zip code w
 `std::sort` is not stable. `std::stable_sort` is. That matters when the order you started with carries meaning. A telemetry log arrives in time order. You sort it by priority so the urgent events go down the link first. Within each priority, the events must still be in time order, or the ground sees a thruster "close" before its "open".
 
 ::: example Sorting a telemetry log by priority
-A log of 1,000 events arrives in time order, one every millisecond, with priorities 0, 1 and 2 mixed together. We sort one copy with `std::sort` and one with `std::stable_sort`, both by priority only. Then we count how many neighbours with the *same* priority ended up out of time order.
+A log of 1,000 events arrives in time order, one every millisecond, with priorities 0, 1 and 2 mixed together. We sort one copy with `std::sort` and one with `std::stable_sort`, both by priority only. Then we count how many neighbors with the *same* priority ended up out of time order.
 
 ```cpp
 #include <algorithm>
@@ -111,7 +111,7 @@ stable_sort: 0 neighbours out of time order
 stable_sort first four: (p0, 0 ms) (p0, 3 ms) (p0, 6 ms) (p0, 9 ms)
 ```
 
-Step by step. The expression `(t * 7) % 3` gives priority 0 to times 0, 3, 6, 9 and so on, so about a third of the events have each priority. Both sorts put every priority-0 event before every priority-1 event — both did their job on the key. But `std::sort` scrambled the times inside each group: 500 of the neighbouring pairs are backwards. `stable_sort` left all of them in time order, and the first four priority-0 events come out at 0, 3, 6 and 9 ms, exactly as they arrived.
+Step by step. The expression `(t * 7) % 3` gives priority 0 to times 0, 3, 6, 9 and so on, so about a third of the events have each priority. Both sorts put every priority-0 event before every priority-1 event — both did their job on the key. But `std::sort` scrambled the times inside each group: 500 of the neighboring pairs are backwards. `stable_sort` left all of them in time order, and the first four priority-0 events come out at 0, 3, 6 and 9 ms, exactly as they arrived.
 
 Sanity check: the 500 belongs to this library and this input; another library could scramble a different number. Only the zero from `stable_sort` is guaranteed.
 :::
@@ -296,7 +296,7 @@ Read it line by line.
 Sanity check: for a missing key a linear search pays the full $n$, while a binary search pays $\log_2 n$ either way — 128 against 7 here, a million against 20 for a million entries.
 :::
 
-That fixed bound is why a sorted `std::array` searched with `lower_bound` is a favourite shape for lookup tables in [[flight code|bounded-time]]. The worst case is known before the program ever runs. Exercise `cpp04_ex2` asks you to measure it against the tree and hash containers of lessons 02 and 03.
+That fixed bound is why a sorted `std::array` searched with `lower_bound` is a favorite shape for lookup tables in [[flight code|bounded-time]]. The worst case is known before the program ever runs. Exercise `cpp04_ex2` asks you to measure it against the tree and hash containers of lessons 02 and 03.
 
 ::: warning lower_bound does not say "found"
 `lower_bound` always returns *a* position, even when the key is missing. You must check both that it is not `end()` and that the element there is really your key:
@@ -377,7 +377,7 @@ Why does `std::sort(v.begin(), v.end(), [](int a, int b) { return a <= b; })` co
 :::
 
 ::: answer
-The comparison must be a strict weak ordering: an element must never come before itself. With `<=`, `a <= a` is true, so the rule is broken and the behaviour is undefined. It may pass small tests and then, on a big range with many equal elements, run past the end of the array. Use `<` for increasing order and `>` (or `std::greater<>{}`) for decreasing order.
+The comparison must be a strict weak ordering: an element must never come before itself. With `<=`, `a <= a` is true, so the rule is broken and the behavior is undefined. It may pass small tests and then, on a big range with many equal elements, run past the end of the array. Use `<` for increasing order and `>` (or `std::greater<>{}`) for decreasing order.
 :::
 
 ## Summary

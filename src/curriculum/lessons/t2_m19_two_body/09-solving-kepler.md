@@ -8,7 +8,7 @@ covers:
 
 Kepler's equation, $M = E - e\sin E$, works beautifully in one direction. Give it the eccentric anomaly $E$ and it hands back the mean anomaly $M$ – the time – in one line. Ask the reverse – *here is the time, where is the spacecraft?* – and there is no formula at all. You have to search for the answer.
 
-That search sits inside every orbit propagator, and it gets called millions of times: once per time step for every object in a catalogue, once per measurement in a navigation filter, once per candidate path in a trajectory optimizer. So it must be fast. And it must never fail, because one silent failure buried in a [[Monte Carlo run|monte-carlo]] quietly poisons the statistics.
+That search sits inside every orbit propagator, and it gets called millions of times: once per time step for every object in a catalog, once per measurement in a navigation filter, once per candidate path in a trajectory optimizer. So it must be fast. And it must never fail, because one silent failure buried in a [[Monte Carlo run|monte-carlo]] quietly poisons the statistics.
 
 The standard tool is Newton's method. For most orbits it lands in four or five tries even from a crude first guess. For very stretched orbits – comet-like paths, some lunar transfer ellipses, the $e = 0.99$ test orbits used to break software – Newton's method from a bad start can take a hundred tries or wander off entirely. The fixes are well understood: a better starting point, a fallback that cannot fail, or a method that does not care where it starts. This lesson derives each one, shows exactly how and why the naive method breaks, and does the same for the hyperbolic equation and for Barker's cubic, which can be solved exactly.
 
@@ -406,5 +406,5 @@ Unlike square roots, cube roots of negative numbers are ordinary real numbers: $
 :::
 
 ::: context cancellation Subtracting away your digits
-Keep eight significant digits of each number: $0.010000000$ and $0.0099988334$. Their difference is $0.0000011666$. The leading four digits of the two inputs matched and cancelled, so the answer has only four trustworthy digits left – an error in the eighth digit of either input is now an error in the fourth digit of the answer. That is catastrophic cancellation. It is not a bug in the arithmetic; it is information that was never there, and only a different formula can recover it.
+Keep eight significant digits of each number: $0.010000000$ and $0.0099988334$. Their difference is $0.0000011666$. The leading four digits of the two inputs matched and canceled, so the answer has only four trustworthy digits left – an error in the eighth digit of either input is now an error in the fourth digit of the answer. That is catastrophic cancellation. It is not a bug in the arithmetic; it is information that was never there, and only a different formula can recover it.
 :::

@@ -232,7 +232,7 @@ Each uncertain input — mass, center of gravity, aerodynamic coefficients, wind
 :::
 
 ::: context zoh-half-sample Why a hold looks like half a sample of delay
-The grey curve is a smooth command. The blue staircase is what a zero-order hold sends out, updated ten times per cycle. The red dashed curve is the smooth command shifted right by half a sample. It runs through the middle of every step: on average, the staircase lags by $T/2$.
+The gray curve is a smooth command. The blue staircase is what a zero-order hold sends out, updated ten times per cycle. The red dashed curve is the smooth command shifted right by half a sample. It runs through the middle of every step: on average, the staircase lags by $T/2$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
@@ -248,7 +248,7 @@ The grey curve is a smooth command. The blue staircase is what a zero-order hold
 :::
 
 ::: context aliasing-picture A 30 Hz wave wearing a 20 Hz disguise
-The grey curve is a $30\,\mathrm{Hz}$ vibration over one tenth of a second. The dots are the samples a $50\,\mathrm{Hz}$ computer takes. The dashed blue curve is a $20\,\mathrm{Hz}$ wave, and it passes through every dot. From the samples alone, the two are identical.
+The gray curve is a $30\,\mathrm{Hz}$ vibration over one tenth of a second. The dots are the samples a $50\,\mathrm{Hz}$ computer takes. The dashed blue curve is a $20\,\mathrm{Hz}$ wave, and it passes through every dot. From the samples alone, the two are identical.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">

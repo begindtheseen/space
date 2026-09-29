@@ -3,13 +3,13 @@ id: l13-profiling-and-speed
 title: Profiling and making code fast
 minutes: 22
 covers:
-  - The Profiler, tic/toc, vectorisation, parfor
+  - The Profiler, tic/toc, vectorization, parfor
   - Preallocation and why growing an array in a loop is fatal
 ---
 
 Suppose your drive to school takes an hour and you want it shorter. You could buy a faster car. But if you timed each part of the trip, you might find that forty of those sixty minutes are spent waiting at one broken traffic light. A faster car would save you almost nothing. Fixing the light would save you forty minutes.
 
-Slow code is the same. The first job is never "make it faster". The first job is "find out where the time goes". Only then do you fix the one place that matters. Lesson 12 finished the MATLAB language itself; this lesson is about running it quickly. You will meet two measuring tools — **tic/toc**, a stopwatch, and the **Profiler**, a tool that times every line — and then the three classic fixes: **preallocation**, **vectorisation** and **parfor**.
+Slow code is the same. The first job is never "make it faster". The first job is "find out where the time goes". Only then do you fix the one place that matters. Lesson 12 finished the MATLAB language itself; this lesson is about running it quickly. You will meet two measuring tools — **tic/toc**, a stopwatch, and the **Profiler**, a tool that times every line — and then the three classic fixes: **preallocation**, **vectorization** and **parfor**.
 
 Why does a GNC engineer care? Because the same script runs thousands of times. A **[[Monte Carlo campaign|monte-carlo]]** flies a simulated vehicle two thousand times with slightly different winds, masses and sensor errors, to see how far from the target it can land. If one flight takes a minute, the campaign takes a day and a half. Make it ten times faster and the answer arrives the same morning, so you can try several design changes in a day instead of one.
 
@@ -83,7 +83,7 @@ The working loop is short: profile, fix the top line, profile again. Often the s
 Lesson 6 met the most common slow line in beginner MATLAB: an array grown inside a loop with `x(end+1) = v`. In short: an array lives in one unbroken block of memory. To add an element, MATLAB may have to find a new, bigger block and copy every old element across. Over $n$ passes that is up to $1 + 2 + \cdots + (n-1) = n(n-1)/2$ copies, so the time grows as $n^2$ — **quadratic**, written $O(n^2)$ and read "order n squared" — instead of as $n$.
 
 ::: key
-Why is `x(end+1) = v` inside a loop a bug? Each assignment may reallocate and copy the whole array, making the loop quadratic in the number of iterations. Preallocate with `zeros(1,n)` and index, or vectorise.
+Why is `x(end+1) = v` inside a loop a bug? Each assignment may reallocate and copy the whole array, making the loop quadratic in the number of iterations. Preallocate with `zeros(1,n)` and index, or vectorize.
 :::
 
 In the Profiler, a growing array shows up as one line with a huge share of the time, often inside a loop that looks innocent. Two quick tests confirm it.
@@ -95,11 +95,11 @@ How big the gap is depends on your release and on what you grow. Recent MATLAB r
 
 Preallocation is the first of three fixes, and the next two build on it. A preallocated loop can often go further and lose the loop altogether.
 
-## Vectorisation: let the whole array move at once
+## Vectorization: let the whole array move at once
 
 Picture a stack of 500 letters to mail. You could walk each letter to the mailbox, one trip per letter. Or you could carry the whole stack once. The letters are the same; the walking is what costs.
 
-A MATLAB loop over a million elements makes a million trips. On each trip the interpreter has to look up the names, check the types and sizes, check that each index is in range, and only then do the arithmetic. **Vectorisation** means writing the calculation as operations on whole arrays, so the loop happens *inside* a built-in function — one trip. Built-in functions are compiled code that loops at full machine speed, and many of them use [[several processor cores|simd-and-cores]] at once.
+A MATLAB loop over a million elements makes a million trips. On each trip the interpreter has to look up the names, check the types and sizes, check that each index is in range, and only then do the arithmetic. **Vectorization** means writing the calculation as operations on whole arrays, so the loop happens *inside* a built-in function — one trip. Built-in functions are compiled code that loops at full machine speed, and many of them use [[several processor cores|simd-and-cores]] at once.
 
 You already have the tools. The element-wise operators `.*`, `./` and `.^` from lesson 4 work on every element. Logical indexing from lesson 3 replaces an `if` inside a loop. And functions such as `sum`, `mean`, `max`, `cumsum` and `diff` replace the loops you would write to add up, average, search, accumulate or difference.
 
@@ -122,7 +122,7 @@ for k = 1:n
 end
 ```
 
-The vectorised version, two lines:
+The vectorized version, two lines:
 
 ```matlab
 q = 0.5*1.225*exp(-h/8500).*v.^2;     % every sample at once
@@ -141,7 +141,7 @@ max(abs(q - q1))
 
 Step by step. `exp(-h/8500)` computes the density factor for all 12,001 samples at once; `.*v.^2` multiplies each by its own speed squared. `q > 30e3` makes a logical array, true where the limit is passed; `sum` counts the trues (3,889 of them), and multiplying by $dt = 0.01$ s turns a count into $38.89$ s. `max` returns the peak and where it happened: $76.6\,\mathrm{kPa}$ at $t = 29.15$ s.
 
-In GNU Octave, which has no JIT compiler, the loop took about $0.10$ s and the vectorised lines about $0.00042$ s — some 240 times faster. MATLAB's loop would be much faster than Octave's, for reasons the next part explains.
+In GNU Octave, which has no JIT compiler, the loop took about $0.10$ s and the vectorized lines about $0.00042$ s — some 240 times faster. MATLAB's loop would be much faster than Octave's, for reasons the next part explains.
 
 Sanity check: $q = \tfrac12 \cdot 1.225 \cdot 400\,t^2\,e^{-t^2/850}$, and a function of the form $t^2 e^{-t^2/c}$ peaks where $t^2 = c$, at $t = \sqrt{850} \approx 29.15$ s. The peak is $245 \times 850 \times e^{-1} \approx 76{,}611$ Pa. Both match. And $76.6$ kPa is in the range of a real launcher's max-q, a few tens of kilopascals.
 :::
@@ -154,15 +154,15 @@ That last line, `max(abs(q - q1))`, did not give zero. The two versions multipli
 
 ### What the JIT changed
 
-Since release R2015b, MATLAB runs all code through an execution engine with a **JIT compiler** — "just in time": it turns your loop into fast machine code the first time it runs. A plain loop over scalars, preallocated, is now often close to the vectorised version. So is vectorising still worth it?
+Since release R2015b, MATLAB runs all code through an execution engine with a **JIT compiler** — "just in time": it turns your loop into fast machine code the first time it runs. A plain loop over scalars, preallocated, is now often close to the vectorized version. So is vectorizing still worth it?
 
 ::: key
-Is vectorising still necessary given the JIT? Less than it once was for simple loops, but yes for anything indexing-heavy or growing arrays, and vectorised code is usually clearer about the mathematics. Profile rather than assume, exactly as in Python.
+Is vectorizing still necessary given the JIT? Less than it once was for simple loops, but yes for anything indexing-heavy or growing arrays, and vectorized code is usually clearer about the mathematics. Profile rather than assume, exactly as in Python.
 :::
 
 "Clearer about the mathematics" matters as much as speed. `q = 0.5*rho.*v.^2` reads like the formula on paper. A reviewer can check it at a glance, which is harder with a loop and its indices.
 
-Vectorising is not always the right move. Two cases favor a preallocated loop:
+Vectorizing is not always the right move. Two cases favor a preallocated loop:
 
 - **Each step needs the previous one.** An integrator that computes `x(k) = x(k-1) + v(k)*dt` cannot compute sample 5 before sample 4. Some of these have a built-in (this one is `cumsum`), but many, like a filter with feedback, do not.
 - **The trick builds huge temporary arrays.** A clever one-liner that expands two 100,000-element vectors into a 100,000-by-100,000 matrix needs 80 GB. A loop needs almost nothing.
@@ -189,7 +189,7 @@ Here `dispersedParams` and `simulateLanding` stand for your own functions. For M
 - A running total such as `total = total + x` is allowed; it is a **reduction** variable, and MATLAB combines the workers' partial totals at the end.
 - `x(end+1) = ...`, `break`, and anything that reads the previous iteration's result are not allowed.
 
-When does it help? When each iteration is *expensive* — seconds, not microseconds — and there are many of them, and little data has to travel to and from the workers. A Monte Carlo campaign of full flight simulations is the textbook case. When does it hurt? When each iteration is cheap. Starting a pool often takes tens of seconds, and sending work to the workers costs time on every batch. A loop of a million `sin` evaluations spends far longer on bookkeeping than on math; vectorise it instead. And `parfor` never fixes a growing array. Preallocate first.
+When does it help? When each iteration is *expensive* — seconds, not microseconds — and there are many of them, and little data has to travel to and from the workers. A Monte Carlo campaign of full flight simulations is the textbook case. When does it hurt? When each iteration is cheap. Starting a pool often takes tens of seconds, and sending work to the workers costs time on every batch. A loop of a million `sin` evaluations spends far longer on bookkeeping than on math; vectorize it instead. And `parfor` never fixes a growing array. Preallocate first.
 
 How much can it gain? Part of any program cannot be split: loading data, setting up, making the final plots. If a fraction $p$ of the run time can be split over $N$ workers and the rest cannot, the speedup is
 
@@ -213,7 +213,7 @@ So 40 minutes becomes about $40 / 5.93 \approx 6.7$ minutes, plus the time to st
 Sanity check: 8 workers should give less than 8 times, and more than 1 time. 5.93 sits in between, closer to 8 because the parallel part is large.
 :::
 
-The order of attack follows from all this. Profile first. Fix growing arrays with preallocation. Vectorise where it is clearer or faster. Reach for `parfor` last, and only for loops whose iterations are heavy and independent.
+The order of attack follows from all this. Profile first. Fix growing arrays with preallocation. Vectorize where it is clearer or faster. Reach for `parfor` last, and only for loops whose iterations are heavy and independent.
 
 ## Check yourself
 
@@ -242,7 +242,7 @@ Doubling the steps multiplied the time by $12/3 = 4$. That is the fingerprint of
 :::
 
 ::: check
-A pointing-error array holds `err = [0.2 -0.7 0.4 0.9 -0.1 0.6]` (degrees). Write vectorised lines that count how many samples are more than 0.5 degrees off in either direction, and compute the RMS error. Give the results.
+A pointing-error array holds `err = [0.2 -0.7 0.4 0.9 -0.1 0.6]` (degrees). Write vectorized lines that count how many samples are more than 0.5 degrees off in either direction, and compute the RMS error. Give the results.
 :::
 
 ::: answer
@@ -258,7 +258,7 @@ Can this loop become a `parfor`? `for k = 2:n, x(k) = x(k-1) + v(k)*dt; end` If 
 :::
 
 ::: answer
-No. Each iteration reads `x(k-1)`, the result of the iteration before it, so the iterations are not independent, and `parfor` gives no fixed order. Two good options instead. Preallocate `x = zeros(1, n)` before the loop, and the JIT makes the loop itself fast. Or vectorise it with a running sum: with `x(1) = 0`, the loop is the same as `x = [0 cumsum(v(2:end))*dt]`. For `v = [1 2 3 4]` and `dt = 0.5`, both give `[0 1 2.5 4.5]`.
+No. Each iteration reads `x(k-1)`, the result of the iteration before it, so the iterations are not independent, and `parfor` gives no fixed order. Two good options instead. Preallocate `x = zeros(1, n)` before the loop, and the JIT makes the loop itself fast. Or vectorize it with a running sum: with `x(1) = 0`, the loop is the same as `x = [0 cumsum(v(2:end))*dt]`. For `v = [1 2 3 4]` and `dt = 0.5`, both give `[0 1 2.5 4.5]`.
 :::
 
 ::: check
@@ -279,7 +279,7 @@ By Amdahl's law with $p = 0.8$ and $N = 16$: $S = 1/(0.2 + 0.8/16) = 1/(0.2 + 0.
 | total vs self time | with or without called functions | large self time marks the slow code |
 | growing `x(end+1)` | may copy the whole array each time | $n(n-1)/2$ copies: quadratic, $O(n^2)$ |
 | preallocation | `zeros(n,3)`, `NaN`, `false`, `cell` | one allocation; linear, $O(n)$ |
-| vectorisation | whole-array operations and masks | faster and closer to the math |
+| vectorization | whole-array operations and masks | faster and closer to the math |
 | JIT (R2015b on) | compiles loops as they run | simple loops are fast; profile, do not assume |
 | `parfor` | splits independent iterations over workers | Parallel Computing Toolbox; heavy iterations only |
 | Amdahl's law | limit on parallel speedup | $S = 1/((1-p) + p/N)$, never above $1/(1-p)$ |
@@ -350,7 +350,7 @@ A sliced output is like a class worksheet torn into pieces: each worker gets som
 :::
 
 ::: context amdahl The serial part sets the ceiling
-Gene Amdahl, a computer designer at IBM, made this argument in 1967. The curve shows the speedup for a program that is 95% parallel. It rises fast at first, then flattens toward the dashed ceiling of 20, no matter how many workers you add. The grey line is the ideal of $N$ workers giving $N$ times.
+Gene Amdahl, a computer designer at IBM, made this argument in 1967. The curve shows the speedup for a program that is 95% parallel. It rises fast at first, then flattens toward the dashed ceiling of 20, no matter how many workers you add. The gray line is the ideal of $N$ workers giving $N$ times.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210" font-family="Inter, Arial, sans-serif">

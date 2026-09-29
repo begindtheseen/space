@@ -379,7 +379,7 @@ Two parts inside a spacecraft push on each other with equal and opposite forces 
 :::
 
 ::: context shrinking-ellipsoid The ellipsoid shrinks, the sphere stays
-A slice through lesson 6's picture for the unit body, in the plane of axes 1 and 3, with $H = 1$. The circle (black) is the momentum sphere; it never changes. Each energy ellipse has half-widths $\sqrt{2TI_1}$ and $\sqrt{2TI_3}$. At the highest energy, $T = H^2/(2I_1)$ (grey), it touches the circle only at the minor axis. As energy drains (blue), it shrinks until, at $T = H^2/(2I_3)$ (red), it touches only at the major axis.
+A slice through lesson 6's picture for the unit body, in the plane of axes 1 and 3, with $H = 1$. The circle (black) is the momentum sphere; it never changes. Each energy ellipse has half-widths $\sqrt{2TI_1}$ and $\sqrt{2TI_3}$. At the highest energy, $T = H^2/(2I_1)$ (gray), it touches the circle only at the minor axis. As energy drains (blue), it shrinks until, at $T = H^2/(2I_3)$ (red), it touches only at the major axis.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" font-family="Inter, Arial, sans-serif">

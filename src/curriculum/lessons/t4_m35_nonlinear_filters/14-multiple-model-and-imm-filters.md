@@ -379,7 +379,7 @@ Process noise is a filter's allowance for pushes it cannot predict: gusts, small
 :::
 
 ::: context likelihood Probability, turned around
-The **likelihood** is a probability read backwards. Normally you ask "given the model, how probable is this measurement?". Here the measurement is already in, and the same number is used to score the models: "which model made what we saw least surprising?". The formula is the Gaussian bell evaluated at the innovation. It has units (per metre, here), so a likelihood is not a probability by itself — only ratios of likelihoods matter, which is why the IMM always normalizes at the end.
+The **likelihood** is a probability read backwards. Normally you ask "given the model, how probable is this measurement?". Here the measurement is already in, and the same number is used to score the models: "which model made what we saw least surprising?". The formula is the Gaussian bell evaluated at the innovation. It has units (per meter, here), so a likelihood is not a probability by itself — only ratios of likelihoods matter, which is why the IMM always normalizes at the end.
 :::
 
 ::: context markov Named for Andrey Markov
@@ -463,7 +463,7 @@ The maneuvering model's probability over the whole run. It hovers near $0.1$ whi
 :::
 
 ::: context rmse Root mean square error
-**RMSE** stands for root mean square error. Take the error at every step, square each one (so negatives count too), average the squares, then take the square root to get back to metres. Squaring makes big errors count much more than small ones: one $18\,\mathrm m$ miss outweighs dozens of $1\,\mathrm m$ ones. That suits tracking, where a single large miss can mean losing the target altogether.
+**RMSE** stands for root mean square error. Take the error at every step, square each one (so negatives count too), average the squares, then take the square root to get back to meters. Squaring makes big errors count much more than small ones: one $18\,\mathrm m$ miss outweighs dozens of $1\,\mathrm m$ ones. That suits tracking, where a single large miss can mean losing the target altogether.
 :::
 
 ::: context mmae Multiple models beyond tracking

@@ -38,7 +38,7 @@ For each gain factor, find where $|L| = 1/k$, read the phase margin there, and d
 
 Check one row. At $k = 2$: $54.68^\circ = 0.954\ \mathrm{rad}$, and $0.954/18.82 = 0.0507\ \mathrm{s} = 51\ \mathrm{ms}$.
 
-Now read the last column. The design has a $110\ \mathrm{ms}$ delay margin — but only if the gain is exactly as modelled. A vehicle that comes out $6\ \mathrm{dB}$ "hot" (twice the gain) has $51\ \mathrm{ms}$. One that comes out $15.6\ \mathrm{dB}$ hot has $9.8\ \mathrm{ms}$, less than one cycle of a 100 Hz flight computer. Neither number appears on a margin table that reports $22.07\ \mathrm{dB}$ and $62.80^\circ$.
+Now read the last column. The design has a $110\ \mathrm{ms}$ delay margin — but only if the gain is exactly as modeled. A vehicle that comes out $6\ \mathrm{dB}$ "hot" (twice the gain) has $51\ \mathrm{ms}$. One that comes out $15.6\ \mathrm{dB}$ hot has $9.8\ \mathrm{ms}$, less than one cycle of a 100 Hz flight computer. Neither number appears on a margin table that reports $22.07\ \mathrm{dB}$ and $62.80^\circ$.
 :::
 
 ### The disk margin
@@ -98,7 +98,7 @@ $$
 L_1(s) = \frac{s - a^2}{s^2+a^2} + \frac{a^2(s+1)}{s(s^2+a^2)} = \frac{s(s-a^2) + a^2(s+1)}{s(s^2+a^2)} = \frac{s^2 + a^2}{s(s^2+a^2)} = \frac{1}{s}.
 $$
 
-The second step put both fractions over the common bottom $s(s^2+a^2)$. The third multiplied out the top: $s^2 - a^2 s + a^2 s + a^2 = s^2 + a^2$. The last cancelled it with the bottom.
+The second step put both fractions over the common bottom $s(s^2+a^2)$. The third multiplied out the top: $s^2 - a^2 s + a^2 s + a^2 = s^2 + a^2$. The last canceled it with the bottom.
 
 A pure integrator. Its gain crossover is at $1\ \mathrm{rad/s}$ with a phase margin of $90^\circ$. Its angle never reaches $-180^\circ$, so the gain margin is infinite. And $\lVert S\rVert_\infty = 1$, so the modulus margin is $1$ — the best any loop can have. By symmetry, loop 2 is identical. Scale channel 1 alone by any positive factor $d$ and the closed-loop polynomial is $(s+1)(s+d)$: stable for every $d > 0$. The gain margin really is infinite, in both directions.
 
@@ -195,7 +195,7 @@ The robust-control material later in this track builds all four. The habit to ca
 ## Check yourself
 
 ::: check
-A loop has 10 dB of gain margin and $50^\circ$ of phase margin. The actuator turns out 4 dB stronger than modelled. What can you say about the remaining phase margin without recomputing?
+A loop has 10 dB of gain margin and $50^\circ$ of phase margin. The actuator turns out 4 dB stronger than modeled. What can you say about the remaining phase margin without recomputing?
 :::
 
 ::: answer
@@ -336,7 +336,7 @@ A rocket steered by a swiveling engine is the same: aerodynamic forces try to ti
 :::
 
 ::: context rate-limit-wave What a rate limit does to a sine
-Here the grey sine is the command, and the blue line is what an actuator limited to half the command's top speed ($A\omega/R = 2$) actually does.
+Here the gray sine is the command, and the blue line is what an actuator limited to half the command's top speed ($A\omega/R = 2$) actually does.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">

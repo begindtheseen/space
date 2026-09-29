@@ -96,7 +96,7 @@ Notice also the word `static` in the last column. It means the frame size is a c
 
 The stack size is set before `main` runs. On the Linux machine used for this lesson, the shell command `ulimit -s` reports `8192`, in **[[kibibytes|kibibytes]]**: 8 MiB. On a flight target the size is set per task in the **[[RTOS|rtos]]** configuration and is commonly 8 to 64 KiB — about a thousand times less.
 
-Running past the limit is **undefined behaviour**: the C++ standard says nothing at all about what happens. What you *observe* is a fact about your operating system, not about C++.
+Running past the limit is **undefined behavior**: the C++ standard says nothing at all about what happens. What you *observe* is a fact about your operating system, not about C++.
 
 ::: example Predicting the overflow depth, then measuring it
 A function that calls itself forever, with a frame dominated by a 1 KiB scratch buffer ($128 \times 8 = 1024$ bytes):
@@ -157,7 +157,7 @@ One more detail. The sanitized build overflowed *sooner*: its last depth was abo
 :::
 
 ::: warning
-Everything above is what *this* build on *this* kernel did. The standard says stack overflow is undefined behaviour and stops there. Linux happens to leave an unmapped **[[guard page|guard-page]]** below the stack, so the first access past the limit faults and you get a clean signal. A bare-metal target with no memory protection has no guard page. The write lands in whatever is next in memory, the program carries on, and the damage shows up later somewhere unrelated. Never reason from "it crashes if it overflows".
+Everything above is what *this* build on *this* kernel did. The standard says stack overflow is undefined behavior and stops there. Linux happens to leave an unmapped **[[guard page|guard-page]]** below the stack, so the first access past the limit faults and you get a clean signal. A bare-metal target with no memory protection has no guard page. The write lands in whatever is next in memory, the program carries on, and the damage shows up later somewhere unrelated. Never reason from "it crashes if it overflows".
 :::
 
 ## Why recursion is banned
@@ -248,7 +248,7 @@ The recursive version uses 64 bytes per level. On this tree it goes five levels 
 Three properties make the iterative version certifiable.
 
 1. The stack has a capacity fixed at compile time, so the frame size is a constant.
-2. The overflow case is *handled*. `top + 2 > kMaxDepth` returns a marker value instead of writing past the array, so failure is a value you can test for, not undefined behaviour.
+2. The overflow case is *handled*. `top + 2 > kMaxDepth` returns a marker value instead of writing past the array, so failure is a value you can test for, not undefined behavior.
 3. The high-water mark, 5 of 8 slots, is something the program can report, so a long test run tells you how much margin you really have.
 
 That is the shape of every "no recursion" rewrite: make the worst case a constant, make exceeding it a defined outcome, and measure the margin.
@@ -286,7 +286,7 @@ chk-bigframe.cpp:8:1: warning: the frame size of 1600064 bytes is larger than 16
 Set either number to your task's budget, and the build tells you when a frame grows past it. Neither is turned on by `-Wall`, `-Wextra` or `-Wpedantic`: you have to ask.
 
 ::: key
-A stack frame holds a call's return address, saved registers, parameters and locals, and its size is a compile-time constant for a function without variable-length arrays. Measure it with `-fstack-usage`; bound it with `-Wframe-larger-than=`. Stack overflow is undefined behaviour with no diagnostic from the language. Replace recursion with an explicit stack of fixed capacity and a defined behaviour when that capacity is reached.
+A stack frame holds a call's return address, saved registers, parameters and locals, and its size is a compile-time constant for a function without variable-length arrays. Measure it with `-fstack-usage`; bound it with `-Wframe-larger-than=`. Stack overflow is undefined behavior with no diagnostic from the language. Replace recursion with an explicit stack of fixed capacity and a defined behavior when that capacity is reached.
 :::
 
 ## Check yourself
@@ -312,7 +312,7 @@ Before calling it safe, you would want three more things.
 ::: answer
 Into the parts of the frame you did not declare: the return address (8 bytes), the saved frame pointer at `-O0` (8), the `depth` parameter stored on the stack, any registers the function must preserve, and padding to keep the stack pointer 16-byte aligned. $1072 - 1024 = 48$.
 
-Adding up `sizeof` of your locals misses all of that. The gap grows with the number of parameters and changes with the optimisation level, which also *moves* objects between registers and the frame. The tool reports what the compiler actually produced for the flags you built with, and that is the only number that means anything. Build your stack budget from `.su` files made with the same flags as the flight build.
+Adding up `sizeof` of your locals misses all of that. The gap grows with the number of parameters and changes with the optimization level, which also *moves* objects between registers and the frame. The tool reports what the compiler actually produced for the flags you built with, and that is the only number that means anything. Build your stack budget from `.su` files made with the same flags as the flight build.
 :::
 
 ::: check
@@ -320,7 +320,7 @@ An engineer argues that recursion is fine here because the tree is only ever fou
 :::
 
 ::: answer
-"Only ever four levels" is a claim about the data, enforced nowhere. The function accepts any tree. Nothing in it fails, or even notices, if a corrupted index or a future configuration file produces a deeper one. When that happens the result is a stack overflow — undefined behaviour, which on a target without memory protection silently corrupts neighboring memory. The cost of being wrong is unlimited; the benefit is a slightly shorter function.
+"Only ever four levels" is a claim about the data, enforced nowhere. The function accepts any tree. Nothing in it fails, or even notices, if a corrupted index or a future configuration file produces a deeper one. When that happens the result is a stack overflow — undefined behavior, which on a target without memory protection silently corrupts neighboring memory. The cost of being wrong is unlimited; the benefit is a slightly shorter function.
 
 It becomes acceptable only if the depth is *enforced*, not assumed. Pass a remaining-depth counter, refuse and return an error when it reaches zero, and now the worst-case stack use is a constant you can compute and an analysis tool can see. At that point you have written the bounded version anyway — with clumsier code than an explicit stack.
 :::
@@ -344,7 +344,7 @@ It changes the storage duration from automatic to static (lesson 01). The 1.53 M
 
 The new problem is that there is now exactly one `window` for the whole program. The function is no longer **reentrant** — safe to run twice at once. Two tasks calling it corrupt each other's data with no warning, and an interrupt-time call does the same. It has also become mutable global state, which flight-software reviews object to most consistently, because any file can declare it `extern` and write to it.
 
-The usual fix is to make the buffer a member of the subsystem object that owns the computation, created once during initialisation, and to pass a `std::span` of it into the function. One buffer per subsystem, no global, no large frame.
+The usual fix is to make the buffer a member of the subsystem object that owns the computation, created once during initialization, and to pass a `std::span` of it into the function. One buffer per subsystem, no global, no large frame.
 :::
 
 ## Summary
@@ -381,7 +381,7 @@ That is the whole cost of allocating every local in the function at once. Compar
 ::: context power-of-ten Ten rules from JPL
 *The Power of Ten: Rules for Developing Safety-Critical Code* was written by Gerard Holzmann of NASA's Jet Propulsion Laboratory and published in *IEEE Computer* in 2006. It is ten short rules, chosen so that a tool can check each one.
 
-Rule 1 restricts code to simple control flow: no `goto`, no `setjmp`/`longjmp`, and no direct or indirect recursion. Rule 3 forbids dynamic memory allocation after initialisation, which is the subject of lessons 06 and 07. JPL built its C coding standard for flight software on these rules.
+Rule 1 restricts code to simple control flow: no `goto`, no `setjmp`/`longjmp`, and no direct or indirect recursion. Rule 3 forbids dynamic memory allocation after initialization, which is the subject of lessons 06 and 07. JPL built its C coding standard for flight software on these rules.
 :::
 
 ::: context frame-layout One frame, top to bottom

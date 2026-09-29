@@ -7,7 +7,7 @@ covers:
   - General notes and flag notes
 ---
 
-Open the booklet that comes with a big LEGO set. The first page lists every piece in the box, with a small picture and a count: "2 ×" beside a red brick, "8 ×" beside a small grey plate. Each step then shows a picture of the model with arrows pointing at the pieces you add now. Somewhere there is also fine print: "Adult supervision required", "Press firmly until you hear a click."
+Open the booklet that comes with a big LEGO set. The first page lists every piece in the box, with a small picture and a count: "2 ×" beside a red brick, "8 ×" beside a small gray plate. Each step then shows a picture of the model with arrows pointing at the pieces you add now. Somewhere there is also fine print: "Adult supervision required", "Press firmly until you hear a click."
 
 An **assembly drawing** — a drawing of a unit made of several parts joined together — works the same way. It has a list of every part that goes in, with how many of each. It has numbered circles pointing at those parts in the views. And it has written instructions, some for the whole drawing and some for one spot only.
 

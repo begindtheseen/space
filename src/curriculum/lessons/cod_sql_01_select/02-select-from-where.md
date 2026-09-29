@@ -525,7 +525,7 @@ Every row meets the same yes-or-no question. Only the rows that answer a clear *
 </svg>
 ```
 
-The blue rows (ACTIVE) pass; the grey ones (SAFE_MODE, DEORBITED, COMMISSIONING) do not. The gate never looks at more than one row at a time.
+The blue rows (ACTIVE) pass; the gray ones (SAFE_MODE, DEORBITED, COMMISSIONING) do not. The gate never looks at more than one row at a time.
 :::
 
 ::: context double-quotes What double quotes are for

@@ -63,7 +63,7 @@ array expression:   0.8 ms
 speedup: 37x
 ```
 
-Your numbers will differ from machine to machine, but the gap is always large: here the array did the same work about 37 times faster. The last lesson of this module, on vectorisation, shows how to measure this carefully and when the gap is bigger or smaller.
+Your numbers will differ from machine to machine, but the gap is always large: here the array did the same work about 37 times faster. The last lesson of this module, on vectorization, shows how to measure this carefully and when the gap is bigger or smaller.
 
 ::: key
 A list of floats is a row of pointers to separate 24-byte boxed float objects. An ndarray is one contiguous block of same-typed numbers plus a small header that says how to read it. Array arithmetic runs one compiled loop over that block, with no per-element interpreter work and no boxing.

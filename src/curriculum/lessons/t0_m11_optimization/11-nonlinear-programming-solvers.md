@@ -12,14 +12,14 @@ Nonlinear programming is the same. You will almost never write an SQP or interio
 
 Both solve the general nonlinear program (NLP). IPOPT is lesson 9's interior-point method with a filter line search. SNOPT is lesson 10's SQP, with an active set and a limited-memory quasi-Newton Hessian. Their different behavior follows straight from that difference.
 
-The other half of this lesson is what goes *into* a solver — the fuel. When a trajectory optimization will not converge, the cause is usually not the solver but a wrong derivative, a badly scaled variable, or a discretisation that made the problem harder than the physics needed.
+The other half of this lesson is what goes *into* a solver — the fuel. When a trajectory optimization will not converge, the cause is usually not the solver but a wrong derivative, a badly scaled variable, or a discretization that made the problem harder than the physics needed.
 
 ## What a general NLP solver asks for
 
 Both codes take the problem in nearly the same shape:
 
 $$
-\text{minimise } f(\mathbf{x}) \quad \text{subject to} \quad \mathbf{g}_L \le \mathbf{g}(\mathbf{x}) \le \mathbf{g}_U, \qquad \mathbf{x}_L \le \mathbf{x} \le \mathbf{x}_U .
+\text{minimize } f(\mathbf{x}) \quad \text{subject to} \quad \mathbf{g}_L \le \mathbf{g}(\mathbf{x}) \le \mathbf{g}_U, \qquad \mathbf{x}_L \le \mathbf{x} \le \mathbf{x}_U .
 $$
 
 Here $\mathbf{x} \in \mathbb{R}^n$ holds the $n$ unknowns and $\mathbf{g}: \mathbb{R}^n \to \mathbb{R}^m$ the $m$ constraint functions; $L$ and $U$ mark lower and upper bounds. An equality is the case $g_{L,i} = g_{U,i}$ — floor and ceiling the same. A one-sided constraint uses an infinite bound.
@@ -32,7 +32,7 @@ What you must hand over:
 4. **A starting guess** $\mathbf{x}_0$. For SNOPT you may also pass a starting active set, or **basis**, which is what makes its warm starts so effective.
 5. **Scaling**, unstated but assumed: both codes expect that a change of one unit in any variable or constraint matters about as much as in any other. It is your job to make that true.
 
-The sparsity pattern is not paperwork. A trajectory NLP's **[[Jacobian is more than 98 % zeros|sparsity-picture]]**, and the whole method stays tractable only by never storing or factorising those zeros.
+The sparsity pattern is not paperwork. A trajectory NLP's **[[Jacobian is more than 98 % zeros|sparsity-picture]]**, and the whole method stays tractable only by never storing or factorizing those zeros.
 
 ::: example Sizing a direct-collocation ascent problem
 Turn a three-degree-of-freedom ascent into an NLP by **[[direct collocation|collocation-word]]**: chop the flight into $N = 100$ intervals, and at each of the $101$ nodes make the state (position, velocity, mass — seven numbers) and the control (a thrust direction — three numbers) unknowns. The final time is one more. So
@@ -57,7 +57,7 @@ $$
 
 a density of $15{,}723 / 925{,}065 = 1.70\,\%$.
 
-**What it buys.** The KKT matrix the solver factorises each iteration has size $M = n + m = 1926$. Factorising it densely costs about $M^3/3 = 2.4 \times 10^9$ operations. Ordered by time node, it is **banded** — nonzeros only near the diagonal — with a half-bandwidth $b$ of about $27$, and a banded factorisation costs about $M b^2 = 1.4 \times 10^6$. That is a factor of about $1{,}700$.
+**What it buys.** The KKT matrix the solver factorizes each iteration has size $M = n + m = 1926$. Factorizing it densely costs about $M^3/3 = 2.4 \times 10^9$ operations. Ordered by time node, it is **banded** — nonzeros only near the diagonal — with a half-bandwidth $b$ of about $27$, and a banded factorization costs about $M b^2 = 1.4 \times 10^6$. That is a factor of about $1{,}700$.
 
 **Sanity check.** A factor of $1{,}700$ turns a one-minute solve into more than a day, which is why the sparsity pattern is an input, not something the solver discovers.
 :::
@@ -67,28 +67,28 @@ a density of $15{,}723 / 925{,}065 = 1.70\,\%$.
 **IPOPT** (Interior Point OPTimizer) is lesson 9's algorithm stretched to cover nonconvex problems. It is **[[open source|ipopt-snopt-history]]**, which is a big reason it is everywhere.
 
 - **Barrier on the bounds.** Every bound such as $x_i \ge x_{L,i}$ is replaced by a **[[logarithmic barrier|barrier-picture]]** term with weight $\mu$ ("mu"). It is a wall rising to infinity at the bound, so iterates stay strictly inside. IPOPT drives $\mu$ toward zero adaptively, not on a fixed schedule.
-- **Newton on the perturbed KKT system.** Each iteration solves one symmetric indefinite linear system with a sparse $\mathbf{L}\mathbf{D}\mathbf{L}^\top$ factorisation — Gaussian elimination for a symmetric matrix, with $\mathbf{L}$ lower-triangular and $\mathbf{D}$ block-diagonal — from an outside library (MA27, MA57, HSL MA97, MUMPS or Pardiso, depending on the build).
-- **Inertia correction.** The **[[inertia|inertia-word]]** of a matrix is its count of positive, negative and zero eigenvalues. For the step to point downhill, the KKT matrix must have exactly $n$ positive and $m$ negative eigenvalues. When the factorisation reports anything else — the Lagrangian Hessian is not positive enough on the directions the constraints allow — IPOPT adds $\delta\mathbf{I}$ ("delta" times the identity) to the Hessian block and factorises again, raising $\delta$ until the count is right. This is lesson 10's $\mathbf{W} + \sigma\mathbf{I}$ fix, done automatically and reported in the log.
+- **Newton on the perturbed KKT system.** Each iteration solves one symmetric indefinite linear system with a sparse $\mathbf{L}\mathbf{D}\mathbf{L}^\top$ factorization — Gaussian elimination for a symmetric matrix, with $\mathbf{L}$ lower-triangular and $\mathbf{D}$ block-diagonal — from an outside library (MA27, MA57, HSL MA97, MUMPS or Pardiso, depending on the build).
+- **Inertia correction.** The **[[inertia|inertia-word]]** of a matrix is its count of positive, negative and zero eigenvalues. For the step to point downhill, the KKT matrix must have exactly $n$ positive and $m$ negative eigenvalues. When the factorization reports anything else — the Lagrangian Hessian is not positive enough on the directions the constraints allow — IPOPT adds $\delta\mathbf{I}$ ("delta" times the identity) to the Hessian block and factorizes again, raising $\delta$ until the count is right. This is lesson 10's $\mathbf{W} + \sigma\mathbf{I}$ fix, done automatically and reported in the log.
 - **Filter line search.** A step is accepted if it improves the objective or the constraint violation against every filter entry — no penalty weight to tune.
-- **Restoration phase.** When the line search finds no acceptable step, IPOPT sets the objective aside, minimises the constraint violation alone for a while, then resumes. "Restoration" again and again in a log usually means bad scaling or an infeasible formulation, not a solver bug.
+- **Restoration phase.** When the line search finds no acceptable step, IPOPT sets the objective aside, minimizes the constraint violation alone for a while, then resumes. "Restoration" again and again in a log usually means bad scaling or an infeasible formulation, not a solver bug.
 - **Hessian:** exact if you supply it, limited-memory BFGS otherwise.
 
-IPOPT is at its best with many **degrees of freedom** — many more variables than active constraints, the usual shape of a finely discretised trajectory. Its cost per iteration is one sparse factorisation, so it scales to hundreds of thousands of variables.
+IPOPT is at its best with many **degrees of freedom** — many more variables than active constraints, the usual shape of a finely discretized trajectory. Its cost per iteration is one sparse factorization, so it scales to hundreds of thousands of variables.
 
 ## SNOPT
 
 **SNOPT** (Sparse Nonlinear OPTimizer) is lesson 10's active-set SQP, engineered for sparse problems. It is commercial software from Stanford — a real factor when choosing a toolchain.
 
-- **Sparse SQP.** Each **major iteration** solves a sparse QP with linearised constraints; each **minor iteration** inside it adds or drops one active constraint.
+- **Sparse SQP.** Each **major iteration** solves a sparse QP with linearized constraints; each **minor iteration** inside it adds or drops one active constraint.
 - **Limited-memory quasi-Newton.** SNOPT never forms a second derivative. It keeps a limited-memory BFGS approximation built from roughly the last ten to twenty steps, with Powell damping to keep it positive definite.
 - **Augmented-Lagrangian merit function** for the line search, rather than a filter.
-- **Elastic mode.** When a QP's linearised constraints contradict each other, SNOPT relaxes them with penalised elastic variables so a step always exists, and the penalty's size says how infeasible the linearisation was. It keeps going where a plain SQP would stop.
+- **Elastic mode.** When a QP's linearized constraints contradict each other, SNOPT relaxes them with penalized elastic variables so a step always exists, and the penalty's size says how infeasible the linearization was. It keeps going where a plain SQP would stop.
 - **Warm starts.** Hand it the previous solution's active set, and a re-solve of a slightly changed problem finishes in a handful of major iterations.
 
 SNOPT suits **few degrees of freedom** — many constraints, nearly all active, so the active-set search has little to explore — and expensive function evaluations, because it needs comparatively few. Its natural home is a shooting-style transcription with modest numbers of unknowns, not a hundred-thousand-variable collocation mesh.
 
 ::: key Choosing between them
-IPOPT: interior point, filter line search, exact or limited-memory Hessian, sparse indefinite factorisation per iteration, open source. Best with many degrees of freedom and a fine mesh. SNOPT: active-set SQP, limited-memory quasi-Newton, elastic mode, excellent warm starts, commercial. Best with few degrees of freedom, expensive function evaluations, and repeated solves of a slowly changing problem. Neither returns a certificate of global optimality; both find a point satisfying the first-order conditions, if they converge at all.
+IPOPT: interior point, filter line search, exact or limited-memory Hessian, sparse indefinite factorization per iteration, open source. Best with many degrees of freedom and a fine mesh. SNOPT: active-set SQP, limited-memory quasi-Newton, elastic mode, excellent warm starts, commercial. Best with few degrees of freedom, expensive function evaluations, and repeated solves of a slowly changing problem. Neither returns a certificate of global optimality; both find a point satisfying the first-order conditions, if they converge at all.
 :::
 
 A quick rule: count the degrees of freedom at the answer, variables minus active constraints. Many favors IPOPT; few favors SNOPT.
@@ -134,7 +134,7 @@ Read the errors as a U: smaller $h$ helps until round-off takes over, then it ge
 
 **Algorithmic differentiation** is what production trajectory work uses. A tool such as CasADi, ADOL-C or JAX builds derivative code from the function's own chain of operations, exact to machine precision. Its **[[reverse mode|reverse-mode-word]]** computes a full gradient for about three function evaluations, whatever $n$ is. For the $1011$-variable ascent, a dense forward-difference gradient costs $1011$ extra evaluations per iteration. At $1\,\mathrm{ms}$ each, that is $1.0\,\mathrm{s}$ per iteration, about $100\,\mathrm{s}$ over a hundred iterations — against roughly $0.3\,\mathrm{s}$ for algorithmic differentiation.
 
-A middle road is sparse finite differencing with **[[graph colouring|colouring-note]]**: variables that never share a constraint row are nudged together, so the ascent Jacobian costs $21$ evaluations instead of $1011$ — about $48$ times fewer.
+A middle road is sparse finite differencing with **[[graph coloring|colouring-note]]**: variables that never share a constraint row are nudged together, so the ascent Jacobian costs $21$ evaluations instead of $1011$ — about $48$ times fewer.
 
 ::: example Handing a landing problem to IPOPT
 Lesson 10's vertical landing — $1000\,\mathrm{m}$ up at $-50\,\mathrm{m/s}$, thrust acceleration $0$ to $30\,\mathrm{m/s^2}$, free final time — goes to IPOPT through CasADi, the usual route in GNC work. It needs `pip install casadi`, which bundles IPOPT; the output is from CasADi 3.8.1.
@@ -182,7 +182,7 @@ for N in (2, 10, 100):
 
 **Check against lesson 10.** With $N = 2$, IPOPT lands on $186.78\,\mathrm{m/s}$ and $13.948\,\mathrm{s}$ — the same answer our hand-built SQP found. The trapezoidal rule is exact here, because the thrust is constant on each interval and the velocity changes linearly.
 
-**Watch the discretisation error shrink.** $N = 10$ gives $181.80\,\mathrm{m/s}$; $N = 100$ gives $181.25\,\mathrm{m/s}$ and $t_f = 13.384\,\mathrm{s}$ — lesson 5's continuous answer to every printed digit. The iteration count grows with size, but slowly.
+**Watch the discretization error shrink.** $N = 10$ gives $181.80\,\mathrm{m/s}$; $N = 100$ gives $181.25\,\mathrm{m/s}$ and $t_f = 13.384\,\mathrm{s}$ — lesson 5's continuous answer to every printed digit. The iteration count grows with size, but slowly.
 
 Three things are worth noticing:
 
@@ -196,7 +196,7 @@ Three things are worth noticing:
 Everything above is design-time software, for reasons built into the algorithms, not tuning.
 
 - **No iteration bound.** The methods converge locally, and the iteration count depends on the data and the starting guess. A code that takes $30$ iterations on the nominal case and $400$ on a dispersed one cannot be given a $100\,\mathrm{ms}$ budget.
-- **[[Dynamic memory|flight-memory-rules]].** A sparse factorisation with numerical pivoting decides its fill-in — the extra nonzeros created while factorising — at run time. So the memory a solve needs is not known before it runs. Flight software generally forbids allocating memory after start-up.
+- **[[Dynamic memory|flight-memory-rules]].** A sparse factorization with numerical pivoting decides its fill-in — the extra nonzeros created while factorizing — at run time. So the memory a solve needs is not known before it runs. Flight software generally forbids allocating memory after start-up.
 - **No certificate.** As lesson 10 stressed, a converged NLP satisfies the first-order conditions to a tolerance. That is not a proof of optimality. And an "infeasible" report from a nonconvex solver is a statement about the solver's search, not about the problem.
 - **Dependence on the starting guess.** Certification needs reproducible answers across flights and dispersion cases, which is much harder when the answer depends on where the search started.
 - **Verification burden.** IPOPT pulls in a third-party sparse linear algebra library of tens of thousands of lines. Qualifying that to flight standards is a project in itself, and SNOPT's license terms make source-level qualification a commercial negotiation.
@@ -226,14 +226,14 @@ You must supply a Jacobian for a constraint function you did not write and canno
 ::: answer
 1. **Algorithmic differentiation**, if the function can be rewritten in a framework such as CasADi or JAX. Exact to machine precision; reverse mode costs about three function evaluations per gradient, whatever the dimension.
 2. **Complex step**, if the code is analytic and can run on complex inputs. Also exact, at one complex evaluation per variable — the ideal way to check an existing Jacobian.
-3. **Sparse finite differences with colouring.** About $10^{-8}$ relative accuracy for forward differences and $10^{-11}$ for central, at one evaluation per colour (per colour and direction for central) — $21$ rather than $1011$ in the ascent example.
+3. **Sparse finite differences with coloring.** About $10^{-8}$ relative accuracy for forward differences and $10^{-11}$ for central, at one evaluation per color (per color and direction for central) — $21$ rather than $1011$ in the ascent example.
 4. **Dense finite differences.** Same accuracy, one evaluation per variable.
 
 The accuracy floor matters: a solver asked for a KKT tolerance of $10^{-10}$ with forward-difference derivatives is asked for something they cannot support, and it will stall.
 :::
 
 ::: check
-An IPOPT log shows the regularisation $\delta$ rising through $10^{-4}$, $10^{-2}$, $1$, $100$ over successive iterations, and the algorithm entering restoration twice. What is happening?
+An IPOPT log shows the regularization $\delta$ rising through $10^{-4}$, $10^{-2}$, $1$, $100$ over successive iterations, and the algorithm entering restoration twice. What is happening?
 :::
 
 ::: answer
@@ -249,7 +249,7 @@ Estimate the arithmetic per iteration of the ascent NLP above if the solver igno
 :::
 
 ::: answer
-The KKT matrix has size $M = n + m = 1011 + 915 = 1926$. A dense symmetric indefinite factorisation costs about $M^3/3 = 2.4 \times 10^9$ operations, against about $M b^2 = 1926 \times 27^2 \approx 1.4 \times 10^6$ for the banded structure — a factor of about $1{,}700$. Storage tells the same story: $1926^2$ doubles at $8$ bytes each is about $30\,\mathrm{MB}$, against $15{,}723$ Jacobian nonzeros, a few hundred kilobytes.
+The KKT matrix has size $M = n + m = 1011 + 915 = 1926$. A dense symmetric indefinite factorization costs about $M^3/3 = 2.4 \times 10^9$ operations, against about $M b^2 = 1926 \times 27^2 \approx 1.4 \times 10^6$ for the banded structure — a factor of about $1{,}700$. Storage tells the same story: $1926^2$ doubles at $8$ bytes each is about $30\,\mathrm{MB}$, against $15{,}723$ Jacobian nonzeros, a few hundred kilobytes.
 
 For the pattern: declaring *extra* entries is not free, because every spurious nonzero can widen the band and add fill-in. Declaring *too few* is a correctness bug: the solver never asks about entries you left out, so its derivatives are silently wrong. Both mistakes are common; the second is much worse. The standard catch is a dense finite-difference check of the whole Jacobian on a small instance of the problem.
 :::
@@ -270,7 +270,7 @@ That asymmetry — "feasible" is proved by showing a point, "infeasible" is not 
 
 | Idea | In one line |
 | --- | --- |
-| NLP form | minimise $f(\mathbf{x})$ s.t. $\mathbf{g}_L \le \mathbf{g}(\mathbf{x}) \le \mathbf{g}_U$, $\mathbf{x}_L \le \mathbf{x} \le \mathbf{x}_U$ |
+| NLP form | minimize $f(\mathbf{x})$ s.t. $\mathbf{g}_L \le \mathbf{g}(\mathbf{x}) \le \mathbf{g}_U$, $\mathbf{x}_L \le \mathbf{x} \le \mathbf{x}_U$ |
 | Solver inputs | Values, sparse first derivatives, optional sparse Hessian, starting guess, scaling |
 | IPOPT | Interior point, barrier $\mu$, filter, inertia correction $\delta\mathbf{I}$, restoration, exact or L-BFGS Hessian, open source |
 | SNOPT | Active-set sparse SQP, L-BFGS, augmented-Lagrangian merit, elastic mode, warm starts, commercial |
@@ -280,12 +280,12 @@ That asymmetry — "feasible" is proved by showing a point, "infeasible" is not 
 | Finite differences | Forward: $h \approx \sqrt{\epsilon} \approx 1.5 \times 10^{-8}$, floor $\approx 5 \times 10^{-8}$. Central: $h \approx \epsilon^{1/3} \approx 6 \times 10^{-6}$, floor $\approx 3 \times 10^{-11}$ |
 | Complex step | $f'(x) \approx \operatorname{Im}f(x+ih)/h$; exact at $h = 10^{-20}$; needs analytic code |
 | Algorithmic differentiation | Exact; reverse-mode gradient for about $3$ evaluations |
-| Colouring | At least the most nonzeros in a row, at most $2b+1$; $21$ evaluations instead of $1011$ here |
+| Coloring | At least the most nonzeros in a row, at most $2b+1$; $21$ evaluations instead of $1011$ here |
 | IPOPT on the landing | $N = 2$: $186.78\,\mathrm{m/s}$ (matches lesson 10); $N = 100$: $181.25\,\mathrm{m/s}$, $13.384\,\mathrm{s}$ (matches lesson 5) |
 | Why they do not fly | No iteration bound, dynamic memory, no certificate, start dependence, verification burden |
 | What they are for | Reference trajectories, design sweeps, pricing a convex formulation |
 
-The next lesson returns to the convex world and the software you would put in a guidance loop: a modelling language that turns a written problem into cone data, and the solvers that consume it.
+The next lesson returns to the convex world and the software you would put in a guidance loop: a modeling language that turns a written problem into cone data, and the solvers that consume it.
 
 ::: context sparsity-picture What a collocation Jacobian looks like
 Each defect constraint links one interval's two end nodes, plus the final time, which stretches every interval. So the nonzeros form a staircase of blocks down the diagonal and one full column at the right. Here is the pattern for four intervals. With $100$ intervals the blue blocks are the same size and the white space is enormous — that white space is the $98\,\%$ the solver never touches.
@@ -335,7 +335,7 @@ IPOPT was written by Andreas Wächter and Lorenz Biegler at Carnegie Mellon; the
 :::
 
 ::: context barrier-picture A wall that softens
-To keep $x \ge 0$ while minimising the cost $x$, add $-\mu \ln x$. The logarithm runs to infinity at $x = 0$, so the minimum always sits strictly inside. The minimum of $x - \mu\ln x$ is where its slope $1 - \mu/x$ is zero, at $x = \mu$. As $\mu$ shrinks, the wall hugs the bound and the minimum slides toward the true answer, $x = 0$.
+To keep $x \ge 0$ while minimizing the cost $x$, add $-\mu \ln x$. The logarithm runs to infinity at $x = 0$, so the minimum always sits strictly inside. The minimum of $x - \mu\ln x$ is where its slope $1 - \mu/x$ is zero, at $x = \mu$. As $\mu$ shrinks, the wall hugs the bound and the minimum slides toward the true answer, $x = 0$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
@@ -362,7 +362,7 @@ To keep $x \ge 0$ while minimising the cost $x$, add $-\mu \ln x$. The logarithm
 :::
 
 ::: context inertia-word Counting the signs
-**Inertia** here has nothing to do with Newton's first law. It is the triple of numbers (positive, negative, zero) counting a symmetric matrix's eigenvalues by sign. Sylvester's law of inertia says those counts survive the $\mathbf{L}\mathbf{D}\mathbf{L}^\top$ factorisation, so the solver can read them straight off the diagonal blocks of $\mathbf{D}$ at no extra cost. The right count — $n$ positive, $m$ negative — is how IPOPT knows its model curves upward along every direction the constraints allow.
+**Inertia** here has nothing to do with Newton's first law. It is the triple of numbers (positive, negative, zero) counting a symmetric matrix's eigenvalues by sign. Sylvester's law of inertia says those counts survive the $\mathbf{L}\mathbf{D}\mathbf{L}^\top$ factorization, so the solver can read them straight off the diagonal blocks of $\mathbf{D}$ at no extra cost. The right count — $n$ positive, $m$ negative — is how IPOPT knows its model curves upward along every direction the constraints allow.
 :::
 
 ::: context roundoff-picture The U-shaped error curve
@@ -394,7 +394,7 @@ Forward-mode differentiation pushes derivatives through the calculation in the s
 :::
 
 ::: context colouring-note Nudging many variables at once
-If the Jacobian is sparse, variables whose columns never share a nonzero row can be nudged *at the same time*: one extra evaluation recovers all their entries, because no row mixes them. Grouping the columns is a **graph-colouring** problem. You need at least as many colours as the most nonzeros in any one row, and for a banded pattern with half-bandwidth $b$, $2b + 1$ colours always suffice. In the ascent problem each defect row touches $21$ variables, so at least $21$ colours are needed — and $21$ are enough: colours 1 to 10 for the ten variables at even-numbered nodes, 11 to 20 for odd-numbered nodes, and colour 21 for the final time. A Jacobian then costs $21$ evaluations instead of $1011$, about $48$ times fewer, for pure bookkeeping on the sparsity pattern you supplied anyway. Solver interfaces do this when you decline to provide derivatives.
+If the Jacobian is sparse, variables whose columns never share a nonzero row can be nudged *at the same time*: one extra evaluation recovers all their entries, because no row mixes them. Grouping the columns is a **graph-coloring** problem. You need at least as many colors as the most nonzeros in any one row, and for a banded pattern with half-bandwidth $b$, $2b + 1$ colors always suffice. In the ascent problem each defect row touches $21$ variables, so at least $21$ colors are needed — and $21$ are enough: colors 1 to 10 for the ten variables at even-numbered nodes, 11 to 20 for odd-numbered nodes, and color 21 for the final time. A Jacobian then costs $21$ evaluations instead of $1011$, about $48$ times fewer, for pure bookkeeping on the sparsity pattern you supplied anyway. Solver interfaces do this when you decline to provide derivatives.
 :::
 
 ::: context flight-memory-rules Why flight code will not allocate memory

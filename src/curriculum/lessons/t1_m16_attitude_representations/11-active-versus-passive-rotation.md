@@ -15,7 +15,7 @@ A rotation matrix has exactly this problem. A $3\times 3$ **orthonormal** matrix
 
 The two are **[[transposes|transpose-grid]]** of each other: flip one across its main diagonal and you get the other. That single sentence is the whole content of this lesson. It is also the source of an entire family of flight software bugs, because a transpose error produces a matrix that passes every structural check. It is orthonormal. Its determinant is $+1$. As a quaternion it has length $1$. Its numbers look sensible.
 
-Lesson 05 showed that a transpose error costs exactly $2\Phi$ of pointing (twice the principal angle, folded into $0^\circ$ to $180^\circ$). At the identity attitude, $\Phi = 0$, that is zero. So bench tests on a vehicle sitting still find nothing, and the error appears in flight, growing with each manoeuvre. This module has put the question off several times with a note. Here it is settled, along with the naming habit that keeps it settled.
+Lesson 05 showed that a transpose error costs exactly $2\Phi$ of pointing (twice the principal angle, folded into $0^\circ$ to $180^\circ$). At the identity attitude, $\Phi = 0$, that is zero. So bench tests on a vehicle sitting still find nothing, and the error appears in flight, growing with each maneuver. This module has put the question off several times with a note. Here it is settled, along with the naming habit that keeps it settled.
 
 ## The same turn, written twice
 
@@ -96,7 +96,7 @@ where $0.965926 = \cos 15^\circ$ and $0.258819 = \sin 15^\circ$ (half of $30^\ci
 The passive quaternion has the axis *negated*, because it is the active turn through $-30^\circ$. And here is the trap. If a library's `from_axis_angle(axis, angle)` is active — as [[Eigen's AngleAxis|eigen-active]] is, and as graphics code generally is — then to build a passive frame transformation from it you must negate the angle or conjugate the result. Doing neither is the same $2\Phi$ error, dressed as a quaternion.
 
 ::: example A star tracker alignment matrix used the wrong way
-A **[[star tracker|star-tracker]]** is a camera that recognises star patterns to measure attitude. This one is mounted with a small measured misalignment: $\Phi = 0.800^\circ$ about the axis $\hat{\mathbf{e}} = (0.202808,\ 0.912636,\ -0.354914)$. The alignment matrix $\mathbf{M}$ is stored in the spacecraft database. By mistake, the code that reads it in applies $\mathbf{M}^{\top}$ where $\mathbf{M}$ belongs.
+A **[[star tracker|star-tracker]]** is a camera that recognizes star patterns to measure attitude. This one is mounted with a small measured misalignment: $\Phi = 0.800^\circ$ about the axis $\hat{\mathbf{e}} = (0.202808,\ 0.912636,\ -0.354914)$. The alignment matrix $\mathbf{M}$ is stored in the spacecraft database. By mistake, the code that reads it in applies $\mathbf{M}^{\top}$ where $\mathbf{M}$ belongs.
 
 The tracker's **boresight** — the direction its lens looks along — is $\mathbf{b} = (0,0,1)$ in the tracker's own axes. Done correctly,
 
@@ -114,7 +114,7 @@ Both are unit vectors to twelve digits. Each is $0.748^\circ$ from the nominal b
 
 The angle between them is $1.496^\circ$. Compare that with the rule. The relative rotation between the right and wrong matrices is $\mathbf{M}\mathbf{M}$, and its principal angle is $1.600^\circ$ — exactly $2\Phi = 2\times 0.800^\circ$. That is the error a vector at right angles to $\hat{\mathbf{e}}$ would suffer. The boresight gets a bit less, $1.496^\circ$, because it is [[not quite at right angles|boresight-gap]] to the misalignment axis. Sanity check: $1.496^\circ$ is less than $1.600^\circ$, as it must be.
 
-Now scale it. An imaging satellite specified to know its attitude to $0.01^\circ$ is off by $1.5^\circ$ — a hundred and fifty times the requirement. Because the number is plausible and steady, it would be blamed on almost anything before the transpose: tracker bias, thermal bending, a bad star catalogue.
+Now scale it. An imaging satellite specified to know its attitude to $0.01^\circ$ is off by $1.5^\circ$ — a hundred and fifty times the requirement. Because the number is plausible and steady, it would be blamed on almost anything before the transpose: tracker bias, thermal bending, a bad star catalog.
 :::
 
 ::: example A rate gyro package, mounted at 45°
@@ -148,15 +148,15 @@ The two orders really are different. Let $\mathbf{A}$ be a $50^\circ$ turn about
 This is the intrinsic-and-extrinsic reversal of lesson 02 in its general form. A list of active turns about *fixed* axes, applied in one order, equals the same list of turns about *moving* (body) axes applied in the opposite order. Two conventions, one relationship, described in every attitude library's documentation with different words.
 
 ::: warning Two wrong transposes can cancel, and then uncancel
-The dangerous repair is the local one. A frame chain gives the wrong answer. Someone inserts a transpose where the test was failing, and the test passes. But it passes because a second convention error further along the chain was cancelling the first — and now both are wrong in a way that happens to balance. The chain is right for the path that was tested and wrong for every other path through the same matrices. When a transpose fixes a symptom, find out which of the two conventions is actually wrong, fix that one, and re-run the paths that were already passing.
+The dangerous repair is the local one. A frame chain gives the wrong answer. Someone inserts a transpose where the test was failing, and the test passes. But it passes because a second convention error further along the chain was canceling the first — and now both are wrong in a way that happens to balance. The chain is right for the path that was tested and wrong for every other path through the same matrices. When a transpose fixes a symptom, find out which of the two conventions is actually wrong, fix that one, and re-run the paths that were already passing.
 :::
 
 ::: warning Small attitudes hide the bug, and that is the trap
-Code that uses either convention on a vehicle near its reference attitude is wrong only by $2\Phi$, and $\Phi$ is small. So the bug hides in exactly the code that runs most often and is checked least carefully. It surfaces on the first large slew, at $2\Phi$, which is why it is so often reported as "the estimator is fine until we manoeuvre".
+Code that uses either convention on a vehicle near its reference attitude is wrong only by $2\Phi$, and $\Phi$ is small. So the bug hides in exactly the code that runs most often and is checked least carefully. It surfaces on the first large slew, at $2\Phi$, which is why it is so often reported as "the estimator is fine until we maneuver".
 :::
 
 ::: note Naming the matrices is the fix
-Every convention argument in this module ends the same way: put the meaning in the name. `R_b_from_s` (body from sensor) cannot be misread, and it reads correctly in a chain — `R_b_from_n @ n_vector`, with the neighbouring labels matching. `C_align`, `R_mount`, `dcm` and `q_body` are not names; they are placeholders, and no amount of commenting makes them safe. Where a language allows it, give the frames to the [[type system|frame-types]] so that a mismatched product does not compile. Where it does not, the naming habit is the only defence — and it works.
+Every convention argument in this module ends the same way: put the meaning in the name. `R_b_from_s` (body from sensor) cannot be misread, and it reads correctly in a chain — `R_b_from_n @ n_vector`, with the neighboring labels matching. `C_align`, `R_mount`, `dcm` and `q_body` are not names; they are placeholders, and no amount of commenting makes them safe. Where a language allows it, give the frames to the [[type system|frame-types]] so that a mismatched product does not compile. Where it does not, the naming habit is the only defense — and it works.
 :::
 
 ## Check yourself
@@ -214,7 +214,7 @@ To check: take $\hat{\mathbf{n}} = \hat{\mathbf{z}}$ and $\theta = 90^\circ$, an
 :::
 
 ::: check
-A team reports that their attitude estimator "is fine until we manoeuvre, then the error grows with the slew angle, and it goes away when we return to the reference attitude". Name the most likely cause and the diagnostic.
+A team reports that their attitude estimator "is fine until we maneuver, then the error grows with the slew angle, and it goes away when we return to the reference attitude". Name the most likely cause and the diagnostic.
 :::
 
 ::: answer
@@ -235,7 +235,7 @@ The diagnostic has two steps. First, plot the reported error against the vehicle
 | $\mathbf{C}_{A\leftarrow B}$ read as an operator | Carries the $A$ triad onto the $B$ triad |
 | $\mathbf{C}(q)$ in this module | The active matrix of $[\cos(\Phi/2), \hat{\mathbf{e}}\sin(\Phi/2)]$ |
 | Passive elementary quaternion | Same angle, negated axis: $[\cos(\theta/2), -\hat{\mathbf{n}}\sin(\theta/2)]$ |
-| Composition | Active in a fixed frame: most recent leftmost. Passive: match neighbouring labels |
+| Composition | Active in a fixed frame: most recent leftmost. Passive: match neighboring labels |
 | Cost of confusing them | Exactly $2\Phi$ of pointing error; zero at the identity |
 | Diagnostic | Push one known vector through the matrix; check the sign of the result |
 | Worked figures | A $0.8^\circ$ misalignment used transposed gives $1.496^\circ$ on the boresight, $1.600^\circ$ at worst; a $45^\circ$ gyro mount gives resolved rates exactly $90^\circ$ apart |
@@ -316,7 +316,7 @@ Most general-purpose libraries — Eigen's `AngleAxis`, graphics engines, roboti
 :::
 
 ::: context star-tracker How a star tracker works
-A star tracker is a small digital camera with a computer attached. It photographs a patch of sky, finds the bright dots, matches their pattern against a catalogue of thousands of stars, and works out which way the camera is pointing — often to a few arcseconds, about a thousandth of a degree. Because it measures the camera's attitude, the spacecraft must know exactly how the camera is bolted on. That is the alignment matrix, and it is measured on the ground before launch.
+A star tracker is a small digital camera with a computer attached. It photographs a patch of sky, finds the bright dots, matches their pattern against a catalog of thousands of stars, and works out which way the camera is pointing — often to a few arcseconds, about a thousandth of a degree. Because it measures the camera's attitude, the spacecraft must know exactly how the camera is bolted on. That is the alignment matrix, and it is measured on the ground before launch.
 :::
 
 ::: context boresight-gap Why the boresight moves less than 2Φ

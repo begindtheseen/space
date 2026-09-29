@@ -98,7 +98,7 @@ UBSan did not catch it either: the sanitized build printed the same wrong answer
 :::
 
 ::: key
-Why does strict aliasing matter? The compiler assumes objects of unrelated types do not overlap, so a reinterpret_cast read of a float through an int* is undefined and can be optimised into nonsense. Use std::memcpy or, in C++20, std::bit_cast.
+Why does strict aliasing matter? The compiler assumes objects of unrelated types do not overlap, so a reinterpret_cast read of a float through an int* is undefined and can be optimized into nonsense. Use std::memcpy or, in C++20, std::bit_cast.
 :::
 
 ::: warning

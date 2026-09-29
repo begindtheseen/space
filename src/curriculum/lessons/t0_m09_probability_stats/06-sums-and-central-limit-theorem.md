@@ -134,7 +134,7 @@ Knowing the shape is worth a factor of fifteen in sample count. That is why the 
 
 ## The central limit theorem
 
-> **Central limit theorem.** Let $X_1, X_2, \ldots$ be i.i.d. with mean $\mu$ and finite variance $\sigma^2$, and let $S_N = \sum_{i=1}^{N} X_i$. Then the standardised sum
+> **Central limit theorem.** Let $X_1, X_2, \ldots$ be i.i.d. with mean $\mu$ and finite variance $\sigma^2$, and let $S_N = \sum_{i=1}^{N} X_i$. Then the standardized sum
 > $$
 > Z_N = \frac{S_N - N\mu}{\sigma\sqrt{N}}
 > $$
@@ -145,7 +145,7 @@ Read $Z_N$ as "the sum, measured in sigmas from where you would expect it". The 
 Put another way: for large $N$, the sum $S_N$ is approximately $\mathcal{N}(N\mu, N\sigma^2)$, and the average $\bar{X}_N$ is approximately $\mathcal{N}(\mu, \sigma^2/N)$. The pieces can be uniform, exponential, coin flips — anything with a finite variance. The Gaussian comes out of the act of adding, as it did with the dice.
 
 ::: note Why it has to be true
-Standardise each piece: $Y_i = (X_i - \mu)/\sigma$ has mean $0$ and variance $1$, and $Z_N = \tfrac{1}{\sqrt{N}}\sum_i Y_i$. By independence the MGFs multiply:
+Standardize each piece: $Y_i = (X_i - \mu)/\sigma$ has mean $0$ and variance $1$, and $Z_N = \tfrac{1}{\sqrt{N}}\sum_i Y_i$. By independence the MGFs multiply:
 
 $$
 M_{Z_N}(t) = \big[M_Y(t/\sqrt{N})\big]^N.
@@ -169,12 +169,12 @@ And $e^{t^2/2}$ is the MGF of the standard normal. Every detail of the original 
 The theorem has a **[[long history|clt-history]]**, but the result you need is in the box.
 
 ::: key
-The central limit theorem: the normalised sum $(S_N - N\mu)/(\sigma\sqrt{N})$ of $N$ i.i.d. random variables with finite variance converges to $\mathcal{N}(0, 1)$. The caveat for GNC: it converges fastest in the centre of the distribution and slowest in the far tails, so it says nothing useful about the $10^{-4}$-probability events where miss-distance and load requirements live.
+The central limit theorem: the normalized sum $(S_N - N\mu)/(\sigma\sqrt{N})$ of $N$ i.i.d. random variables with finite variance converges to $\mathcal{N}(0, 1)$. The caveat for GNC: it converges fastest in the center of the distribution and slowest in the far tails, so it says nothing useful about the $10^{-4}$-probability events where miss-distance and load requirements live.
 :::
 
 ## How fast, and where, does it converge?
 
-The proof shows the leading corrections. If one piece has skewness $\gamma_1$ ("gamma one") and kurtosis $\kappa$ ("kappa"), the standardised sum has skewness $\gamma_1/\sqrt{N}$ and excess kurtosis $(\kappa - 3)/N$. Lopsidedness dies off as $1/\sqrt{N}$; extra tail weight as $1/N$. Exponential pieces have skewness $2$, so even a sum of $N = 100$ still has skewness $2/\sqrt{100} = 0.2$ — plainly visible in a histogram.
+The proof shows the leading corrections. If one piece has skewness $\gamma_1$ ("gamma one") and kurtosis $\kappa$ ("kappa"), the standardized sum has skewness $\gamma_1/\sqrt{N}$ and excess kurtosis $(\kappa - 3)/N$. Lopsidedness dies off as $1/\sqrt{N}$; extra tail weight as $1/N$. Exponential pieces have skewness $2$, so even a sum of $N = 100$ still has skewness $2/\sqrt{100} = 0.2$ — plainly visible in a histogram.
 
 The **Berry–Esseen theorem** puts a number on the worst-case error:
 
@@ -182,12 +182,12 @@ $$
 \sup_z \big|P(Z_N \leq z) - \Phi(z)\big| \leq \frac{0.4748\,\rho}{\sigma^3\sqrt{N}}, \qquad \rho = \mathbb{E}|X - \mu|^3.
 $$
 
-($\sup_z$, "soup over z", means the largest value over all $z$.) It guarantees that the CDF error shrinks like $1/\sqrt{N}$. But it bounds the *absolute* error, and the absolute error is biggest in the centre. For a sum of twelve uniforms it allows an error of $0.178$ — hopelessly loose against the real error of a few thousandths near the mean.
+($\sup_z$, "soup over z", means the largest value over all $z$.) It guarantees that the CDF error shrinks like $1/\sqrt{N}$. But it bounds the *absolute* error, and the absolute error is biggest in the center. For a sum of twelve uniforms it allows an error of $0.178$ — hopelessly loose against the real error of a few thousandths near the mean.
 
 The far tails are another matter. The honest way to see this is to compute an exact case.
 
 ::: example Twelve uniforms against the Gaussian
-Let $S$ be the sum of **[[twelve independent|twelve-uniforms]]** $U(0, 1)$ variables (uniform on $0$ to $1$). Each has mean $\tfrac{1}{2}$ and variance $\tfrac{1}{12}$. So $S$ has mean $12 \times \tfrac{1}{2} = 6$ and variance $12 \times \tfrac{1}{12} = 1$: $S - 6$ is already standardised. The Irwin–Hall CDF gives the exact tails, which we can set against the Gaussian's:
+Let $S$ be the sum of **[[twelve independent|twelve-uniforms]]** $U(0, 1)$ variables (uniform on $0$ to $1$). Each has mean $\tfrac{1}{2}$ and variance $\tfrac{1}{12}$. So $S$ has mean $12 \times \tfrac{1}{2} = 6$ and variance $12 \times \tfrac{1}{12} = 1$: $S - 6$ is already standardized. The Irwin–Hall CDF gives the exact tails, which we can set against the Gaussian's:
 
 | Threshold | $P(S - 6 > k)$ exact | $1 - \Phi(k)$ | Ratio |
 | --- | --- | --- | --- |
@@ -273,7 +273,7 @@ With only two pieces the approximation is already within $12\%$ at this moderate
 :::
 
 ::: check
-Two independent GNSS position errors along one axis are $\mathcal{N}(0.5, 2^2)$ and $\mathcal{N}(-0.2, 1.5^2)$, in metres. What is the distribution of their difference, and what is the chance the difference exceeds $5\,\mathrm{m}$?
+Two independent GNSS position errors along one axis are $\mathcal{N}(0.5, 2^2)$ and $\mathcal{N}(-0.2, 1.5^2)$, in meters. What is the distribution of their difference, and what is the chance the difference exceeds $5\,\mathrm{m}$?
 :::
 
 ::: answer
@@ -297,7 +297,7 @@ A colleague wants to verify a $10^{-6}$ failure probability by adding up many in
 :::
 
 ::: answer
-**First, the tail is where the theorem is weakest.** It controls the absolute error of the CDF, which is dominated by the centre. The *relative* error in the tail has no limit. The twelve-uniform example is already off by a factor of nearly four at $4\sigma$, and its true probability drops to zero not far beyond. A $10^{-6}$ event at $4.75\sigma$ is deep in the region where the approximation is out of control.
+**First, the tail is where the theorem is weakest.** It controls the absolute error of the CDF, which is dominated by the center. The *relative* error in the tail has no limit. The twelve-uniform example is already off by a factor of nearly four at $4\sigma$, and its true probability drops to zero not far beyond. A $10^{-6}$ event at $4.75\sigma$ is deep in the region where the approximation is out of control.
 
 **Second, the conditions may fail.** If one term dominates the variance, or the terms share a common cause, the sum keeps the shape of that term. If any term has heavy tails, the true probability may be many times — even orders of magnitude — larger than the Gaussian's.
 
@@ -316,7 +316,7 @@ The defensible routes are an exact distribution where one exists, or a Monte Car
 | $P(\lvert\bar{X}_N - \mu\rvert \geq \varepsilon) \leq \sigma^2/(N\varepsilon^2)$ | Weak law of large numbers, via Chebyshev |
 | $Z_N = (S_N - N\mu)/(\sigma\sqrt{N}) \to \mathcal{N}(0, 1)$ | Central limit theorem |
 | Skewness $\gamma_1/\sqrt{N}$, excess kurtosis $(\kappa - 3)/N$ | How fast shape corrections fade |
-| $\sup_z\lvert F_N(z) - \Phi(z)\rvert \leq 0.4748\,\rho/(\sigma^3\sqrt{N})$ | Berry–Esseen: absolute CDF error, dominated by the centre |
+| $\sup_z\lvert F_N(z) - \Phi(z)\rvert \leq 0.4748\,\rho/(\sigma^3\sqrt{N})$ | Berry–Esseen: absolute CDF error, dominated by the center |
 | $K \sim \operatorname{Bin}(N, p) \approx \mathcal{N}(Np, Np(1-p))$ | Normal approximation to a count |
 | $\sum_{i=1}^{k} Z_i^2 \sim \chi^2_k$, mean $k$, variance $2k$ | Sum of squared standard normals (chi-square) |
 
@@ -375,7 +375,7 @@ Jacob Bernoulli, a Swiss mathematician, proved the first version of the law of l
 :::
 
 ::: context clt-history From coin tosses to a name
-Abraham de Moivre found the bell curve in 1733 as an approximation to the number of heads in many coin tosses. Pierre-Simon Laplace widened it around 1810 to sums of many kinds of errors. The name came much later: in 1920 George Pólya called it the "central" limit theorem because of its central place in probability — not because it is about the centre of a distribution, though, as this lesson shows, that is also where it works best.
+Abraham de Moivre found the bell curve in 1733 as an approximation to the number of heads in many coin tosses. Pierre-Simon Laplace widened it around 1810 to sums of many kinds of errors. The name came much later: in 1920 George Pólya called it the "central" limit theorem because of its central place in probability — not because it is about the center of a distribution, though, as this lesson shows, that is also where it works best.
 :::
 
 ::: context twelve-uniforms A shortcut from the early days
@@ -383,7 +383,7 @@ Early computers could easily make uniform random numbers but found Gaussian ones
 :::
 
 ::: context tail-ratio Good in the middle, wrong in the tails
-Each bar is the exact tail chance for the sum of twelve uniforms divided by the Gaussian's tail chance, at $k$ sigmas. A bar reaching the dashed line means a perfect match. Near the centre the match is excellent; by four sigmas the Gaussian is too big by a factor of nearly four; at six sigmas the true chance is zero.
+Each bar is the exact tail chance for the sum of twelve uniforms divided by the Gaussian's tail chance, at $k$ sigmas. A bar reaching the dashed line means a perfect match. Near the center the match is excellent; by four sigmas the Gaussian is too big by a factor of nearly four; at six sigmas the true chance is zero.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
@@ -408,5 +408,5 @@ The Cauchy distribution looks like a bell at first glance, but its tails are so 
 :::
 
 ::: context thermal-noise Noise from warm electrons
-In 1926–1928 John B. Johnson measured, and Harry Nyquist explained, the faint random voltage across any resistor at room temperature. It comes from the heat-driven jiggling of an enormous number of electrons, each nudging the voltage a tiny amount. Add up that many tiny independent nudges and the central limit theorem makes the result Gaussian — which is why the noise floor of nearly every electronic sensor, including the ones in an IMU, is modelled that way.
+In 1926–1928 John B. Johnson measured, and Harry Nyquist explained, the faint random voltage across any resistor at room temperature. It comes from the heat-driven jiggling of an enormous number of electrons, each nudging the voltage a tiny amount. Add up that many tiny independent nudges and the central limit theorem makes the result Gaussian — which is why the noise floor of nearly every electronic sensor, including the ones in an IMU, is modeled that way.
 :::

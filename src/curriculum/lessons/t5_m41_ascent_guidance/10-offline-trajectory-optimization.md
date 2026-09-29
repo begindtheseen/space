@@ -27,7 +27,7 @@ It carries only a flat-gravity local picture and the rocket's current state — 
 What is left for it to do is a **[[boundary-value problem|boundary-value-problem]]**: a problem where you know where you are now and where you must end up, and you have to find the steering that connects the two. The offline work has already chosen the route; onboard guidance only has to close the gap from wherever the rocket actually is.
 
 ::: key
-Offline optimisation vs onboard guidance: the full ascent trajectory is optimised offline with high-fidelity models to set the pitch program, staging and I-loads. Onboard guidance then only has to close the remaining boundary-value problem in real time from the actual state.
+Offline optimization vs onboard guidance: the full ascent trajectory is optimized offline with high-fidelity models to set the pitch program, staging and I-loads. Onboard guidance then only has to close the remaining boundary-value problem in real time from the actual state.
 :::
 
 ::: key
@@ -36,7 +36,7 @@ Offline optimization affords a full-fidelity vehicle and environment model, solv
 
 ## The limit that actually decides the answer
 
-Back to the road trip. The shortest route to Grandma's house crosses an old bridge with a 10-tonne weight limit, and your moving truck weighs 12 tonnes. The shortest route is not an answer at all. The real question is "the shortest route *that the truck is allowed to take*". The weight limit, not the distance, decides which road you drive.
+Back to the road trip. The shortest route to Grandma's house crosses an old bridge with a 10-metric ton weight limit, and your moving truck weighs 12 metric tons. The shortest route is not an answer at all. The real question is "the shortest route *that the truck is allowed to take*". The weight limit, not the distance, decides which road you drive.
 
 It is tempting to picture the offline ascent problem as "use the least propellant" and stop there. The first lesson already showed that picture is incomplete. As the pitch kick gets bigger, gravity loss falls and drag loss rises, and somewhere in between is the angle where their sum is smallest. An offline optimizer searches for that angle properly, and finds something the first lesson's four-case table could only hint at.
 
@@ -235,7 +235,7 @@ That is harder, because you cannot just march forward in time — you have to gu
 :::
 
 ::: context shadow-price What a limit is worth
-Economists use "shadow price" for the value of loosening a limit by one unit, even though nobody sells that unit in a shop. If your truck could cross a bridge rated 1 tonne higher, how many kilometers would you save? That is the shadow price of the weight limit.
+Economists use "shadow price" for the value of loosening a limit by one unit, even though nobody sells that unit in a shop. If your truck could cross a bridge rated 1 metric ton higher, how many kilometers would you save? That is the shadow price of the weight limit.
 
 In the ascent problem it is the loss saved per extra kilopascal of allowed dynamic pressure. The optimizer reports it for free — it is the Lagrange multiplier on the constraint. A large shadow price tells the structures team a slightly stronger rocket would pay off. A tiny one says strengthening it is pointless.
 

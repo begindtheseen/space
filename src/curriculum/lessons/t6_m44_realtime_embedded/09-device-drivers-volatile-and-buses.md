@@ -38,7 +38,7 @@ Signaling between threads or cores needs **atomics**: types whose reads and writ
 Where `volatile` is both needed and enough is its real job: a location that changes for reasons the compiler cannot see, where the "other party" is hardware, not another thread.
 
 ::: key What volatile does and does not do
-It stops the compiler from caching or reordering accesses to that object, which is what a memory-mapped register needs. It is NOT a synchronisation primitive: it provides no atomicity and no memory ordering between threads. For that, use atomics.
+It stops the compiler from caching or reordering accesses to that object, which is what a memory-mapped register needs. It is NOT a synchronization primitive: it provides no atomicity and no memory ordering between threads. For that, use atomics.
 :::
 
 Here are both tools in one short program. It compiles with `g++ -std=c++17` and runs as shown. A plain object stands in for the device, so it runs on any computer.

@@ -315,8 +315,8 @@ To **renormalize** means to divide a vector by its own length, so it has length 
 The step in the picture is exaggerated so it can be seen; its length error is about $0.23$, while the lesson's real step drifts by about $0.0001$ — some $2000$ times less.
 :::
 
-::: context gimbal Swivelling the engine
-A **gimbal** is a pivot mount that lets an engine swivel a few degrees in two directions, so the thrust can point slightly away from the body axis. It is how most rockets steer: a Falcon 9 booster's engines gimbal. Swivelling the thrust off the center of mass also makes a torque that turns the vehicle, which is why a real model couples gimbal angle, attitude and angular acceleration. This lesson leaves the gimbal out and lets attitude do all the aiming.
+::: context gimbal Swiveling the engine
+A **gimbal** is a pivot mount that lets an engine swivel a few degrees in two directions, so the thrust can point slightly away from the body axis. It is how most rockets steer: a Falcon 9 booster's engines gimbal. Swiveling the thrust off the center of mass also makes a torque that turns the vehicle, which is why a real model couples gimbal angle, attitude and angular acceleration. This lesson leaves the gimbal out and lets attitude do all the aiming.
 :::
 
 ::: context cosine-loss Leaning costs lift

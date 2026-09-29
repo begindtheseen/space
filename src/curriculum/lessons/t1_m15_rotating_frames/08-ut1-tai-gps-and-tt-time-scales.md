@@ -71,7 +71,7 @@ So today $\mathrm{TT} - \mathrm{UTC} = 37 + 32.184 = 69.184\,\mathrm{s}$, and $\
 
 The odd constant is history. TT replaced Ephemeris Time, worked out from the Moon's motion, and when the atomic scale took over in 1977 the gap between the two was $32.184\,\mathrm{s}$. Keeping it made TT continue smoothly from centuries of astronomical records. It is exact and will never change.
 
-The epoch **J2000.0** is defined in TT: 1 January 2000 at $12{:}00{:}00$ TT, which is $11{:}58{:}55.816$ UTC that day. As a Julian date (below) it is $\mathrm{JD}\;2\,451\,545.0\;\mathrm{TT}$. Every precession formula, star catalogue and "days since J2000" counts from this instant, in the scale the formula was written for. Feed it UTC and the argument is $69\,\mathrm{s}$ off. For precession, which moves $50''$ a year, that does not matter. For the Moon, moving about $1\,\mathrm{km/s}$, it is $70\,\mathrm{km}$.
+The epoch **J2000.0** is defined in TT: 1 January 2000 at $12{:}00{:}00$ TT, which is $11{:}58{:}55.816$ UTC that day. As a Julian date (below) it is $\mathrm{JD}\;2\,451\,545.0\;\mathrm{TT}$. Every precession formula, star catalog and "days since J2000" counts from this instant, in the scale the formula was written for. Feed it UTC and the argument is $69\,\mathrm{s}$ off. For precession, which moves $50''$ a year, that does not matter. For the Moon, moving about $1\,\mathrm{km/s}$, it is $70\,\mathrm{km}$.
 
 Strictly, TT is the time a clock on the geoid keeps. **Barycentric Dynamical Time**, TDB, used by NASA JPL's planet tables, is time at the solar system's center of mass; it differs from TT by relativistic wiggles under $2\,\mathrm{ms}$. In this module, treat them as the same.
 
@@ -275,7 +275,7 @@ Direction: UT1 is *ahead* of UTC, so the Earth has really turned farther than th
 | Week, seconds of week | GPS time format; 10-bit week rolls over every $1024$ weeks (1999, 2019) |
 | $\mathrm{TT} = \mathrm{TAI} + 32.184\,\mathrm{s}$ | Dynamical time; argument of ephemerides and precession–nutation; $\mathrm{TT} - \mathrm{GPS} = 51.184\,\mathrm{s}$ |
 | J2000.0 | 1 January 2000, $12{:}00{:}00$ TT $= \mathrm{JD}\;2\,451\,545.0\;\mathrm{TT}$ |
-| $\mathrm{JD}$, $\mathrm{MJD} = \mathrm{JD} - 2\,400\,000.5$ | Julian date (from noon) and modified Julian date (from midnight); always labelled with a scale |
+| $\mathrm{JD}$, $\mathrm{MJD} = \mathrm{JD} - 2\,400\,000.5$ | Julian date (from noon) and modified Julian date (from midnight); always labeled with a scale |
 | UT1 | Earth rotation angle in time units; measured, published as $\Delta\mathrm{UT1} = \mathrm{UT1} - \mathrm{UTC}$, $|\Delta\mathrm{UT1}| < 0.9\,\mathrm{s}$ |
 | $\theta_{ERA} = 2\pi(0.7790572732640 + 1.00273781191135448\,T_u)$ | Earth rotation angle from $T_u = \mathrm{JD}_{\mathrm{UT1}} - 2\,451\,545.0$ |
 | $\theta_{GMST}$ | Same rotation measured from the mean equinox of date; $360.98564736629^\circ$ per day $= 15.041^\circ/\mathrm{h}$ |

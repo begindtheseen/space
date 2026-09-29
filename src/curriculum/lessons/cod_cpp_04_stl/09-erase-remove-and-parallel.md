@@ -93,7 +93,7 @@ std::erase_if(x < 4)   size 2: 5 8
 Line by line.
 
 1. **remove alone.** The keepers 3, 5, 8 slid to the front, in order. The size is still 6. The tail, `0 0 8`, is whatever this library happened to leave — here, the old values that were never overwritten. Printing the whole vector makes it look as if "nothing was removed" and a stray 8 appeared. `new_end` points at index 3, right after the three keepers.
-2. **erase with one iterator.** `erase(it)` with a *single* iterator erases *one* element — the one at `it`. So it erased index 3, one zero from the tail, and left a vector of five with junk in it. It compiles, because `erase` has both forms. If nothing had been removed, `new_end` would equal `end()`, and erasing the element at `end()` is undefined behaviour.
+2. **erase with one iterator.** `erase(it)` with a *single* iterator erases *one* element — the one at `it`. So it erased index 3, one zero from the tail, and left a vector of five with junk in it. It compiles, because `erase` has both forms. If nothing had been removed, `new_end` would equal `end()`, and erasing the element at `end()` is undefined behavior.
 3. **The idiom.** `erase(new_end, end())` cut the whole tail. Size 3, contents 3 5 8. Correct.
 4. **`std::erase(d, 0)`** did the same in one call and returned the count removed, 3.
 5. **`std::erase_if`** with "less than 4" dropped the 3 and all three zeros — four elements — and kept 5 and 8.
@@ -105,7 +105,7 @@ Sanity check: six elements in, three zeros, so three should survive the zero-rem
 The two halves of the idiom each fail on their own, and neither g++ 13 nor clang++ 18 warns about either with `-Wall -Wextra`:
 
 - **`remove` alone** — `std::remove(v.begin(), v.end(), 0);` with the result thrown away. The size never changes, and the tail still holds stale values, so loops over `v` see "removed" data.
-- **`erase` alone** — `v.erase(std::remove(v.begin(), v.end(), 0));` with the second argument forgotten. It erases one element instead of the tail, and is undefined behaviour when nothing matched.
+- **`erase` alone** — `v.erase(std::remove(v.begin(), v.end(), 0));` with the second argument forgotten. It erases one element instead of the tail, and is undefined behavior when nothing matched.
 
 When you see `std::remove` or `std::unique` in a review, look for the `erase(…, v.end())` around it. On C++20, write `std::erase` or `std::erase_if` and the question disappears.
 :::
@@ -119,7 +119,7 @@ for (auto it = v.begin(); it != v.end(); ++it)
     if (is_bad(*it)) v.erase(it);        // bug: it is invalid after erase
 ```
 
-Lesson 06's rule for `vector` says `erase` invalidates every iterator at or after the erased position. So `it` is dangling the moment `erase` returns, and `++it` is undefined behaviour. The fix uses the iterator that `erase` returns, which points at the element after the erased one:
+Lesson 06's rule for `vector` says `erase` invalidates every iterator at or after the erased position. So `it` is dangling the moment `erase` returns, and `++it` is undefined behavior. The fix uses the iterator that `erase` returns, which points at the element after the erased one:
 
 ```cpp
 for (auto it = v.begin(); it != v.end();) {
@@ -193,7 +193,7 @@ Sanity check: the loop's cost grows like $n^2/4$ — here $10{,}000^2 / 4 = 25{,
 This is the second reason the idiom exists. It is not only shorter; it is **[[linear instead of quadratic|quadratic]]**.
 
 ::: key erase alone is the common bug
-Erasing inside a loop with `v.erase(it); ++it;` uses an invalidated iterator — undefined behaviour. The corrected loop, `it = v.erase(it)`, works but moves elements $O(n^2)$ times. The erase-remove idiom (or `std::erase_if`) does one $O(n)$ pass.
+Erasing inside a loop with `v.erase(it); ++it;` uses an invalidated iterator — undefined behavior. The corrected loop, `it = v.erase(it)`, works but moves elements $O(n^2)$ times. The erase-remove idiom (or `std::erase_if`) does one $O(n)$ pass.
 :::
 
 ## C++20: std::erase and std::erase_if
@@ -242,7 +242,7 @@ std::sort(std::execution::par, v.begin(), v.end());
 
 A policy is **permission, not a command**. The library may use as many threads as it likes, including one. What the policy really changes is what *you* promise:
 
-- With **`par`**, your function may run at the same time on different threads, for different elements. It must not cause a **[[data race|data-race]]**: two threads touching the same memory at the same time, at least one of them writing, with nothing coordinating them. That is undefined behaviour. A `for_each` that does `++count` on one shared `int` is the classic case; use `std::count_if` or `std::reduce` instead, which combine the partial results safely.
+- With **`par`**, your function may run at the same time on different threads, for different elements. It must not cause a **[[data race|data-race]]**: two threads touching the same memory at the same time, at least one of them writing, with nothing coordinating them. That is undefined behavior. A `for_each` that does `++count` on one shared `int` is the classic case; use `std::count_if` or `std::reduce` instead, which combine the partial results safely.
 - With **`par_unseq`** and **`unseq`**, the steps for different elements may also be interleaved *within one thread*. So your function must not take a lock or allocate memory either — a thread could end up waiting on a lock that it already holds, one step earlier.
 - Under **every** policy, including `seq`, an exception that escapes your function calls `std::terminate`. The program ends. There is no `catch`.
 - `reduce` and `transform_reduce` under a parallel policy may split the range differently on different machines or thread counts, so floating-point sums may differ in their last digits from run to run — last lesson's example, now with the grouping outside your control.
@@ -355,7 +355,7 @@ v.erase(std::remove(v.begin(), v.end(), 0));
 :::
 
 ::: answer
-`std::remove` finds nothing to remove and returns `v.end()`. The single-argument `erase(pos)` then tries to erase the element *at* `v.end()` — which is not an element. That is undefined behaviour. When there *are* zeros, the same line erases only one element of the tail and leaves the rest. The line needs its second argument: `v.erase(std::remove(v.begin(), v.end(), 0), v.end());`, or on C++20, `std::erase(v, 0);`.
+`std::remove` finds nothing to remove and returns `v.end()`. The single-argument `erase(pos)` then tries to erase the element *at* `v.end()` — which is not an element. That is undefined behavior. When there *are* zeros, the same line erases only one element of the tail and leaves the rest. The line needs its second argument: `v.erase(std::remove(v.begin(), v.end(), 0), v.end());`, or on C++20, `std::erase(v, 0);`.
 :::
 
 ::: check
@@ -379,7 +379,7 @@ A teammate writes `std::for_each(std::execution::par, v.begin(), v.end(), [&](do
 :::
 
 ::: answer
-With `par`, the lambda may run on several threads at once, and each one does `++count` on the same `int` with nothing coordinating them. That is a data race: undefined behaviour, and in practice a count that is sometimes too low. The fix is an algorithm that combines partial results safely: `auto count = std::count_if(std::execution::par, v.begin(), v.end(), [&](double x) { return x > limit; });`. Each thread counts its own piece, and the library adds the pieces together.
+With `par`, the lambda may run on several threads at once, and each one does `++count` on the same `int` with nothing coordinating them. That is a data race: undefined behavior, and in practice a count that is sometimes too low. The fix is an algorithm that combines partial results safely: `auto count = std::count_if(std::execution::par, v.begin(), v.end(), [&](double x) { return x > limit; });`. Each thread counts its own piece, and the library adds the pieces together.
 :::
 
 ## Summary
@@ -392,7 +392,7 @@ With `par`, the lambda may run on several threads at once, and each one does `++
 | erase in a loop | `it = v.erase(it)` | correct but $O(n^2)$ moves on a vector |
 | `std::erase`, `std::erase_if` | C++20, every container | return the count removed; the right method per container |
 | `seq`, `par`, `par_unseq`, `unseq` | execution policies | permission, not a promise; exceptions call `terminate` |
-| data race | unsynchronized shared write | undefined behaviour; use `count_if` or `reduce` |
+| data race | unsynchronized shared write | undefined behavior; use `count_if` or `reduce` |
 | libstdc++ back end | Intel oneTBB | needs TBB headers and `-ltbb`; otherwise quietly serial |
 
 Next lesson: lambdas in full. You have been reading `[]` and `[&]` as "uses nothing" and "uses the locals around it". Lesson 10 shows what the compiler builds for each, how capture by value and by reference differ, and why a stored `[&]` lambda is a classic dangling bug.
@@ -467,7 +467,7 @@ Modern processors have **SIMD** instructions — "single instruction, multiple d
 :::
 
 ::: context data-race Why a data race is undefined
-`++count` looks like one step but is three: read the value, add one, write it back. Two threads can both read 41, both add one, and both write 42 — one increment lost. The C++ standard goes further than "the answer may be wrong": any data race makes the whole program's behaviour undefined, which lets compilers optimise as if races never happen. The concurrency module later in this track covers the tools that make shared data safe: atomics and mutexes.
+`++count` looks like one step but is three: read the value, add one, write it back. Two threads can both read 41, both add one, and both write 42 — one increment lost. The C++ standard goes further than "the answer may be wrong": any data race makes the whole program's behavior undefined, which lets compilers optimize as if races never happen. The concurrency module later in this track covers the tools that make shared data safe: atomics and mutexes.
 :::
 
 ::: context tbb Where libstdc++'s parallel algorithms came from

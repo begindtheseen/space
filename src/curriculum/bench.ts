@@ -59,7 +59,7 @@ export const BENCH_TASKS: BenchTask[] = [
     minutes: 25,
     brief:
       'The pitch rate loop on the upper stage was tuned by someone who has since left. It tracks well enough in the nominal case, but the margin analysis fails and the review board will not sign it off. Retune it.',
-    spec: `The vehicle's pitch-rate response is modelled as a first-order lag with a delay:
+    spec: `The vehicle's pitch-rate response is modeled as a first-order lag with a delay:
 
 $$
 G(s) = \\frac{K_v}{\\tau s + 1} e^{-T_d s}, \\qquad K_v = 2.4,\\ \\tau = 0.45\\ \\mathrm{s},\\ T_d = 0.03\\ \\mathrm{s}
@@ -319,7 +319,7 @@ The engine produces a constant \`T = 845\` kN at a specific impulse of
 \`Isp = 282\` s once lit, and cannot be throttled or relit. Gravity is
 \`g = 9.81\` m/s², and you may ignore drag.
 
-Write \`ignition_altitude()\` returning the altitude in metres at which the
+Write \`ignition_altitude()\` returning the altitude in meters at which the
 engine must light so that velocity and altitude both reach zero together.
 
 Then write \`propellant_used()\` returning the propellant mass in kg burned
@@ -340,7 +340,7 @@ g0 = 9.80665     # m/s^2, for the Isp definition
 g  = 9.81        # m/s^2, local gravity
 
 def ignition_altitude():
-    """Altitude in metres at which to light the engine."""
+    """Altitude in meters at which to light the engine."""
     # TODO
     return 0.0
 
@@ -425,7 +425,7 @@ Judged on:
 | Average NEES | between 0.4 and 2.6 |
 | Final altitude variance | above 0.5 m² |
 
-NEES is the normalised estimation error squared. For a two-state filter that is
+NEES is the normalized estimation error squared. For a two-state filter that is
 working properly it averages about 2. Far below means the filter is too
 uncertain; far above means it believes itself more than it has earned, which is
 what is happening here.`,
@@ -547,7 +547,7 @@ else:
       'A long-duration orbit propagator is being used for a coverage study. Over a few days of simulated time the orbit visibly shrinks, and nobody believes the results any more. The dynamics are right. The integrator is not.',
     spec: `Propagate a two-body orbit for 20 orbital periods and keep it closed.
 
-Implement \`step(state, dt)\` taking \`[x, y, vx, vy]\` in metres and metres per
+Implement \`step(state, dt)\` taking \`[x, y, vx, vy]\` in meters and meters per
 second, under Earth point-mass gravity with
 \`mu = 3.986004418e14\` m³/s².
 
@@ -646,7 +646,7 @@ else:
 
 Write two functions.
 
-\`utilisation()\` returns total processor utilisation as a fraction.
+\`utilization()\` returns total processor utilization as a fraction.
 
 \`response_time(i)\` returns the worst-case response time in milliseconds of
 task \`i\` (0 = control, highest priority) using standard response-time
@@ -665,8 +665,8 @@ not guess — iterate the recurrence until it stops changing.`,
 # (period_ms, wcet_ms), highest priority first under rate monotonic.
 TASKS = [(10.0, 4.0), (40.0, 9.0), (100.0, 12.0)]
 
-def utilisation():
-    """Total processor utilisation as a fraction, e.g. 0.75."""
+def utilization():
+    """Total processor utilization as a fraction, e.g. 0.75."""
     # TODO
     return 0.0
 
@@ -697,7 +697,7 @@ def _ref_response(i):
             return float('inf')
     return R
 
-u = float(utilisation())
+u = float(utilization())
 u_ref = _ref_util()
 print("METRIC utilisation_error %.6f <= 1e-6" % abs(u - u_ref))
 
@@ -717,9 +717,9 @@ for i in range(len(TASKS)):
     T_i = TASKS[i][0]
     print("NOTE %s: response %.2f ms against a %.0f ms deadline%s"
           % (names[i], want, T_i, "" if want <= T_i else "  <-- misses"))
-print("NOTE Utilisation is %.3f. The rate-monotonic sufficient bound for three tasks is %.3f, so a utilisation test alone cannot settle this." % (u_ref, 3 * (2 ** (1.0 / 3) - 1)))
+print("NOTE Utilization is %.3f. The rate-monotonic sufficient bound for three tasks is %.3f, so a utilization test alone cannot settle this." % (u_ref, 3 * (2 ** (1.0 / 3) - 1)))
 `,
-    hint: 'The recurrence starts at R = C_i and is iterated: compute the interference at the current R, get a new R, repeat until it stops moving. It converges from below, so starting at C_i and going up is correct. Watch the ceiling — the interference is a step function, which is exactly why the utilisation bound is not enough.',
+    hint: 'The recurrence starts at R = C_i and is iterated: compute the interference at the current R, get a new R, repeat until it stops moving. It converges from below, so starting at C_i and going up is correct. Watch the ceiling — the interference is a step function, which is exactly why the utilization bound is not enough.',
   },
 ]
 

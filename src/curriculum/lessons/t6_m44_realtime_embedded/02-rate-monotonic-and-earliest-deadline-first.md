@@ -3,8 +3,8 @@ id: l02-rate-monotonic-and-edf
 title: Fixed-priority scheduling and earliest-deadline-first
 minutes: 22
 covers:
-  - "Fixed-priority scheduling: rate-monotonic priority assignment and the Liu-Layland utilisation bound"
-  - Earliest-deadline-first and why it achieves higher utilisation but degrades worse on overload
+  - "Fixed-priority scheduling: rate-monotonic priority assignment and the Liu-Layland utilization bound"
+  - Earliest-deadline-first and why it achieves higher utilization but degrades worse on overload
 ---
 
 Imagine you have homework in three subjects. Math is due every day. Science is due every three days. A book report is due every two weeks. You can only work on one at a time. Which do you pick up first when two are waiting?
@@ -21,7 +21,7 @@ Every result in this lesson uses the same simple picture of the work. There is a
 - $T_i$ ("T sub i") is its **period**: it is released — becomes ready to run — once every $T_i$.
 - $D_i$ ("D sub i") is its **relative deadline**: each job must finish within $D_i$ of its release. For now, $D_i = T_i$ — each job must finish before the next one is released.
 
-The fraction of the processor that task $i$ uses is $C_i / T_i$. A task needing $2\,\mathrm{ms}$ every $10\,\mathrm{ms}$ uses $0.2$ of the processor. Add these up for all the tasks and you get the total **utilisation**:
+The fraction of the processor that task $i$ uses is $C_i / T_i$. A task needing $2\,\mathrm{ms}$ every $10\,\mathrm{ms}$ uses $0.2$ of the processor. Add these up for all the tasks and you get the total **utilization**:
 
 $$
 U = \sum_{i=1}^{n} \frac{C_i}{T_i}.
@@ -42,10 +42,10 @@ Why this rule and not some other fixed order? In **[[1973, Liu and Layland prove
 When a deadline is shorter than its period, $D_i < T_i$, the rule grows up into **deadline-monotonic**: rank by shortest *deadline* instead of shortest period. The same optimality result carries over. In this lesson $D_i = T_i$, so the two rules agree.
 
 ::: key
-**Rate-monotonic priority assignment**: shorter period gets higher priority. Optimal among fixed-priority assignments for independent periodic tasks with deadlines equal to periods. Deadline-monotonic generalises it when deadlines are shorter than periods.
+**Rate-monotonic priority assignment**: shorter period gets higher priority. Optimal among fixed-priority assignments for independent periodic tasks with deadlines equal to periods. Deadline-monotonic generalizes it when deadlines are shorter than periods.
 :::
 
-## The Liu-Layland utilisation bound
+## The Liu-Layland utilization bound
 
 Fixing the ranking still leaves a question: how much of the processor may the tasks claim? Liu and Layland answered that too. For $n$ tasks under rate-monotonic priorities,
 
@@ -53,7 +53,7 @@ $$
 U = \sum_{i=1}^{n} \frac{C_i}{T_i} \;\le\; n\left(2^{1/n} - 1\right)
 $$
 
-is **sufficient** for schedulability. Read $2^{1/n}$ as "two to the one over n", the $n$-th root of $2$. In words: if the total utilisation is at or below this number, every task meets every deadline, guaranteed, whatever the individual $C_i$ and $T_i$ are.
+is **sufficient** for schedulability. Read $2^{1/n}$ as "two to the one over n", the $n$-th root of $2$. In words: if the total utilization is at or below this number, every task meets every deadline, guaranteed, whatever the individual $C_i$ and $T_i$ are.
 
 Here is the bound for a few task counts:
 
@@ -61,14 +61,14 @@ Here is the bound for a few task counts:
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Bound | $1.000$ | $0.828$ | $0.780$ | $0.757$ | $0.743$ | $0.718$ | $\ln 2 = 0.693$ |
 
-One task can use the whole processor. Two tasks are guaranteed safe up to $82.8\%$. As $n$ grows, the bound keeps falling, and it **[[levels off at ln 2|bound-curve]]** — about $0.693$. So a large task set is guaranteed schedulable by this test only below about $69\%$ utilisation.
+One task can use the whole processor. Two tasks are guaranteed safe up to $82.8\%$. As $n$ grows, the bound keeps falling, and it **[[levels off at ln 2|bound-curve]]** — about $0.693$. So a large task set is guaranteed schedulable by this test only below about $69\%$ utilization.
 
 Now the most important word in this section: **sufficient**. It works in one direction only.
 
 - **Pass** the bound, and schedulability is proven. Done.
 - **Fail** the bound, and you have proven *nothing*. The set might be fine. This test cannot tell.
 
-Think of a sign at a bridge: "trucks under 10 tonnes: always safe." A 12-tonne truck is not told it will fall in — only that the sign cannot vouch for it. The bound is built from the worst possible relationship between periods that could ever occur at that utilisation, and most real task sets are nowhere near that worst case. The next lesson builds the exact test that settles what the bound leaves open. For now: a pass is a free proof; a fail means "unknown — go compute".
+Think of a sign at a bridge: "trucks under 10 metric tons: always safe." A 12-metric ton truck is not told it will fall in — only that the sign cannot vouch for it. The bound is built from the worst possible relationship between periods that could ever occur at that utilization, and most real task sets are nowhere near that worst case. The next lesson builds the exact test that settles what the bound leaves open. For now: a pass is a free proof; a fail means "unknown — go compute".
 
 ::: note Why the bound is 0.828 for two tasks, and why it levels off at ln 2
 Take two tasks with $T_1 < T_2 \le 2T_1$, so task 1 has the higher priority. Build the tightest possible set: release both at $t = 0$ and choose the times so that the processor is busy every instant from $0$ to $T_2$, with task 2 finishing exactly on its deadline.
@@ -89,7 +89,7 @@ For the limit, write $x = 1/n$, so the bound is $\frac{2^x - 1}{x}$. For tiny $x
 ::: example A task set the bound clears outright
 Two tasks: $C_1 = 1\,\mathrm{ms}$, $T_1 = 4\,\mathrm{ms}$, and $C_2 = 1\,\mathrm{ms}$, $T_2 = 6\,\mathrm{ms}$. Rate-monotonic priorities put task 1 first, since its period is shorter.
 
-**Step 1: add up the utilisation.** Put both fractions over $12$:
+**Step 1: add up the utilization.** Put both fractions over $12$:
 
 $$
 U = \frac{1}{4} + \frac{1}{6} = \frac{3}{12} + \frac{2}{12} = \frac{5}{12} \approx 0.417.
@@ -103,7 +103,7 @@ $$
 :::
 
 ::: key
-**Liu-Layland utilisation bound**: $U \le n(2^{1/n}-1)$ is SUFFICIENT for rate-monotonic schedulability. $n = 2$ gives $0.828$, $n = 3$ gives $0.780$, and it decreases to $\ln 2 = 0.693$. Failing it proves nothing — run exact analysis.
+**Liu-Layland utilization bound**: $U \le n(2^{1/n}-1)$ is SUFFICIENT for rate-monotonic schedulability. $n = 2$ gives $0.828$, $n = 3$ gives $0.780$, and it decreases to $\ln 2 = 0.693$. Failing it proves nothing — run exact analysis.
 :::
 
 ## Earliest-deadline-first
@@ -135,7 +135,7 @@ So the work does fit after all — a contradiction. The assumed miss cannot happ
 ::: example A set rate-monotonic cannot schedule but EDF can
 Two tasks: $C_1 = 2\,\mathrm{ms}$, $T_1 = 5\,\mathrm{ms}$, and $C_2 = 4\,\mathrm{ms}$, $T_2 = 7\,\mathrm{ms}$.
 
-**Step 1: utilisation.**
+**Step 1: utilization.**
 
 $$
 U = \frac{2}{5} + \frac{4}{7} = 0.4 + 0.5714 = 0.9714.
@@ -147,7 +147,7 @@ This is above the two-task bound of $0.828$, so the RM bound is silent.
 
 **Step 3: EDF.** At $t = 5$, task 1's new job has deadline $10$, but task 2's job has deadline $7$ — nearer. So EDF lets task 2 keep running, and it finishes at $t = 6$, on time. Carry on the same way over one **[[hyperperiod|edf-rm-picture]]** — the $35\,\mathrm{ms}$ after which the pattern repeats, the least common multiple of $5$ and $7$ — and all seven jobs of task 1 and all five of task 2 finish on time. That matches the test: $0.9714 \le 1$.
 
-**Sanity check:** the processor sits idle for $1\,\mathrm{ms}$ in those $35\,\mathrm{ms}$, and $1/35 \approx 0.029 = 1 - 0.9714$. The idle time is exactly the unused utilisation. EDF put a $97\%$ load to work that no fixed ranking can carry.
+**Sanity check:** the processor sits idle for $1\,\mathrm{ms}$ in those $35\,\mathrm{ms}$, and $1/35 \approx 0.029 = 1 - 0.9714$. The idle time is exactly the unused utilization. EDF put a $97\%$ load to work that no fixed ranking can carry.
 :::
 
 ::: key
@@ -185,7 +185,7 @@ When EDF does appear on a real system, such as Linux's **[[SCHED_DEADLINE|sched-
 ## Check yourself
 
 ::: check
-A four-task set under rate-monotonic priorities has total utilisation $U = 0.74$. What exactly can you conclude? Do you need anything more before writing "this task set is safe"?
+A four-task set under rate-monotonic priorities has total utilization $U = 0.74$. What exactly can you conclude? Do you need anything more before writing "this task set is safe"?
 :::
 
 ::: answer
@@ -197,7 +197,7 @@ Without the formula, explain why the Liu-Layland bound falls as the number of ta
 :::
 
 ::: answer
-With more tasks, each low-priority task can be interrupted by a longer chain of higher-priority tasks, and their periods can line up against it in more bad ways. The bound has to cover the worst of those line-ups, so the guaranteed-safe utilisation goes down.
+With more tasks, each low-priority task can be interrupted by a longer chain of higher-priority tasks, and their periods can line up against it in more bad ways. The bound has to cover the worst of those line-ups, so the guaranteed-safe utilization goes down.
 
 It levels off because the extra pessimism from each new task shrinks. Liu and Layland showed the worst-case loss from bad alignment tends to a limit as $n$ grows, landing the bound at $\ln 2 \approx 0.693$. So there is always a slice — about $69\%$ of the processor — that any rate-monotonic task set fits inside, however badly its periods line up.
 :::
@@ -209,7 +209,7 @@ A colleague argues for EDF on a safety-critical flight computer "because it can 
 ::: answer
 It compares only the nominal bounds and ignores what happens on overload, which matters more for a safety-critical scheduler. Under EDF no task has a protected rank, so one task's overrun can, over time, make an unrelated task late — whoever's deadline is nearest while the backlog lasts. Under rate-monotonic, an overrun can only delay tasks of equal or lower rank; the top task is protected by construction.
 
-A real flight schedule rarely runs at a utilisation where the extra headroom matters. But over a long mission, some task somewhere will overrun, and what that overrun does is the fact that should decide the choice.
+A real flight schedule rarely runs at a utilization where the extra headroom matters. But over a long mission, some task somewhere will overrun, and what that overrun does is the fact that should decide the choice.
 :::
 
 ::: check
@@ -237,9 +237,9 @@ The miss is the same size, but the cause is different. Here B misses because of 
 | Term | Statement |
 | --- | --- |
 | Task model | Independent periodic tasks: WCET $C_i$, period $T_i$, deadline $D_i = T_i$ |
-| Utilisation | $U = \sum C_i/T_i$, the fraction of the processor the tasks claim |
+| Utilization | $U = \sum C_i/T_i$, the fraction of the processor the tasks claim |
 | Rate-monotonic (RM) | Shorter period gets higher priority, fixed; optimal among fixed-priority assignments when $D_i = T_i$ |
-| Deadline-monotonic | Shorter deadline gets higher priority; generalises RM when $D_i < T_i$ |
+| Deadline-monotonic | Shorter deadline gets higher priority; generalizes RM when $D_i < T_i$ |
 | Liu-Layland bound | $U \le n(2^{1/n}-1)$ is sufficient for RM; $0.828$ at $n = 2$, $0.780$ at $n = 3$, down to $\ln 2 = 0.693$ |
 | Sufficient, not necessary | Passing the bound proves schedulability; failing it proves nothing |
 | EDF | Run the ready task with the nearest absolute deadline, re-decided continuously |
@@ -254,7 +254,7 @@ To **preempt** is to cut in. When a more urgent task becomes ready, the schedule
 :::
 
 ::: context liu-layland The paper behind the bound
-C. L. Liu and James Layland published "Scheduling Algorithms for Multiprogramming in a Hard-Real-Time Environment" in the Journal of the ACM in 1973. In a few pages it proved that rate-monotonic is the best fixed ranking, gave the utilisation bound, and showed that deadline-driven scheduling — what we now call EDF — can use the whole processor. It is still one of the most cited papers in computer science, and nearly every scheduling result in this module grows out of it.
+C. L. Liu and James Layland published "Scheduling Algorithms for Multiprogramming in a Hard-Real-Time Environment" in the Journal of the ACM in 1973. In a few pages it proved that rate-monotonic is the best fixed ranking, gave the utilization bound, and showed that deadline-driven scheduling — what we now call EDF — can use the whole processor. It is still one of the most cited papers in computer science, and nearly every scheduling result in this module grows out of it.
 :::
 
 ::: context bound-curve The bound, task by task
@@ -354,7 +354,7 @@ Push one domino and it knocks down the next, which knocks down the next. Under E
 :::
 
 ::: context tie-break Breaking ties
-When two ready jobs have exactly the same deadline, EDF's rule does not say which goes first, so the scheduler needs a second rule — the lower task number, the one that arrived first, or whatever the code happens to do. The choice does not change whether a schedulable set is schedulable. It does change who gets hurt on overload, as the example shows, which is one more sign that EDF's overload behaviour is hard to predict.
+When two ready jobs have exactly the same deadline, EDF's rule does not say which goes first, so the scheduler needs a second rule — the lower task number, the one that arrived first, or whatever the code happens to do. The choice does not change whether a schedulable set is schedulable. It does change who gets hurt on overload, as the example shows, which is one more sign that EDF's overload behavior is hard to predict.
 :::
 
 ::: context sched-deadline EDF inside Linux

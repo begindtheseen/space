@@ -3,7 +3,7 @@ id: l01-function-and-class-templates
 title: Function and class templates
 minutes: 24
 covers:
-  - "Function and class templates; argument deduction; explicit and partial specialisation"
+  - "Function and class templates; argument deduction; explicit and partial specialization"
 ---
 
 Think of a cookie cutter. You cut the shape once, out of metal. After that you can press it into gingerbread, sugar dough or chocolate dough, and every time you get the same star, made of whatever you pressed it into. The cutter is not a cookie. It is a recipe for the shape.
@@ -29,7 +29,7 @@ T clamp_to(T x, T lo, T hi) {
 
 Read the first line aloud as "a template, for any type `T`". The angle brackets hold the **template parameter list** — the holes in the cutter. `typename T` says "`T` stands for some type, to be filled in later". (You will also see `class T` there. In this spot it means exactly the same thing; lesson 4 says where the two words differ.) After that line, `T` is used like any type name.
 
-The whole thing is a **function template** — not a function, but a pattern for making functions. Nothing is compiled for it until you call it. When you do, the compiler fills in `T` and writes a real function. That act is **instantiation**, and the function it produces is an **instantiation** or **specialisation** of the template: `clamp_to<double>`, read "clamp-to of double".
+The whole thing is a **function template** — not a function, but a pattern for making functions. Nothing is compiled for it until you call it. When you do, the compiler fills in `T` and writes a real function. That act is **instantiation**, and the function it produces is an **instantiation** or **specialization** of the template: `clamp_to<double>`, read "clamp-to of double".
 
 ::: example Three functions from one template
 This program clamps three different kinds of command.
@@ -64,7 +64,7 @@ Walk through it.
 2. $112$ percent throttle is above $100$, so it comes back as $100$.
 3. $0.3$ is inside $[0, 1]$, so it comes back unchanged.
 
-Now look at what the compiler made. Compile to an object file without optimisation (at `-O2` these tiny functions get pasted into `main` and vanish), and list its symbols with `nm -C`, which prints the names in readable C++ form:
+Now look at what the compiler made. Compile to an object file without optimization (at `-O2` these tiny functions get pasted into `main` and vanish), and list its symbols with `nm -C`, which prints the names in readable C++ form:
 
 ```
 0000000000000000 W double clamp_to<double>(double, double, double)
@@ -174,14 +174,14 @@ $\sqrt{3^2 + 4^2 + 12^2} = \sqrt{169} = 13$ and $\sqrt{1 + 4 + 4} = 3$, as the o
 One more property saves real work. A member function of a class template is instantiated only if it is used. So `Vec3<std::string>` holding the names `"roll"`, `"pitch"`, `"yaw"` compiles fine: `norm()` would be nonsense for strings, but nobody called it, so it was never written out. Calling it would be the error, at the line that calls it.
 
 ::: key
-A class template is a pattern for classes; each set of arguments (`Vec3<float>`, `Vec3<double>`) is a separate, unrelated type. Member functions are instantiated only when used. Since C++17 the arguments can often be deduced from the initialiser.
+A class template is a pattern for classes; each set of arguments (`Vec3<float>`, `Vec3<double>`) is a separate, unrelated type. Member functions are instantiated only when used. Since C++17 the arguments can often be deduced from the initializer.
 :::
 
-## Explicit specialisation: one special case
+## Explicit specialization: one special case
 
 Sometimes the general pattern is wrong for one particular type. Back to the kitchen: the star cutter works for every dough except the crumbly one, so for that dough you keep a separate cutter.
 
-In C++ the separate cutter is an **explicit specialisation**, also called a **full specialisation**: a complete replacement definition of the template for one exact set of arguments. It starts with `template <>` — read "template with nothing left open" — because every parameter has been fixed.
+In C++ the separate cutter is an **explicit specialization**, also called a **full specialization**: a complete replacement definition of the template for one exact set of arguments. It starts with `template <>` — read "template with nothing left open" — because every parameter has been fixed.
 
 Picture a telemetry encoder that must decide how each field type goes on the wire. For most types, sending the raw bytes is fine. A `bool` is wasteful as a whole byte, so flags get packed into bits. A pointer should never be sent at all, because an address in the flight computer means nothing on the ground.
 
@@ -237,8 +237,8 @@ const char*  0  never sent: an address means nothing on the ground
 
 Walk through how the compiler chose each line.
 
-1. `Wire<std::int16_t>` and `Wire<double>`: no specialisation matches, so the **primary template** — the general one — is used, with `sizeof(T)` giving 2 and 8.
-2. `Wire<bool>` exactly matches the full specialisation, so that definition replaces the primary entirely.
+1. `Wire<std::int16_t>` and `Wire<double>`: no specialization matches, so the **primary template** — the general one — is used, with `sizeof(T)` giving 2 and 8.
+2. `Wire<bool>` exactly matches the full specialization, so that definition replaces the primary entirely.
 3. `Wire<double*>` matches the pointer pattern `T*` with `T = double`. Why it wins is the next section's subject.
 4. `Wire<const char*>` also matches `T*`, this time with `T = const char`.
 
@@ -247,13 +247,13 @@ Sanity check: the only lines that did not come from the primary are exactly the 
 
 A specialisation must be declared after the primary template, and before the first use that would need it. Its body can be completely different from the primary's: different members, different sizes, anything. The standard library does this in [[a famous case|vector-bool]].
 
-## Partial specialisation: a special family
+## Partial specialization: a special family
 
-The `Wire<T*>` definition above is neither the general case nor one exact type. It is a **partial specialisation**: a definition for a whole family of arguments that match a pattern. It still has open parameters (`template <typename T>`), and the pattern after the name (`Wire<T*>`) says which arguments it takes.
+The `Wire<T*>` definition above is neither the general case nor one exact type. It is a **partial specialization**: a definition for a whole family of arguments that match a pattern. It still has open parameters (`template <typename T>`), and the pattern after the name (`Wire<T*>`) says which arguments it takes.
 
-When several definitions match, the compiler picks the **most specialised** one: the one whose pattern accepts the fewest types. Every pointer is "some type", but not every type is a pointer, so `T*` is more specialised than `T` and wins for `double*`. If no pattern is more specialised than every other, the use is ambiguous, and it is an error.
+When several definitions match, the compiler picks the **most specialized** one: the one whose pattern accepts the fewest types. Every pointer is "some type", but not every type is a pointer, so `T*` is more specialized than `T` and wins for `double*`. If no pattern is more specialized than every other, the use is ambiguous, and it is an error.
 
-Now the rule to carry away: **only class templates and variable templates can be partially specialised. Function templates cannot.** Try it and g++ tells you plainly:
+Now the rule to carry away: **only class templates and variable templates can be partially specialized. Function templates cannot.** Try it and g++ tells you plainly:
 
 ```cpp
 template <typename T>
@@ -267,9 +267,9 @@ void describe<T*>(T*) { std::puts("a pointer"); }   // not allowed
 error: non-class, non-variable partial specialization 'describe<T*>' is not allowed
 ```
 
-For functions, you do something else that already works: **overload**. Drop the `<T*>` after the name, and the second `describe` becomes a separate function template that happens to share the name. Overload resolution, which you met in the first module, then picks the best candidate, and among templates that fit equally well it prefers the more specialised one. You get the effect you wanted by a different mechanism.
+For functions, you do something else that already works: **overload**. Drop the `<T*>` after the name, and the second `describe` becomes a separate function template that happens to share the name. Overload resolution, which you met in the first module, then picks the best candidate, and among templates that fit equally well it prefers the more specialized one. You get the effect you wanted by a different mechanism.
 
-::: example Overloads instead of partial specialisation
+::: example Overloads instead of partial specialization
 ```cpp
 #include <cstdio>
 
@@ -300,24 +300,24 @@ a flag
 Step by step:
 
 1. `describe(3.5)`: a `double` is not a pointer, so only (1) can deduce, with `T = double`.
-2. `describe(&x)`: `&x` is an `int*`. Template (1) fits with `T = int*`, template (2) fits with `T = int`. Both are exact matches, so the tie-breaker is "more specialised", and (2) wins.
+2. `describe(&x)`: `&x` is an `int*`. Template (1) fits with `T = int*`, template (2) fits with `T = int`. Both are exact matches, so the tie-breaker is "more specialized", and (2) wins.
 3. `describe(true)`: (1) fits with `T = bool`, and the plain function (3) fits exactly. When a template and a non-template are equally good, the non-template wins.
 
 Sanity check: each call printed the most specific description that applies to it.
 :::
 
-You may also write a full specialisation of a function template, with `template <>`. It is legal but rarely a good idea, because a specialisation does not take part in overload resolution. The compiler first picks among the overloaded *primary* templates, and only then looks for a specialisation of the winner. Mixing the two produces [[results that surprise experts|dimov-abrahams]]. Overloading is the tool for functions, and later lessons add two more: `if constexpr` (lesson 7) and concepts (lesson 6).
+You may also write a full specialization of a function template, with `template <>`. It is legal but rarely a good idea, because a specialization does not take part in overload resolution. The compiler first picks among the overloaded *primary* templates, and only then looks for a specialization of the winner. Mixing the two produces [[results that surprise experts|dimov-abrahams]]. Overloading is the tool for functions, and later lessons add two more: `if constexpr` (lesson 7) and concepts (lesson 6).
 
 ::: key
-Class templates and variable templates can be partially specialised; function templates cannot — you overload instead. That is why generic function customisation is usually done with overloads, tag types or `if constexpr`.
+Class templates and variable templates can be partially specialized; function templates cannot — you overload instead. That is why generic function customization is usually done with overloads, tag types or `if constexpr`.
 :::
 
 ::: warning Specialise the primary you meant
-A function-template specialisation attaches to whichever primary template is visible and matches when it is declared. Add an overload later, and your specialisation may end up attached to a primary that overload resolution never chooses. If you want a special case for a function, write an overload (or a plain function) and let overload resolution see it.
+A function-template specialization attaches to whichever primary template is visible and matches when it is declared. Add an overload later, and your specialization may end up attached to a primary that overload resolution never chooses. If you want a special case for a function, write an overload (or a plain function) and let overload resolution see it.
 :::
 
 ::: note Why functions got overloading instead
-Functions already had a way to choose among several definitions by argument type: overloading, with its rules for ranking candidates. When templates arrived, overloaded function templates plugged into the same machinery, including the "more specialised" tie-breaker. Adding partial specialisation for functions as well would have given two competing ways to choose, with rules to settle which one applies first. Classes have no overloading at all — you cannot declare two class templates named `Wire` — so partial specialisation was the only way to give them a special family. That same class mechanism is what the [[type traits of lesson 5|traits-bridge]] are built on.
+Functions already had a way to choose among several definitions by argument type: overloading, with its rules for ranking candidates. When templates arrived, overloaded function templates plugged into the same machinery, including the "more specialized" tie-breaker. Adding partial specialization for functions as well would have given two competing ways to choose, with rules to settle which one applies first. Classes have no overloading at all — you cannot declare two class templates named `Wire` — so partial specialization was the only way to give them a special family. That same class mechanism is what the [[type traits of lesson 5|traits-bridge]] are built on.
 :::
 
 ## Check yourself
@@ -347,7 +347,7 @@ Two: `clamp_to<double>` and `clamp_to<int>`. Instantiation happens once per dist
 :::
 
 ::: check
-A library has `template <typename T> struct Limits` with a general definition. You want a special definition for every `std::vector<T>`, whatever `T` is. Write the first two lines of it, and say which kind of specialisation it is.
+A library has `template <typename T> struct Limits` with a general definition. You want a special definition for every `std::vector<T>`, whatever `T` is. Write the first two lines of it, and say which kind of specialization it is.
 :::
 
 ::: answer
@@ -356,7 +356,7 @@ template <typename T>
 struct Limits<std::vector<T>> { /* ... */ };
 ```
 
-It is a partial specialisation: it still has an open parameter `T`, and the pattern `std::vector<T>` says it applies to the whole family of vectors. A full specialisation would fix everything, as in `template <> struct Limits<std::vector<double>>`, and would apply to that one type only. This works because `Limits` is a class template.
+It is a partial specialization: it still has an open parameter `T`, and the pattern `std::vector<T>` says it applies to the whole family of vectors. A full specialization would fix everything, as in `template <> struct Limits<std::vector<double>>`, and would apply to that one type only. This works because `Limits` is a class template.
 :::
 
 ::: check
@@ -364,7 +364,7 @@ A teammate writes `template <typename T> void send(const T&)` and then, for arra
 :::
 
 ::: answer
-The compiler rejects it, because `send<T[N]>` is a partial specialisation of a function template, and only class and variable templates may be partially specialised. g++ reports a "non-class, non-variable partial specialization ... is not allowed" error.
+The compiler rejects it, because `send<T[N]>` is a partial specialization of a function template, and only class and variable templates may be partially specialized. g++ reports a "non-class, non-variable partial specialization ... is not allowed" error.
 
 They should drop the `<T[N]>` after the name and write an overload:
 
@@ -373,7 +373,7 @@ template <typename T, std::size_t N>
 void send(const T (&arr)[N]);
 ```
 
-Read `const T (&)[N]` as "a reference to a const array of `N` elements of type `T`"; both `T` and `N` are deduced from the array passed. For an array argument, both templates can match, and overload resolution prefers the more specialised one — the array overload. Called with `int a[3]`, it picks the array version; called with `5`, the general one.
+Read `const T (&)[N]` as "a reference to a const array of `N` elements of type `T`"; both `T` and `N` are deduced from the array passed. For an array argument, both templates can match, and overload resolution prefers the more specialized one — the array overload. Called with `int a[3]`, it picks the array version; called with `5`, the general one.
 :::
 
 ::: check
@@ -396,14 +396,14 @@ When someone calls `norm()`, the compiler instantiates it, and then `dot`, whose
 | argument deduction | the compiler solves for `T` from the arguments | no conversions; `f(1, 2.5)` with one `T` fails |
 | fixes for conflicts | explicit `f<double>(…)`, matching arguments, two parameters | explicit arguments fill from the left |
 | class template argument deduction | `std::vector v{1.0, 2.0}` | C++17 for constructors, C++20 for aggregates |
-| explicit (full) specialisation | `template <> struct X<bool>` | replaces the primary for one exact argument set |
-| partial specialisation | `template <typename T> struct X<T*>` | class and variable templates only; the most specialised match wins |
-| functions | cannot be partially specialised | overload instead; overloads beat function specialisations |
+| explicit (full) specialization | `template <> struct X<bool>` | replaces the primary for one exact argument set |
+| partial specialization | `template <typename T> struct X<T*>` | class and variable templates only; the most specialized match wins |
+| functions | cannot be partially specialized | overload instead; overloads beat function specializations |
 
 The next lesson puts values, not only types, into the angle brackets. `std::array<int, 5>` already did it; with a `Matrix<double, 3, 3>` whose sizes are part of its type, a wrong-shaped multiply stops the build instead of reaching flight.
 
 ::: context weak-symbol A name the linker may merge
-Every function the compiler emits gets a name in the object file, and `nm` lists them. The letter beside each name says what kind it is. `T` is an ordinary function, which must be defined exactly once in the program. `W` is a **weak** symbol: several object files may each carry one, and the linker keeps one and discards the rest instead of reporting a multiple-definition error. Template instantiations and inline functions are emitted this way on Linux, which is how the one-definition rule is honoured in practice.
+Every function the compiler emits gets a name in the object file, and `nm` lists them. The letter beside each name says what kind it is. `T` is an ordinary function, which must be defined exactly once in the program. `W` is a **weak** symbol: several object files may each carry one, and the linker keeps one and discards the rest instead of reporting a multiple-definition error. Template instantiations and inline functions are emitted this way on Linux, which is how the one-definition rule is honored in practice.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
@@ -438,8 +438,8 @@ To instantiate `clamp_to<double>`, the compiler needs the template's body right 
 Class template argument deduction is usually called **CTAD**. Before C++17, library writers supplied helper functions such as `std::make_pair` and `std::make_tuple` only because functions could deduce and classes could not; `std::make_pair(1, 2.5)` existed to spare you writing `std::pair<int, double>`. CTAD lets `std::pair p{1, 2.5}` do the same directly. It also works for `std::array`: `std::array a{1.0, 2.0, 3.0}` deduces `std::array<double, 3>`, counting the elements for you.
 :::
 
-::: context vector-bool The standard's most argued-over specialisation
-`std::vector<bool>` is a partial specialisation of `std::vector` (the allocator parameter stays open). Instead of one byte per element it packs eight flags into each byte. That saves memory, but it breaks the promise every other vector keeps: `v[3]` is not a real `bool&`, because a single bit has no address. It returns a small proxy object instead, so `bool* p = &v[3];` does not compile. Many engineers use `std::vector<std::uint8_t>` or `std::bitset` for flags because of this.
+::: context vector-bool The standard's most argued-over specialization
+`std::vector<bool>` is a partial specialization of `std::vector` (the allocator parameter stays open). Instead of one byte per element it packs eight flags into each byte. That saves memory, but it breaks the promise every other vector keeps: `v[3]` is not a real `bool&`, because a single bit has no address. It returns a small proxy object instead, so `bool* p = &v[3];` does not compile. Many engineers use `std::vector<std::uint8_t>` or `std::bitset` for flags because of this.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
@@ -468,9 +468,9 @@ Class template argument deduction is usually called **CTAD**. Before C++17, libr
 :::
 
 ::: context dimov-abrahams A puzzle that settled the advice
-Herb Sutter's article "Why Not Specialize Function Templates?" made this example famous. Declare `f(T)`, then `f(T*)`, then `template <> void f<int>(int*)`: calling `f(&x)` with an `int x` runs the specialisation. Now declare `g(U)`, then `template <> void g<int*>(int*)`, then `g(U*)`: calling `g(&x)` runs the general `g(U*)`, not the specialisation. The only difference is the order. In the second case the specialisation attached to `g(U)`, and overload resolution then chose `g(U*)`, a primary that has no specialisation. We compiled both with g++ 13 and got exactly that. The lesson: specialisations do not overload.
+Herb Sutter's article "Why Not Specialize Function Templates?" made this example famous. Declare `f(T)`, then `f(T*)`, then `template <> void f<int>(int*)`: calling `f(&x)` with an `int x` runs the specialization. Now declare `g(U)`, then `template <> void g<int*>(int*)`, then `g(U*)`: calling `g(&x)` runs the general `g(U*)`, not the specialization. The only difference is the order. In the second case the specialization attached to `g(U)`, and overload resolution then chose `g(U*)`, a primary that has no specialization. We compiled both with g++ 13 and got exactly that. The lesson: specializations do not overload.
 :::
 
-::: context traits-bridge Where partial specialisation earns its keep
-Lesson 5's type traits are small class templates that answer questions about types at compile time. A question such as "is this a pointer?" is typically answered by a primary template that says `false` and a partial specialisation for `T*` that says `true` — the same shape as `Wire<T*>`. Much of the compile-time machinery in the standard library is built from this one move.
+::: context traits-bridge Where partial specialization earns its keep
+Lesson 5's type traits are small class templates that answer questions about types at compile time. A question such as "is this a pointer?" is typically answered by a primary template that says `false` and a partial specialization for `T*` that says `true` — the same shape as `Wire<T*>`. Much of the compile-time machinery in the standard library is built from this one move.
 :::

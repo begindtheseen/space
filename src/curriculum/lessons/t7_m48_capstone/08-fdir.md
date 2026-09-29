@@ -65,7 +65,7 @@ NEES needs truth; it exists to verify a filter design in simulation, once, befor
 :::
 
 ::: key Filter consistency checks
-NEES (normalised estimation error squared) against truth in simulation, and NIS (normalised innovation squared) in flight, since it needs no truth. Both should sit inside their chi-squared bounds. An overconfident filter corrupts gating, FDIR thresholds and guidance margins alike.
+NEES (normalized estimation error squared) against truth in simulation, and NIS (normalized innovation squared) in flight, since it needs no truth. Both should sit inside their chi-squared bounds. An overconfident filter corrupts gating, FDIR thresholds and guidance margins alike.
 :::
 
 Why does an **overconfident** filter — one whose $\mathbf P$ is smaller than its real error — do so much damage? Every consumer of the estimate trusts $\mathbf P$. With $\mathbf P$ too small, $\mathbf S$ is too small too. Then NIS reads too high on perfectly healthy data, so good measurements get thrown out and the monitor cries wolf. The filter also gives too little weight to new measurements, the very ones that would correct it. And guidance plans with a confidence that does not exist.

@@ -88,7 +88,7 @@ Check the arithmetic in the last line. The loop filled `d[i] = -9.80 - 0.01i`, s
 
 The rule is narrow, and it is not the rule most people assume.
 
-> Pointer arithmetic is defined only within a single array object, and on the one-past-the-end address. Forming any other address is undefined behaviour, and *dereferencing* the one-past-the-end address is undefined behaviour too.
+> Pointer arithmetic is defined only within a single array object, and on the one-past-the-end address. Forming any other address is undefined behavior, and *dereferencing* the one-past-the-end address is undefined behavior too.
 
 Take `double d[4]`.
 

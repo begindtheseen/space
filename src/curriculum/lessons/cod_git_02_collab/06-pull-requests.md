@@ -299,7 +299,7 @@ The name comes from how Linux kernel development worked (and still largely works
 :::
 
 ::: context three-dot-picture Where the three-dot diff starts
-`main` moved on after Ravi branched. Comparing the two tips (grey) sweeps in Maya's README change. The three-dot diff (blue) starts at the merge base, so it contains only Ravi's two commits.
+`main` moved on after Ravi branched. Comparing the two tips (gray) sweeps in Maya's README change. The three-dot diff (blue) starts at the merge base, so it contains only Ravi's two commits.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">

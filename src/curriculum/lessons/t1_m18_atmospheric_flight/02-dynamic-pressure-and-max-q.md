@@ -16,7 +16,7 @@ That number is the **dynamic pressure**, written $\bar{q} = \tfrac{1}{2}\rho v^2
 
 Picture a stream of air hitting a flat plate head-on. Right at the center the air comes to a complete stop. That spot is the **[[stagnation point|stagnation-point]]**. The moving air had energy of motion, and stopping it turns that energy into extra pressure.
 
-How much extra? Each cubic metre of air has mass $\rho$, so its energy of motion is $\tfrac{1}{2}\rho v^2$ — the familiar $\tfrac{1}{2}mv^2$ with $\rho$ in place of $m$. **[[Bernoulli's equation|bernoulli]]** for slow flow says the pressure at the stagnation point, $p_0$, is higher than the pressure in the free stream, $p_\infty$ (read "p infinity", the pressure far from the body), by exactly that amount:
+How much extra? Each cubic meter of air has mass $\rho$, so its energy of motion is $\tfrac{1}{2}\rho v^2$ — the familiar $\tfrac{1}{2}mv^2$ with $\rho$ in place of $m$. **[[Bernoulli's equation|bernoulli]]** for slow flow says the pressure at the stagnation point, $p_0$, is higher than the pressure in the free stream, $p_\infty$ (read "p infinity", the pressure far from the body), by exactly that amount:
 
 $$
 p_0 - p_\infty = \tfrac{1}{2}\rho v^2 \equiv \bar{q}.
@@ -46,7 +46,7 @@ Some sizes to calibrate your feel:
 
 - A 100 m/s gust at sea level: $\tfrac{1}{2} \times 1.225 \times 100^2 = 6125\ \mathrm{Pa}$, about 6.1 kPa.
 - An airliner cruising at 250 m/s at 11 km, where $\rho = 0.3639\ \mathrm{kg/m^3}$: $\tfrac{1}{2} \times 0.3639 \times 250^2 = 11.4\ \mathrm{kPa}$.
-- A launcher at max-Q: 25 to 40 kPa. That is about a third of an atmosphere pushing on every square metre of the nose.
+- A launcher at max-Q: 25 to 40 kPa. That is about a third of an atmosphere pushing on every square meter of the nose.
 
 ## Why the climb has a max-Q
 
@@ -116,7 +116,7 @@ Three lessons fall out of this.
 
 1. **Where.** In this model max-Q always happens at one scale height of altitude, whatever the acceleration or angle. That is about 8 km with $H = 8.5$ km, and a bit higher in reality, because the true density scale height near the ground is 9 to 10 km.
 2. **Harder push, bigger peak.** $\bar{q}_{\max}$ is proportional to $a$. A rocket that accelerates harder reaches a given height going faster, so it meets the same air with more $v^2$. Throttling down through this region lowers the peak directly.
-3. **Flatter path, bigger peak.** A smaller $\sin\gamma$ raises the peak, because the rocket covers more path — and gains more speed — for each metre of height.
+3. **Flatter path, bigger peak.** A smaller $\sin\gamma$ raises the peak, because the rocket covers more path — and gains more speed — for each meter of height.
 
 ::: example A quick max-Q estimate
 Take a net acceleration $a = 8\ \mathrm{m/s^2}$, a flight-path angle of $60^\circ$ through the peak ($\sin 60^\circ = 0.866$), and $H = 8.5\ \mathrm{km}$.
@@ -402,9 +402,9 @@ This is the unthrottled simulated flight from the lesson. A throttle bucket flat
 :::
 
 ::: context gravity-loss Paying gravity while you climb
-While a rocket climbs, gravity pulls it back the whole time. The part of the engine's push spent just holding the rocket up, instead of speeding it up, is **gravity loss**. Its rate is $g\sin\gamma$ each second, so it is worst early, when the path is steep. A slower climb spends more seconds at steep angles, which is why every throttle-down costs some payload. For a typical orbital launch gravity loss is over a kilometre per second of speed, far more than drag loss.
+While a rocket climbs, gravity pulls it back the whole time. The part of the engine's push spent just holding the rocket up, instead of speeding it up, is **gravity loss**. Its rate is $g\sin\gamma$ each second, so it is worst early, when the path is steep. A slower climb spends more seconds at steep angles, which is why every throttle-down costs some payload. For a typical orbital launch gravity loss is over a kilometer per second of speed, far more than drag loss.
 :::
 
 ::: context parabola-fit Finding a peak between samples
-Near any smooth peak, a curve looks like an upside-down parabola. Three samples — the largest and its two neighbours — pin down exactly one parabola, and its top can be found with a short formula. For samples $q_-$, $q_0$, $q_+$ spaced $\Delta t$ apart, the peak sits a fraction $\tfrac{1}{2}(q_- - q_+)/(q_- - 2q_0 + q_+)$ of a step from the middle sample. The numerical methods module uses the same trick for root-finding and optimisation.
+Near any smooth peak, a curve looks like an upside-down parabola. Three samples — the largest and its two neighbors — pin down exactly one parabola, and its top can be found with a short formula. For samples $q_-$, $q_0$, $q_+$ spaced $\Delta t$ apart, the peak sits a fraction $\tfrac{1}{2}(q_- - q_+)/(q_- - 2q_0 + q_+)$ of a step from the middle sample. The numerical methods module uses the same trick for root-finding and optimization.
 :::

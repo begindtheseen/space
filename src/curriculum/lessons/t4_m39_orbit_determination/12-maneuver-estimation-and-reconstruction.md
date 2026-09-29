@@ -14,13 +14,13 @@ Every fit so far in this module assumed one set of dynamics for the whole arc (a
 
 ## What a small burn does to an orbit
 
-Start with the size of the thing. The change in velocity a burn gives is written $\Delta\mathbf v$, read "delta v": delta ($\Delta$) is the Greek letter for "change in". Big burns, such as moving to a new orbit, are hundreds of metres per second. A stationkeeping touch can be a few centimetres per second — slower than a snail crossing a sidewalk.
+Start with the size of the thing. The change in velocity a burn gives is written $\Delta\mathbf v$, read "delta v": delta ($\Delta$) is the Greek letter for "change in". Big burns, such as moving to a new orbit, are hundreds of meters per second. A stationkeeping touch can be a few centimeters per second — slower than a snail crossing a sidewalk.
 
 Most thruster firings last seconds to minutes, while an orbit takes an hour and a half. So we model the burn as **[[impulsive|impulsive-burn]]**: the velocity jumps by $\Delta\mathbf v$ at one instant $t_m$ ("t sub m", the maneuver time), and the position does not jump at all. Position cannot change in zero time; velocity, in this model, can.
 
-Why should a few centimetres per second matter? Because orbits turn a tiny speed change into a large distance, the same way the RIC lesson showed a tiny error in semi-major axis turning into a long in-track error.
+Why should a few centimeters per second matter? Because orbits turn a tiny speed change into a large distance, the same way the RIC lesson showed a tiny error in semi-major axis turning into a long in-track error.
 
-::: example Fifty millimetres per second in low orbit
+::: example Fifty millimeters per second in low orbit
 Take the module's usual satellite: a near-circular orbit with semi-major axis $a = 6798\,\mathrm{km}$, about $420\,\mathrm{km}$ up. Its speed is $v = \sqrt{\mu/a} \approx 7657\,\mathrm{m/s}$ and its period is about $93.0$ minutes. A burn adds $\Delta v = 0.05\,\mathrm{m/s}$ straight along the direction of motion.
 
 **Step 1: the new orbit size.** For a near-circular orbit, a small push along the velocity changes the semi-major axis by $\Delta a = 2a\,\Delta v / v$. (The note below says where that comes from.) So
@@ -39,7 +39,7 @@ $$
 
 **Step 3: over a day.** There are about $15.5$ orbits in a day, so the drift piles up to about $837 \times 15.5 \approx 13\,000\,\mathrm m$, or $13\,\mathrm{km}$.
 
-**Sanity check.** A tracking station measures range to about $5\,\mathrm m$. A burn that moves the satellite hundreds of metres within one orbit is more than a hundred times that noise. The data cannot miss it — so if the model misses it, the fit must bend somewhere else to cope.
+**Sanity check.** A tracking station measures range to about $5\,\mathrm m$. A burn that moves the satellite hundreds of meters within one orbit is more than a hundred times that noise. The data cannot miss it — so if the model misses it, the fit must bend somewhere else to cope.
 :::
 
 ::: note Why it has to be true
@@ -54,7 +54,7 @@ Notice which way it drifts. A forward push makes the satellite **[[fall behind|s
 
 Here is the flick-and-straight-line problem with real tracking data. The example is a full simulation: the same three-pass arc from one station used throughout this module, with range noise of $5\,\mathrm m$.
 
-::: example An unnoticed five-centimetre-per-second burn, and a confidently wrong answer
+::: example An unnoticed five-centimeter-per-second burn, and a confidently wrong answer
 A true velocity change of $50\,\mathrm{mm/s}$ is applied to the truth trajectory between the second and third passes. The fit uses ordinary two-body-plus-J2 dynamics that know nothing about it. The batch loop converges, and reports:
 
 ```python
@@ -63,7 +63,7 @@ A true velocity change of $50\,\mathrm{mm/s}$ is applied to the truth trajectory
 # |error| / |sigma|, worst component: about 14,500
 ```
 
-Read the first line. The epoch position is wrong by **kilometres**, and the epoch velocity by metres per second. Read the second line. The fit's own covariance claims it knows the position to about $0.2\,\mathrm m$ and the velocity to under $1\,\mathrm{mm/s}$.
+Read the first line. The epoch position is wrong by **kilometers**, and the epoch velocity by meters per second. Read the second line. The fit's own covariance claims it knows the position to about $0.2\,\mathrm m$ and the velocity to under $1\,\mathrm{mm/s}$.
 
 Divide one by the other. In the first velocity component, $771 / 0.053 \approx 14\,500$: the real error is about fourteen and a half thousand times the **[[formal sigma|formal-sigma]]**. The iteration gave no sign of distress. It converged, cleanly, to the wrong answer.
 :::
@@ -80,7 +80,7 @@ Either solve for an impulsive delta-v at a known epoch as extra state parameters
 
 ### The idea on a kitchen floor
 
-Go back to the toy car. Say it starts at $x = 0$ and rolls at $2\,\mathrm{m/s}$, and the flick at $t_m = 2.5\,\mathrm s$ adds $1\,\mathrm{m/s}$. Positions measured once a second are $0,\ 2,\ 4,\ 6.5,\ 9.5,\ 12.5$ metres.
+Go back to the toy car. Say it starts at $x = 0$ and rolls at $2\,\mathrm{m/s}$, and the flick at $t_m = 2.5\,\mathrm s$ adds $1\,\mathrm{m/s}$. Positions measured once a second are $0,\ 2,\ 4,\ 6.5,\ 9.5,\ 12.5$ meters.
 
 Fit a straight line $x = x_0 + v_0 t$ to them, and least squares gives $x_0 = -0.5\,\mathrm m$ and $v_0 = 2.5\,\mathrm{m/s}$. Both are wrong. The misses, measured minus fitted, are
 
@@ -139,7 +139,7 @@ Same contaminated three-pass arc as before, now fitted with a nine-number state:
 
 **The burn.** The errors, estimate minus truth, are $0.51$, $0.32$ and $1.83\,\mathrm{mm/s}$. Divide each by its formal sigma: $0.51/1.3 \approx 0.39$, $0.32/2.2 \approx 0.15$ and $1.83/2.6 \approx 0.70$. All under one sigma. The covariance is honest again.
 
-**The epoch state.** Position is now right to about half a metre, against about $3\,\mathrm{km}$ before. Adding three columns to the model bought back a factor of several thousand.
+**The epoch state.** Position is now right to about half a meter, against about $3\,\mathrm{km}$ before. Adding three columns to the model bought back a factor of several thousand.
 :::
 
 In real operations the team that planned the burn usually shares it. Then the planned $\Delta\mathbf v$ becomes the fit's starting guess, with an *a priori* uncertainty — one stated before any tracking data arrives — sized to how well thrusters actually **[[perform the plan|execution-error]]**, and the tracking data corrects it.
@@ -237,7 +237,7 @@ First fit the whole arc with ordinary dynamics and study the residuals, as in th
 Every method so far has treated one object's orbit on its own. The last lesson looks at what changes when several spacecraft are estimated together — and when a spacecraft has to work out its own orbit, with no ground team watching.
 
 ::: context stationkeeping Staying in your parking space
-A satellite is often assigned a place: a slot of longitude over the equator for a geostationary TV satellite, or a spot in a planned pattern for a constellation. Small forces — the Sun's and Moon's pull, the lumpy Earth, thin air in low orbit, sunlight pressure — slowly push it out. **Stationkeeping** is the routine of small burns that push it back. A geostationary satellite typically spends tens of metres per second of $\Delta v$ a year on it, in many small firings, which is why its propellant load often sets how long its working life is.
+A satellite is often assigned a place: a slot of longitude over the equator for a geostationary TV satellite, or a spot in a planned pattern for a constellation. Small forces — the Sun's and Moon's pull, the lumpy Earth, thin air in low orbit, sunlight pressure — slowly push it out. **Stationkeeping** is the routine of small burns that push it back. A geostationary satellite typically spends tens of meters per second of $\Delta v$ a year on it, in many small firings, which is why its propellant load often sets how long its working life is.
 :::
 
 ::: context impulsive-burn A burn short enough to call instant

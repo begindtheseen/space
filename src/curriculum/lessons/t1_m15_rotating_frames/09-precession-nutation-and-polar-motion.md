@@ -187,7 +187,7 @@ print([round(v, 2) for v in (-x_p * r_itrf[2], y_p * r_itrf[2], x_p * r_itrf[0] 
 
 The chain pins down the native frames of lesson 05 exactly.
 
-A **star tracker** matches a catalogue of ICRF star positions, so its output is $\mathbf{R}_{GCRF \leftarrow S}$: the sensor's orientation in the celestial frame — not in any frame of date, and certainly not in ITRF. To get the body attitude relative to the Earth-fixed frame, to point an antenna at a ground station, say, the chain is
+A **star tracker** matches a catalog of ICRF star positions, so its output is $\mathbf{R}_{GCRF \leftarrow S}$: the sensor's orientation in the celestial frame — not in any frame of date, and certainly not in ITRF. To get the body attitude relative to the Earth-fixed frame, to point an antenna at a ground station, say, the chain is
 
 $$
 \mathbf{R}_{ITRF \leftarrow B} = \mathbf{W}^{T}\,\mathbf{R}_3(\theta_{ERA})\,\mathbf{Q}^{T}\,\mathbf{R}_{GCRF \leftarrow S}\,\mathbf{R}_{B \leftarrow S}^{T} ,
@@ -222,7 +222,7 @@ In two or three sentences, explain why the Earth's spin axis precesses and in wh
 ::: answer
 The Sun and Moon pull harder on the near half of Earth's bulge, and with the equator tilted $23.4^\circ$ to the ecliptic that makes a torque trying to stand the axis up. A spinning body moves its axis at right angles to a torque, so the axis circles the ecliptic pole instead. A toy top's gravity torque tries to tip it *over*, and it precesses in the same direction as its spin; the Earth's torque points the opposite way (it tries to *right* the axis), so the Earth precesses **westward**, opposite to its spin.
 
-Over a decade the pole moves about $200''$ along that circle. [[Polaris|polaris]] is now about $40'$ from the pole and getting closer. A system treating it as *the* pole would already be about $0.7^\circ$ wrong, and its "fixed" reference would drift about three arcminutes per decade against the true axis. A star tracker avoids this by using the whole catalogue in GCRF, which does not precess.
+Over a decade the pole moves about $200''$ along that circle. [[Polaris|polaris]] is now about $40'$ from the pole and getting closer. A system treating it as *the* pole would already be about $0.7^\circ$ wrong, and its "fixed" reference would drift about three arcminutes per decade against the true axis. A star tracker avoids this by using the whole catalog in GCRF, which does not precess.
 :::
 
 ::: check

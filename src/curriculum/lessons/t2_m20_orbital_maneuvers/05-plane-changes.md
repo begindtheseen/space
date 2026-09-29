@@ -1,9 +1,9 @@
 ---
 id: l05-plane-changes
-title: Plane changes and combined manoeuvres
+title: Plane changes and combined maneuvers
 minutes: 21
 covers:
-  - plane change and combined plane-change-plus-raise optimisation
+  - plane change and combined plane-change-plus-raise optimization
 ---
 
 Picture riding a bike fast down a straight road, and then trying to turn onto a side street without slowing down. The faster you go, the harder that turn is. You have to push sideways against all the speed you have built up. Walking, the same turn is effortless.

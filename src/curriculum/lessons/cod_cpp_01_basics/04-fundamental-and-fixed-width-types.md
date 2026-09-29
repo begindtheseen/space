@@ -194,7 +194,7 @@ PRId64 = "ld", value = 1234567890123456789
 
 `std::ptrdiff_t` is its signed partner: the type you get when you subtract one pointer from another. It is 8 bytes here. Both come from `<cstddef>`.
 
-`printf` prints a `size_t` with `%zu`. Not `%d` — that means a 4-byte signed `int`, a different width and a different signedness, and the mismatch is undefined behaviour.
+`printf` prints a `size_t` with `%zu`. Not `%d` — that means a 4-byte signed `int`, a different width and a different signedness, and the mismatch is undefined behavior.
 
 The key fact about `size_t` is that it is **unsigned**, and that causes the most common loop bug in C++. Picture a car's odometer at 000000. Roll it back one mile and it does not show $-1$. It shows 999999. Unsigned numbers do the same thing. `v.size() - 1` on an empty container is not $-1$. It is
 
@@ -230,7 +230,7 @@ uint16 seq counter rolls over after 65536 packets
 Add it up: $2 + 2 + 4 + 1 + 1 + 2 = 12$ bytes. Every offset is a multiple of the field's own size, so the compiler inserted no **[[padding|header-layout]]** — no hidden filler bytes. Now the reasons for each choice:
 
 - `apid` is an 11-bit identifier in the **[[CCSDS|ccsds]]** space-packet standard. 16 bits is the smallest type that holds it.
-- `seq_count` is *meant* to wrap. Unsigned wrap is defined behaviour, so `++seq` on a `uint16_t` is correct and needs no special case: 65535 goes to 0. At 10 packets per second, $65536 / 10 = 6553.6$ s, about 1.8 hours between rollovers. The ground station counts the rollovers to rebuild the full count.
+- `seq_count` is *meant* to wrap. Unsigned wrap is defined behavior, so `++seq` on a `uint16_t` is correct and needs no special case: 65535 goes to 0. At 10 packets per second, $65536 / 10 = 6553.6$ s, about 1.8 hours between rollovers. The ground station counts the rollovers to rebuild the full count.
 - `t_ms` as `uint32_t` covers $2^{32}$ ms. Divide by 1000 to get seconds and by 86,400 to get days: 49.7 days. Plenty for a launch. Wrong for a space-station module, which wants a `uint64_t` count of microseconds. When you justify a time field, state the mission length.
 - `mode` and `flags` are one byte each. The mode list has fewer than 256 values, and flags are single bits. Lesson 10 shows how to keep the list and the byte in step.
 - `payload_len` as `uint16_t` caps the payload at 65,535 bytes. That is about the size of the CCSDS packet-length limit — check your project's interface control document for the exact figure. The point is that the type carries the protocol's limit, instead of leaving it to a comment.
@@ -296,7 +296,7 @@ Why is `std::printf("%d\n", sizeof(buf))` wrong, and what catches it?
 :::
 
 ::: answer
-`sizeof` gives a `std::size_t`: unsigned, and 8 bytes here. `%d` tells `printf` to read a 4-byte signed `int`. `printf` is a variadic function — it accepts any number of arguments of any type — so the language itself does not check the arguments against the format. It reads whatever is there and treats it as an `int`. On x86-64 it often prints the right number by luck, but the mismatch is undefined behaviour. The correct specifier is `%zu`. In practice g++ with `-Wall` does catch this, because `-Wformat` knows the rules of `printf`: it reports "format '%d' expects argument of type 'int', but argument 2 has type 'long unsigned int'". That is one more reason never to build without `-Wall`.
+`sizeof` gives a `std::size_t`: unsigned, and 8 bytes here. `%d` tells `printf` to read a 4-byte signed `int`. `printf` is a variadic function — it accepts any number of arguments of any type — so the language itself does not check the arguments against the format. It reads whatever is there and treats it as an `int`. On x86-64 it often prints the right number by luck, but the mismatch is undefined behavior. The correct specifier is `%zu`. In practice g++ with `-Wall` does catch this, because `-Wformat` knows the rules of `printf`: it reports "format '%d' expects argument of type 'int', but argument 2 has type 'long unsigned int'". That is one more reason never to build without `-Wall`.
 :::
 
 ::: check

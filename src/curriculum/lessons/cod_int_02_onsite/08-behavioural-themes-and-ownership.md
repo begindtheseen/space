@@ -1,30 +1,30 @@
 ---
 id: l08-behavioural-themes-and-ownership
-title: Behavioural themes and saying what you did
+title: Behavioral themes and saying what you did
 minutes: 20
 covers:
-  - 'Behavioural themes: mission alignment, extreme ownership, operating with ambiguity and speed, intellectual honesty about failure'
-  - Saying what you personally modelled, coded, analysed, tuned, tested or debugged versus what the team did
+  - 'Behavioral themes: mission alignment, extreme ownership, operating with ambiguity and speed, intellectual honesty about failure'
+  - Saying what you personally modeled, coded, analyzed, tuned, tested or debugged versus what the team did
 ---
 
 Think about a group project at school. Four of you built a model volcano. At the end the teacher turns to you and asks, "What did *you* do?" There are three bad answers. "We all did everything" hides you. "I did most of it" might not be true, and your teammates are standing right there. "Not much, really" undersells you. The good answer is specific: "I mixed the baking-soda recipe, tested it five times, and fixed the one that overflowed the base."
 
-An engineering interview asks that question over and over, in different clothes. It also asks a few others: why you want this work, what you do when nobody tells you the plan, and what happened the last time you got something wrong. Questions like these are called **behavioural questions** — questions about how you work, not about what you know.
+An engineering interview asks that question over and over, in different clothes. It also asks a few others: why you want this work, what you do when nobody tells you the plan, and what happened the last time you got something wrong. Questions like these are called **behavioral questions** — questions about how you work, not about what you know.
 
 This lesson covers the four themes those questions probe, and the one sentence you must be able to say plainly about every project on your résumé: what you personally did, versus what the team did. The next lesson turns all of this into stories you can tell.
 
 ## Half the interview
 
-It is easy to treat behavioural questions as the chat before the real test. That is a mistake, and the numbers show why.
+It is easy to treat behavioral questions as the chat before the real test. That is a mistake, and the numbers show why.
 
-::: key How much of the onsite is behavioural
+::: key How much of the onsite is behavioral
 Reported at 30 to 50 percent. The themes are mission alignment, ownership end to end, tolerance for ambiguity and pace, and honesty about failure. Treat it as half the interview, because it is.
 :::
 
-"Reported" means it comes from many candidates' accounts of their own onsites, not from an official rulebook. Behavioural questions are not one round. They show up [[inside the other rounds|behavioural-throughout]]: at the start of a design round, at the end of a coding round, in the middle of the presentation's questions.
+"Reported" means it comes from many candidates' accounts of their own onsites, not from an official rulebook. Behavioral questions are not one round. They show up [[inside the other rounds|behavioural-throughout]]: at the start of a design round, at the end of a coding round, in the middle of the presentation's questions.
 
 ::: example Turning a percentage into hours
-Say your onsite has six rounds of 50 minutes each. How much of it is behavioural, if the reported range holds?
+Say your onsite has six rounds of 50 minutes each. How much of it is behavioral, if the reported range holds?
 
 Step 1: total time. $6 \times 50 = 300$ minutes.
 
@@ -34,7 +34,7 @@ Step 3: the high end. $0.50 \times 300 = 150$ minutes.
 
 So between 90 and 150 minutes — an hour and a half to two and a half hours — of a five-hour day is about how you work.
 
-Now your preparation. This module is planned at 40 hours. If you split your time the way the onsite does, behavioural preparation gets $0.30 \times 40 = 12$ to $0.50 \times 40 = 20$ hours.
+Now your preparation. This module is planned at 40 hours. If you split your time the way the onsite does, behavioral preparation gets $0.30 \times 40 = 12$ to $0.50 \times 40 = 20$ hours.
 
 Sanity check: both answers are between a third and a half of the whole, which is what 30 to 50 percent means. Compare that with how long most people spend on it — often an evening. That gap is the opportunity.
 :::
@@ -115,16 +115,16 @@ Sanity check on the arithmetic: 28.6 degrees divided by 0.5 degrees is about 57,
 Most real engineering is done in teams, with libraries other people wrote. That is fine. But in an interview, the panel is hiring *you*, so they need to know where your work stops and everyone else's starts.
 
 ::: key What you did versus the team
-What was personally modelled, coded, analysed, tuned, tested or debugged by you versus completed by a team. Build the portfolio so that answer is specific and verifiable, and rehearse saying it without either inflating or deflating your contribution.
+What was personally modeled, coded, analyzed, tuned, tested or debugged by you versus completed by a team. Build the portfolio so that answer is specific and verifiable, and rehearse saying it without either inflating or deflating your contribution.
 :::
 
 The flashcard calls this "the Katalyst sentence". The name comes from a **[[job posting|job-posting]]** — the public description of a job a company advertises — that asks candidates for exactly this distinction. You do not need to know anything more about that posting. What matters is the six verbs in it, because each one is a different kind of contribution.
 
 | Verb | What it means you did |
 | --- | --- |
-| Modelled | wrote down the physics or maths the software represents |
+| Modeled | wrote down the physics or maths the software represents |
 | Coded | wrote the software itself |
-| Analysed | ran it and drew conclusions from the results |
+| Analyzed | ran it and drew conclusions from the results |
 | Tuned | adjusted gains or parameters until it met a requirement |
 | Tested | wrote the checks that show it works |
 | Debugged | found and fixed what was wrong |
@@ -160,15 +160,15 @@ The boundary sentence feels awkward the first few times you say it, because it s
 ## Check yourself
 
 ::: check
-An onsite has four rounds of 45 minutes. Using the reported range, how many minutes are likely behavioural, and why would you not save your stories for one "behavioural round"?
+An onsite has four rounds of 45 minutes. Using the reported range, how many minutes are likely behavioral, and why would you not save your stories for one "behavioral round"?
 :::
 
 ::: answer
-Total time is $4 \times 45 = 180$ minutes. Thirty percent is $0.30 \times 180 = 54$ minutes and fifty percent is $0.50 \times 180 = 90$ minutes. Behavioural questions are spread through the other rounds, not held in one, so you need your stories ready from the first round to the last.
+Total time is $4 \times 45 = 180$ minutes. Thirty percent is $0.30 \times 180 = 54$ minutes and fifty percent is $0.50 \times 180 = 90$ minutes. Behavioral questions are spread through the other rounds, not held in one, so you need your stories ready from the first round to the last.
 :::
 
 ::: check
-Name the four behavioural themes, and for each one give a one-line question an interviewer might ask to probe it.
+Name the four behavioral themes, and for each one give a one-line question an interviewer might ask to probe it.
 :::
 
 ::: answer
@@ -188,7 +188,7 @@ A candidate says, "I built the whole Monte Carlo framework," but the integrator 
 :::
 
 ::: answer
-It is inflating: it claims parts someone else wrote. A fixed version names the boundary: "I wrote the dispersion sampling and the run manager; the integrator is SciPy's, and a teammate wrote the plotting. I ran and analysed the 2,000-case study." It is still impressive, and now it is true and checkable.
+It is inflating: it claims parts someone else wrote. A fixed version names the boundary: "I wrote the dispersion sampling and the run manager; the integrator is SciPy's, and a teammate wrote the plotting. I ran and analyzed the 2,000-case study." It is still impressive, and now it is true and checkable.
 :::
 
 ::: check
@@ -203,12 +203,12 @@ One radian is about 57.3 degrees, so 2 rad/s is $2 \times 57.3 \approx 115$ degr
 
 | Idea | In one line |
 | --- | --- |
-| Behavioural share | reported at 30 to 50 percent of the onsite; treat it as half the interview |
+| Behavioral share | reported at 30 to 50 percent of the onsite; treat it as half the interview |
 | Mission alignment | your reasons match the work; show it with things you did, not feelings |
 | Ownership end to end | the result is yours to get right, from build to test to follow-up |
 | Ambiguity and pace | say what you did not know, what you decided, how you checked |
 | Honesty about failure | defect, cost, how found, what you changed; a scrubbed story is transparent |
-| Six verbs | modelled, coded, analysed, tuned, tested, debugged: you, the team, or a library |
+| Six verbs | modeled, coded, analyzed, tuned, tested, debugged: you, the team, or a library |
 | Inflate or deflate | both are mistakes; be specific and verifiable instead |
 
 Next lesson turns these themes into a bank of six to eight stories from your capstones, each with a number, timed to under two minutes — and ends with the questions you ask them.

@@ -4,7 +4,7 @@ title: Moving models between programs, and who uses what
 minutes: 22
 covers:
   - 'Interchange formats: STEP, IGES, Parasolid, JT, and translation fidelity'
-  - 'The landscape: NX plus Teamcenter at SpaceX; CATIA at Boeing and Airbus; Creo in defence; SolidWorks at suppliers and startups; Onshape and Fusion as cloud-native newcomers'
+  - 'The landscape: NX plus Teamcenter at SpaceX; CATIA at Boeing and Airbus; Creo in defense; SolidWorks at suppliers and startups; Onshape and Fusion as cloud-native newcomers'
 ---
 
 Think about a cake again. You can hand a friend the finished cake, or you can hand them the recipe. With the cake they can eat it, measure it, even slice it and weigh a slice. But if they want the same cake 20% bigger, the cake itself will not tell them how. Only the recipe says "two cups of flour, bake 30 minutes", and only the recipe can be scaled up.
@@ -111,7 +111,7 @@ In aluminum at $2700\,\mathrm{kg/m^3}$ that is $3 \times 10^{-9}\,\mathrm{m^3} \
 - **PMI.** Tolerances travel as semantic PMI only in AP242, and only if both programs support it. Otherwise they arrive as dumb graphics that look right but that an inspection program cannot read — or not at all.
 - **Names, structure and tiny features.** Part names and sub-assembly grouping can be garbled, and very small fillets can be distorted.
 
-::: example The bracket that weighed two tonnes
+::: example The bracket that weighed two metric tons
 An aluminum bracket has a volume of $45\,000\,\mathrm{mm^3}$. Density $2700\,\mathrm{kg/m^3}$.
 
 **True mass.** Convert the volume to cubic meters: $1\,\mathrm{mm^3} = 10^{-9}\,\mathrm{m^3}$, so $45\,000\,\mathrm{mm^3} = 4.5 \times 10^{-5}\,\mathrm{m^3}$. Multiply by density: $4.5 \times 10^{-5} \times 2700 = 0.1215\,\mathrm{kg}$, about 122 grams.
@@ -120,7 +120,7 @@ An aluminum bracket has a volume of $45\,000\,\mathrm{mm^3}$. Density $2700\,\ma
 $$
 25.4^3 \approx 16\,387.
 $$
-The "mass" becomes $0.1215 \times 16\,387 \approx 1991\,\mathrm{kg}$ — about two tonnes.
+The "mass" becomes $0.1215 \times 16\,387 \approx 1991\,\mathrm{kg}$ — about two metric tons.
 
 **Inertia is worse.** A moment of inertia is mass times distance squared. Mass grew by $25.4^3$ and distance squared by $25.4^2$, so inertia grows by $25.4^5 \approx 1.06 \times 10^7$.
 
@@ -149,9 +149,9 @@ Read that the way an engineer would. The reason was **scale**: a rocket is a hug
 
 **CATIA** is made by Dassault Systèmes, a French company. Boeing adopted CATIA in 1986, and the 787 Dreamliner was designed in it. Airbus uses CATIA too.
 
-### Defence: Creo
+### Defense: Creo
 
-**Creo** is made by PTC, and it is the descendant of Pro/ENGINEER, one of the first commercial parametric modelers. It is used heavily in the defence industry.
+**Creo** is made by PTC, and it is the descendant of Pro/ENGINEER, one of the first commercial parametric modelers. It is used heavily in the defense industry.
 
 ### Suppliers, startups and student teams: SolidWorks
 
@@ -162,7 +162,7 @@ Read that the way an engineer would. The reason was **scale**: a rocket is a hug
 **Onshape** (owned by PTC) and **Fusion** (made by Autodesk, long sold as Fusion 360) are [[cloud-native|cloud-native]]: the model lives on the company's servers and you work in a browser or a thin app. Several people can edit at once, and every change is recorded automatically.
 
 ::: key
-**Who uses CATIA, NX, Creo and SolidWorks.** CATIA at Boeing (adopted 1986, the 787 was designed in it) and Airbus; NX at SpaceX and much of automotive and aerospace; Creo heavily in defence; SolidWorks at suppliers, startups and student teams; Onshape and Fusion as cloud-native newcomers.
+**Who uses CATIA, NX, Creo and SolidWorks.** CATIA at Boeing (adopted 1986, the 787 was designed in it) and Airbus; NX at SpaceX and much of automotive and aerospace; Creo heavily in defense; SolidWorks at suppliers, startups and student teams; Onshape and Fusion as cloud-native newcomers.
 :::
 
 ::: warning Say what is documented, not what you guess
@@ -242,7 +242,7 @@ Boeing uses CATIA, adopted in 1986, and the 787 was designed in it. A SolidWorks
 | Tolerance mismatch | Kernels disagree on what "touching" means | Heal, then check volume, CG and a known dimension |
 | SpaceX | NX with Teamcenter, NX Nastran, Femap | Per Siemens's case study; large-assembly load time |
 | Boeing, Airbus | CATIA | Boeing adopted 1986; 787 designed in it |
-| Defence; suppliers; newcomers | Creo; SolidWorks; Onshape and Fusion | Cloud-native newcomers |
+| Defense; suppliers; newcomers | Creo; SolidWorks; Onshape and Fusion | Cloud-native newcomers |
 | CAD for GNC | Cross-discipline literacy | Read a drawing, get mass properties right, talk to mechanical teams |
 
 The last lesson of this module is about the system that sits on top of the CAD tool: product lifecycle management, where part numbers, revisions, effectivity and change orders decide which version of a model is real.

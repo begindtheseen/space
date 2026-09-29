@@ -332,7 +332,7 @@ The loop $K / (s(s+4)(s+10))$ has closed-loop poles at the roots of $s^3 + 14s^2
 :::
 
 ::: answer
-Make an array of gains, for example `np.linspace(0, 1000, 10001)`, and for each gain compute `np.roots([1.0, 14.0, 40.0, k])`. Take the largest real part at each gain and find the first gain where it becomes zero or positive. That gain is $K = 560$, and the crossing roots are about $\pm 6.32j$, so the loop oscillates at about $6.32\,\mathrm{rad/s}$ ($1.01\,\mathrm{Hz}$) there. (By hand: with $s = j\omega$, the imaginary part gives $\omega^2 = 40$ and the real part gives $K = 14 \times 40 = 560$.) On the plot, mark the crossing with a labelled marker ("K = 560, 6.32 rad/s"), mark the design gain with another, and draw the imaginary axis. The ratio of the two gains is the gain margin.
+Make an array of gains, for example `np.linspace(0, 1000, 10001)`, and for each gain compute `np.roots([1.0, 14.0, 40.0, k])`. Take the largest real part at each gain and find the first gain where it becomes zero or positive. That gain is $K = 560$, and the crossing roots are about $\pm 6.32j$, so the loop oscillates at about $6.32\,\mathrm{rad/s}$ ($1.01\,\mathrm{Hz}$) there. (By hand: with $s = j\omega$, the imaginary part gives $\omega^2 = 40$ and the real part gives $K = 14 \times 40 = 560$.) On the plot, mark the crossing with a labeled marker ("K = 560, 6.32 rad/s"), mark the design gain with another, and draw the imaginary axis. The ratio of the two gains is the gain margin.
 :::
 
 ::: check

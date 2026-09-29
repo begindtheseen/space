@@ -201,7 +201,7 @@ for t in [60, 150, 300, 600]:
 **What it shows.** The chaser first drifts out a little further — to about $8.05\,\mathrm{m}$ at $t \approx 5\,\mathrm{s}$ — while the correction cancels its outward drift. Then it comes smoothly back. Since $8 + 0.18\,t$ is always positive, $y$ never crosses zero: the chaser never overshoots through the corridor centerline. By the ten-minute mark it is inside a millimeter of the line, from an eight-meter start.
 :::
 
-This is where line-of-sight guidance shows its limit. It needs the reference line itself to be right — chosen by mission design or supplied by an outside tracker. And cancelling your distance from a line does not, by itself, bring the range to a *moving* target down to zero on any schedule. That is why classic beam riding worked best when the target was not moving much relative to the beam's aim. It is also why spacecraft corridor approaches plan and control the forward closing separately from the sideways correction shown here.
+This is where line-of-sight guidance shows its limit. It needs the reference line itself to be right — chosen by mission design or supplied by an outside tracker. And canceling your distance from a line does not, by itself, bring the range to a *moving* target down to zero on any schedule. That is why classic beam riding worked best when the target was not moving much relative to the beam's aim. It is also why spacecraft corridor approaches plan and control the forward closing separately from the sideways correction shown here.
 
 ::: key Two ideas, two different failure modes
 Pursuit guidance: $\chi = \lambda$, giving $a_{lat} = V_p\dot\lambda$. It is simple and needs only a bearing to the target, but against any target with crossing motion $\dot\lambda$ grows as the range shrinks, demanding the most lateral acceleration exactly when there is the least time left. Line-of-sight guidance: cancel the sideways deviation from a reference line supplied by a third party or by mission design, $a_\perp = -k_1 y - k_2 \dot y$. It is well behaved and is exactly a reference-following problem, but it is only as good as that outside reference, and it says nothing about the intercept geometry itself.
@@ -254,7 +254,7 @@ A drifting target has velocity that is generally not along the line of sight, so
 :::
 
 ::: check
-A sideways deviation from an approach corridor starts at $y_0 = 5\,\mathrm{m}$ with $\dot y_0 = -0.01\,\mathrm{m/s}$ (already heading back). It is cancelled with critically damped gains and $\omega_n = 0.03\,\mathrm{rad/s}$. What are $y$ and $\dot y$ at $t = 200\,\mathrm{s}$?
+A sideways deviation from an approach corridor starts at $y_0 = 5\,\mathrm{m}$ with $\dot y_0 = -0.01\,\mathrm{m/s}$ (already heading back). It is canceled with critically damped gains and $\omega_n = 0.03\,\mathrm{rad/s}$. What are $y$ and $\dot y$ at $t = 200\,\mathrm{s}$?
 :::
 
 ::: answer
@@ -296,7 +296,7 @@ It inherits the same strength — a fixed reference you can inspect, plus an ord
 Both ideas point at the same missing piece: a law shaped like $a_{lat} = V_p\dot\lambda$, but with the pursuer's own speed replaced by something better behaved, and with a gain you can tune. The next lesson derives exactly that law — proportional navigation.
 
 ::: context los-geometry Naming the angles
-The pursuer P looks at the target T along the line of sight, a distance $R$ away. Both $\lambda$ and the heading $\chi$ are measured from the same fixed reference direction (dashed). Under pure pursuit the pursuer's velocity lies along the line of sight, so $\chi = \lambda$. The target's velocity splits into a part along the line (grey), which only changes $R$, and a part across it (red), which turns the line.
+The pursuer P looks at the target T along the line of sight, a distance $R$ away. Both $\lambda$ and the heading $\chi$ are measured from the same fixed reference direction (dashed). Under pure pursuit the pursuer's velocity lies along the line of sight, so $\chi = \lambda$. The target's velocity splits into a part along the line (gray), which only changes $R$, and a part across it (red), which turns the line.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
@@ -374,7 +374,7 @@ The missile needed no radar of its own, which was a big advantage. The drawbacks
 :::
 
 ::: context critical-damping Three ways to come back
-The picture plots the V-bar example exactly: $y(t) = (8 + 0.18\,t)\,e^{-0.02t}$ over ten minutes. It bulges out slightly at first while the outward drift is cancelled, then glides in without ever crossing the line.
+The picture plots the V-bar example exactly: $y(t) = (8 + 0.18\,t)\,e^{-0.02t}$ over ten minutes. It bulges out slightly at first while the outward drift is canceled, then glides in without ever crossing the line.
 
 With less damping ($\zeta < 1$) it would get back sooner but swing across the centerline and back. With more ($\zeta > 1$) it would creep in more slowly. Critical damping is the dividing line between the two.
 

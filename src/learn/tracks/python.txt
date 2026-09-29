@@ -223,7 +223,7 @@ The kind of a value is called its **type**. In the next lesson you will learn th
 
 A variable name can use letters, digits and the underscore `_` (the low line you get with Shift and the minus key). It cannot contain spaces, and it cannot start with a digit. Capitals matter: `fuel` and `Fuel` are two different names.
 
-Python programmers write names in lowercase, with an underscore between words: `max_speed`, not `MaxSpeed`. This style is called **[[snake case|snake-case]]**. Pick names that say what the value is. `height_m` tells you it is a height and that it is [[measured in metres|units-in-names]]; `h` tells you almost nothing.
+Python programmers write names in lowercase, with an underscore between words: `max_speed`, not `MaxSpeed`. This style is called **[[snake case|snake-case]]**. Pick names that say what the value is. `height_m` tells you it is a height and that it is [[measured in meters|units-in-names]]; `h` tells you almost nothing.
 
 ::: context assignment The equals sign points left
 In maths, "x = 5" and "5 = x" say the same thing. In Python they do not. Python always works out the right-hand side first and then gives that value the name on the left. So `fuel = 98` works, and `98 = fuel` is an error: you cannot stick a label called `98` on anything.
@@ -252,7 +252,7 @@ Words joined by underscores lie low and flat along the line, like a snake: `max_
 :::
 
 ::: context units-in-names Why engineers put units in names
-A number without its unit is a trap. Is `height = 1.65` in metres or in feet? In 1999, NASA lost the Mars Climate Orbiter because one team's software produced numbers in US customary units (pound-force seconds) while another team's software expected metric units (newton-seconds). The spacecraft flew too close to Mars and was lost. Writing the unit into the name, as in `height_m` or `thrust_kn`, is a cheap habit that makes that kind of mix-up much easier to spot.
+A number without its unit is a trap. Is `height = 1.65` in meters or in feet? In 1999, NASA lost the Mars Climate Orbiter because one team's software produced numbers in US customary units (pound-force seconds) while another team's software expected metric units (newton-seconds). The spacecraft flew too close to Mars and was lost. Writing the unit into the name, as in `height_m` or `thrust_kn`, is a cheap habit that makes that kind of mix-up much easier to spot.
 :::
 --- task
 Create three variables:
@@ -332,7 +332,7 @@ print(type(True))    # <class 'bool'>
 **Watch out:** quotes change the type. `36` is an `int`, but `"36"` is a `str`: it is the two characters 3 and 6, not a number. `print` shows both as `36`, so they look the same on the screen, yet `type` tells them apart. Mixing up a number and text that looks like a number is one of the most common mistakes in programming, and [[types matter in flight too|ariane-5]].
 
 ::: context float-name Why a decimal number is called a float
-The full name is **floating-point number**. The "point" is the decimal point, and it "floats" because the computer can slide it left or right. Scientists do the same thing when they write 3.0 × 10⁸ ("3 times ten to the eighth") instead of 300,000,000: the digits stay the same and the point moves. That is how one type can hold a tiny number like 0.000003 and a huge one like the distance to the Sun in metres.
+The full name is **floating-point number**. The "point" is the decimal point, and it "floats" because the computer can slide it left or right. Scientists do the same thing when they write 3.0 × 10⁸ ("3 times ten to the eighth") instead of 300,000,000: the digits stay the same and the point moves. That is how one type can hold a tiny number like 0.000003 and a huge one like the distance to the Sun in meters.
 :::
 
 ::: context boolean Named after a person
@@ -361,7 +361,7 @@ On 4 June 1996, the first Ariane 5 rocket broke up about 40 seconds after launch
 ```
 :::
 --- task
-The International Space Station flies about 408 kilometres up, at about 7.66 kilometres per second.
+The International Space Station flies about 408 kilometers up, at about 7.66 kilometers per second.
 
 1. Create a variable `altitude_km` holding the whole number `408`.
 2. Create a variable `speed_km_s` holding the decimal number `7.66`.
@@ -577,7 +577,7 @@ print(3 ** 2)    # 9   (3 squared: 3 * 3)
 print(2 ** 10)   # 1024
 ```
 
-Squaring, `** 2`, is the one you will use most. The area of a square with sides 4 metres long is `4 ** 2`, which is `16` square metres. Powers of two, like `2 ** 10`, [[show up everywhere in computers|powers-of-two]].
+Squaring, `** 2`, is the one you will use most. The area of a square with sides 4 meters long is `4 ** 2`, which is `16` square meters. Powers of two, like `2 ** 10`, [[show up everywhere in computers|powers-of-two]].
 
 **Watch out:** in some calculators and in school, `2^3` means 2 to the power of 3. In Python the `^` sign means something quite different, and `2 ^ 10` gives `8`, not `1024`. Python gives no error, only a wrong answer, so always use `**` for powers.
 
@@ -629,11 +629,11 @@ During a launch, controllers watch **mission elapsed time**: the time since lift
 Computers store everything as bits, and a bit is a tiny switch that is either off or on: two choices. With 10 switches you can make `2 ** 10` different patterns, which is 1024. That is why memory sizes are so often powers of two. The number 1024 is close to 1000, which is why it has long been nicknamed a "kilo" in computing, even though a true kilo is exactly 1000.
 :::
 --- task
-Practise all three new operators.
+Practice all three new operators.
 
 1. A test burn lasted `200` minutes. Set `hours` to the whole number of hours in 200 minutes, using `200 // 60`.
 2. Set `minutes` to the minutes left over, using `200 % 60`.
-3. A square solar panel has sides `3` metres long. Set `area` to its area, using `3 ** 2`.
+3. A square solar panel has sides `3` meters long. Set `area` to its area, using `3 ** 2`.
 4. Print `hours` and `minutes` on one line with one `print`, then print `area` on the next line.
 
 The output should be:
@@ -799,7 +799,7 @@ print(f"{name} is {len(name)} letters")   # Ada is 3 letters
 Here `*` is "times", from last lesson. Python works out each expression first, then drops the answer into the sentence.
 
 ::: context cleaning-text Why programs clean text first
-To a computer, `"ARM"` and `"ARM "` (with a space on the end) are two different strings. If a program is waiting for the word `ARM` and gets the second one, it will not recognise it. So programs that read typed text almost always clean it first: trim the spaces, then turn everything into one case. Engineers call this **normalising** the input. It is one of the first things any program that talks to people does.
+To a computer, `"ARM"` and `"ARM "` (with a space on the end) are two different strings. If a program is waiting for the word `ARM` and gets the second one, it will not recognize it. So programs that read typed text almost always clean it first: trim the spaces, then turn everything into one case. Engineers call this **normalizing** the input. It is one of the first things any program that talks to people does.
 :::
 
 ::: context method Functions and methods
@@ -2221,13 +2221,13 @@ A dictionary can never hold the same key twice. Writing to a key that already ex
 :::
 
 ::: context tally Counting like a tally sheet
-Picture counting cars by colour with a pencil. When a colour appears for the first time, you write it down with one mark. When it appears again, you add a mark next to it. The dictionary does the same: `.get(color, 0)` is "how many marks so far, or zero if it is not written down yet", and `+ 1` is the new mark. This counting pattern is one of the most used patterns in all of Python.
+Picture counting cars by color with a pencil. When a color appears for the first time, you write it down with one mark. When it appears again, you add a mark next to it. The dictionary does the same: `.get(color, 0)` is "how many marks so far, or zero if it is not written down yet", and `+ 1` is the new mark. This counting pattern is one of the most used patterns in all of Python.
 :::
 --- task
 Write `count_words(text)` that returns a dictionary mapping each word to how many times it appears.
 
 - Make the text lowercase and split it into words with `text.lower().split()`, so `"The the"` counts `the` twice.
-- Loop over those words, and count each one with `counts[word] = counts.get(word, 0) + 1`, like the colour example.
+- Loop over those words, and count each one with `counts[word] = counts.get(word, 0) + 1`, like the color example.
 - Return `counts` at the end.
 
 For example, `count_words("to be or not to be")` returns `{"to": 2, "be": 2, "or": 1, "not": 1}`, and `count_words("")` returns `{}`. The starter already makes the empty dictionary and returns it.
@@ -2770,7 +2770,7 @@ The capitals in `FuelTank` stick up like the humps of a camel, which is where th
 :::
 
 ::: context dunder Names Python calls for you
-Names with two underscores on each side are special: you write them, but Python calls them at the right moment. `__init__` is short for "initialise", which means "set up at the start". There are many others. In the intermediate course you will write `__repr__`, which Python calls to show an object, and `__eq__`, which Python calls when you compare two objects with `==`. The double underscores make these names hard to clash with your own by accident.
+Names with two underscores on each side are special: you write them, but Python calls them at the right moment. `__init__` is short for "initialize", which means "set up at the start". There are many others. In the intermediate course you will write `__repr__`, which Python calls to show an object, and `__eq__`, which Python calls when you compare two objects with `==`. The double underscores make these names hard to clash with your own by accident.
 :::
 
 ::: context self-name Why self has to be written
@@ -2778,7 +2778,7 @@ Many languages hide the "this object" parameter. Python makes you write it, beca
 :::
 
 ::: context attribute Data that belongs to an object
-An attribute is a named value that belongs to an object, the way "colour" and "size" belong to a shirt. The dot means "the one inside": `acct.balance` is "the balance inside `acct`". Flight software is often organised the same way. NASA's open-source F Prime framework, which ran on the Ingenuity helicopter on Mars, is built from components written as C++ classes, each keeping its own data and the methods that work on it.
+An attribute is a named value that belongs to an object, the way "color" and "size" belong to a shirt. The dot means "the one inside": `acct.balance` is "the balance inside `acct`". Flight software is often organized the same way. NASA's open-source F Prime framework, which ran on the Ingenuity helicopter on Mars, is built from components written as C++ classes, each keeping its own data and the methods that work on it.
 :::
 --- task
 Write a class called `Counter` that counts up, like a clicker.

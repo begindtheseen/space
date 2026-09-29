@@ -142,7 +142,7 @@ The second problem is that **BMIs are not portable**. A BMI belongs to one compi
 fatal error: file 'gcm.cache/units.gcm' is not a valid precompiled module file
 ```
 
-So a library cannot ship "the compiled module". It ships the interface source, and every user's build compiles its own BMI. Package managers, IDEs and static analysers all have to learn this too.
+So a library cannot ship "the compiled module". It ships the interface source, and every user's build compiles its own BMI. Package managers, IDEs and static analyzers all have to learn this too.
 
 The third problem is the standard library itself. C++23 adds **`import std;`**, read "import std", which imports the whole standard library as one module. It should be the biggest win of all. Neither toolchain here has it: g++ 13 with `-std=c++23 -fmodules-ts` answers `failed to read compiled module` for `std`, and clang 18 with the libstdc++ 13 library says `module 'std' not found`. The CMake 3.28 documentation also lists "no builtin support for `import std;`" under its known limitations.
 
@@ -288,14 +288,14 @@ C++23 adds a ready-made `std::generator<T>` in `<generator>`, which would replac
 
 ## Why coroutines are rare in flight code
 
-**The frame usually lives on the heap.** The standard says the frame is allocated with `operator new` unless the compiler can prove it is safe not to. Removing that allocation is an optimisation, called **[[heap allocation elision|halo]]**, and the standard never promises it. You saw g++ 13 allocate every time, and clang skip it only when optimising. Flight code usually forbids heap allocation after start-up, because an allocation can fail and its time is not bounded. A feature whose memory behaviour changes with the compiler and the `-O` flag is hard to certify.
+**The frame usually lives on the heap.** The standard says the frame is allocated with `operator new` unless the compiler can prove it is safe not to. Removing that allocation is an optimization, called **[[heap allocation elision|halo]]**, and the standard never promises it. You saw g++ 13 allocate every time, and clang skip it only when optimizing. Flight code usually forbids heap allocation after start-up, because an allocation can fail and its time is not bounded. A feature whose memory behavior changes with the compiler and the `-O` flag is hard to certify.
 
 A partial fix: `promise_type` may supply an `operator new` that hands out memory from a fixed pool. But the compiler picks the frame's size — 72 bytes with g++, 64 with clang at `-O0`, for the same function — so the pool must be sized by measuring, and re-measured whenever the code or compiler changes.
 
-**The control flow is harder to analyse.** Flight software must prove its **[[worst-case execution time|wcet]]** — the longest any piece of code can take — for every task in every cycle. An ordinary function's path is visible in its source. A coroutine's body is cut into pieces at every `co_await` and `co_yield`, and one call to `resume()` runs whichever piece comes next, according to a saved position inside a frame the compiler generated. Timing tools, coverage tools and human reviewers all find that harder to reason about.
+**The control flow is harder to analyze.** Flight software must prove its **[[worst-case execution time|wcet]]** — the longest any piece of code can take — for every task in every cycle. An ordinary function's path is visible in its source. A coroutine's body is cut into pieces at every `co_await` and `co_yield`, and one call to `resume()` runs whichever piece comes next, according to a saved position inside a frame the compiler generated. Timing tools, coverage tools and human reviewers all find that harder to reason about.
 
 ::: key
-Why coroutines rarely appear in flight code: the compiler allocates the coroutine frame on the heap unless it can prove elision, and the control flow is harder to analyse for worst-case timing. Both conflict with the no-allocation, analysable-timing rules.
+Why coroutines rarely appear in flight code: the compiler allocates the coroutine frame on the heap unless it can prove elision, and the control flow is harder to analyze for worst-case timing. Both conflict with the no-allocation, analysable-timing rules.
 :::
 
 So what do flight programs do instead? They want what coroutines offer — a multi-step sequence spread over many control cycles — but they write it as an explicit **[[state machine|state-machine]]**: an `enum class` saying which step it is on, and a `switch` run once per tick.
@@ -414,7 +414,7 @@ tick 3                      tick 3
 result 0                    sizeof(ValveSequence) = 8 bytes
 ```
 
-Same behaviour, tick for tick. Check the wait: after "10%" at tick 1, the coroutine pauses twice more (ticks 2 and 3), and the state machine counts `waited` to 2 (ticks 2 and 3). Both open fully at tick 3.
+Same behavior, tick for tick. Check the wait: after "10%" at tick 1, the coroutine pauses twice more (ticks 2 and 3), and the state machine counts `waited` to 2 (ticks 2 and 3). Both open fully at tick 3.
 
 The coroutine reads more naturally; that is its whole appeal. But the state machine is a plain 8-byte object (a 4-byte `enum class` and a 4-byte `int`) that can sit in static storage, and its state is a named variable you can send down in telemetry — not a hidden resume point in a frame the compiler sized.
 :::
@@ -456,7 +456,7 @@ The generator allocated 72 bytes with g++ at `-O2` and nothing with clang at `-O
 :::
 
 ::: answer
-No. Clang removed the allocation because, in that one program, it could see the frame's whole lifetime. That is an optimisation, not a guarantee: at `-O0` clang allocated 64 bytes for the same code, and storing the generator in a member or passing it elsewhere can make elision impossible. A flight rule needs something true in every build — for example `promise_type::operator new` drawing from a fixed pool sized by measurement, which is extra work to verify.
+No. Clang removed the allocation because, in that one program, it could see the frame's whole lifetime. That is an optimization, not a guarantee: at `-O0` clang allocated 64 bytes for the same code, and storing the generator in a member or passing it elsewhere can make elision impossible. A flight rule needs something true in every build — for example `promise_type::operator new` drawing from a fixed pool sized by measurement, which is extra work to verify.
 :::
 
 ::: check
@@ -548,8 +548,8 @@ Why not on the stack? The stack works because calls nest: the last function call
 ```
 :::
 
-::: context halo The optimisation with a halo
-The committee paper by Gor Nishanov and Richard Smith that argued the frame could usually be kept off the heap nicknamed the optimisation HALO, for heap allocation elision optimisation. The idea: if the compiler can see that the coroutine is created, resumed and destroyed entirely within one caller, it can put the frame in that caller's own stack frame. Clang implements it, as the example showed at `-O2`. The rules for when it applies belong to the compiler, not the language, so code cannot rely on it.
+::: context halo The optimization with a halo
+The committee paper by Gor Nishanov and Richard Smith that argued the frame could usually be kept off the heap nicknamed the optimization HALO, for heap allocation elision optimization. The idea: if the compiler can see that the coroutine is created, resumed and destroyed entirely within one caller, it can put the frame in that caller's own stack frame. Clang implements it, as the example showed at `-O2`. The rules for when it applies belong to the compiler, not the language, so code cannot rely on it.
 :::
 
 ::: context wcet The number every control task must have

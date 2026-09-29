@@ -14,7 +14,7 @@ That match is why WLS is the default estimator in navigation, and not only a han
 
 ## The likelihood of a measurement
 
-Start with one number. A sensor reads $y$. Its noise is Gaussian with standard deviation $\sigma$ ("sigma", the typical size of the error). If the true value were $x$, the chance of reading something near $y$ is set by the bell curve centred at $x$:
+Start with one number. A sensor reads $y$. Its noise is Gaussian with standard deviation $\sigma$ ("sigma", the typical size of the error). If the true value were $x$, the chance of reading something near $y$ is set by the bell curve centered at $x$:
 
 $$
 p(y;x) = \frac{1}{\sqrt{2\pi}\,\sigma}\exp\!\left(-\frac{(y-x)^2}{2\sigma^2}\right).
@@ -102,7 +102,7 @@ $$
 \mathcal{I}(\mathbf{x}) := \operatorname{Cov}(\mathbf{s}) = \mathbf{H}^\mathsf{T}\mathbf{R}^{-1}\operatorname{Cov}(\mathbf{v})\,\mathbf{R}^{-1}\mathbf{H} = \mathbf{H}^\mathsf{T}\mathbf{R}^{-1}\mathbf{H}.
 $$
 
-The symbol $\mathcal{I}$ is a curly "I", read "Fisher information". The last step used $\operatorname{Cov}(\mathbf{v})=\mathbf{R}$, so one $\mathbf{R}^{-1}$ cancels the $\mathbf{R}$. The result is the same matrix lesson two called the **information matrix**. That is not a coincidence; it is where the name comes from. For a linear model it does not depend on $\mathbf{x}$ at all, because $\mathbf{x}$ cancelled out of the score. That is special to linear models.
+The symbol $\mathcal{I}$ is a curly "I", read "Fisher information". The last step used $\operatorname{Cov}(\mathbf{v})=\mathbf{R}$, so one $\mathbf{R}^{-1}$ cancels the $\mathbf{R}$. The result is the same matrix lesson two called the **information matrix**. That is not a coincidence; it is where the name comes from. For a linear model it does not depend on $\mathbf{x}$ at all, because $\mathbf{x}$ canceled out of the score. That is special to linear models.
 
 Why does the spread of the *slope* measure the sharpness of the *peak*? For this model, the curvature of $\log L$ — how fast its slope changes — is $-\mathbf{H}^\mathsf{T}\mathbf{R}^{-1}\mathbf{H}$, the same matrix with a minus sign. A sharply curved hill has a slope that swings a lot when the noise nudges the data. Both views give one number.
 
@@ -261,7 +261,7 @@ Add up many small, independent random nudges and the total comes out bell-shaped
 :::
 
 ::: context mahalanobis Distance measured in sigmas
-An error of $5\,\mathrm{m}$ is huge for a laser rangefinder and tiny for a GNSS fix. The Mahalanobis distance measures a miss in units of the expected noise instead of in metres. For one measurement it is $(y - x)/\sigma$, squared. For many correlated measurements, $\mathbf{R}^{-1}$ does the same job in every direction at once. It is named after Prasanta Chandra Mahalanobis, an Indian statistician who published it in 1936; he was comparing body measurements between groups of people.
+An error of $5\,\mathrm{m}$ is huge for a laser rangefinder and tiny for a GNSS fix. The Mahalanobis distance measures a miss in units of the expected noise instead of in meters. For one measurement it is $(y - x)/\sigma$, squared. For many correlated measurements, $\mathbf{R}^{-1}$ does the same job in every direction at once. It is named after Prasanta Chandra Mahalanobis, an Indian statistician who published it in 1936; he was comparing body measurements between groups of people.
 :::
 
 ::: context log-trick Why the log helps

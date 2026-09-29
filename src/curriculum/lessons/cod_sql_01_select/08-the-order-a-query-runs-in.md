@@ -51,7 +51,7 @@ A memory aid, if you like one: "**F**ind **W**hich **G**roups **H**ave **S**ome 
 
 You need these two clauses to see the whole order. The next module teaches them in depth; here is what they do.
 
-Picture a laundry basket of socks. You tip them out and sort them into piles by colour. Then for each pile you say one thing: "seven blue socks", "three red socks". You started with many socks and ended with one line per pile.
+Picture a laundry basket of socks. You tip them out and sort them into piles by color. Then for each pile you say one thing: "seven blue socks", "three red socks". You started with many socks and ended with one line per pile.
 
 **GROUP BY** is the sorting into piles. `GROUP BY sat_id` makes one pile per satellite. After it, the rows are no longer separate — each pile will become **one** output row.
 
@@ -454,7 +454,7 @@ Everyday aggregates are everywhere: a class average, a team's total score, the h
 ::: context sqlite-leniency Why SQLite accepts more
 SQLite was designed to be small, forgiving and embedded inside other programs (lesson 06 told that story). Its author chose to accept many queries that the SQL standard forbids, such as an alias in WHERE or a bare column in a grouped SELECT, and do something reasonable.
 
-PostgreSQL follows the standard more strictly. Neither is wrong, but a query that relies on SQLite's generosity will break when your team moves the analysis onto a PostgreSQL warehouse. Practise the strict form and you are safe on both.
+PostgreSQL follows the standard more strictly. Neither is wrong, but a query that relies on SQLite's generosity will break when your team moves the analysis onto a PostgreSQL warehouse. Practice the strict form and you are safe on both.
 :::
 
 ::: context declarative Saying what, not how

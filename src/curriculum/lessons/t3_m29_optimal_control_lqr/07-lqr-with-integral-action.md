@@ -297,11 +297,11 @@ Controllability of the augmented pair needs $\begin{bmatrix}\mathbf{A} & \mathbf
 The next lesson goes to the far end of the weighting range and asks what happens when control is made almost free. The answer exposes a hard limit that no amount of actuator authority can buy past.
 
 ::: context steady-torques Where steady torques come from in orbit
-A spacecraft is not quite a rigid ball in empty space. Gravity pulls slightly harder on the end nearer Earth, so a long spacecraft feels a gentle twist that tries to line it up with the vertical — the **gravity-gradient torque**. In low orbit there is still a trace of atmosphere, and if the center of drag is not over the center of mass, the drag twists the vehicle too. Sunlight pushes as well. On a small satellite these torques are tiny, often well under a thousandth of a newton-metre, but they act for hours on end, and a controller that tolerates a small error per unit of torque ends up with a steady offset. Integral action is what removes it.
+A spacecraft is not quite a rigid ball in empty space. Gravity pulls slightly harder on the end nearer Earth, so a long spacecraft feels a gentle twist that tries to line it up with the vertical — the **gravity-gradient torque**. In low orbit there is still a trace of atmosphere, and if the center of drag is not over the center of mass, the drag twists the vehicle too. Sunlight pushes as well. On a small satellite these torques are tiny, often well under a thousandth of a newton-meter, but they act for hours on end, and a controller that tolerates a small error per unit of torque ends up with a steady offset. Integral action is what removes it.
 :::
 
 ::: context thrust-offset Why an engine pushes off-axis
-An engine's thrust line never passes exactly through the vehicle's center of mass. Manufacturing tolerances tilt the nozzle a little, and the center of mass moves as propellant drains. A thrust of a few hundred newtons acting ten centimeters off the center of mass makes a torque of tens of newton-metres. So even a small misalignment turns a propulsive burn into a steady twisting disturbance that the attitude control must hold against for the whole burn.
+An engine's thrust line never passes exactly through the vehicle's center of mass. Manufacturing tolerances tilt the nozzle a little, and the center of mass moves as propellant drains. A thrust of a few hundred newtons acting ten centimeters off the center of mass makes a torque of tens of newton-meters. So even a small misalignment turns a propulsive burn into a steady twisting disturbance that the attitude control must hold against for the whole burn.
 :::
 
 ::: context running-area The integral as a running area

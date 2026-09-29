@@ -33,7 +33,7 @@ So two well-placed points average any cubic exactly. This is a [[Gauss–Hermite
 
 ## The cubature rule
 
-Where the unscented transform used $2n+1$ points, the cubature rule uses exactly $2n$, with no centre point. They sit along the columns of a matrix square root of $\mathbf P$, stretched by $\sqrt n$, and every weight is the same.
+Where the unscented transform used $2n+1$ points, the cubature rule uses exactly $2n$, with no center point. They sit along the columns of a matrix square root of $\mathbf P$, stretched by $\sqrt n$, and every weight is the same.
 
 ::: key The (third-degree) cubature rule
 With $\mathbf S$ any matrix square root satisfying $\mathbf S\mathbf S^{\mathsf T}=n\mathbf P$, the cubature points and weights are
@@ -43,7 +43,7 @@ $$
 Propagate each point through the true, unmodified $\mathbf g$ and pool the mean and covariance exactly as the unscented transform does, with these uniform, always positive weights.
 :::
 
-Where does the $\sqrt n$ come from? Picture the standard bell in $n$ dimensions, a cloud of points. Split each point into a **direction** and a **distance** from the centre. The rule averages over directions using the $2n$ points where the axes pierce a sphere, and over distances using a single typical distance. For a standard $n$-dimensional bell the squared distance from the centre averages exactly $n$, so the typical distance is $\sqrt n$. Put the $2n$ direction points out at that distance and you have the rule. This is why it is called a **[[spherical-radial|spherical-radial]]** rule: spherical for the directions, radial for the distance.
+Where does the $\sqrt n$ come from? Picture the standard bell in $n$ dimensions, a cloud of points. Split each point into a **direction** and a **distance** from the center. The rule averages over directions using the $2n$ points where the axes pierce a sphere, and over distances using a single typical distance. For a standard $n$-dimensional bell the squared distance from the center averages exactly $n$, so the typical distance is $\sqrt n$. Put the $2n$ direction points out at that distance and you have the rule. This is why it is called a **[[spherical-radial|spherical-radial]]** rule: spherical for the directions, radial for the distance.
 
 ::: note Why it has to be true
 Work in standard coordinates, where $\hat{\mathbf x} = \mathbf 0$ and $\mathbf P = \mathbf I$; the matrix square root maps the answer back to any $\hat{\mathbf x}$ and $\mathbf P$. The points are $\pm\sqrt n\,\mathbf e_i$, where $\mathbf e_i$ is the unit vector along axis $i$, each with weight $\tfrac{1}{2n}$.
@@ -73,7 +73,7 @@ $$
 Exact, as it must be for a degree-$2$ function, with no Jacobian and no tuning. Sanity check: the points average to $(1,\ -2)$, the mean, as they should.
 :::
 
-Notice what is missing: no $\alpha$, no $\beta$, no $\kappa$ and no centre point. Every weight is positive and equal, so the huge cancelling weights of a small-$\alpha$ UKF cannot happen.
+Notice what is missing: no $\alpha$, no $\beta$, no $\kappa$ and no center point. Every weight is positive and equal, so the huge canceling weights of a small-$\alpha$ UKF cannot happen.
 
 ## The cubature points are UKF points in disguise
 
@@ -83,7 +83,7 @@ $$
 \lambda = \alpha^2(n + \kappa) - n = 1^2(n + 0) - n = 0
 $$
 
-exactly, for every $n$. So the centre's mean weight is $W_0^{(m)} = \lambda/(n+\lambda) = 0/n = 0$: the centre point still exists but adds nothing to the mean. The stretch is $\sqrt{n + \lambda} = \sqrt n$, exactly the cubature stretch. And each outer weight is $1/(2(n + \lambda)) = 1/(2n)$, exactly the cubature weight.
+exactly, for every $n$. So the center's mean weight is $W_0^{(m)} = \lambda/(n+\lambda) = 0/n = 0$: the center point still exists but adds nothing to the mean. The stretch is $\sqrt{n + \lambda} = \sqrt n$, exactly the cubature stretch. And each outer weight is $1/(2(n + \lambda)) = 1/(2n)$, exactly the cubature weight.
 
 ::: example Two formulas, one set of points
 Build both point sets on a real $3 \times 3$ covariance,
@@ -92,7 +92,7 @@ $$
 \mathbf P = \mathbf A\mathbf A^{\mathsf T}+2\mathbf I, \qquad \mathbf A=\begin{pmatrix}2.041 & -2.556 & 0.418\\ -0.568 & -0.453 & -0.216\\ -2.020 & -0.232 & -0.865\end{pmatrix},
 $$
 
-around $\hat{\mathbf x} = (1,\ -2,\ 0.5)$. Compute the six outer UKF sigma points ($\alpha = 1$, $\beta = 2$, $\kappa = 0$) from the UKF formula, and the six cubature points from the cubature formula. The largest difference between them is $0.0$ — not small, but zero, to the [[last bit|last-bit]] of floating-point precision. The UKF's outer weight is $\tfrac16 = 0.166667$, identical to the cubature weight $\tfrac{1}{2n}$. The UKF's centre weights come out as $W_0^{(m)} = 0$ and $W_0^{(c)} = 2$.
+around $\hat{\mathbf x} = (1,\ -2,\ 0.5)$. Compute the six outer UKF sigma points ($\alpha = 1$, $\beta = 2$, $\kappa = 0$) from the UKF formula, and the six cubature points from the cubature formula. The largest difference between them is $0.0$ — not small, but zero, to the [[last bit|last-bit]] of floating-point precision. The UKF's outer weight is $\tfrac16 = 0.166667$, identical to the cubature weight $\tfrac{1}{2n}$. The UKF's center weights come out as $W_0^{(m)} = 0$ and $W_0^{(c)} = 2$.
 :::
 
 ```python
@@ -127,16 +127,16 @@ print(Wm[0], Wc[0], Wm[1], w[0])       # 0.0 2.0 0.16666666666666666 0.166666666
 
 ## The one real difference: the beta term
 
-If the outer points and weights are identical, what separates the two filters? Only the **centre point's covariance weight**. The UKF's is
+If the outer points and weights are identical, what separates the two filters? Only the **center point's covariance weight**. The UKF's is
 
 $$
 W_0^{(c)} = \frac{\lambda}{n+\lambda} + (1 - \alpha^2 + \beta),
 $$
 
-and at $\lambda = 0$, $\alpha = 1$ this is exactly $\beta$. With the standard Gaussian choice $\beta = 2$, the centre point gets weight $0$ in the mean but weight $2$ in the covariance. That is a small correction that carries the bell curve's fourth-moment shape into the covariance. The cubature rule has no centre point, so it has no such term. In this precise sense it is the $\alpha = 1$, $\kappa = 0$, $\beta = 0$ member of the unscented family, with the centre point — which would carry zero weight in both the mean and the covariance — simply left out.
+and at $\lambda = 0$, $\alpha = 1$ this is exactly $\beta$. With the standard Gaussian choice $\beta = 2$, the center point gets weight $0$ in the mean but weight $2$ in the covariance. That is a small correction that carries the bell curve's fourth-moment shape into the covariance. The cubature rule has no center point, so it has no such term. In this precise sense it is the $\alpha = 1$, $\kappa = 0$, $\beta = 0$ member of the unscented family, with the center point — which would carry zero weight in both the mean and the covariance — simply left out.
 
 ::: key CKF as a special case, stated precisely
-The cubature Kalman filter's point set is exactly the unscented transform's sigma points at $\alpha=1,\ \kappa=0$, with the zero-mean-weight centre point dropped. The two filters share every mean that this tuning of the UKF produces, and differ only in the covariance's centre-point correction, which the UKF calls $\beta$ and the CKF fixes, implicitly, at $0$.
+The cubature Kalman filter's point set is exactly the unscented transform's sigma points at $\alpha=1,\ \kappa=0$, with the zero-mean-weight center point dropped. The two filters share every mean that this tuning of the UKF produces, and differ only in the covariance's center-point correction, which the UKF calls $\beta$ and the CKF fixes, implicitly, at $0$.
 :::
 
 Everything else about the filter is the UKF of lesson 4: predict by pushing the points through $\mathbf f$ and adding $\mathbf Q$; update by pushing fresh points through $\mathbf h$, forming $\mathbf P_{zz}$ and $\mathbf P_{xz}$, and using $\mathbf K = \mathbf P_{xz}\mathbf P_{zz}^{-1}$. There is a square-root CKF too, and because every weight is positive, its square root can be built entirely from a QR factorization, with no risky downdates.
@@ -144,7 +144,7 @@ Everything else about the filter is the UKF of lesson 4: predict by pushing the 
 ::: example The range-and-bearing problem, with cubature points
 Go back to lesson 4's radar: range $1000\,\mathrm m$ with standard deviation $50\,\mathrm m$, bearing $30^\circ$ with standard deviation $15^\circ$, converted to east and north. With $n = 2$ the cubature rule uses four points, and weight $\tfrac14$ each.
 
-**Mean.** $(836.68,\ 483.06)\,\mathrm m$ — identical to the $\alpha = 1$ unscented mean, as it must be, because the centre point never entered that mean. It is $0.19\,\mathrm m$ from the exact mean $(836.85,\ 483.16)\,\mathrm m$.
+**Mean.** $(836.68,\ 483.06)\,\mathrm m$ — identical to the $\alpha = 1$ unscented mean, as it must be, because the center point never entered that mean. It is $0.19\,\mathrm m$ from the exact mean $(836.85,\ 483.16)\,\mathrm m$.
 
 **Covariance.**
 
@@ -197,9 +197,9 @@ For $n = 6$ states, how many points does the cubature rule use, and how does tha
 :::
 
 ::: answer
-The cubature rule uses $2n = 12$ points, with no centre point. The unscented transform uses $2n + 1 = 13$, one more.
+The cubature rule uses $2n = 12$ points, with no center point. The unscented transform uses $2n + 1 = 13$, one more.
 
-At the $\alpha = 1$, $\kappa = 0$ tuning where the two rules coincide, that extra centre point has zero weight in the mean. So both produce the same mean from what are effectively the same $12$ points.
+At the $\alpha = 1$, $\kappa = 0$ tuning where the two rules coincide, that extra center point has zero weight in the mean. So both produce the same mean from what are effectively the same $12$ points.
 :::
 
 ::: check
@@ -223,7 +223,7 @@ $$
 W_0^{(c)} = \frac{\lambda}{n+\lambda} + (1 - \alpha^2 + \beta) = 0 + (1 - 1 + 0) = 0.
 $$
 
-The centre point now contributes nothing to the covariance, and every remaining weight is $\tfrac{1}{2n}$, the cubature weight. The filter still calls itself a UKF but reproduces the CKF exactly — which is precisely the sense in which the CKF is a special case rather than a separate algorithm.
+The center point now contributes nothing to the covariance, and every remaining weight is $\tfrac{1}{2n}$, the cubature weight. The filter still calls itself a UKF but reproduces the CKF exactly — which is precisely the sense in which the CKF is a special case rather than a separate algorithm.
 :::
 
 ::: check
@@ -231,15 +231,15 @@ In the range-and-bearing example, the cubature mean matched the $\alpha = 1$ uns
 :::
 
 ::: answer
-A general property. Whenever $\lambda = 0$, which happens at $\alpha = 1$, $\kappa = 0$ whatever the function, the centre point's mean weight is zero. The UKF mean $\sum_i W_i^{(m)}\mathbf y_i$ then never uses $\mathbf g(\boldsymbol\chi_0)$ at all. It is built only from the same $2n$ outer points, with the same weights $\tfrac{1}{2n}$, as the cubature mean. So the two means agree for every nonlinear $\mathbf g$, not only this one.
+A general property. Whenever $\lambda = 0$, which happens at $\alpha = 1$, $\kappa = 0$ whatever the function, the center point's mean weight is zero. The UKF mean $\sum_i W_i^{(m)}\mathbf y_i$ then never uses $\mathbf g(\boldsymbol\chi_0)$ at all. It is built only from the same $2n$ outer points, with the same weights $\tfrac{1}{2n}$, as the cubature mean. So the two means agree for every nonlinear $\mathbf g$, not only this one.
 :::
 
 ::: check
-Is the cubature Kalman filter more or less exposed than a small-$\alpha$ UKF to the large-cancelling-weights problem from lesson 4? Justify it from the weight formulas.
+Is the cubature Kalman filter more or less exposed than a small-$\alpha$ UKF to the large-canceling-weights problem from lesson 4? Justify it from the weight formulas.
 :::
 
 ::: answer
-Less exposed. Every cubature weight is exactly $\tfrac{1}{2n}$: positive, equal, and never large. There is nothing like the UKF's outer weights of size about $1/\alpha^2$, or its huge negative centre weight that must cancel them.
+Less exposed. Every cubature weight is exactly $\tfrac{1}{2n}$: positive, equal, and never large. There is nothing like the UKF's outer weights of size about $1/\alpha^2$, or its huge negative center weight that must cancel them.
 
 The cubature weights add to one because $2n$ equal pieces of $\tfrac{1}{2n}$ add to one, with no cancellation at all. And with every weight positive, the pooled covariance is a sum of squares, so it can never show a negative variance.
 :::
@@ -249,11 +249,11 @@ The cubature weights add to one because $2n$ equal pieces of $\tfrac{1}{2n}$ add
 | Item | Statement |
 | --- | --- |
 | Averages as integrals | Filter means and covariances are Gaussian-weighted integrals; a quadrature or cubature rule replaces each by a weighted sum over a few points |
-| Cubature rule | $2n$ points $\hat{\mathbf x}\pm[\mathbf S]_i$ with $\mathbf S\mathbf S^{\mathsf T}=n\mathbf P$, equal weights $\tfrac{1}{2n}$; no centre point, no tuning |
+| Cubature rule | $2n$ points $\hat{\mathbf x}\pm[\mathbf S]_i$ with $\mathbf S\mathbf S^{\mathsf T}=n\mathbf P$, equal weights $\tfrac{1}{2n}$; no center point, no tuning |
 | Origin | Third-degree spherical-radial rule: exact for polynomials up to degree $3$; points at the typical distance $\sqrt n$ |
 | Relation to the UKF | Identical to the UKF's outer points and weights at $\alpha=1,\kappa=0$, to the last bit; the CKF equals that UKF with $\beta=0$ |
 | Range-and-bearing test | Same mean as the $\alpha=1$ UKF; covariance error $1536\,\mathrm{m^2}$ against $1887$ ($\beta=2$) and $4784$ (tangent line) |
-| Trade-off | No cancelling weights and no knobs to mis-set, but no way to shrink the spread or encode tail shape; points drift out as $\sqrt n$ |
+| Trade-off | No canceling weights and no knobs to mis-set, but no way to shrink the spread or encode tail shape; points drift out as $\sqrt n$ |
 
 Every filter in this module so far — EKF, UKF and CKF — shares one assumption under all their differences: the belief is a single Gaussian, however it is pushed through the curve. The next lesson drops that assumption and represents the belief as [[a cloud of weighted samples|particle-bridge]] instead.
 
@@ -315,7 +315,7 @@ Floating-point arithmetic usually leaves tiny traces of rounding, so two routes 
 :::
 
 ::: context far-points Points in places the model never meant
-Why does the distance grow like $\sqrt n$? In $n$ dimensions, each axis adds its own variance to the squared distance from the centre, so a typical draw from the bell sits about $\sqrt n$ standard deviations out, even though along any single axis it is usually within one. This graph shows that distance for different $n$.
+Why does the distance grow like $\sqrt n$? In $n$ dimensions, each axis adds its own variance to the squared distance from the center, so a typical draw from the bell sits about $\sqrt n$ standard deviations out, even though along any single axis it is usually within one. This graph shows that distance for different $n$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">

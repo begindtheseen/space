@@ -304,8 +304,8 @@ Lesson 06 showed why a count of seconds since an epoch must never sit in a float
 
 On 1 March 2026 at 14:05 UTC, the Unix count is 1,772,373,900 seconds.
 
-- In an 8-byte float (DOUBLE PRECISION, or REAL in SQLite), neighbouring values near 1.77 billion are about $2.4 \times 10^{-7}$ seconds apart. Add 0.1 s and you get 0.09999990463 s, not 0.1. Two systems that computed "the same" time by different routes disagree in the last digits, so `=` fails and a join on time finds no match.
-- In a 4-byte float (REAL in PostgreSQL), neighbouring values near 1.77 billion are **[[128 seconds apart|float-spacing]]**. The value 1,772,373,900 itself becomes 1,772,373,888, twelve seconds early.
+- In an 8-byte float (DOUBLE PRECISION, or REAL in SQLite), neighboring values near 1.77 billion are about $2.4 \times 10^{-7}$ seconds apart. Add 0.1 s and you get 0.09999990463 s, not 0.1. Two systems that computed "the same" time by different routes disagree in the last digits, so `=` fails and a join on time finds no match.
+- In a 4-byte float (REAL in PostgreSQL), neighboring values near 1.77 billion are **[[128 seconds apart|float-spacing]]**. The value 1,772,373,900 itself becomes 1,772,373,888, twelve seconds early.
 
 ::: key Why telemetry timestamps are never stored as floats
 Binary floating point cannot represent decimal fractions of a second exactly and loses resolution as the epoch offset grows, so equality and joins break. Use a timestamp type, or an integer count of nanoseconds since a stated epoch.
@@ -454,7 +454,7 @@ The stretch between them is a **pass**, usually 5 to 12 minutes for a low satell
 ::: context microsecond How small is a microsecond?
 A microsecond is one millionth of a second, written μs (the Greek letter mu, for "micro"). In one microsecond, light travels about 300 m. A satellite in low orbit, moving at about 7.6 km/s, moves about 7.6 mm.
 
-So a timestamp with microsecond resolution pins down *where* a satellite was to within a centimetre or so. That is fine for most telemetry. Systems that time-tag radio signals for navigation need nanoseconds, a thousand times finer, which is one reason they keep time as an integer count instead.
+So a timestamp with microsecond resolution pins down *where* a satellite was to within a centimeter or so. That is fine for most telemetry. Systems that time-tag radio signals for navigation need nanoseconds, a thousand times finer, which is one reason they keep time as an integer count instead.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">

@@ -171,7 +171,7 @@ An **inertial navigation system**, the accelerometers and gyros of an earlier mo
 **Terrain relative navigation**, or **TRN**, does something different. It runs the same correlation as tracking, but the reference is a large, pre-loaded map with known coordinates, usually built from an orbiter's photos. The descent picture is the template. The search covers as much of the map as the vehicle's uncertainty demands. And the correlation peak is not a motion — it is a **position fix**: "the patch I am looking at is *here* on the map." It depends on nothing the inertial system assumed on the way down.
 
 ::: key Terrain relative navigation
-Match descent imagery to an onboard map (craters, landmarks, template patches) for an **absolute** position fix relative to the terrain. It removes both inertial drift and map-tie error, which is what turns a kilometre-sized landing ellipse into tens of metres.
+Match descent imagery to an onboard map (craters, landmarks, template patches) for an **absolute** position fix relative to the terrain. It removes both inertial drift and map-tie error, which is what turns a kilometer-sized landing ellipse into tens of meters.
 :::
 
 ::: example A descent image finds itself on the map
@@ -241,7 +241,7 @@ The search only looks within its radius of the inertial guess. If the true posit
 
 ## Crater matching: a pattern with sizes
 
-Correlating whole pictures works well when the guess is already good, so the search box is small. At the start of a descent the uncertainty can be kilometres, and searching every offset of a huge map is far too slow. This is the same wall the lost-in-space star identification of the first lesson hit, and the escape is the same: stop comparing whole pictures and compare *patterns* of distinctive points.
+Correlating whole pictures works well when the guess is already good, so the search box is small. At the start of a descent the uncertainty can be kilometers, and searching every offset of a huge map is far too slow. This is the same wall the lost-in-space star identification of the first lesson hit, and the escape is the same: stop comparing whole pictures and compare *patterns* of distinctive points.
 
 The points here are **[[craters|slim-craters]]** — round, rimmed pits that stand out from the ground around them and are easy to detect.
 
@@ -401,7 +401,7 @@ A small round blob means nothing changes much anywhere. A long thin oval means c
 :::
 
 ::: context sub-pixel Finding the top between the grid points
-The tracker's scores sit on a whole-pixel grid, but the true peak can fall between grid points. Take the best score $s_0$ and its two neighbours $s_-$ and $s_+$ along one axis, fit a parabola through the three, and move to the parabola's top. The shift from the best whole pixel is
+The tracker's scores sit on a whole-pixel grid, but the true peak can fall between grid points. Take the best score $s_0$ and its two neighbors $s_-$ and $s_+$ along one axis, fit a parabola through the three, and move to the parabola's top. The shift from the best whole pixel is
 
 $$
 \delta = \frac{s_- - s_+}{2(s_- - 2s_0 + s_+)},
@@ -411,19 +411,19 @@ always between $-\tfrac12$ and $+\tfrac12$ pixel. Do it once for $x$ and once fo
 :::
 
 ::: context map-tie Where exactly is the map?
-A map of Mars made from orbiter photos is very detailed, but the map as a whole is only known to sit in the planet's coordinate frame to within some tens to hundreds of metres. A lander's inertial system, even a perfect one, works in its own frame. So "the safe spot is at these map coordinates" carries that map-tie uncertainty into the landing, no matter how good the inertial system is. Looking at the ground and matching it to the same map sidesteps the problem entirely: the fix is *relative to the map*, which is exactly the frame the landing target is written in.
+A map of Mars made from orbiter photos is very detailed, but the map as a whole is only known to sit in the planet's coordinate frame to within some tens to hundreds of meters. A lander's inertial system, even a perfect one, works in its own frame. So "the safe spot is at these map coordinates" carries that map-tie uncertainty into the landing, no matter how good the inertial system is. Looking at the ground and matching it to the same map sidesteps the problem entirely: the fix is *relative to the map*, which is exactly the frame the landing target is written in.
 :::
 
 ::: context gsd Ground sample distance
-**Ground sample distance** is how much ground one pixel covers. It grows with altitude: a camera with $f = 1000$ pixels looking straight down from $2500\,\mathrm{m}$ covers $2500 / 1000 = 2.5\,\mathrm{m}$ per pixel, while from $250\,\mathrm{m}$ it covers $0.25\,\mathrm{m}$. That matters for TRN because the descent image must be scaled to match the map's pixel size before correlating. It also sets the fix's resolution: a one-pixel search step at $2.5\,\mathrm{m}$ per pixel can place the vehicle to within about a metre or two, not to centimetres.
+**Ground sample distance** is how much ground one pixel covers. It grows with altitude: a camera with $f = 1000$ pixels looking straight down from $2500\,\mathrm{m}$ covers $2500 / 1000 = 2.5\,\mathrm{m}$ per pixel, while from $250\,\mathrm{m}$ it covers $0.25\,\mathrm{m}$. That matters for TRN because the descent image must be scaled to match the map's pixel size before correlating. It also sets the fix's resolution: a one-pixel search step at $2.5\,\mathrm{m}$ per pixel can place the vehicle to within about a meter or two, not to centimeters.
 :::
 
 ::: context lvs How Perseverance used it
-Perseverance's landing target in Jezero crater sat inside an ellipse about $7.7 \times 6.6\,\mathrm{km}$ — a region full of cliffs, boulder fields and dunes. During the parachute descent, the Lander Vision System took pictures of the ground and matched them against an onboard map built from orbiter images, getting a position fix good to tens of metres. The rover then chose the safest reachable spot from a pre-made safety map and steered to it during the powered descent. Earlier Mars landers had no way to do this; they had to pick landing ellipses flat and safe *everywhere*, which ruled out many of the most interesting places.
+Perseverance's landing target in Jezero crater sat inside an ellipse about $7.7 \times 6.6\,\mathrm{km}$ — a region full of cliffs, boulder fields and dunes. During the parachute descent, the Lander Vision System took pictures of the ground and matched them against an onboard map built from orbiter images, getting a position fix good to tens of meters. The rover then chose the safest reachable spot from a pre-made safety map and steered to it during the powered descent. Earlier Mars landers had no way to do this; they had to pick landing ellipses flat and safe *everywhere*, which ruled out many of the most interesting places.
 :::
 
 ::: context slim-craters A lander that navigated by craters
-The Moon and Mars are covered in craters of every size, and new craters form rarely, so an orbiter's crater catalog stays valid for a very long time. Japan's SLIM lander ("Smart Lander for Investigating Moon") used exactly this in January 2024: its camera detected craters during descent and matched their pattern against an onboard catalog to find its position. It touched down about $55\,\mathrm{m}$ from its target — a pinpoint landing by lunar standards, where earlier landers had accepted uncertainties of kilometres.
+The Moon and Mars are covered in craters of every size, and new craters form rarely, so an orbiter's crater catalog stays valid for a very long time. Japan's SLIM lander ("Smart Lander for Investigating Moon") used exactly this in January 2024: its camera detected craters during descent and matched their pattern against an onboard catalog to find its position. It touched down about $55\,\mathrm{m}$ from its target — a pinpoint landing by lunar standards, where earlier landers had accepted uncertainties of kilometers.
 :::
 
 ::: context invariant What stays the same

@@ -3,7 +3,7 @@ id: l01-object-model-and-storage
 title: The object model: storage, lifetime, and the address of a thing
 minutes: 24
 covers:
-  - 'Storage duration: automatic, static, thread-local, dynamic; lifetime and initialisation order'
+  - 'Storage duration: automatic, static, thread-local, dynamic; lifetime and initialization order'
 ---
 
 Think of a hotel. The rooms are there before any guest arrives, and they are still there after the guest checks out. A room has a number on the door, so anyone can find it. But "room 214" and "the guest in room 214" are not the same thing. Once the guest has left, knocking on 214 gets you an empty room — or a stranger.
@@ -249,7 +249,7 @@ That last clause is the **[[static initialization order fiasco|init-fiasco]]** t
 **Dynamic objects** are initialized by the `new` expression, where you write it. That is the whole rule — and the whole problem, because nothing tells you where to write the matching `delete`.
 
 ::: key
-Every object has one of four storage durations — automatic, static, thread-local, dynamic — and that choice fixes when its bytes appear and disappear. Lifetime is narrower than storage: it begins when the constructor completes and ends when the destructor starts. Using the bytes outside that interval is undefined behaviour, whatever the allocator happens to have done with them.
+Every object has one of four storage durations — automatic, static, thread-local, dynamic — and that choice fixes when its bytes appear and disappear. Lifetime is narrower than storage: it begins when the constructor completes and ends when the destructor starts. Using the bytes outside that interval is undefined behavior, whatever the allocator happens to have done with them.
 :::
 
 ::: warning Three meanings of `static`
@@ -338,8 +338,8 @@ The second is the `int` that `new` created. It has dynamic storage duration, liv
 | thread-local storage | one object per thread; thread start (or first use) to thread exit |
 | dynamic storage | the allocator; `new` to `delete` |
 | lifetime | constructor completes to destructor starts — narrower than storage |
-| constant initialisation | zero, then constant values, before any code runs |
-| dynamic initialisation | computed initialisers, before `main`, unspecified order across translation units |
+| constant initialization | zero, then constant values, before any code runs |
+| dynamic initialization | computed initializers, before `main`, unspecified order across translation units |
 | guaranteed elision (C++17) | returning a prvalue constructs directly in the caller; no copy exists |
 | ASLR | addresses differ between runs; never assert one |
 

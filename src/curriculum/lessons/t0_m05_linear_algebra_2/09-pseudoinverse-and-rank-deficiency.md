@@ -89,7 +89,7 @@ The free coefficients add their squares, so the [[shortest solution|min-norm-pic
 $$\mathbf{x} = \sum_{i\le r}\frac{\beta_i}{\sigma_i}\mathbf{v}_i = \mathbf{V}\boldsymbol{\Sigma}^+\mathbf{U}^\mathsf{T}\mathbf{b}.$$
 
 ::: key What the pseudoinverse solves
-$\mathbf{x} = \mathbf{A}^+\mathbf{b}$ minimises $\lVert\mathbf{A}\mathbf{x} - \mathbf{b}\rVert$, and among all minimisers it is the one with the smallest $\lVert\mathbf{x}\rVert$. Componentwise, $\mathbf{x} = \sum_{i \le r}(\mathbf{u}_i^\mathsf{T}\mathbf{b}/\sigma_i)\,\mathbf{v}_i$, and the minimum residual is the norm of the part of $\mathbf{b}$ outside the column space. The solution has no component in the null space of $\mathbf{A}$.
+$\mathbf{x} = \mathbf{A}^+\mathbf{b}$ minimizes $\lVert\mathbf{A}\mathbf{x} - \mathbf{b}\rVert$, and among all minimizers it is the one with the smallest $\lVert\mathbf{x}\rVert$. Componentwise, $\mathbf{x} = \sum_{i \le r}(\mathbf{u}_i^\mathsf{T}\mathbf{b}/\sigma_i)\,\mathbf{v}_i$, and the minimum residual is the norm of the part of $\mathbf{b}$ outside the column space. The solution has no component in the null space of $\mathbf{A}$.
 :::
 
 That last sentence is the one to keep. The pseudoinverse answers only about the directions the data pins down and reports zero for the rest — like writing the building's unknown height as zero. Whether zero is the right default is an engineering question, and the rest of this lesson is about when it is.

@@ -3,14 +3,14 @@ id: l11-mass-properties
 title: Mass properties for a 6-DOF simulation
 minutes: 24
 covers:
-  - 'Mass properties: where the mass, centre of gravity and inertia tensor for a 6-DOF simulation come from'
+  - 'Mass properties: where the mass, center of gravity and inertia tensor for a 6-DOF simulation come from'
 ---
 
 Pick up a broom by the very end of the handle and try to twirl it. Hard work. Now grab it near the brush, where it balances, and twirl it again. Much easier. The broom did not get lighter. What changed is where the mass sits compared with the point you spin it about.
 
-Three numbers describe that. How heavy the thing is: its **mass**. Where it balances: its **centre of gravity**. And how hard it is to spin about each direction: its **inertia**. Together they are called the **mass properties**.
+Three numbers describe that. How heavy the thing is: its **mass**. Where it balances: its **center of gravity**. And how hard it is to spin about each direction: its **inertia**. Together they are called the **mass properties**.
 
-A GNC engineer needs all three for every vehicle. A **[[6-DOF simulation|six-dof-sim]]** — the program that flies the vehicle in software, tracking three positions and three angles — cannot run without them. The mass sets how thrust turns into acceleration. The centre of gravity sets the lever arm every force acts through. The inertia sets how torque turns into rotation. Last lesson you built an assembly. This lesson shows where these numbers come out of it, how to compute them yourself, and what quietly makes them wrong.
+A GNC engineer needs all three for every vehicle. A **[[6-DOF simulation|six-dof-sim]]** — the program that flies the vehicle in software, tracking three positions and three angles — cannot run without them. The mass sets how thrust turns into acceleration. The center of gravity sets the lever arm every force acts through. The inertia sets how torque turns into rotation. Last lesson you built an assembly. This lesson shows where these numbers come out of it, how to compute them yourself, and what quietly makes them wrong.
 
 ## Mass: density times volume
 
@@ -20,7 +20,7 @@ $$
 m = \rho V.
 $$
 
-Aluminum is about $2700\,\mathrm{kg/m^3}$, titanium alloy about $4430$, steel about $7850$, carbon-fibre composite about $1600$. An assembly's mass is the sum of its parts' masses:
+Aluminum is about $2700\,\mathrm{kg/m^3}$, titanium alloy about $4430$, steel about $7850$, carbon-fiber composite about $1600$. An assembly's mass is the sum of its parts' masses:
 
 $$
 M = \sum_i m_i,
@@ -30,17 +30,17 @@ where the index $i$ runs over every part.
 
 The CAD tool does this for you, but only as well as the density you gave it. If nobody assigned a material, many tools quietly use a **default density** — often water, $1000\,\mathrm{kg/m^3}$, or whatever the template says. The volume is right; the mass is a guess.
 
-## Centre of gravity: the balance point
+## Center of gravity: the balance point
 
 Put two kids on a seesaw. If they weigh the same, the balance point is in the middle. If one is twice as heavy, the balance point moves towards that one, so that the lighter kid sits twice as far away. The balance point is a **[[weighted average|balance-point]]** of the positions, where each position counts in proportion to its mass.
 
-The **centre of gravity**, or **CG** (also called the centre of mass), is exactly that:
+The **center of gravity**, or **CG** (also called the center of mass), is exactly that:
 
 $$
 \mathbf{r}_{cg} = \frac{\sum_i m_i\, \mathbf{r}_i}{M}.
 $$
 
-Here $\mathbf{r}_i$ (read "r sub i", bold because it is a vector with x, y and z parts) is where part $i$'s own centre sits, and $\mathbf{r}_{cg}$ is the assembly's CG. You compute it one direction at a time: add up mass times x for every part and divide by the total mass; then the same for y and z.
+Here $\mathbf{r}_i$ (read "r sub i", bold because it is a vector with x, y and z parts) is where part $i$'s own center sits, and $\mathbf{r}_{cg}$ is the assembly's CG. You compute it one direction at a time: add up mass times x for every part and divide by the total mass; then the same for y and z.
 
 ::: key Centre of gravity
 Mass $m = \rho V$ for each part, $M = \sum m_i$ for the assembly, and the CG is the mass-weighted average position: $\mathbf{r}_{cg} = \sum m_i \mathbf{r}_i / M$.
@@ -71,7 +71,7 @@ $$
 
 The three on the diagonal are the **moments of inertia**. The three off the diagonal are the **products of inertia**. A product of inertia measures how lopsided the mass is: it is zero when the mass is balanced across the axes, and non-zero when, say, extra mass sits where $x$ and $y$ are **[[both positive|products-picture]]**. A non-zero product means that spinning about one axis tries to twist the body about another too. The table is symmetric: the entry in row x, column y equals the one in row y, column x.
 
-For a solid box of mass $m$ and side lengths $a$, $b$, $c$ along x, y, z, about its own centre and its own edges' directions, the products are zero and
+For a solid box of mass $m$ and side lengths $a$, $b$, $c$ along x, y, z, about its own center and its own edges' directions, the products are zero and
 
 $$
 I_{xx} = \frac{m}{12}(b^2 + c^2), \qquad I_{yy} = \frac{m}{12}(a^2 + c^2), \qquad I_{zz} = \frac{m}{12}(a^2 + b^2).
@@ -93,7 +93,7 @@ $$
 
 where $\boldsymbol{\tau}$ ("tau") is the torque, $\boldsymbol{\omega}$ ("omega") is the spin rate and $\dot{\boldsymbol{\omega}}$ ("omega dot") is how fast the spin rate changes.
 
-CAD tools measure everything from an **output coordinate system** — by default the assembly's origin, which is wherever the modeller happened to start. Many tools report three versions: the tensor about the CG aligned with the output axes; the principal moments at the CG; and the tensor about the output origin itself. Only the first one is what the simulator wants, provided the output axes are set to the vehicle's body axes. Make a coordinate system that matches the body axes and ask for the properties relative to it.
+CAD tools measure everything from an **output coordinate system** — by default the assembly's origin, which is wherever the modeler happened to start. Many tools report three versions: the tensor about the CG aligned with the output axes; the principal moments at the CG; and the tensor about the output origin itself. Only the first one is what the simulator wants, provided the output axes are set to the vehicle's body axes. Make a coordinate system that matches the body axes and ask for the properties relative to it.
 
 ### The parallel-axis theorem
 
@@ -116,13 +116,13 @@ Measure each bit of mass from the CG: its position from $O$ is $\mathbf{d} + \bo
 :::
 
 ::: example Two blocks on a line, by hand
-Part A is an aluminum block, $0.2 \times 0.1 \times 0.1\,\mathrm{m}$, centred at the origin. Part B is a steel cube, $0.1\,\mathrm{m}$ on each side, centred at $x = 0.15\,\mathrm{m}$. Find $I_{zz}$ about the assembly CG.
+Part A is an aluminum block, $0.2 \times 0.1 \times 0.1\,\mathrm{m}$, centered at the origin. Part B is a steel cube, $0.1\,\mathrm{m}$ on each side, centered at $x = 0.15\,\mathrm{m}$. Find $I_{zz}$ about the assembly CG.
 
 **Masses.** $m_A = 2700 \times 0.2 \times 0.1 \times 0.1 = 5.40\,\mathrm{kg}$. $m_B = 7850 \times 0.1^3 = 7.85\,\mathrm{kg}$. Total $M = 13.25\,\mathrm{kg}$.
 
-**CG.** Both centres are on the x axis, so only $x$ matters: $x_{cg} = \dfrac{5.40 \times 0 + 7.85 \times 0.15}{13.25} = 0.0889\,\mathrm{m}$. Closer to the steel, as it should be.
+**CG.** Both centers are on the x axis, so only $x$ matters: $x_{cg} = \dfrac{5.40 \times 0 + 7.85 \times 0.15}{13.25} = 0.0889\,\mathrm{m}$. Closer to the steel, as it should be.
 
-**Each block about its own centre.** $I_{zz,A} = \frac{5.40}{12}(0.2^2 + 0.1^2) = 0.0225\,\mathrm{kg\,m^2}$. $I_{zz,B} = \frac{7.85}{12}(0.1^2 + 0.1^2) = 0.0131\,\mathrm{kg\,m^2}$.
+**Each block about its own center.** $I_{zz,A} = \frac{5.40}{12}(0.2^2 + 0.1^2) = 0.0225\,\mathrm{kg\,m^2}$. $I_{zz,B} = \frac{7.85}{12}(0.1^2 + 0.1^2) = 0.0131\,\mathrm{kg\,m^2}$.
 
 **Shift each to the CG.** A sits $0.0889\,\mathrm{m}$ from the CG: $5.40 \times 0.0889^2 = 0.0426$. B sits $0.15 - 0.0889 = 0.0611\,\mathrm{m}$ away: $7.85 \times 0.0611^2 = 0.0293$.
 
@@ -211,21 +211,21 @@ The line inside the loop is the parallel-axis theorem, used to move each part's 
 
 **Checks on the tensor.** The trace is $0.05341 + 0.06166 + 0.07122 = 0.1863$, and the principal moments add to $0.04918 + 0.06061 + 0.07649 = 0.1863$. They match. The largest, $0.0765$, is less than $0.0492 + 0.0606 = 0.1098$. It passes.
 
-**The material change.** Switching the mast from aluminum to carbon fibre takes its mass from $0.432$ to $0.256\,\mathrm{kg}$, a loss of $0.176\,\mathrm{kg}$ — under $3\%$ of the total. Yet two principal moments drop by more than $14\%$. The mast is long and far from the CG, and distance counts squared. A small part in the wrong place can matter more to attitude control than a big part near the middle.
+**The material change.** Switching the mast from aluminum to carbon fiber takes its mass from $0.432$ to $0.256\,\mathrm{kg}$, a loss of $0.176\,\mathrm{kg}$ — under $3\%$ of the total. Yet two principal moments drop by more than $14\%$. The mast is long and far from the CG, and distance counts squared. A small part in the wrong place can matter more to attitude control than a big part near the middle.
 :::
 
 In a simulator, those smaller moments mean the same thruster torque spins the vehicle up about 17% faster about those axes, which changes controller gains and the rate at which a reaction wheel saturates. That is why a material change is a mass-properties change, and a mass-properties change is a GNC change.
 
 ::: warning Watch the units on export
-CAD tools often report inertia in $\mathrm{g\,mm^2}$ or $\mathrm{kg\,mm^2}$, because parts are modelled in millimeters. $1\,\mathrm{kg\,m^2} = 10^6\,\mathrm{kg\,mm^2} = 10^9\,\mathrm{g\,mm^2}$. A factor of a million wrong is easy to spot; a factor of a thousand, from grams against kilograms, can slip through.
+CAD tools often report inertia in $\mathrm{g\,mm^2}$ or $\mathrm{kg\,mm^2}$, because parts are modeled in millimeters. $1\,\mathrm{kg\,m^2} = 10^6\,\mathrm{kg\,mm^2} = 10^9\,\mathrm{g\,mm^2}$. A factor of a million wrong is easy to spot; a factor of a thousand, from grams against kilograms, can slip through.
 :::
 
 ## What makes a CAD tensor wrong
 
 The mass properties are only as true as the model is complete and materially correct. The usual failures are not bugs in the software. They are things the model does not know.
 
-- **Placeholder materials and densities.** A part left at the template default, or given "generic steel" when it is really titanium. An electronics box modelled as a solid block of aluminum when it is mostly air and circuit cards.
-- **Missing mass.** Harnesses and cables, brackets added late, glue, paint, fasteners nobody modelled — and, on a rocket, the biggest one of all: **fluids and propellant**, whose mass, CG and inertia change throughout the flight as the tanks drain.
+- **Placeholder materials and densities.** A part left at the template default, or given "generic steel" when it is really titanium. An electronics box modeled as a solid block of aluminum when it is mostly air and circuit cards.
+- **Missing mass.** Harnesses and cables, brackets added late, glue, paint, fasteners nobody modeled — and, on a rocket, the biggest one of all: **fluids and propellant**, whose mass, CG and inertia change throughout the flight as the tanks drain.
 - **Simplified or suppressed components.** Envelope blocks, defeatured stand-ins and parts suppressed to make the assembly load faster. Last lesson warned about exactly this.
 - **As-built deviation.** The shop made something slightly different from the model: a thicker wall, a different fastener, an approved substitute material.
 
@@ -242,7 +242,7 @@ For your simulation, that means one habit: every inertia tensor you use should c
 ## Check yourself
 
 ::: check
-A part is modelled correctly but has no material assigned, and the tool uses $1000\,\mathrm{kg/m^3}$. The real part is titanium at $4430\,\mathrm{kg/m^3}$. By what factor are its mass and its own moments of inertia wrong? Does its CG move?
+A part is modeled correctly but has no material assigned, and the tool uses $1000\,\mathrm{kg/m^3}$. The real part is titanium at $4430\,\mathrm{kg/m^3}$. By what factor are its mass and its own moments of inertia wrong? Does its CG move?
 :::
 
 ::: answer
@@ -278,7 +278,7 @@ Your CAD mass properties say $412\,\mathrm{kg}$ and the vehicle weighs in at $43
 :::
 
 ::: answer
-Candidates: harnesses and cables not modelled; parts left at placeholder densities (an electronics box as "generic" material); suppressed or simplified components; fasteners, adhesive and paint; residual fluids; and as-built deviations such as thicker walls or substitute materials. The measured mass is the truth for flight. The team reconciles: it finds and fixes the gap in the model where it can, and the measured mass properties take precedence where it cannot.
+Candidates: harnesses and cables not modeled; parts left at placeholder densities (an electronics box as "generic" material); suppressed or simplified components; fasteners, adhesive and paint; residual fluids; and as-built deviations such as thicker walls or substitute materials. The measured mass is the truth for flight. The team reconciles: it finds and fixes the gap in the model where it can, and the measured mass properties take precedence where it cannot.
 :::
 
 ## Summary
@@ -286,10 +286,10 @@ Candidates: harnesses and cables not modelled; parts left at placeholder densiti
 | Symbol or idea | Meaning | Formula or fact |
 |---|---|---|
 | $m = \rho V$ | Mass from density and volume | Only as good as the assigned material |
-| $\mathbf{r}_{cg}$ | Centre of gravity | $\sum m_i \mathbf{r}_i / M$ |
+| $\mathbf{r}_{cg}$ | Center of gravity | $\sum m_i \mathbf{r}_i / M$ |
 | $I_{xx}, I_{yy}, I_{zz}$ | Moments of inertia | Mass times distance from the axis, squared |
 | $I_{xy}, I_{xz}, I_{yz}$ | Products of inertia | Tensor convention $-\int xy\,dm$; check the tool's sign |
-| Box about its centre | Solid block, sides a, b, c | $I_{zz} = \frac{m}{12}(a^2 + b^2)$ |
+| Box about its center | Solid block, sides a, b, c | $I_{zz} = \frac{m}{12}(a^2 + b^2)$ |
 | Parallel-axis theorem | Shift the reference point | $\mathbf{I}_{cg} = \mathbf{I}_O - m(d^2\mathbf{1} - \mathbf{d}\mathbf{d}^{\mathsf{T}})$ |
 | Principal moments | Eigenvalues of $\mathbf{I}$ | Sum equals trace; each at most the sum of the others |
 | For the simulator | Which tensor | About the CG, in body axes |
@@ -298,7 +298,7 @@ Candidates: harnesses and cables not modelled; parts left at placeholder densiti
 Next lesson turns the model back into instructions for the shop: drawings made from the model, and product manufacturing information carried in the model itself.
 
 ::: context six-dof-sim Six numbers for where, six for how fast
-A 6-DOF simulation tracks a vehicle's three position coordinates and three attitude angles, plus how fast each is changing, by stepping Newton's laws forward in small time steps. Translation needs the mass. Rotation needs the inertia tensor. Every force applied away from the CG — thrust through a gimbaled engine, aerodynamic force at the centre of pressure — also makes a torque, whose lever arm is measured from the CG. Get any of the three mass properties wrong and the simulated vehicle flies differently from the real one.
+A 6-DOF simulation tracks a vehicle's three position coordinates and three attitude angles, plus how fast each is changing, by stepping Newton's laws forward in small time steps. Translation needs the mass. Rotation needs the inertia tensor. Every force applied away from the CG — thrust through a gimbaled engine, aerodynamic force at the center of pressure — also makes a torque, whose lever arm is measured from the CG. Get any of the three mass properties wrong and the simulated vehicle flies differently from the real one.
 :::
 
 ::: context balance-point The seesaw rule
@@ -320,7 +320,7 @@ A seesaw balances when mass times distance on one side equals mass times distanc
 :::
 
 ::: context tensor-word Why "tensor" and not "number"
-A tensor is a quantity whose numbers depend on which axes you write it in, but in a predictable way. Turn your axes and the nine entries change, yet they still describe the same physical body. That is why a tensor must always come labelled with its axes and its reference point. The word comes from the Latin for "stretch", from its first use describing stress in materials.
+A tensor is a quantity whose numbers depend on which axes you write it in, but in a predictable way. Turn your axes and the nine entries change, yet they still describe the same physical body. That is why a tensor must always come labeled with its axes and its reference point. The word comes from the Latin for "stretch", from its first use describing stress in materials.
 :::
 
 ::: context products-picture Where a product of inertia comes from

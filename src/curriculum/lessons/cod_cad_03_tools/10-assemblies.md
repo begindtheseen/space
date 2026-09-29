@@ -10,7 +10,7 @@ Think about building a piece of flat-pack furniture. Every panel, dowel and scre
 
 A CAD **assembly** is that instruction sheet, in 3D. It is a file that holds no geometry of its own. It points at part files and stores the rules that place each part relative to the others. The rules are called **mates** — "put this face against that face", "line up these two holes". Last lesson you built single parts with a feature tree and design intent. This lesson puts parts together.
 
-On a real launch vehicle almost everything a GNC engineer touches lives in an assembly: the inertial measurement unit on its bracket on its shelf in the avionics bay; the engine on its gimbal on the thrust structure. The assembly is where the **[[bill of materials|bom]]** comes from, where clashes between parts are found before metal is cut, and — next lesson — where the mass, centre of gravity and inertia of the whole vehicle come from.
+On a real launch vehicle almost everything a GNC engineer touches lives in an assembly: the inertial measurement unit on its bracket on its shelf in the avionics bay; the engine on its gimbal on the thrust structure. The assembly is where the **[[bill of materials|bom]]** comes from, where clashes between parts are found before metal is cut, and — next lesson — where the mass, center of gravity and inertia of the whole vehicle come from.
 
 ## Six ways to move
 
@@ -107,7 +107,7 @@ It captures real design intent: the bracket *should* match the panel. But it has
 - **Broken links.** Rename, move or copy the panel file, and the bracket may lose its reference and fail to rebuild.
 
 ::: key In-context design
-In-context design means modelling one part by referencing geometry of another in the assembly. It captures real intent but creates external references, so changing the parent silently changes the child and circular dependencies can make a rebuild non-deterministic.
+In-context design means modeling one part by referencing geometry of another in the assembly. It captures real intent but creates external references, so changing the parent silently changes the child and circular dependencies can make a rebuild non-deterministic.
 :::
 
 Teams that use top-down design keep it safe with a few habits. They reference one controlled **[[skeleton model|skeleton-model]]** — a part that holds only the interface points, planes and hole positions — instead of referencing each other's parts. They lock or break external references once a part is released. And they review the list of external references the way they review the feature tree.
@@ -120,18 +120,18 @@ Before you snap to geometry in another part, ask: "If that part changes without 
 
 The worst furniture moment is two panels wanting the same space. CAD finds that before anything is built.
 
-**Interference detection** checks every pair of solids and reports where they overlap, with the **interference volume** — how many cubic millimeters of one part sit inside the other. Two solid parts can never occupy the same space in reality, so every interference is either a design error or a modelling shortcut.
+**Interference detection** checks every pair of solids and reports where they overlap, with the **interference volume** — how many cubic millimeters of one part sit inside the other. Two solid parts can never occupy the same space in reality, so every interference is either a design error or a modeling shortcut.
 
-**Clearance detection** goes one step further. It reports any pair of parts closer than a gap you choose. A harness must stay 10 mm from a hot line; a moving part must clear its neighbours. Parts that do not touch can still be too close.
+**Clearance detection** goes one step further. It reports any pair of parts closer than a gap you choose. A harness must stay 10 mm from a hot line; a moving part must clear its neighbors. Parts that do not touch can still be too close.
 
 Three habits make these checks useful:
 
-- **Expect false alarms from fasteners.** Threads are usually modelled as **[[plain cylinders|cosmetic-threads]]**, so a bolt shows up as overlapping its tapped hole. Most tools can ignore fastener-in-hole interference or list it separately.
+- **Expect false alarms from fasteners.** Threads are usually modeled as **[[plain cylinders|cosmetic-threads]]**, so a bolt shows up as overlapping its tapped hole. Most tools can ignore fastener-in-hole interference or list it separately.
 - **Separate touching from overlapping.** A bracket sitting on a panel shares a face with it. That is contact, zero volume, and most tools report it as "coincident" rather than as a clash.
 - **Check through the motion.** A part that clears in one position can hit in another. Drag the free DOF — or run a motion study — and repeat the check at the extremes, such as an engine at full gimbal.
 
 ::: example Two findings from one clash check
-**A thread "clash".** An M6 bolt is modelled as a plain 6.0 mm cylinder. The tapped hole it screws into is modelled at the 5.0 mm tap-drill size, 12 mm deep. The overlap is a ring between those two diameters:
+**A thread "clash".** An M6 bolt is modeled as a plain 6.0 mm cylinder. The tapped hole it screws into is modeled at the 5.0 mm tap-drill size, 12 mm deep. The overlap is a ring between those two diameters:
 
 $$
 V = \frac{\pi}{4}\left(6.0^2 - 5.0^2\right) \times 12 = \frac{\pi}{4} \times 11 \times 12 \approx 104\,\mathrm{mm^3}.
@@ -189,11 +189,11 @@ Why is "just fix it" a bad way to position a part that keeps moving?
 :::
 
 ::: answer
-Fixing freezes the part where it happens to be instead of relating it to its neighbours. When a neighbour moves — new hole pattern, new plate thickness — the fixed part stays behind, floating or clashing. Fix only the one reference part; mate everything else.
+Fixing freezes the part where it happens to be instead of relating it to its neighbors. When a neighbor moves — new hole pattern, new plate thickness — the fixed part stays behind, floating or clashing. Fix only the one reference part; mate everything else.
 :::
 
 ::: check
-Your bracket was modelled in context, snapping its holes to the panel's holes. The panel designer moves two holes by 5 mm. Name two things that can go wrong, and one habit that would have prevented them.
+Your bracket was modeled in context, snapping its holes to the panel's holes. The panel designer moves two holes by 5 mm. Name two things that can go wrong, and one habit that would have prevented them.
 :::
 
 ::: answer
@@ -205,7 +205,7 @@ An interference check lists 40 clashes, 36 of which are bolts in tapped holes. W
 :::
 
 ::: answer
-The bolt clashes are usually modelling artefacts: a plain full-diameter cylinder inside a hole modelled at the smaller tap-drill size. Mark them as fastener interference (or exclude fasteners) and look hard at the other 4. Before trusting the check, make sure every part is loaded as its full solid (not an envelope or defeatured stand-in), and that moving parts are checked at their extreme positions, not only where they happen to sit.
+The bolt clashes are usually modeling artifacts: a plain full-diameter cylinder inside a hole modeled at the smaller tap-drill size. Mark them as fastener interference (or exclude fasteners) and look hard at the other 4. Before trusting the check, make sure every part is loaded as its full solid (not an envelope or defeatured stand-in), and that moving parts are checked at their extreme positions, not only where they happen to sit.
 :::
 
 ## Summary
@@ -224,10 +224,10 @@ The bolt clashes are usually modelling artefacts: a plain full-diameter cylinder
 | Interference and clearance | Overlap volume and minimum gap | Check fasteners, contact and motion extremes |
 | Lightweight and simplified | Faster loading | Wrong mass; never for mass properties |
 
-Next lesson asks the assembly a number question: how heavy is it, where is its balance point, and how hard is it to spin — the mass, centre of gravity and inertia tensor that a 6-DOF simulation needs.
+Next lesson asks the assembly a number question: how heavy is it, where is its balance point, and how hard is it to spin — the mass, center of gravity and inertia tensor that a 6-DOF simulation needs.
 
 ::: context bom The shopping list the assembly writes
-A bill of materials, or BOM, is the list of everything needed to build something: part numbers, names and how many of each. An assembly tree already knows every part and how many times it appears, so CAD can write the BOM for you. A parts list on a drawing is a BOM, and so is the list a factory orders from. Because the BOM comes from the tree, a tree organised the way the thing is really built gives a BOM the shop can use directly.
+A bill of materials, or BOM, is the list of everything needed to build something: part numbers, names and how many of each. An assembly tree already knows every part and how many times it appears, so CAD can write the BOM for you. A parts list on a drawing is a BOM, and so is the list a factory orders from. Because the BOM comes from the tree, a tree organized the way the thing is really built gives a BOM the shop can use directly.
 :::
 
 ::: context six-freedoms Three slides and three spins
@@ -271,11 +271,11 @@ Picture a bracket with two holes 80.0 mm apart, and a panel with two holes 80.2 
 :::
 
 ::: context skeleton-model One shared layout instead of a web of links
-A skeleton (or layout) model is a part that holds no real material — only the points, planes, axes and sketches that define where the interfaces are: hole centres, mounting planes, the engine's gimbal point. Every part that must match an interface references the skeleton, not its neighbour. Changes then flow one way, from one controlled file, and there are no loops. Siemens NX calls its linking of geometry between parts WAVE; other tools have their own names for the same idea.
+A skeleton (or layout) model is a part that holds no real material — only the points, planes, axes and sketches that define where the interfaces are: hole centers, mounting planes, the engine's gimbal point. Every part that must match an interface references the skeleton, not its neighbor. Changes then flow one way, from one controlled file, and there are no loops. Siemens NX calls its linking of geometry between parts WAVE; other tools have their own names for the same idea.
 :::
 
 ::: context cosmetic-threads Why threads are drawn as plain cylinders
-Modelling every thread as a real helix would make each bolt a heavy, slow piece of geometry, and a vehicle has thousands of bolts. So CAD draws a "cosmetic" thread: a plain cylinder with a tag saying "M6 × 1.0". The drawing and the model-based definition show it correctly as a thread, but the solid itself is a smooth rod at the full diameter. That is exactly why interference checks flag bolts in tapped holes.
+Modeling every thread as a real helix would make each bolt a heavy, slow piece of geometry, and a vehicle has thousands of bolts. So CAD draws a "cosmetic" thread: a plain cylinder with a tag saying "M6 × 1.0". The drawing and the model-based definition show it correctly as a thread, but the solid itself is a smooth rod at the full diameter. That is exactly why interference checks flag bolts in tapped holes.
 :::
 
 ::: context tessellation Curves made of flat triangles

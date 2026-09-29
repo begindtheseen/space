@@ -238,7 +238,7 @@ else:
       },
       {
         id: 'c_nmi_km',
-        front: '1 nautical mile in kilometres?',
+        front: '1 nautical mile in kilometers?',
         back: '1.852 km, exactly (defined as one minute of latitude at the equator, rounded to a defined value).',
         formula: true,
       },
@@ -281,7 +281,7 @@ else:
         ],
         answer: 0,
         explain:
-          'Δv = v_e ln(MR). Staging multiplies mass ratios, and ln turns that product into a sum: total Δv is the sum of per-stage Δv. That additivity is why staging is analysed stage-by-stage. The mass ratio is dimensionless whether or not you take its log.',
+          'Δv = v_e ln(MR). Staging multiplies mass ratios, and ln turns that product into a sum: total Δv is the sum of per-stage Δv. That additivity is why staging is analyzed stage-by-stage. The mass ratio is dimensionless whether or not you take its log.',
         b: -0.3,
         bloom: 'understand',
       },
@@ -314,7 +314,7 @@ else:
     tier: 0,
     title: 'Trigonometry & Analytic Geometry',
     summary:
-      "Make the unit circle, atan2 and the conic sections automatic. By the end you can move a vector between Cartesian, polar and spherical coordinates, difference two angles without a wrap bug, and recognise every two-body orbit as a conic.",
+      "Make the unit circle, atan2 and the conic sections automatic. By the end you can move a vector between Cartesian, polar and spherical coordinates, difference two angles without a wrap bug, and recognize every two-body orbit as a conic.",
     prereqs: ['t0_m01_algebra_precalc'],
     hours: 35,
     topics: [
@@ -332,7 +332,7 @@ else:
     objectives: [
       'Use atan2 correctly and explain why atan alone is a bug in flight code',
       'Switch fluently between Cartesian, polar and spherical coordinates',
-      'Recognise conics as the shape of every two-body orbit',
+      'Recognize conics as the shape of every two-body orbit',
       'Apply the small-angle approximation and state where it breaks',
     ],
     resources: [
@@ -378,14 +378,14 @@ else:
         ].join('\n'),
         starter: `import math
 
-A = 6378137.0                    # WGS-84 semi-major axis, metres
+A = 6378137.0                    # WGS-84 semi-major axis, meters
 F = 1.0 / 298.257223563          # WGS-84 flattening
 B = A * (1.0 - F)                # semi-minor axis
 E2 = F * (2.0 - F)               # first eccentricity squared
 
 
 def ecef_to_geodetic(x: float, y: float, z: float) -> tuple[float, float, float]:
-    """Convert ECEF metres to (geodetic latitude, longitude, altitude).
+    """Convert ECEF meters to (geodetic latitude, longitude, altitude).
 
     Returns
     -------
@@ -548,7 +548,7 @@ assert max(vals) - min(vals) < 1e-9`,
       {
         id: 'c_geodetic_vs_geocentric',
         front: 'Geodetic vs geocentric latitude — what is the difference?',
-        back: 'Geocentric latitude is the angle at the centre of the Earth to the point; geodetic latitude is the angle of the local ellipsoid normal. On WGS-84 they differ by up to ≈ 0.19° (≈ 11.5 arcmin) near 45°.',
+        back: 'Geocentric latitude is the angle at the center of the Earth to the point; geodetic latitude is the angle of the local ellipsoid normal. On WGS-84 they differ by up to ≈ 0.19° (≈ 11.5 arcmin) near 45°.',
       },
     ],
     quiz: [
@@ -603,7 +603,7 @@ assert max(vals) - min(vals) < 1e-9`,
         choices: ['≈ 14°', '≈ 1°', '≈ 30°', '≈ 45°'],
         answer: 0,
         explain:
-          'The leading error term is θ³/6, giving a relative error of about θ²/6. Setting θ²/6 = 0.01 gives θ ≈ 0.245 rad ≈ 14°. This is why small-angle linearised attitude control is fine for a few degrees of error and not for a large-angle slew.',
+          'The leading error term is θ³/6, giving a relative error of about θ²/6. Setting θ²/6 = 0.01 gives θ ≈ 0.245 rad ≈ 14°. This is why small-angle linearized attitude control is fine for a few degrees of error and not for a large-angle slew.',
         b: 0.1,
         bloom: 'apply',
       },
@@ -617,12 +617,12 @@ assert max(vals) - min(vals) < 1e-9`,
     tier: 0,
     title: 'Python for Scientific Computing',
     summary:
-      'Turn Python into a flight-analysis instrument: vectorised NumPy, SciPy integration and optimisation, matplotlib, pytest and git. Every later module ships as tested, version-controlled code instead of scratch work.',
+      'Turn Python into a flight-analysis instrument: vectorized NumPy, SciPy integration and optimization, matplotlib, pytest and git. Every later module ships as tested, version-controlled code instead of scratch work.',
     prereqs: ['t0_m01_algebra_precalc'],
     hours: 60,
     topics: [
       'Python syntax, control flow, functions, classes',
-      'NumPy arrays, broadcasting, vectorisation, dtypes, float64 semantics',
+      'NumPy arrays, broadcasting, vectorization, dtypes, float64 semantics',
       'SciPy: integrate.solve_ivp, optimize, linalg, signal, stats',
       'matplotlib and publication-grade plots',
       'Jupyter notebooks',
@@ -633,7 +633,7 @@ assert max(vals) - min(vals) < 1e-9`,
       'floating-point pitfalls: catastrophic cancellation, machine epsilon',
     ],
     objectives: [
-      'Vectorise a Monte Carlo instead of looping over samples',
+      'Vectorize a Monte Carlo instead of looping over samples',
       'Write a unit-tested module with a real pytest suite',
       'Version-control every project from the first commit',
       'Produce publication-grade plots of trajectories and time histories',
@@ -667,12 +667,12 @@ assert max(vals) - min(vals) < 1e-9`,
     exercises: [
       {
         id: 'ex_mc_projectile',
-        title: 'Vectorised Monte Carlo of a dispersed projectile',
+        title: 'Vectorized Monte Carlo of a dispersed projectile',
         kind: 'code',
         lang: 'python',
         hours: 3,
         prompt: [
-          'Monte Carlo is how GNC teams certify a trajectory. Learn the vectorised idiom now, because at SpaceX these run',
+          'Monte Carlo is how GNC teams certify a trajectory. Learn the vectorized idiom now, because at SpaceX these run',
           'over tens of thousands of CPUs and a Python `for` loop over samples is not an option.',
           '',
           'Implement `monte_carlo_range(v0, mean_deg, sigma_deg, n, g=9.80665, seed=0)` that draws `n` launch angles from a',
@@ -705,11 +705,11 @@ def monte_carlo_range(
 
     Returns
     -------
-    np.ndarray of shape (n,) -- range in metres for each sample.
+    np.ndarray of shape (n,) -- range in meters for each sample.
     """
     rng = np.random.default_rng(seed)
     # TODO: draw all n angles at once, convert to radians, and evaluate
-    #       R = v0**2 * sin(2 theta) / g as a single vectorised expression.
+    #       R = v0**2 * sin(2 theta) / g as a single vectorized expression.
     raise NotImplementedError
 `,
         tests: [
@@ -745,7 +745,7 @@ assert np.array_equal(a, b)`,
         prompt: [
           'Write `vecquat.py` containing a `Vec3` and a `Quaternion` class, then a `test_vecquat.py` that actually earns its keep.',
           '',
-          'Required behaviour:',
+          'Required behavior:',
           '- `Vec3`: addition, scalar multiplication, `dot`, `cross`, `norm`, `normalized`.',
           '- `Quaternion`: **scalar-first** (w, x, y, z) storage, Hamilton product, `conjugate`, `norm`, `normalized`,',
           '  and `rotate(v)` applying the rotation to a `Vec3`.',
@@ -882,7 +882,7 @@ class Quaternion:
       },
       {
         id: 'c_quat_norm_test',
-        front: 'Why unit-test a quaternion normalisation routine?',
+        front: 'Why unit-test a quaternion normalization routine?',
         back: 'A quaternion that drifts off unit norm silently corrupts the DCM built from it — the rotation picks up a scale factor and stops being orthonormal, so every rotated vector is subtly wrong with no exception thrown.',
       },
       {
@@ -956,7 +956,7 @@ class Quaternion:
         ],
         answer: 0,
         explain:
-          'Length preservation is the defining property of a rotation. A transposed DCM, an un-normalised quaternion or most sign errors in the Hamilton product break it, so one test catches a whole family of bugs — though a flip of the entire cross term still preserves length, which is why a known-answer test such as i ⊗ j = k belongs beside it. A positive w is a convention choice, not a correctness property — q and −q are the same rotation.',
+          'Length preservation is the defining property of a rotation. A transposed DCM, an un-normalized quaternion or most sign errors in the Hamilton product break it, so one test catches a whole family of bugs — though a flip of the entire cross term still preserves length, which is why a known-answer test such as i ⊗ j = k belongs beside it. A positive w is a convention choice, not a correctness property — q and −q are the same rotation.',
         b: 0.0,
         bloom: 'understand',
       },
@@ -993,7 +993,7 @@ class Quaternion:
       'vectors, dot and cross products, norms, projections',
       'matrix multiplication as composition of maps',
       'identity, inverse, transpose',
-      'Gaussian elimination and LU factorisation',
+      'Gaussian elimination and LU factorization',
       'rank, null space, column space',
       'linear independence and basis',
       'determinant and its geometric meaning',
@@ -1014,7 +1014,7 @@ class Quaternion:
         kind: 'video',
         url: 'https://www.3blue1brown.com/topics/linear-algebra',
         free: true,
-        note: 'Watch the whole series first. It installs the geometric picture that the rest of the module formalises.',
+        note: 'Watch the whole series first. It installs the geometric picture that the rest of the module formalizes.',
       },
       {
         title: '18.06 Linear Algebra (Spring 2010)',
@@ -1252,7 +1252,7 @@ def is_rotation(R: np.ndarray, tol: float = 1e-9) -> bool:
       },
       {
         id: 'c_qr',
-        front: 'What is the QR factorisation and what is Q good for?',
+        front: 'What is the QR factorization and what is Q good for?',
         back: 'A = QR with Q having orthonormal columns and R upper triangular. Q comes from Gram-Schmidt; because Q preserves the 2-norm, solving least squares through QR avoids squaring the condition number.',
         formula: true,
       },
@@ -1345,7 +1345,7 @@ def is_rotation(R: np.ndarray, tol: float = 1e-9) -> bool:
     prereqs: ['t0_m04_linear_algebra_1'],
     hours: 45,
     topics: [
-      'eigenvalues, eigenvectors, diagonalisation',
+      'eigenvalues, eigenvectors, diagonalization',
       'similarity transforms',
       'the matrix exponential and the state transition matrix',
       'symmetric matrices and the spectral theorem',
@@ -1354,7 +1354,7 @@ def is_rotation(R: np.ndarray, tol: float = 1e-9) -> bool:
       'pseudoinverse and rank deficiency',
       'condition number',
       'least squares: normal equations vs QR vs SVD',
-      'Cholesky factorisation',
+      'Cholesky factorization',
       'matrix calculus: gradients and Jacobians',
     ],
     objectives: [
@@ -1423,7 +1423,7 @@ def fit_normal(A: np.ndarray, b: np.ndarray) -> np.ndarray:
 
 
 def fit_qr(A: np.ndarray, b: np.ndarray) -> np.ndarray:
-    """Least-squares fit via the reduced QR factorisation."""
+    """Least-squares fit via the reduced QR factorization."""
     # TODO: A = Q R, then solve R x = Q.T b by back substitution.
     raise NotImplementedError
 
@@ -1602,7 +1602,7 @@ assert np.allclose(expm_scaling_squaring(A), expm(A), rtol=1e-10, atol=1e-14)`,
       },
       {
         id: 'c_cholesky',
-        front: 'What is the Cholesky factorisation and where does GNC use it?',
+        front: 'What is the Cholesky factorization and where does GNC use it?',
         back: 'A = LLᵀ for symmetric positive definite A, at about half the cost of LU. GNC uses it for covariance square roots — sigma-point generation in a UKF, and square-root filters that keep P positive definite by construction.',
         formula: true,
       },
@@ -1624,14 +1624,14 @@ assert np.allclose(expm_scaling_squaring(A), expm(A), rtol=1e-10, atol=1e-14)`,
         id: 'q_negative_eig_cov',
         q: 'Your filter reports a covariance matrix with a small negative eigenvalue. What happened, and what are two standard fixes?',
         choices: [
-          'Round-off in the P update destroyed symmetry and positive definiteness; fix with the Joseph-form update and by symmetrising P ← (P + Pᵀ)/2, or move to a square-root / UD-factorised filter',
+          'Round-off in the P update destroyed symmetry and positive definiteness; fix with the Joseph-form update and by symmetrising P ← (P + Pᵀ)/2, or move to a square-root / UD-factorized filter',
           'The measurement noise R was set too large; reduce R',
           'The state has become unobservable, which always produces negative eigenvalues',
           'It is harmless and can be ignored, since covariance only matters up to sign',
         ],
         answer: 0,
         explain:
-          'The short-form update P = (I − KH)P is a difference of nearly equal matrices, and catastrophic cancellation can push a small eigenvalue negative. The Joseph form (I − KH)P(I − KH)ᵀ + KRKᵀ is a sum of PSD terms and stays PSD; symmetrising and square-root filtering are the other standard defences. A negative variance is never harmless — the gain computed from it is garbage.',
+          'The short-form update P = (I − KH)P is a difference of nearly equal matrices, and catastrophic cancellation can push a small eigenvalue negative. The Joseph form (I − KH)P(I − KH)ᵀ + KRKᵀ is a sum of PSD terms and stays PSD; symmetrising and square-root filtering are the other standard defenses. A negative variance is never harmless — the gain computed from it is garbage.',
         b: 0.9,
         bloom: 'analyze',
       },
@@ -1641,18 +1641,18 @@ assert np.allclose(expm_scaling_squaring(A), expm(A), rtol=1e-10, atol=1e-14)`,
         choices: [
           'Because SVD lets you discard singular values below a threshold and return the minimum-norm solution, whereas AᵀA is singular and cannot be inverted at all',
           'Because the SVD is faster than forming AᵀA',
-          'Because the SVD implicitly adds regularisation to every singular value',
+          'Because the SVD implicitly adds regularization to every singular value',
           'Because AᵀA is not symmetric when A is rank deficient',
         ],
         answer: 0,
         explain:
-          'If A is rank deficient, AᵀA is singular and the normal equations have no unique solution. The SVD exposes the rank explicitly: zeroing the reciprocals of the tiny singular values projects the answer onto the row space and yields the minimum-norm least-squares solution. AᵀA is always symmetric, and truncation is a deliberate choice rather than automatic regularisation.',
+          'If A is rank deficient, AᵀA is singular and the normal equations have no unique solution. The SVD exposes the rank explicitly: zeroing the reciprocals of the tiny singular values projects the answer onto the row space and yields the minimum-norm least-squares solution. AᵀA is always symmetric, and truncation is a deliberate choice rather than automatic regularization.',
         b: 0.7,
         bloom: 'understand',
       },
       {
         id: 'q_eig_stability',
-        q: 'A has eigenvalues {−1, −0.1, +0.01}. Is ẋ = Ax stable, and which mode governs the long-term behaviour?',
+        q: 'A has eigenvalues {−1, −0.1, +0.01}. Is ẋ = Ax stable, and which mode governs the long-term behavior?',
         choices: [
           'Unstable — the +0.01 mode grows with a ~100 s time constant and eventually dominates, even though it is the slowest',
           'Stable — two of the three eigenvalues are negative, so the response decays',
@@ -1686,16 +1686,16 @@ assert np.allclose(expm_scaling_squaring(A), expm(A), rtol=1e-10, atol=1e-14)`,
     tier: 0,
     title: 'Single-Variable Calculus',
     summary:
-      'Differentiate and integrate without hesitation, and master the one move that the rest of GNC is built on: linearising a nonlinear function about an operating point and knowing what the truncated terms cost you.',
+      'Differentiate and integrate without hesitation, and master the one move that the rest of GNC is built on: linearizing a nonlinear function about an operating point and knowing what the truncated terms cost you.',
     prereqs: ['t0_m02_trigonometry'],
     hours: 75,
     topics: [
       'limits and continuity',
       'the derivative: definition, chain, product and quotient rules',
       'implicit differentiation and related rates',
-      'linearisation and differentials',
+      'linearization and differentials',
       'Taylor series and truncation error',
-      'maxima, minima and optimisation of a scalar function',
+      'maxima, minima and optimization of a scalar function',
       'the definite integral and the fundamental theorem of calculus',
       'integration by parts and substitution',
       'improper integrals',
@@ -1703,7 +1703,7 @@ assert np.allclose(expm_scaling_squaring(A), expm(A), rtol=1e-10, atol=1e-14)`,
     ],
     objectives: [
       'Take a derivative and an integral without hesitation',
-      'Linearise a nonlinear function about an operating point',
+      'Linearize a nonlinear function about an operating point',
       'Estimate truncation error from a Taylor expansion',
       'Derive the ideal rocket equation from conservation of momentum for a vehicle expelling mass',
     ],
@@ -1855,7 +1855,7 @@ assert big > small > 0.0`,
       },
       {
         id: 'c_linearization',
-        front: 'Write the first-order linearisation of f about x₀ and state its error order.',
+        front: 'Write the first-order linearization of f about x₀ and state its error order.',
         back: "f(x) ≈ f(x₀) + f'(x₀)(x − x₀), with error O((x − x₀)²) — the Lagrange remainder is f''(ξ)(x − x₀)²/2.",
         formula: true,
       },
@@ -1919,7 +1919,7 @@ assert big > small > 0.0`,
       },
       {
         id: 'q_linearize_example',
-        q: 'Linearise f(x) = x/(1 + x²) about x = 0. What is the linearisation, and roughly where does it hold to better than 1%?',
+        q: 'Linearize f(x) = x/(1 + x²) about x = 0. What is the linearization, and roughly where does it hold to better than 1%?',
         choices: [
           'f(x) ≈ x, good to about 1% for |x| ≲ 0.1',
           'f(x) ≈ 1 + x, good to about 1% for |x| ≲ 0.5',
@@ -1936,10 +1936,10 @@ assert big > small > 0.0`,
         id: 'q_ekf_taylor',
         q: 'Why does a first-order Taylor expansion sit at the heart of the Extended Kalman Filter, and what does it cost?',
         choices: [
-          'Because the Kalman update is only optimal for linear-Gaussian systems, so the EKF linearises about the current estimate — and the neglected second-order terms bias the covariance, so a bad estimate or strong curvature makes the filter inconsistent or divergent',
-          'Because linearisation makes the filter run faster, at no accuracy cost',
+          'Because the Kalman update is only optimal for linear-Gaussian systems, so the EKF linearizes about the current estimate — and the neglected second-order terms bias the covariance, so a bad estimate or strong curvature makes the filter inconsistent or divergent',
+          'Because linearization makes the filter run faster, at no accuracy cost',
           'Because the first-order term is the only one that can be computed numerically',
-          'Because the Gaussian assumption requires the dynamics to be exactly linear, which linearisation makes true',
+          'Because the Gaussian assumption requires the dynamics to be exactly linear, which linearization makes true',
         ],
         answer: 0,
         explain:
@@ -1949,7 +1949,7 @@ assert big > small > 0.0`,
       },
       {
         id: 'q_gravity_loss_integral',
-        q: 'Realised Δv falls short of the ideal rocket-equation Δv during ascent. Which integral captures the gravity loss?',
+        q: 'Realized Δv falls short of the ideal rocket-equation Δv during ascent. Which integral captures the gravity loss?',
         choices: [
           '∫ g sin(γ) dt, with γ the flight-path angle above the local horizon',
           '∫ g dt, independent of attitude',
@@ -1991,7 +1991,7 @@ assert big > small > 0.0`,
       'Compute the Jacobian of a nonlinear measurement model',
       'Express gravitational acceleration as the gradient of a potential',
       'Differentiate a vector expressed in a rotating frame',
-      'Read the Hessian of an optimisation problem as a statement about the local solution',
+      'Read the Hessian of an optimization problem as a statement about the local solution',
     ],
     resources: [
       {
@@ -2208,7 +2208,7 @@ assert np.allclose(H[1, 3:], d / np.linalg.norm(d))`,
         ],
         answer: 0,
         explain:
-          'Write h = (ΔrᵀΔr)^(1/2); differentiating gives (1/2)(ΔrᵀΔr)^(−1/2)·2Δrᵀ = Δrᵀ/‖Δr‖. The result is a unit row vector, which makes sense dimensionally: metres of range per metre of position along the line of sight, and nothing perpendicular to it.',
+          'Write h = (ΔrᵀΔr)^(1/2); differentiating gives (1/2)(ΔrᵀΔr)^(−1/2)·2Δrᵀ = Δrᵀ/‖Δr‖. The result is a unit row vector, which makes sense dimensionally: meters of range per meter of position along the line of sight, and nothing perpendicular to it.',
         b: 0.2,
         bloom: 'apply',
       },
@@ -2229,7 +2229,7 @@ assert np.allclose(H[1, 3:], d / np.linalg.norm(d))`,
       },
       {
         id: 'q_hessian_pd',
-        q: 'At a solution of a trajectory-optimisation problem the Hessian of the Lagrangian is positive definite on the tangent space of the active constraints. What does that certify?',
+        q: 'At a solution of a trajectory-optimization problem the Hessian of the Lagrangian is positive definite on the tangent space of the active constraints. What does that certify?',
         choices: [
           'That the point is a strict local minimum — second-order sufficiency is met, though global optimality is still not implied for a nonconvex problem',
           'That the point is the global minimum',
@@ -2238,7 +2238,7 @@ assert np.allclose(H[1, 3:], d / np.linalg.norm(d))`,
         ],
         answer: 0,
         explain:
-          'Together with the first-order KKT conditions, positive definiteness of the reduced Hessian is the second-order sufficient condition for a strict local minimiser. It says nothing about other basins: only convexity (or an exhaustive global method) gives you global optimality, which is precisely the argument for convexifying landing guidance.',
+          'Together with the first-order KKT conditions, positive definiteness of the reduced Hessian is the second-order sufficient condition for a strict local minimizer. It says nothing about other basins: only convexity (or an exhaustive global method) gives you global optimality, which is precisely the argument for convexifying landing guidance.',
         b: 1.1,
         bloom: 'analyze',
       },
@@ -2516,7 +2516,7 @@ assert max(second_order_step(1.0, 2.0, t) for t in ts) <= 1.0 + 1e-9`,
         q: 'Why is ζ ≈ 0.707 a common design target, and when is it the wrong target for a launch vehicle?',
         choices: [
           'It gives ≈ 4% overshoot with a maximally flat closed-loop magnitude and ≈ 65° phase margin — but an ascent controller is driven by structural load (q̄α), bending-mode separation and an unstable plant, so margins and load relief set the design, not step overshoot',
-          'It minimises settling time for any system, and is therefore always correct',
+          'It minimizes settling time for any system, and is therefore always correct',
           'It is the value that guarantees infinite gain margin; launch vehicles need finite gain margin instead',
           'It eliminates steady-state error, which a launch vehicle does not need',
         ],
@@ -2685,7 +2685,7 @@ assert 0.96 < frac < 0.98`,
         lang: 'python',
         hours: 3,
         prompt: [
-          'A gyro bias is almost never modelled as a constant. The standard model is a first-order Gauss-Markov process',
+          'A gyro bias is almost never modeled as a constant. The standard model is a first-order Gauss-Markov process',
           '`bdot = -b/T + w`, which has a finite steady-state variance and an autocorrelation that decays as `exp(-|tau|/T)`.',
           '',
           'Implement the exact discrete-time form `b[k+1] = phi b[k] + n[k]` with `phi = exp(-dt/T)` and',
@@ -2812,7 +2812,7 @@ def sample_covariance_through(A: np.ndarray, P: np.ndarray, n: int, seed: int = 
       {
         id: 'c_white_noise',
         front: 'Define white noise.',
-        back: 'Zero-mean, with a flat power spectral density and autocorrelation E[w(t)w(τ)ᵀ] = Qδ(t − τ) — uncorrelated between any two distinct instants. It is a mathematical idealisation: infinite power, physically unrealisable.',
+        back: 'Zero-mean, with a flat power spectral density and autocorrelation E[w(t)w(τ)ᵀ] = Qδ(t − τ) — uncorrelated between any two distinct instants. It is a mathematical idealization: infinite power, physically unrealisable.',
         formula: true,
       },
       {
@@ -2848,13 +2848,13 @@ def sample_covariance_through(A: np.ndarray, P: np.ndarray, n: int, seed: int = 
       {
         id: 'c_nis',
         front: 'What is the NIS test and what distribution does it follow?',
-        back: 'Normalised innovation squared: ε = ỹᵀS⁻¹ỹ, which is χ² with m degrees of freedom (m = measurement dimension) for a consistent filter. Consistently high ε means the filter is over-confident.',
+        back: 'Normalized innovation squared: ε = ỹᵀS⁻¹ỹ, which is χ² with m degrees of freedom (m = measurement dimension) for a consistent filter. Consistently high ε means the filter is over-confident.',
         formula: true,
       },
       {
         id: 'c_clt',
         front: 'State the central limit theorem and one caveat for GNC.',
-        back: 'The normalised sum of N i.i.d. finite-variance random variables converges to a Gaussian. The caveat: it says nothing useful about the far tails, which is exactly where miss-distance and load requirements live.',
+        back: 'The normalized sum of N i.i.d. finite-variance random variables converges to a Gaussian. The caveat: it says nothing useful about the far tails, which is exactly where miss-distance and load requirements live.',
       },
     ],
     quiz: [
@@ -2884,7 +2884,7 @@ def sample_covariance_through(A: np.ndarray, P: np.ndarray, n: int, seed: int = 
         ],
         answer: 0,
         explain:
-          'To resolve a probability p you need on the order of 10–100 events in the tail, i.e. N ≈ 10/p to 100/p, so 1e5–1e6 runs at p = 1e-4. When that is infeasible the standard moves are importance sampling (bias the draws toward the tail and reweight), fitting a generalised Pareto tail, or replacing sampling with linear covariance analysis where the linearisation is defensible.',
+          'To resolve a probability p you need on the order of 10–100 events in the tail, i.e. N ≈ 10/p to 100/p, so 1e5–1e6 runs at p = 1e-4. When that is infeasible the standard moves are importance sampling (bias the draws toward the tail and reweight), fitting a generalized Pareto tail, or replacing sampling with linear covariance analysis where the linearization is defensible.',
         b: 1.1,
         bloom: 'analyze',
       },
@@ -3335,12 +3335,12 @@ assert abs(complex_step(lambda z: np.exp(z), 1.0) - exact) < 1e-12`,
     tier: 0,
     title: 'Optimization',
     summary:
-      'Recognise convexity on sight, put a problem into second-order-cone standard form, and explain why a landing algorithm that has to run onboard with a hard deadline wants a convex problem and an interior-point solver.',
+      'Recognize convexity on sight, put a problem into second-order-cone standard form, and explain why a landing algorithm that has to run onboard with a hard deadline wants a convex problem and an interior-point solver.',
     prereqs: ['t0_m07_calculus_multi', 't0_m05_linear_algebra_2', 't0_m10_numerical_methods'],
     hours: 80,
     topics: [
-      'unconstrained optimisation: gradient descent, Newton, BFGS, line search, trust region',
-      'constrained optimisation and Lagrange multipliers',
+      'unconstrained optimization: gradient descent, Newton, BFGS, line search, trust region',
+      'constrained optimization and Lagrange multipliers',
       'KKT conditions',
       'convex sets and convex functions',
       'why convexity matters: global optimum, polynomial time, certificates',
@@ -3351,11 +3351,11 @@ assert abs(complex_step(lambda z: np.exp(z), 1.0) - exact) < 1e-12`,
       'interior-point methods',
       'sequential quadratic programming',
       'nonlinear programming solvers (IPOPT, SNOPT)',
-      'modelling languages and solvers: CVXPY, ECOS, SCS, OSQP, Clarabel',
+      'modeling languages and solvers: CVXPY, ECOS, SCS, OSQP, Clarabel',
       'real-time embedded convex solvers and code generation',
     ],
     objectives: [
-      'Recognise whether a problem is convex',
+      'Recognize whether a problem is convex',
       'Write a problem in second-order-cone standard form',
       'State and apply the KKT conditions',
       'Use CVXPY to solve a real trajectory problem',
@@ -3395,11 +3395,11 @@ assert abs(complex_step(lambda z: np.exp(z), 1.0) - exact) < 1e-12`,
         lang: 'python',
         hours: 4,
         prompt: [
-          'Discretise a vertical landing into N steps with state `[h, v]`, control `T` (thrust acceleration), constant gravity,',
+          'Discretize a vertical landing into N steps with state `[h, v]`, control `T` (thrust acceleration), constant gravity,',
           'and constant mass (relax that later).',
           '',
-          'Minimise total impulse `sum(T_k) dt` subject to:',
-          '- the discretised dynamics,',
+          'Minimize total impulse `sum(T_k) dt` subject to:',
+          '- the discretized dynamics,',
           '- `0 <= T_k <= T_max`,',
           '- terminal conditions `h_N = 0`, `v_N = 0`,',
           '- altitude never negative.',
@@ -3471,7 +3471,7 @@ assert interior <= 5`,
 
 
 def rosenbrock(x: np.ndarray) -> float:
-    """f(x, y) = (1 - x)^2 + 100 (y - x^2)^2, minimised at (1, 1) with f = 0."""
+    """f(x, y) = (1 - x)^2 + 100 (y - x^2)^2, minimized at (1, 1) with f = 0."""
     # TODO: implement
     raise NotImplementedError
 
@@ -3575,7 +3575,7 @@ assert kn < 100 and kg > 10 * kn`,
       {
         id: 'c_socp_form',
         front: 'Write second-order cone programming standard form.',
-        back: 'minimise cᵀx subject to ‖Aᵢx + bᵢ‖₂ ≤ cᵢᵀx + dᵢ for each i, and Fx = g. LP and QP are both special cases.',
+        back: 'minimize cᵀx subject to ‖Aᵢx + bᵢ‖₂ ≤ cᵢᵀx + dᵢ for each i, and Fx = g. LP and QP are both special cases.',
         formula: true,
       },
       {
@@ -3591,13 +3591,13 @@ assert kn < 100 and kg > 10 * kn`,
       {
         id: 'c_gd_newton',
         front: 'Gradient descent vs Newton step.',
-        back: 'Gradient descent: x ← x − α∇f, linear convergence with rate set by the Hessian condition number. Newton: x ← x − H⁻¹∇f, quadratic local convergence, cost of a factorisation per step.',
+        back: 'Gradient descent: x ← x − α∇f, linear convergence with rate set by the Hessian condition number. Newton: x ← x − H⁻¹∇f, quadratic local convergence, cost of a factorization per step.',
         formula: true,
       },
       {
         id: 'c_bfgs',
         front: 'What does BFGS do?',
-        back: 'Builds an approximate inverse Hessian from successive gradient differences (a rank-two update), giving near-Newton convergence without ever forming or factorising the true Hessian.',
+        back: 'Builds an approximate inverse Hessian from successive gradient differences (a rank-two update), giving near-Newton convergence without ever forming or factorizing the true Hessian.',
       },
       {
         id: 'c_duality',
@@ -3644,7 +3644,7 @@ assert kn < 100 and kg > 10 * kn`,
           'Relaxing the thrust limit by one newton would reduce the optimal propellant cost by about 0.8 kg — the constraint shadow price',
           'The constraint is inactive and can be dropped',
           'The solution violates the thrust bound by 0.8 N',
-          'The optimiser has not converged, since multipliers should be zero at a solution',
+          'The optimizer has not converged, since multipliers should be zero at a solution',
         ],
         answer: 0,
         explain:
@@ -3705,14 +3705,14 @@ assert kn < 100 and kg > 10 * kn`,
       'the STL: containers, algorithms, iterators',
       'classes, inheritance, virtual dispatch and its cost',
       'Eigen, including the Geometry module',
-      'memory layout, cache behaviour, allocation-free hot loops',
+      'memory layout, cache behavior, allocation-free hot loops',
       'constexpr and compile-time computation',
       'error handling without exceptions',
       'CMake, with Bazel awareness',
       'GoogleTest',
       'profiling and sanitizers: perf, valgrind, ASan/UBSan',
       'pybind11 bindings over a C++ simulation core',
-      'undefined behaviour',
+      'undefined behavior',
       'static analysis: clang-tidy, cppcheck',
     ],
     objectives: [
@@ -3730,7 +3730,7 @@ assert kn < 100 and kg > 10 * kn`,
         kind: 'docs',
         url: 'https://eigen.tuxfamily.org',
         free: true,
-        note: 'Quaternion, AngleAxis and the fixed-size vectorisable types are the parts GNC lives in.',
+        note: 'Quaternion, AngleAxis and the fixed-size vectorizable types are the parts GNC lives in.',
       },
       {
         title: 'The Power of Ten — Rules for Developing Safety-Critical Code',
@@ -3845,7 +3845,7 @@ class RingBuffer {
       {
         id: 'c_raii',
         front: 'What is RAII?',
-        back: 'Resource Acquisition Is Initialisation: a resource is owned by an object, acquired in its constructor and released in its destructor, so scope exit — including by exception — always cleans up. It is the reason well-written C++ needs no explicit free.',
+        back: 'Resource Acquisition Is Initialization: a resource is owned by an object, acquired in its constructor and released in its destructor, so scope exit — including by exception — always cleans up. It is the reason well-written C++ needs no explicit free.',
       },
       {
         id: 'c_smart_pointers',
@@ -3865,12 +3865,12 @@ class RingBuffer {
       {
         id: 'c_power_of_ten_loops',
         front: 'Why does the Power of Ten require every loop to have a fixed upper bound?',
-        back: 'A statically provable bound makes termination checkable by a static analyser and gives a finite worst-case execution time for the real-time scheduler. A runaway loop in flight software is a missed deadline, not a slow program.',
+        back: 'A statically provable bound makes termination checkable by a static analyzer and gives a finite worst-case execution time for the real-time scheduler. A runaway loop in flight software is a missed deadline, not a slow program.',
       },
       {
         id: 'c_power_of_ten_rules',
         front: 'Name four of the Power of Ten rules.',
-        back: 'No complex control flow (no goto, setjmp, recursion); all loops have a fixed upper bound; no dynamic memory allocation after initialisation; functions short enough to fit one page (~60 lines); at least two assertions per function; declare data at the smallest possible scope; check every return value; minimal preprocessor use; restricted pointer use and no function pointers; compile with all warnings on and zero warnings tolerated.',
+        back: 'No complex control flow (no goto, setjmp, recursion); all loops have a fixed upper bound; no dynamic memory allocation after initialization; functions short enough to fit one page (~60 lines); at least two assertions per function; declare data at the smallest possible scope; check every return value; minimal preprocessor use; restricted pointer use and no function pointers; compile with all warnings on and zero warnings tolerated.',
       },
       {
         id: 'c_eigen_quat_storage',
@@ -3885,7 +3885,7 @@ class RingBuffer {
       {
         id: 'c_eigen_fixed_size',
         front: 'Why prefer Eigen fixed-size types (Vector3d, Matrix3d) in flight code?',
-        back: 'Fixed-size objects are stack-allocated with dimensions known at compile time, so there is no heap traffic, loops can be unrolled and vectorised, and the sizes are checked at compile time rather than asserted at run time.',
+        back: 'Fixed-size objects are stack-allocated with dimensions known at compile time, so there is no heap traffic, loops can be unrolled and vectorized, and the sizes are checked at compile time rather than asserted at run time.',
       },
       {
         id: 'c_eigen_auto',
@@ -3894,8 +3894,8 @@ class RingBuffer {
       },
       {
         id: 'c_ub_examples',
-        front: 'Name four sources of undefined behaviour in C++.',
-        back: 'Signed integer overflow; out-of-bounds array access; use of an uninitialised value; use-after-free or dangling reference. The compiler may assume UB never happens, which is how a null check gets optimised away.',
+        front: 'Name four sources of undefined behavior in C++.',
+        back: 'Signed integer overflow; out-of-bounds array access; use of an uninitialised value; use-after-free or dangling reference. The compiler may assume UB never happens, which is how a null check gets optimized away.',
       },
       {
         id: 'c_gtest_assert_expect',
@@ -3911,7 +3911,7 @@ class RingBuffer {
       {
         id: 'c_cache_layout',
         front: 'Struct-of-arrays vs array-of-structs — which and why for a Monte Carlo?',
-        back: 'Struct-of-arrays. Sweeping one field over many cases touches contiguous memory, so every cache line is fully used and the loop can vectorise (a floating-point sum only if the compiler may reorder it, e.g. -ffast-math). Array-of-structs strides over unused fields and wastes most of each line.',
+        back: 'Struct-of-arrays. Sweeping one field over many cases touches contiguous memory, so every cache line is fully used and the loop can vectorize (a floating-point sum only if the compiler may reorder it, e.g. -ffast-math). Array-of-structs strides over unused fields and wastes most of each line.',
       },
       {
         id: 'c_sanitizers',
@@ -3926,7 +3926,7 @@ class RingBuffer {
         choices: [
           'Dynamic allocation (unbounded latency and possible failure), exceptions or unbounded recursion (unbounded unwinding and stack), and blocking calls such as I/O, locks or logging (no provable worst-case execution time)',
           'Floating-point arithmetic, templates, and const references — all three are too slow',
-          'Function calls, arrays, and struct members, because they defeat the optimiser',
+          'Function calls, arrays, and struct members, because they defeat the optimizer',
           'Integer arithmetic, switch statements, and inline functions, because they break determinism',
         ],
         answer: 0,
@@ -3946,7 +3946,7 @@ class RingBuffer {
         ],
         answer: 0,
         explain:
-          'The rule exists so that a static analyser can prove termination and so that WCET analysis produces a real number. Holzmann pairs it with the convention that a loop intended to be unbounded (a scheduler loop) is annotated as such so the checker can distinguish intent from bug.',
+          'The rule exists so that a static analyzer can prove termination and so that WCET analysis produces a real number. Holzmann pairs it with the convention that a loop intended to be unbounded (a scheduler loop) is annotated as such so the checker can distinguish intent from bug.',
         b: 0.5,
         bloom: 'understand',
       },
@@ -3993,7 +3993,7 @@ class RingBuffer {
     tier: 1,
     title: 'Newtonian Particle Mechanics',
     summary:
-      'Derive the equations of motion of a variable-mass vehicle from first principles — the whiteboard question SpaceX actually asks — and decompose the gap between ideal and realised Δv into gravity, drag and steering losses.',
+      'Derive the equations of motion of a variable-mass vehicle from first principles — the whiteboard question SpaceX actually asks — and decompose the gap between ideal and realized Δv into gravity, drag and steering losses.',
     prereqs: ['t0_m08_odes', 't0_m07_calculus_multi'],
     hours: 45,
     topics: [
@@ -4001,9 +4001,9 @@ class RingBuffer {
       'force, momentum, impulse',
       'the work-energy theorem',
       'conservative forces and potential energy',
-      'systems of particles and the centre of mass',
+      'systems of particles and the center of mass',
       'variable-mass systems and the rocket equation done properly',
-      'constraints and generalised coordinates',
+      'constraints and generalized coordinates',
       'Lagrangian mechanics and the Euler-Lagrange equation',
       'Hamilton principle',
     ],
@@ -4011,7 +4011,7 @@ class RingBuffer {
       'Derive equations of motion for a variable-mass vehicle',
       'Choose between Newton-Euler and Lagrangian formulations and justify it',
       'Apply conservation laws as sanity checks on a simulation',
-      'Decompose realised Δv into gravity, drag and steering losses',
+      'Decompose realized Δv into gravity, drag and steering losses',
     ],
     resources: [
       {
@@ -4073,7 +4073,7 @@ class RingBuffer {
           '```',
           '',
           'Kick the vehicle off vertical with a small pitch-over at ~50 m/s, integrate to burnout, and report ideal Δv,',
-          'realised Δv, gravity loss and drag loss. Sweep the pitch-over angle and find the value that minimises total loss.',
+          'realized Δv, gravity loss and drag loss. Sweep the pitch-over angle and find the value that minimizes total loss.',
         ].join('\n'),
         starter: `import numpy as np
 
@@ -4173,7 +4173,7 @@ assert lo[0] < hi[0]`,
       },
       {
         id: 'c_com_dynamics',
-        front: 'How does the centre of mass of a system move?',
+        front: 'How does the center of mass of a system move?',
         back: 'M R̈_cm = ΣF_ext — internal forces cancel in pairs. This is why a tumbling vehicle still has a clean translational trajectory.',
         formula: true,
       },
@@ -4186,17 +4186,17 @@ assert lo[0] < hi[0]`,
       {
         id: 'c_euler_lagrange',
         front: 'Write the Euler-Lagrange equation.',
-        back: 'd/dt(∂L/∂q̇ᵢ) − ∂L/∂qᵢ = Qᵢ, with L = T − V and Qᵢ the generalised non-conservative force.',
+        back: 'd/dt(∂L/∂q̇ᵢ) − ∂L/∂qᵢ = Qᵢ, with L = T − V and Qᵢ the generalized non-conservative force.',
         formula: true,
       },
       {
         id: 'c_lagrangian_advantage',
         front: 'When is a Lagrangian formulation decisively better than Newton-Euler?',
-        back: 'When holonomic constraints dominate — multibody chains, gimbals, flexible appendages, slosh pendulums — because generalised coordinates eliminate the constraint forces you never wanted to compute.',
+        back: 'When holonomic constraints dominate — multibody chains, gimbals, flexible appendages, slosh pendulums — because generalized coordinates eliminate the constraint forces you never wanted to compute.',
       },
       {
         id: 'c_dv_losses',
-        front: 'Decompose ideal Δv into realised Δv plus losses.',
+        front: 'Decompose ideal Δv into realized Δv plus losses.',
         back: 'Δv_ideal = Δv_realised + gravity loss + drag loss + steering loss (+ back-pressure loss). For a LEO ascent, ideal ≈ 9.3–9.5 km/s against ≈ 7.8 km/s orbital speed.',
         formula: true,
       },
@@ -4258,7 +4258,7 @@ assert lo[0] < hi[0]`,
         id: 'q_lagrangian_when',
         q: 'When is a Lagrangian formulation decisively better than Newton-Euler for a spacecraft?',
         choices: [
-          'When holonomic constraints dominate — gimballed appendages, multibody chains, flexible modes, slosh pendulums — because generalised coordinates remove the constraint forces from the problem entirely',
+          'When holonomic constraints dominate — gimballed appendages, multibody chains, flexible modes, slosh pendulums — because generalized coordinates remove the constraint forces from the problem entirely',
           'Whenever there are external torques, because Newton-Euler cannot represent torque',
           'When the system is linear, because the Euler-Lagrange equation only applies to linear systems',
           'Never; the two are mathematically identical so the choice is purely stylistic',
@@ -4280,7 +4280,7 @@ assert lo[0] < hi[0]`,
         ],
         answer: 0,
         explain:
-          'Thrust is F = ṁv_e + (p_e − p_a)A_e. At sea level p_a ≈ 101 kPa acts against the exit plane, reducing thrust; in vacuum p_a = 0 and the full pressure term is recovered. Mass flow is set by the injector and chamber pressure and barely changes. This is also why vacuum-optimised engines carry much larger area-ratio nozzles.',
+          'Thrust is F = ṁv_e + (p_e − p_a)A_e. At sea level p_a ≈ 101 kPa acts against the exit plane, reducing thrust; in vacuum p_a = 0 and the full pressure term is recovered. Mass flow is set by the injector and chamber pressure and barely changes. This is also why vacuum-optimized engines carry much larger area-ratio nozzles.',
         b: 0.5,
         bloom: 'apply',
       },
@@ -4484,10 +4484,10 @@ def spin_axis_index(w: np.ndarray) -> int:
           'plates (30 kg each, 1 m × 3 m, mounted ±1.1 m along the y axis), and a propellant tank modeled as a sphere',
           '(120 kg, r = 0.45 m, offset 0.3 m along +z).',
           '',
-          '- Compute each component tensor about its own centre of mass.',
-          '- Move each to the assembly centre of mass with the parallel axis theorem.',
+          '- Compute each component tensor about its own center of mass.',
+          '- Move each to the assembly center of mass with the parallel axis theorem.',
           '- Sum, then find the principal moments and principal axes by eigen-decomposition.',
-          '- State which axis is major, which is intermediate and which is minor, and what that implies for a spin-stabilised',
+          '- State which axis is major, which is intermediate and which is minor, and what that implies for a spin-stabilized',
           '  configuration.',
         ].join('\n'),
       },
@@ -4502,7 +4502,7 @@ def spin_axis_index(w: np.ndarray) -> int:
       {
         id: 'c_parallel_axis',
         front: 'State the parallel axis theorem in tensor form.',
-        back: 'I_P = I_cm + m(‖d‖²I₃ − ddᵀ), where d is the vector from the centre of mass to the new reference point.',
+        back: 'I_P = I_cm + m(‖d‖²I₃ − ddᵀ), where d is the vector from the center of mass to the new reference point.',
         formula: true,
       },
       {
@@ -4512,7 +4512,7 @@ def spin_axis_index(w: np.ndarray) -> int:
       },
       {
         id: 'c_H_eq_Iw',
-        front: 'Angular momentum of a rigid body about its centre of mass.',
+        front: 'Angular momentum of a rigid body about its center of mass.',
         back: 'H = Iω. H and ω are parallel only along a principal axis — which is exactly why an off-axis spin nutates.',
         formula: true,
       },
@@ -4536,13 +4536,13 @@ def spin_axis_index(w: np.ndarray) -> int:
       {
         id: 'c_intermediate_proof',
         front: 'How do you prove the intermediate axis theorem?',
-        back: 'Linearise Euler equations about a spin ω₃ = n on axis 3. The transverse pair obeys ω̈₁ = −k ω₁ with k = n²(I₃−I₂)(I₃−I₁)/(I₁I₂). If I₃ is largest or smallest both factors share a sign so k > 0 (oscillation); if I₃ is intermediate the signs differ, k < 0, and the solution grows as e^(√|k| t).',
+        back: 'Linearize Euler equations about a spin ω₃ = n on axis 3. The transverse pair obeys ω̈₁ = −k ω₁ with k = n²(I₃−I₂)(I₃−I₁)/(I₁I₂). If I₃ is largest or smallest both factors share a sign so k > 0 (oscillation); if I₃ is intermediate the signs differ, k < 0, and the solution grows as e^(√|k| t).',
         formula: true,
       },
       {
         id: 'c_major_axis_rule',
         front: 'Why is only major-axis spin stable for a body that dissipates energy?',
-        back: 'With H fixed, T = H²/(2I) is minimised by the largest I. Dissipation drives T monotonically down toward that minimum, so the spin migrates to the major axis and stays there.',
+        back: 'With H fixed, T = H²/(2I) is minimized by the largest I. Dissipation drives T monotonically down toward that minimum, so the spin migrates to the major axis and stays there.',
         formula: true,
       },
       {
@@ -4575,7 +4575,7 @@ def spin_axis_index(w: np.ndarray) -> int:
       {
         id: 'c_dual_spin',
         front: 'What is a dual-spin spacecraft and why build one?',
-        back: 'A spinning rotor plus a de-spun platform. The rotor supplies gyroscopic stiffness while the platform points continuously, and — per the Iorillo/energy-sink result — damping on the de-spun section can stabilise a configuration that would otherwise violate the major-axis rule.',
+        back: 'A spinning rotor plus a de-spun platform. The rotor supplies gyroscopic stiffness while the platform points continuously, and — per the Iorillo/energy-sink result — damping on the de-spun section can stabilize a configuration that would otherwise violate the major-axis rule.',
       },
     ],
     quiz: [
@@ -4583,14 +4583,14 @@ def spin_axis_index(w: np.ndarray) -> int:
         id: 'q_intermediate_axis',
         q: 'State the intermediate axis theorem and identify the step in the proof that produces the instability.',
         choices: [
-          'Spin about the major or minor principal axis is stable, about the intermediate axis unstable: linearising Euler equations gives ω̈ = −k ω with k ∝ (I₃−I₂)(I₃−I₁), and only for the intermediate axis do those two factors have opposite signs, making k negative and the solution exponential',
+          'Spin about the major or minor principal axis is stable, about the intermediate axis unstable: linearizing Euler equations gives ω̈ = −k ω with k ∝ (I₃−I₂)(I₃−I₁), and only for the intermediate axis do those two factors have opposite signs, making k negative and the solution exponential',
           'Spin is stable only about the major axis; the minor axis is always unstable because it has the least inertia',
           'All three principal axes are stable for a rigid body; only flexibility creates instability',
-          'The theorem follows from conservation of energy alone, without linearising the equations of motion',
+          'The theorem follows from conservation of energy alone, without linearizing the equations of motion',
         ],
         answer: 0,
         explain:
-          'The mechanism is the sign of the product (I₃−I₂)(I₃−I₁) in the linearised transverse dynamics. For the largest or smallest moment both factors share a sign, giving simple harmonic (bounded) motion. For the intermediate moment the signs oppose, k < 0, and the perturbation grows as e^(√|k| t). Note this is a *rigid-body* result: for a rigid body minor-axis spin is stable, and it is energy dissipation — a separate argument — that rules it out in practice.',
+          'The mechanism is the sign of the product (I₃−I₂)(I₃−I₁) in the linearized transverse dynamics. For the largest or smallest moment both factors share a sign, giving simple harmonic (bounded) motion. For the intermediate moment the signs oppose, k < 0, and the perturbation grows as e^(√|k| t). Note this is a *rigid-body* result: for a rigid body minor-axis spin is stable, and it is energy dissipation — a separate argument — that rules it out in practice.',
         b: 1.0,
         bloom: 'analyze',
       },
@@ -4598,14 +4598,14 @@ def spin_axis_index(w: np.ndarray) -> int:
         id: 'q_explorer1',
         q: 'Explorer 1 was spun about its long, slender axis and tumbled into a flat spin within its first few orbits (a few hours). What is the physics?',
         choices: [
-          'Its flexible antennas dissipated kinetic energy at essentially constant angular momentum, and since T = H²/(2I) is minimised at the largest inertia, the spin migrated from the minor to the major axis',
+          'Its flexible antennas dissipated kinetic energy at essentially constant angular momentum, and since T = H²/(2I) is minimized at the largest inertia, the spin migrated from the minor to the major axis',
           'Aerodynamic torque at 350 km reversed the spin direction',
           'A residual magnetic dipole interacting with the geomagnetic field flipped the vehicle',
           'The intermediate axis theorem: the spin axis happened to be the intermediate axis',
         ],
         answer: 0,
         explain:
-          'Rigid-body theory says minor-axis spin is stable, so the flight result was a surprise at the time. The resolution is that no spacecraft is truly rigid: the whip antennas flexed and dissipated energy. With H conserved and T decreasing, the only end state is spin about the axis of maximum inertia — a flat spin. This is the origin of the engineering rule that spin-stabilised vehicles must be major-axis spinners.',
+          'Rigid-body theory says minor-axis spin is stable, so the flight result was a surprise at the time. The resolution is that no spacecraft is truly rigid: the whip antennas flexed and dissipated energy. With H conserved and T decreasing, the only end state is spin about the axis of maximum inertia — a flat spin. This is the origin of the engineering rule that spin-stabilized vehicles must be major-axis spinners.',
         b: 0.7,
         bloom: 'understand',
       },
@@ -4772,7 +4772,7 @@ assert min(abs(th), abs(th - 2 * np.pi)) < 1e-4`,
           '1. Write the full rotating-frame acceleration from the transport theorem and name every term.',
           '2. Evaluate the Coriolis term `2 omega x v_rel` in the local NED frame and give its magnitude and direction.',
           '3. Evaluate the centrifugal term `omega x (omega x r)` at the same point and compare its magnitude to g.',
-          '4. Integrate the Coriolis deflection over 10 minutes of flight and state the cross-range error in kilometres.',
+          '4. Integrate the Coriolis deflection over 10 minutes of flight and state the cross-range error in kilometers.',
           '',
           'Success: you get roughly 0.05 m/s² for the Coriolis term, pointing west, so the deflection it causes',
           '(`-2 omega x v_rel`) is directed east; a centrifugal term near 0.024 m/s² (~0.24% of g);',
@@ -4815,7 +4815,7 @@ assert min(abs(th), abs(th - 2 * np.pi)) < 1e-4`,
       {
         id: 'c_eci_ecef',
         front: 'Distinguish ECI (GCRF) from ECEF (ITRF).',
-        back: 'ECI/GCRF is quasi-inertial: axes fixed relative to distant quasars, origin at Earth centre. ECEF/ITRF rotates with the crust, so ground stations and launch pads have fixed coordinates in it. They differ by Earth rotation plus precession, nutation and polar motion.',
+        back: 'ECI/GCRF is quasi-inertial: axes fixed relative to distant quasars, origin at Earth center. ECEF/ITRF rotates with the crust, so ground stations and launch pads have fixed coordinates in it. They differ by Earth rotation plus precession, nutation and polar motion.',
       },
       {
         id: 'c_ned_enu',
@@ -4847,7 +4847,7 @@ assert min(abs(th), abs(th - 2 * np.pi)) < 1e-4`,
       {
         id: 'c_precession_nutation',
         front: 'Distinguish precession, nutation and polar motion.',
-        back: 'Precession: the ~26 000-year conical drift of the spin axis in inertial space. Nutation: smaller periodic wobbles on top of it, dominated by an 18.6-year lunar term. Polar motion: the metre-scale wander of the rotation axis relative to the crust, measured and published by the IERS.',
+        back: 'Precession: the ~26 000-year conical drift of the spin axis in inertial space. Nutation: smaller periodic wobbles on top of it, dominated by an 18.6-year lunar term. Polar motion: the meter-scale wander of the rotation axis relative to the crust, measured and published by the IERS.',
       },
       {
         id: 'c_frame_naming',
@@ -4896,14 +4896,14 @@ assert min(abs(th), abs(th - 2 * np.pi)) < 1e-4`,
         id: 'q_gcrf_itrf_startracker',
         q: 'What is the difference between GCRF and ITRF, and which does a star tracker naturally measure in?',
         choices: [
-          'GCRF is the quasi-inertial celestial frame and ITRF is the Earth-fixed terrestrial frame; a star tracker matches a star catalogue and therefore produces attitude relative to the inertial frame (GCRF)',
+          'GCRF is the quasi-inertial celestial frame and ITRF is the Earth-fixed terrestrial frame; a star tracker matches a star catalog and therefore produces attitude relative to the inertial frame (GCRF)',
           'GCRF rotates with the Earth and ITRF is inertial; a star tracker measures in ITRF',
           'They differ only by a translation, and a star tracker measures in neither',
-          'ITRF is inertial but epoch-dependent; a star tracker measures in ITRF because catalogues are Earth-referenced',
+          'ITRF is inertial but epoch-dependent; a star tracker measures in ITRF because catalogs are Earth-referenced',
         ],
         answer: 0,
         explain:
-          'A star tracker solves a lost-in-space problem against a catalogue of inertial star directions, so its native output is attitude with respect to the celestial frame. Getting a body-to-ECEF attitude requires the full Earth-orientation chain — precession, nutation, sidereal rotation with UT1, and polar motion.',
+          'A star tracker solves a lost-in-space problem against a catalog of inertial star directions, so its native output is attitude with respect to the celestial frame. Getting a body-to-ECEF attitude requires the full Earth-orientation chain — precession, nutation, sidereal rotation with UT1, and polar motion.',
         b: 0.8,
         bloom: 'understand',
       },
@@ -5127,7 +5127,7 @@ for _ in range(200):
           '- Build the Euler-angle kinematic matrix that maps body rates to Euler-angle rates. Its determinant carries a',
           '  `1/cos(pitch)` factor.',
           '- Drive pitch from 0 toward 90° and plot the condition number of that matrix. Watch it diverge.',
-          '- Propagate the same manoeuvre twice, once in Euler angles and once in quaternions, and plot the attitude error',
+          '- Propagate the same maneuver twice, once in Euler angles and once in quaternions, and plot the attitude error',
           '  between the two as pitch passes 89.9°.',
           '- Write one paragraph: what physically is lost at pitch = 90°, and why does the quaternion propagation not care?',
         ].join('\n'),
@@ -5165,9 +5165,9 @@ def rate_matrix_condition(pitch: float) -> float:
         hours: 2,
         prompt: [
           'Implement `slerp(q0, q1, t)` with the standard shortest-path guard (negate `q1` when `dot(q0, q1) < 0`) and a',
-          'small-angle fallback to normalised linear interpolation.',
+          'small-angle fallback to normalized linear interpolation.',
           '',
-          '- Compare against interpolating the four components linearly and renormalising, for a 170° rotation.',
+          '- Compare against interpolating the four components linearly and renormalizing, for a 170° rotation.',
           '- Plot the angular rate implied by each interpolation. SLERP should be constant; LERP should not.',
           '- Show what happens without the sign guard: the interpolation takes the 190° path instead of the 170° one.',
         ].join('\n'),
@@ -5182,7 +5182,7 @@ def slerp(q0: np.ndarray, q1: np.ndarray, t: float) -> np.ndarray:
 
     Two things must be handled or the result is wrong:
       * if q0 . q1 < 0, negate q1 so the interpolation takes the short path;
-      * if Omega is tiny, sin(Omega) underflows -- fall back to normalised
+      * if Omega is tiny, sin(Omega) underflows -- fall back to normalized
         linear interpolation.
     """
     # TODO: implement with both guards.
@@ -5190,7 +5190,7 @@ def slerp(q0: np.ndarray, q1: np.ndarray, t: float) -> np.ndarray:
 
 
 def nlerp(q0: np.ndarray, q1: np.ndarray, t: float) -> np.ndarray:
-    """Naive componentwise interpolation followed by renormalisation.
+    """Naive componentwise interpolation followed by renormalization.
 
     Compare its implied angular rate against slerp -- it is not constant.
     """
@@ -5298,7 +5298,7 @@ def nlerp(q0: np.ndarray, q1: np.ndarray, t: float) -> np.ndarray:
         choices: [
           'Four parameters with one norm constraint cover SO(3) smoothly, so no chart boundary exists — but the constraint makes a 4-parameter covariance singular, and q/−q ambiguity must be resolved, which is why filters use a 3-parameter error state (the multiplicative EKF)',
           'Quaternions are singularity free because they use half angles, and they cost nothing in a filter',
-          'Quaternions avoid the singularity by normalising after every operation; the double cover means the filter must estimate twice as many states',
+          'Quaternions avoid the singularity by normalizing after every operation; the double cover means the filter must estimate twice as many states',
           'They do have a singularity, at a 360° rotation, but it is never reached in practice',
         ],
         answer: 0,
@@ -5343,12 +5343,12 @@ def nlerp(q0: np.ndarray, q1: np.ndarray, t: float) -> np.ndarray:
         choices: [
           'Compose two known rotations and see which multiplication order reproduces the truth, and rotate a known vector to see whether you get the rotation or its transpose — the two conventions differ in the sign of ijk and in composition order, so the wrong one produces a transposed DCM that still passes orthonormality checks',
           'Check whether the scalar component is stored first or last; that alone determines the convention',
-          'Check whether the norm is 1; JPL quaternions are not normalised',
+          'Check whether the norm is 1; JPL quaternions are not normalized',
           'The two conventions produce numerically identical results, so no test is possible',
         ],
         answer: 0,
         explain:
-          'Storage order (scalar-first vs scalar-last) is a separate axis from the algebra, and most JPL-convention code is scalar-last while most Hamilton code is scalar-first — but that correlation is not a rule. The reliable test is behavioural: compose two known rotations, or rotate a known vector, and compare. A convention mismatch gives you the transpose, which passes CᵀC = I and det = +1 while being wrong.',
+          'Storage order (scalar-first vs scalar-last) is a separate axis from the algebra, and most JPL-convention code is scalar-last while most Hamilton code is scalar-first — but that correlation is not a rule. The reliable test is behavioral: compose two known rotations, or rotate a known vector, and compare. A convention mismatch gives you the transpose, which passes CᵀC = I and det = +1 while being wrong.',
         b: 1.3,
         bloom: 'analyze',
       },
@@ -5368,7 +5368,7 @@ def nlerp(q0: np.ndarray, q1: np.ndarray, t: float) -> np.ndarray:
     hours: 40,
     topics: [
       'kinematic differential equations for DCM, quaternion, Euler angles and MRP',
-      'numerical integration of attitude with re-normalisation',
+      'numerical integration of attitude with re-normalization',
       'quaternion integration schemes and norm drift',
       'combining kinematics with Euler dynamics into a 6-state rotational system',
       'external torques: gravity gradient, aerodynamic, solar radiation pressure, residual magnetic dipole',
@@ -5380,7 +5380,7 @@ def nlerp(q0: np.ndarray, q1: np.ndarray, t: float) -> np.ndarray:
     ],
     objectives: [
       'Build and validate a full rotational 6-DOF (attitude plus rate) propagator',
-      'Select an integration and renormalisation strategy for attitude',
+      'Select an integration and renormalization strategy for attitude',
       'Model reaction wheels including momentum exchange back onto the body',
       'Diagnose angular-momentum drift in a simulation',
     ],
@@ -5421,7 +5421,7 @@ def nlerp(q0: np.ndarray, q1: np.ndarray, t: float) -> np.ndarray:
           'with `I = diag(10, 20, 30)` kg m² and an initial rate that is not aligned with any principal axis.',
           '',
           'Verify, over 10⁵ steps:',
-          '- the quaternion norm stays within 1e-12 of 1 (choose and justify a renormalisation strategy),',
+          '- the quaternion norm stays within 1e-12 of 1 (choose and justify a renormalization strategy),',
           '- `||H||` in the **body** frame is constant,',
           '- `H` expressed in the **inertial** frame is constant as a vector, not just in magnitude,',
           '- rotational kinetic energy is constant.',
@@ -5565,12 +5565,12 @@ def total_inertial_momentum(y: np.ndarray, I: np.ndarray, Jw: np.ndarray) -> np.
         kind: 'analysis',
         hours: 3,
         prompt: [
-          'For a booster with 7 600 kN of thrust, a gimbal-to-centre-of-mass distance of 22 m, a pitch inertia of',
+          'For a booster with 7 600 kN of thrust, a gimbal-to-center-of-mass distance of 22 m, a pitch inertia of',
           '3.5 × 10⁸ kg m², and ±5° of gimbal travel at 10 °/s:',
           '',
           '- Compute the maximum control torque `F L sin(delta)` (F the thrust) and the resulting maximum angular acceleration.',
-          '- Compare it against the aerodynamic destabilising torque at max-Q for a 2° angle of attack, using a plausible',
-          '  normal-force coefficient slope and a centre of pressure 8 m ahead of the centre of mass.',
+          '- Compare it against the aerodynamic destabilizing torque at max-Q for a 2° angle of attack, using a plausible',
+          '  normal-force coefficient slope and a center of pressure 8 m ahead of the center of mass.',
           '- State the control-authority margin, and explain what the gimbal *rate* limit does to achievable bandwidth.',
           '',
           'Write up whether this vehicle is controllable at max-Q, and what you would change if it were not.',
@@ -5599,7 +5599,7 @@ def total_inertial_momentum(y: np.ndarray, I: np.ndarray, Jw: np.ndarray) -> np.
       {
         id: 'c_norm_drift_fix',
         front: 'Your quaternion norm reaches 1.0003 after 10⁶ RK4 steps. Consequence and two fixes?',
-        back: 'The derived DCM picks up a scale factor of ‖q‖² ≈ 1.0006, so every rotated vector is 0.06% too long and the matrix is no longer orthonormal. Fix by renormalising every step (cheap, standard) or by using a norm-preserving update q_{k+1} = q_k ⊗ exp(½ωΔt).',
+        back: 'The derived DCM picks up a scale factor of ‖q‖² ≈ 1.0006, so every rotated vector is 0.06% too long and the matrix is no longer orthonormal. Fix by renormalizing every step (cheap, standard) or by using a norm-preserving update q_{k+1} = q_k ⊗ exp(½ωΔt).',
       },
       {
         id: 'c_mrp_kinematics',
@@ -5627,7 +5627,7 @@ def total_inertial_momentum(y: np.ndarray, I: np.ndarray, Jw: np.ndarray) -> np.
       {
         id: 'c_srp_torque',
         front: 'Order of magnitude of solar radiation pressure, and how it makes a torque.',
-        back: 'P_SRP ≈ 4.5 × 10⁻⁶ N/m² at 1 AU. Force ≈ P·A·(1 + reflectivity); it becomes a torque through the offset between the centre of pressure and the centre of mass, and it dominates the disturbance budget at GEO.',
+        back: 'P_SRP ≈ 4.5 × 10⁻⁶ N/m² at 1 AU. Force ≈ P·A·(1 + reflectivity); it becomes a torque through the offset between the center of pressure and the center of mass, and it dominates the disturbance budget at GEO.',
         formula: true,
       },
       {
@@ -5649,12 +5649,12 @@ def total_inertial_momentum(y: np.ndarray, I: np.ndarray, Jw: np.ndarray) -> np.
       {
         id: 'c_min_impulse_bit',
         front: 'What is minimum impulse bit and why does it matter?',
-        back: 'The smallest impulse a thruster can reliably deliver, set by valve open/close time. It sets the finest attitude and rate increment available, so it puts a floor on pointing deadband and produces limit-cycle behaviour in thruster-only control.',
+        back: 'The smallest impulse a thruster can reliably deliver, set by valve open/close time. It sets the finest attitude and rate increment available, so it puts a floor on pointing deadband and produces limit-cycle behavior in thruster-only control.',
       },
       {
         id: 'c_tvc_torque',
         front: 'Control torque from a gimballed engine.',
-        back: 'T_c = F·L·sin δ ≈ F·L·δ, with L the distance from the gimbal to the centre of mass and δ the deflection. Gimbal rate and deflection limits cap both the achievable torque and the loop bandwidth.',
+        back: 'T_c = F·L·sin δ ≈ F·L·δ, with L the distance from the gimbal to the center of mass and δ the deflection. Gimbal rate and deflection limits cap both the achievable torque and the loop bandwidth.',
         formula: true,
       },
       {
@@ -5669,13 +5669,13 @@ def total_inertial_momentum(y: np.ndarray, I: np.ndarray, Jw: np.ndarray) -> np.
         q: 'In q̇ = ½Ω(ω)q with scalar-first quaternions, what is the structure of Ω(ω) and why does it matter?',
         choices: [
           'Ω = [[0, −ωᵀ],[ω, −[ω×]]] — skew-symmetric, which is exactly what makes the exact solution preserve the unit norm',
-          'Ω is symmetric with ω on the diagonal, so the norm grows unless renormalised',
+          'Ω is symmetric with ω on the diagonal, so the norm grows unless renormalized',
           'Ω = [[0, ωᵀ],[ω, [ω×]]], and it is the identity when ω = 0',
           'Ω is the cross-product matrix of ω padded with zeros, and its structure is arbitrary',
         ],
         answer: 0,
         explain:
-          'The first row couples the scalar to the vector part through −ωᵀ, the first column through +ω, and the lower-right block is −[ω×]. Skew-symmetry gives d(qᵀq)/dt = qᵀΩq = 0, the analytic norm-preservation property. Discrete integration still drifts, which is why you renormalise — but if your Ω is not skew, you have a sign error, not a round-off problem.',
+          'The first row couples the scalar to the vector part through −ωᵀ, the first column through +ω, and the lower-right block is −[ω×]. Skew-symmetry gives d(qᵀq)/dt = qᵀΩq = 0, the analytic norm-preservation property. Discrete integration still drifts, which is why you renormalize — but if your Ω is not skew, you have a sign error, not a round-off problem.',
         b: 0.9,
         bloom: 'recall',
       },
@@ -5683,14 +5683,14 @@ def total_inertial_momentum(y: np.ndarray, I: np.ndarray, Jw: np.ndarray) -> np.
         id: 'q_norm_drift',
         q: 'After 2×10⁶ RK4 steps your quaternion norm reads 0.9996. What is the consequence, and what are two fixes?',
         choices: [
-          'The DCM built from it carries a scale factor of about 0.9992 and is no longer orthonormal, so rotated vectors are systematically too short; fix by renormalising every step, or by switching to a norm-preserving exponential-map update',
+          'The DCM built from it carries a scale factor of about 0.9992 and is no longer orthonormal, so rotated vectors are systematically too short; fix by renormalizing every step, or by switching to a norm-preserving exponential-map update',
           'Nothing measurable happens; the norm error is well within float64 precision',
           'The attitude is rotated by 0.03°; fix by adding the deficit to the scalar component',
           'The quaternion now represents a reflection; fix by negating it',
         ],
         answer: 0,
         explain:
-          'The rotation matrix built from a non-unit quaternion scales by ‖q‖², so a norm of 0.9996 shrinks every rotated vector by 0.08% — a systematic error that a downstream filter will interpret as a real signal. It is not merely a rotation offset. The two standard fixes are per-step renormalisation and integrating with q_{k+1} = q_k ⊗ exp(½ωΔt), which is exactly unit-norm by construction.',
+          'The rotation matrix built from a non-unit quaternion scales by ‖q‖², so a norm of 0.9996 shrinks every rotated vector by 0.08% — a systematic error that a downstream filter will interpret as a real signal. It is not merely a rotation offset. The two standard fixes are per-step renormalization and integrating with q_{k+1} = q_k ⊗ exp(½ωΔt), which is exactly unit-norm by construction.',
         b: 0.9,
         bloom: 'analyze',
       },
@@ -5745,7 +5745,7 @@ def total_inertial_momentum(y: np.ndarray, I: np.ndarray, Jw: np.ndarray) -> np.
       'Mach number and the subsonic / transonic / supersonic / hypersonic regimes',
       'drag coefficient vs Mach',
       'angle of attack and sideslip; body vs wind frame',
-      'normal force, centre of pressure vs centre of gravity, static margin',
+      'normal force, center of pressure vs center of gravity, static margin',
       'aerodynamic instability of a boosting rocket',
       'the q-alpha load indicator and load relief control',
       'wind profiles and gust models (Dryden, von Karman), wind shear',
@@ -5879,7 +5879,7 @@ assert 0.5 < approx / rho < 2.0`,
           '- Implement a crude load-relief law that commands a fraction of the measured lateral acceleration back into the',
           '  attitude command, and show the peak `q alpha` falling and the terminal position error rising.',
           '',
-          'Success: you can state the trade — how many kPa-deg of load you bought with how many metres of insertion error.',
+          'Success: you can state the trade — how many kPa-deg of load you bought with how many meters of insertion error.',
         ].join('\n'),
         starter: `import numpy as np
 
@@ -5917,7 +5917,7 @@ def q_alpha_profile(
       },
       {
         id: 'ex_bending_notch',
-        title: 'Destabilise a TVC loop with a bending mode, then fix it',
+        title: 'Destabilize a TVC loop with a bending mode, then fix it',
         kind: 'build',
         hours: 5,
         prompt: [
@@ -5927,7 +5927,7 @@ def q_alpha_profile(
           '- Add a lightly damped second-order bending mode at 12 Hz (zeta = 0.005) in series, with the gyro mounted so that',
           '  the mode appears with positive sign in the feedback path.',
           '- Show on a Bode plot that the mode crosses 0 dB with the wrong phase and the closed loop goes unstable.',
-          '- Design a notch filter at 12 Hz and show the mode is now gain-stabilised with at least 8 dB of attenuation,',
+          '- Design a notch filter at 12 Hz and show the mode is now gain-stabilized with at least 8 dB of attenuation,',
           '  without eating more than ~10° of phase margin at the rigid-body crossover.',
           '- Then move the mode to 3 Hz, just above a 2 Hz crossover, and explain why a notch no longer works and what you',
           '  would do instead.',
@@ -5967,7 +5967,7 @@ def q_alpha_profile(
       {
         id: 'c_mach_regimes',
         front: 'Name the flow regimes by Mach number.',
-        back: 'Subsonic M < 0.8 · transonic 0.8-1.2 (drag rise, shifting centre of pressure) · supersonic 1.2-5 · hypersonic M > 5 (real-gas effects, strong shock layer).',
+        back: 'Subsonic M < 0.8 · transonic 0.8-1.2 (drag rise, shifting center of pressure) · supersonic 1.2-5 · hypersonic M > 5 (real-gas effects, strong shock layer).',
       },
       {
         id: 'c_alpha_beta',
@@ -5977,13 +5977,13 @@ def q_alpha_profile(
       {
         id: 'c_static_margin',
         front: 'Define static margin and the sign that means stable.',
-        back: 'SM = (x_cp − x_cg)/d in calibres. Positive — centre of pressure aft of the centre of mass — is statically stable, because a disturbance produces a restoring moment.',
+        back: 'SM = (x_cp − x_cg)/d in calibers. Positive — center of pressure aft of the center of mass — is statically stable, because a disturbance produces a restoring moment.',
         formula: true,
       },
       {
         id: 'c_lv_unstable',
         front: 'Why is a boosting launch vehicle statically unstable in pitch?',
-        back: 'It is a slender body with its centre of pressure well forward (near the nose and payload fairing) and its centre of mass far aft over the full tanks and engines, and it carries no tail fins. Any α produces a moment that increases α, so the TVC loop must actively stabilise it.',
+        back: 'It is a slender body with its center of pressure well forward (near the nose and payload fairing) and its center of mass far aft over the full tanks and engines, and it carries no tail fins. Any α produces a moment that increases α, so the TVC loop must actively stabilize it.',
       },
       {
         id: 'c_qalpha',
@@ -6004,7 +6004,7 @@ def q_alpha_profile(
       {
         id: 'c_gain_vs_phase_stab',
         front: 'Gain stabilization vs phase stabilization of a flexible mode.',
-        back: 'Gain-stabilise: attenuate the mode below 0 dB with a notch or roll-off — the right answer when it sits well above crossover. Phase-stabilise: let it exceed 0 dB but shape the phase so the loop still encircles correctly — necessary when the mode is too close to crossover to attenuate without destroying phase margin.',
+        back: 'Gain-stabilize: attenuate the mode below 0 dB with a notch or roll-off — the right answer when it sits well above crossover. Phase-stabilize: let it exceed 0 dB but shape the phase so the loop still encircles correctly — necessary when the mode is too close to crossover to attenuate without destroying phase margin.',
       },
       {
         id: 'c_slosh_frequency',
@@ -6029,14 +6029,14 @@ def q_alpha_profile(
         id: 'q_lv_instability',
         q: 'Why is a launch vehicle statically unstable in pitch, and what does that imply for the controller?',
         choices: [
-          'Its centre of pressure sits forward of its centre of mass, so any α produces a divergent moment; the TVC loop must have bandwidth comfortably above the unstable pole, and a control outage of a few seconds is unrecoverable',
+          'Its center of pressure sits forward of its center of mass, so any α produces a divergent moment; the TVC loop must have bandwidth comfortably above the unstable pole, and a control outage of a few seconds is unrecoverable',
           'It is statically stable but dynamically unstable, so only damping is needed',
           'Instability comes from engine gimbal lag, and is removed by a faster actuator',
           'It is unstable only above Mach 1, so the controller can be open-loop below that',
         ],
         answer: 0,
         explain:
-          'A slender finless body has its centre of pressure near the nose while the centre of mass is far aft over full tanks — the opposite of the stable arrangement on a finned model rocket. The resulting unstable rigid-body pole has a time-to-double of order a second, so the loop must be closed and fast. This is exactly why loss of TVC authority is catastrophic rather than merely degrading.',
+          'A slender finless body has its center of pressure near the nose while the center of mass is far aft over full tanks — the opposite of the stable arrangement on a finned model rocket. The resulting unstable rigid-body pole has a time-to-double of order a second, so the loop must be closed and fast. This is exactly why loss of TVC authority is catastrophic rather than merely degrading.',
         b: 0.8,
         bloom: 'understand',
       },
@@ -6057,16 +6057,16 @@ def q_alpha_profile(
       },
       {
         id: 'q_bending_stabilization',
-        q: 'A bending mode sits at 18 Hz and your rigid-body control bandwidth is 3 Hz. Do you gain-stabilise or phase-stabilise, and why?',
+        q: 'A bending mode sits at 18 Hz and your rigid-body control bandwidth is 3 Hz. Do you gain-stabilize or phase-stabilize, and why?',
         choices: [
-          'Gain-stabilise: the mode is six times above crossover, so a notch plus natural roll-off can push it well below 0 dB without costing meaningful phase margin at 3 Hz',
-          'Phase-stabilise: high-frequency modes always need phase shaping because notches are unreliable',
+          'Gain-stabilize: the mode is six times above crossover, so a notch plus natural roll-off can push it well below 0 dB without costing meaningful phase margin at 3 Hz',
+          'Phase-stabilize: high-frequency modes always need phase shaping because notches are unreliable',
           'Neither: raise the control bandwidth above 18 Hz so the mode falls inside the loop',
-          'Gain-stabilise by lowering the overall loop gain until the mode is attenuated, accepting the slower rigid-body response',
+          'Gain-stabilize by lowering the overall loop gain until the mode is attenuated, accepting the slower rigid-body response',
         ],
         answer: 0,
         explain:
-          'With a factor of six separation, the loop is already rolling off at the mode frequency, and a notch centred at 18 Hz adds the remaining attenuation while its phase distortion at 3 Hz is small. Phase stabilization is what you resort to when the mode is close to crossover — say 4.5 Hz against a 3 Hz bandwidth — where you cannot attenuate it without wrecking the rigid-body loop. Reducing overall gain would also slow the unstable rigid body, which you cannot afford.',
+          'With a factor of six separation, the loop is already rolling off at the mode frequency, and a notch centered at 18 Hz adds the remaining attenuation while its phase distortion at 3 Hz is small. Phase stabilization is what you resort to when the mode is close to crossover — say 4.5 Hz against a 3 Hz bandwidth — where you cannot attenuate it without wrecking the rigid-body loop. Reducing overall gain would also slow the unstable rigid body, which you cannot afford.',
         b: 1.2,
         bloom: 'analyze',
       },
@@ -6074,7 +6074,7 @@ def q_alpha_profile(
         id: 'q_slosh_near_crossover',
         q: 'A propellant slosh mode sits at 0.4 Hz, right near your rigid-body crossover. What goes wrong?',
         choices: [
-          'The lightly damped slosh mass couples into the control loop at the frequency where loop gain is highest, so the controller can pump it — producing a limit cycle or outright instability; fixes are baffles to add damping, notching, or explicitly modelling the slosh state in the controller',
+          'The lightly damped slosh mass couples into the control loop at the frequency where loop gain is highest, so the controller can pump it — producing a limit cycle or outright instability; fixes are baffles to add damping, notching, or explicitly modeling the slosh state in the controller',
           'The slosh mode simply adds mass, lowering the natural frequency of the vehicle with no stability consequence',
           'Slosh only matters on orbit, where there is no axial acceleration',
           'The mode is far enough from the bending modes that it can be ignored',
@@ -6152,7 +6152,7 @@ def q_alpha_profile(
         kind: 'site',
         url: 'https://orbital-mechanics.space',
         free: true,
-        note: 'Free and complete: reference frames, orbital elements, Kepler equation, universal anomaly, impulsive manoeuvres, interplanetary transfer.',
+        note: 'Free and complete: reference frames, orbital elements, Kepler equation, universal anomaly, impulsive maneuvers, interplanetary transfer.',
       },
       {
         title: 'An Introduction to the Mathematics and Methods of Astrodynamics',
@@ -6495,7 +6495,7 @@ def propagate_universal(
       {
         id: 'c_tle_sgp4',
         front: 'What is in a TLE and what must you propagate it with?',
-        back: 'Two lines of *mean* elements in the Brouwer-Lyddane sense used by SGP4, plus a drag term B*. They must be propagated with SGP4/SDP4; feeding them to a Cowell integrator mixes theories and produces kilometre-level errors immediately.',
+        back: 'Two lines of *mean* elements in the Brouwer-Lyddane sense used by SGP4, plus a drag term B*. They must be propagated with SGP4/SDP4; feeding them to a Cowell integrator mixes theories and produces kilometer-level errors immediately.',
       },
     ],
     quiz: [
@@ -6550,7 +6550,7 @@ def propagate_universal(
         choices: [
           'A constant of the two-body motion (the Laplace-Runge-Lenz vector divided by m²μ) that points from the focus toward periapsis, with magnitude equal to the eccentricity',
           'A unit vector along the orbit normal, with magnitude equal to the eccentricity',
-          'A vector from the centre of the ellipse to the occupied focus, pointing toward apoapsis',
+          'A vector from the center of the ellipse to the occupied focus, pointing toward apoapsis',
           'The time derivative of the angular momentum vector',
         ],
         answer: 0,
@@ -6578,9 +6578,9 @@ def propagate_universal(
       'Hohmann transfer and its optimality',
       'bi-elliptic transfer and the crossover ratio',
       'one-tangent burns',
-      'plane change and combined plane-change-plus-raise optimisation',
+      'plane change and combined plane-change-plus-raise optimization',
       'apsidal rotation',
-      'phasing manoeuvres and rendezvous phasing',
+      'phasing maneuvers and rendezvous phasing',
       'finite-burn and gravity losses',
       'low-thrust transfers: Edelbaum, spirals, electric propulsion',
       'station-keeping for GEO and LEO',
@@ -6731,7 +6731,7 @@ def geo_transfer_total(
     Build the four speeds (circular at r1, transfer perigee, transfer apogee,
     circular at r2) from vis-viva, then apply combined_burn at each end.
     """
-    # TODO: implement, then minimise over frac_at_perigee numerically.
+    # TODO: implement, then minimize over frac_at_perigee numerically.
     raise NotImplementedError
 `,
       },
@@ -6835,7 +6835,7 @@ def propellant_mass(m0: float, dv: float, isp: float, g0: float = 9.80665e-3) ->
       {
         id: 'c_finite_burn_loss',
         front: 'What is finite-burn loss and when does the impulsive approximation break down?',
-        back: 'A real burn takes time, during which the vehicle moves and the thrust direction is not always optimal, so realised Δv falls short of the impulsive calculation. The approximation degrades when burn arc length becomes a significant fraction of the orbit — roughly when burn time exceeds a few percent of the period.',
+        back: 'A real burn takes time, during which the vehicle moves and the thrust direction is not always optimal, so realized Δv falls short of the impulsive calculation. The approximation degrades when burn arc length becomes a significant fraction of the orbit — roughly when burn time exceeds a few percent of the period.',
       },
       {
         id: 'c_edelbaum',
@@ -6857,18 +6857,18 @@ def propellant_mass(m0: float, dv: float, isp: float, g0: float = 9.80665e-3) ->
       {
         id: 'c_soi',
         front: 'Sphere of influence radius, and Earth value.',
-        back: 'r_SOI = a(m/M)^(2/5). For Earth about 924 000 km. Inside it you patch to a planet-centred conic; outside, to a heliocentric one.',
+        back: 'r_SOI = a(m/M)^(2/5). For Earth about 924 000 km. Inside it you patch to a planet-centered conic; outside, to a heliocentric one.',
         formula: true,
       },
       {
         id: 'c_gravity_assist',
         front: 'What does a gravity assist actually change?',
-        back: 'It rotates v_∞ in the planet-centred frame without changing its magnitude; adding the planet heliocentric velocity back in changes the spacecraft heliocentric speed. The maximum turn is sin(δ/2) = 1/(1 + r_p v_∞²/μ), so a close pass at a massive body turns the most.',
+        back: 'It rotates v_∞ in the planet-centered frame without changing its magnitude; adding the planet heliocentric velocity back in changes the spacecraft heliocentric speed. The maximum turn is sin(δ/2) = 1/(1 + r_p v_∞²/μ), so a close pass at a massive body turns the most.',
         formula: true,
       },
       {
         id: 'c_phasing',
-        front: 'How does a phasing manoeuvre work?',
+        front: 'How does a phasing maneuver work?',
         back: 'Change the period so the chaser drifts relative to the target, then restore the original orbit once the phase angle is right. Cost trades against time: a smaller Δv means a slower drift and more revolutions.',
       },
     ],
@@ -6899,7 +6899,7 @@ def propellant_mass(m0: float, dv: float, isp: float, g0: float = 9.80665e-3) ->
         ],
         answer: 0,
         explain:
-          'Rotating a velocity vector of magnitude v through Δi costs 2v sin(Δi/2), so the price falls linearly with speed. The Oberth effect applies to changes in *energy*, not direction, so it argues for perigee burns when raising apoapsis and does nothing for a pure rotation. Combining the plane change with the apogee circularisation burn is cheaper still, via the law of cosines.',
+          'Rotating a velocity vector of magnitude v through Δi costs 2v sin(Δi/2), so the price falls linearly with speed. The Oberth effect applies to changes in *energy*, not direction, so it argues for perigee burns when raising apoapsis and does nothing for a pure rotation. Combining the plane change with the apogee circularization burn is cheaper still, via the law of cosines.',
         b: 0.6,
         bloom: 'apply',
       },
@@ -6914,7 +6914,7 @@ def propellant_mass(m0: float, dv: float, isp: float, g0: float = 9.80665e-3) ->
         ],
         answer: 0,
         explain:
-          'A coplanar spiral needs Δv = |v₁ − v₀|, which is *more* than the Hohmann total — but the rocket equation is exponential in Δv/(Isp·g₀), so a 1500 s Isp beats a 300 s Isp by a wide margin even with the penalty. The operational arguments matter just as much: satellites are deployed low so that a failed unit re-enters quickly, and the slow raise doubles as the phasing manoeuvre that spreads the plane.',
+          'A coplanar spiral needs Δv = |v₁ − v₀|, which is *more* than the Hohmann total — but the rocket equation is exponential in Δv/(Isp·g₀), so a 1500 s Isp beats a 300 s Isp by a wide margin even with the penalty. The operational arguments matter just as much: satellites are deployed low so that a failed unit re-enters quickly, and the slow raise doubles as the phasing maneuver that spreads the plane.',
         b: 1.1,
         bloom: 'analyze',
       },
@@ -6953,7 +6953,7 @@ def propellant_mass(m0: float, dv: float, isp: float, g0: float = 9.80665e-3) ->
       'J2 secular effects: nodal regression and apsidal rotation',
       'sun-synchronous orbits',
       'atmospheric drag, ballistic coefficient and density model uncertainty',
-      'solar radiation pressure and eclipse modelling',
+      'solar radiation pressure and eclipse modeling',
       'third-body lunar and solar perturbations',
       'tides and relativistic corrections',
       'general vs special perturbations',
@@ -7024,7 +7024,7 @@ J2_EARTH = 1.08263e-3
 def j2_accel(
     r: np.ndarray, mu: float = MU_EARTH, j2: float = J2_EARTH, re: float = R_EARTH
 ) -> np.ndarray:
-    """J2 perturbing acceleration in an Earth-centred inertial frame, km/s^2.
+    """J2 perturbing acceleration in an Earth-centered inertial frame, km/s^2.
 
     a = (3/2) J2 mu Re^2 / rmag^4 * [
             (x/rmag)(5 z^2/rmag^2 - 1),
@@ -7208,11 +7208,11 @@ def lifetime_days(r0: np.ndarray, v0: np.ndarray, bc: float, reentry_alt_km: flo
       {
         id: 'c_drag_paradox',
         front: 'Why does drag make a satellite speed up?',
-        back: 'Drag removes energy, lowering the semi-major axis, and v = √(μ/a) rises as a falls. The satellite ends up faster in a lower orbit — the drag paradox. Drag also circularises, because it bites hardest at perigee.',
+        back: 'Drag removes energy, lowering the semi-major axis, and v = √(μ/a) rises as a falls. The satellite ends up faster in a lower orbit — the drag paradox. Drag also circularizes, because it bites hardest at perigee.',
       },
       {
         id: 'c_srp_eclipse',
-        front: 'Solar radiation pressure magnitude and why eclipse modelling matters.',
+        front: 'Solar radiation pressure magnitude and why eclipse modeling matters.',
         back: 'P ≈ 4.56 × 10⁻⁶ N/m² at 1 AU; a = P(A/m)(1 + reflectivity). It switches on and off at eclipse entry and exit, so a shadow model (cylindrical, or conical with penumbra) is needed or the along-track error accumulates.',
         formula: true,
       },
@@ -7234,7 +7234,7 @@ def lifetime_days(r0: np.ndarray, v0: np.ndarray, bc: float, reentry_alt_km: flo
       {
         id: 'c_tle_theory_specific',
         front: 'Why can a TLE not be fed to your own Cowell propagator?',
-        back: 'TLE elements are mean elements defined *within* the SGP4 theory, with its particular analytic removal of periodic terms and its own B* drag model. Treating them as osculating elements introduces kilometre-level error at epoch and grows from there. Propagate with SGP4, then convert the resulting state if you need one.',
+        back: 'TLE elements are mean elements defined *within* the SGP4 theory, with its particular analytic removal of periodic terms and its own B* drag model. Treating them as osculating elements introduces kilometer-level error at epoch and grows from there. Propagate with SGP4, then convert the resulting state if you need one.',
       },
       {
         id: 'c_lifetime_uncertainty',
@@ -7277,14 +7277,14 @@ def lifetime_days(r0: np.ndarray, v0: np.ndarray, bc: float, reentry_alt_km: flo
         id: 'q_tle_cowell',
         q: 'Why does feeding TLE elements directly into a Cowell propagator give wrong answers?',
         choices: [
-          'TLE elements are mean elements defined inside the SGP4 theory, with its specific removal of periodic terms and its own B* drag parameter — treating them as osculating elements is a theory mismatch that costs kilometres immediately',
+          'TLE elements are mean elements defined inside the SGP4 theory, with its specific removal of periodic terms and its own B* drag parameter — treating them as osculating elements is a theory mismatch that costs kilometers immediately',
           'TLEs are always several days stale, so any propagator gives wrong answers',
           'TLEs are given in ECEF while Cowell propagators work in ECI',
           'TLE elements use degrees where Cowell propagators expect radians',
         ],
         answer: 0,
         explain:
-          'The error is conceptual, not clerical. SGP4 mean elements have short-period and some long-period variations analytically removed; an osculating-element propagator expects the instantaneous values, which differ by the very terms SGP4 stripped out. Stale data and unit errors are real problems too, but even a fresh, correctly converted TLE used this way is wrong by kilometres at epoch.',
+          'The error is conceptual, not clerical. SGP4 mean elements have short-period and some long-period variations analytically removed; an osculating-element propagator expects the instantaneous values, which differ by the very terms SGP4 stripped out. Stale data and unit errors are real problems too, but even a fresh, correctly converted TLE used this way is wrong by kilometers at epoch.',
         b: 1.1,
         bloom: 'understand',
       },
@@ -7294,8 +7294,8 @@ def lifetime_days(r0: np.ndarray, v0: np.ndarray, bc: float, reentry_alt_km: flo
         choices: [
           'The J2 apsidal rotation rate is proportional to (5cos²i − 1), which vanishes at i = 63.435°, so the argument of perigee stops drifting and apogee stays parked over the intended hemisphere',
           'It is the inclination that makes the orbit sun-synchronous',
-          'It minimises the nodal regression rate',
-          'It maximises the ground-station coverage from a mid-latitude site',
+          'It minimizes the nodal regression rate',
+          'It maximizes the ground-station coverage from a mid-latitude site',
         ],
         answer: 0,
         explain:
@@ -7326,7 +7326,7 @@ def lifetime_days(r0: np.ndarray, v0: np.ndarray, bc: float, reentry_alt_km: flo
       'the state transition matrix and its use in targeting',
       'B-plane targeting',
       'porkchop plots from repeated Lambert solutions',
-      'trajectory correction manoeuvres',
+      'trajectory correction maneuvers',
       'linear covariance analysis of targeting errors',
     ],
     objectives: [
@@ -7395,7 +7395,7 @@ def stumpff_C(z: float) -> float:
 
 
 def stumpff_S(z: float) -> float:
-    """S(z) = (sqrt(z) - sin(sqrt(z)))/z**1.5 for z > 0, and the hyperbolic analogue for z < 0, 1/6 at z = 0."""
+    """S(z) = (sqrt(z) - sin(sqrt(z)))/z**1.5 for z > 0, and the hyperbolic analog for z < 0, 1/6 at z = 0."""
     # TODO: implement all three branches.
     raise NotImplementedError
 
@@ -7484,7 +7484,7 @@ assert np.linalg.norm(sol.y[:3, -1] - r2) < 1.0`,
           '  you are in the linear regime).',
           '- `A` must include the gradient of every perturbation you propagate (at least ∂a_J2/∂r; central differences are',
           '  fine) — with the two-body Jacobian alone, convergence is only linear.',
-          '- Show what happens when the initial guess is bad enough that the linearisation is invalid.',
+          '- Show what happens when the initial guess is bad enough that the linearization is invalid.',
         ].join('\n'),
         starter: `import numpy as np
 
@@ -7562,7 +7562,7 @@ def correct_velocity(x0: np.ndarray, r_target: np.ndarray, dt: float, tol: float
       {
         id: 'c_stumpff',
         front: 'Define the Stumpff functions C(z) and S(z).',
-        back: 'C(z) = (1 − cos√z)/z and S(z) = (√z − sin√z)/z^(3/2) for z > 0, with the hyperbolic analogues for z < 0 and C(0) = 1/2, S(0) = 1/6. Near z = 0 use the series to avoid cancellation.',
+        back: 'C(z) = (1 − cos√z)/z and S(z) = (√z − sin√z)/z^(3/2) for z > 0, with the hyperbolic analogs for z < 0 and C(0) = 1/2, S(0) = 1/6. Near z = 0 use the series to avoid cancellation.',
         formula: true,
       },
       {
@@ -7580,7 +7580,7 @@ def correct_velocity(x0: np.ndarray, r_target: np.ndarray, dt: float, tol: float
       {
         id: 'c_bplane',
         front: 'What is the B-plane and what are its coordinates?',
-        back: 'The plane through the target body centre perpendicular to the incoming asymptote v_∞. The aim point is described by B·R and B·T, which behave almost linearly with respect to a correction manoeuvre — which is why interplanetary targeting is done there rather than in position space.',
+        back: 'The plane through the target body center perpendicular to the incoming asymptote v_∞. The aim point is described by B·R and B·T, which behave almost linearly with respect to a correction maneuver — which is why interplanetary targeting is done there rather than in position space.',
       },
       {
         id: 'c_porkchop',
@@ -7594,7 +7594,7 @@ def correct_velocity(x0: np.ndarray, r_target: np.ndarray, dt: float, tol: float
       },
       {
         id: 'c_tcm',
-        front: 'What is a trajectory correction manoeuvre and when is it cheapest?',
+        front: 'What is a trajectory correction maneuver and when is it cheapest?',
         back: 'A small burn that removes accumulated targeting error. Early TCMs are cheap because the error has not yet propagated into a large miss, but they must wait long enough for orbit determination to have converged — a genuine trade, not a preference.',
       },
       {
@@ -7605,7 +7605,7 @@ def correct_velocity(x0: np.ndarray, r_target: np.ndarray, dt: float, tol: float
       {
         id: 'c_linear_covariance',
         front: 'What does linear covariance analysis give you in targeting?',
-        back: 'It propagates a covariance through the same STM that propagates the state, producing a predicted dispersion at the target (and the Δv statistics of the correction) without running a Monte Carlo — valid only while the linearisation holds.',
+        back: 'It propagates a covariance through the same STM that propagates the state, producing a predicted dispersion at the target (and the Δv statistics of the correction) without running a Monte Carlo — valid only while the linearization holds.',
       },
     ],
     quiz: [
@@ -7620,7 +7620,7 @@ def correct_velocity(x0: np.ndarray, r_target: np.ndarray, dt: float, tol: float
         ],
         answer: 0,
         explain:
-          'The plane of the transfer is fixed by the cross product of the two position vectors. When they are antiparallel that cross product vanishes and the plane is undetermined — a genuine degeneracy of the problem, not an artefact of a particular solver. Practically, a mission designer nudges the arrival date to avoid the ridge; this is the gap between the Type I and Type II lobes on a porkchop plot.',
+          'The plane of the transfer is fixed by the cross product of the two position vectors. When they are antiparallel that cross product vanishes and the plane is undetermined — a genuine degeneracy of the problem, not an artifact of a particular solver. Practically, a mission designer nudges the arrival date to avoid the ridge; this is the gap between the Type I and Type II lobes on a porkchop plot.',
         b: 1.0,
         bloom: 'understand',
       },
@@ -7650,7 +7650,7 @@ def correct_velocity(x0: np.ndarray, r_target: np.ndarray, dt: float, tol: float
         ],
         answer: 0,
         explain:
-          'Lambert is the guidance kernel: it converts "where I am, where the target will be, when I want to arrive" into a required velocity. Closing the loop around it — re-solving each cycle — is what turns a two-body idealisation into a robust targeting law, exactly as Apollo did with Lambert-based powered flight guidance.',
+          'Lambert is the guidance kernel: it converts "where I am, where the target will be, when I want to arrive" into a required velocity. Closing the loop around it — re-solving each cycle — is what turns a two-body idealization into a robust targeting law, exactly as Apollo did with Lambert-based powered flight guidance.',
         b: 0.9,
         bloom: 'apply',
       },
@@ -7699,7 +7699,7 @@ def correct_velocity(x0: np.ndarray, r_target: np.ndarray, dt: float, tol: float
       'docking vs berthing',
       'ISS visiting vehicle requirements',
       'relative navigation sensors: relative GPS, lidar, cameras, retroreflectors',
-      'abort trajectories and collision avoidance manoeuvres',
+      'abort trajectories and collision avoidance maneuvers',
     ],
     objectives: [
       'Derive and implement the CW equations and their state transition matrix',
@@ -7888,7 +7888,7 @@ def is_passively_safe(
       {
         id: 'c_cw_assumptions',
         front: 'What assumptions go into the CW equations?',
-        back: 'A circular reference orbit, separation small compared with the orbit radius (so the gravity difference can be linearised), two-body gravity only, and no differential drag or J2.',
+        back: 'A circular reference orbit, separation small compared with the orbit radius (so the gravity difference can be linearized), two-body gravity only, and no differential drag or J2.',
       },
       {
         id: 'c_cw_solution_x',
@@ -7932,12 +7932,12 @@ def is_passively_safe(
       {
         id: 'c_passive_safety',
         front: 'Define passive safety in proximity operations.',
-        back: 'If every subsequent manoeuvre fails to execute, the free-drift trajectory still misses the target by more than the keep-out distance for a specified time (often 24 hours). It is a design requirement, not a hope, and it is verified by propagating from every point on the approach.',
+        back: 'If every subsequent maneuver fails to execute, the free-drift trajectory still misses the target by more than the keep-out distance for a specified time (often 24 hours). It is a design requirement, not a hope, and it is verified by propagating from every point on the approach.',
       },
       {
         id: 'c_keepout_corridor',
         front: 'What are the keep-out sphere and the approach corridor?',
-        back: 'The keep-out sphere (200 m for the ISS) may only be entered with explicit authorisation and a demonstrated safe trajectory. Inside it the vehicle must stay within an approach corridor — a cone about the docking axis — with bounded rate and attitude.',
+        back: 'The keep-out sphere (200 m for the ISS) may only be entered with explicit authorization and a demonstrated safe trajectory. Inside it the vehicle must stay within an approach corridor — a cone about the docking axis — with bounded rate and attitude.',
       },
       {
         id: 'c_docking_vs_berthing',
@@ -7947,7 +7947,7 @@ def is_passively_safe(
       {
         id: 'c_tschauner_hempel',
         front: 'When do the CW equations fail, and what replaces them?',
-        back: 'They assume a circular reference orbit; at meaningful eccentricity the linearisation must retain the time-varying terms. Use the Tschauner-Hempel equations (or the Yamanaka-Ankersen closed-form STM) for an eccentric reference orbit.',
+        back: 'They assume a circular reference orbit; at meaningful eccentricity the linearization must retain the time-varying terms. Use the Tschauner-Hempel equations (or the Yamanaka-Ankersen closed-form STM) for an eccentric reference orbit.',
       },
       {
         id: 'c_glideslope',
@@ -7958,7 +7958,7 @@ def is_passively_safe(
       {
         id: 'c_rpo_sensors',
         front: 'Relative navigation sensors, by range.',
-        back: 'Far field: relative GPS and ground tracking, kilometres to hundreds of metres. Mid field: lidar and radar against retroreflectors, kilometres to metres. Near field: cameras with pattern recognition on docking targets, tens of metres to contact. Each hand-off is a point of failure that must be tested.',
+        back: 'Far field: relative GPS and ground tracking, kilometers to hundreds of meters. Mid field: lidar and radar against retroreflectors, kilometers to meters. Near field: cameras with pattern recognition on docking targets, tens of meters to contact. Each hand-off is a point of failure that must be tested.',
       },
     ],
     quiz: [
@@ -8003,7 +8003,7 @@ def is_passively_safe(
         ],
         answer: 0,
         explain:
-          'The CW derivation linearises about a circular orbit, so n is constant and the coefficients are constant. At e = 0.05 the reference radius and angular rate vary by several percent over a revolution, which shows up as a growing phase and amplitude error — anywhere from tens of metres to kilometres over an orbit at kilometre separations, depending on the geometry, which matters for a corridor. Tschauner-Hempel keeps the time-varying coefficients; Yamanaka-Ankersen gives a closed-form STM for it.',
+          'The CW derivation linearizes about a circular orbit, so n is constant and the coefficients are constant. At e = 0.05 the reference radius and angular rate vary by several percent over a revolution, which shows up as a growing phase and amplitude error — anywhere from tens of meters to kilometers over an orbit at kilometer separations, depending on the geometry, which matters for a corridor. Tschauner-Hempel keeps the time-varying coefficients; Yamanaka-Ankersen gives a closed-form STM for it.',
         b: 1.1,
         bloom: 'understand',
       },
@@ -8011,8 +8011,8 @@ def is_passively_safe(
         id: 'q_abort_30m',
         q: 'A thruster fails at 30 m on final approach. What does a well-designed abort do?',
         choices: [
-          'Fire a pre-computed collision avoidance manoeuvre using the remaining thrusters that puts the vehicle onto a free-drift trajectory clearing the keep-out sphere, verified beforehand for every point on the approach and for every credible single failure',
-          'Immediately null all relative velocity and hold position until the ground can analyse the failure',
+          'Fire a pre-computed collision avoidance maneuver using the remaining thrusters that puts the vehicle onto a free-drift trajectory clearing the keep-out sphere, verified beforehand for every point on the approach and for every credible single failure',
+          'Immediately null all relative velocity and hold position until the ground can analyze the failure',
           'Continue the approach, since 30 m is too close to abort safely',
           'Rotate the vehicle so the failed thruster points away from the target and continue',
         ],
@@ -8205,7 +8205,7 @@ def ignition_altitude(v: float, thrust_accel: float, g: float = G_EARTH) -> floa
 
     Returns
     -------
-    Altitude in metres such that velocity and altitude reach zero together.
+    Altitude in meters such that velocity and altitude reach zero together.
 
     Raises
     ------
@@ -8349,7 +8349,7 @@ assert touchdown_velocity(250.0, h - 50.0, a) > 5.0`,
       {
         id: 'c_radar_altimeter',
         front: 'What does a radar altimeter give you during terminal descent that GNSS does not?',
-        back: 'Direct, precise range to the actual surface beneath you — the droneship deck or the terrain — with no dependence on a geoid or terrain model, no multipath-prone geometry, and no reliance on GNSS availability. GNSS gives ellipsoidal height with metre-level error, which is not good enough at touchdown.',
+        back: 'Direct, precise range to the actual surface beneath you — the droneship deck or the terrain — with no dependence on a geoid or terrain model, no multipath-prone geometry, and no reliance on GNSS availability. GNSS gives ellipsoidal height with meter-level error, which is not good enough at touchdown.',
       },
       {
         id: 'c_trn',
@@ -8379,7 +8379,7 @@ assert touchdown_velocity(250.0, h - 50.0, a) > 5.0`,
         ],
         answer: 0,
         explain:
-          'Maximising ρv²/(2β) with v = v_E·exp(−Hρ/(2β|sin γ|)) gives ρ* = β|sin γ|/H, and substituting back cancels β entirely: a_max = v_E²|sin γ|/(2eH). So a heavy, streamlined body and a light, blunt one pull the same peak g on the same entry — but the heavy one pulls it far lower in the atmosphere, where the air is denser and the heating environment is different.',
+          'Maximizing ρv²/(2β) with v = v_E·exp(−Hρ/(2β|sin γ|)) gives ρ* = β|sin γ|/H, and substituting back cancels β entirely: a_max = v_E²|sin γ|/(2eH). So a heavy, streamlined body and a light, blunt one pull the same peak g on the same entry — but the heavy one pulls it far lower in the atmosphere, where the air is denser and the heating environment is different.',
         b: 1.3,
         bloom: 'analyze',
       },
@@ -8417,14 +8417,14 @@ assert touchdown_velocity(250.0, h - 50.0, a) > 5.0`,
         id: 'q_radar_altimeter',
         q: 'What does a radar altimeter provide during terminal descent that GNSS cannot?',
         choices: [
-          'Direct precise range to the actual surface below — a ship deck or terrain — independent of geoid and terrain models and of GNSS availability, at the sub-metre accuracy touchdown requires',
+          'Direct precise range to the actual surface below — a ship deck or terrain — independent of geoid and terrain models and of GNSS availability, at the sub-meter accuracy touchdown requires',
           'Absolute position in an Earth-fixed frame, which GNSS does not provide',
           'Velocity relative to the atmosphere, which GNSS cannot measure',
           'Attitude information, which GNSS receivers do not supply',
         ],
         answer: 0,
         explain:
-          'GNSS gives you height above a mathematical ellipsoid, with metre-level error and degraded geometry near the ground. What the landing needs is height above the thing you are about to touch, which may be a droneship deck that is itself moving in the swell. A radar altimeter (or landing lidar) measures exactly that. GNSS gives absolute position well and says nothing about attitude from a single antenna.',
+          'GNSS gives you height above a mathematical ellipsoid, with meter-level error and degraded geometry near the ground. What the landing needs is height above the thing you are about to touch, which may be a droneship deck that is itself moving in the swell. A radar altimeter (or landing lidar) measures exactly that. GNSS gives absolute position well and says nothing about attitude from a single antenna.',
         b: 0.8,
         bloom: 'understand',
       },

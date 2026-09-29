@@ -1,16 +1,16 @@
 ---
 id: l06-linearisation-and-differentials
-title: Linearisation and differentials
+title: Linearization and differentials
 minutes: 23
 covers:
-  - linearisation and differentials
+  - linearization and differentials
 ---
 
 Stand in a big flat field and the Earth looks flat. It is not — it is a ball — but the piece you can see is so small that a flat plane matches it almost perfectly. Zoom in close enough on any smooth curve and the same thing happens: it looks like a straight line. This lesson turns that everyday fact into the most useful tool in the module.
 
 Almost nothing on a vehicle is **linear** — that is, a straight-line relationship where doubling the input doubles the output. Gravity weakens with the square of distance. Drag grows with the square of speed. A star tracker's reading is a trig function of the attitude. The rocket equation has a logarithm in it. Yet almost every tool a GNC engineer reaches for — the Kalman filter, the LQR controller, the stability analysis of a flight-control loop, the error budget of a navigation system — is a linear tool.
 
-The bridge between the two is **linearisation**: near an operating point, replace the curved function by its tangent line, and keep track of what you threw away.
+The bridge between the two is **linearization**: near an operating point, replace the curved function by its tangent line, and keep track of what you threw away.
 
 Done well, this is why an Extended Kalman Filter can track a spacecraft using linear algebra alone. Done carelessly, it is why the same filter goes off the rails. So this lesson does two things with equal care. It builds the tangent-line approximation and its notation. And it finds an exact formula for the error, so that "small" always comes with a number attached. Along the way it recovers the small-angle approximations, gives the notation $dy = f'(x)\,dx$ a precise meaning, and turns the tangent line into Newton's method for solving equations.
 
@@ -22,7 +22,7 @@ $$
 L(x) = f(x_0) + f'(x_0)\,(x - x_0).
 $$
 
-Read it as: start at the known height $f(x_0)$, then add slope times distance moved. $L$ is the **linearisation** of $f$ about $x_0$. The point $x_0$ is called the **operating point**, the **reference**, or the **[[trim point|trim-point]]**, depending on who is talking.
+Read it as: start at the known height $f(x_0)$, then add slope times distance moved. $L$ is the **linearization** of $f$ about $x_0$. The point $x_0$ is called the **operating point**, the **reference**, or the **[[trim point|trim-point]]**, depending on who is talking.
 
 The claim is that $f(x) \approx L(x)$ when $x$ is near $x_0$. But why the tangent, and not some other line through the same point? Because the definition of the derivative says so. It says $\dfrac{f(x_0 + h) - f(x_0)}{h} \to f'(x_0)$ as $h \to 0$. Multiply out and it becomes
 
@@ -40,7 +40,7 @@ $$
 \Delta f = f(x_0 + h) - f(x_0) = \underbrace{f'(x_0)\,h}_{\text{linear part}} + \underbrace{R(h)}_{\text{remainder}}.
 $$
 
-($\Delta$, capital "delta", means "change in".) To linearise is to keep the first piece and drop $R$, the **remainder**. Everything that follows is about how big $R$ is.
+($\Delta$, capital "delta", means "change in".) To linearize is to keep the first piece and drop $R$, the **remainder**. Everything that follows is about how big $R$ is.
 
 ## The error, exactly
 
@@ -71,11 +71,11 @@ Hence $K = f''(\xi)/2$, and $R(h) = K h^2 = \tfrac12 f''(\xi) h^2$.
 Here are three things to read off this formula.
 
 - **The error grows like $h^2$.** Halve the step and the error drops to a quarter. This is written $R(h) = O(h^2)$, read "**[[big O|big-o]]** of h squared", meaning $|R(h)| \le C h^2$ for some constant $C$ once $h$ is small. Here $C$ can be half the largest value of $|f''|$ on the interval.
-- **The error grows with the bending, $f''$.** A function that is nearly straight near $x_0$ linearises well over a wide range. One that bends sharply does not. Where $f''(x_0) = 0$, the tangent is exceptionally good.
+- **The error grows with the bending, $f''$.** A function that is nearly straight near $x_0$ linearizes well over a wide range. One that bends sharply does not. Where $f''(x_0) = 0$, the tangent is exceptionally good.
 - **The point $\xi$ is unknown.** For a guaranteed *bound*, replace $f''(\xi)$ by the largest $|f''|$ between $x_0$ and $x_0 + h$. For an *estimate*, use $f''(x_0)$ — which is what keeping one more term of the Taylor series gives you in the next lesson.
 
 ::: key
-First-order linearisation of $f$ about $x_0$: $f(x) \approx f(x_0) + f'(x_0)(x - x_0)$, with error $O\big((x - x_0)^2\big)$. Exactly, the Lagrange remainder is $\dfrac{f''(\xi)}{2}(x - x_0)^2$ for some $\xi$ between $x_0$ and $x$. Halving the displacement quarters the error.
+First-order linearization of $f$ about $x_0$: $f(x) \approx f(x_0) + f'(x_0)(x - x_0)$, with error $O\big((x - x_0)^2\big)$. Exactly, the Lagrange remainder is $\dfrac{f''(\xi)}{2}(x - x_0)^2$ for some $\xi$ between $x_0$ and $x$. Halving the displacement quarters the error.
 :::
 
 ::: example Gravity as a function of altitude
@@ -85,13 +85,13 @@ $$
 g(h) = \frac{\mu}{(R_E + h)^2},
 $$
 
-with $\mu = 3.986 \times 10^{14}\,\mathrm{m^3/s^2}$ (Earth's gravity constant, read "mew") and Earth radius $R_E = 6371\,\mathrm{km}$. Linearise about $h = 0$, then test the approximation at $100$, $400$ and $1000\,\mathrm{km}$.
+with $\mu = 3.986 \times 10^{14}\,\mathrm{m^3/s^2}$ (Earth's gravity constant, read "mew") and Earth radius $R_E = 6371\,\mathrm{km}$. Linearize about $h = 0$, then test the approximation at $100$, $400$ and $1000\,\mathrm{km}$.
 
 **Value at the operating point.** $g(0) = \mu/R_E^2 = 9.820\,\mathrm{m/s^2}$.
 
 **Slope.** By the chain rule, $g'(h) = -\dfrac{2\mu}{(R_E + h)^3}$. At $h = 0$ that is $-2\mu/R_E^3$, which is the same as $-2g(0)/R_E = -3.08 \times 10^{-6}\,\mathrm{s^{-2}}$.
 
-**The linearisation.**
+**The linearization.**
 
 $$
 g(h) \approx g(0) - \frac{2g(0)}{R_E}\,h = g(0)\left(1 - \frac{2h}{R_E}\right).
@@ -124,7 +124,7 @@ $$
 
 So $dy$ is the change in $y$ *predicted by the tangent line* when $x$ moves by $dx$. The true change is $\Delta y = f(x + dx) - f(x)$. The two differ by the remainder, which is $O(dx^2)$.
 
-With this reading, **[[Leibniz's|leibniz]]** $\dfrac{dy}{dx}$ really is one differential divided by another. The chain rule $\dfrac{dy}{dx} = \dfrac{dy}{du}\dfrac{du}{dx}$ then looks like cancelling a common factor — which is why the notation has lasted over three hundred years.
+With this reading, **[[Leibniz's|leibniz]]** $\dfrac{dy}{dx}$ really is one differential divided by another. The chain rule $\dfrac{dy}{dx} = \dfrac{dy}{du}\dfrac{du}{dx}$ then looks like canceling a common factor — which is why the notation has lasted over three hundred years.
 
 The most common use is **error propagation**. Suppose you know $x$ only to within a small uncertainty $\delta x$ ("delta x"). How uncertain is $y = f(x)$? To first order,
 
@@ -165,7 +165,7 @@ The sensitivity is $3/2$, the exponent.
 :::
 
 ::: example Drag about a flight condition
-A re-entering body moves at $v_0 = 1000\,\mathrm{m/s}$ through air of density $\rho = 0.4\,\mathrm{kg/m^3}$. Its drag is $D(v) = \tfrac12 \rho v^2 C_D A$, with $C_D A = 3.0\,\mathrm{m^2}$ (drag coefficient times area). Linearise about $v_0$, and compare with the exact drag at $1050\,\mathrm{m/s}$.
+A re-entering body moves at $v_0 = 1000\,\mathrm{m/s}$ through air of density $\rho = 0.4\,\mathrm{kg/m^3}$. Its drag is $D(v) = \tfrac12 \rho v^2 C_D A$, with $C_D A = 3.0\,\mathrm{m^2}$ (drag coefficient times area). Linearize about $v_0$, and compare with the exact drag at $1050\,\mathrm{m/s}$.
 
 **Value and slope.** $D(v_0) = \tfrac12(0.4)(10^6)(3.0) = 600\,\mathrm{kN}$. The derivative is $D'(v) = \rho v C_D A$, so $D'(v_0) = (0.4)(1000)(3.0) = 1200\,\mathrm{N}$ per $\mathrm{m/s}$.
 
@@ -179,15 +179,15 @@ $$
 
 **The gap.** The difference, $1.5\,\mathrm{kN}$, is exactly $\tfrac12 D''\,\Delta v^2 = \tfrac12(\rho C_D A)(50)^2 = \tfrac12(1.2)(2500)$. Because $D$ is a quadratic, $D''$ is the constant $\rho C_D A = 1.2\,\mathrm{kg/m}$, so the Lagrange remainder is exact for any $\xi$.
 
-The coefficient $1200\,\mathrm{N\,s/m}$ is the "aerodynamic damping" that appears in a linearised model of this body's speed. It is the *slope* of the drag curve at the trim speed, not the drag itself.
+The coefficient $1200\,\mathrm{N\,s/m}$ is the "aerodynamic damping" that appears in a linearized model of this body's speed. It is the *slope* of the drag curve at the trim speed, not the drag itself.
 :::
 
 ## The small-angle approximations
 
-Linearise the trig functions about $\theta = 0$ and you get the approximations that run all through attitude control (where pointing errors are a fraction of a degree) and guidance (where flight-path angles are steered in small steps).
+Linearize the trig functions about $\theta = 0$ and you get the approximations that run all through attitude control (where pointing errors are a fraction of a degree) and guidance (where flight-path angles are steered in small steps).
 
 - **Sine.** $\sin 0 = 0$ and $\cos 0 = 1$, so $\sin\theta \approx \theta$. The second derivative is $-\sin\xi$, so $|R| \le \tfrac12|\sin\xi|\,\theta^2 \le \tfrac12|\theta|^3$, using $|\sin\xi| \le |\xi| \le |\theta|$. The next lesson sharpens this to $\theta^3/6$.
-- **Cosine.** $\cos 0 = 1$ and its slope $-\sin 0 = 0$, so the tangent line is flat: $\cos\theta \approx 1$. The remainder is $-\tfrac12\cos\xi\,\theta^2$, so $|R| \le \theta^2/2$. Here the linearisation throws away the whole effect, which is why engineers use $\cos\theta \approx 1 - \theta^2/2$ instead.
+- **Cosine.** $\cos 0 = 1$ and its slope $-\sin 0 = 0$, so the tangent line is flat: $\cos\theta \approx 1$. The remainder is $-\tfrac12\cos\xi\,\theta^2$, so $|R| \le \theta^2/2$. Here the linearization throws away the whole effect, which is why engineers use $\cos\theta \approx 1 - \theta^2/2$ instead.
 - **Tangent.** $\tan 0 = 0$ and $\sec^2 0 = 1$, so $\tan\theta \approx \theta$.
 
 The angle must be in radians for any of this to work. $\sin\theta \approx \theta$ with $\theta$ in degrees is off by a factor of $57.3$.
@@ -201,9 +201,9 @@ The angle must be in radians for any of this to work. $\sin\theta \approx \theta
 
 At $15^\circ$, $\sin\theta \approx \theta$ is good to $1.1\%$ and $\cos\theta \approx 1$ to $3.5\%$.
 
-Now double the angle to $30^\circ$. The sine error grows by a factor of eight, not four. The sine's linearisation is better than $O(\theta^2)$: since $f''(0) = -\sin 0 = 0$, there is no quadratic error term, and the true leading error is cubic — and $2^3 = 8$. When the curvature happens to be zero at your operating point (an **inflection point**), you get an extra order of accuracy for free.
+Now double the angle to $30^\circ$. The sine error grows by a factor of eight, not four. The sine's linearization is better than $O(\theta^2)$: since $f''(0) = -\sin 0 = 0$, there is no quadratic error term, and the true leading error is cubic — and $2^3 = 8$. When the curvature happens to be zero at your operating point (an **inflection point**), you get an extra order of accuracy for free.
 
-## Linearising a model: the pendulum and the filter
+## Linearizing a model: the pendulum and the filter
 
 The same idea works on an equation of motion, not only on a formula.
 
@@ -213,7 +213,7 @@ $$
 \ddot\theta = -\frac{g_0}{\ell}\sin\theta.
 $$
 
-($\ddot\theta$, "theta double dot", is the angular acceleration.) Linearise the right side about the hanging-down equilibrium $\theta_0 = 0$. There $\sin\theta \approx \theta$, so
+($\ddot\theta$, "theta double dot", is the angular acceleration.) Linearize the right side about the hanging-down equilibrium $\theta_0 = 0$. There $\sin\theta \approx \theta$, so
 
 $$
 \ddot\theta \approx -\frac{g_0}{\ell}\,\theta.
@@ -221,17 +221,17 @@ $$
 
 This is a linear equation. Its solutions are sine waves with angular frequency $\sqrt{g_0/\ell}$: $3.13\,\mathrm{rad/s}$ for a one-meter pendulum, which is a period of $2\pi/3.13 = 2.0\,\mathrm{s}$. The linear model holds while $\theta$ stays small. At a $30^\circ$ swing, the real pull back toward the middle is $4.5\%$ weaker than the linear model says ($\sin 30^\circ/0.5236 = 0.955$), so the true period is a little longer.
 
-Now linearise about the *upside-down* equilibrium, $\theta_0 = \pi$. Write $\theta = \pi + \delta$, where $\delta$ is a small tilt away from straight up. Since $\sin(\pi + \delta) = -\sin\delta \approx -\delta$,
+Now linearize about the *upside-down* equilibrium, $\theta_0 = \pi$. Write $\theta = \pi + \delta$, where $\delta$ is a small tilt away from straight up. Since $\sin(\pi + \delta) = -\sin\delta \approx -\delta$,
 
 $$
 \ddot\delta \approx +\frac{g_0}{\ell}\,\delta.
 $$
 
-The sign flipped. Now any tilt makes the acceleration push it *further* away, and the solutions grow exponentially. Same pendulum, different operating point, **[[opposite stability|pendulum-picture]]** — and the linearisation told you so without solving anything nonlinear. This is exactly how a launch vehicle's nonlinear attitude dynamics become the linear model its autopilot is designed around.
+The sign flipped. Now any tilt makes the acceleration push it *further* away, and the solutions grow exponentially. Same pendulum, different operating point, **[[opposite stability|pendulum-picture]]** — and the linearization told you so without solving anything nonlinear. This is exactly how a launch vehicle's nonlinear attitude dynamics become the linear model its autopilot is designed around.
 
-The Kalman filter is the other big user of linearisation. Its cycle — predict a mean and a spread, then correct them with a measurement — is exact only when the dynamics $\dot x = f(x)$ and the measurement $z = h(x)$ are linear and the noise is Gaussian (bell-curve shaped). Only then do a mean and a **covariance** (the filter's measure of its own uncertainty) describe everything, and evolve by matrix algebra.
+The Kalman filter is the other big user of linearization. Its cycle — predict a mean and a spread, then correct them with a measurement — is exact only when the dynamics $\dot x = f(x)$ and the measurement $z = h(x)$ are linear and the noise is Gaussian (bell-curve shaped). Only then do a mean and a **covariance** (the filter's measure of its own uncertainty) describe everything, and evolve by matrix algebra.
 
-Real models are not linear. The **[[Extended Kalman Filter|ekf-history]]** keeps the same cycle by linearising both functions about the current best estimate $\hat x$ ("x hat"):
+Real models are not linear. The **[[Extended Kalman Filter|ekf-history]]** keeps the same cycle by linearizing both functions about the current best estimate $\hat x$ ("x hat"):
 
 $$
 f(x) \approx f(\hat x) + f'(\hat x)(x - \hat x), \qquad h(x) \approx h(\hat x) + h'(\hat x)(x - \hat x).
@@ -239,10 +239,10 @@ $$
 
 It then uses the slopes $f'(\hat x)$ and $h'(\hat x)$ — called Jacobians when there are many variables — where the linear filter used its fixed matrices.
 
-The price is the remainder. The dropped term $\tfrac12 f''(\xi)(x - \hat x)^2$ does not average out to zero. In the gravity example, every linearisation error had the same sign, because $g'' > 0$. So the predicted mean drifts off (a **bias**), the covariance stops describing the real spread of the error, and the filter becomes over-confident. If $\hat x$ is far from the truth, or the curvature $f''$ is strong over the size of the error, the mistakes pile up and the filter can **diverge** — lose track entirely. Sigma-point (unscented) and particle filters exist to avoid exactly this remainder.
+The price is the remainder. The dropped term $\tfrac12 f''(\xi)(x - \hat x)^2$ does not average out to zero. In the gravity example, every linearization error had the same sign, because $g'' > 0$. So the predicted mean drifts off (a **bias**), the covariance stops describing the real spread of the error, and the filter becomes over-confident. If $\hat x$ is far from the truth, or the curvature $f''$ is strong over the size of the error, the mistakes pile up and the filter can **diverge** — lose track entirely. Sigma-point (unscented) and particle filters exist to avoid exactly this remainder.
 
 ::: key
-Linearising a nonlinear model about an operating point $x_0$ replaces $f(x)$ by $f(x_0) + f'(x_0)(x - x_0)$. The neglected term is $\tfrac12 f''(\xi)(x - x_0)^2$: second order, but *not* zero-mean, so a linearised filter carries a bias that grows with curvature and with the distance between the reference and the truth.
+Linearising a nonlinear model about an operating point $x_0$ replaces $f(x)$ by $f(x_0) + f'(x_0)(x - x_0)$. The neglected term is $\tfrac12 f''(\xi)(x - x_0)^2$: second order, but *not* zero-mean, so a linearized filter carries a bias that grows with curvature and with the distance between the reference and the truth.
 :::
 
 ## Newton's method
@@ -303,7 +303,7 @@ For eccentricities near $1$, the derivative $1 - e\cos E$ gets close to zero nea
 :::
 
 ::: warning Linearise where you will operate
-Linearise about the point you will actually be near. A common slip is linearising $\sin\theta$ about $0$ and then using it at $\theta = 60^\circ$, where the error is $17\%$ of $\theta$. Another is linearising the pendulum about hanging and applying it upside down. The linearisation belongs to its point. Move the operating point and every coefficient must be recomputed — which is why an EKF recomputes its Jacobians at every step.
+Linearize about the point you will actually be near. A common slip is linearizing $\sin\theta$ about $0$ and then using it at $\theta = 60^\circ$, where the error is $17\%$ of $\theta$. Another is linearizing the pendulum about hanging and applying it upside down. The linearization belongs to its point. Move the operating point and every coefficient must be recomputed — which is why an EKF recomputes its Jacobians at every step.
 :::
 
 ::: warning Second order is not the same as small
@@ -313,7 +313,7 @@ $O(h^2)$ says how the error *scales*, not that it is small. The constant in fron
 ## Check yourself
 
 ::: check
-Use the linearisation of $\sqrt{x}$ about $x_0 = 100$ to estimate $\sqrt{104}$. Bound the error with the Lagrange remainder, and compare with the exact value.
+Use the linearization of $\sqrt{x}$ about $x_0 = 100$ to estimate $\sqrt{104}$. Bound the error with the Lagrange remainder, and compare with the exact value.
 :::
 
 ::: answer
@@ -363,7 +363,7 @@ Exact: $\tfrac43\pi\rho\big[(1.501)^3 - (1.5)^3\big] = 32.28\,\mathrm{kg}$. The 
 :::
 
 ::: check
-Linearise $f(x) = \dfrac{1}{1 + x}$ about $x_0 = 0$. Find the *exact* remainder, and use it to find the range of $x$ over which the linearisation is accurate to $1\%$ of $f$.
+Linearise $f(x) = \dfrac{1}{1 + x}$ about $x_0 = 0$. Find the *exact* remainder, and use it to find the range of $x$ over which the linearization is accurate to $1\%$ of $f$.
 :::
 
 ::: answer
@@ -404,7 +404,7 @@ So two Newton steps from a guess off by $0.011$ land within $2 \times 10^{-10}$ 
 
 | Idea | Statement |
 | --- | --- |
-| Linearisation about $x_0$ | $f(x) \approx L(x) = f(x_0) + f'(x_0)(x - x_0)$ |
+| Linearization about $x_0$ | $f(x) \approx L(x) = f(x_0) + f'(x_0)(x - x_0)$ |
 | Lagrange remainder | $f(x) - L(x) = \tfrac12 f''(\xi)(x - x_0)^2$, $\xi$ between $x_0$ and $x$ |
 | Order notation | $R = O(h^2)$: $|R| \le C h^2$ for small $h$, $C = \tfrac12\max|f''|$ |
 | Differential | $dy = f'(x)\,dx$; $\Delta y = dy + O(dx^2)$ |
@@ -413,7 +413,7 @@ So two Newton steps from a guess off by $0.011$ land within $2 \times 10^{-10}$ 
 | Gravity with altitude | $g(h) \approx g(0)(1 - 2h/R_E)$ |
 | Period sensitivity | $dT/T = \tfrac32\,da/a$ |
 | Pendulum | Hanging: $\ddot\theta \approx -(g_0/\ell)\theta$, stable; inverted: $\ddot\delta \approx +(g_0/\ell)\delta$, unstable |
-| EKF | Linearise $f, h$ about $\hat x$; neglected $\tfrac12 f''(\xi)(x - \hat x)^2$ biases the covariance |
+| EKF | Linearize $f, h$ about $\hat x$; neglected $\tfrac12 f''(\xi)(x - \hat x)^2$ biases the covariance |
 | Newton's method | $x_{n+1} = x_n - f(x_n)/f'(x_n)$; error squares each step |
 
 The tangent line is the first chapter of a longer story. The next lesson keeps the second, third and higher terms — the Taylor series — and turns the remainder into a precise tool for deciding how many terms a numerical integrator or a filter needs.
@@ -470,7 +470,7 @@ A satellite's position error is usually split three ways: **along-track** (ahead
 :::
 
 ::: context pendulum-picture Same pendulum, two operating points
-Hanging down, a tilt makes gravity pull the bob back toward the middle: stable. Balanced upside down, a tilt makes gravity pull it further over: unstable. The linearisations say the same thing through the sign of $g_0/\ell$.
+Hanging down, a tilt makes gravity pull the bob back toward the middle: stable. Balanced upside down, a tilt makes gravity pull it further over: unstable. The linearizations say the same thing through the sign of $g_0/\ell$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
@@ -493,7 +493,7 @@ Hanging down, a tilt makes gravity pull the bob back toward the middle: stable. 
 :::
 
 ::: context ekf-history The filter that went to the Moon
-Rudolf Kálmán published his filter in 1960, for linear systems. Almost at once, Stanley Schmidt's group at NASA Ames saw that it could navigate a spacecraft to the Moon if the nonlinear orbit equations were linearised about the current estimate. That extended form flew in the Apollo navigation software. Today it runs in phones, drones, aircraft and nearly every spacecraft — and the warning in this lesson about the dropped remainder is the one its users still have to respect.
+Rudolf Kálmán published his filter in 1960, for linear systems. Almost at once, Stanley Schmidt's group at NASA Ames saw that it could navigate a spacecraft to the Moon if the nonlinear orbit equations were linearized about the current estimate. That extended form flew in the Apollo navigation software. Today it runs in phones, drones, aircraft and nearly every spacecraft — and the warning in this lesson about the dropped remainder is the one its users still have to respect.
 :::
 
 ::: context newton-picture Sliding down the tangent

@@ -118,7 +118,7 @@ $$
 J_M = m(0) - m(\Delta t) = 1000 - 913.2421 = 86.7579\,\mathrm{kg}.
 $$
 
-**Sanity check.** $J_L = J_M$ to every digit. That is not luck. The trip-meter state obeys $\dot x_{n+1} = T/c$, and the mass obeys $\dot m = -T/c$ — the same equation with the sign flipped. So $x_{n+1}(t) = m(0) - m(t)$ at every instant, exactly. About $87\,\mathrm{kg}$ out of a tonne, under $9\,\%$, is a believable propellant bill for a short final landing burn.
+**Sanity check.** $J_L = J_M$ to every digit. That is not luck. The trip-meter state obeys $\dot x_{n+1} = T/c$, and the mass obeys $\dot m = -T/c$ — the same equation with the sign flipped. So $x_{n+1}(t) = m(0) - m(t)$ at every instant, exactly. About $87\,\mathrm{kg}$ out of a metric ton, under $9\,\%$, is a believable propellant bill for a short final landing burn.
 :::
 
 Here is the same bookkeeping as a few lines of Python. The mass and the trip meter are integrated side by side, as a solver would carry them:

@@ -41,7 +41,7 @@ A pack is not a container. You cannot write `fields[0]` or run a `for` loop over
 
 Where the dots sit decides what repeats. Read the pattern to the left of the `...` as the thing being copied.
 
-Expansions may appear where a comma-separated list is allowed: function-call arguments, template argument lists such as `std::tuple<Ts...>`, braced initialiser lists, and a few more. Doing something *for each* element, like printing it, needs one more tool — the fold expression below.
+Expansions may appear where a comma-separated list is allowed: function-call arguments, template argument lists such as `std::tuple<Ts...>`, braced initializer lists, and a few more. Doing something *for each* element, like printing it, needs one more tool — the fold expression below.
 
 ::: warning The dots follow the pattern, not the name
 `std::forward<Args>(args)...` forwards each argument separately; the pattern `std::forward<Args>(args)` mentions both packs, and they are expanded together, in step. Moving the dots inside, as `std::forward<Args...>(args...)`, is a different and wrong expression. When an expansion misbehaves, underline the pattern the dots apply to and write out what it becomes for three elements.
@@ -136,7 +136,7 @@ empty: 0.0
 Step by step:
 
 1. Both versions compute $3^2 + 4^2 + 12^2 = 9 + 16 + 144 = 169$. The old and new ways agree.
-2. `norm(3.0, 4.0, 12.0)` passes the whole pack on with `xs...` and takes the square root: $\sqrt{169} = 13$. A velocity with those components in metres per second has a speed of $13\,\mathrm{m/s}$.
+2. `norm(3.0, 4.0, 12.0)` passes the whole pack on with `xs...` and takes the square root: $\sqrt{169} = 13$. A velocity with those components in meters per second has a speed of $13\,\mathrm{m/s}$.
 3. A quaternion has four components. `norm(0.5, 0.5, 0.5, 0.5)` is $\sqrt{4 \times 0.25} = \sqrt{1} = 1$, so this one is a unit quaternion, as attitude quaternions must be. The same template made a four-argument version with no extra code.
 4. `sum_sq()` with no arguments gives $0.0$: in a binary fold with an empty pack, only the starting value `I` is left.
 
@@ -344,7 +344,7 @@ The fold `(sizeof(Fields) + ... + 0)` becomes $2 + 8 + 1 + 0 = 11$, so it return
 The next lesson opens up how the compiler reads a template's body at all: why you sometimes have to write `typename` in front of a name, and why the `print_field` helpers had to come first.
 
 ::: context recursion-cost Every level is a new function
-In the recursive version, a call with $n$ arguments instantiates $n$ separate function templates, each with its own mangled name, plus the base case. The optimiser usually inlines them all into a flat sum, so the running program is fast. The cost lands on the compiler, which must create, check and then discard every level; with long packs used in many places, that adds up. Lesson 10 is about exactly this kind of build-time cost. A fold expression is one instantiation.
+In the recursive version, a call with $n$ arguments instantiates $n$ separate function templates, each with its own mangled name, plus the base case. The optimizer usually inlines them all into a flat sum, so the running program is fast. The cost lands on the compiler, which must create, check and then discard every level; with long packs used in many places, that adds up. Lesson 10 is about exactly this kind of build-time cost. A fold expression is one instantiation.
 :::
 
 ::: context float-order Adding in a different order can change the answer

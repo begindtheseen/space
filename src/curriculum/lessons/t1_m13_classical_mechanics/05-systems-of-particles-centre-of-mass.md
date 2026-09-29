@@ -3,12 +3,12 @@ id: l05-systems-of-particles-centre-of-mass
 title: Systems of particles and the center of mass
 minutes: 24
 covers:
-  - systems of particles and the centre of mass
+  - systems of particles and the center of mass
 ---
 
 Toss a hammer end over end to a friend. The hammer spins and wobbles in the air, and its handle and head trace loops. But one point inside it — close to the heavy head — follows a smooth, simple arc, exactly the arc a thrown pebble would follow. That point is the **[[center of mass|hammer-toss]]**, and this lesson is about why it behaves so well.
 
-Nothing you will ever fly is a single particle. A launch vehicle is tanks, engines, a payload and hundreds of tonnes of sloshing liquid. A spacecraft has solar panels, a swiveling antenna and spinning reaction wheels. Yet lessons 1 to 4 treated vehicles as points, orbit programs do the same, and the answers come out right. The reason: every system of particles, however it tumbles, flexes or sloshes, has one point that moves exactly like a single particle carrying all the mass, pushed by the total outside force.
+Nothing you will ever fly is a single particle. A launch vehicle is tanks, engines, a payload and hundreds of metric tons of sloshing liquid. A spacecraft has solar panels, a swiveling antenna and spinning reaction wheels. Yet lessons 1 to 4 treated vehicles as points, orbit programs do the same, and the answers come out right. The reason: every system of particles, however it tumbles, flexes or sloshes, has one point that moves exactly like a single particle carrying all the mass, pushed by the total outside force.
 
 That fact does three jobs. It justifies the point-particle model for trajectories and says which point the trajectory belongs to. It separates moving from turning, so the next module can solve the attitude problem about the center of mass without caring where the vehicle is going. And it makes the rocket equation come out right in lesson 6, because a rocket and its exhaust form a system whose total momentum obeys a law that neither part obeys alone.
 

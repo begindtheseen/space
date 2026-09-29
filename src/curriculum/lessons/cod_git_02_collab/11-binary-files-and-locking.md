@@ -10,7 +10,7 @@ Every tool in this module so far has leaned on one quiet assumption: that a file
 
 Some of the most important files on a GNC team break that assumption. The attitude controller may live in a **Simulink model** — a block diagram of gains, integrators and saturation limits that engineers edit by dragging boxes and wires. The star-tracker bracket lives in a **CAD part**. Neither is a list of lines, so none of the tools above can combine two people's edits to one.
 
-In the basics module (lesson 08) you set up the defences on the Git side: mark such files `binary` in `.gitattributes`, store the big ones with Git LFS, and remember that a model conflict can only be settled by choosing one whole file. This lesson, the last in the module, is about the *team* side: why "prevent, don't resolve" is the only workable rule, how **file locking** enforces it, how to review a model change you cannot read as text, and how to arrange a project so that fewer people ever need the same binary file at once.
+In the basics module (lesson 08) you set up the defenses on the Git side: mark such files `binary` in `.gitattributes`, store the big ones with Git LFS, and remember that a model conflict can only be settled by choosing one whole file. This lesson, the last in the module, is about the *team* side: why "prevent, don't resolve" is the only workable rule, how **file locking** enforces it, how to review a model change you cannot read as text, and how to arrange a project so that fewer people ever need the same binary file at once.
 
 ## Why a model cannot be merged like code
 

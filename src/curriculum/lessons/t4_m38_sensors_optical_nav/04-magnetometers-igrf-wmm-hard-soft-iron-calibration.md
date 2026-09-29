@@ -158,7 +158,7 @@ with $\mathbf{b}$ the hard-iron offset (a vector) and $\mathbf{A}$ the soft-iron
 Now the trick that separates them. Let the spacecraft tumble for a few minutes. It barely moves along its orbit in that time, so the field's *strength* stays nearly constant, while its *direction* in the body sweeps over every direction. A perfect magnetometer would trace a sphere of that fixed radius. Hard iron shifts the sphere's center to $\mathbf{b}$. Soft iron stretches and tilts the sphere into an **[[ellipsoid|ellipsoid-picture]]**, a squashed or stretched sphere, like a rugby ball. So calibration is a shape-fitting problem. Fit the ellipsoid, and read off the distortion.
 
 ::: key Hard-iron and soft-iron
-Hard iron is an additive offset from the spacecraft own permanent dipole; soft iron is a multiplicative distortion from induced magnetisation. Calibration fits an ellipsoid: centre gives hard iron, the shape matrix gives soft iron. In symbols, $\mathbf{m}=\mathbf{A}\mathbf{B}_{\text{body}}+\mathbf{b}$.
+Hard iron is an additive offset from the spacecraft own permanent dipole; soft iron is a multiplicative distortion from induced magnetization. Calibration fits an ellipsoid: center gives hard iron, the shape matrix gives soft iron. In symbols, $\mathbf{m}=\mathbf{A}\mathbf{B}_{\text{body}}+\mathbf{b}$.
 :::
 
 ## Calibrating by fitting an ellipsoid

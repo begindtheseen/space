@@ -117,11 +117,11 @@ The first-model example in lesson 1 left every Integrator setting at its default
 - **Initial condition** is $y(t_0)$: where the running total starts. The default is 0.
 - **Initial condition source** chooses whether that value is typed into the dialog (**internal**, the default) or arrives on an extra input port (**external**), so another part of the model can compute it.
 - **Limit output**, with an **Upper saturation limit** and a **Lower saturation limit**, stops the total from going beyond those bounds. When the output sits at a limit, the Integrator stops accumulating in that direction, which prevents **[[windup|windup]]**.
-- **State name** gives the state a name, such as `'altitude'`, so it can be found in logged states and in the results of **[[linearisation|linearisation]]**.
+- **State name** gives the state a name, such as `'altitude'`, so it can be found in logged states and in the results of **[[linearization|linearisation]]**.
 - **External reset** adds a port that sends the total back to its initial condition when a trigger arrives.
 
 ::: key
-Integrator block: which settings matter most? Initial condition (and whether it is an external input), saturation limits with the anti-windup behaviour, and state name for logging and for linearisation. Getting the initial condition wrong is the single most common cause of a model that will not **[[trim|trim]]**.
+Integrator block: which settings matter most? Initial condition (and whether it is an external input), saturation limits with the anti-windup behavior, and state name for logging and for linearization. Getting the initial condition wrong is the single most common cause of a model that will not **[[trim|trim]]**.
 :::
 
 ::: warning A wrong initial condition looks like a real transient
@@ -287,11 +287,11 @@ In the Laplace notation of the last module, multiplying by $s$ means "take the d
 :::
 
 ::: context linearisation Turning a model into a tf or ss
-**Linearisation** finds the straight-line approximation of a model near one operating point and returns it as a state-space model, the same `ss` object you used in the last module. Each Integrator becomes one state. Named states show up by name in the result, so you can tell which row of the $\mathbf{A}$ matrix is altitude and which is pitch rate, instead of guessing from numbers.
+**Linearization** finds the straight-line approximation of a model near one operating point and returns it as a state-space model, the same `ss` object you used in the last module. Each Integrator becomes one state. Named states show up by name in the result, so you can tell which row of the $\mathbf{A}$ matrix is altitude and which is pitch rate, instead of guessing from numbers.
 :::
 
 ::: context trim Finding the steady flight condition
-To **trim** a model is to find the inputs and states at which nothing is changing: every Integrator's input is zero. For an aircraft it is the throttle and elevator setting that holds steady level flight. Trim is the starting point for linearisation and for most control design. A search for trim starts from the Integrators' initial conditions, so a wildly wrong one can send it somewhere meaningless or stop it from converging at all.
+To **trim** a model is to find the inputs and states at which nothing is changing: every Integrator's input is zero. For an aircraft it is the throttle and elevator setting that holds steady level flight. Trim is the starting point for linearization and for most control design. A search for trim starts from the Integrators' initial conditions, so a wildly wrong one can send it somewhere meaningless or stop it from converging at all.
 :::
 
 ::: context algebraic-loop A loop with no memory

@@ -3,7 +3,7 @@ id: l08-behavioural-and-culture
 title: "Stage 5: behavioral and culture"
 minutes: 19
 covers:
-  - "stage 5 — behavioural and culture, using STAR"
+  - "stage 5 — behavioral and culture, using STAR"
 ---
 
 Think about picking a partner for a long school project. You already know who is smart. What you really want to know is different. When things go wrong, do they own up or blame someone? When you disagree, can you sort it out? When they say "my part is done," is it actually done? You answer those questions by remembering what the person *did* last time — not by what they promise.

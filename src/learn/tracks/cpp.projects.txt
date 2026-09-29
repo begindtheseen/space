@@ -16,7 +16,7 @@ This course is where you put all of it to work on bigger programs. It comes in t
 
 ### What a matrix is
 
-Picture the seating chart of a small theatre: rows of seats, and every row has the same number of seats. Or a spreadsheet: rows and columns of cells, each holding a number.
+Picture the seating chart of a small theater: rows of seats, and every row has the same number of seats. Or a spreadsheet: rows and columns of cells, each holding a number.
 
 A **matrix** is exactly that: a rectangle of numbers, arranged in rows and columns. Its size is written "rows × columns" and read "rows by columns". This one is a 2 × 3 matrix, "two by three": 2 rows, 3 columns.
 
@@ -168,7 +168,7 @@ A ragged, or "jagged", array has rows of different lengths, like the lines of a 
 :::
 
 ::: context row-major-picture One grid, one line of memory
-Each colour is one row. The grid on the left is how you think of the matrix; the strip on the right is how it really sits in memory.
+Each color is one row. The grid on the left is how you think of the matrix; the strip on the right is how it really sits in memory.
 
 ```svg
 <svg viewBox="0 0 360 160" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
@@ -885,7 +885,7 @@ The second shape's top row is the first one's plus half of row 0. Swapping the t
 :::
 
 ::: context rounding-pivot Why the biggest pivot wins
-Every `double` calculation rounds a tiny bit. Dividing by a very small pivot, say 0.0001, makes the factor huge, and a huge factor multiplies those tiny rounding errors into big ones that swamp the real answer. Choosing the pivot with the largest size keeps every factor between −1 and 1, so errors stay small. The tolerance `1e-12` exists because rounding rarely produces an exact 0: a column that "should" be zero may hold something like 0.0000000000000002. Treating anything that small as zero is how the code recognises a singular matrix.
+Every `double` calculation rounds a tiny bit. Dividing by a very small pivot, say 0.0001, makes the factor huge, and a huge factor multiplies those tiny rounding errors into big ones that swamp the real answer. Choosing the pivot with the largest size keeps every factor between −1 and 1, so errors stay small. The tolerance `1e-12` exists because rounding rarely produces an exact 0: a column that "should" be zero may hold something like 0.0000000000000002. Treating anything that small as zero is how the code recognizes a singular matrix.
 :::
 --- task
 Add printing and the determinant to your `Matrix`. The starter holds your code from the last two lessons. No `main`: the checker supplies it.
@@ -1132,7 +1132,7 @@ F(0) F(1) F(2) F(3) F(4) F(5) F(6) F(7) F(8)
   0    1    1    2    3    5    8   13   21
 ```
 
-Now watch what the matrix `| 1 1 |` over `| 1 0 |` does to a pair of neighbours, written as a 2 × 1 matrix. Take F(5) = 5 and F(4) = 3:
+Now watch what the matrix `| 1 1 |` over `| 1 0 |` does to a pair of neighbors, written as a 2 × 1 matrix. Take F(5) = 5 and F(4) = 3:
 
 ```text
 | 1 1 |   | 5 |   | 1·5 + 1·3 |   | 8 |
@@ -1264,11 +1264,11 @@ log₂ k, read "log base 2 of k", answers the question: how many times can you h
 :::
 
 ::: context optional-deref What star does on an empty box
-`*opt` does not check anything: it assumes the box is full. On an empty optional it is undefined behaviour, the same kind of bug as reading past the end of an array, which may crash, or may quietly hand back garbage. The member function `.value()` does check, but when the box is empty it reports that by throwing an exception, and exceptions are off here. So the safe patterns are: test first with `if (opt)`, or prove it cannot be empty, as `power` does after its shape check, and write that proof down as a comment for the next reader.
+`*opt` does not check anything: it assumes the box is full. On an empty optional it is undefined behavior, the same kind of bug as reading past the end of an array, which may crash, or may quietly hand back garbage. The member function `.value()` does check, but when the box is empty it reports that by throwing an exception, and exceptions are off here. So the safe patterns are: test first with `if (opt)`, or prove it cannot be empty, as `power` does after its shape check, and write that proof down as a comment for the next reader.
 :::
 
 ::: context exact-doubles Where exact whole numbers end
-A `double` has 53 binary digits for the number itself, plus an exponent that says where the point goes. So every whole number up to 2⁵³ = 9,007,199,254,740,992 fits exactly. Past that, the gaps between neighbouring doubles are bigger than 1: 2⁵³ + 1 cannot be stored, and rounds. The Fibonacci numbers pass 2⁵³ at F(79), so a little beyond F(70) the matrix answers start to round. Real code that needs exact huge values uses integer types, or keeps only the answer modulo some number.
+A `double` has 53 binary digits for the number itself, plus an exponent that says where the point goes. So every whole number up to 2⁵³ = 9,007,199,254,740,992 fits exactly. Past that, the gaps between neighboring doubles are bigger than 1: 2⁵³ + 1 cannot be stored, and rounds. The Fibonacci numbers pass 2⁵³ at F(79), so a little beyond F(70) the matrix answers start to round. Real code that needs exact huge values uses integer types, or keeps only the answer modulo some number.
 :::
 --- task
 Add one non-member function to your matrix library. The starter holds your code from the last three lessons. No `main`: the checker supplies it.
@@ -1675,7 +1675,7 @@ In C++, integer division rounds toward zero, so `-507 / 100` is `-5`, not `-6`. 
 :::
 
 ::: context hook-word Hooks: a slot for later
-A hook is a virtual function in a base class that does nothing, or something very simple, and exists so derived classes can add behaviour at a known moment. The base class decides *when* it is called (here, once a month for every account) and each derived class decides *what* happens. Game engines use the same idea: every object in a game gets an `update` call each frame, and most objects' versions do nothing at all. In lesson 3 of this project the bank will call `end_month` on every account without knowing which kind each one is.
+A hook is a virtual function in a base class that does nothing, or something very simple, and exists so derived classes can add behavior at a known moment. The base class decides *when* it is called (here, once a month for every account) and each derived class decides *what* happens. Game engines use the same idea: every object in a game gets an `update` call each frame, and most objects' versions do nothing at all. In lesson 3 of this project the bank will call `end_month` on every account without knowing which kind each one is.
 :::
 
 ::: context protected-trade-off Is protected a good idea?
@@ -1822,7 +1822,7 @@ A real bank offers several kinds of account. They share almost everything: an id
 
 ### Passing the id and owner up to Account
 
-A derived class's constructor must build its `Account` part first. You did this with `Square(double side) : Rectangle(side, side) {}`: the base's constructor goes first in the initialiser list, and then the derived class's own members.
+A derived class's constructor must build its `Account` part first. You did this with `Square(double side) : Rectangle(side, side) {}`: the base's constructor goes first in the initializer list, and then the derived class's own members.
 
 Here it is with a string. The derived constructor takes the string by value, the way `Account`'s constructor does, and moves it along to the base, so it is not copied a second time:
 
@@ -1933,7 +1933,7 @@ To "draw" money from an account is an old word for taking it out, and to "overdr
 :::
 
 ::: context withdrawal-limits A limit from real banking rules
-In the United States, a rule called Regulation D long limited savings accounts to six "convenient" withdrawals and transfers per month, such as online transfers and cheques. Banks enforced it in software much like your counter, and many refused or charged for the seventh. In April 2020 the Federal Reserve removed that limit, but many banks kept their own monthly limits. It is a good example of a business rule that changes over time, which is why it belongs in one clearly named place in the code.
+In the United States, a rule called Regulation D long limited savings accounts to six "convenient" withdrawals and transfers per month, such as online transfers and checks. Banks enforced it in software much like your counter, and many refused or charged for the seventh. In April 2020 the Federal Reserve removed that limit, but many banks kept their own monthly limits. It is a good example of a business rule that changes over time, which is why it belongs in one clearly named place in the code.
 :::
 
 ::: context extend-not-replace One copy of each rule
@@ -2209,7 +2209,7 @@ Two functions work on every account. `total_balance` adds up all the balances. `
 
 Here the virtual hook from lesson 1 pays off. The bank calls `account->end_month()` on every account without knowing which kind it is. A savings account pays interest; the others do nothing. There is no `if (kind == "savings")` anywhere, and a new kind of account added later needs no change to the bank.
 
-**Watch out:** never `delete` the pointer that `find` gives you. It is only borrowed. The `unique_ptr` in the map still owns the account, and it will delete it again when the bank goes away, which is undefined behaviour.
+**Watch out:** never `delete` the pointer that `find` gives you. It is only borrowed. The `unique_ptr` in the map still owns the account, and it will delete it again when the bank goes away, which is undefined behavior.
 
 ::: context ownership-word Owning and borrowing
 In C++, the owner of an object is the one responsible for destroying it. Modern C++ writes ownership into the types. A `std::unique_ptr` owns. A plain pointer `T*` or a reference `T&` only borrows. The C++ Core Guidelines, a widely used set of rules edited by Bjarne Stroustrup and Herb Sutter, say exactly this: a raw pointer should never own. So a reader who sees `Account*` knows at once "I must not delete this", without reading any comments.
@@ -2627,7 +2627,7 @@ A sentinel is a special value that stands for "nothing here", chosen so it can n
 :::
 
 ::: context aggregate-init Filling a struct from braces
-A struct or class with only public data members, no constructors of its own and no virtual functions is called an **aggregate**. C++ lets you build one by listing its members' values in braces, in declaration order: `Loan{LoanKind::Return, 7, 42, false}`. Inside `push_back(...)` you can leave off the type name, because the vector already knows it holds `Loan`s. Values you leave off at the end are set to zero. The danger is that nothing checks you listed them in the right order when two neighbours have the same type, like `from` and `to`.
+A struct or class with only public data members, no constructors of its own and no virtual functions is called an **aggregate**. C++ lets you build one by listing its members' values in braces, in declaration order: `Loan{LoanKind::Return, 7, 42, false}`. Inside `push_back(...)` you can leave off the type name, because the vector already knows it holds `Loan`s. Values you leave off at the end are set to zero. The danger is that nothing checks you listed them in the right order when two neighbors have the same type, like `from` and `to`.
 :::
 
 ::: context audit-trail Why keep the failures
@@ -3174,7 +3174,7 @@ Whitespace means the characters that print as empty space: the ordinary space, t
 :::
 
 ::: context big-counts Why a long long
-An `int` on today's computers holds numbers up to 2,147,483,647. A text file bigger than about 2 GB has more characters than that, and log files that size are common on servers. Going past the top of an `int` is signed overflow, which the debugging lesson in the expert course showed is undefined behaviour. A `long long` holds up to about 9.2 quintillion (9,223,372,036,854,775,807), far more than any file.
+An `int` on today's computers holds numbers up to 2,147,483,647. A text file bigger than about 2 GB has more characters than that, and log files that size are common on servers. Going past the top of an `int` is signed overflow, which the debugging lesson in the expert course showed is undefined behavior. A `long long` holds up to about 9.2 quintillion (9,223,372,036,854,775,807), far more than any file.
 :::
 --- task
 Write a complete program, with `main`, that reads all of standard input and prints exactly these three lines:
@@ -3247,7 +3247,7 @@ Last lesson, your tool counted the lines, words and characters of its input. Thi
 
 Counting words was easy: every piece between spaces counted once. Counting **the same** word is harder, because first you have to decide what "the same" means.
 
-In the sample text, `The` starts a sentence, `the` sits in the middle of one, and `river,` has a comma stuck to it. A person reading sees `The` and `the` as one word, and `river,` as the word "river". Your program sees three different strings. So before counting, you **[[normalise|normalising]]** each word: turn it into one standard form, so that words a person would call the same really are the same string.
+In the sample text, `The` starts a sentence, `the` sits in the middle of one, and `river,` has a comma stuck to it. A person reading sees `The` and `the` as one word, and `river,` as the word "river". Your program sees three different strings. So before counting, you **[[normalize|normalising]]** each word: turn it into one standard form, so that words a person would call the same really are the same string.
 
 Here are the three rules, in order:
 
@@ -3255,11 +3255,11 @@ Here are the three rules, in order:
 2. **Lowercase** what is left. `"The"` becomes `"the"`.
 3. If **nothing** is left, skip it. The "word" `--` is all punctuation, so it trims down to the empty string `""`, and it is not counted at all.
 
-Put these rules in their own function, `normalize`. It has one job, you can test it on its own, and the next two lessons use it again. (The word is spelled "normalise" in British English; the code uses the American spelling, as C++ programmers usually do.)
+Put these rules in their own function, `normalize`. It has one job, you can test it on its own, and the next two lessons use it again. (The word is spelled "normalize" in British English; the code uses the American spelling, as C++ programmers usually do.)
 
 ### Is it a letter or a digit?
 
-In the lesson on `std::map`, `std::unordered_map` and `std::set` you met `std::isalpha` from `<cctype>`, which asks "is this a letter?". Its neighbour **`std::isalnum`** asks "is this a letter **or** a digit?" ("alnum" is short for alphanumeric). It gives true for `'a'`, `'Q'` and `'7'`, and false for `'.'`, `','` and `'-'`.
+In the lesson on `std::map`, `std::unordered_map` and `std::set` you met `std::isalpha` from `<cctype>`, which asks "is this a letter?". Its neighbor **`std::isalnum`** asks "is this a letter **or** a digit?" ("alnum" is short for alphanumeric). It gives true for `'a'`, `'Q'` and `'7'`, and false for `'.'`, `','` and `'-'`.
 
 ```cpp
 std::isalnum(static_cast<unsigned char>('7'))    // true: a digit
@@ -3319,7 +3319,7 @@ votes["tacos"]++;
 votes["pizza"]++;        // votes: {"pizza": 2, "tacos": 1}
 ```
 
-It helps to keep the normalised words in a `std::vector<std::string>` as you read them, then count them after the reading loop. The next two lessons compute more statistics from that same list.
+It helps to keep the normalized words in a `std::vector<std::string>` as you read them, then count them after the reading loop. The next two lessons compute more statistics from that same list.
 
 ### Ranking: from map to sorted vector
 
@@ -3358,7 +3358,7 @@ The `i < ranking.size()` part matters when there are fewer entries than the limi
 
 ### The old count stays
 
-The `words:` line from step 1 stays exactly as it was. It counts pieces of text, punctuation-only pieces included. The new ranking counts normalised words. They are two different questions, and your report answers both.
+The `words:` line from step 1 stays exactly as it was. It counts pieces of text, punctuation-only pieces included. The new ranking counts normalized words. They are two different questions, and your report answers both.
 
 **Watch out:** trimming only one end. `"(yes)"` must lose both brackets, and `"--"` must become empty and be skipped. If an empty string slips through, it gets counted as a "word" and can even show up in the top five as a blank line.
 
@@ -3366,12 +3366,12 @@ The `words:` line from step 1 stays exactly as it was. It counts pieces of text,
 Count the words of almost any long English text and the winners are tiny words: "the", "of", "and", "to". In the Brown Corpus, a famous collection of about a million words of American English from 1961, "the" is about 7 percent of all words. The linguist George Zipf noticed in the 1930s and 1940s that a word's count is roughly proportional to one over its rank: the second word appears about half as often as the first, the third about a third as often. Real search tools often skip such "stop words" because they say little about what a text is about.
 :::
 
-::: context normalising Where normalising shows up
-Search engines, spell checkers and databases all normalise text before comparing it. Searching a website for "Mars" also finds "mars" and "MARS" because both sides were lowercased first, a step often called case folding. Bigger tools go further: they may turn "rockets" into "rocket" (stemming) or drop accents. Each step is a choice about what should count as the same, which is why this lesson writes the rules down before any code.
+::: context normalising Where normalizing shows up
+Search engines, spell checkers and databases all normalize text before comparing it. Searching a website for "Mars" also finds "mars" and "MARS" because both sides were lowercased first, a step often called case folding. Bigger tools go further: they may turn "rockets" into "rocket" (stemming) or drop accents. Each step is a choice about what should count as the same, which is why this lesson writes the rules down before any code.
 :::
 
 ::: context unsigned-char Why the unsigned char cast
-A `char` holds one byte. On most PCs a `char` is signed, so bytes above 127 come out as negative numbers. Letters like é or ñ are stored as two such bytes in UTF-8, the usual text encoding. The `<cctype>` functions only accept values from 0 to 255 (and a special end-of-file value); a negative `char` passed straight in is undefined behaviour. Converting to `unsigned char` first turns every byte into 0 to 255. The functions then treat those bytes as "not a letter", so é is trimmed like punctuation: a known limit of byte-by-byte tools.
+A `char` holds one byte. On most PCs a `char` is signed, so bytes above 127 come out as negative numbers. Letters like é or ñ are stored as two such bytes in UTF-8, the usual text encoding. The `<cctype>` functions only accept values from 0 to 255 (and a special end-of-file value); a negative `char` passed straight in is undefined behavior. Converting to `unsigned char` first turns every byte into 0 to 255. The functions then treat those bytes as "not a letter", so é is trimmed like punctuation: a known limit of byte-by-byte tools.
 :::
 
 ::: context range-constructor Building a container from a range
@@ -3401,7 +3401,7 @@ A program is **deterministic** when the same input always gives the same output.
 ```
 :::
 --- task
-Extend the tool from step 1. Keep its three lines exactly as they are, then print the five most frequent **normalised** words:
+Extend the tool from step 1. Keep its three lines exactly as they are, then print the five most frequent **normalized** words:
 
 ```
 top words:
@@ -3409,7 +3409,7 @@ top words:
 ```
 
 - Write `std::string normalize(const std::string& raw)`: trim every character that is not a letter or digit (`std::isalnum`) from both ends, then lowercase the rest (`std::tolower`). Skip words that become empty.
-- Count the normalised words in a `std::map<std::string, int>`, copy it into a `std::vector<std::pair<std::string, int>>`, and sort it: most frequent first, equal counts in alphabetical order.
+- Count the normalized words in a `std::map<std::string, int>`, copy it into a `std::vector<std::pair<std::string, int>>`, and sort it: most frequent first, equal counts in alphabetical order.
 - Each word line starts with two spaces. Print fewer than five lines if there are fewer than five different words.
 - The `words:` line still counts the raw pieces, as in step 1.
 
@@ -3514,7 +3514,7 @@ top words:
 
 === cppp-11 | Text stats 3: sentences and word lengths
 --- teach
-Last lesson, your tool learned to normalise words and rank the five most common ones. This lesson adds three more numbers to the report: how many sentences there are, how long the words are on average, and which word is the longest.
+Last lesson, your tool learned to normalize words and rank the five most common ones. This lesson adds three more numbers to the report: how many sentences there are, how long the words are on average, and which word is the longest.
 
 Each one needs a precise definition first, the way lines, words and characters did.
 
@@ -3572,7 +3572,7 @@ Real sentence detection is [[much harder than this|sentence-hard]], but a precis
 
 The **average** (also called the mean) is the total divided by how many there are. The average length of `{"sky", "blue"}` is (3 + 4) / 2 = 3.5.
 
-Use the **normalised** words from step 2, the vector your program already keeps. That way punctuation does not count towards length: `"summer."` counts as 6 letters, not 7.
+Use the **normalized** words from step 2, the vector your program already keeps. That way punctuation does not count towards length: `"summer."` counts as 6 letters, not 7.
 
 Two things to get right:
 
@@ -3594,7 +3594,7 @@ Both settings **stay** on `std::cout` afterwards. That is harmless here: they on
 
 ### The longest word
 
-The longest word is **the first** normalised word of the greatest length. "First" matters, because several words may tie. A precise rule makes the output the same every time.
+The longest word is **the first** normalized word of the greatest length. "First" matters, because several words may tie. A precise rule makes the output the same every time.
 
 To get the first one, keep a best-so-far, and replace it only when a word is **strictly longer**: use `>`, not `>=`. Here it finds the first longest planet name:
 
@@ -3609,7 +3609,7 @@ for (const auto& p : planets) {
 
 With `>=`, each tie would replace the best, and you would end up with the **last** longest word, "pluto", instead.
 
-You can find the longest word and add up the lengths for the average in **one** loop over the normalised words.
+You can find the longest word and add up the lengths for the average in **one** loop over the normalized words.
 
 ### Keep main readable
 
@@ -3648,7 +3648,7 @@ In C++, `200 / 52` with two whole numbers gives `3`: the fraction is thrown away
 :::
 
 ::: context rounding How the last digit is chosen
-The sample text has 52 normalised words with 200 letters between them. 200 divided by 52 is 3.846153…, and with two decimal places that prints as `3.85`: the third decimal, 6, is 5 or more, so the second rounds up from 4 to 5. A `double` stores most decimals only approximately, so a value that looks like an exact half, such as 2.675, may really be stored as 2.67499999… and round down. For a report like this one, two decimals are plenty.
+The sample text has 52 normalized words with 200 letters between them. 200 divided by 52 is 3.846153…, and with two decimal places that prints as `3.85`: the third decimal, 6, is 5 or more, so the second rounds up from 4 to 5. A `double` stores most decimals only approximately, so a value that looks like an exact half, such as 2.675, may really be stored as 2.67499999… and round down. For a report like this one, two decimals are plenty.
 :::
 --- task
 Extend the tool. After the `chars:` line and before `top words:`, print three new lines:
@@ -3660,7 +3660,7 @@ longest word: <word>
 ```
 
 - Write `int count_sentences(const std::string& line)`: a sentence ends at each run of one or more `.`, `!` or `?` characters within the line. Add up its result for every line.
-- The average and the longest word use the normalised words from step 2. Print the average with `std::fixed` and `std::setprecision(2)` (include `<iomanip>`), and use `0.0` when there are no words.
+- The average and the longest word use the normalized words from step 2. Print the average with `std::fixed` and `std::setprecision(2)` (include `<iomanip>`), and use `0.0` when there are no words.
 - The longest word is the first one of the greatest length.
 
 --- starter
@@ -3801,7 +3801,7 @@ Write `count_sentences` first. Walk the line's characters with a `bool previous_
 --- hint
 In the reading loop, add `count_sentences(line)` to an `int sentences` total, and print `sentences:` right after `chars:`.
 --- hint
-Then loop once over the normalised words: add each `w.size()` to a `long long` total, and set `longest = w` only when `w.size() > longest.size()`. Divide as `double`s (or use `0.0` for no words) and print `"average word length: " << std::fixed << std::setprecision(2) << average`, then `longest word:`, before the `top words:` block.
+Then loop once over the normalized words: add each `w.size()` to a `long long` total, and set `longest = w` only when `w.size() > longest.size()`. Divide as `double`s (or use `0.0` for no words) and print `"average word length: " << std::fixed << std::setprecision(2) << average`, then `longest word:`, before the `top words:` block.
 --- stdin
 The river was low that summer. The boats sat in the mud, and the children
 walked out to them at noon!
@@ -3828,7 +3828,7 @@ Last lesson, your tool counted sentences and measured the average and longest wo
 
 ### A bar chart made of characters
 
-Picture a class tallying its favourite fruit on the board. Each vote adds one mark next to the fruit's name, and the longest row of marks wins. You can see the answer before you count.
+Picture a class tallying its favorite fruit on the board. Each vote adds one mark next to the fruit's name, and the longest row of marks wins. You can see the answer before you count.
 
 That row of marks is a **[[histogram|histogram-word]]**: a bar chart of how many things fall into each group. Here the groups are word lengths. Every 3-letter word adds one `#` to the row for length 3. Laid out neatly, it looks like this (on some other text):
 
@@ -3892,17 +3892,17 @@ Each line has these parts, in order:
 
 The count at the end matters: a bar of 23 `#` is hard to count by eye.
 
-Print the heading `word lengths:` on its own line first, after the top words. The histogram uses the same normalised words as the average and the longest word.
+Print the heading `word lengths:` on its own line first, after the top words. The histogram uses the same normalized words as the average and the longest word.
 
 ### Looking back at the whole tool
 
 With four features in place, look at the shape of your program:
 
 - The input is read **once**.
-- Every statistic is computed from the **same** list of normalised words.
-- Each rule that needs thought (normalising, counting sentences) is a **named function**.
+- Every statistic is computed from the **same** list of normalized words.
+- Each rule that needs thought (normalizing, counting sentences) is a **named function**.
 
-Adding the histogram took one new block at the end. That is the payoff of the structure you built step by step: new features slot in without disturbing the old ones. And because the check compares the **whole** report, it also proves that nothing earlier changed. A test that guards old behaviour like this is called a [[regression test|regression-test]].
+Adding the histogram took one new block at the end. That is the payoff of the structure you built step by step: new features slot in without disturbing the old ones. And because the check compares the **whole** report, it also proves that nothing earlier changed. A test that guards old behavior like this is called a [[regression test|regression-test]].
 
 **Watch out:** `std::setw(4)` must come right before the length. If you put it before `" | "` or anywhere else, it pads that instead, and the length prints with no padding at all.
 
@@ -3950,7 +3950,7 @@ Extend the tool one last time. After the top words, print the heading:
 word lengths:
 ```
 
-Then print one line for each word length that occurs among the normalised words, shortest first:
+Then print one line for each word length that occurs among the normalized words, shortest first:
 
 - the length, right-aligned in 4 characters with `std::setw(4)`;
 - then ` | ` (space, bar, space);
@@ -4124,7 +4124,7 @@ int main() {
     return 0;
 }
 --- hint
-After the top-words loop, make a `std::map<std::size_t, int>` and add one to the entry for `w.size()` for every normalised word `w`.
+After the top-words loop, make a `std::map<std::size_t, int>` and add one to the entry for `w.size()` for every normalized word `w`.
 --- hint
 Print `word lengths:`, then loop over the map with `for (const auto& [length, n] : ...)`. The map already visits the shortest length first.
 --- hint
@@ -4168,7 +4168,7 @@ Until now, each lesson told you which class to write, which members to give it a
 
 - a **specification**: an exact description of what the finished code must do, but not how (the task below is one);
 - an almost empty file;
-- the checks, which test the behaviour.
+- the checks, which test the behavior.
 
 You choose the data structures, the helper types and the algorithms. This is the part that proves you can build things on your own. The explanation still gives you every idea and every tool the job needs, each on its own small example. Putting them together is your work.
 
@@ -4238,7 +4238,7 @@ The next three steps give you one tool for each.
 
 Picture a hospital waiting room. Patients are not seen in the order they arrived: the most urgent is seen next, whoever came in first. When someone new arrives, they slot in according to how urgent they are.
 
-C++ has that as **`std::priority_queue<T>`**, from `<queue>`: a container that always keeps its **largest** element on top, where you can reach it. Inside, it is organised as a **[[heap|heap-shape]]**, a clever half-sorted arrangement that makes both adding and removing cost only O(log n).
+C++ has that as **`std::priority_queue<T>`**, from `<queue>`: a container that always keeps its **largest** element on top, where you can reach it. Inside, it is organized as a **[[heap|heap-shape]]**, a clever half-sorted arrangement that makes both adding and removing cost only O(log n).
 
 Its members, one at a time:
 
@@ -4261,7 +4261,7 @@ int next = heights.top();      // now 151
 
 `top()` looks at the largest without removing it. `pop()` removes it and gives nothing back. `empty()` is true when nothing is inside, and `size()` says how many are.
 
-**Watch out:** `pop()` does not hand you the element it removed. Read `top()` first, then `pop()`. Calling `top()` or `pop()` on an empty queue is undefined behaviour, so check `empty()` first.
+**Watch out:** `pop()` does not hand you the element it removed. Read `top()` first, then `pop()`. Calling `top()` or `pop()` on an empty queue is undefined behavior, so check `empty()` first.
 
 ### Tool 2: telling the queue what "largest" means
 
@@ -4625,7 +4625,7 @@ The cure is a constructor that takes `const char*` exactly: an exact match wins.
 
 **The int trap.** With constructors for `bool` and `double` but none for `int`, `Json(3)` does not compile: turning an `int` into a `double` and turning it into a `bool` count as [[equally good conversions|int-ambiguous]], so the call is ambiguous. A constructor taking `int` settles it, and can store the number as a `double`.
 
-**The nullptr trap.** Without a constructor for `std::nullptr_t`, `nullptr` would happily go to the `const char*` one, and building a `std::string` from a null pointer is undefined behaviour.
+**The nullptr trap.** Without a constructor for `std::nullptr_t`, `nullptr` would happily go to the `const char*` one, and building a `std::string` from a null pointer is undefined behavior.
 
 **Named constructors.** For an empty array and an empty object, use static member functions, as with `Matrix::identity` in the matrix project. A static function can make a fresh object, set its variant to the right kind, and return it.
 
@@ -4728,7 +4728,7 @@ Write down, before any code:
 Then build in stages: constructors and the `is_` questions; `dump` for the four plain kinds; then arrays and objects. Run the checks after each stage.
 
 ::: context json-history Where JSON came from
-JSON stands for JavaScript Object Notation: it is the way JavaScript writes objects and arrays in its own code. Douglas Crockford described it as a data format in the early 2000s and put up json.org. It was later standardised as ECMA-404 in 2013 and as RFC 8259 in 2017. Web services, configuration files and logs use it everywhere, because it is plain text and easy to read. JSON has no way to write infinity or "not a number", and it does not promise any order for an object's keys, which is why sorting them makes output the same every time.
+JSON stands for JavaScript Object Notation: it is the way JavaScript writes objects and arrays in its own code. Douglas Crockford described it as a data format in the early 2000s and put up json.org. It was later standardized as ECMA-404 in 2013 and as RFC 8259 in 2017. Web services, configuration files and logs use it everywhere, because it is plain text and easy to read. JSON has no way to write infinity or "not a number", and it does not promise any order for an object's keys, which is why sorting them makes output the same every time.
 :::
 
 ::: context nullptr-type A type with a single value
@@ -5044,7 +5044,7 @@ std::isfinite(std::pow(10.0, 400.0));        // false: infinity
 std::isfinite(0.125);                        // true
 ```
 
-**Recognising a name.** `std::isalpha(c)` is true for a letter, and `std::isalnum(c)` for a letter or a digit, both from `<cctype>` (the containers lesson). As always with these, turn the `char` into an `unsigned char` first:
+**Recognizing a name.** `std::isalpha(c)` is true for a letter, and `std::isalnum(c)` for a letter or a digit, both from `<cctype>` (the containers lesson). As always with these, turn the `char` into an `unsigned char` first:
 
 ```cpp
 char c = 'q';
@@ -5116,7 +5116,7 @@ Write the full grammar on paper first, one line per level, from `+ -` down to th
 That is the end of the C++ courses. You started with `Hello, main()` and have now built containers, a hash map, a bank, a JSON type, and a small language of your own. Some directions from here:
 
 - **Grow this interpreter.** Add functions such as `sqrt(x)`, comparisons, then `if` and loops, and it becomes a real programming language. Robert Nystrom's book *Crafting Interpreters*, free to read at craftinginterpreters.com, walks through exactly that.
-- **Learn the tools professionals use every day.** A debugger such as `gdb`, the compiler's sanitizers (`-fsanitize=address,undefined`, which catch memory errors and undefined behaviour as they happen), a build tool such as CMake, and a unit-testing library such as GoogleTest. Compiler Explorer, at godbolt.org, shows you the machine code your C++ turns into.
+- **Learn the tools professionals use every day.** A debugger such as `gdb`, the compiler's sanitizers (`-fsanitize=address,undefined`, which catch memory errors and undefined behavior as they happen), a build tool such as CMake, and a unit-testing library such as GoogleTest. Compiler Explorer, at godbolt.org, shows you the machine code your C++ turns into.
 - **Learn what these courses left out.** The biggest is **concurrency**: several things running at once, with `std::thread`, `std::mutex` and `std::atomic`. Coroutines and modules, from C++20, come after that.
 - **Read real code.** The nlohmann/json library is a full-sized version of last lesson's capstone. The {fmt} library became `std::format` in C++20.
 - **Head for flight software.** NASA's [[F Prime framework|fprime]] is open-source C++ that flew on the Ingenuity Mars helicopter. Aerospace C++ is written under strict [[coding standards|coding-standards]]; reading one shows how everything you learned is used when failure is not an option.

@@ -189,7 +189,7 @@ So many teams write a rule into their modeling standard: no local events in flig
 - **Temporal logic on ticks or seconds** in place of "timer expired" events.
 
 ::: key
-Many flight teams ban Stateflow events in favour of conditions because events introduce implicit, order-dependent control flow that is hard to review, hard to cover and hard to reason about under code generation. Condition-based transitions evaluated each step are deterministic and readable.
+Many flight teams ban Stateflow events in favor of conditions because events introduce implicit, order-dependent control flow that is hard to review, hard to cover and hard to reason about under code generation. Condition-based transitions evaluated each step are deterministic and readable.
 :::
 
 ::: warning "Events are slow" is not the argument

@@ -1486,7 +1486,7 @@ An **enum** (short for *enumeration*, a numbered list of choices) is a [[fixed s
 ```python
 from enum import Enum
 
-class Colour(Enum):
+class Color(Enum):
     RED = 1
     GREEN = 2
 ```
@@ -1496,13 +1496,13 @@ Now you pass `Colour.RED` around instead of a string. A typo like `Colour.REDD` 
 Each member knows its name and its value, and you can look members up either way:
 
 ```python
-Colour.RED            # <Colour.RED: 1>
-Colour.RED.name       # 'RED'
-Colour.RED.value      # 1
-Colour(2)             # <Colour.GREEN: 2>   look up by value, with round brackets
-Colour["GREEN"]       # <Colour.GREEN: 2>   look up by name, with square brackets
-list(Colour)          # [<Colour.RED: 1>, <Colour.GREEN: 2>]
-len(Colour)           # 2
+Color.RED            # <Color.RED: 1>
+Color.RED.name       # 'RED'
+Color.RED.value      # 1
+Color(2)             # <Color.GREEN: 2>   look up by value, with round brackets
+Color["GREEN"]       # <Color.GREEN: 2>   look up by name, with square brackets
+list(Color)          # [<Color.RED: 1>, <Color.GREEN: 2>]
+len(Color)           # 2
 ```
 
 An enum class is iterable, so `list(Colour)` gives every member in the order they were written, and `len` counts them. Asking for a value that is not there, like `Colour(5)`, raises `ValueError: 5 is not a valid Colour`.
@@ -1512,9 +1512,9 @@ An enum class is iterable, so `list(Colour)` gives every member in the order the
 A member is not the same thing as its value. Compare members with members:
 
 ```python
-print(Colour.RED == Colour.RED)     # True
-print(Colour.RED is Colour(1))      # True: there is only one RED
-print(Colour.RED == 1)              # False
+print(Color.RED == Color.RED)     # True
+print(Color.RED is Color(1))      # True: there is only one RED
+print(Color.RED == 1)              # False
 ```
 
 `is` works because [[each member exists only once|enum-singleton]]. When you really need the number, use `.value`.
@@ -1853,7 +1853,7 @@ To overload something is to give it more than one job. `+` already means "add" f
 :::
 
 ::: context fallbacks Python tries the next best thing
-For `x in v`, Python looks for `__contains__` first. If there is none, it loops over `v` with `__iter__` and compares each item with `==`. For `bool(v)`, it looks for `__bool__`, then `__len__`. If a class has neither, every object of it counts as true. These fallbacks mean a few well-chosen methods give you a lot of behaviour for free. Write the specific method only when you can do the job faster or differently.
+For `x in v`, Python looks for `__contains__` first. If there is none, it loops over `v` with `__iter__` and compares each item with `==`. For `bool(v)`, it looks for `__bool__`, then `__len__`. If a class has neither, every object of it counts as true. These fallbacks mean a few well-chosen methods give you a lot of behavior for free. Write the specific method only when you can do the job faster or differently.
 :::
 
 ::: context reflected-ops Asking the other side
@@ -1912,7 +1912,7 @@ Hashing the tuple you compare with `==` makes equal objects land on the same she
 :::
 
 ::: context vectors-in-flight Arrows with a size and a direction
-A vector is a list of numbers that belong together, such as a position (east, north, up) or a velocity. Its length is found with Pythagoras, generalised to any number of parts: square each part, add them, take the square root. So `Vector(3, 4)` has length 5. Guidance and navigation software adds, subtracts and scales vectors constantly, for example to find how far a spacecraft is from where it should be. Libraries such as NumPy make that maths read naturally by defining exactly the special methods in this lesson.
+A vector is a list of numbers that belong together, such as a position (east, north, up) or a velocity. Its length is found with Pythagoras, generalized to any number of parts: square each part, add them, take the square root. So `Vector(3, 4)` has length 5. Guidance and navigation software adds, subtracts and scales vectors constantly, for example to find how far a spacecraft is from where it should be. Libraries such as NumPy make that maths read naturally by defining exactly the special methods in this lesson.
 :::
 --- task
 Write a class `Vector`. It is built from any number of numbers, as in `Vector(1, 2, 3)`, and it stores them in `self.components` as a **tuple**, so they cannot change. The starter stores a list; change that to `tuple(components)`. Then add these special methods.
@@ -2039,7 +2039,7 @@ from functools import partial, reduce, lru_cache
 
 Think of the speed-dial button on a phone. The number is already stored in it, so you press one button instead of typing ten digits. **`partial`** does that for a function. It takes a function and some of its arguments, and it gives you back a **new function** with those arguments already filled in. You give the rest later, when you call it.
 
-Here is a small function to practise on. `**` means "to the power of", so `base ** exp` is `base` multiplied by itself `exp` times:
+Here is a small function to practice on. `**` means "to the power of", so `base ** exp` is `base` multiplied by itself `exp` times:
 
 ```python
 def power(base, exp):
@@ -2571,9 +2571,9 @@ Last lesson you learned to decide on purpose which objects share what, instead o
 
 Think of a torch that takes batteries. The torch does not care which brand of battery is inside. Anything that fits the slot and gives power will do, and you can swap one for another without buying a new torch. That is the idea at the heart of this lesson.
 
-### Two ways to get new behaviour
+### Two ways to get new behavior
 
-Say you have an online shop, and an `Order` class works out the cost of an order. Now you want express shipping too. There are two ways to give a class new behaviour.
+Say you have an online shop, and an `Order` class works out the cost of an order. Now you want express shipping too. There are two ways to give a class new behavior.
 
 **Inheritance** says "an `ExpressOrder` *is an* `Order`, with one method changed". You met subclasses in the exceptions lesson, where `TooHeavy` was a kind of `ShippingError`. Here it would look like this:
 
@@ -2641,7 +2641,7 @@ Strategy objects have another strength: they can carry their own settings, like 
 
 **Inherit** when the child really *is* a kind of the parent and uses nearly all of it. Python's own `TimeoutError` is a subclass of `OSError`: a timeout really is a kind of operating-system error.
 
-**Compose** when one *part* of the behaviour varies, like how shipping is priced.
+**Compose** when one *part* of the behavior varies, like how shipping is priced.
 
 A useful warning sign, which programmers call a [[code smell|code-smell]]: an `if` / `elif` chain that checks a type name or a mode string, like `if self.shipping == "express":`. When that chain shows up, and especially when it is repeated in several methods, it is asking to become strategy objects.
 
@@ -2698,7 +2698,7 @@ Programmers split a program's life in two. "When you write it" is when the code 
 :::
 
 ::: context design-patterns Named solutions
-A design pattern is a well-known shape of code for a problem that keeps coming back, with a name so people can talk about it. The strategy pattern was one of 23 patterns in the 1994 book *Design Patterns*, by Erich Gamma, Richard Helm, Ralph Johnson and John Vlissides, often called the "Gang of Four". The same book gave the advice in this lesson's title: favour object composition over class inheritance.
+A design pattern is a well-known shape of code for a problem that keeps coming back, with a name so people can talk about it. The strategy pattern was one of 23 patterns in the 1994 book *Design Patterns*, by Erich Gamma, Richard Helm, Ralph Johnson and John Vlissides, often called the "Gang of Four". The same book gave the advice in this lesson's title: favor object composition over class inheritance.
 :::
 
 ::: context code-smell Something smells off
@@ -2805,7 +2805,7 @@ Order([("gift", 20.0, 1.0)], type("Flat", (), {"cost": lambda self, order: 3.5})
 
 === py3-11 | Recursion, memoisation and dynamic programming
 --- teach
-Last lesson you built an `Order` out of small parts that you could swap in and out. That was about how to *organise* code. The last four lessons of this course are about **algorithms**: step-by-step methods for solving a problem, and the choice of method often decides whether a program answers in a blink or never answers at all. The first one is a function that calls itself.
+Last lesson you built an `Order` out of small parts that you could swap in and out. That was about how to *organize* code. The last four lessons of this course are about **algorithms**: step-by-step methods for solving a problem, and the choice of method often decides whether a program answers in a blink or never answers at all. The first one is a function that calls itself.
 
 ### A problem with a smaller problem inside
 
@@ -3407,7 +3407,7 @@ for r, row in enumerate(grid):
 # goal (2, 2)
 ```
 
-### The four neighbours
+### The four neighbors
 
 From a square you can move down, up, right or left. Write each move as a change in row and a change in column, `(dr, dc)`:
 
@@ -3429,9 +3429,9 @@ for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
 
 `nr` and `nc` are short for "new row" and "new column". Two of those four are no good in the grid above: `(1, 3)` is off the right edge, and `(1, 1)` is a wall.
 
-### Checking a neighbour before you step there
+### Checking a neighbor before you step there
 
-A neighbour is worth visiting only if it is inside the grid, is not a wall, and has not been seen already:
+A neighbor is worth visiting only if it is inside the grid, is not a wall, and has not been seen already:
 
 ```python
 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] != "#" and (nr, nc) not in seen
@@ -3480,14 +3480,14 @@ def steps_to(grid, start, goal):
     return -1
 ```
 
-Read it in order. The queue starts holding the start square at distance 0, and `seen` starts holding the start square. `while queue:` keeps going as long as the queue is not empty. Each time round, take the front square. If it is the goal, its distance is the answer. Otherwise, queue every good neighbour at one more step. If the queue runs empty without reaching the goal, the goal cannot be reached, and the answer is `-1`.
+Read it in order. The queue starts holding the start square at distance 0, and `seen` starts holding the start square. `while queue:` keeps going as long as the queue is not empty. Each time round, take the front square. If it is the goal, its distance is the answer. Otherwise, queue every good neighbor at one more step. If the queue runs empty without reaching the goal, the goal cannot be reached, and the answer is `-1`.
 
 On `["S..E"]`, starting at `(0, 0)` with the goal at `(0, 3)`: the queue hands out `(0, 0)` at 0 steps, then `(0, 1)` at 1, then `(0, 2)` at 2, then `(0, 3)` at 3, which is the goal. The answer is 3.
 
 Three details make it correct and fast:
 
 - **`deque.popleft()`, not `list.pop(0)`.** Removing from the front of a list shifts every other item along; a deque does it in O(1).
-- **Mark squares as seen when you *add* them to the queue**, not when you take them out. Otherwise the same square can be queued many times, once from each neighbour that finds it.
+- **Mark squares as seen when you *add* them to the queue**, not when you take them out. Otherwise the same square can be queued many times, once from each neighbor that finds it.
 - **Check the bounds before indexing.** A negative index does not fail in Python; it quietly wraps around to the other side of the grid.
 
 Every square is added to the queue at most once, so BFS is O(rows × cols), where × means "times": the work grows in step with the number of squares.
@@ -3495,7 +3495,7 @@ Every square is added to the queue at most once, so BFS is O(rows × cols), wher
 **Watch out:** the common mistake is using **depth-first search**, DFS, for shortest paths. DFS follows one path as far as it goes before backing up, using recursion or a **stack** (last in, first out). It finds *a* path, not the shortest, and exploring every path to compare them is [[exponential|dfs-paths]]. When every step costs the same, reach for BFS and a queue. When steps cost [[different amounts|weighted-maps]], you need a bigger tool.
 
 ::: context ripple-grid The rings on the example grid
-Here is the example grid with each open square labelled by its distance from S, the ring BFS finds it in. The walls are grey. E is in ring 4, so the answer is 4 steps. The square in the top right is further still, 6 steps, because the path has to go all the way round the wall.
+Here is the example grid with each open square labeled by its distance from S, the ring BFS finds it in. The walls are gray. E is in ring 4, so the answer is 4 steps. The square in the top right is further still, 6 steps, because the path has to go all the way round the wall.
 
 ```svg
 <svg viewBox="0 0 360 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
@@ -3602,7 +3602,7 @@ def shortest_path(grid):
 --- hint
 First find the coordinates of `S` and `E`: loop `for r, row in enumerate(grid):`, and inside it `for c, ch in enumerate(row):`, storing `(r, c)` in `start` or `goal` when `ch` is `"S"` or `"E"`.
 --- hint
-Put `from collections import deque` at the top. Start with `queue = deque([(start, 0)])` and `seen = {start}`. While the queue is not empty, `popleft()` the front pair; if its square is the goal, return its distance. Then push each open, unseen neighbour with `dist + 1`.
+Put `from collections import deque` at the top. Start with `queue = deque([(start, 0)])` and `seen = {start}`. While the queue is not empty, `popleft()` the front pair; if its square is the goal, return its distance. Then push each open, unseen neighbor with `dist + 1`.
 --- hint
 The search is the lesson's `steps_to` code with your `start` and `goal`. Check `0 <= nr < rows and 0 <= nc < cols` *before* reading `grid[nr][nc]`, add to `seen` at the moment you queue a square, and return `-1` after the loop.
 --- check case | A straight corridor

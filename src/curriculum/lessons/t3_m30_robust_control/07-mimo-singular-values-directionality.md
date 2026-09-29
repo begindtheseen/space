@@ -60,7 +60,7 @@ The **[[condition number|condition-number]]** $\gamma(\mathbf{G}) = \bar{\sigma}
 
 **Errors at the input can hurt much more than errors at the output.** A relative error at the actuators is multiplied by $\mathbf{G}$ before it reaches the output. On an ill-conditioned plant, a small input error along the strong direction can show up as a large *relative* error in the weak one. This is why the input and output multiplicative uncertainty models of the first lesson must be kept apart. It is also why ill-conditioned plants are the classic failure case for decoupling controllers, which invert the plant and so lean hard on the weak direction.
 
-**It depends on units.** Change one actuator's units from newton-metres to millinewton-metres and the condition number changes. A large $\gamma$ computed on badly scaled data may be an artefact. The honest procedure is:
+**It depends on units.** Change one actuator's units from newton-meters to millinewton-meters and the condition number changes. A large $\gamma$ computed on badly scaled data may be an artifact. The honest procedure is:
 
 - scale each input by its largest expected value, and each output by its allowed error, *before* computing anything;
 - if the number is to be compared across designs, report the **minimized condition number** — the smallest $\gamma$ over all diagonal rescalings.

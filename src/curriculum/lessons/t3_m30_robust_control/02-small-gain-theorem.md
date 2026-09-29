@@ -47,7 +47,7 @@ The same two steps give the other cases.
 For a SISO plant $T_I = T$. For a multivariable plant they are different matrices with different singular values, and mixing them up is the commonest slip in the subject.
 
 ::: key The three standard robust stability tests
-With $\lVert\boldsymbol{\Delta}\rVert_\infty \le 1$ and a nominally stable loop: additive $\mathbf{G}_p = \mathbf{G} + \mathbf{W}\boldsymbol{\Delta}$ needs $\lVert\mathbf{W}\mathbf{K}\mathbf{S}\rVert_\infty < 1$; output multiplicative $\mathbf{G}_p = (\mathbf{I} + \mathbf{W}\boldsymbol{\Delta})\mathbf{G}$ needs $\lVert\mathbf{W}\mathbf{T}\rVert_\infty < 1$; input multiplicative $\mathbf{G}_p = \mathbf{G}(\mathbf{I} + \mathbf{W}\boldsymbol{\Delta})$ needs $\lVert\mathbf{W}\mathbf{T}_I\rVert_\infty < 1$. For a full complex $\boldsymbol{\Delta}$ each test is "if and only if": for example, $\mathbf{G}_p = (\mathbf{I} + \mathbf{W}\boldsymbol{\Delta})\mathbf{G}$ is robustly stabilised iff $\lVert\mathbf{W}\mathbf{T}\rVert_\infty < 1$. Where the uncertainty is large, the matching closed-loop map — here $\mathbf{T}$ — must be small.
+With $\lVert\boldsymbol{\Delta}\rVert_\infty \le 1$ and a nominally stable loop: additive $\mathbf{G}_p = \mathbf{G} + \mathbf{W}\boldsymbol{\Delta}$ needs $\lVert\mathbf{W}\mathbf{K}\mathbf{S}\rVert_\infty < 1$; output multiplicative $\mathbf{G}_p = (\mathbf{I} + \mathbf{W}\boldsymbol{\Delta})\mathbf{G}$ needs $\lVert\mathbf{W}\mathbf{T}\rVert_\infty < 1$; input multiplicative $\mathbf{G}_p = \mathbf{G}(\mathbf{I} + \mathbf{W}\boldsymbol{\Delta})$ needs $\lVert\mathbf{W}\mathbf{T}_I\rVert_\infty < 1$. For a full complex $\boldsymbol{\Delta}$ each test is "if and only if": for example, $\mathbf{G}_p = (\mathbf{I} + \mathbf{W}\boldsymbol{\Delta})\mathbf{G}$ is robustly stabilized iff $\lVert\mathbf{W}\mathbf{T}\rVert_\infty < 1$. Where the uncertainty is large, the matching closed-loop map — here $\mathbf{T}$ — must be small.
 :::
 
 ## The theorem
@@ -59,7 +59,7 @@ Let $\mathbf{M}$ and $\boldsymbol{\Delta}$ both be stable, connected in feedback
 
 $$\lVert\mathbf{M}\rVert_\infty\,\lVert\boldsymbol{\Delta}\rVert_\infty < 1$$
 
-then the closed loop is internally stable. With $\boldsymbol{\Delta}$ normalised to $\lVert\boldsymbol{\Delta}\rVert_\infty \le 1$ the condition is $\lVert\mathbf{M}\rVert_\infty < 1$. The condition is sufficient, not necessary, in general, and it is conservative because it ignores phase and structure. It is also necessary when $\boldsymbol{\Delta}$ ranges over *all* stable perturbations within the norm bound, with no structure imposed.
+then the closed loop is internally stable. With $\boldsymbol{\Delta}$ normalized to $\lVert\boldsymbol{\Delta}\rVert_\infty \le 1$ the condition is $\lVert\mathbf{M}\rVert_\infty < 1$. The condition is sufficient, not necessary, in general, and it is conservative because it ignores phase and structure. It is also necessary when $\boldsymbol{\Delta}$ ranges over *all* stable perturbations within the norm bound, with no structure imposed.
 :::
 
 **[[Internally stable|internal-stability]]** means every signal anywhere in the loop stays bounded when any bounded signal is injected anywhere — not only the output you happen to watch. **Conservative** means pessimistic: the test may say "not proven" for a loop that is in fact fine.
@@ -197,7 +197,7 @@ A loop has $\lVert WT\rVert_\infty = 0.4$. By what factor can the modeled uncert
 ::: answer
 Scaling the weight by $c$ scales the peak to $0.4c$. The guarantee survives while $0.4c < 1$, that is until $c = 1/0.4 = 2.5$.
 
-Physically: if the weight said twenty percent relative error at low frequency and one hundred percent at $67\,\mathrm{rad/s}$, the design tolerates fifty percent ($2.5 \times 20$) and two hundred and fifty percent at those frequencies. It is the natural way to report robust-stability margin as one number. The structured singular value generalises it: $1/\lVert WT\rVert_\infty$ is the unstructured robustness margin, and $1/\mu$ is the structured one.
+Physically: if the weight said twenty percent relative error at low frequency and one hundred percent at $67\,\mathrm{rad/s}$, the design tolerates fifty percent ($2.5 \times 20$) and two hundred and fifty percent at those frequencies. It is the natural way to report robust-stability margin as one number. The structured singular value generalizes it: $1/\lVert WT\rVert_\infty$ is the unstructured robustness margin, and $1/\mu$ is the structured one.
 :::
 
 ::: check
@@ -351,7 +351,7 @@ Write $s = \omega_n p$. Then $L = (2\zeta p + 1)/p^2$, which does not contain $\
 :::
 
 ::: context bandwidth-ceiling The ceiling, drawn
-The dashed red curve is the ceiling $1/\lvert W\rvert$: $5$ at low frequency (twenty percent uncertainty), falling through $1$ near $67\,\mathrm{rad/s}$, levelling at $0.4$. The robust stability test says $\lvert T\rvert$ must stay strictly underneath it.
+The dashed red curve is the ceiling $1/\lvert W\rvert$: $5$ at low frequency (twenty percent uncertainty), falling through $1$ near $67\,\mathrm{rad/s}$, leveling at $0.4$. The robust stability test says $\lvert T\rvert$ must stay strictly underneath it.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 215" font-family="Inter, Arial, sans-serif">
@@ -370,5 +370,5 @@ The dashed red curve is the ceiling $1/\lvert W\rvert$: $5$ at low frequency (tw
 </svg>
 ```
 
-The grey curve is the slow $\omega_n = 0.577$ design: far below the ceiling everywhere. The blue curve is the $\omega_n = 47.2$ design: it touches the ceiling near $67\,\mathrm{rad/s}$. That touch is $\lVert WT\rVert_\infty = 1$.
+The gray curve is the slow $\omega_n = 0.577$ design: far below the ceiling everywhere. The blue curve is the $\omega_n = 47.2$ design: it touches the ceiling near $67\,\mathrm{rad/s}$. That touch is $\lVert WT\rVert_\infty = 1$.
 :::

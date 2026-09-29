@@ -155,7 +155,7 @@ The rule for turning the knob is the whole algorithm.
 3. If the cost dropped, accept the step and decrease $\lambda$: trust the straight-line model more next time.
 4. If it did not, reject the step, keep $\mathbf{x}_k$, and increase $\lambda$: trust it less and try a shorter, safer step.
 
-Using $\mathbf{D}$ built from the information matrix was Marquardt's improvement on Levenberg's original choice, $\mathbf{D}=\mathbf{I}$. It scales the damping sensibly when the unknowns have very different units — metres and metres per second in one state, say.
+Using $\mathbf{D}$ built from the information matrix was Marquardt's improvement on Levenberg's original choice, $\mathbf{D}=\mathbf{I}$. It scales the damping sensibly when the unknowns have very different units — meters and meters per second in one state, say.
 
 ::: key Levenberg-Marquardt step
 $\Delta\mathbf{x} = (\mathbf{J}^\mathsf{T}\mathbf{W}\mathbf{J}+\lambda\mathbf{D})^{-1}\mathbf{J}^\mathsf{T}\mathbf{W}\mathbf{r}$, with $\mathbf{J}=\partial\mathbf{h}/\partial\mathbf{x}$ as before. Large $\lambda$ gives a short gradient-descent step; small $\lambda$ gives Gauss-Newton. Adapt $\lambda$ by whether the step, once actually evaluated, reduced the cost — accept and shrink $\lambda$, or reject and grow it.
@@ -297,7 +297,7 @@ Both methods converged to the same underground position in the low-station examp
 :::
 
 ::: answer
-No. Its job is to stop a step from overshooting past where the straight-line model is trustworthy. It did that: it converged smoothly, with no blow-up. It was never a defence against starting in the valley of the wrong solution. That comes from the shape of a cost with more than one valley — here created by the near-mirror symmetry of the station layout — not from step-size trouble. The fix is a better starting guess or better station geometry, not a better damping rule.
+No. Its job is to stop a step from overshooting past where the straight-line model is trustworthy. It did that: it converged smoothly, with no blow-up. It was never a defense against starting in the valley of the wrong solution. That comes from the shape of a cost with more than one valley — here created by the near-mirror symmetry of the station layout — not from step-size trouble. The fix is a better starting guess or better station geometry, not a better damping rule.
 :::
 
 ::: check

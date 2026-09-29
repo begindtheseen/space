@@ -38,7 +38,7 @@ The USML is split into numbered categories, from Category I to Category XXI — 
 
 That number is not arbitrary. It is the same threshold used by the **[[Missile Technology Control Regime|mtcr]]** — **MTCR**, said "M-T-C-R" — an agreement among many countries to limit the spread of missile technology. The logic is direct. A vehicle that can throw 500 kg as far as 300 km could, with a different payload bolted on top, serve as the body of a usable ballistic missile. The threshold measures what the vehicle *can* do, not what it is carrying today.
 
-A Falcon 9 clears this threshold by a wide margin — it lifts tens of tonnes to orbit. A hobby model rocket does not come close. Every orbital launch vehicle, from any company, sits inside Category IV.
+A Falcon 9 clears this threshold by a wide margin — it lifts tens of metric tons to orbit. A hobby model rocket does not come close. Every orbital launch vehicle, from any company, sits inside Category IV.
 
 ### Category XV: spacecraft
 

@@ -3,7 +3,7 @@ id: l02-star-stories-and-hard-questions
 title: "Behavioral rounds: STAR stories, and the two questions that sting"
 minutes: 21
 covers:
-  - Behavioural and STAR stories emphasising ownership, speed, and recovery from failure
+  - Behavioral and STAR stories emphasizing ownership, speed, and recovery from failure
   - Answering "what would you do differently" and "what was the hardest bug" without either arrogance or apology
 ---
 

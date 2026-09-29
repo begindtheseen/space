@@ -24,7 +24,7 @@ A `std::mutex` is 40 bytes on this Linux machine. It cannot be copied or moved �
 
 The rule that makes a mutex work is a promise *you* keep: **every access to the shared data, reads as well as writes, happens while holding the same mutex**. The mutex does not know which data it guards, so keep the data and its mutex together, in one class with the data private.
 
-It buys two things. **Mutual exclusion**: no two threads are in the critical section together, so load-add-store sequences can no longer interleave. And **ordering**: unlocking a mutex *happens before* the next lock of that same mutex, so what one thread wrote inside is visible to the next thread inside. That is the synchronisation last lesson said was missing: no data race, defined behaviour again.
+It buys two things. **Mutual exclusion**: no two threads are in the critical section together, so load-add-store sequences can no longer interleave. And **ordering**: unlocking a mutex *happens before* the next lock of that same mutex, so what one thread wrote inside is visible to the next thread inside. That is the synchronization last lesson said was missing: no data race, defined behavior again.
 
 ::: key
 Unlocking a mutex happens before the next lock of the same mutex, so every write made while holding it is visible to the next thread that locks it. Every access to the protected data, reads included, must hold the same mutex.
@@ -49,7 +49,7 @@ In the RAII module you wrote `MutexLock`: a class whose constructor calls `lock(
 
 - It locks in the constructor and unlocks in the destructor, and does nothing else.
 - It cannot be copied or moved, and it cannot unlock early.
-- It holds one reference to the mutex: 8 bytes, and after optimisation, no cost beyond the `lock()` and `unlock()` it calls.
+- It holds one reference to the mutex: 8 bytes, and after optimization, no cost beyond the `lock()` and `unlock()` it calls.
 
 Since C++17 the compiler can work out the template argument from the constructor, so `std::lock_guard lock(m);` means the same thing. That feature is **[[class template argument deduction|ctad]]**.
 
@@ -299,7 +299,7 @@ A `std::shared_mutex` is not free. On the same machine, an uncontended shared lo
 
 ## recursive_mutex, and why it is usually a smell
 
-What happens if a thread locks a `std::mutex` it already holds? The standard says undefined behaviour. In practice it waits for itself forever. This event log, whose `add_pair` holds the lock and then calls `add`, which locks again:
+What happens if a thread locks a `std::mutex` it already holds? The standard says undefined behavior. In practice it waits for itself forever. This event log, whose `add_pair` holds the lock and then calls `add`, which locks again:
 
 ```cpp
 void add(int code) {
@@ -426,7 +426,7 @@ A telemetry thread reads `g_nav.alt_m` without locking, "because it only reads",
 :::
 
 ::: answer
-No. Same memory location, one access a write, and the reader holds no lock, so nothing orders them: a data race, undefined behaviour. A mutex only orders threads that lock it. The reader must lock the same mutex — a `std::lock_guard`, or a `std::shared_lock` if `g_nav_mutex` is a `std::shared_mutex` — and ideally copy the state out and unlock at once.
+No. Same memory location, one access a write, and the reader holds no lock, so nothing orders them: a data race, undefined behavior. A mutex only orders threads that lock it. The reader must lock the same mutex — a `std::lock_guard`, or a `std::shared_lock` if `g_nav_mutex` is a `std::shared_mutex` — and ideally copy the state out and unlock at once.
 :::
 
 ::: check
@@ -489,7 +489,7 @@ The standard says only that `std::scoped_lock` and `std::lock` use "a deadlock a
 :::
 
 ::: context readers-writers An old problem with a famous name
-The readers–writers problem was posed in a 1971 paper, "Concurrent control with 'readers' and 'writers'", by P. J. Courtois, F. Heymans and D. L. Parnas. They gave two solutions, one favouring readers and one favouring writers, and the question of whom to favour has never gone away. The same idea lives on in databases (shared and exclusive locks), in file systems, and in operating-system kernels, which often use a variant called read-copy-update so that readers take no lock at all.
+The readers–writers problem was posed in a 1971 paper, "Concurrent control with 'readers' and 'writers'", by P. J. Courtois, F. Heymans and D. L. Parnas. They gave two solutions, one favoring readers and one favoring writers, and the question of whom to favor has never gone away. The same idea lives on in databases (shared and exclusive locks), in file systems, and in operating-system kernels, which often use a variant called read-copy-update so that readers take no lock at all.
 :::
 
 ::: context writer-starvation When the writer never gets a turn

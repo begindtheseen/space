@@ -262,7 +262,7 @@ A colleague proposes a controller with a zero at $s = +0.163$ to cancel the laun
 ::: answer
 The cancellation removes the unstable mode from the transfer function from command to attitude — not from the system.
 
-The mode is still excited by disturbances: wind, thrust misalignment, an initial attitude error. Those enter at a different point in the loop and are not cancelled. So the internal signals grow as $e^{0.163t}$, doubling every $\ln 2/0.163 = 4.25\,\mathrm{s}$, until the actuator saturates.
+The mode is still excited by disturbances: wind, thrust misalignment, an initial attitude error. Those enter at a different point in the loop and are not canceled. So the internal signals grow as $e^{0.163t}$, doubling every $\ln 2/0.163 = 4.25\,\mathrm{s}$, until the actuator saturates.
 
 Even for the command channel, the cancellation is exact only if the pole is exactly at $0.163$, and it is not. $\mu_\alpha$ changes by tens of percent over half a minute of flight, so the residue reappears and grows.
 
@@ -330,7 +330,7 @@ Write $G = \dfrac{r_1}{s - p_1} + \dfrac{r_2}{s - p_2} + \cdots$. Multiply both 
 :::
 
 ::: context tuned-absorber The skyscraper trick
-Taipei 101, a 508-meter tower, hangs a steel ball of about 660 tonnes near its top. The ball's pendulum is tuned to the building's sway frequency. When wind pushes the building at that frequency, the ball swings against it and the building moves much less. The solar array does the same thing to the hub at $2.000\,\mathrm{rad/s}$: it swings with exactly the right size and timing that its spring force cancels the torque on the hub. Good news for anything mounted on the hub, and bad news for a sensor there, which sees almost nothing.
+Taipei 101, a 508-meter tower, hangs a steel ball of about 660 metric tons near its top. The ball's pendulum is tuned to the building's sway frequency. When wind pushes the building at that frequency, the ball swings against it and the building moves much less. The solar array does the same thing to the hub at $2.000\,\mathrm{rad/s}$: it swings with exactly the right size and timing that its spring force cancels the torque on the hub. Good news for anything mounted on the hub, and bad news for a sensor there, which sees almost nothing.
 :::
 
 ::: context interlacing Zero, then pole, then zero, then pole

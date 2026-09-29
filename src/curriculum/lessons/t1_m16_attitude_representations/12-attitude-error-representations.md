@@ -309,7 +309,7 @@ A filter reports attitude uncertainty as a $3\times 3$ covariance whose diagonal
 Small rotations have behaved like arrows all through this lesson — added, scaled, given covariances. The last lesson explains why that works, what the exact statement is, and where the flat picture ends.
 
 ::: context resolved-in Same arrow, different numbers
-An arrow is a physical thing. Its three numbers are not: they depend on which axes you measure it against. Here the red arrow is fixed. Measured against the grey reference axes it is about $(0.34,\ 0.94)$. Measured against the blue body axes, turned $41^\circ$, the same arrow is about $(0.87,\ 0.48)$.
+An arrow is a physical thing. Its three numbers are not: they depend on which axes you measure it against. Here the red arrow is fixed. Measured against the gray reference axes it is about $(0.34,\ 0.94)$. Measured against the blue body axes, turned $41^\circ$, the same arrow is about $(0.87,\ 0.48)$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
@@ -338,7 +338,7 @@ The equation $J\ddot{x} + D\dot{x} + kx = 0$ describes a car's suspension, a doo
 :::
 
 ::: context saturation Why the push levels off
-The proportional torque is $K\sin(\Phi/2)$ (blue). A rotation-vector law with the same small-error stiffness would be $K\Phi/2$ (grey). They agree for small errors. Past about $60^\circ$ the quaternion law bends over and tops out at exactly $K$ at a half turn, while the straight line keeps climbing to $1.57K$. A bounded command is kinder to wheels and thrusters that have limits anyway.
+The proportional torque is $K\sin(\Phi/2)$ (blue). A rotation-vector law with the same small-error stiffness would be $K\Phi/2$ (gray). They agree for small errors. Past about $60^\circ$ the quaternion law bends over and tops out at exactly $K$ at a half turn, while the straight line keeps climbing to $1.57K$. A bounded command is kinder to wheels and thrusters that have limits anyway.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210" font-family="Inter, Arial, sans-serif">

@@ -10,7 +10,7 @@ Two lessons in, the picture is uncomfortable. Walking downhill finds stationary 
 
 There is one broad family of problems where all of that uncertainty disappears, and it is defined by a single idea of shape. A problem is **[[convex|convex-word]]** when its cost is a convex function and its feasible set is a convex set. Being able to look at a constraint or a cost and say, with reasons, "convex" or "not convex" is the most valuable skill in this module. This lesson teaches it. The next lesson collects the reward.
 
-The definitions are short. The craft is in a catalogue of examples and a handful of **closure rules** that let you judge a complicated expression from its parts, without differentiating anything.
+The definitions are short. The craft is in a catalog of examples and a handful of **closure rules** that let you judge a complicated expression from its parts, without differentiating anything.
 
 ## Convex sets
 
@@ -201,7 +201,7 @@ Two subtleties catch people.
 **Nonlinear equality constraints are nonconvex.** The set $\{\mathbf{x} : h(\mathbf{x}) = 0\}$ for a non-affine $h$ is, apart from freak cases such as a single point, a curved surface, and a straight segment between two of its points leaves it. A rocket's equations of motion, $\dot{\mathbf{v}} = \mathbf{T}/m + \mathbf{g}$ with $\dot m = -\|\mathbf{T}\|/v_e$, are nonlinear in the unknowns, because the thrust $\mathbf{T}$ is divided by a mass $m$ that is itself unknown. Written as equality constraints, they make the problem nonconvex no matter how convex everything else is. Landing-guidance research spends a great deal of effort on exactly this — changing variables so the dynamics become affine — and the next lessons return to it.
 
 ::: warning Convex is not the same as smooth, or as bowl-shaped along each axis
-Three different things get muddled. A function can be convex without being differentiable ($|x|$, any norm). A function can be smooth and bowl-shaped along every coordinate axis and still not be convex ($x^2y^2$ above: along each axis it is a parabola or a constant). And a *set* can be convex while the function used to describe it is not: $\{\mathbf{x} : \|\mathbf{x}\|_2^2 \le 1\}$ is the same ball whether you write the rule as $\|\mathbf{x}\|_2^2 - 1 \le 0$ or as $\log\|\mathbf{x}\|_2^2 \le 0$, and the second function is not convex. Convexity of the *set* is what matters. Convex constraint *functions* are a sufficient way to get it — and the way solvers and modelling tools can check.
+Three different things get muddled. A function can be convex without being differentiable ($|x|$, any norm). A function can be smooth and bowl-shaped along every coordinate axis and still not be convex ($x^2y^2$ above: along each axis it is a parabola or a constant). And a *set* can be convex while the function used to describe it is not: $\{\mathbf{x} : \|\mathbf{x}\|_2^2 \le 1\}$ is the same ball whether you write the rule as $\|\mathbf{x}\|_2^2 - 1 \le 0$ or as $\log\|\mathbf{x}\|_2^2 \le 0$, and the second function is not convex. Convexity of the *set* is what matters. Convex constraint *functions* are a sufficient way to get it — and the way solvers and modeling tools can check.
 :::
 
 ## Check yourself
@@ -325,7 +325,7 @@ A real engine that is lit cannot produce a thrust in the hole, and the landing p
 :::
 
 ::: context chord-picture Below every chord, above every tangent
-The blue curve is $f(x) = x^2/4$. The orange chord joins the points at $x = 0$ and $x = 4$; halfway along, the chord is at height $2$ but the curve is only at $1$. The grey line is the tangent at $x = 1$, and it stays under the curve everywhere.
+The blue curve is $f(x) = x^2/4$. The orange chord joins the points at $x = 0$ and $x = 4$; halfway along, the chord is at height $2$ but the curve is only at $1$. The gray line is the tangent at $x = 1$, and it stays under the curve everywhere.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 205" font-family="Inter, Arial, sans-serif">

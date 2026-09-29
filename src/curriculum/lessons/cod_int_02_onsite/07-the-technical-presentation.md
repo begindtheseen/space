@@ -10,14 +10,14 @@ Picture a science fair. You stand next to your poster for a few minutes while a 
 
 The onsite presentation works the same way, only the judges are the engineers you would work with, and there are several of them. You talk for a short while about something you built. Then they take it apart, one assumption at a time, to see whether you understand it all the way down.
 
-This lesson shows you how to build a talk that survives that. You will lay out twelve slides with a clear job each, do the timing arithmetic, label every number on every slide by where it came from, and practise the moves for a hard question. The talk will be about one of your capstones — the Monte Carlo ascent simulator or the C++ GNC application from this track — because the best talk is about work you did yourself and know cold.
+This lesson shows you how to build a talk that survives that. You will lay out twelve slides with a clear job each, do the timing arithmetic, label every number on every slide by where it came from, and practice the moves for a hard question. The talk will be about one of your capstones — the Monte Carlo ascent simulator or the C++ GNC application from this track — because the best talk is about work you did yourself and know cold.
 
 ## The reported dynamic
 
 Here is the shape of the round, as candidates have **[[reported|reported-again]]** it — meaning it comes from many people's accounts of their own interviews, not from a company rulebook.
 
 ::: key The team presentation
-About twelve minutes of slides and twenty or more minutes of debate. Optimise for defending your assumptions, not for slide polish, and know which numbers on each slide you can derive from first principles.
+About twelve minutes of slides and twenty or more minutes of debate. Optimize for defending your assumptions, not for slide polish, and know which numbers on each slide you can derive from first principles.
 :::
 
 Put numbers on that and the priority becomes plain. The whole round is at least $12 + 20 = 32$ minutes. The questions take $20$ of those, so the questions are at least
@@ -36,7 +36,7 @@ The key block uses two phrases worth slowing down on.
 - **[[First principles|first-principles]].** A number you can derive from first principles is one you could work out on a whiteboard from basic physics, starting from nothing but a few well-known constants. We come back to this below, because it is the single most useful thing to prepare.
 
 ::: warning Polishing the wrong thing
-It is tempting to spend a week on colours, fonts and animations, because that work feels productive and nobody argues with you while you do it. None of it survives the first question. Spend an hour on how the slides look and the rest of your time on what is on them and why.
+It is tempting to spend a week on colors, fonts and animations, because that work feels productive and nobody argues with you while you do it. None of it survives the first question. Spend an hour on how the slides look and the rest of your time on what is on them and why.
 :::
 
 ## Twelve slides, six jobs
@@ -114,14 +114,14 @@ Reading slides silently in your head runs much faster than speaking. People who 
 
 ## Numbers you can derive from first principles
 
-Every number on your slides falls into one of four bins. Knowing which bin each one is in is most of your defence.
+Every number on your slides falls into one of four bins. Knowing which bin each one is in is most of your defense.
 
 - **Derived** — you can work it out on a whiteboard from physics and a few known constants.
 - **Measured** — it came from data: a test, a log, a run of your simulator.
 - **Cited** — you took it from a source: a textbook, a datasheet, a paper.
 - **Assumed** — you picked it because you had to pick something.
 
-None of these is bad. Assumed numbers are allowed! What is bad is not knowing which bin a number is in. The panel's favourite question is "where does that number come from?", and "derived — let me show you" is the strongest possible answer.
+None of these is bad. Assumed numbers are allowed! What is bad is not knowing which bin a number is in. The panel's favorite question is "where does that number come from?", and "derived — let me show you" is the strongest possible answer.
 
 ::: example Deriving orbital speed at the whiteboard
 Your ascent slide says the target is a circular orbit at 400 km, needing about 7.67 km/s. An engineer asks: "Where does 7.67 come from?"
@@ -132,9 +132,9 @@ $$
 v = \sqrt{\frac{\mu}{r}}.
 $$
 
-Here $v$ is the orbital speed, $r$ is the distance from Earth's centre, and $\mu$ (read "mu") is Earth's **[[gravitational parameter|mu]]**, $3.986 \times 10^{14}\ \mathrm{m^3/s^2}$.
+Here $v$ is the orbital speed, $r$ is the distance from Earth's center, and $\mu$ (read "mu") is Earth's **[[gravitational parameter|mu]]**, $3.986 \times 10^{14}\ \mathrm{m^3/s^2}$.
 
-Step 1: find $r$. It is measured from Earth's centre, not the ground. Earth's mean radius is 6,371 km, so $r = 6{,}371 + 400 = 6{,}771$ km $= 6.771 \times 10^6$ m.
+Step 1: find $r$. It is measured from Earth's center, not the ground. Earth's mean radius is 6,371 km, so $r = 6{,}371 + 400 = 6{,}771$ km $= 6.771 \times 10^6$ m.
 
 Step 2: divide. $\mu / r = 3.986 \times 10^{14} / 6.771 \times 10^{6} \approx 5.887 \times 10^{7}\ \mathrm{m^2/s^2}$.
 
@@ -143,10 +143,10 @@ Step 3: take the square root. $\sqrt{5.887 \times 10^7} \approx 7{,}673$ m/s, ab
 Sanity check: low Earth orbit speeds are usually quoted as about 7.7 km/s, and a 400 km orbit is a little higher than the lowest ones, so a little slower. That fits.
 :::
 
-Go through your deck slide by slide and mark each number D, M, C or A. For every D, practise the derivation. For every C, know the source by name. For every M, know how many runs or samples it came from. For every A, know what happens to your conclusion if it is off by a sensible amount.
+Go through your deck slide by slide and mark each number D, M, C or A. For every D, practice the derivation. For every C, know the source by name. For every M, know how many runs or samples it came from. For every A, know what happens to your conclusion if it is off by a sensible amount.
 
 ::: note Why gravity and the circle balance
-An object moving in a circle of radius $r$ at speed $v$ needs a pull toward the centre of $v^2/r$ per kilogram. Gravity at distance $r$ gives $\mu/r^2$ per kilogram. In a circular orbit they are the same pull, so $v^2 / r = \mu / r^2$. Multiply both sides by $r$ to get $v^2 = \mu / r$, then take the square root: $v = \sqrt{\mu/r}$.
+An object moving in a circle of radius $r$ at speed $v$ needs a pull toward the center of $v^2/r$ per kilogram. Gravity at distance $r$ gives $\mu/r^2$ per kilogram. In a circular orbit they are the same pull, so $v^2 / r = \mu / r^2$. Multiply both sides by $r$ to get $v^2 = \mu / r$, then take the square root: $v = \sqrt{\mu/r}$.
 :::
 
 ## Results with uncertainty
@@ -244,7 +244,7 @@ Something like: "I used RK4 at a 10 ms step. I checked it by halving the step to
 
 | Idea | In one line |
 | --- | --- |
-| Reported dynamic | about 12 min of slides, 20 or more min of debate; optimise for defending assumptions |
+| Reported dynamic | about 12 min of slides, 20 or more min of debate; optimize for defending assumptions |
 | Six jobs | problem, model and fidelity limits, method, verification, results with uncertainty, defended conclusion |
 | Timing | 12 min over 12 slides is 60 s each on average; plan in seconds, total 720 s |
 | Speaking rate | about 130 to 150 words per minute, so about 1,560 to 1,800 words for the talk |
@@ -254,7 +254,7 @@ Something like: "I used RK4 at a 10 ms step. I checked it by halving the step to
 | Hard question | restate, give the bin, bound the damage, say what would settle it |
 | Never | "it just works"; always concede a real limitation unprompted |
 
-The presentation is the most technical place where the panel watches how you work. Next lesson turns to the part of the onsite that is about that directly: the behavioural themes, and how to say exactly what you did.
+The presentation is the most technical place where the panel watches how you work. Next lesson turns to the part of the onsite that is about that directly: the behavioral themes, and how to say exactly what you did.
 
 ::: context reported-again A map, not a contract
 "Reported" in this module means the fact comes from candidates' own accounts, which agree on the broad shape but not every detail. Your team may run the presentation differently: a different length, a fixed topic, or a smaller panel. Ask your recruiter what to expect. They are there to help you get through, and questions about format are normal.
@@ -287,7 +287,7 @@ A model's fidelity is how much of the real world it includes. A point-mass model
 :::
 
 ::: context mu One number instead of two
-Newton's law of gravity uses $G$, the universal gravitational constant, times $M$, Earth's mass. Each of those is hard to measure on its own, but their product $\mu = GM$ can be measured very precisely by tracking satellites. That is why orbital engineers use $\mu$ directly: $3.986 \times 10^{14}\ \mathrm{m^3/s^2}$ for Earth. Its units look strange, but they are what make $\sqrt{\mu/r}$ come out in metres per second.
+Newton's law of gravity uses $G$, the universal gravitational constant, times $M$, Earth's mass. Each of those is hard to measure on its own, but their product $\mu = GM$ can be measured very precisely by tracking satellites. That is why orbital engineers use $\mu$ directly: $3.986 \times 10^{14}\ \mathrm{m^3/s^2}$ for Earth. Its units look strange, but they are what make $\sqrt{\mu/r}$ come out in meters per second.
 :::
 
 ::: context rule-of-three A bound from nothing

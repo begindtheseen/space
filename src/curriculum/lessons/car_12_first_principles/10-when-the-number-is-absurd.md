@@ -39,7 +39,7 @@ A doctor does not say "you feel bad". She takes your temperature, and the number
 
 1. **Name it.** *"That cannot be right, and here is the limit it breaks."* Do it at once. An interviewer who watches you carry on past an impossible number has learned something you cannot take back.
 2. **Measure the gap as a factor, not a feeling.** A **factor** here means "how many times too big or too small". *"I expected a few hundred kelvin and I have three thousand, so I am out by a factor of ten in temperature."*
-3. **Turn the factor into a search.** A factor of exactly $10^k$ — read "ten to the k" — is a unit mistake. A factor near 2, 4 or 8 is radius mixed up with diameter. A factor of $2\pi$ is a frequency mixed up with an angular rate. The table below is the catalogue.
+3. **Turn the factor into a search.** A factor of exactly $10^k$ — read "ten to the k" — is a unit mistake. A factor near 2, 4 or 8 is radius mixed up with diameter. A factor of $2\pi$ is a frequency mixed up with an angular rate. The table below is the catalog.
 4. **Check in this order: units, then the breakdown, then the bounds.** Units are fastest and cause most of these errors. Then the breakdown — an area where a volume belonged, something counted twice? Bounds come last: the wrong end of a range gives a factor of two or three, never a thousand.
 5. **Say whether the model or the number was wrong.** A factor of $10^4$ is a number mistake. A factor of three with no arithmetic error is usually a **model** mistake — an effect left out, or one that should not be in.
 
@@ -114,7 +114,7 @@ Sometimes there is no mistake. The estimate is telling you something true that y
 An expectation is not evidence. If your only objection is "that feels like a lot", the estimate stands. Say: *"That is larger than I expected. I have checked it two ways, so I think it is right — and here is why it is less surprising than it looks."* That is worth more than a correct answer that arrived with no friction, because it shows you can hold a result against your own gut.
 
 ::: example Two results that sound wrong and are not
-**Ten tonnes of air on every square meter.** From lesson 8: sea-level air pressure is $101325\,\mathrm{Pa}$, and dividing by gravity, $101325/9.80665 = 10332\,\mathrm{kg/m^2}$. A desk one meter square is carrying ten tonnes of atmosphere.
+**Ten metric tons of air on every square meter.** From lesson 8: sea-level air pressure is $101325\,\mathrm{Pa}$, and dividing by gravity, $101325/9.80665 = 10332\,\mathrm{kg/m^2}$. A desk one meter square is carrying ten metric tons of atmosphere.
 
 Is a bound broken? No. It is sea-level pressure said another way: a pascal is one newton per square meter, and dividing a force by $g$ gives a mass. Any barometer confirms it. The desk survives because the same pressure pushes up from underneath — a fact about the desk, not a flaw in the estimate. Verdict: surprising, correct, and one of the most useful anchors you can carry.
 
@@ -164,9 +164,9 @@ Your estimate of a satellite's data rate comes out at 8 Gbps (gigabits per secon
 :::
 
 ::: answer
-The factor is 8, and 8 is in the catalogue: one byte is eight bits. Check whether one part was in bytes and another in bits. Stored data in gigabytes divided by a time gives bytes per second; comparing that with a link rate in bits per second is out by exactly eight.
+The factor is 8, and 8 is in the catalog: one byte is eight bits. Check whether one part was in bytes and another in bits. Stored data in gigabytes divided by a time gives bytes per second; comparing that with a link rate in bits per second is out by exactly eight.
 
-8 is also $2^3$, radius-versus-diameter in a volume — unlikely in a data-rate problem. That is the point of the catalogue: two candidates, and in this domain one is far more likely.
+8 is also $2^3$, radius-versus-diameter in a volume — unlikely in a data-rate problem. That is the point of the catalog: two candidates, and in this domain one is far more likely.
 
 If neither holds, the gap is not a clean factor, and the expectation deserves checking too.
 :::
@@ -233,7 +233,7 @@ It is also the closest an interview gets to the real job, which is mostly findin
 | 9.81, 57.3, 8 | $I_{sp}$ as a velocity, degrees against radians, bytes against bits |
 | Dominant uncertainty | The largest $(\ln f_i)^2$; name the factor, its size, and what would fix it |
 | Worked repairs | Radiator 2946 K from $\mathrm{cm^2}$; 14.7 min orbit from $1/n$ instead of $2\pi/n$ |
-| Correct surprises | 10 tonnes of air per square meter; about 2.14 kg of propellant for a 200 km electric climb |
+| Correct surprises | 10 metric tons of air per square meter; about 2.14 kg of propellant for a 200 km electric climb |
 
 That completes the derivation and estimation halves of the module. The next lesson takes the third kind of problem this round asks — a physics puzzle, where the hard part is not the algebra or the arithmetic but deciding what the mechanism is before any of it can begin.
 
@@ -244,7 +244,7 @@ A Fermi question asks for a number nobody has written down — how much the atmo
 ::: context mars-climate-orbiter A spacecraft lost to units
 In 1999 NASA lost the Mars Climate Orbiter as it arrived at Mars. One team's ground software reported thruster impulse in pound-force seconds. The navigation software expected newton-seconds. One pound-force is about 4.45 newtons, so every small course correction was misjudged by that factor. Over months of cruise the errors added up, and the spacecraft passed far too low over Mars and was lost.
 
-A factor of 4.45 is not in the catalogue, which is the point: the catalogue covers common slips, and a check against an independent anchor is still needed for the rest.
+A factor of 4.45 is not in the catalog, which is the point: the catalog covers common slips, and a check against an independent anchor is still needed for the rest.
 :::
 
 ::: context emissivity How well a surface glows

@@ -116,7 +116,7 @@ $$
 This is **Tustin with prewarping**. At $\omega = \omega_0$ the substitution returns exactly $j\omega_0$, so the discrete response at $\omega_0$ equals the continuous response there. Everywhere else it is still warped, a little differently. You get one frequency for free, so spend it where it matters: the notch center for a notch, the crossover frequency for a compensator.
 
 ::: key
-**Tustin with prewarping.** $s \to \dfrac{\omega_0}{\tan(\omega_0 T/2)}\dfrac{z-1}{z+1}$. Makes the discrete response exact at the single frequency $\omega_0$ — use the notch centre or the crossover frequency.
+**Tustin with prewarping.** $s \to \dfrac{\omega_0}{\tan(\omega_0 T/2)}\dfrac{z-1}{z+1}$. Makes the discrete response exact at the single frequency $\omega_0$ — use the notch center or the crossover frequency.
 :::
 
 ::: example Five discretizations of one notch

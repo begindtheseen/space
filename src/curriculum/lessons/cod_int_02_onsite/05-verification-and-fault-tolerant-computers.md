@@ -199,7 +199,7 @@ Your test suite reaches 100% statement coverage. A reviewer says that proves not
 :::
 
 ::: answer
-She is right. Statement coverage shows every line ran, not that the results were checked. You would add assertions with justified tolerances, MC/DC so each condition's effect is shown, and requirements traceability so each requirement has a test that checks its specific behaviour.
+She is right. Statement coverage shows every line ran, not that the results were checked. You would add assertions with justified tolerances, MC/DC so each condition's effect is shown, and requirements traceability so each requirement has a test that checks its specific behavior.
 :::
 
 ::: check

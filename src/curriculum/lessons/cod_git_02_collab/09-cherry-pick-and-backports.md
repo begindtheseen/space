@@ -230,7 +230,7 @@ fix/altitude-units pull request, with its test.
 Three commands get you out of a stuck cherry-pick. **`--continue`** commits the resolution and moves on to the next picked commit. **`--skip`** drops the stuck commit and carries on. **`--abort`** puts everything back as it was before you started — the safe choice when the backport needs a conversation first.
 
 ::: warning A backport that compiles is not a backport that works
-The fix was written and tested against `main`. The release branch is older code: a helper the fix calls might not exist there, a constant might have a different name, a caller might rely on the old behaviour. Git's merge only checks that the lines fit together, not that the program is right. Always build and run the tests *on the release branch* after a backport, and review the backport as its own pull request against `release/1.4`.
+The fix was written and tested against `main`. The release branch is older code: a helper the fix calls might not exist there, a constant might have a different name, a caller might rely on the old behavior. Git's merge only checks that the lines fit together, not that the program is right. Always build and run the tests *on the release branch* after a backport, and review the backport as its own pull request against `release/1.4`.
 :::
 
 ## Which fixes are already on the release?
@@ -250,7 +250,7 @@ git cherry -v main release/1.4
 
 Read it as "list the commits on `release/1.4` that are not on `main`, and mark each". A **minus** means "an equivalent change is already on `main`"; a **plus** means "no equivalent found". `-v` adds the message.
 
-The G0 backport gets a minus: its diff is Ravi's, byte for byte. The altitude backport gets a plus — not because it is missing from `main`, but because Maya adapted it, so its patch ID differs. The tool recognises exact copies, not "the same idea". The `-x` line is what connects an adapted copy to its original.
+The G0 backport gets a minus: its diff is Ravi's, byte for byte. The altitude backport gets a plus — not because it is missing from `main`, but because Maya adapted it, so its patch ID differs. The tool recognizes exact copies, not "the same idea". The `-x` line is what connects an adapted copy to its original.
 
 The same marks are available in `git log`. `--cherry-mark` labels equivalent commits `=` and the rest `+`, over the commits that are on one side or the other (the three dots, `main...release/1.4`, mean "on either side but not both"):
 
@@ -356,7 +356,7 @@ A two-commit pull request (a fix and its test) was merged into `main` as merge c
 :::
 
 ::: answer
-(1) `git cherry-pick -x -m 1 m9`: one command, and the whole pull request arrives as a single commit measured against parent 1, main's side; its message must be rewritten, since "Merge branch…" is no longer true. (2) `git cherry-pick -x p1..b2`, which picks `b1` then `b2` (everything reachable from `b2` but not from `p1`): the release keeps the same two separate commits as `main`, each with its own message and its own provenance line, and each diff matches its original exactly, so `git cherry` can recognise them if they apply cleanly.
+(1) `git cherry-pick -x -m 1 m9`: one command, and the whole pull request arrives as a single commit measured against parent 1, main's side; its message must be rewritten, since "Merge branch…" is no longer true. (2) `git cherry-pick -x p1..b2`, which picks `b1` then `b2` (everything reachable from `b2` but not from `p1`): the release keeps the same two separate commits as `main`, each with its own message and its own provenance line, and each diff matches its original exactly, so `git cherry` can recognize them if they apply cleanly.
 :::
 
 ::: check Choosing a direction

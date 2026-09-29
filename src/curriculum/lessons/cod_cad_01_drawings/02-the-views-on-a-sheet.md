@@ -69,7 +69,7 @@ A **section view** solves this. Imagine sawing the part in two along a flat plan
 How do you know where the cut was made? The view it came from shows a **[[cutting-plane line|cutting-plane]]**: a thick line, usually drawn with long and short dashes, running across the part where the saw went. Two things sit on it:
 
 - **arrows** at its ends, which point in the direction you look at the cut. The arrows point *away* from the piece that was thrown away.
-- **letters** at its ends, such as A and A. The section view is labelled to match, as SECTION A-A. A drawing with several cuts uses B-B, C-C and so on.
+- **letters** at its ends, such as A and A. The section view is labeled to match, as SECTION A-A. A drawing with several cuts uses B-B, C-C and so on.
 
 Some habits of [[section views|section-in-practice]], so they do not surprise you:
 
@@ -101,7 +101,7 @@ Read the arrows as "look this way". A section drawn in the wrong direction is th
 
 Some features are too small to read at the size of the whole part. An O-ring groove, a small chamfer on an edge, a fine thread. Drawing the whole part bigger would need an enormous sheet.
 
-A **detail view** is a magnified copy of a small region. On the main view, the region is circled with a thin line and given a letter. Somewhere else on the sheet, the enlarged copy appears, labelled with the letter and its own scale, such as DETAIL B, SCALE 4:1. That scale means the detail is drawn four times real size. (Lesson 3 covers scale notation fully.)
+A **detail view** is a magnified copy of a small region. On the main view, the region is circled with a thin line and given a letter. Somewhere else on the sheet, the enlarged copy appears, labeled with the letter and its own scale, such as DETAIL B, SCALE 4:1. That scale means the detail is drawn four times real size. (Lesson 3 covers scale notation fully.)
 
 The important thing: the **dimensions** written on a detail view are still real sizes. The magnification only makes them readable.
 
@@ -165,7 +165,7 @@ On a cutting-plane line, both arrows point up the page. The ends are lettered D.
 :::
 
 ::: answer
-It will be labelled **SECTION D-D**. The arrows give the direction of sight: you look at the cut face in the direction the arrows point, up the page. The part of the object on the arrow-tail side of the line is the piece imagined thrown away.
+It will be labeled **SECTION D-D**. The arrows give the direction of sight: you look at the cut face in the direction the arrows point, up the page. The part of the object on the arrow-tail side of the line is the piece imagined thrown away.
 :::
 
 ::: check
@@ -185,7 +185,7 @@ Hatched regions are solid material that the cutting plane passed through. Blank 
 :::
 
 ::: check
-A detail view is labelled SCALE 5:1 and shows a chamfer drawn $2.5\,\mathrm{mm}$ long on paper. How long is the real chamfer? What number should its dimension say?
+A detail view is labeled SCALE 5:1 and shows a chamfer drawn $2.5\,\mathrm{mm}$ long on paper. How long is the real chamfer? What number should its dimension say?
 :::
 
 ::: answer

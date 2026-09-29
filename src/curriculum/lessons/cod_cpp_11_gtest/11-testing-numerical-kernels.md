@@ -14,7 +14,7 @@ Numerical code puts you in the same spot. An integrator that carries a spacecraf
 - **Convergence**: when you make the step smaller, the answer must get better, and by the right amount. (A nearer trip is shorter.)
 - **Golden data**: a trusted answer recorded earlier, from an independent source, that the code must keep matching. (The friend's written route.)
 
-This last lesson of the module uses every tool you have met — fixtures, `EXPECT_NEAR` with a derived tolerance, parameterised tests, labels, the sanitizer matrix — on exactly this kind of code.
+This last lesson of the module uses every tool you have met — fixtures, `EXPECT_NEAR` with a derived tolerance, parameterized tests, labels, the sanitizer matrix — on exactly this kind of code.
 
 ## Invariants: what must never change
 
@@ -29,7 +29,7 @@ An **invariant** is a property the true answer always has, whatever the inputs. 
 You can check an invariant for *any* input, with no reference answer at all.
 
 ::: example Catching attitude drift with the norm
-A common first-order propagator adds a small step each cycle: $q_{k+1} = q_k + \tfrac{1}{2}\Delta t\, q_k \otimes \omega$, where $\omega$ is the body rate from the gyros written as a quaternion with a zero first element, and $\otimes$ (read "quaternion times") is quaternion multiplication. Some implementations renormalize after each step; some forget. A parameterised test runs both:
+A common first-order propagator adds a small step each cycle: $q_{k+1} = q_k + \tfrac{1}{2}\Delta t\, q_k \otimes \omega$, where $\omega$ is the body rate from the gyros written as a quaternion with a zero first element, and $\otimes$ (read "quaternion times") is quaternion multiplication. Some implementations renormalize after each step; some forget. A parameterized test runs both:
 
 ```cpp
 #include <Eigen/Geometry>
@@ -484,7 +484,7 @@ Each kind of test catches a different kind of bug, and this lesson met one of ea
 | `k1` for `k2` in RK4 | convergence order | a loose tolerance tuned until green |
 | J2 digits swapped | golden data | invariants and convergence |
 
-All of it runs through the machinery of the earlier lessons. Fixtures load golden files. Parameterised tests sweep step sizes and cases with readable names. `EXPECT_NEAR` tolerances are derived and commented. `gtest_discover_tests` registers every case with a label, and the matrix of lesson 10 runs the whole suite under ASan, UBSan and TSan and measures coverage. A numerical kernel tested this way is one you can trust.
+All of it runs through the machinery of the earlier lessons. Fixtures load golden files. Parameterized tests sweep step sizes and cases with readable names. `EXPECT_NEAR` tolerances are derived and commented. `gtest_discover_tests` registers every case with a label, and the matrix of lesson 10 runs the whole suite under ASan, UBSan and TSan and measures coverage. A numerical kernel tested this way is one you can trust.
 
 ## Check yourself
 

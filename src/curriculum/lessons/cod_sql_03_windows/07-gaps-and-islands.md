@@ -522,7 +522,7 @@ The dots are SAT-001's battery readings, one a minute, from 00:00 to 00:11. The 
 </svg>
 ```
 
-Blue dots are above the limit, black dots below: two islands, 00:02 to 00:04 and 00:06 to 00:09. The grey line joining the dots is a guess; the real temperature between readings is unknown.
+Blue dots are above the limit, black dots below: two islands, 00:02 to 00:04 and 00:06 to 00:09. The gray line joining the dots is a guess; the real temperature between readings is unknown.
 :::
 
 ::: context null-safe A not-equal that understands NULL

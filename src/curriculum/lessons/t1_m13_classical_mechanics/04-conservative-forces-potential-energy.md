@@ -215,7 +215,7 @@ A $420\,\mathrm{t}$ station at $r = 6791\,\mathrm{km}$ (about $413\,\mathrm{km}$
 
 **Energy per day.** Losing $100\,\mathrm{m}$ costs $432\,\mathrm{J/kg}$. For the whole station, $432 \times 4.2 \times 10^{5} \approx 1.81 \times 10^{8}\,\mathrm{J}$ per day.
 
-**Power.** Divide by the $86{,}400\,\mathrm{s}$ in a day: about $2.1\,\mathrm{kW}$ — the power of an electric kettle, draining a 420-tonne vehicle.
+**Power.** Divide by the $86{,}400\,\mathrm{s}$ in a day: about $2.1\,\mathrm{kW}$ — the power of an electric kettle, draining a 420-metric ton vehicle.
 
 **Force.** Since $dE/dt = -D v$ with $v \approx \sqrt{\mu / r} \approx 7661\,\mathrm{m/s}$, the drag is $D \approx 2100 / 7661 \approx 0.27\,\mathrm{N}$ — about the weight of a slice of bread. A quarter of a newton, never stopping, brings the station down a few kilometers a month, and periodic reboost burns have to make it up.
 :::

@@ -285,7 +285,7 @@ On a globe, latitude is measured up from the equator. Colatitude is measured dow
 :::
 
 ::: context two-roots Two Earths, the same two crossings
-Drawn flat on the sky, the scan circle (blue) cuts two different Earth positions (orange and grey) at the very same two points. One disk sits inside the circle, one outside. The sensor only sees those crossing points, so it cannot tell which Earth is real.
+Drawn flat on the sky, the scan circle (blue) cuts two different Earth positions (orange and gray) at the very same two points. One disk sits inside the circle, one outside. The sensor only sees those crossing points, so it cannot tell which Earth is real.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">

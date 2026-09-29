@@ -131,7 +131,7 @@ In SQLite, `^` is not a power operator and there is no `'infinity'`: write `c.c2
 :::
 
 ::: warning Keep the raw counts
-It is tempting to store only engineering units, since that is what everyone plots. Do not throw the counts away. When a calibration is corrected next year, the only way to fix two years of volts is to recompute them from the counts. Store raw counts (cheap, small integers) and derive engineering units in a view, a materialised view, or a second column tagged with the calibration version.
+It is tempting to store only engineering units, since that is what everyone plots. Do not throw the counts away. When a calibration is corrected next year, the only way to fix two years of volts is to recompute them from the counts. Store raw counts (cheap, small integers) and derive engineering units in a view, a materialized view, or a second column tagged with the calibration version.
 :::
 
 Decom is also where **limit checking** usually happens: each channel has yellow and red limits, and a value outside them raises an alarm for the operators on shift, seconds after the frame arrived.

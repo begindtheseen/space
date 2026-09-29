@@ -19,7 +19,7 @@ What SQP does not give you is any of lesson 9's guarantees: no global optimum, n
 Take equality constraints first. Inequalities add bookkeeping, not new ideas:
 
 $$
-\text{minimise } f(\mathbf{x}) \quad \text{subject to} \quad \mathbf{c}(\mathbf{x}) = \mathbf{0}, \qquad \mathbf{c}: \mathbb{R}^n \to \mathbb{R}^p .
+\text{minimize } f(\mathbf{x}) \quad \text{subject to} \quad \mathbf{c}(\mathbf{x}) = \mathbf{0}, \qquad \mathbf{c}: \mathbb{R}^n \to \mathbb{R}^p .
 $$
 
 Here $\mathbf{x}$ holds the $n$ unknowns and $\mathbf{c}$ lists $p$ equality constraints. The KKT conditions of lesson 2 are $n + p$ equations in the $n + p$ unknowns $(\mathbf{x}, \boldsymbol{\lambda})$, where $\boldsymbol{\lambda}$ ("lambda") holds the multipliers:
@@ -52,10 +52,10 @@ $$
 That is exactly lesson 5's KKT system for the quadratic program
 
 $$
-\text{minimise}_{\mathbf{d}} \ \nabla f(\mathbf{x})^\top\mathbf{d} + \tfrac{1}{2}\mathbf{d}^\top\mathbf{W}\mathbf{d} \quad \text{subject to} \quad \mathbf{c}(\mathbf{x}) + \nabla\mathbf{c}(\mathbf{x})\,\mathbf{d} = \mathbf{0},
+\text{minimize}_{\mathbf{d}} \ \nabla f(\mathbf{x})^\top\mathbf{d} + \tfrac{1}{2}\mathbf{d}^\top\mathbf{W}\mathbf{d} \quad \text{subject to} \quad \mathbf{c}(\mathbf{x}) + \nabla\mathbf{c}(\mathbf{x})\,\mathbf{d} = \mathbf{0},
 $$
 
-with $\boldsymbol{\lambda}^+$ as its multipliers. So Newton's method on the KKT conditions *is* solving a QP again and again — the hiker's routine. The QP's objective is a bowl model of the Lagrangian. Its constraints are the **[[linearised constraints|linearised-picture]]** — each curved constraint replaced by its tangent. That one fact is all of SQP. It explains both the speed and the fragility: SQP inherits Newton's fast local convergence, and Newton's blindness to whether it is near a minimum, a maximum or a saddle.
+with $\boldsymbol{\lambda}^+$ as its multipliers. So Newton's method on the KKT conditions *is* solving a QP again and again — the hiker's routine. The QP's objective is a bowl model of the Lagrangian. Its constraints are the **[[linearized constraints|linearised-picture]]** — each curved constraint replaced by its tangent. That one fact is all of SQP. It explains both the speed and the fragility: SQP inherits Newton's fast local convergence, and Newton's blindness to whether it is near a minimum, a maximum or a saddle.
 
 ::: key The SQP subproblem
 At the iterate $(\mathbf{x}_k, \boldsymbol{\lambda}_k)$, solve
@@ -87,7 +87,7 @@ read "phi of x", where $\|\mathbf{c}\|_1$ is the sum of the sizes of the constra
 
 **A filter instead of a merit function.** A **[[filter|filter-picture]]** accepts a step if it beats every earlier accepted point on either the objective or the constraint violation. This two-score test avoids picking $\eta$ at all. IPOPT's line search uses a filter; SNOPT uses an augmented-Lagrangian merit function.
 
-**Second-order corrections.** Close to the answer, a good full SQP step can *raise* the $\ell_1$ merit function. The linearised constraints are met exactly, but the curved ones are missed by an amount that grows with the square of the step, while the objective improves only in proportion to the step. The line search rejects the unit step and the fast convergence is lost. This is the **[[Maratos effect|maratos-history]]**. The cure is a **second-order correction**: evaluate $\mathbf{c}$ at the trial point, solve one small extra system for a correction $\hat{\mathbf{d}}$ that removes the leftover violation, and test $\mathbf{x}_k + \mathbf{d}_k + \hat{\mathbf{d}}_k$ instead.
+**Second-order corrections.** Close to the answer, a good full SQP step can *raise* the $\ell_1$ merit function. The linearized constraints are met exactly, but the curved ones are missed by an amount that grows with the square of the step, while the objective improves only in proportion to the step. The line search rejects the unit step and the fast convergence is lost. This is the **[[Maratos effect|maratos-history]]**. The cure is a **second-order correction**: evaluate $\mathbf{c}$ at the trial point, solve one small extra system for a correction $\hat{\mathbf{d}}$ that removes the leftover violation, and test $\mathbf{x}_k + \mathbf{d}_k + \hat{\mathbf{d}}_k$ instead.
 
 ::: example The SQP subproblem, with numbers
 Here is the free-final-time landing that lesson 6 kept out of the SOCP, at its smallest honest size. A vehicle descends vertically from $h_0 = 1000\,\mathrm{m}$ at $v_0 = -50\,\mathrm{m/s}$, with $g = 9.80665\,\mathrm{m/s^2}$. The flight is split into two equal steps of length $\tau = T/2$ ("tau"), with thrust accelerations $a_1, a_2 \in [0, 30]\,\mathrm{m/s^2}$ held constant over each.
@@ -120,7 +120,7 @@ $$
 
 with QP multipliers $(-1.977,\ 0.1206)$.
 
-**Check what the step did.** It meets the *linearised* constraints exactly: $\mathbf{c}_0 + \nabla\mathbf{c}_0\mathbf{d}_0 = \mathbf{0}$ to machine precision. But the new point $\mathbf{x}_1 = (0.181, 26.52, 14.33)$ has true errors $c_1 = 0.82\,\mathrm{m/s}$ and $c_2 = -28.8\,\mathrm{m}$. That is the method in one picture: each QP solves a straightened problem, and the curvature it ignored becomes the error the next QP cleans up. Still, the height miss fell from $234\,\mathrm{m}$ to $29\,\mathrm{m}$ in one step — the quadratic model earning its keep.
+**Check what the step did.** It meets the *linearized* constraints exactly: $\mathbf{c}_0 + \nabla\mathbf{c}_0\mathbf{d}_0 = \mathbf{0}$ to machine precision. But the new point $\mathbf{x}_1 = (0.181, 26.52, 14.33)$ has true errors $c_1 = 0.82\,\mathrm{m/s}$ and $c_2 = -28.8\,\mathrm{m}$. That is the method in one picture: each QP solves a straightened problem, and the curvature it ignored becomes the error the next QP cleans up. Still, the height miss fell from $234\,\mathrm{m}$ to $29\,\mathrm{m}$ in one step — the quadratic model earning its keep.
 :::
 
 ## Quasi-Newton: BFGS in place of the Hessian
@@ -140,7 +140,7 @@ If $\mathbf{y}_k^\top\mathbf{s}_k > 0$ — the **curvature condition**, which le
 For large problems the matrix is never formed. **Limited-memory BFGS** (L-BFGS) keeps only the last five to twenty $(\mathbf{s}, \mathbf{y})$ pairs and applies their effect by a short recursion. That is why an NLP with a hundred thousand unknowns is tractable at all.
 
 ::: key BFGS
-Builds an approximate inverse Hessian from successive gradient differences (a rank-two update), giving near-Newton convergence without ever forming or factorising the true Hessian. Exact Newton converges quadratically; BFGS converges superlinearly, and costs one gradient evaluation and a rank-two update per iteration instead of a full second-derivative evaluation.
+Builds an approximate inverse Hessian from successive gradient differences (a rank-two update), giving near-Newton convergence without ever forming or factorizing the true Hessian. Exact Newton converges quadratically; BFGS converges superlinearly, and costs one gradient evaluation and a rank-two update per iteration instead of a full second-derivative evaluation.
 :::
 
 ::: example The full SQP run, and what it says about the landing
@@ -164,7 +164,7 @@ Continue from $\mathbf{x}_0 = (2, 24, 12)$ with the exact Lagrangian Hessian (pl
 
 **The multipliers mean something.** For $\mathcal{L} = f + \lambda_1c_1 + \lambda_2c_2$ they are $\boldsymbol{\lambda} = (-1.323,\ 0.0926)$. Differentiate the hand formula: one more meter of starting height costs $0.09261\,\mathrm{m/s}$ of impulse, and a finite difference agrees. That is exactly $\lambda_2$ — lesson 2's **[[shadow price|shadow-price-landing]]**, showing up where it should.
 
-**Compare with the continuous answer.** Lesson 5's continuous thrust history for the same vehicle gives $t_f = 13.384\,\mathrm{s}$ and impulse $181.25\,\mathrm{m/s}$. The two-step version is $4.2\,\%$ long and $3.1\,\%$ expensive, because a control held constant for $7\,\mathrm{s}$ cannot put the ignition where it belongs. That error is the discretisation's, not the optimizer's, and it shrinks as $N$ grows — which is why flight formulations use $50$ to $200$ nodes, not two.
+**Compare with the continuous answer.** Lesson 5's continuous thrust history for the same vehicle gives $t_f = 13.384\,\mathrm{s}$ and impulse $181.25\,\mathrm{m/s}$. The two-step version is $4.2\,\%$ long and $3.1\,\%$ expensive, because a control held constant for $7\,\mathrm{s}$ cannot put the ignition where it belongs. That error is the discretization's, not the optimizer's, and it shrinks as $N$ grows — which is why flight formulations use $50$ to $200$ nodes, not two.
 :::
 
 ## What SQP gives up
@@ -173,7 +173,7 @@ On a convex problem, lesson 9's interior-point method returns the global optimum
 
 - **Local, not global.** The QP is built from derivatives at the current point; nothing looks at the rest of the space. A different start can land on a different local minimum — for a trajectory, a completely different flight path.
 - **No iteration bound.** The theory promises quadratic convergence only *near* a solution. How long it takes to get near, or whether it gets there at all, depends on the data. Codes routinely take five iterations on one case and three hundred on the next.
-- **Infeasible subproblems.** The linearised constraints can contradict each other even when the real feasible set is not empty, and then there is no step to take. Production codes switch to an **elastic mode**: they relax the linearised constraints with penalised slack variables, so the subproblem always has a solution, and the size of the slack reports how badly the relaxation was needed.
+- **Infeasible subproblems.** The linearized constraints can contradict each other even when the real feasible set is not empty, and then there is no step to take. Production codes switch to an **elastic mode**: they relax the linearized constraints with penalized slack variables, so the subproblem always has a solution, and the size of the slack reports how badly the relaxation was needed.
 - **Derivatives are the whole game.** A gradient wrong in the sixth digit — a sign error in a hand-coded Jacobian, a finite difference with a bad step — shows up as slow convergence, or as convergence to a point that is not a solution. Check every derivative against finite differences, or better, generate them by **[[algorithmic differentiation|ad-bridge]]**.
 
 So SQP belongs where its weaknesses are affordable: trajectory design on the ground, where an engineer looks at the answer; mission planning, where hours are available; and offline generation of the reference trajectory that an onboard convex solver then tracks. Not in a loop with a hard deadline and nobody watching.
@@ -182,7 +182,7 @@ So SQP belongs where its weaknesses are affordable: trajectory design on the gro
 SQP stops when the KKT error and the constraint violation fall below tolerance. That means "this point meets the first-order necessary conditions" — and lesson 2 was explicit that for a nonconvex problem KKT is necessary, not sufficient. The point could be a local minimum, a saddle, or, if nobody checked the second-order conditions, a maximum along some direction. Lesson 7's dual bound does not rescue you: the dual of a nonconvex problem generally has a gap. The discipline: re-solve from many random starts, compare the objective values, check the second-order conditions on the reduced Hessian, and call the best answer the best *found*, never the best possible.
 :::
 
-Modern powered-descent work often uses SQP's convex cousin, **sequential convex programming** — in guidance, usually the **[[successive convexification|scvx-history]]** (SCvx) family. It linearises only the truly nonconvex parts, so each subproblem is an SOCP with a trust region and **virtual controls** (penalised slacks that keep it feasible).
+Modern powered-descent work often uses SQP's convex cousin, **sequential convex programming** — in guidance, usually the **[[successive convexification|scvx-history]]** (SCvx) family. It linearizes only the truly nonconvex parts, so each subproblem is an SOCP with a trust region and **virtual controls** (penalized slacks that keep it feasible).
 
 ## Check yourself
 
@@ -191,9 +191,9 @@ Why does the SQP subproblem use the Hessian of the Lagrangian rather than the He
 :::
 
 ::: answer
-Because the constraints are curved and the subproblem treats them as flat. The term $\sum_j\lambda_j\nabla^2c_j$ accounts for the way a step along the linearised constraint leaves the true one, and the correct Newton step on the KKT system contains it. Drop it and you lose the quadratic convergence at best; the step can fail outright.
+Because the constraints are curved and the subproblem treats them as flat. The term $\sum_j\lambda_j\nabla^2c_j$ accounts for the way a step along the linearized constraint leaves the true one, and the correct Newton step on the KKT system contains it. Drop it and you lose the quadratic convergence at best; the step can fail outright.
 
-A small case: minimise $f = x_1$ subject to $c = x_1^2 + x_2^2 - 1 = 0$. The answer is $(-1, 0)$, where stationarity $(1, 0) + \lambda(-2, 0) = \mathbf{0}$ gives $\lambda = 1/2$. Here $\nabla^2 f = \mathbf{0}$, so an "SQP" with the objective Hessian solves a *linear* program over a line each iteration. Nothing stops the step; it flies off along the tangent. The Lagrangian Hessian is $\lambda\nabla^2c = 2\lambda\mathbf{I} = \mathbf{I}$ at the answer — positive definite — so the correct subproblem is a well-posed QP. The constraint's curvature is the only curvature in the problem.
+A small case: minimize $f = x_1$ subject to $c = x_1^2 + x_2^2 - 1 = 0$. The answer is $(-1, 0)$, where stationarity $(1, 0) + \lambda(-2, 0) = \mathbf{0}$ gives $\lambda = 1/2$. Here $\nabla^2 f = \mathbf{0}$, so an "SQP" with the objective Hessian solves a *linear* program over a line each iteration. Nothing stops the step; it flies off along the tangent. The Lagrangian Hessian is $\lambda\nabla^2c = 2\lambda\mathbf{I} = \mathbf{I}$ at the answer — positive definite — so the correct subproblem is a well-posed QP. The constraint's curvature is the only curvature in the problem.
 :::
 
 ::: check
@@ -201,7 +201,7 @@ In the worked example, the Lagrangian Hessian at the first iterate is indefinite
 :::
 
 ::: answer
-An indefinite $\mathbf{W}$ makes the subproblem a nonconvex QP, which lesson 5 noted is NP-hard in general. Here, concretely, the objective can be pushed toward $-\infty$ along a direction of negative curvature that stays on the linearised constraints, so the "step" is unbounded or meaningless.
+An indefinite $\mathbf{W}$ makes the subproblem a nonconvex QP, which lesson 5 noted is NP-hard in general. Here, concretely, the objective can be pushed toward $-\infty$ along a direction of negative curvature that stays on the linearized constraints, so the "step" is unbounded or meaningless.
 
 The fixes: (1) use $\mathbf{W} + \sigma\mathbf{I}$, with the smallest $\sigma$ that makes it positive definite on the null space of the active constraint Jacobian. In the example $\sigma = 1$ was enough, with leading minors $1, 1, 0.5$. (2) Impose a trust region $\|\mathbf{d}\| \le \Delta$. That bounds the subproblem whatever the curvature, and gives a principled way to shrink the step when the model proves unreliable. Quasi-Newton SQP avoids the problem altogether, because damped BFGS keeps $\mathbf{B}_k$ positive definite by construction.
 :::
@@ -214,7 +214,7 @@ A colleague's SQP converges in twelve iterations from one starting guess, and st
 1. The derivatives. Compare the analytic Jacobian and gradient with central finite differences at the stalling point. A wrong derivative is by far the most common cause, and cheap to rule out.
 2. Scaling. If the variables differ by many orders of magnitude — meters beside radians beside seconds — the QP is badly conditioned and one group dominates the merit function. Rescale so a unit change in each variable matters about equally.
 3. A Maratos effect. If unit steps are rejected while the KKT error is small, add a second-order correction or switch to a filter.
-4. An infeasible linearised subproblem at that point. That needs elastic mode, not a better step.
+4. An infeasible linearized subproblem at that point. That needs elastic mode, not a better step.
 5. Only then: the second guess may sit in the basin of a different, worse, or nonexistent solution. That is not a bug; it is the nature of a nonconvex problem.
 :::
 
@@ -227,7 +227,7 @@ Every two-step thrust history is also a continuous one, so the discrete feasible
 
 The specific loss is timing. With two steps, ignition must fall on the boundary between them, at $6.97\,\mathrm{s}$; the continuous optimum ignites at $7.34\,\mathrm{s}$. Forced to brake early, the vehicle spends longer fighting gravity, and by lesson 5's identity the impulse is $-v_0 + gT$, so a longer $T$ costs directly. Check: $-(-50) + 9.80665 \times 13.948 = 186.78$.
 
-As $N$ grows, the switch can be placed within one step length $\Delta t$ of its true time, and the excess shrinks roughly in proportion to $\Delta t$ — here $3.1\,\%$ at $N = 2$. That measures the discretisation, not the optimizer, so a convergence study in $N$ should come before any claim about an optimal trajectory.
+As $N$ grows, the switch can be placed within one step length $\Delta t$ of its true time, and the excess shrinks roughly in proportion to $\Delta t$ — here $3.1\,\%$ at $N = 2$. That measures the discretization, not the optimizer, so a convergence study in $N$ should come before any claim about an optimal trajectory.
 :::
 
 ::: check
@@ -252,17 +252,17 @@ In practice the sequential convex programming route above is preferred, because 
 
 | Idea | In one line |
 | --- | --- |
-| Problem | minimise $f(\mathbf{x})$ s.t. $\mathbf{c}_E(\mathbf{x}) = \mathbf{0}$, $\mathbf{c}_I(\mathbf{x}) \le \mathbf{0}$; smooth, maybe nonconvex |
-| Key identity | Newton on the KKT system = repeated QPs with linearised constraints |
+| Problem | minimize $f(\mathbf{x})$ s.t. $\mathbf{c}_E(\mathbf{x}) = \mathbf{0}$, $\mathbf{c}_I(\mathbf{x}) \le \mathbf{0}$; smooth, maybe nonconvex |
+| Key identity | Newton on the KKT system = repeated QPs with linearized constraints |
 | Subproblem | $\min\ \nabla f_k^\top\mathbf{d} + \tfrac{1}{2}\mathbf{d}^\top\mathbf{W}_k\mathbf{d}$ s.t. $\mathbf{c}_k + \nabla\mathbf{c}_k\mathbf{d} = \mathbf{0}$ (and $\le\mathbf{0}$) |
 | Hessian | $\mathbf{W}_k = \nabla^2 f + \sum_j\lambda_j\nabla^2c_j$; constraint curvature essential; often indefinite |
-| Globalisation | $\ell_1$ merit $\phi = f + \eta\|\mathbf{c}\|_1$, $\eta > \|\boldsymbol{\lambda}\|_\infty$, or a filter; trust region or $\mathbf{W} + \sigma\mathbf{I}$ |
+| Globalization | $\ell_1$ merit $\phi = f + \eta\|\mathbf{c}\|_1$, $\eta > \|\boldsymbol{\lambda}\|_\infty$, or a filter; trust region or $\mathbf{W} + \sigma\mathbf{I}$ |
 | Maratos effect | A good unit step raises the merit function; fixed by a second-order correction |
 | BFGS | $\mathbf{B}_{k+1} = \mathbf{B}_k - \frac{\mathbf{B}_k\mathbf{s}\mathbf{s}^\top\mathbf{B}_k}{\mathbf{s}^\top\mathbf{B}_k\mathbf{s}} + \frac{\mathbf{y}\mathbf{y}^\top}{\mathbf{y}^\top\mathbf{s}}$; Powell damping; L-BFGS for large $n$ |
 | Convergence | Quadratic near a solution with LICQ and second-order sufficiency; nothing promised far away |
 | Worked landing | $(a_1, a_2, T) = (0,\ 26.783\,\mathrm{m/s^2},\ 13.948\,\mathrm{s})$, impulse $186.78\,\mathrm{m/s}$, four steps |
 | Multipliers | $\boldsymbol{\lambda} = (-1.323, 0.0926)$; $\lambda_2 = \mathrm{d}(\text{impulse})/\mathrm{d}h_0 = 0.09261\,\mathrm{(m/s)/m}$ |
-| Discretisation | $N = 2$: $T$ $4.2\,\%$ long, impulse $3.1\,\%$ high vs continuous $13.384\,\mathrm{s}$, $181.25\,\mathrm{m/s}$ |
+| Discretization | $N = 2$: $T$ $4.2\,\%$ long, impulse $3.1\,\%$ high vs continuous $13.384\,\mathrm{s}$, $181.25\,\mathrm{m/s}$ |
 | Gives up | Global optimality, iteration bounds, certificates, independence from the start |
 | Cousin | Sequential convex programming: SOCP subproblems, trust region, virtual controls |
 
@@ -368,7 +368,7 @@ $\lambda_2 = 0.0926$ is measured in meters per second of impulse per meter of st
 :::
 
 ::: context scvx-history SQP's convex cousin
-Sequential convex programming linearises only the truly nonconvex parts of the problem, around a reference trajectory. The convex parts — thrust cone, glide slope, throttle limits — stay exactly as they are, so each subproblem is an SOCP rather than a QP. It adds a trust region on how far the trajectory may move from the reference, and **virtual controls**: small penalised slacks on the dynamics that keep every subproblem feasible even when the linearisation is poor. That cures the artificial infeasibility that plagues plain SQP. Under stated assumptions, convergence to a KKT point of the original problem can be proved, and every iteration is a convex solve with all of lesson 9's properties.
+Sequential convex programming linearizes only the truly nonconvex parts of the problem, around a reference trajectory. The convex parts — thrust cone, glide slope, throttle limits — stay exactly as they are, so each subproblem is an SOCP rather than a QP. It adds a trust region on how far the trajectory may move from the reference, and **virtual controls**: small penalized slacks on the dynamics that keep every subproblem feasible even when the linearization is poor. That cures the artificial infeasibility that plagues plain SQP. Under stated assumptions, convergence to a KKT point of the original problem can be proved, and every iteration is a convex solve with all of lesson 9's properties.
 
 The method grew out of the Mars powered-descent research of Behçet Açıkmeşe and colleagues, the line of work that produced lossless convexification. Yuanqi Mao, Michael Szmuk and Açıkmeşe published a convergence analysis in 2016, and it has since been applied to six-degree-of-freedom rocket landing with aerodynamic and attitude constraints: an outer loop that is SQP in spirit, around lesson 6's SOCP.
 :::

@@ -62,7 +62,7 @@ So the formula becomes $\mathbf{0}/0$ — an **[[indeterminate form|zero-over-ze
 
 Now back off a little, to $179.9°$. The three points are no longer exactly in a row. The plane is defined, $A$ is not zero, and the solver returns an answer with no error and no warning.
 
-The trouble is how much that answer moves when the input moves a little. Real position vectors come from **[[orbit determination|orbit-determination]]** — working out where a spacecraft or planet is from tracking data — or from predicted planet positions or onboard navigation. They always carry some error, from metres to kilometres even for well-tracked objects. Near $180°$, that ordinary error gets magnified into a big error in $\mathbf{v}_1$. The error lands in one particular direction: out of the plane, the exact direction the last section said becomes undefined at $180°$.
+The trouble is how much that answer moves when the input moves a little. Real position vectors come from **[[orbit determination|orbit-determination]]** — working out where a spacecraft or planet is from tracking data — or from predicted planet positions or onboard navigation. They always carry some error, from meters to kilometers even for well-tracked objects. Near $180°$, that ordinary error gets magnified into a big error in $\mathbf{v}_1$. The error lands in one particular direction: out of the plane, the exact direction the last section said becomes undefined at $180°$.
 
 Two words make this precise.
 
@@ -123,7 +123,7 @@ $$
 \mathbf{v}_1' - \mathbf{v}_1 = (0.0000069,\ -0.0134,\ 0.4682)\,\mathrm{km/s} .
 $$
 
-Almost all of it is in the new $z$ part. A $1\,\mathrm{km}$ wobble — $0.01\%$ of $\lVert\mathbf{r}_2\rVert$ — has created nearly half a kilometre per second of out-of-plane velocity. That is as big as a whole orbit-raising burn, caused by a position error that would be harmless anywhere else on the sweep.
+Almost all of it is in the new $z$ part. A $1\,\mathrm{km}$ wobble — $0.01\%$ of $\lVert\mathbf{r}_2\rVert$ — has created nearly half a kilometer per second of out-of-plane velocity. That is as big as a whole orbit-raising burn, caused by a position error that would be harmless anywhere else on the sweep.
 
 **What happened.** The nudge chose a new plane. The solver, doing exactly its job, swung the whole sideways velocity into that plane. The next note shows how big the swing is with nothing but a right triangle.
 :::
@@ -147,7 +147,7 @@ Halve the gap to $180°$ and the lever arm $17.45\,\mathrm{km}$ halves, so the s
 :::
 
 ::: warning The problem is well-posed; only the sensitivity is bad
-"Ill-conditioned" is not the same complaint as "singular". For any $\Delta\nu$ below $180°$, Lambert's problem has one answer, and a good solver finds it: the solver used for these examples converged cleanly at $179.99°$, and flying its answer forward with an accurate integrator landed within a metre of $\mathbf{r}_2$ — a $10\,000\,\mathrm{km}$ target. The whole issue is *sensitivity*. The map from the inputs ($\mathbf{r}_1$, $\mathbf{r}_2$) to the output ($\mathbf{v}_1$) gets steeper without limit as $\Delta\nu\to180°$, so an input error that is harmless elsewhere becomes a large output error here. In a rushed test, a problem with huge sensitivity and a truly singular problem can look alike. They are not the same, and they need different fixes.
+"Ill-conditioned" is not the same complaint as "singular". For any $\Delta\nu$ below $180°$, Lambert's problem has one answer, and a good solver finds it: the solver used for these examples converged cleanly at $179.99°$, and flying its answer forward with an accurate integrator landed within a meter of $\mathbf{r}_2$ — a $10\,000\,\mathrm{km}$ target. The whole issue is *sensitivity*. The map from the inputs ($\mathbf{r}_1$, $\mathbf{r}_2$) to the output ($\mathbf{v}_1$) gets steeper without limit as $\Delta\nu\to180°$, so an input error that is harmless elsewhere becomes a large output error here. In a rushed test, a problem with huge sensitivity and a truly singular problem can look alike. They are not the same, and they need different fixes.
 :::
 
 ## Why no solver can fix it
@@ -168,7 +168,7 @@ Since the algebra cannot be patched, real practice works around it. The idea: ne
 
 What you must not do is trust two position vectors to fix a direction they cannot resolve.
 
-**Third, budget more fuel for corrections.** The sensitivity comes from the transfer geometry, not from any one burn, so it does not vanish after the first correction. A small **[[trajectory correction manoeuvre|tcm-bridge]]** (TCM) removes accumulated error on the way. A trip near the ridge needs a bigger TCM allowance than one well inside a lobe, because even a well-executed first burn leaves an out-of-plane error that ordinary navigation uncertainty has made large.
+**Third, budget more fuel for corrections.** The sensitivity comes from the transfer geometry, not from any one burn, so it does not vanish after the first correction. A small **[[trajectory correction maneuver|tcm-bridge]]** (TCM) removes accumulated error on the way. A trip near the ridge needs a bigger TCM allowance than one well inside a lobe, because even a well-executed first burn leaves an out-of-plane error that ordinary navigation uncertainty has made large.
 
 ## Check yourself
 
@@ -215,7 +215,7 @@ Do not rely on the two position vectors alone to fix the transfer plane. Near th
 
 Instead, bring in independent information to pin down the plane: a required inclination or approach-plane constraint from the mission design, or extra velocity or plane-direction information from orbit determination. Do not take the Lambert solve's sideways direction at face value.
 
-Also budget a larger trajectory-correction-manoeuvre allowance than for a transfer safely inside a Type I or Type II lobe. The first burn is likely to leave a larger-than-usual out-of-plane miss that must be removed later.
+Also budget a larger trajectory-correction-maneuver allowance than for a transfer safely inside a Type I or Type II lobe. The first burn is likely to leave a larger-than-usual out-of-plane miss that must be removed later.
 :::
 
 ## Summary
@@ -272,7 +272,7 @@ That is precisely the $180°$ situation. The solver's formula for $\mathbf{v}_1$
 ::: context orbit-determination Where position vectors come from
 Nobody hands a mission a perfect $\mathbf{r}_1$ and $\mathbf{r}_2$. **Orbit determination** is the job of turning tracking data — radar ranges, radio Doppler shifts, star-camera sightings, GPS fixes — into the best estimate of where something is and where it is going. Later modules in this course build the tools that do it: the Kalman filter and orbit determination.
 
-Every estimate comes with an uncertainty. For a spacecraft in low Earth orbit with onboard GPS it may be metres. For a planet's predicted position, or a spacecraft in deep space tracked by radio, it can be kilometres. This lesson is about what happens when that ordinary, unavoidable fuzz meets a geometry that magnifies it.
+Every estimate comes with an uncertainty. For a spacecraft in low Earth orbit with onboard GPS it may be meters. For a planet's predicted position, or a spacecraft in deep space tracked by radio, it can be kilometers. This lesson is about what happens when that ordinary, unavoidable fuzz meets a geometry that magnifies it.
 :::
 
 ::: context ill-conditioned-word A wobbly ladder
@@ -321,7 +321,7 @@ A classic Hohmann transfer is exactly $180°$, which seems to contradict all thi
 :::
 
 ::: context tcm-bridge Small burns on the way
-A **trajectory correction manoeuvre**, or TCM, is a small burn during the cruise that nudges the spacecraft back onto its planned path. Interplanetary missions plan several. The last lesson of this module works out when each one is cheapest, and how big a fuel allowance the whole set needs.
+A **trajectory correction maneuver**, or TCM, is a small burn during the cruise that nudges the spacecraft back onto its planned path. Interplanetary missions plan several. The last lesson of this module works out when each one is cheapest, and how big a fuel allowance the whole set needs.
 
 The link to this lesson: the error a TCM must remove grows with the sensitivity of the transfer. A transfer near $180°$ turns small navigation errors into big out-of-plane misses, so it needs a bigger TCM budget.
 :::

@@ -3,14 +3,14 @@ id: l01-constructors
 title: Constructors, and the explicit keyword
 minutes: 20
 covers:
-  - Constructors: default, parameterised, delegating, converting, explicit
+  - Constructors: default, parameterized, delegating, converting, explicit
 ---
 
 Think about checking in at a hotel. Before you get a key, the person at the desk fills in a card: your name, your room, the night you leave. You never walk around the hotel as a half-registered guest with a blank room number. The check-in desk is the one door into being a guest, and it makes sure every field is filled.
 
 A C++ object gets the same treatment from its **constructor** — a special function that runs automatically at the moment the object is created, and whose job is to put the object into a sensible starting state. Nothing can use the object before its constructor has finished.
 
-The last module ended on two ideas. Lesson 13 split types into [[values|value-bridge]] (a state vector, a quaternion — copy one and you get an independent twin) and identities (an IMU driver — there is only one). Lesson 14 showed smart pointers that destroy what they own at exactly the right moment. Both quietly relied on objects that begin and end their lives cleanly. This module is about that lifecycle: how an object is born, how it dies, how it is copied and moved. This first lesson is about birth. We will build one small class, a `Vector3` — three numbers `x`, `y`, `z` in metres, the kind of thing that holds a position, a velocity or a thrust command in flight software — and give it every kind of constructor C++ has.
+The last module ended on two ideas. Lesson 13 split types into [[values|value-bridge]] (a state vector, a quaternion — copy one and you get an independent twin) and identities (an IMU driver — there is only one). Lesson 14 showed smart pointers that destroy what they own at exactly the right moment. Both quietly relied on objects that begin and end their lives cleanly. This module is about that lifecycle: how an object is born, how it dies, how it is copied and moved. This first lesson is about birth. We will build one small class, a `Vector3` — three numbers `x`, `y`, `z` in meters, the kind of thing that holds a position, a velocity or a thrust command in flight software — and give it every kind of constructor C++ has.
 
 ## What a constructor is
 
@@ -33,7 +33,7 @@ Three things make `Vector3(double x, double y, double z)` a constructor rather t
 - It has **no return type** — not even `void`. It does not return anything; it sets up the object it is running inside.
 - You never call it by name. The compiler calls it for you whenever a `Vector3` is created: `Vector3 p{1.0, 2.0, 3.0};`.
 
-The part after the colon, `: x_(x), y_(y), z_(z)`, is the **member initialiser list** — the list of starting values for the members. Read `x_(x)` aloud as "x-underscore is initialised from x". The trailing underscore is a naming habit that marks a private member, so it cannot be confused with the parameter `x`. The empty braces `{}` at the end are the constructor's **body**, which runs after every member has its value. The list has rules of its own that surprise people, and the next lesson is about exactly those. For now, read it as "fill in the card".
+The part after the colon, `: x_(x), y_(y), z_(z)`, is the **member initializer list** — the list of starting values for the members. Read `x_(x)` aloud as "x-underscore is initialized from x". The trailing underscore is a naming habit that marks a private member, so it cannot be confused with the parameter `x`. The empty braces `{}` at the end are the constructor's **body**, which runs after every member has its value. The list has rules of its own that surprise people, and the next lesson is about exactly those. For now, read it as "fill in the card".
 
 Why bother? Because a class usually has a promise it wants to keep for its whole life — a **[[class invariant|class-invariant]]**, a rule about its members that is always true from the outside. A `Vector3` has an easy one: all three numbers are real values, never leftover garbage. A `UnitQuaternion` would promise its length is 1. A `RingBuffer` would promise its head index is inside the buffer. The constructor is where the invariant is first made true, and because it is the only way in, no object ever exists without it.
 
@@ -41,7 +41,7 @@ Why bother? Because a class usually has a promise it wants to keep for its whole
 
 A **default constructor** is one you can call with no arguments. It runs when you write `Vector3 v;` or `Vector3 v{};`.
 
-Here is the first rule that surprises people. If your class declares *no constructors at all*, the compiler writes a default constructor for you. But the one it writes does not choose values for `double` or `int` members. It leaves them **uninitialised** — holding whatever bytes happened to be in that memory before, the [[garbage from a previous call|garbage-bytes]]. Reading such a value is undefined behaviour, one of the five memory bugs from the last module.
+Here is the first rule that surprises people. If your class declares *no constructors at all*, the compiler writes a default constructor for you. But the one it writes does not choose values for `double` or `int` members. It leaves them **uninitialised** — holding whatever bytes happened to be in that memory before, the [[garbage from a previous call|garbage-bytes]]. Reading such a value is undefined behavior, one of the five memory bugs from the last module.
 
 ```cpp
 struct RawVector { double x, y, z; };   // no constructor written
@@ -50,7 +50,7 @@ RawVector a;     // a.x, a.y, a.z: indeterminate garbage (for a local variable)
 RawVector b{};   // empty braces: every member set to zero
 ```
 
-The empty braces ask for **value-initialisation**, which zero-fills members when there is no constructor you wrote. That is why `{}` is a good habit.
+The empty braces ask for **value-initialization**, which zero-fills members when there is no constructor you wrote. That is why `{}` is a good habit.
 
 The second rule: as soon as you declare *any* constructor yourself, the compiler stops writing the default one. Our `Vector3` above has only the three-number constructor, so `Vector3 v;` no longer compiles. g++ 13 says:
 
@@ -66,9 +66,9 @@ That is often exactly what you want: a thruster command with no numbers in it sh
 `Vector3 v();` looks like "make `v` with no arguments", but C++ reads it as a *function declaration*: a function named `v` that takes nothing and returns a `Vector3`. g++ warns `empty parentheses were disambiguated as a function declaration [-Wvexing-parse]`, and the first use of `v.x()` fails to compile. Write `Vector3 v;` or `Vector3 v{};` instead.
 :::
 
-## Parameterised constructors, and more than one
+## Parameterized constructors, and more than one
 
-A constructor that takes arguments is a **parameterised constructor**. Ours takes three. A class may have several constructors, as long as their parameter lists differ — this is the function **overloading** you met in the basics module, and the compiler picks one by matching the arguments you pass.
+A constructor that takes arguments is a **parameterized constructor**. Ours takes three. A class may have several constructors, as long as their parameter lists differ — this is the function **overloading** you met in the basics module, and the compiler picks one by matching the arguments you pass.
 
 You can pass the arguments in round brackets or curly braces:
 
@@ -81,7 +81,7 @@ Both call the same constructor. The braces have one advantage: they forbid a **[
 
 ## Delegating constructors
 
-A **delegating constructor** hands the work to another constructor of the same class. You write the other constructor's name in the initialiser list, where members would normally go:
+A **delegating constructor** hands the work to another constructor of the same class. You write the other constructor's name in the initializer list, where members would normally go:
 
 ```cpp
 Vector3() : Vector3(0.0, 0.0, 0.0) {}
@@ -91,7 +91,7 @@ Read it as "the default constructor delegates to the three-number constructor wi
 
 1. The **target** constructor (the one delegated to) runs completely first — its list and its body.
 2. Then the delegating constructor's own body runs.
-3. The delegation must be the *only* thing in the list. You cannot delegate and also initialise a member; g++ says `mem-initializer for 'Vector3::z_' follows constructor delegation`.
+3. The delegation must be the *only* thing in the list. You cannot delegate and also initialize a member; g++ says `mem-initializer for 'Vector3::z_' follows constructor delegation`.
 4. Constructors must not delegate in a circle (A to B to A). That is an error the compiler is not required to catch.
 
 The point is to keep one copy of the setup logic. If the three-number constructor later gains a check — say, rejecting a NaN, the "not a number" value a failed calculation produces — every delegating constructor gets the check for free.
@@ -200,7 +200,7 @@ Walk through the first call. `command_thrust` wants a `const Vector3&`. It was h
 
 How big is that mistake? The commanded force has size $\sqrt{450^2 + 450^2 + 450^2} = 450\sqrt{3} \approx 779\,\mathrm{N}$, about 73 percent more than intended, and pointing about $54.7^\circ$ away from the axis that was meant — the angle whose cosine is $1/\sqrt{3}$. Sanity check: three equal parts put the vector along the diagonal of a cube, and the diagonal of a cube is the $\sqrt{3}$ times one edge that you get from Pythagoras twice.
 
-The second line, `Vector3 v = 2.5;`, is **copy-initialisation** — the `=` form — and it uses the same silent conversion.
+The second line, `Vector3 v = 2.5;`, is **copy-initialization** — the `=` form — and it uses the same silent conversion.
 :::
 
 ## explicit: make the conversion opt-in
@@ -276,7 +276,7 @@ In the delegation example, suppose the default constructor's body printed first 
 :::
 
 ::: answer
-It would mean the delegating constructor's body ran before the target had set up the object — so the body could see members that were not yet initialised. The rule is the reverse: the target constructor runs completely (its list, then its body), and only then does the delegating constructor's body run. That is why the real output shows "(x, y, z) constructor ran" before "default constructor body ran", and why the delegating body can safely read `x_`, `y_` and `z_`: they already hold zeros.
+It would mean the delegating constructor's body ran before the target had set up the object — so the body could see members that were not yet initialized. The rule is the reverse: the target constructor runs completely (its list, then its body), and only then does the delegating constructor's body run. That is why the real output shows "(x, y, z) constructor ran" before "default constructor body ran", and why the delegating body can safely read `x_`, `y_` and `z_`: they already hold zeros.
 :::
 
 ::: check
@@ -284,7 +284,7 @@ Which of these compile when the one-argument constructor is `explicit Vector3(do
 :::
 
 ::: answer
-(a) compiles — direct initialisation names the type, so an explicit constructor may be used. (b) does not — the `=` form is copy-initialisation, which only uses non-explicit constructors; g++ says "conversion from 'double' to non-scalar type 'Vector3' requested". (c) compiles — direct-list-initialisation with braces is a direct form. (d) does not — passing a `double` where a `const Vector3&` is expected would need an implicit conversion, and `explicit` forbids exactly that. (e) compiles — the call site builds the `Vector3` by name, then passes it. The pattern: any form where you write `Vector3` yourself works; any form where the compiler would have to invent it does not.
+(a) compiles — direct initialization names the type, so an explicit constructor may be used. (b) does not — the `=` form is copy-initialization, which only uses non-explicit constructors; g++ says "conversion from 'double' to non-scalar type 'Vector3' requested". (c) compiles — direct-list-initialization with braces is a direct form. (d) does not — passing a `double` where a `const Vector3&` is expected would need an implicit conversion, and `explicit` forbids exactly that. (e) compiles — the call site builds the `Vector3` by name, then passes it. The pattern: any form where you write `Vector3` yourself works; any form where the compiler would have to invent it does not.
 :::
 
 ::: check
@@ -310,14 +310,14 @@ So that the setup logic, and especially the invariant checks, exist in one place
 | Constructor | runs automatically when an object is created | same name as the class, no return type |
 | Class invariant | a promise about the members, always true from outside | first made true by the constructor |
 | Default constructor | callable with no arguments | written for you only if you declare no constructor; its `double`s are then uninitialised unless you write `{}` |
-| Parameterised constructor | takes arguments | several may exist; overloading picks one |
+| Parameterized constructor | takes arguments | several may exist; overloading picks one |
 | Braces `{…}` | the modern way to pass constructor arguments | forbid narrowing conversions |
 | Delegating constructor | hands the work to another constructor | target runs fully first; the delegation must be alone in the list |
 | Converting constructor | callable with one argument, not `explicit` | defines a silent conversion from the argument type |
 | `explicit` | makes that conversion opt-in | mark single-argument constructors `explicit` by default |
 | `Vector3 v();` | declares a function, not an object | write `Vector3 v;` or `Vector3 v{};` |
 
-The next lesson opens up the member initialiser list itself — why it beats assigning in the body, why `const` and reference members must go there, and the rule that bites everyone once: members are initialised in the order they are declared, not the order you list them.
+The next lesson opens up the member initializer list itself — why it beats assigning in the body, why `const` and reference members must go there, and the rule that bites everyone once: members are initialized in the order they are declared, not the order you list them.
 
 ::: context value-bridge Values and identities, in one line each
 From the last module: a **value** is a type where two objects with the same contents are interchangeable, and a copy is an independent twin — a `Vector3`, a `State`, a `Matrix3`. An **identity** stands for one particular thing — an `ImuDriver` for the chip on bus 3 — so copying it makes no sense and its copy operations are deleted. `Vector3` in this lesson is a value, which is why it is safe to hand out copies and why a silent conversion to one is so easy to miss.
@@ -353,11 +353,11 @@ A local variable lives in the function's stack frame, a slice of memory that ear
 </svg>
 ```
 
-Reading them is undefined behaviour, and the optimiser is allowed to assume it never happens — so the result may not even be the old bytes.
+Reading them is undefined behavior, and the optimizer is allowed to assume it never happens — so the result may not even be the old bytes.
 :::
 
 ::: context narrowing Why "narrowing"
-Picture each type as a range of values it can hold. Converting from a wide range into a narrower one — `double` into `int`, `int` into `std::uint8_t` — can drop part of the value: $2.7$ becomes $2$, and $300$ becomes $44$ (because $300 - 256 = 44$). Even `long long` into `double` narrows: a `double` has 53 bits of precision, so $2^{53} + 1 = 9{,}007{,}199{,}254{,}740{,}993$ cannot be stored exactly. Brace initialisation, added in C++11, was designed to refuse these silent losses, which is one reason modern style prefers braces.
+Picture each type as a range of values it can hold. Converting from a wide range into a narrower one — `double` into `int`, `int` into `std::uint8_t` — can drop part of the value: $2.7$ becomes $2$, and $300$ becomes $44$ (because $300 - 256 = 44$). Even `long long` into `double` narrows: a `double` has 53 bits of precision, so $2^{53} + 1 = 9{,}007{,}199{,}254{,}740{,}993$ cannot be stored exactly. Brace initialization, added in C++11, was designed to refuse these silent losses, which is one reason modern style prefers braces.
 :::
 
 ::: context delegation-timeline The order of events when b is made

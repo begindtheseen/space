@@ -162,7 +162,7 @@ GitFlow merges with `--no-ff` (basics lesson 05) on purpose, so that every featu
 * b59e07a (tag: v1.0.0) Release 1.0 code
 ```
 
-Count what happened: three real changes (drag model, drag fix, radius guard) and *five* merge commits to move them around. Every fix had to be merged in two directions. That is the price of GitFlow — and the payoff is that `main` holds nothing but tagged releases, and you can always see which branch a change travelled through. The [[picture of the lanes|gitflow-picture]] makes the pattern easier to see than the text graph.
+Count what happened: three real changes (drag model, drag fix, radius guard) and *five* merge commits to move them around. Every fix had to be merged in two directions. That is the price of GitFlow — and the payoff is that `main` holds nothing but tagged releases, and you can always see which branch a change traveled through. The [[picture of the lanes|gitflow-picture]] makes the pattern easier to see than the text graph.
 
 ::: warning Long-lived branches drift
 In GitFlow, `develop` can run weeks ahead of `main`, and a big feature branch can run weeks ahead of `develop`. That is integration hell on a schedule. If you use GitFlow, still keep *feature* branches short, merge `develop` into long features often, and never let a hotfix skip its merge back into `develop` — or the bug comes back in the next release.

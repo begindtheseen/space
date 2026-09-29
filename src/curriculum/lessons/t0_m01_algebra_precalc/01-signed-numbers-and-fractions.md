@@ -186,7 +186,7 @@ Check: $240 + 400 = 640$. The parts always add back up to the whole.
 
 ### Proportions: scaling up
 
-A **proportion** says two ratios are equal, $\frac{a}{b} = \frac{c}{d}$. Multiplying both sides by $b$ and by $d$ gives the handy shortcut $ad = bc$, called **cross-multiplying**. Proportions are how you scale a recipe up or down — and how you scale a rocket. If a stage burns $411\,\mathrm{t}$ of propellant ($1\,\mathrm{t}$, a tonne, is $1000\,\mathrm{kg}$) in $162\,\mathrm{s}$, it burns
+A **proportion** says two ratios are equal, $\frac{a}{b} = \frac{c}{d}$. Multiplying both sides by $b$ and by $d$ gives the handy shortcut $ad = bc$, called **cross-multiplying**. Proportions are how you scale a recipe up or down — and how you scale a rocket. If a stage burns $411\,\mathrm{t}$ of propellant ($1\,\mathrm{t}$, a metric ton, is $1000\,\mathrm{kg}$) in $162\,\mathrm{s}$, it burns
 
 $$
 \frac{411\,000\,\mathrm{kg}}{162\,\mathrm{s}} \approx 2540\,\mathrm{kg}
@@ -228,7 +228,7 @@ $$
 MR = \frac{m_0}{m_f} = \frac{m_d + m_p + m_L}{m_d + m_L}.
 $$
 
-Tonnes divided by tonnes: the units cancel, so the mass ratio is a plain number with no units — engineers call that **[[dimensionless|dimensionless]]**. It is always bigger than $1$, because the top is the bottom *plus* some propellant.
+Metric tons divided by metric tons: the units cancel, so the mass ratio is a plain number with no units — engineers call that **[[dimensionless|dimensionless]]**. It is always bigger than $1$, because the top is the bottom *plus* some propellant.
 
 Two related fractions come straight out of it. Its flip, $\frac{1}{MR} = \frac{m_f}{m_0}$, is the fraction of the lift-off mass still there at burnout. And $1 - \frac{1}{MR} = \frac{m_p}{m_0}$ is the fraction that was propellant.
 
@@ -274,7 +274,7 @@ These fractions add up to $1$, as fractions of a whole always do.
 
 ### How much room does it take?
 
-To build the tanks you need volume, not mass. **Density** tells you how heavy a fixed amount of stuff is: a litre of liquid oxygen weighs more than a litre of kerosene. Mass is density times volume, $m = \rho V$ ($\rho$ is the Greek letter "rho", used for density), so the volume is $V = m / \rho$.
+To build the tanks you need volume, not mass. **Density** tells you how heavy a fixed amount of stuff is: a liter of liquid oxygen weighs more than a liter of kerosene. Mass is density times volume, $m = \rho V$ ($\rho$ is the Greek letter "rho", used for density), so the volume is $V = m / \rho$.
 
 The **[[bulk density|bulk-density]]** of the propellant is the total mass divided by the total volume. Here is the surprise: it is *not* the average of the two densities. Think of a bag holding a kilogram of marbles and a kilogram of ping-pong balls. The ping-pong balls take up far more room, so the mix is much lighter for its size than "halfway between marbles and ping-pong balls" would suggest.
 
@@ -289,7 +289,7 @@ $$
 The first step writes each volume as mass over density. The last step divides the top and the bottom by $m_{fuel}$ and uses $m_{ox} / m_{fuel} = O/F$. It is a complex fraction, exactly like the ones you tidied up earlier — and it is the number that decides how big the tanks must be.
 
 ::: example Splitting a propellant load and sizing the tanks
-A stage carries $400\,\mathrm{t}$ of propellant at $O/F = 2.3$. Liquid oxygen has density $\rho_{ox} = 1141\,\mathrm{kg/m^3}$ and kerosene $\rho_{fuel} = 810\,\mathrm{kg/m^3}$ (a cubic metre, $\mathrm{m^3}$, is a box one metre on each side).
+A stage carries $400\,\mathrm{t}$ of propellant at $O/F = 2.3$. Liquid oxygen has density $\rho_{ox} = 1141\,\mathrm{kg/m^3}$ and kerosene $\rho_{fuel} = 810\,\mathrm{kg/m^3}$ (a cubic meter, $\mathrm{m^3}$, is a box one meter on each side).
 
 **Masses:** $m_{ox} = 0.697 \times 400\,\mathrm{t} \approx 278.8\,\mathrm{t}$ and $m_{fuel} = 0.303 \times 400\,\mathrm{t} \approx 121.2\,\mathrm{t}$. Check: $278.8 + 121.2 = 400$.
 
@@ -481,7 +481,7 @@ How much a rocket can change its speed depends on two things: how fast its exhau
 :::
 
 ::: context dimensionless What "dimensionless" means
-A dimension is the *kind* of thing a number measures: length, mass, time. When you divide tonnes by tonnes, the "tonnes" cancel and what is left is a plain count — "twelve times as heavy". Ratios like this are handy because they come out the same whatever units you used: kilograms over kilograms gives the same $12.1$ as tonnes over tonnes.
+A dimension is the *kind* of thing a number measures: length, mass, time. When you divide metric tons by metric tons, the "metric tons" cancel and what is left is a plain count — "twelve times as heavy". Ratios like this are handy because they come out the same whatever units you used: kilograms over kilograms gives the same $12.1$ as metric tons over metric tons.
 :::
 
 ::: context why-oxidizer Why a rocket carries its own oxygen

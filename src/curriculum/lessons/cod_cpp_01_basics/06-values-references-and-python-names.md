@@ -132,9 +132,9 @@ values.cpp:8:32: warning: parameter 's' set but not used [-Wunused-but-set-param
 A Python name is a label bound to an object; assignment rebinds the label. A C++ variable *is* an object: a named region of storage with a type. Assignment writes into that storage. `T& r = x;` makes a second name for the existing object `x`; it creates nothing and copies nothing.
 :::
 
-## A variable is storage, so it must be initialised
+## A variable is storage, so it must be initialized
 
-Because a C++ variable *is* memory, it exists the moment it is declared. If you did not give it a value, it holds whatever was there before. There is no `None`, no "not yet bound" state, and no exception when you read it. Reading an uninitialised variable is undefined behaviour, as lesson 05 listed.
+Because a C++ variable *is* memory, it exists the moment it is declared. If you did not give it a value, it holds whatever was there before. There is no `None`, no "not yet bound" state, and no exception when you read it. Reading an uninitialised variable is undefined behavior, as lesson 05 listed.
 
 C++ has several ways to write an initial value. Here is what each does:
 
@@ -182,9 +182,9 @@ A **reference** is an alias: another name for an object that already exists. `T&
 
 Three rules follow, and they are what make references safe:
 
-- A reference **must be initialised** when it is declared. `State& r;` does not compile: g++ says "'r' declared as reference but not initialized".
+- A reference **must be initialized** when it is declared. `State& r;` does not compile: g++ says "'r' declared as reference but not initialized".
 - A reference **cannot be reseated** — pointed at a different object later. After `State& r = a;`, writing `r = b;` does not make `r` name `b`. It copies `b` into `a`, because `r` *is* `a`.
-- There is **no null reference**. A reference to nothing can only come from undefined behaviour. So a function taking a `T&` need not check for null, where one taking a pointer, `T*`, must.
+- There is **no null reference**. A reference to nothing can only come from undefined behavior. So a function taking a `T&` need not check for null, where one taking a pointer, `T*`, must.
 
 The second rule is the one that catches Python programmers. `r = b` looks like moving a label, and is really an assignment to the object `r` names.
 
@@ -266,7 +266,7 @@ This method is **[[forward Euler|forward-euler]]**, which the numerical-methods 
 
 ## Dangling references
 
-A reference does not own anything, and it does not keep anything alive. If the object it names dies, the reference is left naming memory that no longer holds an object. Using it is undefined behaviour. We call it a **dangling reference**. The classic case:
+A reference does not own anything, and it does not keep anything alive. If the object it names dies, the reference is left naming memory that no longer holds an object. Using it is undefined behavior. We call it a **dangling reference**. The classic case:
 
 ```cpp
 #include <cstdio>
@@ -371,7 +371,7 @@ A colleague writes `const std::vector<double>& history() { std::vector<double> v
 :::
 
 ::: answer
-g++ warns `reference to local variable 'v' returned [-Wreturn-local-addr]`, and clang++ warns `reference to stack memory associated with local variable 'v' returned`. The local vector is destroyed at the closing brace, which also frees the memory holding its numbers. The returned reference names an object that no longer exists, and every use of it is undefined behaviour. The "optimisation" saves nothing anyway. Write `std::vector<double> history()` and return by value: the compiler usually builds `v` directly in the caller's storage, and when it cannot, it moves the vector — a few pointer copies, never a copy of the data. Return a reference only when you can name something else that keeps the object alive.
+g++ warns `reference to local variable 'v' returned [-Wreturn-local-addr]`, and clang++ warns `reference to stack memory associated with local variable 'v' returned`. The local vector is destroyed at the closing brace, which also frees the memory holding its numbers. The returned reference names an object that no longer exists, and every use of it is undefined behavior. The "optimization" saves nothing anyway. Write `std::vector<double> history()` and return by value: the compiler usually builds `v` directly in the caller's storage, and when it cannot, it moves the vector — a few pointer copies, never a copy of the data. Return a reference only when you can name something else that keeps the object alive.
 :::
 
 ## Summary
@@ -383,10 +383,10 @@ g++ warns `reference to local variable 'v' returned [-Wreturn-local-addr]`, and 
 | Identity test | `a is b` | `&a == &b` |
 | Argument passing | parameter names the caller's object | parameter is a copy, unless declared `T&` or `const T&` |
 | Rebinding | `x = y` inside a function rebinds the local name | writes into `x`'s storage; a reference can never be reseated |
-| Uninitialised | impossible; a name is bound or does not exist | possible, and reading it is undefined behaviour |
+| Uninitialised | impossible; a name is bound or does not exist | possible, and reading it is undefined behavior |
 | Null | `None` | no null reference; `nullptr` only for pointers |
-| Lifetime | the garbage collector keeps an object alive while referenced | a reference keeps nothing alive; a dangling reference is undefined behaviour |
-| `T{}` | — | value initialisation: zero |
+| Lifetime | the garbage collector keeps an object alive while referenced | a reference keeps nothing alive; a dangling reference is undefined behavior |
+| `T{}` | — | value initialization: zero |
 | `-Wreturn-local-addr` | — | g++'s name for returning a reference to a local |
 
 Lesson 07 adds the words that say what may change and when a value is known: `const`, `constexpr`, `consteval`, and the `auto` that lets the compiler write the type for you.
@@ -463,5 +463,5 @@ Each time a function is called, it gets a **stack frame**: a block of memory for
 :::
 
 ::: context copy-elision When the compiler skips the copy
-**Copy elision** means the compiler builds a returned object directly in the caller's storage, so no copy is made at all. Since C++17 it is *guaranteed* when you return a temporary, as in `return State{...};`. When you return a named local, as in `return out;`, elision is allowed and usual but not guaranteed (it is called NRVO, "named return value optimisation"). If the compiler does not elide it, C++ still treats the local as something that can be *moved* rather than copied. Either way, returning by value is cheap.
+**Copy elision** means the compiler builds a returned object directly in the caller's storage, so no copy is made at all. Since C++17 it is *guaranteed* when you return a temporary, as in `return State{...};`. When you return a named local, as in `return out;`, elision is allowed and usual but not guaranteed (it is called NRVO, "named return value optimization"). If the compiler does not elide it, C++ still treats the local as something that can be *moved* rather than copied. Either way, returning by value is cheap.
 :::

@@ -141,7 +141,7 @@ Walk through what happened. The blob starts with three junk bytes, `00 7E 13`. T
 Notice what the output does not contain: frame 3. Its sequence number is missing between 2 and 4. That gap is exactly what the second half of this lesson detects.
 
 ::: key Parsing a binary protocol
-Endianness, field widths and the exact struct format string, resynchronisation after a corrupt frame, checksum verification, and refusing to emit a truncated trailing frame. Say all five aloud before coding.
+Endianness, field widths and the exact struct format string, resynchronization after a corrupt frame, checksum verification, and refusing to emit a truncated trailing frame. Say all five aloud before coding.
 :::
 
 **Complexity.** Each byte of the input can be the start of at most one candidate frame, and checking a candidate costs a fixed 10 bytes of work. So the time is $O(n \cdot L)$ with frame length $L$, and since $L$ is a constant, that is $O(n)$. Space is $O(f)$ for the $f$ frames returned, plus fewer than $L$ leftover bytes. Say it that way in the room: "Linear in the input, linear in the output."

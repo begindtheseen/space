@@ -55,7 +55,7 @@ So any slot from $42.2$ to $42.8$ mm passes. If the designer had written $42.50$
 :::
 
 ::: warning Do not skip the title block
-People who are new to drawings jump straight to the pretty views. Then they read a millimetre drawing as inches, or a first-angle drawing as third angle, or miss that a plain dimension carries a tolerance. Read the title block first, every time. It takes thirty seconds and it sets the meaning of everything else on the sheet.
+People who are new to drawings jump straight to the pretty views. Then they read a millimeter drawing as inches, or a first-angle drawing as third angle, or miss that a plain dimension carries a tolerance. Read the title block first, every time. It takes thirty seconds and it sets the meaning of everything else on the sheet.
 :::
 
 ## The revision block: the drawing's change log

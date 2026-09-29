@@ -3,7 +3,7 @@ id: l03-response-time-analysis
 title: Exact schedulability by response-time analysis
 minutes: 17
 covers:
-  - Exact schedulability by response-time analysis, and why the utilisation bound is only sufficient
+  - Exact schedulability by response-time analysis, and why the utilization bound is only sufficient
 ---
 
 You sit down to read for $20$ minutes. But every $10$ minutes your little brother needs $3$ minutes of help with his puzzle, and he always comes first. When will you finish?
@@ -14,7 +14,7 @@ That little loop of guessing and re-checking is this whole lesson. It is called 
 
 The last lesson's Liu-Layland bound is a one-way door. Pass it and you are done. Fail it and you know nothing. A team that redesigns, splits a task onto a second processor, or halves a loop rate because a set failed the bound may throw away perfectly safe margin for no reason. Response-time analysis is **[[necessary and sufficient|necessary-sufficient]]**: it settles every case, both ways.
 
-It also catches the opposite mistake. A set can pass the loosest check — total utilisation under $100\%$ — and still miss a deadline, because *how* the work is packed in time matters as much as *how much* there is. By the end you will have run the exact arithmetic on one set the bound rejects and watched it pass, and on one that looks safe by simple addition and watched it fail.
+It also catches the opposite mistake. A set can pass the loosest check — total utilization under $100\%$ — and still miss a deadline, because *how* the work is packed in time matters as much as *how much* there is. By the end you will have run the exact arithmetic on one set the bound rejects and watched it pass, and on one that looks safe by simple addition and watched it fail.
 
 ## The critical instant
 
@@ -51,10 +51,10 @@ $R_i$ is on both sides, trapped inside a ceiling, so you cannot solve it with al
 3. Repeat until the guess stops changing: $R^{(k+1)} = R^{(k)}$. That value is the worst-case response time.
 4. If a guess ever goes past the deadline $D_i$, stop. The task misses, and more rounds cannot bring it back.
 
-Do this once per task, from the highest priority down. Task $i$ is **schedulable** — sure to meet every deadline — if and only if $R_i \le D_i$. This is not a rule of thumb. It is necessary and sufficient: there is no gap left over, the way there is with the utilisation bound.
+Do this once per task, from the highest priority down. Task $i$ is **schedulable** — sure to meet every deadline — if and only if $R_i \le D_i$. This is not a rule of thumb. It is necessary and sufficient: there is no gap left over, the way there is with the utilization bound.
 
 ::: key
-**Exact response-time analysis**: $R_i = C_i + \sum_{j\in\mathrm{hp}(i)} \lceil R_i/T_j\rceil\,C_j$, iterated from $R_i = C_i$ to a fixed point, evaluated at the critical instant (all tasks released together). Schedulable when $R_i \le D_i$. Necessary and sufficient for fixed-priority scheduling — unlike the utilisation bound, it settles every task set, in both directions.
+**Exact response-time analysis**: $R_i = C_i + \sum_{j\in\mathrm{hp}(i)} \lceil R_i/T_j\rceil\,C_j$, iterated from $R_i = C_i$ to a fixed point, evaluated at the critical instant (all tasks released together). Schedulable when $R_i \le D_i$. Necessary and sufficient for fixed-priority scheduling — unlike the utilization bound, it settles every task set, in both directions.
 :::
 
 ## Failing the bound, passing exactly
@@ -94,16 +94,16 @@ $R_2 = 3$ against $D_2 = 8$: meets.
 
 $R_3 = 8$ against $D_3 = 12$: meets, with $4\,\mathrm{ms}$ of **slack** — spare time before the deadline.
 
-**Answer:** all three meet their deadlines ($1 \le 3$, $3 \le 8$, $8 \le 12$) at $83.3\%$ utilisation, well above the $78.0\%$ the bound guarantees. You can check it on a **[[timeline|demo1-timeline]]**, too.
+**Answer:** all three meet their deadlines ($1 \le 3$, $3 \le 8$, $8 \le 12$) at $83.3\%$ utilization, well above the $78.0\%$ the bound guarantees. You can check it on a **[[timeline|demo1-timeline]]**, too.
 
 **Sanity check:** the guesses only went up, and they **[[stopped at the first place the staircase met the line|staircase]]**. Task 3's answer, $8$, is more than its own $3\,\mathrm{ms}$ of work, as it must be with two tasks cutting in.
 :::
 
-This was not a lucky edge case. It is the usual situation. The bound is built from the single worst relationship between periods that three tasks could have at this utilisation. The periods $3$, $8$ and $12$ are not that worst case: $12$ is a whole multiple of $3$, and $12/8 = 1.5$ is tame. A failed bound tells you that *somewhere* among all possible periods at this utilisation there is an unsafe set. It does not tell you *your* set is the unsafe one. Response-time analysis finds out.
+This was not a lucky edge case. It is the usual situation. The bound is built from the single worst relationship between periods that three tasks could have at this utilization. The periods $3$, $8$ and $12$ are not that worst case: $12$ is a whole multiple of $3$, and $12/8 = 1.5$ is tame. A failed bound tells you that *somewhere* among all possible periods at this utilization there is an unsafe set. It does not tell you *your* set is the unsafe one. Response-time analysis finds out.
 
 ## Passing a naive check, missing exactly
 
-::: example A miss the utilisation sum could never see
+::: example A miss the utilization sum could never see
 Two tasks, times in milliseconds:
 
 | Task | $C_i$ | $T_i = D_i$ |
@@ -128,7 +128,7 @@ $14 > 11$, so we could stop here: task 2 misses. (One more round gives $4 + \lce
 **Step 4: check it on a timeline.** Both tasks release at $t = 0$. Task 1 runs from $0$ to $5$. Task 2 starts at $5$ and would finish at $9$ — but task 1 is released again at $t = 8$ and cuts in. By then task 2 has done $3$ of its $4\,\mathrm{ms}$. Task 1 runs from $8$ to $13$. Task 2 finishes its last millisecond from $13$ to $14$ — exactly the $R_2 = 14$ the iteration found. Its deadline was $t = 11$. See the **[[timeline for this set|demo2-timeline]]**.
 :::
 
-What went wrong? The period ratio. $8$ and $11$ do not divide into each other, so inside task 2's $11\,\mathrm{ms}$ window, task 1 manages *two* releases, not one. The interference term jumped from $\lceil 4/8 \rceil = 1$ to $\lceil 9/8 \rceil = 2$ the moment the window crossed $8$. Total utilisation measures the *amount* of work. It cannot see that one task's deadline falls in a window where a faster task squeezes in one extra run. That step jump, not the amount of work, is what exact analysis catches.
+What went wrong? The period ratio. $8$ and $11$ do not divide into each other, so inside task 2's $11\,\mathrm{ms}$ window, task 1 manages *two* releases, not one. The interference term jumped from $\lceil 4/8 \rceil = 1$ to $\lceil 9/8 \rceil = 2$ the moment the window crossed $8$. Total utilization measures the *amount* of work. It cannot see that one task's deadline falls in a window where a faster task squeezes in one extra run. That step jump, not the amount of work, is what exact analysis catches.
 
 ## Harmonic periods: the friendliest case
 
@@ -138,7 +138,7 @@ Try $C = 1, 1, 2$ with $T = 2, 4, 8$. Then $U = \frac{1}{2} + \frac{1}{4} + \fra
 
 ## Why the tests disagree
 
-Both demonstrations have the same root. Total utilisation says *how much* processor time is claimed. Schedulability asks *whether that time can be arranged*, with these periods, so that nothing is needed in two places at once.
+Both demonstrations have the same root. Total utilization says *how much* processor time is claimed. Schedulability asks *whether that time can be arranged*, with these periods, so that nothing is needed in two places at once.
 
 - The **Liu-Layland bound** handles the arrangement by assuming the worst one possible for $n$ tasks. So it is safe to trust when it passes, and needlessly gloomy for the many sets whose real periods are friendlier.
 - The **bare sum** $U \le 1$ ignores the arrangement entirely. So it can pass a set whose particular periods force one task into an extra, deadline-breaking release of another.
@@ -223,7 +223,7 @@ Since the critical instant is the worst case, the response time found there is a
 | Harmonic periods | Each period divides the longer ones; RM is schedulable up to $U = 1$ |
 | Why tests disagree | The bound assumes the worst alignment; the bare sum ignores alignment; only RTA checks the real periods |
 
-You now have an exact answer for any fixed-priority task set whose tasks never wait for each other. The next lesson shows a deadline missed even when every $C_i$ and $T_i$ is exactly as analysed here: a high-priority task stuck behind a **[[lock|blocking-bridge]]** held by a task with no business delaying it.
+You now have an exact answer for any fixed-priority task set whose tasks never wait for each other. The next lesson shows a deadline missed even when every $C_i$ and $T_i$ is exactly as analyzed here: a high-priority task stuck behind a **[[lock|blocking-bridge]]** held by a task with no business delaying it.
 
 ::: context necessary-sufficient Two words from logic
 A test is **sufficient** if passing it is enough to be sure: "if it passes, the set is safe". It is **necessary** if every safe set passes it: "if it fails, the set is not safe". The Liu-Layland bound is sufficient only — a pass proves safety, a fail proves nothing. A test that is both gives a clean yes or no. Everyday version: being in Paris is sufficient for being in France, but not necessary — you could be in Lyon.
@@ -234,7 +234,7 @@ A **fixed point** of a rule is a value the rule sends back to itself. Try it on 
 :::
 
 ::: context demo1-timeline The first demonstration, drawn out
-Each row is one task, from time $0$ to $12\,\mathrm{ms}$, all released together at $0$. Task 1 (blue) runs at $0$, $3$, $6$ and $9$. Task 2 (orange) runs its two milliseconds at $1$–$3$ and, after its second release at $8$, again at $8$–$9$ and $10$–$11$. Task 3 (grey) gets only the gaps: $4$–$6$ and $7$–$8$. It finishes at $8$, well before its deadline of $12$.
+Each row is one task, from time $0$ to $12\,\mathrm{ms}$, all released together at $0$. Task 1 (blue) runs at $0$, $3$, $6$ and $9$. Task 2 (orange) runs its two milliseconds at $1$–$3$ and, after its second release at $8$, again at $8$–$9$ and $10$–$11$. Task 3 (gray) gets only the gaps: $4$–$6$ and $7$–$8$. It finishes at $8$, well before its deadline of $12$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
@@ -260,7 +260,7 @@ Each row is one task, from time $0$ to $12\,\mathrm{ms}$, all released together 
 :::
 
 ::: context staircase The staircase and the line
-For task 3 of the first demonstration, the blue staircase is the right-hand side, $3 + \lceil R/3\rceil \cdot 1 + \lceil R/8\rceil \cdot 2$, which jumps whenever $R$ passes a multiple of $3$ or $8$. The grey line is $R$ itself. The guesses $3 \to 6 \to 7 \to 8$ (red dots) climb until the staircase meets the line, at $R = 8$. Starting from the smallest guess means you always find the *first* meeting point, which is the true response time.
+For task 3 of the first demonstration, the blue staircase is the right-hand side, $3 + \lceil R/3\rceil \cdot 1 + \lceil R/8\rceil \cdot 2$, which jumps whenever $R$ passes a multiple of $3$ or $8$. The gray line is $R$ itself. The guesses $3 \to 6 \to 7 \to 8$ (red dots) climb until the staircase meets the line, at $R = 8$. Starting from the smallest guess means you always find the *first* meeting point, which is the true response time.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 215" font-family="Inter, Arial, sans-serif">

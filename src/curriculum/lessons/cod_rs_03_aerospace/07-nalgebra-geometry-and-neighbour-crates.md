@@ -1,17 +1,17 @@
 ---
 id: l07-nalgebra-geometry-and-neighbour-crates
-title: 'Turning things in space: nalgebra geometry and its neighbours'
+title: 'Turning things in space: nalgebra geometry and its neighbors'
 minutes: 28
 covers:
   - 'nalgebra geometry: UnitQuaternion, Rotation3, Isometry3, slerp; no_std support'
-  - 'Neighbouring crates: ndarray, argmin, nyx-space, hifitime, micromath, libm'
+  - 'Neighboring crates: ndarray, argmin, nyx-space, hifitime, micromath, libm'
 ---
 
 Hold a book flat on a table and turn it a quarter turn, the way the hands of a clock move from 12 to 3. The book is still the same book. Nothing got longer, shorter or bent. Only the way it *faces* changed. Now slide it 30 centimeters to the left without turning it. Again, same book; only *where* it is changed.
 
 Turning and sliding are all a solid object can do, and a spacecraft is a solid object. Its guidance software keeps asking *which way is the vehicle facing* (its **attitude**) and *where is each part of it* (its **position**). A star tracker bolted to the side reports what it sees in its own frame; the software must turn and slide that report into the body frame, then into a frame fixed to the stars.
 
-Lesson 06 gave you nalgebra's matrices. This lesson covers the types built on them for turning and sliding: **`UnitQuaternion`**, **`Rotation3`** and **`Isometry3`**, plus **slerp**, the smooth path from one attitude to another. Then it puts them on a microcontroller and meets the neighbouring crates a GNC engineer reaches for next.
+Lesson 06 gave you nalgebra's matrices. This lesson covers the types built on them for turning and sliding: **`UnitQuaternion`**, **`Rotation3`** and **`Isometry3`**, plus **slerp**, the smooth path from one attitude to another. Then it puts them on a microcontroller and meets the neighboring crates a GNC engineer reaches for next.
 
 Every program in this lesson was run with Rust 1.94.1 and nalgebra 0.35.0; the outputs shown are real.
 
@@ -313,7 +313,7 @@ This library builds with `cargo build --release --target thumbv7em-none-eabihf`.
 nalgebra allocates only for dynamically sized types (`DMatrix`, `DVector`). Use the statically sized `SMatrix`, `SVector`, `Matrix3`, `Vector3` and `UnitQuaternion` families, and build for a no_std target with no allocator so an accidental dynamic type fails to link. On no_std, enable `default-features = false, features = ["libm"]`.
 :::
 
-## The neighbouring crates
+## The neighboring crates
 
 Six other crates come up again and again around GNC work in Rust. Each has a clear job.
 

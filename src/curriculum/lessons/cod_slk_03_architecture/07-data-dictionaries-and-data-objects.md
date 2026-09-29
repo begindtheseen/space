@@ -218,7 +218,7 @@ A colleague sends you `pitch_loop.slx` and says "it runs on my machine". On your
 :::
 
 ::: answer
-The model read `Kd` from your colleague's base workspace, where some script or earlier session had put it. The model file only stores the name, so nothing travelled with it. The fix is to create (or use) a data dictionary, add `Kd` to its Design Data section, preferably as a Simulink.Parameter with a type and range, link the model to the dictionary, clear base-workspace access, and put the `.sldd` under source control next to the model. Then anyone who opens the model gets the same `Kd`.
+The model read `Kd` from your colleague's base workspace, where some script or earlier session had put it. The model file only stores the name, so nothing traveled with it. The fix is to create (or use) a data dictionary, add `Kd` to its Design Data section, preferably as a Simulink.Parameter with a type and range, link the model to the dictionary, clear base-workspace access, and put the `.sldd` under source control next to the model. Then anyone who opens the model gets the same `Kd`.
 :::
 
 ::: check

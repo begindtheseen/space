@@ -4,7 +4,7 @@ title: Matrices, caches, artifacts and secrets
 minutes: 26
 covers:
   - 'Matrix builds across OS, compiler and interpreter version'
-  - 'Caching pip, cargo and ccache; artefacts; secrets; environments'
+  - 'Caching pip, cargo and ccache; artifacts; secrets; environments'
 ---
 
 Think about a company that makes a new running-shoe sole. Before it goes on sale, they do not test one shoe. They test it in every size, for every model it will be glued into, on road and on track. Then they keep a pantry of ready-cut parts, so each test shoe does not start from a raw sheet of rubber. Every test ends with a printed report that goes in a binder. And the key to the factory's storeroom hangs in a lockbox, not on a hook by the door.

@@ -278,7 +278,7 @@ Circular error probable began as a way to rate the accuracy of artillery and bom
 </svg>
 ```
 
-All three percentiles crowd into the first metre-and-a-bit; the limit is far off to the right.
+All three percentiles crowd into the first meter-and-a-bit; the limit is far off to the right.
 :::
 
 ::: context correlation What a correlation coefficient measures

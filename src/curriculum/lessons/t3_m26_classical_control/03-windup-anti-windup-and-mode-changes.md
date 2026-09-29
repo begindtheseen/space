@@ -361,5 +361,5 @@ Step responses of the PI rate loop for $b = 1$, $0.8$ and $0$. Same poles, same 
 </svg>
 ```
 
-$b = 1$ (red) rises fastest and overshoots. $b = 0$ (grey) never overshoots but crawls. $b = 0.8$ (blue) gets close to the target nearly as fast as $b = 1$ and hardly overshoots at all.
+$b = 1$ (red) rises fastest and overshoots. $b = 0$ (gray) never overshoots but crawls. $b = 0.8$ (blue) gets close to the target nearly as fast as $b = 1$ and hardly overshoots at all.
 :::

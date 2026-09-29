@@ -10,11 +10,11 @@ You are meeting four friends in a big park, and each one texts you "I left the g
 
 That is exactly the situation of a GNSS receiver. The corrected pseudorange at the end of the last lesson still carried about $936{,}904\,\mathrm{m}$ that had nothing to do with geometry: the receiver's clock was $3.125\,\mathrm{ms}$ ahead of GPS time. Every other term was fixed with a model, a broadcast number or a second frequency. This one cannot be. The reason is not lazy receiver design but physics: a clock trustworthy to a few nanoseconds for hours is an atomic clock, and the satellites carry those precisely so the receiver does not have to.
 
-So we stop treating the clock error as a nuisance to remove and start treating it as a quantity to *measure*, just like position. The list of unknowns — the **state** — of a GNSS fix is not $(x, y, z)$ but $(x, y, z, b)$, where $b = c\,\delta t_{rx}$ is the **clock bias** in metres. Four unknowns need four satellites. This lesson shows what goes wrong if you pretend otherwise (the failure is quiet and huge) and what you gain by doing it right: nanosecond time for free, a velocity solution with the same shape, and fallback modes for when four satellites are not available.
+So we stop treating the clock error as a nuisance to remove and start treating it as a quantity to *measure*, just like position. The list of unknowns — the **state** — of a GNSS fix is not $(x, y, z)$ but $(x, y, z, b)$, where $b = c\,\delta t_{rx}$ is the **clock bias** in meters. Four unknowns need four satellites. This lesson shows what goes wrong if you pretend otherwise (the failure is quiet and huge) and what you gain by doing it right: nanosecond time for free, a velocity solution with the same shape, and fallback modes for when four satellites are not available.
 
 ## What a receiver clock can and cannot do
 
-A receiver keeps time with an **[[oscillator|oscillator]]**, a part that vibrates at a steady rate and is counted like the swings of a pendulum. Its quality is described by its **fractional frequency error** $y = \Delta f/f$: how far its rate is off, as a fraction of the rate. A clock whose rate is off by $y$ gains or loses $y$ seconds every second. In range units, that is $c\,y$ metres per second of **pseudorange drift**, the same for every satellite. The table shows what that means for the clocks a receiver might carry:
+A receiver keeps time with an **[[oscillator|oscillator]]**, a part that vibrates at a steady rate and is counted like the swings of a pendulum. Its quality is described by its **fractional frequency error** $y = \Delta f/f$: how far its rate is off, as a fraction of the rate. A clock whose rate is off by $y$ gains or loses $y$ seconds every second. In range units, that is $c\,y$ meters per second of **pseudorange drift**, the same for every satellite. The table shows what that means for the clocks a receiver might carry:
 
 | Oscillator | Fractional error $y$ | Pseudorange drift $c\,y$ | Apparent L1 Doppler $f_{L1}\,y$ |
 | --- | --- | --- | --- |
@@ -30,7 +30,7 @@ Almost every receiver carries a **TCXO**, a temperature-compensated crystal osci
 No one-time calibration fixes this, because the error keeps changing. What a receiver *can* do is estimate the offset at every moment from the measurements themselves. That is exactly what solving for $b$ does. Between fixes the estimate goes stale by $c\,y\,\Delta t$. A tenth of a second later, a TCXO's bias has moved $30\,\mathrm{m}$ if its frequency offset is unknown, or $3\,\mathrm{cm}$ if that has been estimated too. The clock is, in effect, measured afresh every time.
 
 ::: key
-The receiver clock bias $b = c\,\delta t_{rx}$ (metres) is the fourth unknown, alongside the three coordinates of $\mathbf{x}$. It cannot be calibrated away because a crystal oscillator's frequency error, $10^{-6}$ or so and temperature-dependent, produces a pseudorange drift of about $300\,\mathrm{m/s}$; only an atomic clock holds time to nanoseconds for more than seconds. Four unknowns need four satellites.
+The receiver clock bias $b = c\,\delta t_{rx}$ (meters) is the fourth unknown, alongside the three coordinates of $\mathbf{x}$. It cannot be calibrated away because a crystal oscillator's frequency error, $10^{-6}$ or so and temperature-dependent, produces a pseudorange drift of about $300\,\mathrm{m/s}$; only an atomic clock holds time to nanoseconds for more than seconds. Four unknowns need four satellites.
 :::
 
 ## Three spheres and a wrong answer
@@ -48,13 +48,13 @@ Work in a plane first, where spheres become circles. Put a receiver at $(1.0, 2.
 - circles 1 and 3 meet at $(1.195, 1.511)$;
 - circles 2 and 3 meet at $(0.910, 1.280)\,\mathrm{km}$.
 
-(Each pair also crosses at a second point $24$ to $34\,\mathrm{km}$ away, easily thrown out.) Three different answers, none of them right, each about half a kilometre from the truth. That spread is the clock bias made visible. Any *two* circles agree with each other perfectly; only all three together show that something is wrong — and only if you look.
+(Each pair also crosses at a second point $24$ to $34\,\mathrm{km}$ away, easily thrown out.) Three different answers, none of them right, each about half a kilometer from the truth. That spread is the clock bias made visible. Any *two* circles agree with each other perfectly; only all three together show that something is wrong — and only if you look.
 
 **Solve for the clock too.** Now take three unknowns $(x, y, b)$ and the three equations $\rho_i = \|\mathbf{s}_i - \mathbf{x}\| + b$. Straighten them out around a guess, solve, and repeat — the method the next lesson builds in three dimensions. Start at the origin with $b = 0$:
 
 - after one step, $(1.093, 2.188, 0.716)$;
 - after two, $(1.0007, 2.0015, 0.5018)$;
-- after three, every error is below a millimetre;
+- after three, every error is below a millimeter;
 - the fourth step changes the answer by only $1.5 \times 10^{-7}\,\mathrm{km}$.
 
 The bias comes out as $0.500\,\mathrm{km}$ and the position is exact.
@@ -71,7 +71,7 @@ Put the receiver at Cape Canaveral, as in the last lesson. Take four satellites 
 
 **A bigger bias.** Repeat with the $3.125\,\mathrm{ms}$ bias from the last lesson, $936.9\,\mathrm{km}$. The spheres still meet exactly, with zero leftover — at a point $2{,}342\,\mathrm{km}$ away and $1{,}811\,\mathrm{km}$ below the surface.
 
-**Four satellites, four unknowns.** Now solve all four pseudoranges for position *and* bias, starting from Earth's center with $b = 0$. Within six steps the position error is a few billionths of a metre, and so is the bias error. The unknown that was poisoning the answer comes back almost perfectly once it has its own slot.
+**Four satellites, four unknowns.** Now solve all four pseudoranges for position *and* bias, starting from Earth's center with $b = 0$. Within six steps the position error is a few billionths of a meter, and so is the bias error. The unknown that was poisoning the answer comes back almost perfectly once it has its own slot.
 :::
 
 The direction of the error is no accident. Every satellite is above the receiver. So if you move the receiver *down*, every satellite gets farther away at once — a satellite at elevation $\theta$ by $\sin\theta$ times the move. A shared increase in every range, which is what a clock bias is, can be traded almost perfectly for a [[downward shift|clock-height]]. The clock bias and the height point in nearly the same direction in measurement space. That is why the "clock ignored" answers are mostly height error, why the vertical is always the weakest part of a GNSS fix, and why the time and vertical dilutions of precision are large together — an idea the dilution-of-precision lesson makes exact.
@@ -84,7 +84,7 @@ When there are exactly as many measurements as unknowns, the fit has zero leftov
 
 Once $b$ is admitted as an unknown, there are two ways to deal with it, and they give the same answer.
 
-**Estimate it.** Write the four (or more) equations $\rho_i = \|\mathbf{s}_i - \mathbf{x}\| + b$, straighten them around a guess, and solve. How much does $\rho_i$ change when $b$ changes by one metre? By exactly one metre, for every satellite: the **partial derivative** $\partial\rho_i/\partial b$ ("the partial of rho i with respect to b") is $1$. So the table of derivatives the solver uses — the **Jacobian** — gets a column of ones. It is the fourth column of the **[[geometry matrix|jacobian-bridge]]** the next lesson builds. It also explains why satellites at different elevations are worth such different amounts: the clock column is the same for all of them, so a satellite helps only as much as its direction differs from everyone else's.
+**Estimate it.** Write the four (or more) equations $\rho_i = \|\mathbf{s}_i - \mathbf{x}\| + b$, straighten them around a guess, and solve. How much does $\rho_i$ change when $b$ changes by one meter? By exactly one meter, for every satellite: the **partial derivative** $\partial\rho_i/\partial b$ ("the partial of rho i with respect to b") is $1$. So the table of derivatives the solver uses — the **Jacobian** — gets a column of ones. It is the fourth column of the **[[geometry matrix|jacobian-bridge]]** the next lesson builds. It also explains why satellites at different elevations are worth such different amounts: the clock column is the same for all of them, so a satellite helps only as much as its direction differs from everyone else's.
 
 **Difference it away.** Subtract satellite 1's pseudorange from each of the others:
 
@@ -113,9 +113,9 @@ $$
 \dot\rho_i = \mathbf{e}_i^{\mathsf T}(\dot{\mathbf{s}}_i - \dot{\mathbf{x}}) + \dot b .
 $$
 
-A dot on top means "rate of change", and $\mathbf{e}_i^{\mathsf T}(\ldots)$ picks out the part of a velocity along the line of sight. In words: the range rate is the relative velocity along the line of sight, plus the clock drift. The receiver measures $\dot\rho_i$ from the carrier's Doppler shift, $\dot\rho_i = -\lambda f_{d,i}$. The satellite's velocity $\dot{\mathbf{s}}_i$ comes from the ephemeris. The unknowns are the receiver's velocity $\dot{\mathbf{x}}$ and the **clock drift** $\dot b = c\,y$, in metres per second. Four Doppler measurements determine them, with the same Jacobian as the position problem.
+A dot on top means "rate of change", and $\mathbf{e}_i^{\mathsf T}(\ldots)$ picks out the part of a velocity along the line of sight. In words: the range rate is the relative velocity along the line of sight, plus the clock drift. The receiver measures $\dot\rho_i$ from the carrier's Doppler shift, $\dot\rho_i = -\lambda f_{d,i}$. The satellite's velocity $\dot{\mathbf{s}}_i$ comes from the ephemeris. The unknowns are the receiver's velocity $\dot{\mathbf{x}}$ and the **clock drift** $\dot b = c\,y$, in meters per second. Four Doppler measurements determine them, with the same Jacobian as the position problem.
 
-The drift is not small. An uncalibrated TCXO's $10^{-6}$ shows up as $1{,}575\,\mathrm{Hz}$ of Doppler on every satellite. That looks like the receiver moving at $300\,\mathrm{m/s}$ along every line of sight at once — which no real motion can do. Solve for $\dot b$ and the velocity comes out good to centimetres per second. Forget it and the velocity is nonsense.
+The drift is not small. An uncalibrated TCXO's $10^{-6}$ shows up as $1{,}575\,\mathrm{Hz}$ of Doppler on every satellite. That looks like the receiver moving at $300\,\mathrm{m/s}$ along every line of sight at once — which no real motion can do. Solve for $\dot b$ and the velocity comes out good to centimeters per second. Forget it and the velocity is nonsense.
 
 ## When four satellites are not available
 
@@ -136,7 +136,7 @@ In words: the bias now is the last bias plus the last drift times the time since
 | $10^{-11}$ (chip-scale atomic) | $3\,\mathrm{cm}$ | $0.30\,\mathrm{m}$ | $3.0\,\mathrm{m}$ |
 | $10^{-12}$ (rubidium) | $3\,\mathrm{mm}$ | $3\,\mathrm{cm}$ | $0.30\,\mathrm{m}$ |
 
-The coasting error lands mostly in the height, for the reason above. A TCXO buys seconds of clock-hold at metre accuracy; an OCXO, a minute or two; an atomic clock, tens of minutes. A launch-site reference receiver, or a vehicle whose antenna switching briefly costs it a satellite, is a case for an OCXO. The trade is weight and power against seconds of graceful fallback.
+The coasting error lands mostly in the height, for the reason above. A TCXO buys seconds of clock-hold at meter accuracy; an OCXO, a minute or two; an atomic clock, tens of minutes. A launch-site reference receiver, or a vehicle whose antenna switching briefly costs it a satellite, is a case for an OCXO. The trade is weight and power against seconds of graceful fallback.
 
 **Height aiding.** If you know the altitude — from a barometer, a terrain map, or because the vehicle sits on a surveyed pad — then the condition $\|\mathbf{x}\| \approx R_E + h$ is a fourth equation. It says "the receiver's distance from Earth's center is Earth's radius plus the height $h$". It acts like a measurement from a satellite at Earth's center with a perfect clock, and it pins down the direction the real satellites pin down worst. With height aiding, three satellites give horizontal position and clock. A barometer good to $10\,\mathrm{m}$ supplies a $10\,\mathrm{m}$ vertical measurement, far better than a poor constellation's own vertical geometry.
 
@@ -206,7 +206,7 @@ Averaging ten independent measurements, each with $\sigma = 0.5\,\mathrm{m}$, di
 
 | Item | Statement |
 | --- | --- |
-| The fourth unknown | $b = c\,\delta t_{rx}$ in metres; state vector $(x, y, z, b)$; four satellites minimum |
+| The fourth unknown | $b = c\,\delta t_{rx}$ in meters; state vector $(x, y, z, b)$; four satellites minimum |
 | Why it cannot be calibrated | Fractional frequency error $y$ gives pseudorange drift $c\,y$: $300\,\mathrm{m/s}$ for a $10^{-6}$ crystal, $3\,\mathrm{cm/s}$ for an OCXO at $10^{-10}$ |
 | Ignoring it | Three spheres still meet at a point, with zero residual, tens to thousands of km away, mostly in height |
 | Estimation | $\partial\rho_i/\partial b = 1$: the Jacobian gains a column of ones |
@@ -216,7 +216,7 @@ Averaging ten independent measurements, each with $\sigma = 0.5\,\mathrm{m}$, di
 | Clock-hold | Bias carried forward; error $c\,\sigma_y\,\Delta t$: $30\,\mathrm{m}$ per $100\,\mathrm{s}$ for $10^{-9}$, $3\,\mathrm{m}$ for $10^{-10}$, $0.3\,\mathrm{m}$ for $10^{-11}$ |
 | Height aiding | Known altitude acts as a measurement from a "satellite at Earth's center" with a perfect clock; three satellites then suffice |
 
-The next lesson writes the four equations out, straightens them around a guess, derives the Jacobian row $[-\mathbf{e}_i^{\mathsf T},\ 1]$, and iterates a real four-satellite fix from the center of the Earth to the millimetre.
+The next lesson writes the four equations out, straightens them around a guess, derives the Jacobian row $[-\mathbf{e}_i^{\mathsf T},\ 1]$, and iterates a real four-satellite fix from the center of the Earth to the millimeter.
 
 ::: context oscillator A tuning fork made of stone
 Most clocks in electronics count the vibrations of a tiny slice of **quartz** crystal. Squeeze quartz and it makes a voltage; put a voltage on it and it bends. Wired into a circuit, it rings at a very steady rate — often millions of times a second — like a tuning fork that never stops. The rate shifts a little with temperature, which is why a TCXO has a circuit that compensates, and an OCXO keeps its crystal in a tiny heated oven so its temperature never changes.
@@ -227,7 +227,7 @@ A fractional error of $10^{-6}$ — one part per million — means the clock gai
 :::
 
 ::: context solution-curve A whole line of perfect answers
-With two transmitters and an unknown bias, every point on this curve fits both measurements exactly. Each point matches a different assumed bias $b$. The true receiver is just one of them; two measurements cannot tell which. The curve is part of a hyperbola, because along it the *difference* of the two distances stays fixed. Axes are in kilometres, drawn to the same scale.
+With two transmitters and an unknown bias, every point on this curve fits both measurements exactly. Each point matches a different assumed bias $b$. The true receiver is just one of them; two measurements cannot tell which. The curve is part of a hyperbola, because along it the *difference* of the two distances stays fixed. Axes are in kilometers, drawn to the same scale.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 215" font-family="Inter, Arial, sans-serif">
@@ -247,7 +247,7 @@ With two transmitters and an unknown bias, every point on this curve fits both m
 ```
 :::
 
-::: context underground How deep is 65 kilometres?
+::: context underground How deep is 65 kilometers?
 Under Florida, Earth's rocky crust is roughly $30$ to $40\,\mathrm{km}$ thick. Below that lies the mantle. So a fix $64.6\,\mathrm{km}$ down, with a receiver clock only $100\,\mathrm{\mu s}$ off, sits in the upper mantle — and the solver reports it with a perfect fit. The drawing shows the true position and that wrong answer to scale, seen from the side.
 
 ```svg

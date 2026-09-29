@@ -3,7 +3,7 @@ id: l06-colour
 title: Color that carries meaning
 minutes: 22
 covers:
-  - 'Colour: colourblind-safe cycles, sequential vs diverging, when colour carries data'
+  - 'Color: colourblind-safe cycles, sequential vs diverging, when color carries data'
 ---
 
 A traffic light is red on top, yellow in the middle and green at the bottom. Always in that order. That order is not decoration. About one man in twelve cannot tell red from green easily, and he still drives safely, because he reads the *position* of the lit lamp. The designers made sure the message did not depend on color alone.
@@ -34,9 +34,9 @@ The eye has three kinds of color sensors, called **[[cones|cone-cells]]**. In ab
 
 The red-green kinds squash red and green toward the same muddy olive. That is why the classic pair "red for failed, green for passed" is a trap.
 
-Greyscale is the second audience. Design review packages still get printed on monochrome printers and photocopied. In greyscale, only the **lightness** of each color survives: how bright it looks, from black to white. Two colors with the same lightness become the same grey.
+Greyscale is the second audience. Design review packages still get printed on monochrome printers and photocopied. In greyscale, only the **lightness** of each color survives: how bright it looks, from black to white. Two colors with the same lightness become the same gray.
 
-A common way to estimate the grey a printer produces from a color with red, green and blue parts $R$, $G$, $B$ (each from 0 to 1) is
+A common way to estimate the gray a printer produces from a color with red, green and blue parts $R$, $G$, $B$ (each from 0 to 1) is
 
 $$
 Y = 0.299\,R + 0.587\,G + 0.114\,B.
@@ -70,9 +70,9 @@ for name, (a, b) in pairs.items():
 
 **Step 1.** `to_rgb` turns any Matplotlib color name or hex code into three numbers from 0 to 1. `"tab:red"` is the red of Matplotlib's default cycle, hex `#d62728`.
 
-**Step 2.** The weighted sum gives the grey. For `tab:red`: $0.299 \times 0.839 + 0.587 \times 0.153 + 0.114 \times 0.157 \approx 0.3586$, and $0.3586 \times 255 \approx 91.4$, which rounds to 91.
+**Step 2.** The weighted sum gives the gray. For `tab:red`: $0.299 \times 0.839 + 0.587 \times 0.153 + 0.114 \times 0.157 \approx 0.3586$, and $0.3586 \times 255 \approx 91.4$, which rounds to 91.
 
-**Step 3, compare.** The default red and green land at 91 and 112, only 21 steps apart out of 255, about 8 percent of the range. On paper they look like two nearly identical mid-greys. Matplotlib's default blue and orange are 52 apart. The blue and orange of the **[[Okabe-Ito|okabe-ito]]** palette, a palette built for color-blind readers, are 75 apart: a dark grey and a light grey.
+**Step 3, compare.** The default red and green land at 91 and 112, only 21 steps apart out of 255, about 8 percent of the range. On paper they look like two nearly identical mid-grays. Matplotlib's default blue and orange are 52 apart. The blue and orange of the **[[Okabe-Ito|okabe-ito]]** palette, a palette built for color-blind readers, are 75 apart: a dark gray and a light gray.
 
 **Sanity check.** Orange looks lighter than blue to most people, and it comes out lighter here. The numbers agree with your eyes.
 :::
@@ -161,15 +161,15 @@ print(len(safe_cycle))
 
 **Step 2, use it.** `ax.set_prop_cycle(safe_cycle)` gives this axes the new cycle. Each `ax.plot` call takes the next color *and* the next style.
 
-**Step 3, see it in grey.** `fig.canvas.draw()` renders the figure in memory. `buffer_rgba()` hands back the pixels: $300 \times 600$ because the figure is $6 \times 3$ inches at Matplotlib's default 100 dots per inch. The `@` with the luma weights turns every pixel into its grey value, which you can save with `plt.imsave("grey.png", grey, cmap="gray")` and look at.
+**Step 3, see it in gray.** `fig.canvas.draw()` renders the figure in memory. `buffer_rgba()` hands back the pixels: $300 \times 600$ because the figure is $6 \times 3$ inches at Matplotlib's default 100 dots per inch. The `@` with the luma weights turns every pixel into its gray value, which you can save with `plt.imsave("grey.png", grey, cmap="gray")` and look at.
 
-**Sanity check.** In the grey version, the four traces are still solid, dashed, dotted and dash-dot. Even if two colors became the same grey, the reader can still match every line to its legend entry.
+**Sanity check.** In the gray version, the four traces are still solid, dashed, dotted and dash-dot. Even if two colors became the same gray, the reader can still match every line to its legend entry.
 :::
 
 To use a cycle for every plot in a script, set it once: `plt.rcParams["axes.prop_cycle"] = safe_cycle`. That changes the default, the same thing a style file does.
 
 ::: warning The greyscale check is not optional
-Looking at your figure on your own screen tells you nothing about how it prints. Render it to grey, with the few lines above or by printing one page, before it goes into a review package. If two lines merge, fix the style, not the colors alone.
+Looking at your figure on your own screen tells you nothing about how it prints. Render it to gray, with the few lines above or by printing one page, before it goes into a review package. If two lines merge, fix the style, not the colors alone.
 :::
 
 ## Sequential maps: lightness must climb
@@ -179,7 +179,7 @@ For a quantity with an order, such as temperature or heat flux, a reader's eye j
 `viridis`, Matplotlib's default colormap, is built this way. `cividis` goes further and was designed to look almost the same to people with red-green deficiency. The old default, **[[jet|jet-history]]**, a rainbow from dark blue through cyan, yellow and red, is not.
 
 ::: example Lightness along two colormaps
-Sample each map at nine evenly spaced points and compute the grey value of each color.
+Sample each map at nine evenly spaced points and compute the gray value of each color.
 
 ```python
 import numpy as np
@@ -198,7 +198,7 @@ for name in ["viridis", "jet"]:
 
 **Step 1.** `matplotlib.colormaps["viridis"]` fetches the colormap. Calling it on nine numbers from 0 to 1 returns nine RGBA colors; `[:, :3]` keeps the red, green and blue columns.
 
-**Step 2.** Multiplying by the luma weights gives nine greys.
+**Step 2.** Multiplying by the luma weights gives nine grays.
 
 **Step 3, read.** `viridis` climbs every step, 31 to 216: in greyscale it is a clean dark-to-light ramp, so "lighter means more" still works on paper. `jet` climbs to 220 at three quarters of the way and then falls back to 38 at the top. In greyscale its highest value looks almost as dark as its lowest.
 
@@ -209,7 +209,7 @@ Every color plot needs a **colorbar**, the key that turns colors back into numbe
 
 ## Diverging maps: pin the center
 
-Some quantities have a meaningful middle. A landing miss is east or west of the target, and zero means on target. A temperature is above or below its qualification limit. For these, a **diverging** colormap uses two hues, such as blue for negative and red for positive, fading to white or light grey at the **center**. `RdBu_r` ("red-blue, reversed", so that red is high) and `coolwarm` are common choices.
+Some quantities have a meaningful middle. A landing miss is east or west of the target, and zero means on target. A temperature is above or below its qualification limit. For these, a **diverging** colormap uses two hues, such as blue for negative and red for positive, fading to white or light gray at the **center**. `RdBu_r` ("red-blue, reversed", so that red is high) and `coolwarm` are common choices.
 
 The colormap alone does not know where your center is. The **norm** decides which data value lands on the white middle of the map. Matplotlib's default norm stretches your smallest value to 0 and your largest to 1, and puts whatever falls halfway at the white middle. If your data runs from $-2$ to $+6$, that middle is $+2$, not zero.
 
@@ -246,7 +246,7 @@ Using `RdBu_r` for a quantity that is always positive, such as heat flux, puts w
 
 Color is at its best when it separates a few things or points at one. It is at its worst when it is asked to carry the key fact alone.
 
-A strong pattern in flight reviews is **[[emphasis by color|grey-context]]**: draw most of the data in light grey and one thing in a strong color. Hundreds of Monte Carlo runs go in pale grey; the three runs that broke a requirement go in a saturated color, drawn thicker and with markers. The reader's eye lands on the violators first, which is exactly where the review should start.
+A strong pattern in flight reviews is **[[emphasis by color|grey-context]]**: draw most of the data in light gray and one thing in a strong color. Hundreds of Monte Carlo runs go in pale gray; the three runs that broke a requirement go in a saturated color, drawn thicker and with markers. The reader's eye lands on the violators first, which is exactly where the review should start.
 
 Some habits keep color honest:
 
@@ -294,7 +294,7 @@ You must show 500 Monte Carlo trajectories and the 4 that violate the altitude f
 :::
 
 ::: answer
-Draw the 500 runs in a light grey, thin, perhaps partly transparent, so together they read as a cloud. Draw the 4 violators in one strong color such as vermillion `#D55E00`, thicker, with a marker at the point where each crosses the floor. Draw the altitude floor as a dashed dark line, labelled. In greyscale the violators are dark, thick and marked against a pale cloud, so they still stand out: the emphasis never depended on hue alone.
+Draw the 500 runs in a light gray, thin, perhaps partly transparent, so together they read as a cloud. Draw the 4 violators in one strong color such as vermillion `#D55E00`, thicker, with a marker at the point where each crosses the floor. Draw the altitude floor as a dashed dark line, labeled. In greyscale the violators are dark, thick and marked against a pale cloud, so they still stand out: the emphasis never depended on hue alone.
 :::
 
 ## Summary
@@ -308,7 +308,7 @@ Draw the 500 runs in a light grey, thin, perhaps partly transparent, so together
 | Luma | greyscale brightness of a color | $Y = 0.299R + 0.587G + 0.114B$ |
 | Red-green deficiency | about 8% of men, 0.5% of women | never rely on red versus green alone |
 | Double encoding | color plus line style or marker | `cycler(color=...) + cycler(linestyle=...)` |
-| Greyscale check | render and convert to grey | `buffer_rgba()` then luma weights |
+| Greyscale check | render and convert to gray | `buffer_rgba()` then luma weights |
 | Colorbar | the key back to numbers | `fig.colorbar(im, label="Quantity (unit)")` |
 
 The greyscale check looked at the figure in memory. The next lesson is about getting it out of memory and onto the page: vector and raster formats, dpi, fonts, and the right figure size for a slide versus a report.
@@ -362,13 +362,13 @@ In a perceptually uniform colormap, going from 0.1 to 0.2 looks like the same si
 </svg>
 ```
 
-The curves are the grey values from the lesson's example: `viridis` climbs steadily, `jet` rises and falls.
+The curves are the gray values from the lesson's example: `viridis` climbs steadily, `jet` rises and falls.
 :::
 
 ::: context jet-history Why the rainbow was retired
 `jet` came to Matplotlib from MATLAB, where it was the default for years, and it was Matplotlib's default colormap too until version 2.0 in 2017. Studies of how people read rainbow maps found that they invent boundaries at the bright cyan and yellow bands and hide real gradients inside the broad blue and red regions. Matplotlib's developers designed `viridis` as its replacement: perceptually uniform, readable in greyscale, and usable with the common color vision deficiencies.
 :::
 
-::: context grey-context Grey as a design tool
-Grey is the most useful color in an engineering figure. Anything that is context, such as the bulk of an ensemble, the previous flight, or grid lines, goes in grey, so the one thing the figure is about can take the only strong color. The same move works for a previous flight overlaid on today's, or for grid and reference lines: whatever the reader should look past goes grey, and whatever the reader should look at gets the color.
+::: context grey-context Gray as a design tool
+Gray is the most useful color in an engineering figure. Anything that is context, such as the bulk of an ensemble, the previous flight, or grid lines, goes in gray, so the one thing the figure is about can take the only strong color. The same move works for a previous flight overlaid on today's, or for grid and reference lines: whatever the reader should look past goes gray, and whatever the reader should look at gets the color.
 :::

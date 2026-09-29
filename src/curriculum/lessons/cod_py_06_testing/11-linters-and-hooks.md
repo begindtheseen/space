@@ -452,7 +452,7 @@ The `.git` folder is not part of what you commit, so hooks are not shared by clo
 ::: context ci-backstop Why the server runs it again
 **Continuous integration**, or CI, is a server that runs the project's checks on every pull request. It is the backstop for everything a laptop can skip. A local hook can be bypassed with `--no-verify`, may never have been installed, or may run an older version of a tool.
 
-So a typical setup runs the same checks twice. Locally, pre-commit gives fast feedback in a few seconds, on only the files you touched. On the server, `pre-commit run --all-files` and the full test suite run on a clean machine, and the merge button stays grey until they pass. The two layers catch the same problems at different moments: one is for your convenience, the other is the rule.
+So a typical setup runs the same checks twice. Locally, pre-commit gives fast feedback in a few seconds, on only the files you touched. On the server, `pre-commit run --all-files` and the full test suite run on a clean machine, and the merge button stays gray until they pass. The two layers catch the same problems at different moments: one is for your convenience, the other is the rule.
 :::
 
 ::: context cheap-first Cheap checks first

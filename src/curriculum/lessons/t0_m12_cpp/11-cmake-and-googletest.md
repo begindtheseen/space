@@ -428,7 +428,7 @@ CMake projects close the gap with a toolchain file naming an exact compiler, a c
 | `EXPECT_NEAR(a, b, tol)`, `EXPECT_DOUBLE_EQ(a, b)` | a tolerance you choose / four units in the last place |
 | `--gtest_filter`, `--gtest_repeat`, `--gtest_shuffle` | run a subset; hunt for tests that depend on each other |
 
-The next lesson is about the bugs the compiler is allowed not to tell you about — undefined behaviour — and the sanitizer builds that make the test program you have made report them.
+The next lesson is about the bugs the compiler is allowed not to tell you about — undefined behavior — and the sanitizer builds that make the test program you have made report them.
 
 ::: context translation-unit One file, as the compiler sees it
 The compiler never looks at your whole project at once. It takes one `.cpp` file, pastes in every header that file includes (and every header *those* include), and compiles the result into one object file. That pasted-together text is a **translation unit**. It explains two things you will notice: why editing a header forces many files to recompile, and why a missing function often shows up only at the final link, when the object files are finally put together.
@@ -538,5 +538,5 @@ In a hardware lab, a **test fixture** is the jig that holds a part in exactly th
 :::
 
 ::: context ci A build server that never gets tired
-**Continuous integration**, or CI, means every change a programmer pushes is built and tested automatically, usually within minutes, on a shared server. If anything fails, the change is blocked before it joins the main code. For flight software the CI server does what no person would do by hand every time: build the code three or four different ways, run every test in each, run the sanitizers and static analysers, and keep a record of it all.
+**Continuous integration**, or CI, means every change a programmer pushes is built and tested automatically, usually within minutes, on a shared server. If anything fails, the change is blocked before it joins the main code. For flight software the CI server does what no person would do by hand every time: build the code three or four different ways, run every test in each, run the sanitizers and static analyzers, and keep a record of it all.
 :::

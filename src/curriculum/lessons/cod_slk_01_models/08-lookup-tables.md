@@ -87,7 +87,7 @@ In a new block, extrapolation is **Linear**. That default is convenient for smoo
 A third option does not invent anything: the block's **Diagnostic for out-of-range input** can be set to None, Warning or Error, so that leaving the table is reported instead of silently extrapolated. Many teams turn on a warning in simulation to learn whether the vehicle ever gets there.
 
 ::: key
-What is a Lookup Table (n-D) used for in aerospace models? Aerodynamic coefficients and engine data as functions of Mach, angle of attack and control deflection. Interpolation method and extrapolation behaviour at the table edges are design decisions with real consequences at the envelope boundary.
+What is a Lookup Table (n-D) used for in aerospace models? Aerodynamic coefficients and engine data as functions of Mach, angle of attack and control deflection. Interpolation method and extrapolation behavior at the table edges are design decisions with real consequences at the envelope boundary.
 :::
 
 For the $C_N$ table at Mach 1.0 and $\alpha = 20°$: linear extrapolation continues each row's last slope, giving $2.06$ at Mach 0.9 and $2.36$ at Mach 1.2, so $2.16$ after interpolating along Mach. Clip holds $\alpha$ at $16°$ and gives $1.68$. The two answers differ by 29%, and the table itself cannot tell you which is closer to the truth.

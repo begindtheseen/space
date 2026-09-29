@@ -14,7 +14,7 @@ This lesson builds the **overlapping** Allan estimator every real analysis progr
 
 ## Two averages, side by side
 
-In words first: chop the record into blocks, each $\tau$ seconds long ($\tau$ is the Greek letter "tau", the **averaging time**). Average each block. Now look at neighbouring blocks: how different are their averages? For a perfect sensor the difference would be zero. The bigger the typical difference, the noisier the sensor *at that averaging time*.
+In words first: chop the record into blocks, each $\tau$ seconds long ($\tau$ is the Greek letter "tau", the **averaging time**). Average each block. Now look at neighboring blocks: how different are their averages? For a perfect sensor the difference would be zero. The bigger the typical difference, the noisier the sensor *at that averaging time*.
 
 In symbols, with $\bar y_k$ ("y bar sub k") the average of block $k$:
 
@@ -30,7 +30,7 @@ The definition above uses **non-overlapping** blocks: cut an $N$-sample record i
 
 The fix costs nothing extra. Slide the window one sample at a time, instead of jumping a whole block, and average over every place it fits.
 
-To write that down neatly, first add up the samples. Call $\theta_i = \tau_0\sum_{j<i}\tilde\omega_j$ the **integrated angle**: the running total of the raw rate samples $\tilde\omega_j$ ("omega tilde", the tilde marking a measured value), times the sample interval. For an accelerometer the same running total is a velocity. The average of samples $i$ to $i+m$ is then the change in $\theta$ across the block, divided by $\tau$: $(\theta_{i+m}-\theta_i)/\tau$. The difference between two neighbouring block averages is therefore $(\theta_{i+2m}-2\theta_{i+m}+\theta_i)/\tau$, and the overlapping estimator is
+To write that down neatly, first add up the samples. Call $\theta_i = \tau_0\sum_{j<i}\tilde\omega_j$ the **integrated angle**: the running total of the raw rate samples $\tilde\omega_j$ ("omega tilde", the tilde marking a measured value), times the sample interval. For an accelerometer the same running total is a velocity. The average of samples $i$ to $i+m$ is then the change in $\theta$ across the block, divided by $\tau$: $(\theta_{i+m}-\theta_i)/\tau$. The difference between two neighboring block averages is therefore $(\theta_{i+2m}-2\theta_{i+m}+\theta_i)/\tau$, and the overlapping estimator is
 
 $$
 \sigma_A^2(\tau) = \frac{1}{2\tau^2(N-2m)}\sum_{i=0}^{N-2m-1}\big(\theta_{i+2m} - 2\theta_{i+m} + \theta_i\big)^2 .
@@ -98,7 +98,7 @@ $$
 This curve is a hump. It rises from zero at short $\tau$, peaks at $\tau \approx 1.89\,T$ with a height of about $0.617\,\sigma$, and then *falls* again. Far past the peak it approaches $\sqrt{2\sigma^2T/\tau}$, the shape of white noise. Once each block is many correlation times long, the process has forgotten itself many times inside it, so it averages down like noise with no memory. A simulated record with $\sigma = 3^\circ/\mathrm h$ and $T = 100\,\mathrm s$ follows the formula within $2\%$ over two decades of $\tau$, peaks near $\tau = 200\,\mathrm s$, and is already falling by $1000\,\mathrm s$.
 
 ::: note Why it has to be true
-Write $\bar y_1$ and $\bar y_2$ for two neighbouring block averages. Expanding the square in the definition gives $\sigma_A^2 = \operatorname{Var}(\bar y) - \operatorname{Cov}(\bar y_1, \bar y_2)$: the spread of one block average, minus how much two neighbours move together. For a Gauss-Markov bias with autocorrelation $\sigma^2 e^{-|t|/T}$, the probability module found $\operatorname{Var}(\bar y) = \frac{2\sigma^2T^2}{\tau^2}\big(\tau/T - 1 + e^{-\tau/T}\big)$. The same exponential integrals, taken across two neighbouring blocks, give $\operatorname{Cov}(\bar y_1,\bar y_2) = \frac{\sigma^2T^2}{\tau^2}\big(1-e^{-\tau/T}\big)^2$. Subtract, and expand $(1-e^{-\tau/T})^2 = 1 - 2e^{-\tau/T} + e^{-2\tau/T}$, to reach the formula above.
+Write $\bar y_1$ and $\bar y_2$ for two neighboring block averages. Expanding the square in the definition gives $\sigma_A^2 = \operatorname{Var}(\bar y) - \operatorname{Cov}(\bar y_1, \bar y_2)$: the spread of one block average, minus how much two neighbors move together. For a Gauss-Markov bias with autocorrelation $\sigma^2 e^{-|t|/T}$, the probability module found $\operatorname{Var}(\bar y) = \frac{2\sigma^2T^2}{\tau^2}\big(\tau/T - 1 + e^{-\tau/T}\big)$. The same exponential integrals, taken across two neighboring blocks, give $\operatorname{Cov}(\bar y_1,\bar y_2) = \frac{\sigma^2T^2}{\tau^2}\big(1-e^{-\tau/T}\big)^2$. Subtract, and expand $(1-e^{-\tau/T})^2 = 1 - 2e^{-\tau/T} + e^{-2\tau/T}$, to reach the formula above.
 :::
 
 So where do the flat floors on datasheets come from? From many such processes at once, each with its own correlation time. Add five Gauss-Markov processes with the same total variance and correlation times spread half a decade apart — $10$, $32$, $100$, $316$ and $1000\,\mathrm s$. The rising edge of each hump overlaps the falling edge of the next. Between $\tau = 100$ and $1000\,\mathrm s$, the ratio of the highest to the lowest value of the curve drops from $1.50$ for one process to about $1.08$ for five. The limit of infinitely many processes, spread evenly on a log scale of $T$, is **[[flicker noise|flicker-noise]]**, and its Allan curve is flat over many decades.
@@ -126,7 +126,7 @@ $$
 At $\tau = 3\,\mathrm s$ the factor $\sqrt{\tau/3}$ is exactly $1$, so the curve's value there is $\sqrt{Q_r}$ directly — the same trick as reading ARW at $\tau = 1\,\mathrm s$. Multiply by $60$ for the datasheet coefficient $K$ in $^\circ/\mathrm h/\sqrt{\mathrm h}$. A simulated rate random walk with $K = 0.05\,^\circ/\mathrm h/\sqrt{\mathrm h}$ follows $\sqrt{Q_r\tau/3}$ within a few per cent, and reads $8.4\times10^{-4}\,^\circ/\mathrm h$ at $\tau = 3\,\mathrm s$, against $K/60 = 8.3\times10^{-4}\,^\circ/\mathrm h$.
 
 ::: note Why it has to be true
-The difference of two neighbouring block averages, $\bar y_2 - \bar y_1$, is a weighted sum of all the kicks $w_r(s)$ since the start. A kick at time $s$ inside the first block raises every later bias value, so it counts fully in $\bar y_2$ but in $\bar y_1$ only for the fraction $(\tau - s)/\tau$ of the block after it: its weight in the difference is $1 - (\tau-s)/\tau = s/\tau$. A kick at time $s$ in the second block counts only in $\bar y_2$, for the part after $s$: its weight is $(2\tau - s)/\tau$. White noise makes the variance equal to $Q_r$ times the integral of the squared weight: $\int_0^\tau (s/\tau)^2\,ds + \int_\tau^{2\tau}\big((2\tau-s)/\tau\big)^2\,ds = \tau/3 + \tau/3 = 2\tau/3$. Halve it, and $\sigma_A^2 = Q_r\tau/3$.
+The difference of two neighboring block averages, $\bar y_2 - \bar y_1$, is a weighted sum of all the kicks $w_r(s)$ since the start. A kick at time $s$ inside the first block raises every later bias value, so it counts fully in $\bar y_2$ but in $\bar y_1$ only for the fraction $(\tau - s)/\tau$ of the block after it: its weight in the difference is $1 - (\tau-s)/\tau = s/\tau$. A kick at time $s$ in the second block counts only in $\bar y_2$, for the part after $s$: its weight is $(2\tau - s)/\tau$. White noise makes the variance equal to $Q_r$ times the integral of the squared weight: $\int_0^\tau (s/\tau)^2\,ds + \int_\tau^{2\tau}\big((2\tau-s)/\tau\big)^2\,ds = \tau/3 + \tau/3 = 2\tau/3$. Halve it, and $\sigma_A^2 = Q_r\tau/3$.
 :::
 
 ### Rate ramp: slope $+1$
@@ -332,11 +332,11 @@ With one calibration temperature the slope is unknown, so there is nothing to in
 This closes the module's account of what a sensor does on its own, sitting still. The next lesson sets the sensors moving: the strapdown mechanization that turns a stream of corrected gyro and accelerometer samples into attitude, velocity and position, in the three reference frames a navigator actually computes in.
 
 ::: context allan-name Borrowed from clockmakers
-David Allan, a physicist at the US National Bureau of Standards (now NIST), introduced this statistic in 1966 to compare atomic clocks. Ordinary variance was useless for them: for some kinds of clock noise it keeps growing the longer you record, so it never settles on an answer. Comparing *neighbouring* averages fixed that. Gyro engineers borrowed the tool because a gyro and a clock have the same problem — both are supposed to put out a steady number, and both wander in several ways at once. The IEEE test standards for fiber-optic and ring-laser gyros later adopted it as the standard way to specify gyro noise.
+David Allan, a physicist at the US National Bureau of Standards (now NIST), introduced this statistic in 1966 to compare atomic clocks. Ordinary variance was useless for them: for some kinds of clock noise it keeps growing the longer you record, so it never settles on an answer. Comparing *neighboring* averages fixed that. Gyro engineers borrowed the tool because a gyro and a clock have the same problem — both are supposed to put out a steady number, and both wander in several ways at once. The IEEE test standards for fiber-optic and ring-laser gyros later adopted it as the standard way to specify gyro noise.
 :::
 
 ::: context second-difference Three points and a straight line
-A second difference asks one question: how far does the middle point sit from the straight line joining its two neighbours?
+A second difference asks one question: how far does the middle point sit from the straight line joining its two neighbors?
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
@@ -356,7 +356,7 @@ A second difference asks one question: how far does the middle point sit from th
 </svg>
 ```
 
-The slope of $\theta$ over a block is that block's average rate. If both blocks had the same average rate, the three points would lie on one straight line and the gap would be zero. The gap is half the second difference, $(\theta_{i+2m}-2\theta_{i+m}+\theta_i)/2$, so its size measures how much the two neighbouring averages disagree.
+The slope of $\theta$ over a block is that block's average rate. If both blocks had the same average rate, the three points would lie on one straight line and the gap would be zero. The gap is half the second difference, $(\theta_{i+2m}-2\theta_{i+m}+\theta_i)/2$, so its size measures how much the two neighboring averages disagree.
 :::
 
 ::: context monte-carlo Answering questions by rolling dice
@@ -390,7 +390,7 @@ Each segment's steepness here matches its label: the first falls one decade per 
 :::
 
 ::: context quantization Counting in whole steps
-A digital sensor reports whole numbers of some smallest step, called the **least significant bit** or LSB. Anything between two steps is rounded. Think of a ruler marked only in millimetres: every length you read is off by up to half a millimetre, and if you know nothing else, any error in that range is equally likely. An error spread evenly over a range of width $\Delta$ has variance $\Delta^2/12$ — the same $12$ that appears in the formula for the variance of a uniform distribution, which you can check by integrating $x^2$ from $-\Delta/2$ to $\Delta/2$ and dividing by $\Delta$.
+A digital sensor reports whole numbers of some smallest step, called the **least significant bit** or LSB. Anything between two steps is rounded. Think of a ruler marked only in millimeters: every length you read is off by up to half a millimeter, and if you know nothing else, any error in that range is equally likely. An error spread evenly over a range of width $\Delta$ has variance $\Delta^2/12$ — the same $12$ that appears in the formula for the variance of a uniform distribution, which you can check by integrating $x^2$ from $-\Delta/2$ to $\Delta/2$ and dividing by $\Delta$.
 :::
 
 ::: context flicker-noise Noise that looks the same at every scale

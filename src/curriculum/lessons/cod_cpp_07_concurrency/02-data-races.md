@@ -3,12 +3,12 @@ id: l02-data-races
 title: Data races
 minutes: 26
 covers:
-  - Data races as undefined behaviour, not merely a wrong answer
+  - Data races as undefined behavior, not merely a wrong answer
 ---
 
 Two friends keep score at a basketball game on one small whiteboard. Each time their team scores, whoever saw it walks to the board, reads the number, works out one more in their head, wipes the board and writes the new number. One evening both see the same basket. Both read 41. Both write 42. The team scored twice, and the board says one.
 
-That lost point is the picture most people have of two threads sharing a variable: sometimes the answer is a little wrong. It is true, and it is the least of the problem. In C++, two threads touching the same variable without coordination is a **data race**, and a data race is **undefined behaviour**, like reading past the end of an array. The compiler may assume it never happens, and optimises on that assumption — enough to make a control loop ignore its stop flag forever.
+That lost point is the picture most people have of two threads sharing a variable: sometimes the answer is a little wrong. It is true, and it is the least of the problem. In C++, two threads touching the same variable without coordination is a **data race**, and a data race is **undefined behavior**, like reading past the end of an array. The compiler may assume it never happens, and optimizes on that assumption — enough to make a control loop ignore its stop flag forever.
 
 Last lesson every example read shared data only after a `join`. This lesson drops that care on purpose: a counter that loses counts, the same counter right for the wrong reason, a stop flag that `-O2` turns into an infinite loop, and **ThreadSanitizer**, the tool that finds them. It closes with the data race's cousin, the **race condition**, which no tool finds for you.
 
@@ -20,7 +20,7 @@ A **[[memory location|memory-location]]** is one scalar object — an `int`, a `
 
 Two accesses **conflict** when they touch the same memory location and at least one of them is a write. Two reads never conflict: any number of threads can read a value that nobody is changing.
 
-The last ingredient is **happens-before**, an ordering the program guarantees between two actions, so that the first is complete and visible when the second runs. Inside one thread, each statement happens before the next. Across threads, only **[[synchronisation|synchronisation]]** creates it, and you have already used two kinds:
+The last ingredient is **happens-before**, an ordering the program guarantees between two actions, so that the first is complete and visible when the second runs. Inside one thread, each statement happens before the next. Across threads, only **[[synchronization|synchronisation]]** creates it, and you have already used two kinds:
 
 - everything a thread does before constructing a `std::thread` happens before the new thread's function starts;
 - everything a thread does happens before the `join()` that waits for it returns.
@@ -30,7 +30,7 @@ Unlocking a mutex and then locking it (next lesson) and pairs of atomic operatio
 Put together:
 
 ::: key
-A **data race**: two threads access the same memory location, at least one access is a write, and the accesses are not ordered by a synchronisation relationship (neither happens before the other). It is undefined behaviour, so the program has no defined meaning at all, regardless of what it appears to do.
+A **data race**: two threads access the same memory location, at least one access is a write, and the accesses are not ordered by a synchronization relationship (neither happens before the other). It is undefined behavior, so the program has no defined meaning at all, regardless of what it appears to do.
 :::
 
 Read that last sentence twice. It does not say "the variable may have a wrong value". It says the whole program has no meaning. In practice the damage usually lands near the race, but the standard gives you no floor.
@@ -67,7 +67,7 @@ int main() {
 }
 ```
 
-Each thread adds one a million times, so the total should be 2,000,000. Built with `g++ -std=c++20 -Wall -Wextra -O0` (no optimisation) on a 4-core machine, five runs printed:
+Each thread adds one a million times, so the total should be 2,000,000. Built with `g++ -std=c++20 -Wall -Wextra -O0` (no optimization) on a 4-core machine, five runs printed:
 
 ```text
 frames = 1311019 (expected 2000000)
@@ -122,14 +122,14 @@ The loop is gone. The compiler loads `g_frames` once, adds `n` in one go (the tw
 Each thread now finishes its million in a few nanoseconds, long before the other has even started — creating a thread takes tens of microseconds, as you measured last lesson. The race is still there; the right answer is timing luck. Change the loop body or the timing, and the two load-add-store sequences can overlap and the answer halves.
 
 ::: warning The right answer proves nothing
-A racy program that passes its tests has been shown to pass *on that compiler, at that optimisation level, on that machine, with that timing* — nothing more. Change any one and the behaviour may change. A race is a bug the moment it is written, not the moment it is noticed.
+A racy program that passes its tests has been shown to pass *on that compiler, at that optimization level, on that machine, with that timing* — nothing more. Change any one and the behavior may change. A race is a bug the moment it is written, not the moment it is noticed.
 :::
 
-## The optimiser assumes you did not race
+## The optimizer assumes you did not race
 
-The counter shows the rule the compiler works by. Stated plainly: **because a data race is undefined behaviour, the compiler may assume that no other thread changes an ordinary variable between two synchronisation points.** Within that stretch of code it can keep a copy of the variable in a **[[register|register]]**, read it once instead of a hundred times, and combine or delay writes.
+The counter shows the rule the compiler works by. Stated plainly: **because a data race is undefined behavior, the compiler may assume that no other thread changes an ordinary variable between two synchronization points.** Within that stretch of code it can keep a copy of the variable in a **[[register|register]]**, read it once instead of a hundred times, and combine or delay writes.
 
-Those are the optimisations that make single-threaded code fast. They are also exactly what breaks a thread that is waiting for another thread to change something.
+Those are the optimizations that make single-threaded code fast. They are also exactly what breaks a thread that is waiting for another thread to change something.
 
 ::: example A stop flag that never stops
 A control loop runs until another thread asks it to stop, through a plain `bool`:
@@ -190,14 +190,14 @@ _Z12control_loopv:
 	jmp	puts@PLT
 ```
 
-Read it line by line. `cmp` reads `g_stop` **once**. If it is already true, jump to `.L5` and print. Otherwise fall into `.L6: jmp .L6` — "at label L6, jump to label L6" — an empty loop that never reads memory again. The compiler reasoned: nothing inside the loop changes `g_stop`, and no other thread may change it without synchronisation, so its value cannot change, so read it once. The load was **hoisted** — lifted out of the loop.
+Read it line by line. `cmp` reads `g_stop` **once**. If it is already true, jump to `.L5` and print. Otherwise fall into `.L6: jmp .L6` — "at label L6, jump to label L6" — an empty loop that never reads memory again. The compiler reasoned: nothing inside the loop changes `g_stop`, and no other thread may change it without synchronization, so its value cannot change, so read it once. The load was **hoisted** — lifted out of the loop.
 
 And `++g_cycles` vanished completely. The loop never ends, so nothing after it can ever read `g_cycles`, so the increments had no visible effect and were removed.
 
-Sanity check: `-O0` keeps every load, so it happened to work; `-O2` assumed no race and hung. Same source, two behaviours: undefined behaviour you can watch.
+Sanity check: `-O0` keeps every load, so it happened to work; `-O2` assumed no race and hung. Same source, two behaviors: undefined behavior you can watch.
 :::
 
-The fix is to give the flag real synchronisation. Declare it `std::atomic<bool> g_stop{false};` (read "a std atomic of bool") and change nothing else: at `-O2` it printed all three lines and exited normally, because every read of an atomic must really happen. Lesson 06 explains why. Or use last lesson's tool: a `std::jthread` whose loop checks its `std::stop_token`, which is built on the same atomic machinery.
+The fix is to give the flag real synchronization. Declare it `std::atomic<bool> g_stop{false};` (read "a std atomic of bool") and change nothing else: at `-O2` it printed all three lines and exited normally, because every read of an atomic must really happen. Lesson 06 explains why. Or use last lesson's tool: a `std::jthread` whose loop checks its `std::stop_token`, which is built on the same atomic machinery.
 
 ::: warning volatile is not the fix
 Marking the flag `volatile` makes this loop re-read `g_stop`, and the program appears to work. It is still a data race: `volatile` gives no atomicity and no ordering of the *other* memory the threads share, as the memory module's volatile lesson showed. Use `std::atomic` or a mutex.
@@ -207,7 +207,7 @@ Lost updates and hoisted loads are the common failures, not the only ones. A rac
 
 ## ThreadSanitizer finds races for you
 
-**ThreadSanitizer**, **TSan** for short, is AddressSanitizer's sibling for data races. It watches every memory access and every synchronisation operation, tracks which accesses are ordered by happens-before, and reports any conflicting pair that is not.
+**ThreadSanitizer**, **TSan** for short, is AddressSanitizer's sibling for data races. It watches every memory access and every synchronization operation, tracks which accesses are ordered by happens-before, and reports any conflicting pair that is not.
 
 You build with:
 
@@ -259,7 +259,7 @@ Why line 7, the `for`, and not line 8? At `-O1` the increment was folded into th
 The program exited with status 66, TSan's signal to a test script that it found something. Sanity check: TSan flagged exactly the variable we expected, in the right function, between the two threads we started.
 :::
 
-TSan does not need the race to *go wrong* in that run: it checks the ordering, not the result. The `-O0` counter, run under TSan, happened to print the correct 2,000,000, and TSan still reported the race. Two writes to one global from two threads 200 ms apart, with no synchronisation, were flagged too. The stop-flag build hung under TSan, but only after reporting the write on line 19 and the read on line 9. And a report is never a guess from the source: it is a real unordered pair in the run.
+TSan does not need the race to *go wrong* in that run: it checks the ordering, not the result. The `-O0` counter, run under TSan, happened to print the correct 2,000,000, and TSan still reported the race. Two writes to one global from two threads 200 ms apart, with no synchronization, were flagged too. The stop-flag build hung under TSan, but only after reporting the write on line 19 and the read on line 9. And a report is never a guess from the source: it is a real unordered pair in the run.
 
 The limits: TSan sees only the code the run executes, so a race on an untested error path stays hidden. And it is slow — the LLVM documentation gives a typical slowdown of 5 to 15 times and memory use of 5 to 10 times — so it runs the ground test suite, never the flight build.
 
@@ -273,9 +273,9 @@ When you build the module's lock-free ring buffer, TSan is the judge. A buffer c
 
 The two names sound alike and mean different things.
 
-A **data race** is the precise, standard-defined thing of this lesson: unordered conflicting accesses to one memory location. It is undefined behaviour. TSan can find it.
+A **data race** is the precise, standard-defined thing of this lesson: unordered conflicting accesses to one memory location. It is undefined behavior. TSan can find it.
 
-A **race condition** is broader and is about your logic: the program is correct for some orderings of events between threads and wrong for others. It is [[a design bug|therac]]. The behaviour is well defined, only not what you wanted, and no sanitizer can know what you wanted.
+A **race condition** is broader and is about your logic: the program is correct for some orderings of events between threads and wrong for others. It is [[a design bug|therac]]. The behavior is well defined, only not what you wanted, and no sanitizer can know what you wanted.
 
 You can have either one without the other.
 
@@ -337,7 +337,7 @@ Trace it. The heater thread checks: 100 is at least 80, yes. The radio thread ch
 Sanity check: the loads add up to 140 W against a 100 W budget, so at most one should have come on. The fix is to make check-and-act one locked step — a `try_take` that checks and subtracts under a single lock — which the next lesson builds.
 :::
 
-The reverse also exists: a data race that seems harmless to the logic, such as two threads both writing `true` to the same "fault seen" flag. People call these **[[benign races|benign-race]]**. There is no such thing in C++: it is still undefined behaviour, and the optimiser may still transform the code as if it could not happen. Make the flag atomic.
+The reverse also exists: a data race that seems harmless to the logic, such as two threads both writing `true` to the same "fault seen" flag. People call these **[[benign races|benign-race]]**. There is no such thing in C++: it is still undefined behavior, and the optimizer may still transform the code as if it could not happen. Make the flag atomic.
 
 ::: warning Locks make accesses safe, not algorithms
 Protecting every variable with a lock removes data races. It does not remove race conditions. Whenever code reads shared state, decides something, and then acts on the decision, ask: "what if another thread changes it in between?" The whole decision must sit inside one lock, or be one atomic operation.
@@ -350,7 +350,7 @@ For each pair, say whether it is a data race. (a) Two threads both read the cons
 :::
 
 ::: answer
-(a) No: two reads never conflict, and the table was filled before the threads were constructed, so before both started. (b) No: different members are different memory locations. (Lesson 10 shows they can still be slow if they share a cache line — performance, not correctness.) (c) No: the worker's write happens before `join()` returns, so the read is ordered after it. (d) Yes: same location, both write, and nothing orders them. It is undefined behaviour, whatever total it prints.
+(a) No: two reads never conflict, and the table was filled before the threads were constructed, so before both started. (b) No: different members are different memory locations. (Lesson 10 shows they can still be slow if they share a cache line — performance, not correctness.) (c) No: the worker's write happens before `join()` returns, so the read is ordered after it. (d) Yes: same location, both write, and nothing orders them. It is undefined behavior, whatever total it prints.
 :::
 
 ::: check
@@ -358,7 +358,7 @@ A colleague says: "Our racy counter printed the right total in 10,000 test runs 
 :::
 
 ::: answer
-First, the right total came from the compiler turning the loop into one load, one add and one store, finished before the second thread started; a change to the loop body or timing can make the two sequences overlap and lose counts. Second, a data race is undefined behaviour: no number of passing runs proves anything about the next build, compiler or machine. TSan reports the race even on a run with the right total.
+First, the right total came from the compiler turning the loop into one load, one add and one store, finished before the second thread started; a change to the loop body or timing can make the two sequences overlap and lose counts. Second, a data race is undefined behavior: no number of passing runs proves anything about the next build, compiler or machine. TSan reports the race even on a run with the right total.
 :::
 
 ::: check
@@ -366,7 +366,7 @@ In the stop-flag example, why did the `-O2` loop become `jmp .L6`, and why did `
 :::
 
 ::: answer
-The compiler may assume no other thread writes `g_stop` without synchronisation, and the loop body has none, so `g_stop` cannot change during the loop: read it once, and if it was false, jump to yourself forever. `++g_cycles` vanished because a loop that never exits leaves no later code to read `g_cycles`, so the increments had no observable effect. A `std::atomic<bool>` forces a real read every time and fixes both.
+The compiler may assume no other thread writes `g_stop` without synchronization, and the loop body has none, so `g_stop` cannot change during the loop: read it once, and if it was false, jump to yourself forever. `++g_cycles` vanished because a loop that never exits leaves no later code to read `g_cycles`, so the increments had no observable effect. A `std::atomic<bool>` forces a real read every time and fixes both.
 :::
 
 ::: check
@@ -391,18 +391,18 @@ There is no data race: each access to the queue is inside its lock, so all acces
 | --- | --- | --- |
 | Memory location | one scalar object, or a run of adjacent bit-fields | different struct members are different locations |
 | Conflict | two accesses to one location, at least one a write | two reads never conflict |
-| Happens-before | an ordering the program guarantees | from program order and synchronisation: thread start, `join`, mutexes, atomics |
-| Data race | conflicting accesses in two threads, neither happening before the other | undefined behaviour: the whole program has no meaning |
+| Happens-before | an ordering the program guarantees | from program order and synchronization: thread start, `join`, mutexes, atomics |
+| Data race | conflicting accesses in two threads, neither happening before the other | undefined behavior: the whole program has no meaning |
 | Lost update | two load-add-store sequences overlap | lost 34 to 48 percent of counts at `-O0` |
 | Hoisting | a load moved out of a loop | the `-O2` stop-flag loop read `g_stop` once and spun forever |
 | Fix for flags | `std::atomic<bool>` or a `std::stop_token` | not `volatile` |
 | ThreadSanitizer | `-fsanitize=thread -g -O1` | reports unordered pairs even when the answer was right; executed paths only |
-| Race condition | correctness depends on timing | defined behaviour, a logic bug; TSan cannot see it |
+| Race condition | correctness depends on timing | defined behavior, a logic bug; TSan cannot see it |
 
 The fix for most data races, and the first fix for the check-then-act race condition, is the mutex. Next lesson: `std::mutex` and the family of lock types around it, what each one is for, and what locking really costs.
 
 ::: context memory-location The unit the rules are about
-The standard's exact wording: a memory location is either an object of scalar type or a maximal sequence of adjacent bit-fields all having nonzero width. The bit-field part exists because a processor cannot write a single bit; to change one bit-field it reads, modifies and writes a whole word, and would clobber its neighbours:
+The standard's exact wording: a memory location is either an object of scalar type or a maximal sequence of adjacent bit-fields all having nonzero width. The bit-field part exists because a processor cannot write a single bit; to change one bit-field it reads, modifies and writes a whole word, and would clobber its neighbors:
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
@@ -422,8 +422,8 @@ The standard's exact wording: a memory location is either an object of scalar ty
 ```
 :::
 
-::: context synchronisation Synchronisation, the only bridge between threads
-Synchronisation is any operation the standard defines as creating order between threads. The full list is short: starting and joining threads, locking and unlocking mutexes, operations on atomics with suitable memory orderings, and a few library facilities built on those, such as condition variables and futures (lessons 05 and 08). Everything else — ordinary reads and writes, `volatile`, sleeping for a while and hoping — creates no order at all. When you ask "can thread B see what thread A wrote?", the answer is always found by tracing a chain of these operations from A's write to B's read.
+::: context synchronisation Synchronization, the only bridge between threads
+Synchronization is any operation the standard defines as creating order between threads. The full list is short: starting and joining threads, locking and unlocking mutexes, operations on atomics with suitable memory orderings, and a few library facilities built on those, such as condition variables and futures (lessons 05 and 08). Everything else — ordinary reads and writes, `volatile`, sleeping for a while and hoping — creates no order at all. When you ask "can thread B see what thread A wrote?", the answer is always found by tracing a chain of these operations from A's write to B's read.
 :::
 
 ::: context lost-update The whiteboard, instruction by instruction
@@ -453,7 +453,7 @@ Time runs downward. Thread b's store overwrites thread a's, and one increment is
 :::
 
 ::: context register Where the compiler keeps a copy
-A **register** is a tiny storage slot inside the processor core itself; an x86-64 core has 16 general-purpose ones, named `rax`, `rdx` and so on. Arithmetic happens in registers, and reading one is far faster than reading memory. So compilers work hard to load a variable into a register once, work on it there, and write it back as late as they can. In a single thread nobody can tell. A second thread looking at the memory copy sees a stale value, which is why the compiler must be told, through synchronisation, where the copies have to be brought up to date.
+A **register** is a tiny storage slot inside the processor core itself; an x86-64 core has 16 general-purpose ones, named `rax`, `rdx` and so on. Arithmetic happens in registers, and reading one is far faster than reading memory. So compilers work hard to load a variable into a register once, work on it there, and write it back as late as they can. In a single thread nobody can tell. A second thread looking at the memory copy sees a stale value, which is why the compiler must be told, through synchronization, where the copies have to be brought up to date.
 :::
 
 ::: context torn-read Half an old value, half a new one

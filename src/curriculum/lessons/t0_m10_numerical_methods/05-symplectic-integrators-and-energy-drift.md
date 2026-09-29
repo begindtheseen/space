@@ -393,7 +393,7 @@ In the 1830s the Irish mathematician William Rowan Hamilton rewrote mechanics ar
 :::
 
 ::: context shadow-ellipse The shadow orbit in the phase plane
-The true motion of $\ddot x = -x$ stays on the circle $x^2 + v^2 = 1$ (grey). Leapfrog with $h = 0.5$ puts its points (red) on the ellipse $v^2 + 0.9375\,x^2 = 0.9375$ (blue) — slightly squashed — and keeps them there forever.
+The true motion of $\ddot x = -x$ stays on the circle $x^2 + v^2 = 1$ (gray). Leapfrog with $h = 0.5$ puts its points (red) on the ellipse $v^2 + 0.9375\,x^2 = 0.9375$ (blue) — slightly squashed — and keeps them there forever.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210" font-family="Inter, Arial, sans-serif">

@@ -323,7 +323,7 @@ The **bel**, named for Alexander Graham Bell, is the base-ten logarithm of a *po
 :::
 
 ::: context asymptote-picture Straight lines versus the true curve
-Magnitude of $1/(1 + s/p)$ over three decades. The grey straight lines are the asymptotes: flat, then $-20\,\mathrm{dB}$ per decade from the corner. The blue curve is exact. The biggest gap is at the corner, $3\,\mathrm{dB}$; a decade away the two agree within $0.04\,\mathrm{dB}$.
+Magnitude of $1/(1 + s/p)$ over three decades. The gray straight lines are the asymptotes: flat, then $-20\,\mathrm{dB}$ per decade from the corner. The blue curve is exact. The biggest gap is at the corner, $3\,\mathrm{dB}$; a decade away the two agree within $0.04\,\mathrm{dB}$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
@@ -344,7 +344,7 @@ Magnitude of $1/(1 + s/p)$ over three decades. The grey straight lines are the a
 :::
 
 ::: context resonance-picture How damping shapes the peak
-Magnitude of the complex pair over two decades around $\omega_n$, for $\zeta = 0.1$ (red, $+14\,\mathrm{dB}$ peak), $\zeta = 0.3$ (orange, $+4.8\,\mathrm{dB}$) and $\zeta = 0.707$ (blue, no peak). Grey: the straight lines, flat then $-40\,\mathrm{dB}$ per decade. Far from $\omega_n$ all three agree with them.
+Magnitude of the complex pair over two decades around $\omega_n$, for $\zeta = 0.1$ (red, $+14\,\mathrm{dB}$ peak), $\zeta = 0.3$ (orange, $+4.8\,\mathrm{dB}$) and $\zeta = 0.707$ (blue, no peak). Gray: the straight lines, flat then $-40\,\mathrm{dB}$ per decade. Far from $\omega_n$ all three agree with them.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
@@ -376,7 +376,7 @@ Harry Nyquist (1889–1976), Bode's colleague at Bell Labs, published his stabil
 :::
 
 ::: context polar-picture The loop as one curve
-The polar plot of $L = 200/[s(s+2)(s+20)]$ from $\omega = 1.3\,\mathrm{rad/s}$ up. Grey: the unit circle. The curve crosses it at $2.85\,\mathrm{rad/s}$, $27^\circ$ below the negative real axis (the phase margin), and crosses that axis at $-0.227$ (gain margin $4.4$). The red line is the closest approach to $-1$: $0.402$.
+The polar plot of $L = 200/[s(s+2)(s+20)]$ from $\omega = 1.3\,\mathrm{rad/s}$ up. Gray: the unit circle. The curve crosses it at $2.85\,\mathrm{rad/s}$, $27^\circ$ below the negative real axis (the phase margin), and crosses that axis at $-0.227$ (gain margin $4.4$). The red line is the closest approach to $-1$: $0.402$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" font-family="Inter, Arial, sans-serif">

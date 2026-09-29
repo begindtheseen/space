@@ -290,7 +290,7 @@ They split the square root across a plus sign, which is not allowed. Add first: 
 | Distance on a graph | $d = \sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}$ |
 | Space diagonal | $d = \sqrt{l^2 + w^2 + h^2}$ |
 
-Next, the units every one of these lengths, areas and speeds is measured in: the metric system, where changing from kilometres to metres is only a matter of moving the decimal point.
+Next, the units every one of these lengths, areas and speeds is measured in: the metric system, where changing from kilometers to meters is only a matter of moving the decimal point.
 
 ::: context radical-sign Where the √ sign comes from
 The Latin word for "root" is *radix* — the same word that gives us "radish". A root was pictured as the thing a square "grows from". The tick-shaped sign first appeared in print in a German book in 1525, and is thought to have grown out of a quickly written small letter *r*. The bar over the top, which shows how far the root reaches, was added later.

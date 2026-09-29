@@ -173,7 +173,7 @@ DETAIL:  Failing row contains (null, Mystery, 2, 540, 2024-03-02, ACTIVE, 800).
 A rule like this that the database enforces is called a **constraint**. (`satellite_pkey` is the name Postgres gave the primary-key constraint: "satellite primary key".)
 
 ::: key What a primary key promises
-A primary key promises uniqueness and non-nullability for that combination of columns, enforced by the database with a supporting index. It is the identity contract other tables reference, which is why choosing it is a modelling decision, not a formality.
+A primary key promises uniqueness and non-nullability for that combination of columns, enforced by the database with a supporting index. It is the identity contract other tables reference, which is why choosing it is a modeling decision, not a formality.
 :::
 
 ### Keys made of several columns
@@ -201,7 +201,7 @@ Notice what the key does *not* include: `value`. Two different readings of the s
 
 **Step 3: fix it.** Add `channel` to the key: `(sat_id, ts, channel)`. Now the two rows have different key values, (SAT-001, …, BATT_SOC) and (SAT-001, …, BUS_TEMP), and both are kept.
 
-**Check.** Could the three-column key let a real duplicate in? A true duplicate is same satellite, same moment, same channel — exactly what the key forbids. Picking it needed you to think about what one row *means*, which is why choosing a key is a modelling decision.
+**Check.** Could the three-column key let a real duplicate in? A true duplicate is same satellite, same moment, same channel — exactly what the key forbids. Picking it needed you to think about what one row *means*, which is why choosing a key is a modeling decision.
 :::
 
 ::: warning Do not use a name as the key

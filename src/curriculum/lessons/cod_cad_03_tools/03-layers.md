@@ -3,7 +3,7 @@ id: l03-layers
 title: Layers, the drafter's core discipline
 minutes: 19
 covers:
-  - 'Layers as the core discipline: name, colour, linetype, lineweight, plot state, freeze versus off'
+  - 'Layers as the core discipline: name, color, linetype, lineweight, plot state, freeze versus off'
 ---
 
 Old anatomy books had a wonderful trick. The first page showed a skeleton. On top of it lay a clear plastic sheet printed with the muscles. On top of that, another sheet with the blood vessels, then one with the skin. Flip a sheet back and that system disappeared, leaving the rest in place. Every sheet lined up exactly with the others, so together they made one body.

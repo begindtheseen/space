@@ -37,7 +37,7 @@ The exponent counts how many places the decimal point moved:
 
 Big numbers get positive exponents; numbers smaller than one get negative ones.
 
-Why keep the mantissa between one and ten? So every number has exactly *one* way to be written. But nothing breaks if you write $39.86 \times 10^{13}$ halfway through a calculation. You tidy it up at the end, which is called **normalising**.
+Why keep the mantissa between one and ten? So every number has exactly *one* way to be written. But nothing breaks if you write $39.86 \times 10^{13}$ halfway through a calculation. You tidy it up at the end, which is called **normalizing**.
 
 ### In code and with SI prefixes
 
@@ -53,7 +53,7 @@ What is three thousand times two million? Multiply the digits, $3 \times 2 = 6$,
 
 - To **multiply**, multiply the mantissas and **add** the exponents.
 - To **divide**, divide the mantissas and **subtract** the exponents.
-- Then normalise.
+- Then normalize.
 
 ::: example Gravity at Earth's surface
 Gravity at the surface is Earth's gravitational parameter divided by Earth's radius squared. With $3.986 \times 10^{14}\,\mathrm{m^3/s^2}$ and radius $6.371 \times 10^{6}\,\mathrm{m}$:
@@ -66,7 +66,7 @@ Step by step:
 
 1. **Square the bottom.** Square the mantissa, $6.371^2 = 40.59$, and double the exponent, $6 \times 2 = 12$.
 2. **Divide.** Divide the mantissas, $3.986 \div 40.59 = 0.09820$, and subtract the exponents, $14 - 12 = 2$.
-3. **Normalise.** $0.09820$ is less than one, so move its decimal point two places right to get $9.820$. That uses up the two powers of ten, and $10^0 = 1$.
+3. **Normalize.** $0.09820$ is less than one, so move its decimal point two places right to get $9.820$. That uses up the two powers of ten, and $10^0 = 1$.
 
 Sanity check: surface gravity is "about ten". The whole job was two small divisions plus some counting — the point of the notation.
 :::
@@ -89,7 +89,7 @@ $$
 \sqrt{5.887 \times 10^7} = \sqrt{58.87 \times 10^{6}} = \sqrt{58.87} \times 10^{3} = 7.673 \times 10^3 .
 $$
 
-That is the low-orbit speed in metres per second again. A **cube root** ("what number times itself three times gives this?") wants an exponent divisible by three:
+That is the low-orbit speed in meters per second again. A **cube root** ("what number times itself three times gives this?") wants an exponent divisible by three:
 
 $$
 \sqrt[3]{2.944 \times 10^{20}} = \sqrt[3]{294.4 \times 10^{18}} = 6.65 \times 10^{6},
@@ -98,7 +98,7 @@ $$
 as in the check of orbit radius from orbit period in the exponents lesson.
 
 ::: warning Keep the exponent with the number
-Three slips cause most wrong answers. First, getting the mantissas right but forgetting the exponents, so the answer is a thousand or a million times off. Second, normalising the wrong way: $0.0982 \times 10^2$ is $9.82 \times 10^0$, not $9.82 \times 10^4$ — making the mantissa bigger means making the exponent *smaller*. Third, squaring the mantissa but not doubling the exponent: $(6.371 \times 10^6)^2 \neq 40.59 \times 10^6$. Against all three, check the rough size: surface gravity is "about ten", so $9.82 \times 10^4$ is wrong before you look for the mistake.
+Three slips cause most wrong answers. First, getting the mantissas right but forgetting the exponents, so the answer is a thousand or a million times off. Second, normalizing the wrong way: $0.0982 \times 10^2$ is $9.82 \times 10^0$, not $9.82 \times 10^4$ — making the mantissa bigger means making the exponent *smaller*. Third, squaring the mantissa but not doubling the exponent: $(6.371 \times 10^6)^2 \neq 40.59 \times 10^6$. Against all three, check the rough size: surface gravity is "about ten", so $9.82 \times 10^4$ is wrong before you look for the mistake.
 :::
 
 ## Precision, accuracy and significant figures
@@ -138,7 +138,7 @@ A final $5$ with nothing after it is usually rounded up ($2.345 \to 2.35$). But 
 
 ## How precision passes through arithmetic
 
-Rather than memorise rules, see where they come from. Being off by one dollar matters a lot on a \$10 lunch and hardly at all on a \$1000 bike. The **relative error** compares the error to the size of the thing. Write an uncertain quantity as $x(1 + \varepsilon_x)$, where $\varepsilon_x$ (the Greek letter "epsilon", read "epsilon sub x") is its relative error — the uncertainty as a fraction of the value.
+Rather than memorize rules, see where they come from. Being off by one dollar matters a lot on a \$10 lunch and hardly at all on a \$1000 bike. The **relative error** compares the error to the size of the thing. Write an uncertain quantity as $x(1 + \varepsilon_x)$, where $\varepsilon_x$ (the Greek letter "epsilon", read "epsilon sub x") is its relative error — the uncertainty as a fraction of the value.
 
 A number given to three significant figures is uncertain by about half a unit in the third place: between $0.05\%$ and $0.5\%$, depending on its first digit. Four figures is ten times better.
 
@@ -172,11 +172,11 @@ Adding works differently. Weigh a suitcase on a bathroom scale (good to about ha
 
 When adding, the **absolute** errors add — the actual amounts, not the fractions. If $x$ is known to $\pm 0.5$ (read "plus or minus", meaning it could be that much either way) and $y$ to $\pm 0.05$, then $x + y$ is known to about $\pm 0.55$. So the rule is about decimal *places*, not figures: **a sum or difference is precise to the coarsest decimal place among its inputs.**
 
-Stage masses $22.4 + 410.7 + 15.25$ add to $448.35$ on the calculator. But $410.7$ is only good to tenths, so the sum is $448.4\,\mathrm{t}$. That happens to be four figures, but the count of figures is a *result*, not the rule. If the propellant were quoted as $410\,\mathrm{t}$ to the nearest tonne, the sum would be $448\,\mathrm{t}$, whatever decimals the smaller terms had.
+Stage masses $22.4 + 410.7 + 15.25$ add to $448.35$ on the calculator. But $410.7$ is only good to tenths, so the sum is $448.4\,\mathrm{t}$. That happens to be four figures, but the count of figures is a *result*, not the rule. If the propellant were quoted as $410\,\mathrm{t}$ to the nearest metric ton, the sum would be $448\,\mathrm{t}$, whatever decimals the smaller terms had.
 
 ### The sting in subtraction
 
-The orbit radius $6771\,\mathrm{km}$ and Earth's radius $6371\,\mathrm{km}$ each have four figures, about one part in seven thousand. Their difference, the altitude $400\,\mathrm{km}$, inherits about a kilometre of uncertainty from each: $400 \pm 1$, one part in four hundred, barely three figures.
+The orbit radius $6771\,\mathrm{km}$ and Earth's radius $6371\,\mathrm{km}$ each have four figures, about one part in seven thousand. Their difference, the altitude $400\,\mathrm{km}$, inherits about a kilometer of uncertainty from each: $400 \pm 1$, one part in four hundred, barely three figures.
 
 Subtracting nearly equal numbers *destroys* relative precision: the leading digits cancel, and only the uncertain trailing ones survive. This is the **catastrophic cancellation** that hurt the quadratic formula in the equations lesson. It is also why altitude should be measured or stored as altitude, not as one radius minus another, when precision matters.
 
@@ -191,9 +191,9 @@ The rules say how many figures to *report*, not how many to *carry* while you wo
 So carry one or two extra **guard digits** through the whole calculation, and round once, at the end. A computer does this automatically: a standard (double-precision) number carries about sixteen significant figures. But the reporting rule still applies. A printout of `7672.594396313682` is not a claim to sixteen figures of orbital speed; cut it back to what the inputs deserve.
 
 ::: example Orbital speed with the figures accounted for
-The speed of a circular orbit is $v = \sqrt{\mu / r}$. Here $\mu$ (the Greek letter "mu") is Earth's gravitational parameter, $3.986 \times 10^{14}\,\mathrm{m^3/s^2}$ (four figures), and $r$ is the distance from Earth's centre, $6771\,\mathrm{km}$ (four figures, from $6371 + 400$ with the altitude taken as exact).
+The speed of a circular orbit is $v = \sqrt{\mu / r}$. Here $\mu$ (the Greek letter "mu") is Earth's gravitational parameter, $3.986 \times 10^{14}\,\mathrm{m^3/s^2}$ (four figures), and $r$ is the distance from Earth's center, $6771\,\mathrm{km}$ (four figures, from $6371 + 400$ with the altitude taken as exact).
 
-**Divide, keeping guard digits.** Convert $r$ to metres, $6.771 \times 10^{6}\,\mathrm{m}$. Then
+**Divide, keeping guard digits.** Convert $r$ to meters, $6.771 \times 10^{6}\,\mathrm{m}$. Then
 
 $$
 \frac{\mu}{r} = \frac{3.986 \times 10^{14}}{6.771 \times 10^{6}} = 0.58869 \times 10^{8} = 5.8869 \times 10^{7}\,\mathrm{m^2/s^2}.
@@ -203,17 +203,17 @@ $$
 
 **Round once.** The inputs have four figures, so report $v = 7673\,\mathrm{m/s}$, or $7.673\,\mathrm{km/s}$. Sanity check: low-orbit speed is "about $7.7\,\mathrm{km/s}$".
 
-Did the fourth figure of $\mu$ matter? The more precise $3.986\,004 \times 10^{14}$ gives $7672.60$, a change of four millimetres per second. The four-figure $\mu$ was already good enough.
+Did the fourth figure of $\mu$ matter? The more precise $3.986\,004 \times 10^{14}$ gives $7672.60$, a change of four millimeters per second. The four-figure $\mu$ was already good enough.
 
-But if the altitude were known only as "about $400\,\mathrm{km}$", to one figure, $r$ would be uncertain by tens of kilometres, $\mu/r$ by a percent or so, and $v$ by half a percent. Then $7.67\,\mathrm{km/s}$ would be honest, and $7673$ would not. The number of figures you report is a statement about the *worst* input, not the best.
+But if the altitude were known only as "about $400\,\mathrm{km}$", to one figure, $r$ would be uncertain by tens of kilometers, $\mu/r$ by a percent or so, and $v$ by half a percent. Then $7.67\,\mathrm{km/s}$ would be honest, and $7673$ would not. The number of figures you report is a statement about the *worst* input, not the best.
 :::
 
 ::: example Adding up a mass budget
-A stage's parts: structure $18.4\,\mathrm{t}$, engines $4.2\,\mathrm{t}$, avionics (the electronics) and leftover fluids $0.65\,\mathrm{t}$, and propellant $410\,\mathrm{t}$, quoted to the nearest tonne.
+A stage's parts: structure $18.4\,\mathrm{t}$, engines $4.2\,\mathrm{t}$, avionics (the electronics) and leftover fluids $0.65\,\mathrm{t}$, and propellant $410\,\mathrm{t}$, quoted to the nearest metric ton.
 
 **Add.** The calculator total is $433.25\,\mathrm{t}$. The propellant is the coarsest input, good only to $\pm 0.5\,\mathrm{t}$, so the total is $433\,\mathrm{t}$. The $0.25$ is noise; the avionics figure's second decimal never had a chance.
 
-**Mass ratio.** Add a payload of $15\,\mathrm{t}$, so the lift-off mass is $m_0 = 448\,\mathrm{t}$. The burnout mass is what is left after the propellant is gone: $m_f = 448 - 410 = 38\,\mathrm{t}$. That subtraction left $m_f$ good only to about a tonne, roughly $\pm 2.6\%$ (because $1 \div 38 \approx 0.026$). So the mass ratio from the first lesson, $MR = 448 / 38 = 11.79$ on the calculator, is really $11.8$ — three figures, and even the third is soft.
+**Mass ratio.** Add a payload of $15\,\mathrm{t}$, so the lift-off mass is $m_0 = 448\,\mathrm{t}$. The burnout mass is what is left after the propellant is gone: $m_f = 448 - 410 = 38\,\mathrm{t}$. That subtraction left $m_f$ good only to about a metric ton, roughly $\pm 2.6\%$ (because $1 \div 38 \approx 0.026$). So the mass ratio from the first lesson, $MR = 448 / 38 = 11.79$ on the calculator, is really $11.8$ — three figures, and even the third is soft.
 
 Notice which step cost the precision: not the division, but subtracting two similar-sized numbers to get the small burnout mass. Real design work tracks the dry mass directly, to the kilogram, for exactly this reason.
 :::
@@ -263,7 +263,7 @@ Write $0.000\,000\,066\,74$ and $5\,972\,000\,000\,000\,000\,000\,000\,000$ in s
 ::: answer
 $6.674 \times 10^{-11}$ (four figures; the leading zeros do not count) and $5.972 \times 10^{24}$ (four figures; the trailing zeros are placeholders, which the notation makes plain).
 
-Product: multiply the mantissas, $6.674 \times 5.972 = 39.86$. Add the exponents, $-11 + 24 = 13$. So the product is $39.86 \times 10^{13}$, which normalises to $3.986 \times 10^{14}$. This is $G M_\oplus$, the gravitational constant times Earth's mass (the symbol $\oplus$ means Earth) — which is $\mu$. The result has four figures, like its inputs.
+Product: multiply the mantissas, $6.674 \times 5.972 = 39.86$. Add the exponents, $-11 + 24 = 13$. So the product is $39.86 \times 10^{13}$, which normalizes to $3.986 \times 10^{14}$. This is $G M_\oplus$, the gravitational constant times Earth's mass (the symbol $\oplus$ means Earth) — which is $\mu$. The result has four figures, like its inputs.
 :::
 
 ::: check
@@ -281,13 +281,13 @@ One rangefinder (a distance-measuring device) gives $12\,483.7\,\mathrm{m}$ to o
 :::
 
 ::: answer
-The calculator says $12\,483.7 - 12\,480 = 3.7\,\mathrm{m}$. But the second reading is only good to the nearest ten metres ($\pm 5\,\mathrm{m}$), so the difference is only good to the tens place. It is effectively $0 \pm 5\,\mathrm{m}$ — no significant figures at all.
+The calculator says $12\,483.7 - 12\,480 = 3.7\,\mathrm{m}$. But the second reading is only good to the nearest ten meters ($\pm 5\,\mathrm{m}$), so the difference is only good to the tens place. It is effectively $0 \pm 5\,\mathrm{m}$ — no significant figures at all.
 
-Subtracting nearly equal numbers cancelled all the leading digits and left only the uncertainty. To measure a short separation, measure it directly.
+Subtracting nearly equal numbers canceled all the leading digits and left only the uncertainty. To measure a short separation, measure it directly.
 :::
 
 ::: check
-The nautical mile is exactly $1852\,\mathrm{m}$. A distance is measured as $37.2\,\mathrm{nmi}$. Convert it to kilometres with the right number of figures. Does the $1852$ limit the precision?
+The nautical mile is exactly $1852\,\mathrm{m}$. A distance is measured as $37.2\,\mathrm{nmi}$. Convert it to kilometers with the right number of figures. Does the $1852$ limit the precision?
 :::
 
 ::: answer
@@ -301,7 +301,7 @@ What is the order of magnitude of a Falcon 9's lift-off mass, $5.49 \times 10^{5
 :::
 
 ::: answer
-$\log_{10}(5.49 \times 10^5) = 5.74$, which rounds to $6$. So the rocket is of order $10^6\,\mathrm{kg}$ — a thousand tonnes, to the nearest power of ten. The CubeSat is $10^0\,\mathrm{kg}$.
+$\log_{10}(5.49 \times 10^5) = 5.74$, which rounds to $6$. So the rocket is of order $10^6\,\mathrm{kg}$ — a thousand metric tons, to the nearest power of ten. The CubeSat is $10^0\,\mathrm{kg}$.
 
 They differ by about six orders of magnitude, so the ratio is about a million. The exact ratio, $5.49 \times 10^5$, is within a factor of two of that — as good as orders of magnitude promise.
 :::
@@ -311,7 +311,7 @@ They differ by about six orders of magnitude, so the ratio is about a million. T
 | Idea | Statement |
 | --- | --- |
 | Scientific notation | $a \times 10^{n}$, $1 \leq \lvert a \rvert < 10$; `3.986e14` in code; engineering notation uses exponents in multiples of $3$ (k, M, G) |
-| Multiply / divide | multiply or divide mantissas, add or subtract exponents, normalise |
+| Multiply / divide | multiply or divide mantissas, add or subtract exponents, normalize |
 | Add / subtract | make the exponents equal first |
 | Roots | make the exponent divisible by 2 (square root) or 3 (cube root), then root each part |
 | Accuracy vs precision | how close to the truth vs how finely stated |
@@ -363,7 +363,7 @@ A badly calibrated sensor is the left board: very repeatable, and wrong the same
 :::
 
 ::: context defined-exact Numbers fixed by agreement
-Some of the most famous constants are now exact by definition. Since 1983 the metre has been defined as the distance light travels in $1/299\,792\,458$ of a second, so the speed of light is exactly $299\,792\,458\,\mathrm{m/s}$, with no uncertainty at all. Since 2019 the kilogram has been defined by fixing the Planck constant in the same way. A constant that is exact can never be the weakest link in your significant figures.
+Some of the most famous constants are now exact by definition. Since 1983 the meter has been defined as the distance light travels in $1/299\,792\,458$ of a second, so the speed of light is exactly $299\,792\,458\,\mathrm{m/s}$, with no uncertainty at all. Since 2019 the kilogram has been defined by fixing the Planck constant in the same way. A constant that is exact can never be the weakest link in your significant figures.
 :::
 
 ::: context bankers-rounding Banker's rounding
@@ -371,7 +371,7 @@ Round $0.5$, $1.5$, $2.5$ and $3.5$ the schoolbook way and you get $1 + 2 + 3 + 
 :::
 
 ::: context patriot When tiny errors piled up
-In February 1991 a Patriot air-defence battery in Dhahran, Saudi Arabia, failed to stop an incoming Scud missile, which hit a US Army barracks and killed 28 soldiers. The battery's computer counted time in tenths of a second, and $0.1$ cannot be stored exactly in binary, so every tick was chopped very slightly short. After about $100$ hours of running, the clock was off by about a third of a second. A Scud travels more than half a kilometre in that time, so the system looked for it in the wrong place.
+In February 1991 a Patriot air-defense battery in Dhahran, Saudi Arabia, failed to stop an incoming Scud missile, which hit a US Army barracks and killed 28 soldiers. The battery's computer counted time in tenths of a second, and $0.1$ cannot be stored exactly in binary, so every tick was chopped very slightly short. After about $100$ hours of running, the clock was off by about a third of a second. A Scud travels more than half a kilometer in that time, so the system looked for it in the wrong place.
 :::
 
 ::: context log-halfway The middle of a power of ten

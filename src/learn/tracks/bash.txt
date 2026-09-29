@@ -593,7 +593,7 @@ If you leave out `-n` and a number, `head` and `tail` show 10 lines each.
 </svg>
 ```
 
-`tail` is a favourite for logs, because the newest events are written at the bottom.
+`tail` is a favorite for logs, because the newest events are written at the bottom.
 :::
 
 ::: context wc-counts Lines, words and letters
@@ -906,7 +906,7 @@ Relative paths are shorter, so people use them while working by hand. Scripts an
 :::
 
 ::: context whats-next Coming up in the next course
-The intermediate Terminal course starts with **wildcards**: patterns such as `*.txt` that mean "every name ending in .txt", so one command can handle dozens of files. Then come **pipes**, which send one command's output straight into another, so `grep`, `wc`, `head` and friends from this course can be chained into small machines that answer real questions about a log. Everything you practised here is the building material.
+The intermediate Terminal course starts with **wildcards**: patterns such as `*.txt` that mean "every name ending in .txt", so one command can handle dozens of files. Then come **pipes**, which send one command's output straight into another, so `grep`, `wc`, `head` and friends from this course can be chained into small machines that answer real questions about a log. Everything you practiced here is the building material.
 :::
 --- task
 You are three folders deep, in `src/app/components`. Jump to your home folder with `cd ~`, check with `pwd` that you are there, then come straight back with `cd -`.

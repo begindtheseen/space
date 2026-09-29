@@ -68,7 +68,7 @@ That matches the code.
 
 **Step 5 — drag.** $D = q\, C_D\, A \approx 16{,}700 \times 0.465 \times 10.5 \approx 81{,}900\,\mathrm{N}$, about $82\,\mathrm{kN}$.
 
-Sanity check: 82 kN is the weight of about 8 tonnes. For a large rocket punching through the sound barrier, that is the right size — big, but far less than its engines' thrust.
+Sanity check: 82 kN is the weight of about 8 metric tons. For a large rocket punching through the sound barrier, that is the right size — big, but far less than its engines' thrust.
 :::
 
 ### What happens off the end of the table

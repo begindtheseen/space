@@ -385,7 +385,7 @@ A **decibel** (dB) measures a power ratio on a log scale: $10\log_{10}$ of the r
 :::
 
 ::: context gyro-psd The gyro's error spectrum
-This is the example's gyro, on log-log axes. The dashed grey line is the white floor $Q_w = 2.5 \times 10^{-5}$. The dashed orange curve is the bias Lorentzian, flat at $1.39 \times 10^{-4}$ below the corner (orange dot, $1.59\,\mathrm{mHz}$) and falling at slope $-2$ above it. The solid blue curve is their sum.
+This is the example's gyro, on log-log axes. The dashed gray line is the white floor $Q_w = 2.5 \times 10^{-5}$. The dashed orange curve is the bias Lorentzian, flat at $1.39 \times 10^{-4}$ below the corner (orange dot, $1.59\,\mathrm{mHz}$) and falling at slope $-2$ above it. The solid blue curve is their sum.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 205" font-family="Inter, Arial, sans-serif">

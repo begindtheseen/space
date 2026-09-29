@@ -589,7 +589,7 @@ The picture is a memory aid, not the whole truth: a join pairs rows, so one left
 :::
 
 ::: context cartesian Where "Cartesian" comes from
-The name honours René Descartes, the French philosopher and mathematician of the 1600s who tied geometry to numbers with a grid of $x$ and $y$ axes. Every point on that grid is a pairing of one $x$ value with one $y$ value — all possible pairings of two sets. Mathematicians call that set of pairs the Cartesian product and write it $A \times B$. The multiplication sign is honest: if $A$ has 4 members and $B$ has 2, the product has $4 \times 2 = 8$ pairs.
+The name honors René Descartes, the French philosopher and mathematician of the 1600s who tied geometry to numbers with a grid of $x$ and $y$ axes. Every point on that grid is a pairing of one $x$ value with one $y$ value — all possible pairings of two sets. Mathematicians call that set of pairs the Cartesian product and write it $A \times B$. The multiplication sign is honest: if $A$ has 4 members and $B$ has 2, the product has $4 \times 2 = 8$ pairs.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">

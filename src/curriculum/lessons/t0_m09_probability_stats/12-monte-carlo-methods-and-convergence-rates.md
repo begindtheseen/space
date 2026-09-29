@@ -8,7 +8,7 @@ covers:
 
 Suppose you want to know how often a basketball player makes a free throw. You could study the physics of the arm, the ball and the hoop. Or you could watch her take a thousand shots and count. The second way is a **Monte Carlo** method: when a question is too tangled to answer with a formula, you play the game many times at random and count what happens.
 
-Every launch vehicle, lander and spacecraft flies on the strength of exactly this. The vehicle model is a **[[six-degree-of-freedom|six-dof]]** simulation. The uncertainties are a few hundred **dispersions** — things that vary from flight to flight: winds, thrust, mass, aerodynamics, sensor noise, ignition timing, air density. No formula carries all of that through a trajectory with guidance switching modes along the way. So you draw the dispersions at random, fly the trajectory in the computer, and repeat a few thousand times. The histogram of outcomes is the answer. "We ran two thousand cases and the worst miss distance was 41 metres" is the kind of sentence heard at every flight readiness review.
+Every launch vehicle, lander and spacecraft flies on the strength of exactly this. The vehicle model is a **[[six-degree-of-freedom|six-dof]]** simulation. The uncertainties are a few hundred **dispersions** — things that vary from flight to flight: winds, thrust, mass, aerodynamics, sensor noise, ignition timing, air density. No formula carries all of that through a trajectory with guidance switching modes along the way. So you draw the dispersions at random, fly the trajectory in the computer, and repeat a few thousand times. The histogram of outcomes is the answer. "We ran two thousand cases and the worst miss distance was 41 meters" is the kind of sentence heard at every flight readiness review.
 
 That sentence is easy to misread. Two thousand cases say almost nothing about a one-in-ten-thousand event, and the worst of two thousand draws is not a bound on anything. This lesson is about knowing exactly how much a campaign is worth. The answer is precise: the error falls as $\sigma/\sqrt{N}$, in any number of dimensions. That rate is a bargain for many inputs and a disaster for rare events, and there are tricks that buy accuracy without buying runs.
 
@@ -139,7 +139,7 @@ $$
 are independent standard normals. Think of it as choosing a point on a dartboard by picking a distance and a direction.
 
 ::: note Why Box–Muller works
-A pair of independent standard normals $(Z_1, Z_2)$ is round: its density depends only on the distance from the centre. So its direction is uniform, which is what $2\pi U_2$ supplies. Its squared radius $Z_1^2 + Z_2^2$ is exponential with mean $2$ (you met this as $P(d \leq k) = 1 - e^{-k^2/2}$ in the Gaussian lesson). By inverse transform, $-2\ln U_1$ is exactly such an exponential. Radius and angle together rebuild the pair.
+A pair of independent standard normals $(Z_1, Z_2)$ is round: its density depends only on the distance from the center. So its direction is uniform, which is what $2\pi U_2$ supplies. Its squared radius $Z_1^2 + Z_2^2$ is exponential with mean $2$ (you met this as $P(d \leq k) = 1 - e^{-k^2/2}$ in the Gaussian lesson). By inverse transform, $-2\ln U_1$ is exactly such an exponential. Radius and angle together rebuild the pair.
 :::
 
 ### Correlated dispersions
@@ -201,8 +201,8 @@ For the lander, resolving $p = 1.70 \times 10^{-4}$ to ten per cent takes $(1-p)
 At $10^{-6}$, direct sampling stops being feasible at all. Three alternatives take over:
 
 1. **Importance sampling** — aim the draws at the failure and correct with weights. It is the last section of this lesson.
-2. **[[Extreme-value fitting|extreme-value]]** — fit a tail model, such as a generalised Pareto distribution, to the runs above a high threshold, and extrapolate further out.
-3. **[[Linear covariance analysis|lincov]]** — stop sampling. Propagate the covariance through a linearised model of the trajectory with the sandwich formula, wherever the linearisation can be defended.
+2. **[[Extreme-value fitting|extreme-value]]** — fit a tail model, such as a generalized Pareto distribution, to the runs above a high threshold, and extrapolate further out.
+3. **[[Linear covariance analysis|lincov]]** — stop sampling. Propagate the covariance through a linearized model of the trajectory with the sandwich formula, wherever the linearization can be defended.
 
 ::: warning The worst case is not a bound
 The largest outcome in $N$ runs is not a limit and is not a $3\sigma$ value. It is a random variable with a distribution of its own, and it creeps upward as $N$ grows. Reporting "the worst case in $2000$ runs was $41\,\mathrm{m}$" as a limit invites two errors. It hides that a different seed would give a different worst case. And it invites the reader to treat an unknown quantile as a certified maximum. Quote an estimated probability with its interval, or an estimated quantile with its interval, and say which.
@@ -300,7 +300,7 @@ print(est, se, se / est)
 # exact value exp(-50**2 / (2 * 12**2)) = 0.00016985667656141068
 ```
 
-The catch: the proposal had to be aimed. Widening a dispersion that does not drive the failure buys nothing, and finding the ones that matter takes a pilot study and engineering judgement. So importance sampling is a specialist's tool for a known failure mode, not a default setting for a whole campaign.
+The catch: the proposal had to be aimed. Widening a dispersion that does not drive the failure buys nothing, and finding the ones that matter takes a pilot study and engineering judgment. So importance sampling is a specialist's tool for a known failure mode, not a default setting for a whole campaign.
 :::
 
 A last family is worth knowing by name: **[[quasi-Monte Carlo|quasi-mc]]**, which replaces random draws with carefully even ones.
@@ -477,12 +477,12 @@ Pick a uniform number $u$ on the vertical axis, go across to the CDF curve, and 
 A **core** is one processor inside a computer; a modern server has dozens. A **core-hour** is one core busy for one hour. $3300$ core-hours could be one core running for about $140$ days, or a hundred cores running for about a day and a half. Because Monte Carlo runs are independent, they split perfectly across cores, which is why campaigns run on large computer clusters overnight.
 :::
 
-::: context extreme-value Modelling only the tail
-Extreme-value theory is the branch of statistics built for floods, storms and material failures. Its key result says that, far enough out, the tails of a very wide range of distributions look like one family — the generalised Pareto distribution. So you fit that shape to the few hundred runs beyond a high threshold and use it to extrapolate to probabilities your campaign never sampled. The result is only as good as the assumption that the fitted shape still holds further out, so it is quoted with care.
+::: context extreme-value Modeling only the tail
+Extreme-value theory is the branch of statistics built for floods, storms and material failures. Its key result says that, far enough out, the tails of a very wide range of distributions look like one family — the generalized Pareto distribution. So you fit that shape to the few hundred runs beyond a high threshold and use it to extrapolate to probabilities your campaign never sampled. The result is only as good as the assumption that the fitted shape still holds further out, so it is quoted with care.
 :::
 
 ::: context lincov Sampling without samples
-Linear covariance analysis, often called **LinCov**, carries the mean and covariance of the errors along the trajectory with the rule $\mathbf{P} \to \mathbf{F}\mathbf{P}\mathbf{F}^{\mathsf{T}} + \mathbf{Q}$ from the linear-transformations lesson, instead of flying thousands of random cases. One LinCov run gives the whole statistical answer in the time of a single simulation. The price is that it trusts a linearised model, so it misses effects like mode switches and saturation. Engineers often use LinCov for fast trade studies and Monte Carlo to confirm the final design.
+Linear covariance analysis, often called **LinCov**, carries the mean and covariance of the errors along the trajectory with the rule $\mathbf{P} \to \mathbf{F}\mathbf{P}\mathbf{F}^{\mathsf{T}} + \mathbf{Q}$ from the linear-transformations lesson, instead of flying thousands of random cases. One LinCov run gives the whole statistical answer in the time of a single simulation. The price is that it trusts a linearized model, so it misses effects like mode switches and saturation. Engineers often use LinCov for fast trade studies and Monte Carlo to confirm the final design.
 :::
 
 ::: context quasi-mc Evenly spread instead of random

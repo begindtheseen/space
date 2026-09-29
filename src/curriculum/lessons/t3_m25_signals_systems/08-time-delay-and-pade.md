@@ -332,7 +332,7 @@ Henri Padé (1863–1953) was a French mathematician who studied these rational 
 :::
 
 ::: context pade-step The Padé step starts backward
-A step through a true $1\,\mathrm{s}$ delay (grey) does nothing for one second, then jumps to 1. The first-order Padé (red) jumps to $-1$ at once, then climbs as $1 - 2e^{-2t}$, crossing zero at $t = \ln 2/2 = 0.35\,\mathrm{s}$.
+A step through a true $1\,\mathrm{s}$ delay (gray) does nothing for one second, then jumps to 1. The first-order Padé (red) jumps to $-1$ at once, then climbs as $1 - 2e^{-2t}$, crossing zero at $t = \ln 2/2 = 0.35\,\mathrm{s}$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">

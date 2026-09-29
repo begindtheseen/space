@@ -16,17 +16,17 @@ This lesson builds that filter in full. Every earlier filter in this module — 
 
 The Kalman filter module built its machinery for systems that are **[[linear|linear-meaning]]** — where doubling a cause doubles its effect — or close enough to linear that one straight-line approximation holds for one step. The navigator's own state is none of that.
 
-- Its position sits on a curved Earth, millions of metres from the center.
+- Its position sits on a curved Earth, millions of meters from the center.
 - Its attitude is a **[[quaternion|quaternion-norm]]**, four numbers that must always have length exactly one — a rule no plain linear update respects.
-- Its velocity can be hundreds of metres per second, and the update equations that move it are strongly nonlinear over anything but a very short time.
+- Its velocity can be hundreds of meters per second, and the update equations that move it are strongly nonlinear over anything but a very short time.
 
 Estimating this state directly means re-linearizing a fast, curved, constrained trajectory at every step, the fragile **extended Kalman filter** approach.
 
 The error-state idea sidesteps the problem. Let the mechanization keep running exactly as this module built it, with no filter inside its loop. What it computes is called the **nominal state**: the navigator's best guess before any correction. Let the filter estimate only the difference between the nominal state and the truth. That difference is small:
 
-- a position error of metres, against a position of millions of metres;
+- a position error of meters, against a position of millions of meters;
 - an attitude error of seconds of arc, against an attitude that may be tumbling;
-- a velocity error of centimetres per second, against hundreds of metres per second.
+- a velocity error of centimeters per second, against hundreds of meters per second.
 
 Because it is small, it behaves almost exactly linearly — the Schuler lesson's derivation was this linearization for two of the fifteen states. The error state follows a **linear time-varying** system: linear in the errors, with coefficients that change as the vehicle's own acceleration and attitude change. The Kalman filter module's ordinary predict-and-update steps handle it with no changes.
 
@@ -42,7 +42,7 @@ $$
 
 Each group has three components, one per axis:
 
-- $\delta\mathbf p$, the **position error**, here in metres north, east and down;
+- $\delta\mathbf p$, the **position error**, here in meters north, east and down;
 - $\delta\mathbf v$, the **velocity error**;
 - $\boldsymbol\phi$ ("phi"), the **attitude error**, a small **[[rotation vector|rotation-vector]]**: an arrow along the axis of the small wrong turn, whose length is the angle in radians;
 - $\delta\mathbf b_a$, the **accelerometer bias error** ("delta b sub a");
@@ -135,7 +135,7 @@ Sanity check: the Schuler period $2\pi/\omega_s$ is about $5060\,\mathrm s$, or 
 ::: example The vertical channel does not oscillate
 The vertical channel is not a third copy of the horizontal pattern. Treating it as one is a standing trap.
 
-Gravity gets weaker as you go up, by about $2g/a$ per metre (the **[[free-air gradient|free-air]]** from the update lesson, with $a$ the Earth's equatorial radius). Suppose the computed height is too high. The navigator then computes gravity slightly too weak, so it computes an upward drift that is not there. The computed height rises further, gravity gets weaker still, and the error feeds itself. In the horizontal channels the feedback has the opposite sign and pulls the error back.
+Gravity gets weaker as you go up, by about $2g/a$ per meter (the **[[free-air gradient|free-air]]** from the update lesson, with $a$ the Earth's equatorial radius). Suppose the computed height is too high. The navigator then computes gravity slightly too weak, so it computes an upward drift that is not there. The computed height rises further, gravity gets weaker still, and the error feeds itself. In the horizontal channels the feedback has the opposite sign and pulls the error back.
 
 Build the two-state block for height error and down-velocity error:
 
@@ -367,11 +367,11 @@ The horizontal INS channel has the middle kind (Schuler). The vertical channel h
 :::
 
 ::: context free-air How fast gravity fades with height
-Gravity falls off with distance from Earth's center, as $1/r^2$. Near the surface that is a loss of about $2g/a$ per metre climbed: $2\times9.79/6\,378\,137$, about $3.07\times10^{-6}\,\mathrm{m/s^2}$ per metre. It is called "free-air" because it ignores the pull of any rock you climb over. It looks tiny, but it acts like a spring pushed the wrong way: a height error of $100\,\mathrm m$ creates a false vertical acceleration of about $3\times10^{-4}\,\mathrm{m/s^2}$, roughly $31\,\mu g$ — already most of a good accelerometer's bias budget, and it keeps growing with the error.
+Gravity falls off with distance from Earth's center, as $1/r^2$. Near the surface that is a loss of about $2g/a$ per meter climbed: $2\times9.79/6\,378\,137$, about $3.07\times10^{-6}\,\mathrm{m/s^2}$ per meter. It is called "free-air" because it ignores the pull of any rock you climb over. It looks tiny, but it acts like a spring pushed the wrong way: a height error of $100\,\mathrm m$ creates a false vertical acceleration of about $3\times10^{-4}\,\mathrm{m/s^2}$, roughly $31\,\mu g$ — already most of a good accelerometer's bias budget, and it keeps growing with the error.
 :::
 
 ::: context baro Measuring height with air pressure
-Air pressure drops as you climb, about $12\,\mathrm{Pa}$ per metre near sea level. A barometric altimeter reads pressure and converts it to height. It drifts with the weather, but it never runs away the way an inertial height does, so the two complement each other perfectly. Aircraft have blended "baro" with inertial height since long before GPS; the combination is called a baro-inertial loop. Drones and phones do the same with a tiny chip pressure sensor.
+Air pressure drops as you climb, about $12\,\mathrm{Pa}$ per meter near sea level. A barometric altimeter reads pressure and converts it to height. It drifts with the weather, but it never runs away the way an inertial height does, so the two complement each other perfectly. Aircraft have blended "baro" with inertial height since long before GPS; the combination is called a baro-inertial loop. Drones and phones do the same with a tiny chip pressure sensor.
 :::
 
 ::: context covariance The filter's own doubt

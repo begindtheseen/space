@@ -18,7 +18,7 @@ On a spacecraft, speed is not a luxury. A guidance loop that runs 100 times a se
 Lesson 01's loop was observe, hypothesize, predict, test. Performance work uses the same loop, with a stopwatch as the instrument.
 
 ::: key
-**Why profile before optimising?** Engineers guess wrong about hotspots most of the time, and optimisation always costs readability. A profile turns the work into measurement-driven engineering, and gives you the before number you need to prove the after number.
+**Why profile before optimizing?** Engineers guess wrong about hotspots most of the time, and optimization always costs readability. A profile turns the work into measurement-driven engineering, and gives you the before number you need to prove the after number.
 :::
 
 A **hotspot** is the small part of the code where most of the time goes, like the shoe hunt.

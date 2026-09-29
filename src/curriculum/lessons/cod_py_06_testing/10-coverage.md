@@ -443,5 +443,5 @@ A ratchet is the clicking gear in a wrench that turns one way and locks against 
 </svg>
 ```
 
-The blue steps are the floor, the grey line is the measured coverage, and the red dot is a change that would have dropped below the floor, so it was blocked. A ratchet suits an older codebase that starts with low coverage: you do not demand $90\%$ on day one, but you never let it slide backward.
+The blue steps are the floor, the gray line is the measured coverage, and the red dot is a change that would have dropped below the floor, so it was blocked. A ratchet suits an older codebase that starts with low coverage: you do not demand $90\%$ on day one, but you never let it slide backward.
 :::

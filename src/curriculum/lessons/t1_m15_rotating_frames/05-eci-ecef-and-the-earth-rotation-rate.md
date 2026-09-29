@@ -93,7 +93,7 @@ An **Earth-centered Earth-fixed** (ECEF) frame shares the ECI origin, but its ax
 The ellipsoid, the gravity model and the geodetic latitude of the next lesson are all attached to this frame, and so is everything on the ground. Anything a ground sensor measures — radar range and angles, a survey, a GNSS fix — is native to ECEF. Anything taken from the stars is native to ECI.
 
 ::: key ECI versus ECEF
-ECI/GCRF is quasi-inertial: axes fixed relative to distant quasars, origin at Earth centre; J2000 is the same frame to within a few tens of milliarcseconds of frame bias. ECEF/ITRF rotates with the crust, so ground stations and launch pads have fixed coordinates in it; WGS-84 is its GPS realization. They differ by Earth rotation plus precession, nutation and polar motion.
+ECI/GCRF is quasi-inertial: axes fixed relative to distant quasars, origin at Earth center; J2000 is the same frame to within a few tens of milliarcseconds of frame bias. ECEF/ITRF rotates with the crust, so ground stations and launch pads have fixed coordinates in it; WGS-84 is its GPS realization. They differ by Earth rotation plus precession, nutation and polar motion.
 :::
 
 ## The rotation between them

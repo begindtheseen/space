@@ -189,7 +189,7 @@ Add inequality constraints and one linear solve is no longer enough, because you
 
 **Active-set methods** do what lesson 2 did by hand. Guess the active constraints, solve the equality-constrained QP with those as equalities, check the multipliers and the inactive constraints, then add or drop one constraint and repeat. Each iteration is one KKT solve, cheap when **warm-started** from the last active set, so it excels when the active set barely changes between solves — a controller re-solving every cycle. Its weakness is the worst case: nothing better bounds the iterations than the number of possible active sets.
 
-**Interior-point methods** solve a QP in a bounded number of Newton steps that barely depends on the data — the choice when a bound is needed. A third family, operator splitting (the ADMM method behind the OSQP solver), trades accuracy for very cheap iterations; the modelling lesson covers it.
+**Interior-point methods** solve a QP in a bounded number of Newton steps that barely depends on the data — the choice when a bound is needed. A third family, operator splitting (the ADMM method behind the OSQP solver), trades accuracy for very cheap iterations; the modeling lesson covers it.
 
 The **LQR** (linear-quadratic regulator) problem is the classic QP. For a linear system $\mathbf{x}_{k+1} = \mathbf{A}_d\mathbf{x}_k + \mathbf{B}_d\mathbf{u}_k$ and cost $\sum_k \mathbf{x}_k^\top\mathbf{Q}\mathbf{x}_k + \mathbf{u}_k^\top\mathbf{R}\mathbf{u}_k$, with $\mathbf{Q} \succeq 0$ and $\mathbf{R} \succ 0$, stacking over the horizon gives a QP whose only constraints are the dynamics. Eliminating the states leaves an unconstrained strictly convex quadratic, solved by the Riccati recursion of the control module. Add $\|\mathbf{u}_k\|_\infty \le u_{\max}$ and no recursion solves it — it is a constrained QP, and you are doing **[[model-predictive control|mpc]]**.
 
@@ -329,7 +329,7 @@ Think of $\nu_k$ as the value, in fuel, of one more meter per second of speed ch
 :::
 
 ::: context suicide-burn Why Falcon 9 cannot hover
-The bang-bang landing is how a Falcon 9 first stage lands. Even at its lowest throttle, a single Merlin engine pushes harder than the nearly empty stage weighs, so the stage cannot hover: it must light at just the right height and reach zero speed exactly at the ground. Engineers call it a "hoverslam"; fans often say "suicide burn". The picture shows this lesson's example: the blue block is the bang-bang burn, the grey outline the gentle constant-thrust descent. The area of each is its impulse.
+The bang-bang landing is how a Falcon 9 first stage lands. Even at its lowest throttle, a single Merlin engine pushes harder than the nearly empty stage weighs, so the stage cannot hover: it must light at just the right height and reach zero speed exactly at the ground. Engineers call it a "hoverslam"; fans often say "suicide burn". The picture shows this lesson's example: the blue block is the bang-bang burn, the gray outline the gentle constant-thrust descent. The area of each is its impulse.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 185" font-family="Inter, Arial, sans-serif">

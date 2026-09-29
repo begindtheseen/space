@@ -6,7 +6,7 @@ covers:
   - sequences, series, and sigma notation
 ---
 
-Say you put $5$ dollars in a jar every week. Write down how much is in the jar each Sunday: $5, 10, 15, 20, \ldots$ That numbered list is a **sequence**. Now drop a bouncy ball and write down how high it gets after each bounce: $2\,\mathrm{m}$, then $1.2\,\mathrm{m}$, then $0.72\,\mathrm{m}$, each bounce a bit lower than the last. That is a sequence too. And if you add up a list as you go — the total distance the ball has travelled — you get a **[[series|series-word]]**.
+Say you put $5$ dollars in a jar every week. Write down how much is in the jar each Sunday: $5, 10, 15, 20, \ldots$ That numbered list is a **sequence**. Now drop a bouncy ball and write down how high it gets after each bounce: $2\,\mathrm{m}$, then $1.2\,\mathrm{m}$, then $0.72\,\mathrm{m}$, each bounce a bit lower than the last. That is a sequence too. And if you add up a list as you go — the total distance the ball has traveled — you get a **[[series|series-word]]**.
 
 A flight computer lives on lists like these. It never sees a smooth signal. It sees the [[accelerometer|accelerometer]] reading at tick $0$, at tick $1$, at tick $2$, a hundred or a thousand times a second. Add those readings up and you get velocity. Add the velocities up and you get position. A digital filter is a rule that builds each new output by mixing together old ones in fixed proportions. The sigma sign $\sum$ is the notation that lets you write "add these $n$ things" in one line and then work with it like any other expression.
 
@@ -94,7 +94,7 @@ Read it aloud as "the sum, from $k$ equals $1$ to $n$, of a sub k". The recipe i
 3. Add $1$ to $k$ and repeat, until $k$ reaches the number on top ($n$).
 4. Add up everything you got.
 
-The letter $k$ is the **index of summation**. It is a placeholder, like the name on a ticket that only matters inside the theatre: outside the sum it means nothing. So $\sum_{k=1}^{n} a_k$ and $\sum_{j=1}^{n} a_j$ are the same number, exactly as $f(x)$ and $f(t)$ were the same function.
+The letter $k$ is the **index of summation**. It is a placeholder, like the name on a ticket that only matters inside the theater: outside the sum it means nothing. So $\sum_{k=1}^{n} a_k$ and $\sum_{j=1}^{n} a_j$ are the same number, exactly as $f(x)$ and $f(t)$ were the same function.
 
 The expression can be anything:
 
@@ -374,7 +374,7 @@ The same $n$ terms are being added in the same order; only their labels changed.
 Next lesson: from equalities to **inequalities** — the limits that box in a design, like a thrust-to-weight ratio that must be more than one, a heating rate that must stay under a limit, or a radius that must be at least the planet's radius, $r \geq R$.
 
 ::: context series-word A series is a sum, not a list
-In everyday English a series is a string of things one after another — a TV series, a series of games. Mathematics is stricter. A **sequence** is the list; a **series** is what you get when you add the list up. The ball's heights $2, 1.2, 0.72, \ldots$ are a sequence. The running total of how far it has travelled is a series. People mix the two words up all the time, so fix it now: list first, then sum.
+In everyday English a series is a string of things one after another — a TV series, a series of games. Mathematics is stricter. A **sequence** is the list; a **series** is what you get when you add the list up. The ball's heights $2, 1.2, 0.72, \ldots$ are a sequence. The running total of how far it has traveled is a series. People mix the two words up all the time, so fix it now: list first, then sum.
 :::
 
 ::: context accelerometer The sensor that feels a push
@@ -382,11 +382,11 @@ An **accelerometer** measures how hard it is being pushed — its acceleration. 
 :::
 
 ::: context why-geometric Where the two names come from
-The names come from two kinds of average. In an arithmetic sequence every term is the ordinary average — the **arithmetic mean** — of its two neighbours: $7$ is halfway between $3$ and $11$. In a geometric sequence every term is the **geometric mean** of its neighbours, the square root of their product: $6 = \sqrt{2 \times 18}$. That mean earned its name from geometry: $\sqrt{ab}$ is the side of a square with the same area as an $a$-by-$b$ rectangle. It comes back for estimating in the last lesson of this module.
+The names come from two kinds of average. In an arithmetic sequence every term is the ordinary average — the **arithmetic mean** — of its two neighbors: $7$ is halfway between $3$ and $11$. In a geometric sequence every term is the **geometric mean** of its neighbors, the square root of their product: $6 = \sqrt{2 \times 18}$. That mean earned its name from geometry: $\sqrt{ab}$ is the side of a square with the same area as an $a$-by-$b$ rectangle. It comes back for estimating in the last lesson of this module.
 :::
 
 ::: context fencepost The fencepost puzzle
-A fence $3\,\mathrm{m}$ long has a post every metre. How many posts? Most people say three. The answer is four: three gaps, but a post at each end.
+A fence $3\,\mathrm{m}$ long has a post every meter. How many posts? Most people say three. The answer is four: three gaps, but a post at each end.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 136" font-family="Inter, Arial, sans-serif">
@@ -451,7 +451,7 @@ About 2,500 years ago the Greek thinker Zeno of Elea used this very walk to argu
 </svg>
 ```
 
-Each block is half the one before. Together they fill exactly one metre, and never more.
+Each block is half the one before. Together they fill exactly one meter, and never more.
 :::
 
 ::: context point-nine-repeating Why 0.999… really is 1

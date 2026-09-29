@@ -69,7 +69,7 @@ decay.cpp:4:23: note: declared here
       |                ~~~~~~~^~~~~~~
 ```
 
-The second problem is going past the end. `buf[12]` on a ten-element array is **[[undefined behaviour|out-of-bounds]]**, and nothing checks for it. The compilers catch some cases when the index is a fixed number:
+The second problem is going past the end. `buf[12]` on a ten-element array is **[[undefined behavior|out-of-bounds]]**, and nothing checks for it. The compilers catch some cases when the index is a fixed number:
 
 ```cpp
 #include <cstdio>
@@ -447,7 +447,7 @@ Because the cost is lumpy. Most `push_back` calls are a store and a counter bump
 
 In a script, only the *total* time matters, and the average cost per push is excellent.
 
-In a control loop, the *worst* cycle is what matters. At 500 Hz every cycle must finish within $1/500 = 2\,\mathrm{ms}$, and a cycle that happens to hit a regrowth can take many times longer than its neighbours. On top of that, the allocator's own timing depends on the heap's history, so the worst case is not even limited by the copy.
+In a control loop, the *worst* cycle is what matters. At 500 Hz every cycle must finish within $1/500 = 2\,\mathrm{ms}$, and a cycle that happens to hit a regrowth can take many times longer than its neighbors. On top of that, the allocator's own timing depends on the heap's history, so the worst case is not even limited by the copy.
 
 A fixed-size container removes the question. If a vector must be used, `reserve` the maximum before the loop starts, so no regrowth can happen inside it.
 :::
@@ -549,7 +549,7 @@ C++ kept C's rule for compatibility. `std::array` and `std::span` are the C++ wa
 ::: context out-of-bounds What really happens past the end
 On a real machine, `buf[12]` usually reads whatever 8 bytes happen to sit 96 bytes after the start of `buf` — perhaps another variable, perhaps a saved return address. The program may print nonsense, crash, or appear to work perfectly.
 
-"Appear to work" is the dangerous one. Because the behaviour is undefined, the optimizer is allowed to assume it never happens, and code built at `-O2` may behave differently from the same code at `-O0`. A write past the end is worse still: it silently changes some other variable, and the symptom shows up far from the cause.
+"Appear to work" is the dangerous one. Because the behavior is undefined, the optimizer is allowed to assume it never happens, and code built at `-O2` may behave differently from the same code at `-O0`. A write past the end is worse still: it silently changes some other variable, and the symptom shows up far from the cause.
 :::
 
 ::: context asan A sanitizer that watches every access

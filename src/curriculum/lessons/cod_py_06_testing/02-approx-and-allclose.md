@@ -345,7 +345,7 @@ This version passes. A micrometer of position and a nanometer per second of velo
 :::
 
 ::: key
-Use assert_allclose rather than assert_array_equal for floats. assert_array_equal requires bit-for-bit equality, which differs across BLAS builds, vectorisation and compilers. assert_allclose takes rtol and atol and prints the worst mismatch and its index when it fails.
+Use assert_allclose rather than assert_array_equal for floats. assert_array_equal requires bit-for-bit equality, which differs across BLAS builds, vectorization and compilers. assert_allclose takes rtol and atol and prints the worst mismatch and its index when it fails.
 :::
 
 ### assert_array_equal

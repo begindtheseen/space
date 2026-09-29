@@ -8,7 +8,7 @@ covers:
 
 Think about a store receipt. Most of it is a list of lines: this item, this many, this price. Each line is short. But every line also points at things with a lot more to say about them — the product (its name, brand, aisle), the store (its city, its manager), the day (a weekday? a holiday?). Nobody prints the store's whole address on every line. The receipt keeps the lines lean and lets you look up the rest.
 
-Last lesson you split a messy telemetry sheet into one big `reading` table and three small tables that describe what each reading is about. That shape — a tall, thin table of events surrounded by short, wide tables of descriptions — is so common in analytics that it has a name: the **star schema**. This lesson names its parts, compares it with its more normalised cousin, the snowflake, and then settles a question every one of those tables forces on you: what should its key be?
+Last lesson you split a messy telemetry sheet into one big `reading` table and three small tables that describe what each reading is about. That shape — a tall, thin table of events surrounded by short, wide tables of descriptions — is so common in analytics that it has a name: the **star schema**. This lesson names its parts, compares it with its more normalized cousin, the snowflake, and then settles a question every one of those tables forces on you: what should its key be?
 
 The key question matters more than it looks. The telemetry table for a six-thousand-satellite fleet gets trillions of rows a year, and every one of them carries the keys of the tables it points to. A key that is a few bytes too big, or one that changes when it should not, is a problem multiplied by a trillion.
 
@@ -86,7 +86,7 @@ Notice what the fact rows do *not* contain: no names, no units, no subsystem. Th
 
 A star's dimensions are usually left a little *denormalised* on purpose. `dim_satellite` holds both `plane` and `incl_deg`, which you know from last lesson is a transitive dependency (`sat_id → plane → incl_deg`). In a dimension that is often an accepted trade: dimensions are small (six thousand satellites, a few thousand channels), rarely updated, and every extra table is another join in every query.
 
-If you normalise the dimensions anyway, each dimension grows its own smaller dimensions, and the drawing starts to branch like a **[[snowflake|snowflake-picture]]**. That is the **snowflake schema**: a star whose dimension tables are normalised into further tables.
+If you normalize the dimensions anyway, each dimension grows its own smaller dimensions, and the drawing starts to branch like a **[[snowflake|snowflake-picture]]**. That is the **snowflake schema**: a star whose dimension tables are normalized into further tables.
 
 ```sql
 CREATE TABLE dim_plane (plane int PRIMARY KEY, incl_deg numeric NOT NULL, alt_km int NOT NULL);
@@ -121,7 +121,7 @@ GROUP BY p.incl_deg, ss.owner_team ORDER BY p.incl_deg;
 Same facts, same kind of answer, more joins. What you get back for them: a plane's altitude or a subsystem's owning team is stored once, so changing it is a one-row update.
 
 ::: key Star versus snowflake
-A **star schema** has a central fact table joined directly to denormalised dimension tables, each one join away. A **snowflake schema** normalises the dimensions into sub-dimensions, so some attributes are two or more joins away. Stars are simpler and usually faster to query; snowflakes store each dimension fact once. Most analytics teams choose the star unless a dimension is large or changes often.
+A **star schema** has a central fact table joined directly to denormalised dimension tables, each one join away. A **snowflake schema** normalizes the dimensions into sub-dimensions, so some attributes are two or more joins away. Stars are simpler and usually faster to query; snowflakes store each dimension fact once. Most analytics teams choose the star unless a dimension is large or changes often.
 :::
 
 ::: warning Normalise facts, relax dimensions — not the other way around
@@ -140,7 +140,7 @@ A **natural key** is an identifier that already exists in the real world, outsid
 
 Natural keys are attractive because everybody already uses them. An operator says "25544", not "row 7". But they have three weaknesses that bite in a telemetry database:
 
-1. **They may not exist yet.** A satellite is catalogued only after it has been tracked in orbit. For the first hours or days after launch, your own satellite has telemetry but no NORAD number.
+1. **They may not exist yet.** A satellite is cataloged only after it has been tracked in orbit. For the first hours or days after launch, your own satellite has telemetry but no NORAD number.
 2. **They can change or be wrong.** When a rocket drops off dozens of satellites at once, the catalog sometimes pairs numbers with the wrong objects for a while and later corrects them. Channel mnemonics get renamed when the telemetry dictionary is revised.
 3. **They can run out or change format.** The catalog number was designed with **[[five digits|norad-digits]]**, and the number of tracked objects is closing in on that limit.
 
@@ -389,7 +389,7 @@ A satellite is renamed from Relay-3 to Relay-3B. Your analysts want old plots to
 | Dimension table | descriptive attributes to filter and group by, one row per thing |
 | Grain | exactly what one fact row represents |
 | Star schema | facts joined directly to denormalised dimensions |
-| Snowflake schema | dimensions normalised into sub-dimensions; more joins |
+| Snowflake schema | dimensions normalized into sub-dimensions; more joins |
 | Natural key | NORAD catalog number, COSPAR ID, channel mnemonic |
 | Surrogate key | `GENERATED ALWAYS AS IDENTITY`, `serial`, UUID |
 | Key sizes | `int` 4 bytes, `bigint` 8, UUID 16 |
@@ -456,7 +456,7 @@ In the snowflake version, the plane and subsystem facts moved out of the dimensi
 :::
 
 ::: context norad-digits Running out of catalog numbers
-Five digits allow catalog numbers up to 99,999, and with large constellations and debris from breakups, the count of catalogued objects is closing in on that. Much older software stores the number in a fixed five-character field — the classic "two-line element" format for orbits has exactly five columns for it. A stopgap called Alpha-5 replaces the first digit with a letter so the same five characters reach further, and newer data formats allow longer numbers. Any database that used the catalog number as a five-digit key would have to change its key. A surrogate key does not care.
+Five digits allow catalog numbers up to 99,999, and with large constellations and debris from breakups, the count of cataloged objects is closing in on that. Much older software stores the number in a fixed five-character field — the classic "two-line element" format for orbits has exactly five columns for it. A stopgap called Alpha-5 replaces the first digit with a letter so the same five characters reach further, and newer data formats allow longer numbers. Any database that used the catalog number as a five-digit key would have to change its key. A surrogate key does not care.
 :::
 
 ::: context uuid-hex Reading a UUID

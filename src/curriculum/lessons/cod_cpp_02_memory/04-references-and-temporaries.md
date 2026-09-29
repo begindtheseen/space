@@ -11,7 +11,7 @@ Think of a reference as a nickname. Your friend Alexandra is "Alex" to you, but 
 That is a C++ **reference**: a second name for an object that already exists. The previous module gave you the working rules. A reference is bound when it is created, never reseated, never null, and `const T&` is the default way to pass something you only read. Here they are side by side with the pointer from lesson 02, because the contrast is what you will be asked about.
 
 ::: key
-Pointer versus reference, the practical differences: a reference must be bound at initialisation, cannot be rebound and cannot be null; a pointer can be null, reseated and arithmetic-ed. Use a reference for a required parameter, a pointer (or `std::optional`) when absence is meaningful.
+Pointer versus reference, the practical differences: a reference must be bound at initialization, cannot be rebound and cannot be null; a pointer can be null, reseated and arithmetic-ed. Use a reference for a required parameter, a pointer (or `std::optional`) when absence is meaningful.
 :::
 
 Those rules are enough to write correct functions. They are not enough to read the compiler's errors about references, or to know when a reference to a *temporary* is safe. The missing piece is **value categories**: every expression in C++ is sorted into, roughly, "something with a home" or "something without one". The binding rules are written in those terms, and so is the one rule that lets `const T&` keep a temporary alive.
@@ -200,7 +200,7 @@ Tracer 8 outlived its semicolon and died at the end of `main`, along with `n`.
 
 ## Where extension does not happen
 
-The word doing the work in the rule is **directly**. If your reference is initialised from something that is *already a reference*, no temporary is being bound, so there is nothing to extend. In the cup picture: someone else took the cup and handed you back only a note saying where it was. Two forms of this cost real time in real codebases.
+The word doing the work in the rule is **directly**. If your reference is initialized from something that is *already a reference*, no temporary is being bound, so there is nothing to extend. In the cup picture: someone else took the cup and handed you back only a note saying where it was. Two forms of this cost real time in real codebases.
 
 ::: example The two cases that dangle, and which tool finds each
 **Case 1: through a function that returns its own parameter.** The temporary binds to the parameter `t`, not to your reference, so it dies at the semicolon.
@@ -245,7 +245,7 @@ READ of size 4 at 0x7f8c32300020 thread T0
 
 Look at the order of the lines. `dtor Tracer(7)` printed *before* the read. The destructor had already run, and the read came afterwards. That is a **[[use-after-scope|use-after-scope]]** written out by the program itself — and it is why putting a print in a destructor is a good first debugging move.
 
-**Case 2: a reference member initialised in a constructor.** Here nothing at all warns.
+**Case 2: a reference member initialized in a constructor.** Here nothing at all warns.
 
 ```cpp
 // Tracer and make() as before.
@@ -263,7 +263,7 @@ int main() {
 }
 ```
 
-Follow the temporary. It binds to the constructor's parameter `r`. The member `t` is then initialised from `r`, which is a reference, not a temporary. Nothing is extended, and the `Tracer` dies at the end of the line that declares `o`. **[[The member is left pointing at nothing|reference-member-picture]]**.
+Follow the temporary. It binds to the constructor's parameter `r`. The member `t` is then initialized from `r`, which is a reference, not a temporary. Nothing is extended, and the `Tracer` dies at the end of the line that declares `o`. **[[The member is left pointing at nothing|reference-member-picture]]**.
 
 g++ 13.3.0 at `-Wall -Wextra -Wpedantic` gave **no diagnostic at all**, and neither did clang++ 18.1.3. AddressSanitizer found it:
 
@@ -299,7 +299,7 @@ A dangling reference is a reference to an object whose lifetime has ended. The c
 :::
 
 ::: key
-A temporary bound *directly* to a `const T&`, a `T&&` or an `auto&&` lives as long as that reference. Extension does not survive a function return, and it does not apply to a reference member initialised from a constructor parameter. A class with a reference member does not own anything and does not extend anything: it is a pointer that cannot be null, with the same lifetime obligation on whoever constructs it.
+A temporary bound *directly* to a `const T&`, a `T&&` or an `auto&&` lives as long as that reference. Extension does not survive a function return, and it does not apply to a reference member initialized from a constructor parameter. A class with a reference member does not own anything and does not extend anything: it is a pointer that cannot be null, with the same lifetime obligation on whoever constructs it.
 :::
 
 ::: warning
@@ -310,7 +310,7 @@ A temporary bound *directly* to a `const T&`, a `T&&` or an `auto&&` lives as lo
 - `auto&& q = compute_attitude();` also binds and extends.
 - `const auto& q = wrapper(compute_attitude());`, where `wrapper` returns a reference, dangles.
 
-The rule is about what the initialiser *is*, not what it looks like. When the initialiser is a function call, you have to know its return type.
+The rule is about what the initializer *is*, not what it looks like. When the initializer is a function call, you have to know its return type.
 :::
 
 ## `T&&` beyond binding
@@ -367,7 +367,7 @@ inside forward_on:
 ::: answer
 It lives in `main`'s stack frame, in exactly the place the by-value version would put it. Lifetime extension does not move the object anywhere. The temporary was already created in the caller's frame by the C++17 rule from lesson 01 (a prvalue returned by value is built directly in the caller's storage). Extension only changes *when its destructor runs*.
 
-So the two lines cost the same: one construction, one destruction, no copy. The difference is only in the name you get. `Tracer r2` is an object you may modify. `const Tracer& r2` is a read-only alias. Prefer the reference form when the initialiser's type is long or awkward to spell and you only want to read it.
+So the two lines cost the same: one construction, one destruction, no copy. The difference is only in the name you get. `Tracer r2` is an object you may modify. `const Tracer& r2` is a read-only alias. Prefer the reference form when the initializer's type is long or awkward to spell and you only want to read it.
 :::
 
 ::: check
@@ -413,7 +413,7 @@ If `name()` returns `std::string` by value, the call makes a temporary, the refe
 
 If `name()` returns `const std::string&`, there is no temporary. `s` is bound to whatever the function returned a reference to — usually a member of `person` — and `s` dangles the moment `person` dies.
 
-Both look identical at the call site, so the safety of your line depends on a declaration somewhere else that may change under you. Write `std::string s = person.name();` when you want to own the value: a copy you can reason about, and one the compiler will often avoid anyway. Or write `auto s = person.name();`, which copies in both cases, because `auto` drops the reference. Keep `const auto&` for initialisers whose type you can see.
+Both look identical at the call site, so the safety of your line depends on a declaration somewhere else that may change under you. Write `std::string s = person.name();` when you want to own the value: a copy you can reason about, and one the compiler will often avoid anyway. Or write `auto s = person.name();`, which copies in both cases, because `auto` drops the reference. Keep `const auto&` for initializers whose type you can see.
 :::
 
 ## Summary

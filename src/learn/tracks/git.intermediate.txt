@@ -1592,7 +1592,7 @@ git . at HEAD file engine.txt excludes <<<<<<<
 --- teach
 Last lesson you took a conflicted merge all the way to the finish. Sometimes you should not. Maybe you merged the wrong branch. Maybe the conflict is in code [[a teammate wrote|ask-the-author]], and you need to ask them which side is right. This lesson shows the way out: calling the whole merge off.
 
-Think of a board game you set up on the table, then realise you are missing a piece. You do not play half a game. You put everything back in the box, exactly as it was, and try again later.
+Think of a board game you set up on the table, then realize you are missing a piece. You do not play half a game. You put everything back in the box, exactly as it was, and try again later.
 
 **Step 1: a merge you are not ready for**
 

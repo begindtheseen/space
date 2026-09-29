@@ -251,7 +251,7 @@ python3 sweep.py
 
 How to read it:
 
-1. `sweep` stands in for the real simulation. Each case draws a peak pressure from a bell curve centred on $31\,\mathrm{kPa}$ with a spread of $2.4\,\mathrm{kPa}$ (`rng.gauss(mean, spread)`).
+1. `sweep` stands in for the real simulation. Each case draws a peak pressure from a bell curve centered on $31\,\mathrm{kPa}$ with a spread of $2.4\,\mathrm{kPa}$ (`rng.gauss(mean, spread)`).
 2. `measure` runs whatever you hand it and reports how much memory the result took. (`lambda: ...` wraps a line of code as a small function to hand over; lesson 3 covers it.)
 3. The list comprehension keeps the case numbers over the limit. The `_` in `for _, q in ...` is a name meaning "I do not need this part".
 4. `max(...)` over a generator expression finds the worst value.
@@ -277,7 +277,7 @@ A comprehension is an expression that *produces a value*. If you do not want the
 [None, None, None]
 ```
 
-`print` shows each number, then returns `None`, Python's "nothing here" value. So `flags` is a list of three `None`s that nobody wants. Writing a comprehension only for what it *does* along the way — its **side effects** — is a recognised **[[code smell|code-smell]]**, because it builds and throws away a list as long as the input.
+`print` shows each number, then returns `None`, Python's "nothing here" value. So `flags` is a list of three `None`s that nobody wants. Writing a comprehension only for what it *does* along the way — its **side effects** — is a recognized **[[code smell|code-smell]]**, because it builds and throws away a list as long as the input.
 
 ::: warning Long comprehensions and the vanishing variable
 Two more limits, before a reviewer points them out.
@@ -343,7 +343,7 @@ A colleague's parser assigns `t = float(values[0])`, `ax = float(values[1])`, an
 :::
 
 ::: answer
-Every channel from the new column onward is read from the wrong position, and nothing raises. The values are all numbers, so the parse succeeds, and `q` now holds whatever the neighbouring channel contained. That is the worst kind of failure: believable numbers with the wrong meaning, found a week later when a plot looks strange.
+Every channel from the new column onward is read from the wrong position, and nothing raises. The values are all numbers, so the parse succeeds, and `q` now holds whatever the neighboring channel contained. That is the worst kind of failure: believable numbers with the wrong meaning, found a week later when a plot looks strange.
 
 `{name: float(value) for name, value in zip(names, values, strict=True)}` stores each value under the name the file's own header gives it. An inserted column only adds a key; every existing key still means what it meant. And if the header and a row have different lengths, `strict=True` raises `ValueError` at once instead of quietly cutting to the shorter one.
 :::
@@ -408,7 +408,7 @@ Every comprehension has the same three parts as the loop it replaces. They are o
 </svg>
 ```
 
-Match the colours: the walk and the test keep their order, and the kept expression jumps to the front, where it is easy to find.
+Match the colors: the walk and the test keep their order, and the kept expression jumps to the front, where it is easy to find.
 :::
 
 ::: context jupyter-cells Why notebooks make half-built lists dangerous

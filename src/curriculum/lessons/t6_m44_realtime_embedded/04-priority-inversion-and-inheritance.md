@@ -265,7 +265,7 @@ On Pathfinder, a check noticed that the bus task had not finished when the next 
 :::
 
 ::: context interleaving-picture The plain-mutex timeline, drawn out
-Each row is one task; time runs left to right, from $0$ to $56\,\mathrm{ms}$. Blue is running, the thin grey line is $H$ blocked, and the red dashed line is $H$'s deadline at $t=52$ (released at $2$, plus $50$). $H$ cannot start until $46$ and finishes at $56$ — too late.
+Each row is one task; time runs left to right, from $0$ to $56\,\mathrm{ms}$. Blue is running, the thin gray line is $H$ blocked, and the red dashed line is $H$'s deadline at $t=52$ (released at $2$, plus $50$). $H$ cannot start until $46$ and finishes at $56$ — too late.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">

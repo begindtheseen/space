@@ -18,7 +18,7 @@ Think of a basketball game. The game itself — every pass, every shot — is th
 
 A **[[random variable|not-random-not-variable]]** works the same way. It is a rule that assigns a real number to every outcome in the sample space, written $X : \Omega \to \mathbb{R}$ (read "X maps omega to the real numbers"). The randomness lives in the outcome. The variable is a fixed rule for reading a number off it. When a range sensor fires, the outcome is "everything that happened inside the sensor during that measurement", and $X$ is the number it sends out.
 
-Two habits of notation. A capital letter ($X$) is the random variable; a lower-case letter ($x$) is a particular value it might take. So $P(X \leq x)$ is "the chance that the reading comes out at or below the number $x$". A value actually observed is called a **realisation** or a **sample**.
+Two habits of notation. A capital letter ($X$) is the random variable; a lower-case letter ($x$) is a particular value it might take. So $P(X \leq x)$ is "the chance that the reading comes out at or below the number $x$". A value actually observed is called a **realization** or a **sample**.
 
 Random variables come in two kinds:
 
@@ -117,7 +117,7 @@ $$
 P(a < X \leq b) = \int_{a}^{b} f_X(x)\,dx.
 $$
 
-A density must never be negative, and its total area must be one — all the sand is somewhere. But the density is not itself a probability, and it can be bigger than one. If $X$ is a range error in metres, $f_X$ has units of $\mathrm{m^{-1}}$ ("per metre"). An error spread evenly over a band only $1\,\mathrm{mm}$ wide has a density of $1000\,\mathrm{m^{-1}}$ across that band. That is perfectly fine, because the area — $1000\,\mathrm{m^{-1}} \times 0.001\,\mathrm{m}$ — is still one.
+A density must never be negative, and its total area must be one — all the sand is somewhere. But the density is not itself a probability, and it can be bigger than one. If $X$ is a range error in meters, $f_X$ has units of $\mathrm{m^{-1}}$ ("per meter"). An error spread evenly over a band only $1\,\mathrm{mm}$ wide has a density of $1000\,\mathrm{m^{-1}}$ across that band. That is perfectly fine, because the area — $1000\,\mathrm{m^{-1}} \times 0.001\,\mathrm{m}$ — is still one.
 
 ::: warning A density is not a probability
 $f_X(0.3) = 2.5$ does *not* mean "the chance that $X = 0.3$ is $2.5$" — that chance is zero for any continuous variable. It is a chance *per unit of $X$*, and it carries the units of one over $X$. Comparing densities of variables measured in different units, or reading a tall peak as a big probability without multiplying by a width, are both mistakes that turn up in real analyses.
@@ -135,7 +135,7 @@ f_X(x) = \begin{cases} \dfrac{1}{b - a} & a \leq x \leq b, \\[6pt] 0 & \text{oth
 F_X(x) = \frac{x - a}{b - a} \quad \text{for } a \leq x \leq b.
 $$
 
-The height $1/(b - a)$ is whatever makes the area of the rectangle one. The uniform is the honest model when all you know about a quantity is its limits. It is also the exact model for the rounding error of an **[[analogue-to-digital converter|adc]]**.
+The height $1/(b - a)$ is whatever makes the area of the rectangle one. The uniform is the honest model when all you know about a quantity is its limits. It is also the exact model for the rounding error of an **[[analog-to-digital converter|adc]]**.
 
 ### The exponential distribution
 
@@ -174,7 +174,7 @@ For a $2\,\mathrm{mV}$ threshold the band is $4\,\mathrm{mV}$ wide: $1 - 4/4.88 
 :::
 
 ::: example Survival of a flight computer
-A flight computer has an MTBF of $50\,000\,\mathrm{h}$, with random failures modelled as exponential, so $\lambda = 1/50\,000 = 2 \times 10^{-5}$ per hour.
+A flight computer has an MTBF of $50\,000\,\mathrm{h}$, with random failures modeled as exponential, so $\lambda = 1/50\,000 = 2 \times 10^{-5}$ per hour.
 
 **Surviving a $5000\,\mathrm{h}$ mission:**
 
@@ -215,7 +215,7 @@ This is **[[inverse-transform sampling|inverse-transform]]**: any random number 
 
 ## Functions of a random variable
 
-Often you know the distribution of one quantity and need the distribution of something computed from it: a range error in metres from a timing error in nanoseconds, or an energy from a speed.
+Often you know the distribution of one quantity and need the distribution of something computed from it: a range error in meters from a timing error in nanoseconds, or an energy from a speed.
 
 Picture sand spread on a rubber band. Stretch part of the band to twice its length and the same sand now covers twice the length, so the layer is half as thick. Densities behave exactly like that.
 
@@ -336,7 +336,7 @@ which is the exponential density. A second way: $P(T \leq t) = P(U \geq e^{-\lam
 :::
 
 ::: check
-A laser rangefinder rounds range to the nearest centimetre. Write the density of the rounding error and find the chance its size exceeds $2\,\mathrm{mm}$. What physical assumption makes the uniform model right?
+A laser rangefinder rounds range to the nearest centimeter. Write the density of the rounding error and find the chance its size exceeds $2\,\mathrm{mm}$. What physical assumption makes the uniform model right?
 :::
 
 ::: answer
@@ -344,14 +344,14 @@ Rounding to the nearest $10\,\mathrm{mm}$ leaves an error between $-5$ and $+5\,
 
 $|E| > 2\,\mathrm{mm}$ means the two outer strips, $[-5, -2]$ and $[2, 5]$, each $3\,\mathrm{mm}$ wide. Their area is $2 \times 3\,\mathrm{mm} \times 0.1\,\mathrm{mm^{-1}} = 0.6$.
 
-The uniform model needs the true range to change by many centimetres between readings, so where it lands inside a rounding cell is effectively random. For a target that does not move, the error is one fixed offset, not a random variable at all.
+The uniform model needs the true range to change by many centimeters between readings, so where it lands inside a rounding cell is effectively random. For a target that does not move, the error is one fixed offset, not a random variable at all.
 :::
 
 ## Summary
 
 | Symbol or formula | Meaning |
 | --- | --- |
-| $X : \Omega \to \mathbb{R}$ | Random variable: a number attached to each outcome; $x$ is a realisation |
+| $X : \Omega \to \mathbb{R}$ | Random variable: a number attached to each outcome; $x$ is a realization |
 | $p_X(x) = P(X = x)$ | Probability mass function of a discrete variable |
 | $\binom{n}{k}p^k(1-p)^{n-k}$ | Binomial: successes in $n$ independent trials |
 | $(\lambda t)^k e^{-\lambda t}/k!$ | Poisson: counts at steady rate $\lambda$ over time $t$ |
@@ -445,7 +445,7 @@ The shape is a trapezoid, so you can check without calculus: width $0.5$ times t
 :::
 
 ::: context adc Turning voltages into numbers
-An analogue-to-digital converter (ADC) is the chip that turns a smoothly varying voltage from a sensor into a whole number a computer can store. A 12-bit ADC can output $2^{12} = 4096$ different numbers, so it chops its voltage range into 4096 steps and reports which step the voltage is nearest.
+An analog-to-digital converter (ADC) is the chip that turns a smoothly varying voltage from a sensor into a whole number a computer can store. A 12-bit ADC can output $2^{12} = 4096$ different numbers, so it chops its voltage range into 4096 steps and reports which step the voltage is nearest.
 
 Whatever falls between steps is lost — that lost bit is the rounding error. More bits mean smaller steps: a 16-bit converter on the same $\pm 10\,\mathrm{V}$ range has steps of about $0.305\,\mathrm{mV}$, sixteen times finer.
 :::

@@ -40,7 +40,7 @@ Several stored numbers can shift as a result:
 The onboard guidance algorithm itself does not change at all. The code is the same code. Only the numbers it is handed change, exactly as the previous lesson said.
 
 ::: key
-Day-of-launch I-load update: re-optimise the pitch program on launch day against the measured wind profile, so loads are sized for the actual atmosphere and not a worst-case envelope. Buys payload and launch availability.
+Day-of-launch I-load update: re-optimize the pitch program on launch day against the measured wind profile, so loads are sized for the actual atmosphere and not a worst-case envelope. Buys payload and launch availability.
 :::
 
 ::: key

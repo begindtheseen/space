@@ -55,7 +55,7 @@ $\mathbf{x}_{k+1} = \mathbf{F}\mathbf{x}_k + \mathbf{G}\mathbf{u}_k + \mathbf{w}
 
 **Gaussian noise** makes the filter the best of *all* possible estimators. Drop it and the filter is still the best *linear* estimator (the BLUE, best linear unbiased estimator, of the least-squares module). That is usually enough.
 
-The assumption that fails most often in real life is whiteness, and it fails in one typical way: a sensor error that stays put from one sample to the next. A gyro's offset, a GPS signal bouncing off a building for seconds, an altimeter reading $1\%$ high: none is white. Treat any of them as $\mathbf{v}$ and the filter thinks it is hearing fresh evidence when it is hearing the same error again and again. That gives the most important modelling rule in the module.
+The assumption that fails most often in real life is whiteness, and it fails in one typical way: a sensor error that stays put from one sample to the next. A gyro's offset, a GPS signal bouncing off a building for seconds, an altimeter reading $1\%$ high: none is white. Treat any of them as $\mathbf{v}$ and the filter thinks it is hearing fresh evidence when it is hearing the same error again and again. That gives the most important modeling rule in the module.
 
 ::: key Noise with memory is a state
 If an error is correlated from one step to the next, it is not noise. Move it into $\mathbf{x}$, give it dynamics (a constant, a random walk, a Gauss-Markov process) and drive *that* with white noise. The model's noises must be white; whatever is not white must be a state.
@@ -315,7 +315,7 @@ Using $0.5^\circ$ as $R$ would tell the filter to expect independent $0.5^\circ$
 | --- | --- |
 | Discrete model | $\mathbf{x}_{k+1} = \mathbf{F}_k\mathbf{x}_k + \mathbf{G}_k\mathbf{u}_k + \mathbf{w}_k$, $\mathbf{z}_k = \mathbf{H}_k\mathbf{x}_k + \mathbf{v}_k$ |
 | Noise assumptions | $\mathbf{w}_k \sim \mathcal{N}(\mathbf{0},\mathbf{Q}_k)$, $\mathbf{v}_k \sim \mathcal{N}(\mathbf{0},\mathbf{R}_k)$, white ($\mathbb{E}[\mathbf{w}_k\mathbf{w}_j^{\mathsf{T}}] = \mathbf{Q}_k\delta_{kj}$), mutually uncorrelated, uncorrelated with $\mathbf{x}_0 \sim \mathcal{N}(\hat{\mathbf{x}}_0,\mathbf{P}_0)$ |
-| Modelling rule | Noise with memory is a state: correlated errors go into $\mathbf{x}$, driven by white noise |
+| Modeling rule | Noise with memory is a state: correlated errors go into $\mathbf{x}$, driven by white noise |
 | Continuous to discrete | $\mathbf{F} = e^{\mathbf{A}\Delta t}$, $\mathbf{Q} = \int_0^{\Delta t} e^{\mathbf{A}\tau}\mathbf{G}_c\mathbf{Q}_c\mathbf{G}_c^{\mathsf{T}}e^{\mathbf{A}^{\mathsf{T}}\tau}\,d\tau$; short step $\mathbf{Q} \approx \mathbf{G}_c\mathbf{Q}_c\mathbf{G}_c^{\mathsf{T}}\Delta t$; Van Loan computes both from one exponential |
 | Constant-velocity model | $\mathbf{F} = \begin{pmatrix} 1 & \Delta t \\ 0 & 1 \end{pmatrix}$, $\mathbf{Q} = q\begin{pmatrix} \Delta t^3/3 & \Delta t^2/2 \\ \Delta t^2/2 & \Delta t \end{pmatrix}$, $q$ in $\mathrm{m^2/s^3}$, correlation $\sqrt{3}/2$ |
 | Piecewise-constant acceleration | $\mathbf{Q} = \sigma_a^2\begin{pmatrix} \Delta t^4/4 & \Delta t^3/2 \\ \Delta t^3/2 & \Delta t^2 \end{pmatrix}$, rank one; a different model |

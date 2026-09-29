@@ -347,7 +347,7 @@ d1.cpp: In member function 'void LowPass<T>::restart()':
 d1.cpp:16:22: error: there are no arguments to 'reset' that depend on a template parameter, so a declaration of 'reset' must be available [-fpermissive]
 ```
 
-The base class `Filter<T>` depends on `T`; it is a **[[dependent base|dependent-base-picture]]**. In phase 1 the compiler does not look inside a dependent base, because it cannot know what will be there. Lesson 1 showed why: someone may write an explicit specialisation `Filter<int>` later that has no member `state` at all, or has a `state` that is a function. So the plain name `state` is non-dependent, it is looked up in phase 1, the dependent base is skipped, and nothing is found.
+The base class `Filter<T>` depends on `T`; it is a **[[dependent base|dependent-base-picture]]**. In phase 1 the compiler does not look inside a dependent base, because it cannot know what will be there. Lesson 1 showed why: someone may write an explicit specialization `Filter<int>` later that has no member `state` at all, or has a `state` that is a function. So the plain name `state` is non-dependent, it is looked up in phase 1, the dependent base is skipped, and nothing is found.
 
 The fix is to make the name dependent, so its lookup waits for phase 2, when the base class is known:
 
@@ -445,7 +445,7 @@ In `template <typename T> struct Kf : Base<T> { void predict() { propagate(); } 
 :::
 
 ::: answer
-`Base<T>` depends on `T`, so it is a dependent base. `propagate()` has no dependent arguments, so it is looked up in phase 1, and phase 1 does not look inside a dependent base, because a later specialisation of `Base` could have no `propagate` at all. The lookup finds nothing (or, worse, finds an unrelated `propagate` outside the class).
+`Base<T>` depends on `T`, so it is a dependent base. `propagate()` has no dependent arguments, so it is looked up in phase 1, and phase 1 does not look inside a dependent base, because a later specialization of `Base` could have no `propagate` at all. The lookup finds nothing (or, worse, finds an unrelated `propagate` outside the class).
 
 The usual fix is `this->propagate();`, which makes the name dependent so it is looked up in phase 2, when `Base<T>` is known. `using Base<T>::propagate;` in the class body also works. `Base<T>::propagate()` works too, but if `propagate` is virtual it bypasses virtual dispatch, so it is the last choice.
 :::
@@ -496,7 +496,7 @@ Phase 1 happens once, where the template is written. Phase 2 happens once per di
 :::
 
 ::: context instantiate-word Where "instantiate" comes from
-To instantiate is to make an *instance*: one concrete example of a general pattern. In lesson 1's picture, the template is the cookie cutter and each cookie is an instance. When you write `sum(gyro_z)`, the compiler works out `Container = std::vector<double>` and privately writes a real function with that type everywhere the blank was: a specialisation of the template. It is compiled like any hand-written function, which is why templates cost nothing at run time and quite a lot at build time, a trade-off lesson 10 measures.
+To instantiate is to make an *instance*: one concrete example of a general pattern. In lesson 1's picture, the template is the cookie cutter and each cookie is an instance. When you write `sum(gyro_z)`, the compiler works out `Container = std::vector<double>` and privately writes a real function with that type everywhere the blank was: a specialization of the template. It is compiled like any hand-written function, which is why templates cost nothing at run time and quite a lot at build time, a trade-off lesson 10 measures.
 :::
 
 ::: context msvc-history Not every compiler read templates the same way
@@ -529,7 +529,7 @@ Blue: found by ordinary lookup in phase 1. Orange: found by ADL in phase 2, beca
 :::
 
 ::: context dependent-base-picture Why the compiler will not look in the base
-The general `Filter<T>` has a member `state`. But lesson 1 showed that anyone may write an explicit specialisation, and a specialisation is free to contain completely different members. The compiler, reading `LowPass<T>` in phase 1, cannot know which version it will inherit from.
+The general `Filter<T>` has a member `state`. But lesson 1 showed that anyone may write an explicit specialization, and a specialization is free to contain completely different members. The compiler, reading `LowPass<T>` in phase 1, cannot know which version it will inherit from.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">

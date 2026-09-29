@@ -235,7 +235,7 @@ The rule $t_s \approx 4/(\zeta\omega_n)$ is for the underdamped regime. For an o
 :::
 
 ::: example A second-order thrust-vector actuator
-Lesson 1 modelled a TVC actuator as a first-order lag. A better model includes the actuator's own inertia and is second order. The vendor quotes $\omega_n = 40\,\mathrm{rad/s}$ (about $6.4\,\mathrm{Hz}$) and $\zeta = 0.6$.
+Lesson 1 modeled a TVC actuator as a first-order lag. A better model includes the actuator's own inertia and is second order. The vendor quotes $\omega_n = 40\,\mathrm{rad/s}$ (about $6.4\,\mathrm{Hz}$) and $\zeta = 0.6$.
 
 **Poles:**
 
@@ -362,7 +362,7 @@ The next lesson rewrites this second-order equation as two first-order equations
 A *canon* was originally a rule or a measuring rod. In mathematics, a **canonical form** is the agreed standard way of writing something, so that any two things of the same kind can be compared at a glance. Every second-order system, whether it is a car, a nozzle actuator or a satellite, becomes the same equation with only two numbers changed. Seeing $\zeta = 0.6$ tells you the shape of the motion, whatever the machine.
 :::
 
-::: context natural-frequency Every structure has a favourite rate
+::: context natural-frequency Every structure has a favorite rate
 Pluck a guitar string, tap a wine glass or give a swing one push, and each moves back and forth at its own rate. That rate, set by stiffness and mass, is its natural frequency: stiffer means faster, heavier means slower — hence $\sqrt{k/m}$. Rockets, satellites and their solar panels all have natural frequencies, and engineers list them carefully, because pushing anything at its natural frequency makes it swing hard.
 :::
 

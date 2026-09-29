@@ -8,9 +8,9 @@ covers:
 
 Set two kitchen clocks side by side. One runs one second a day fast. After a day you can hardly tell. After a year they are six minutes apart, and the gap never closes by itself. A tiny difference in *rate* becomes a large difference in *position*, because it keeps adding up.
 
-Two spacecraft in nearly the same orbit behave the same way. Of everything the CW equations predict, one behaviour matters more to a real rendezvous than all the others: some starting states give a relative orbit that stays put, and others give one that walks steadily away, forever. The difference between the two is one short condition. Missing it is not a rounding error. It is the difference between a stable formation and a chaser kilometres off course by the next orbit.
+Two spacecraft in nearly the same orbit behave the same way. Of everything the CW equations predict, one behavior matters more to a real rendezvous than all the others: some starting states give a relative orbit that stays put, and others give one that walks steadily away, forever. The difference between the two is one short condition. Missing it is not a rounding error. It is the difference between a stable formation and a chaser kilometers off course by the next orbit.
 
-This lesson finds that condition, explains what it means physically, and uses it to explain a result that looks wrong the first time you see it: fire your engine forward, in the direction you are travelling, and you end up *behind*.
+This lesson finds that condition, explains what it means physically, and uses it to explain a result that looks wrong the first time you see it: fire your engine forward, in the direction you are traveling, and you end up *behind*.
 
 ## Finding the term that grows forever
 
@@ -64,7 +64,7 @@ $$
 \delta a \approx 4x_0 + \frac{2\dot y_0}{n}.
 $$
 
-This matches the exact two-body answer to five significant figures for offsets up to hundreds of metres.
+This matches the exact two-body answer to five significant figures for offsets up to hundreds of meters.
 
 ::: note Why it has to be true
 Seen from outside, the chaser moves along-track at the target's speed $v_0$, plus its own relative speed $\dot y_0$, plus $nx_0$ — the extra speed it gets from being carried around by the turning frame at a radius $x_0$ farther out. Its distance from Earth is $r_0 + x_0$.
@@ -126,12 +126,12 @@ A chaser starts $50\,\mathrm{m}$ above the target, $x_0 = 0.050\,\mathrm{km}$. B
 
 **Step 4: in time.** One orbit is $5569\,\mathrm{s}$, about 93 minutes.
 
-**Sanity check.** The chaser sits higher, in a bigger orbit, with a longer period — so it should fall behind. It does. A 50 m mistake, which looked small and purely radial, walks the chaser nearly two kilometres away every 93 minutes. That is a **[[station-keeping|station-keeping]]**-sized error hiding in a small slip.
+**Sanity check.** The chaser sits higher, in a bigger orbit, with a longer period — so it should fall behind. It does. A 50 m mistake, which looked small and purely radial, walks the chaser nearly two kilometers away every 93 minutes. That is a **[[station-keeping|station-keeping]]**-sized error hiding in a small slip.
 :::
 
 ## The counterintuitive burn
 
-Now test your intuition. Start the chaser exactly on top of the target: $x_0 = y_0 = z_0 = 0$. Fire a small burn **prograde** — in the $+\hat{\mathbf{y}}$ direction, the way both vehicles are travelling. Surely speeding up moves you ahead?
+Now test your intuition. Start the chaser exactly on top of the target: $x_0 = y_0 = z_0 = 0$. Fire a small burn **prograde** — in the $+\hat{\mathbf{y}}$ direction, the way both vehicles are traveling. Surely speeding up moves you ahead?
 
 CW says the opposite. The burn gives $\dot y_0 = \Delta v > 0$ with $x_0 = \dot x_0 = 0$. The drift-free condition wants $\dot y_0 = -2nx_0 = 0$, and $\Delta v$ is not zero, so this burn drifts. The secular rate is
 
@@ -159,7 +159,7 @@ Here $\Delta v/n = 0.05 / 1.1282\times10^{-3} = 44.32\,\mathrm{m}$. At a quarter
 
 After one orbit the chaser is $835\,\mathrm{m}$ *behind* the target, not ahead. It keeps sliding back at an average $-3\Delta v = -0.15\,\mathrm{m/s}$. On top of the slide rides a bounded bounce, which is why $x$ comes back to zero once per orbit while $y$ keeps going. The path [[hops up and backward, orbit after orbit|hopping-backward]].
 
-**Way 2: full nonlinear truth.** Propagating the chaser's real orbit with exact two-body gravity gives $y = -835.4$, $-1670.9$ and $-2506.3\,\mathrm{m}$ at one, two and three orbits. That is indistinguishable from CW, as lesson 4 predicts for separations under a kilometre.
+**Way 2: full nonlinear truth.** Propagating the chaser's real orbit with exact two-body gravity gives $y = -835.4$, $-1670.9$ and $-2506.3\,\mathrm{m}$ at one, two and three orbits. That is indistinguishable from CW, as lesson 4 predicts for separations under a kilometer.
 
 **Way 3: Kepler alone, no CW at all.** Before the burn the speed is $v_0 = \sqrt{\mu/r_0} = 7.661292\,\mathrm{km/s}$. After it, $v_0 + \Delta v$. The **[[vis-viva equation|vis-viva]]**, $v^2 = \mu(2/r - 1/a)$, turns the new speed into a new semi-major axis: $a_1 = 6791.0886\,\mathrm{km}$. That is $88.6\,\mathrm{m}$ *higher* than the target's. The burn really did raise the orbit.
 
@@ -223,7 +223,7 @@ For a radial offset, $\delta a = 4x_0$, with no $n$ in it — sitting 50 m highe
 :::
 
 ::: check
-Two chasers each have $\delta a = +0.5\,\mathrm{km}$ relative to their own targets. One target is on this module's reference orbit ($r_0 = 6791\,\mathrm{km}$, period 92.8 min). The other orbit has a radius four times as large. Which chaser drifts away faster in metres per *hour*?
+Two chasers each have $\delta a = +0.5\,\mathrm{km}$ relative to their own targets. One target is on this module's reference orbit ($r_0 = 6791\,\mathrm{km}$, period 92.8 min). The other orbit has a radius four times as large. Which chaser drifts away faster in meters per *hour*?
 :::
 
 ::: answer
@@ -259,7 +259,7 @@ The word stuck in orbital mechanics for any effect that keeps growing instead of
 ::: context semi-major-axis Half the long way across
 An ellipse has a long axis and a short one. Half the long one is the **semi-major axis**, $a$ — "semi" means half, "major" means bigger. For a circle both axes are the same, and $a$ is the radius.
 
-It is the single number that sets an orbit's energy and period. It is also the average of the orbit's highest and lowest distances from Earth's centre. That is why "same semi-major axis" is the right way to say "same size of orbit", even when one orbit is a circle and the other is a slightly stretched oval.
+It is the single number that sets an orbit's energy and period. It is also the average of the orbit's highest and lowest distances from Earth's center. That is why "same semi-major axis" is the right way to say "same size of orbit", even when one orbit is a circle and the other is a slightly stretched oval.
 :::
 
 ::: context keplers-third-law Bigger orbits take longer
@@ -308,7 +308,7 @@ Give it your distance $r$ and speed $v$ and it hands back the orbit's size $a$. 
 :::
 
 ::: context bigger-slower-orbit Higher, bigger, slower
-The prograde burn, hugely exaggerated. The target stays on its circle (grey). The chaser burns at the top and moves onto a bigger oval (blue) whose lowest point is the burn point. The bigger oval takes longer to go round, so each time the chaser comes back to the top, the target has already passed.
+The prograde burn, hugely exaggerated. The target stays on its circle (gray). The chaser burns at the top and moves onto a bigger oval (blue) whose lowest point is the burn point. The bigger oval takes longer to go round, so each time the chaser comes back to the top, the target has already passed.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210" font-family="Inter, Arial, sans-serif">

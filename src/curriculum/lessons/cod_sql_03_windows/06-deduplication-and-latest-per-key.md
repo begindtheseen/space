@@ -202,7 +202,7 @@ The ORDER BY inside OVER is your **preference order**: it decides which copy is 
 
 **State a real preference.** "Earliest received" is one choice. Others are common: prefer a frame whose checksum passed, prefer a primary station over a backup, prefer the most recently *corrected* value. Whatever you choose, it should be something you could defend in a review, because when copies disagree — like 0.55 against 0.56 — this line of SQL decides which number the whole fleet sees.
 
-**End with something unique.** Rows 1 and 2 have the same `rx_at`. If the ORDER BY were only `rx_at`, those two rows would tie, and ROW_NUMBER would still hand out a 1 and a 2 — but which row gets the 1 is not defined. The database may pick Svalbard today and Troll after the table has been [[reorganised on disk|nondeterminism]]. Here the two copies hold the same value, so nobody would notice. With a disagreeing pair, the dashboard would flicker between two numbers with no change to the data. Adding `ingest_id`, which is unique, as the last ORDER BY column makes the order complete, so the same input always gives the same output. That property is called being **deterministic**.
+**End with something unique.** Rows 1 and 2 have the same `rx_at`. If the ORDER BY were only `rx_at`, those two rows would tie, and ROW_NUMBER would still hand out a 1 and a 2 — but which row gets the 1 is not defined. The database may pick Svalbard today and Troll after the table has been [[reorganized on disk|nondeterminism]]. Here the two copies hold the same value, so nobody would notice. With a disagreeing pair, the dashboard would flicker between two numbers with no change to the data. Adding `ingest_id`, which is unique, as the last ORDER BY column makes the order complete, so the same input always gives the same output. That property is called being **deterministic**.
 
 ::: warning A tie in the preference order
 If two copies tie on every ORDER BY column, ROW_NUMBER picks between them arbitrarily, and may pick differently next time. Always finish the ORDER BY inside OVER with a column that is unique within the partition, such as an ingest id or a primary key.
@@ -412,7 +412,7 @@ SAT-002  soc      2026-03-01T00:10:00Z  0.55   hawaii
 SAT-002  temp     2026-03-01T00:10:00Z  21.2   hawaii
 ```
 
-It gave the right rows here, but it is a [[SQLite-only behaviour|bare-columns]], PostgreSQL rejects the query outright, and when two rows tie for the maximum — the disagreeing pair at 00:10 — you cannot say which one's `value` you get. Use the ROW_NUMBER form in the exercises and in anything you share.
+It gave the right rows here, but it is a [[SQLite-only behavior|bare-columns]], PostgreSQL rejects the query outright, and when two rows tie for the maximum — the disagreeing pair at 00:10 — you cannot say which one's `value` you get. Use the ROW_NUMBER form in the exercises and in anything you share.
 
 ::: warning One key, one row, one rule
 Whatever the tool, write down the key (what "the same thing" means), the preference order (which copy wins), and a final unique tie-breaker. A latest-per-key query missing any of the three either returns too many rows or returns different rows on different days.
@@ -526,7 +526,7 @@ Radio links flip the odd bit. Downlink frames carry error-detecting codes, such 
 :::
 
 ::: context keep-the-ones Number, then keep the 1s
-Each coloured band is one partition: the copies of one sample. ROW_NUMBER numbers inside each band; the filter keeps the rows marked 1 (blue).
+Each colored band is one partition: the copies of one sample. ROW_NUMBER numbers inside each band; the filter keeps the rows marked 1 (blue).
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">

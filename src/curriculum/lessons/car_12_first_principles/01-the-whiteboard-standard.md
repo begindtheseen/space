@@ -154,8 +154,8 @@ You are asked to estimate the total propellant mass a launch vehicle burns in it
 :::
 
 ::: answer
-1. *Restate and bound:* "Propellant burned by the first stage only, from liftoff to staging, for a medium-lift vehicle — call it something that puts ten to twenty tonnes in low Earth orbit."
-2. *Declare the model and assumptions:* "I will work it out from the thrust and the burn time rather than from a quoted mass. Assume a liftoff thrust-to-weight ratio of about 1.3, a liftoff mass of around 500 tonnes, a specific impulse near 300 seconds at sea level, and a first-stage burn of about 160 seconds."
+1. *Restate and bound:* "Propellant burned by the first stage only, from liftoff to staging, for a medium-lift vehicle — call it something that puts ten to twenty metric tons in low Earth orbit."
+2. *Declare the model and assumptions:* "I will work it out from the thrust and the burn time rather than from a quoted mass. Assume a liftoff thrust-to-weight ratio of about 1.3, a liftoff mass of around 500 metric tons, a specific impulse near 300 seconds at sea level, and a first-stage burn of about 160 seconds."
 3. *Decompose:* "Propellant mass is mass flow times burn time. Mass flow is thrust divided by the effective exhaust velocity, which is specific impulse times $g_0$. So three numbers: thrust, $I_{sp}$, burn time."
 
 (Specific impulse, $I_{sp}$, and $g_0 = 9.80665\,\mathrm{m/s^2}$ are defined properly in the next lesson.) No arithmetic yet, and the interviewer already knows the model, the inputs and the route.

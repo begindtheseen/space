@@ -58,7 +58,7 @@ That is roughly three times a typical envelope of about $100\ \mathrm{kPa\cdot d
 
 ## Wind shear
 
-**Wind shear** is how fast the wind changes as you go up. It is written $\partial \mathbf{w}/\partial h$, read "partial w by partial h": the change in wind velocity $\mathbf{w}$ per metre of height $h$. (The curly $\partial$ just means "change with height, holding everything else fixed".)
+**Wind shear** is how fast the wind changes as you go up. It is written $\partial \mathbf{w}/\partial h$, read "partial w by partial h": the change in wind velocity $\mathbf{w}$ per meter of height $h$. (The curly $\partial$ just means "change with height, holding everything else fixed".)
 
 A rocket does not sit at one height, so it does not feel the shear as a pattern in space. It climbs at vertical speed $\dot h$ ("h dot"), so it feels the shear as a change *in time*:
 
@@ -66,9 +66,9 @@ $$
 \dot{\mathbf{w}} = \frac{\partial\mathbf{w}}{\partial h}\,\dot h .
 $$
 
-The change in wind it feels each second is the change per metre times the metres climbed each second. That turns straight into a ramp in angle of attack.
+The change in wind it feels each second is the change per meter times the meters climbed each second. That turns straight into a ramp in angle of attack.
 
-Design shears are usually stated as the change in wind speed across a layer of a stated thickness. The strongest shears sit just below the jet core, where the wind builds up over a kilometre or two. A change of 20 to 30 m/s across 1 km is within the design envelope at the Cape. The max-Q exercise's 30 m/s per kilometre is a severe case.
+Design shears are usually stated as the change in wind speed across a layer of a stated thickness. The strongest shears sit just below the jet core, where the wind builds up over a kilometer or two. A change of 20 to 30 m/s across 1 km is within the design envelope at the Cape. The max-Q exercise's 30 m/s per kilometer is a severe case.
 
 What makes shear dangerous is speed. At 70 s into the lesson 2 trajectory, the rocket's speed is 418 m/s along a path tilted $54^\circ$ above the horizon. Its vertical speed is
 
@@ -104,9 +104,9 @@ $$
 w_g(s) = \frac{w_m}{2}\left[1 - \cos\left(\frac{\pi s}{d_m}\right)\right], \qquad 0 \le s \le 2 d_m .
 $$
 
-Here $s$ is the distance travelled into the gust and $d_m$ is the gust **half-width**. Check the ends. At $s = 0$ the cosine is $1$, so the bracket is $0$: no wind. At $s = d_m$ the cosine is $\cos\pi = -1$, so the bracket is $2$ and the wind is the full peak $w_m$. At $s = 2d_m$ the cosine is back to $1$ and the wind is zero again.
+Here $s$ is the distance traveled into the gust and $d_m$ is the gust **half-width**. Check the ends. At $s = 0$ the cosine is $1$, so the bracket is $0$: no wind. At $s = d_m$ the cosine is $\cos\pi = -1$, so the bracket is $2$ and the wind is the full peak $w_m$. At $s = 2d_m$ the cosine is back to $1$ and the wind is zero again.
 
-Launch-vehicle design adds gusts of roughly 9 m/s on top of the synthetic profile at the jet peak, with half-widths from tens to a few hundred metres. It also uses "embedded" gusts built into measured profiles. For a 9 m/s gust at 420 m/s the peak angle of attack is only $9/420 = 0.021\ \mathrm{rad} = 1.2^\circ$. The point is not the size. It is how suddenly it arrives.
+Launch-vehicle design adds gusts of roughly 9 m/s on top of the synthetic profile at the jet peak, with half-widths from tens to a few hundred meters. It also uses "embedded" gusts built into measured profiles. For a 9 m/s gust at 420 m/s the peak angle of attack is only $9/420 = 0.021\ \mathrm{rad} = 1.2^\circ$. The point is not the size. It is how suddenly it arrives.
 
 ::: example A 1-cosine gust crossed at climbing speed
 Take $w_m = 9\ \mathrm{m/s}$ and $d_m = 150\ \mathrm{m}$, so the gust is 300 m long.
@@ -129,11 +129,11 @@ Take $w_m = 9\ \mathrm{m/s}$ and $d_m = 150\ \mathrm{m}$, so the gust is 300 m l
 
 Real gustiness is random. You cannot write down the wind at the next second, but you can describe its *character*: how strong the gusts are on average, and whether they are long slow swells or short sharp jabs.
 
-The tool for that is the **[[power spectral density|psd]]** (PSD). Think of the graphic equalizer on a music player, with sliders from deep bass to high treble. A PSD says how much of the wind's energy sits at each "note" — each frequency of wobble. Turbulence is modelled as a random process whose PSD is fixed.
+The tool for that is the **[[power spectral density|psd]]** (PSD). Think of the graphic equalizer on a music player, with sliders from deep bass to high treble. A PSD says how much of the wind's energy sits at each "note" — each frequency of wobble. Turbulence is modeled as a random process whose PSD is fixed.
 
 Two spectra are standard. Both use three quantities:
 
-- the **spatial frequency** $\Omega$ ("capital omega"), in radians per metre: how many wobbles the eddies make per metre of path;
+- the **spatial frequency** $\Omega$ ("capital omega"), in radians per meter: how many wobbles the eddies make per meter of path;
 - the **scale length** $L$, the size of the typical eddy;
 - the **turbulence intensity** $\sigma$ ("sigma"), the root-mean-square gust speed — a typical gust size.
 
@@ -158,9 +158,9 @@ $$
 
 Both are scaled so that adding up $\Phi$ over all frequencies gives $\sigma^2$: all the energy together is the square of the typical gust size.
 
-### From metres to seconds
+### From meters to seconds
 
-The spectra are written per metre, but the controller lives in seconds. A rocket flying at speed $V$ through turbulence that is (nearly) standing still sweeps past $V$ metres of it every second. So a wobble of $\Omega$ radians per metre is felt at
+The spectra are written per meter, but the controller lives in seconds. A rocket flying at speed $V$ through turbulence that is (nearly) standing still sweeps past $V$ meters of it every second. So a wobble of $\Omega$ radians per meter is felt at
 
 $$
 \omega = \Omega V
@@ -232,7 +232,7 @@ A $3\sigma$ excursion (three times the typical size, reached now and then) is $1
 :::
 
 ::: key
-Dryden and von Kármán are the two standard turbulence spectra, parameterised by intensity $\sigma$ and scale length $L$ (about 533 m at altitude), converted to the vehicle's time domain by $\omega = \Omega V$. Von Kármán has the physically correct $\Omega^{-5/3}$ high-frequency slope; Dryden is rational and can be generated exactly by filtering white noise, which is why simulations use it.
+Dryden and von Kármán are the two standard turbulence spectra, parameterized by intensity $\sigma$ and scale length $L$ (about 533 m at altitude), converted to the vehicle's time domain by $\omega = \Omega V$. Von Kármán has the physically correct $\Omega^{-5/3}$ high-frequency slope; Dryden is rational and can be generated exactly by filtering white noise, which is why simulations use it.
 :::
 
 ## Winds in the simulation and on launch day
@@ -268,7 +268,7 @@ A vehicle climbs at 300 m/s vertical speed with 380 m/s airspeed through a layer
 
 **Rate.** $3.61/2.67 \approx 1.35^\circ$ per second (using the unrounded values).
 
-The shear gradient is $24/800 = 0.03$ per second — the same gradient as the exercise's 30 m/s per kilometre.
+The shear gradient is $24/800 = 0.03$ per second — the same gradient as the exercise's 30 m/s per kilometer.
 :::
 
 ::: check
@@ -311,9 +311,9 @@ Explain why the day-of-launch steering update removes the mean wind but cannot r
 :::
 
 ::: answer
-The steering update reshapes the pitch and yaw programs from a profile measured an hour or more before launch. It can point the nose into whatever wind that profile shows at each height — but only as finely as the measurement resolves (hundreds of metres), and only as long as the wind stays put over the countdown.
+The steering update reshapes the pitch and yaw programs from a profile measured an hour or more before launch. It can point the nose into whatever wind that profile shows at each height — but only as finely as the measurement resolves (hundreds of meters), and only as long as the wind stays put over the countdown.
 
-Shear finer than that resolution, gusts a few hundred metres long and turbulence are not in the measured profile. Being random, they could not be pre-programmed anyway. They become leftover angle of attack. The closed-loop attitude controller and its load-relief accelerometer feedback handle it in real time — within the limits of a bandwidth that is slower than a gust and about as fast as a shear crossing.
+Shear finer than that resolution, gusts a few hundred meters long and turbulence are not in the measured profile. Being random, they could not be pre-programmed anyway. They become leftover angle of attack. The closed-loop attitude controller and its load-relief accelerometer feedback handle it in real time — within the limits of a bandwidth that is slower than a gust and about as fast as a shear crossing.
 :::
 
 ## Summary
@@ -389,7 +389,7 @@ For gusts this is exactly what a control engineer needs, because a control loop 
 :::
 
 ::: context frozen-turbulence Frozen turbulence
-G. I. Taylor suggested in 1938 that when you move fast through turbulence, you can treat the eddies as frozen in place: they change slowly compared with how quickly you sweep past them. A rocket at 420 m/s crosses a 533 m eddy in about 1.3 s, far faster than the eddy itself evolves, so the idea works very well. It is what lets a pattern in space (per metre) be turned into a signal in time (per second) with one multiplication by $V$.
+G. I. Taylor suggested in 1938 that when you move fast through turbulence, you can treat the eddies as frozen in place: they change slowly compared with how quickly you sweep past them. A rocket at 420 m/s crosses a 533 m eddy in about 1.3 s, far faster than the eddy itself evolves, so the idea works very well. It is what lets a pattern in space (per meter) be turned into a signal in time (per second) with one multiplication by $V$.
 :::
 
 ::: context kolmogorov The five-thirds law

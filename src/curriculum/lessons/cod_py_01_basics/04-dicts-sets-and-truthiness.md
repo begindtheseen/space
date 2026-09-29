@@ -129,7 +129,7 @@ Traceback (most recent call last):
 TypeError: unhashable type: 'list'
 ```
 
-Learn to recognise `unhashable type: 'list'`. It means you used something changeable where a fixed key was needed. The tuple `(12, 500)` — seconds and milliseconds, say — is a perfectly good key.
+Learn to recognize `unhashable type: 'list'`. It means you used something changeable where a fixed key was needed. The tuple `(12, 500)` — seconds and milliseconds, say — is a perfectly good key.
 
 This is the real answer to "when do I *need* a tuple instead of a list?" When the value has to be a dictionary key or a set member. (A tuple is hashable only if **[[everything inside it is hashable too|tuple-hashable]]**.)
 
@@ -264,7 +264,7 @@ A set has no order. Worse, the order it prints in can change between two runs of
 :::
 
 ::: example Channels in the file that the spec never mentioned
-Before analysing a run, check that the data file and the **[[interface document|icd]]** agree about which channels exist.
+Before analyzing a run, check that the data file and the **[[interface document|icd]]** agree about which channels exist.
 
 ```python
 # channel_audit.py
@@ -523,7 +523,7 @@ If either key is missing you get a `KeyError` naming the key that failed, so you
 ::: context hash-randomisation Why the order changes between runs
 In 2011 researchers showed that attackers could send a web server thousands of carefully chosen strings that all landed in the same hash slot. Every lookup then turned into a slow search, and the server ground to a halt. This is called a **hash-flooding** attack.
 
-Python's defence, switched on by default from Python 3.3, is to mix a random number into every string hash, chosen fresh each time the interpreter starts. An attacker can no longer predict the slots. A side effect is that the order of a set of strings is different from run to run. Setting the environment variable `PYTHONHASHSEED` to a fixed number turns the randomness off, but the right fix for output is still `sorted`.
+Python's defense, switched on by default from Python 3.3, is to mix a random number into every string hash, chosen fresh each time the interpreter starts. An attacker can no longer predict the slots. A side effect is that the order of a set of strings is different from run to run. Setting the environment variable `PYTHONHASHSEED` to a fixed number turns the randomness off, but the right fix for output is still `sorted`.
 :::
 
 ::: context icd The interface document

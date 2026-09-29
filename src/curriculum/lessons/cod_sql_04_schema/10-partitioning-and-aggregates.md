@@ -3,7 +3,7 @@ id: l10-partitioning-and-aggregates
 title: Partitioning by time and precomputed aggregates
 minutes: 27
 covers:
-  - Range partitioning by time; clustering; materialised views and continuous aggregates
+  - Range partitioning by time; clustering; materialized views and continuous aggregates
 ---
 
 Picture a filing cabinet for a school's homework, with one drawer per month. Looking for something handed in on 2 March? Open the March drawer and ignore the rest. At the end of the year, the school throws out last year's work by pulling out whole drawers and emptying them into the recycling bin — nobody goes through a single giant drawer pulling out old sheets one by one.
@@ -211,11 +211,11 @@ The BRIN index on the ordered table is 32 kB; the B-tree on `ts` is 35 MB. To wa
 On a large append-only table whose physical order correlates with the column, which is exactly time-ordered telemetry. It stores a summary per block range, so it is tiny compared with a B-tree and excellent for wide time-range scans.
 :::
 
-## Materialised views: answers computed ahead of time
+## Materialized views: answers computed ahead of time
 
 A dashboard shows one satellite's daily maximum bus temperature over ninety days, and redraws every thirty seconds. On the raw table that reads 129,600 rows every time, almost none of which changed since yesterday.
 
-A **view** (from the first SQL module) is a saved query that is re-run on every use. A **materialised view** is a saved query whose **result** is stored like a table, and re-computed only when you say so. The SQL keyword is spelled `MATERIALIZED`.
+A **view** (from the first SQL module) is a saved query that is re-run on every use. A **materialized view** is a saved query whose **result** is stored like a table, and re-computed only when you say so. The SQL keyword is spelled `MATERIALIZED`.
 
 ```sql
 CREATE MATERIALIZED VIEW telemetry_hourly AS
@@ -239,7 +239,7 @@ Check the row count: 10 satellites × 4 channels × 2160 hours (90 days × 24) $
  Execution Time: 260.366 ms
 ```
 
-**Materialised view**, with a unique index on `(sat_id, channel, hour)` and fresh statistics. The same question, now `max(max_value)` grouped by `date_trunc('day', hour)`:
+**Materialized view**, with a unique index on `(sat_id, channel, hour)` and fresh statistics. The same question, now `max(max_value)` grouped by `date_trunc('day', hour)`:
 
 ```text
  Sort  (actual time=0.836..0.840 rows=90 loops=1)
@@ -266,11 +266,11 @@ HINT:  Create a unique index with no WHERE clause on one or more columns of the 
 
 With `CREATE UNIQUE INDEX telemetry_hourly_key ON telemetry_hourly (sat_id, channel, hour);` it ran, in 1279.9 ms — slower than the plain refresh, but without blocking readers. Refreshes are usually scheduled, for example every five minutes with the **pg_cron** extension.
 
-::: key What a continuous aggregate or materialised view is for
+::: key What a continuous aggregate or materialized view is for
 Precomputing the per-minute or per-hour rollups that dashboards ask for, so a query touches thousands of rows instead of billions. The cost is refresh logic and a lag window you must state on the dashboard.
 :::
 
-::: warning A plain materialised view recomputes everything
+::: warning A plain materialized view recomputes everything
 Every `REFRESH` re-reads the whole source table, even if only the last five minutes changed. On 5 million rows that is under a second. On 3.8 trillion it is impossible. At fleet scale you need a rollup that updates only the time buckets that changed — which is what a continuous aggregate does.
 :::
 
@@ -286,7 +286,7 @@ SELECT create_hypertable('telemetry', 'ts', chunk_time_interval => INTERVAL '1 d
 
 New chunks are created automatically as data arrives, so there is no default-partition alarm to watch, and pruning works as you saw above.
 
-A **continuous aggregate** is a materialised view that refreshes **incrementally**: it tracks which time buckets have received new or changed rows and recomputes only those. It is declared like a materialised view, with `time_bucket` (from the windows module) in place of `date_trunc`, plus a policy that says when to refresh:
+A **continuous aggregate** is a materialized view that refreshes **incrementally**: it tracks which time buckets have received new or changed rows and recomputes only those. It is declared like a materialized view, with `time_bucket` (from the windows module) in place of `date_trunc`, plus a policy that says when to refresh:
 
 ```sql
 CREATE MATERIALIZED VIEW telemetry_hourly_ca
@@ -315,7 +315,7 @@ TimescaleDB is one of several time-series stores; lesson 13 compares it with Inf
 
 **1. Hot window in a row store.** Keep the most recent 7 days in PostgreSQL (or a hypertable), in narrow rows, **partitioned by day**. That is $7 \times 270.6 \approx 1894$ GB of table, about 1.9 TB, plus the indexes. Use a BRIN index on `ts` (kilobytes per partition) and one B-tree on `(sat_id, ts)` for "one satellite, recent hours" queries. The B-tree adds about 164 GB a day, so it earns its place only for queries that need it.
 
-**2. Rollups.** A per-minute rollup (count, min, max, mean per satellite) has $6000 \times 1440 = 8\,640\,000$ rows a day, 600 times fewer than the raw data, and $6.3 \times 10^9$ over two years. A per-hour rollup has $6000 \times 24 \times 730 = 105\,120\,000$ rows in all — small enough for any dashboard. Keep these for the whole two years, as continuous aggregates or scheduled materialised views.
+**2. Rollups.** A per-minute rollup (count, min, max, mean per satellite) has $6000 \times 1440 = 8\,640\,000$ rows a day, 600 times fewer than the raw data, and $6.3 \times 10^9$ over two years. A per-hour rollup has $6000 \times 24 \times 730 = 105\,120\,000$ rows in all — small enough for any dashboard. Keep these for the whole two years, as continuous aggregates or scheduled materialized views.
 
 **3. Retention by partition.** Each night, detach the day that has left the hot window, export it to the archive, and drop it. Never `DELETE`.
 
@@ -351,7 +351,7 @@ The rows are no longer stored in time order (a bulk reload in another order, or 
 :::
 
 ::: check
-A dashboard reads from a materialised view refreshed every 15 minutes, and each refresh takes 40 s. What is the oldest the data on the dashboard can be in the moment before a refresh finishes, and what should the dashboard say?
+A dashboard reads from a materialized view refreshed every 15 minutes, and each refresh takes 40 s. What is the oldest the data on the dashboard can be in the moment before a refresh finishes, and what should the dashboard say?
 :::
 
 ::: answer
@@ -369,8 +369,8 @@ The view shows data as of the moment the last refresh started. In the moment bef
 | Correlation | `pg_stats.correlation`, $-1$ to $+1$: physical order versus sorted order |
 | BRIN | tiny min/max per block range; useful only when correlation is near 1 |
 | CLUSTER | one-time rewrite in index order; exclusive lock; not maintained |
-| Materialised view | stored query result; `REFRESH` recomputes all; `CONCURRENTLY` needs a unique index |
-| Continuous aggregate | TimescaleDB's incrementally refreshed materialised view, with a stated lag |
+| Materialized view | stored query result; `REFRESH` recomputes all; `CONCURRENTLY` needs a unique index |
+| Continuous aggregate | TimescaleDB's incrementally refreshed materialized view, with a stated lag |
 | Fleet scale | $6000 \times 10 \times 63\,072\,000 \approx 3.8 \times 10^{12}$ samples in two years; about 271 GB of rows per day |
 
 The next lesson opens up the archive: why storing a table column by column makes it many times smaller, how a Parquet file is laid out, and how data gets into all of this, in batches or as a stream.

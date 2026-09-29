@@ -327,7 +327,7 @@ That pattern has a name, **[[RAII|raii-name]]**, short for "resource acquisition
 Every resource is owned by an object. Acquisition happens in the constructor and release in the destructor. Because destructors run automatically at scope exit, including during exception propagation, the resource cannot leak.
 :::
 
-"Exception propagation" means an error thrown with `throw` travelling up through the functions that called it. On the way up, C++ destroys every local object whose scope it leaves, so their destructors release what they own.
+"Exception propagation" means an error thrown with `throw` traveling up through the functions that called it. On the way up, C++ destroys every local object whose scope it leaves, so their destructors release what they own.
 
 RAII is what the rule of zero stands on: a `std::vector` member needs no help from you because `std::vector` is an RAII class somebody else already wrote. The next module builds your own.
 

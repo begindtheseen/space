@@ -4,7 +4,7 @@ title: "Framing your work with numbers: talks, resume and portfolio"
 minutes: 18
 covers:
   - "Framing self-taught projects as engineering results with numbers: RMSE, margins, run counts, solve times, not adjectives"
-  - "Resume and portfolio construction around artefacts that can be read: repositories, reports, plots"
+  - "Resume and portfolio construction around artifacts that can be read: repositories, reports, plots"
 ---
 
 Picture two ads for the same used bike. The first says: "Great bike, super fast, excellent condition." The second says: "Bought in 2023, ridden about 400 miles, new tires in May, one small scratch on the frame (photo attached)." You trust the second one, even though you have never met either seller. It gives you facts you could check. The first gives you only the seller's opinion.
@@ -65,7 +65,7 @@ print(f"worst of 10,000:   {r.max():.1f} m")
 ::: example A resume line, before and after
 **Before:** "Built a Kalman filter for spacecraft attitude estimation that improved performance significantly."
 
-**After:** "Reduced attitude estimation error from 0.8° to 0.2° RMS by modelling **[[gyro bias instability|gyro-bias]]** as an estimated state, verified over 2,000 dispersed Monte Carlo cases."
+**After:** "Reduced attitude estimation error from 0.8° to 0.2° RMS by modeling **[[gyro bias instability|gyro-bias]]** as an estimated state, verified over 2,000 dispersed Monte Carlo cases."
 
 What changed, piece by piece:
 

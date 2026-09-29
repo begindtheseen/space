@@ -3,7 +3,7 @@ id: l08-what-git-should-not-track
 title: "What Git should not track: .gitignore, .gitattributes and LFS"
 minutes: 23
 covers:
-  - .gitignore, .gitattributes, Git LFS for large binary artefacts
+  - .gitignore, .gitattributes, Git LFS for large binary artifacts
 ---
 
 Run orbit-sim a few times and look at the project folder. Python has left a `__pycache__` folder of compiled bytecode. The build step has made a `build/` folder. Every simulation run has written a CSV file into `out/`. There are log files. And someone has put a file called `.env` with an access token in it right at the top. `git status` lists all of it as untracked, and one careless `git add .` would commit the lot — including the secret.
@@ -109,7 +109,7 @@ git check-ignore -v out/keep.md
 
 The rule `out/` ignored the *folder*. When a folder is ignored, Git does not even look inside it, so it never reaches the `!out/keep.md` line — you cannot un-ignore a file whose parent folder is ignored.
 
-The fix is `out/*`: "ignore everything *inside* `out`". Now Git does look in the folder, sees each file, and the negation can rescue `keep.md`. With the fixed rules, `git check-ignore -v out/keep.md` reports the rescuing line, `.gitignore:10:!out/keep.md`, and `git status` lists `out/keep.md` as untracked, ready to add. **Check:** two ways of writing "ignore out", two different behaviours, and `check-ignore -v` told us which line did it both times.
+The fix is `out/*`: "ignore everything *inside* `out`". Now Git does look in the folder, sees each file, and the negation can rescue `keep.md`. With the fixed rules, `git check-ignore -v out/keep.md` reports the rescuing line, `.gitignore:10:!out/keep.md`, and `git status` lists `out/keep.md` as untracked, ready to add. **Check:** two ways of writing "ignore out", two different behaviors, and `check-ignore -v` told us which line did it both times.
 :::
 
 ::: warning `.gitignore` does nothing to files Git already tracks
@@ -180,7 +180,7 @@ Notice what `binary` really is: a shorthand that turns off three things at once 
 
 Every line of a text file ends with an invisible **[[line-ending|line-endings]]** character. Linux and macOS use one byte, LF ("line feed"). Windows traditionally uses two, CR LF ("carriage return, line feed"). If half a team is on Windows, a file can flip between the two on every commit, and `git diff` shows every single line as changed.
 
-- **`text`** marks a file as text. Git stores it in the repository with LF endings (this is **normalisation**) and may convert to the local style when writing it into your working tree.
+- **`text`** marks a file as text. Git stores it in the repository with LF endings (this is **normalization**) and may convert to the local style when writing it into your working tree.
 - **`text=auto`** lets Git guess which files are text; binary-looking files are left alone.
 - **`eol=lf`** (or `eol=crlf`) forces the ending in the working tree, whatever the machine. Shell scripts need `eol=lf`: a script saved with CR LF fails on Linux with a baffling "bad interpreter" error, because the first line then asks for a program named `/bin/sh` followed by an invisible carriage return.
 
@@ -223,10 +223,10 @@ There are no conflict markers to edit. Git has left Maya's file in place and sto
 **Check the result.** After taking Ravi's side and committing, the model inside the zip reads `Value="0.95"`: Ravi's gain, whole and valid. Maya's 0.70 is gone from the tip. Nothing was blended.
 :::
 
-This is why aerospace teams do not *resolve* concurrent edits to model files; they *prevent* them. A model or a CAD part cannot be three-way merged — the "two sides plus common ancestor" merge of lesson 05 has nothing meaningful to work line by line — so only one person may edit it at a time. Teams mark such files **binary** and **lockable** (the LFS locking feature below), assign each model an owner, and compare versions with the modelling tool's own [[comparison tool|model-comparison]] rather than with `git diff`.
+This is why aerospace teams do not *resolve* concurrent edits to model files; they *prevent* them. A model or a CAD part cannot be three-way merged — the "two sides plus common ancestor" merge of lesson 05 has nothing meaningful to work line by line — so only one person may edit it at a time. Teams mark such files **binary** and **lockable** (the LFS locking feature below), assign each model an owner, and compare versions with the modeling tool's own [[comparison tool|model-comparison]] rather than with `git diff`.
 
 ::: key What `.gitattributes` controls that `.gitignore` does not
-Per-path behaviour for tracked files: text vs binary, end-of-line normalisation, diff and merge drivers, and which paths go through Git LFS. It is how teams stop Git from trying to text-merge a Simulink .slx or a CAD part file.
+Per-path behavior for tracked files: text vs binary, end-of-line normalization, diff and merge drivers, and which paths go through Git LFS. It is how teams stop Git from trying to text-merge a Simulink .slx or a CAD part file.
 :::
 
 ::: warning Adding `text` rules to an old repository
@@ -354,8 +354,8 @@ The file is tracked through Git LFS, and their machine did not have `git-lfs` in
 | `git check-ignore -v path` | which rule ignores a path |
 | `git rm --cached file` | stop tracking a file but keep it on disk |
 | `.git/info/exclude`, `core.excludesFile` | personal ignore rules, never committed |
-| `.gitattributes` | per-path behaviour for tracked files |
-| `text`, `text=auto`, `eol=lf` | treat as text, normalise to LF, force the working-tree ending |
+| `.gitattributes` | per-path behavior for tracked files |
+| `text`, `text=auto`, `eol=lf` | treat as text, normalize to LF, force the working-tree ending |
 | `binary` | shorthand for `-diff -merge -text`: no text diff, no text merge |
 | `git check-attr -a path` | which attributes apply to a path |
 | Git LFS | pointer file in Git, payload on an LFS server; `git lfs track`, `git lfs lock` |
@@ -395,7 +395,7 @@ The two line-ending characters are named after typewriters and teleprinters. **C
 :::
 
 ::: context model-comparison Comparing models without text diffs
-Because a text diff of a model file is useless, modelling tools ship their own comparison. MathWorks' Simulink has a model comparison tool that opens two versions side by side and highlights changed blocks, lines and parameter values in the diagram itself. CAD systems have similar "compare parts" features. Many teams configure Git to launch these tools with a custom diff driver in `.gitattributes`, so that `git difftool` on a `.slx` file opens the graphical comparison instead of printing "Binary files differ".
+Because a text diff of a model file is useless, modeling tools ship their own comparison. MathWorks' Simulink has a model comparison tool that opens two versions side by side and highlights changed blocks, lines and parameter values in the diagram itself. CAD systems have similar "compare parts" features. Many teams configure Git to launch these tools with a custom diff driver in `.gitattributes`, so that `git difftool` on a `.slx` file opens the graphical comparison instead of printing "Binary files differ".
 :::
 
 ::: context golden-telemetry What "golden" means here

@@ -73,7 +73,7 @@ So the goal is not constant time, which is rarely possible and rarely needed. Th
 - no path waits on something outside with no time limit;
 - the worst case over every path is a number you can write down before the code runs.
 
-Lesson eight builds on exactly this. Flight code bans the heap so memory behaviour can be analyzed. It bans recursion and unbounded loops so the order of steps can be analyzed. And it watches the **[[cache|cache]]** and the branch predictor, because those two are the usual reasons a loop that *looks* bounded takes an unpredictable time in practice.
+Lesson eight builds on exactly this. Flight code bans the heap so memory behavior can be analyzed. It bans recursion and unbounded loops so the order of steps can be analyzed. And it watches the **[[cache|cache]]** and the branch predictor, because those two are the usual reasons a loop that *looks* bounded takes an unpredictable time in practice.
 
 ## Worst-case execution time
 
@@ -101,9 +101,9 @@ $$
 \bar{C} = \frac{2.1+1.9+2.0+2.2+1.8+12.4+2.0}{7} = \frac{24.4}{7} \approx 3.49\,\mathrm{ms}.
 $$
 
-(Read $\bar{C}$ as "C bar", the mean execution time.) The **utilisation** — the fraction of the frame the task uses — would be $3.49 / 10 \approx 0.349$, about a third. Looks comfortable.
+(Read $\bar{C}$ as "C bar", the mean execution time.) The **utilization** — the fraction of the frame the task uses — would be $3.49 / 10 \approx 0.349$, about a third. Looks comfortable.
 
-**Step 2: the worst sample.** The largest time is $12.4\,\mathrm{ms}$. Its utilisation is $12.4 / 10 = 1.24$. That one cycle needed $124\%$ of the frame. It cannot fit, no matter what else runs.
+**Step 2: the worst sample.** The largest time is $12.4\,\mathrm{ms}$. Its utilization is $12.4 / 10 = 1.24$. That one cycle needed $124\%$ of the frame. It cannot fit, no matter what else runs.
 
 **Sanity check:** the worst case is more than three times the mean, and bigger than the frame. The mean hid it completely.
 
@@ -111,7 +111,7 @@ Seven samples do not prove the true worst case is $12.4\,\mathrm{ms}$ — a long
 :::
 
 ::: warning
-Timing a task and reporting the mean, or even the 99th percentile, is not a WCET measurement. It describes typical behaviour, and a hard deadline does not care about typical behaviour. A rare branch, a cold cache line, a page of memory untouched since startup: each is invisible to a short test, and each can turn a comfortable mean into a missed deadline on the thousandth day of the mission.
+Timing a task and reporting the mean, or even the 99th percentile, is not a WCET measurement. It describes typical behavior, and a hard deadline does not care about typical behavior. A rare branch, a cold cache line, a page of memory untouched since startup: each is invisible to a short test, and each can turn a comfortable mean into a missed deadline on the thousandth day of the mission.
 :::
 
 ## Jitter
@@ -140,7 +140,7 @@ A task meant to run at $100\,\mathrm{Hz}$ writes down its own wake-up time every
 - The largest single deviation is $0.4\,\mathrm{ms}$. That says how far any one cycle strayed.
 - The peak-to-peak spread of the periods is $10.3 - 9.6 = 0.7\,\mathrm{ms}$. That says how much the period itself swings — the number a control-margin calculation needs, because a fixed-delay model cannot capture a swing.
 
-**Sanity check:** the average period is $(39.9 - 0.0)/4 \approx 9.98\,\mathrm{ms}$, almost exactly nominal. The average would have hidden all of the jitter. Five samples cannot bound a real system, but the recipe is the same at any size: log every wake-up, subtract neighbours, and report the spread, not the average.
+**Sanity check:** the average period is $(39.9 - 0.0)/4 \approx 9.98\,\mathrm{ms}$, almost exactly nominal. The average would have hidden all of the jitter. Five samples cannot bound a real system, but the recipe is the same at any size: log every wake-up, subtract neighbors, and report the spread, not the average.
 :::
 
 ## Check yourself
@@ -205,7 +205,7 @@ A single "maximum deviation" figure can come out about the same for both. Over a
 | How WCET is found | Measurement over adversarial cases, reconciled with static analysis of loops and paths |
 | Jitter | Variation in a periodic task's actual period or start time |
 
-Next lesson: many tasks share one processor. You will meet the first tool that turns "every deadline is met" from a hope into a proof — rate-monotonic priorities and a one-line utilisation test — and see exactly where that test stops being enough.
+Next lesson: many tasks share one processor. You will meet the first tool that turns "every deadline is met" from a hope into a proof — rate-monotonic priorities and a one-line utilization test — and see exactly where that test stops being enough.
 
 ::: context tvc Steering by tilting the engine
 A rocket has no air to push against for most of its flight, so fins do little. Instead it steers by tilting its engine a few degrees on a pivot called a gimbal. Pointing the push slightly off-center makes the rocket turn, the way pushing a shopping cart from one corner swings it around. Two actuators — powerful electric or hydraulic pistons — do the tilting, and a computer loop tells them where to go many times a second. That loop is the classic hard real-time task.
@@ -308,7 +308,7 @@ A feedback loop is stable with room to spare when its corrections do not arrive 
 :::
 
 ::: context jitter-picture Reading jitter off a timeline
-Grey ticks show where the wake-ups should be, every $10\,\mathrm{ms}$. The blue bars below show how far each measured period missed nominal, drawn to scale on a much larger axis so they can be seen.
+Gray ticks show where the wake-ups should be, every $10\,\mathrm{ms}$. The blue bars below show how far each measured period missed nominal, drawn to scale on a much larger axis so they can be seen.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">

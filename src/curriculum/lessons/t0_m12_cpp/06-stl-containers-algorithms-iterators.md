@@ -20,7 +20,7 @@ The big difference from Python: in C++, each container is also a *memory decisio
 
 ## Containers, and where their memory lives
 
-| Container | Python analogue | Where the items live | Hot-loop status |
+| Container | Python analog | Where the items live | Hot-loop status |
 | --- | --- | --- | --- |
 | `std::array` | fixed-length tuple | inline, size in the type | allowed |
 | `std::span` | slice or memoryview | nowhere — a view of someone else's | allowed |
@@ -92,7 +92,7 @@ The sizes tell the memory story. The array is $4 \times 8 = 32$ bytes: its items
 
 **`std::accumulate`**, from the `<numeric>` header, adds up a range starting from a first value. The *type* of that first value decides the arithmetic, so the `0.0` matters. With `0`, the sum would be done in whole numbers and the decimals thrown away.
 
-The `try`/`catch` at the end is the C++ exception mechanism, shown once so you recognise it. Lesson 8 explains why flight code is built with exceptions turned off. Then `.at()` out of range stops the program instead. In the loop, you check the index yourself and use `[]`.
+The `try`/`catch` at the end is the C++ exception mechanism, shown once so you recognize it. Lesson 8 explains why flight code is built with exceptions turned off. Then `.at()` out of range stops the program instead. In the loop, you check the index yourself and use `[]`.
 :::
 
 ### std::vector and how it grows
@@ -150,7 +150,7 @@ Count the cost. Twenty pushes caused six allocations. Each move copied every ite
 :::
 
 ::: warning Growing a vector while you walk it
-Anything that can reallocate a `std::vector` — `push_back`, `insert`, `resize` past capacity — invalidates every reference, pointer and iterator into it. So `for (auto& x : v) { if (cond(x)) v.push_back(x); }` is undefined behaviour the moment a push reallocates: the loop's iterators now point into freed memory. Collect the additions in a second container, or `reserve` enough room first.
+Anything that can reallocate a `std::vector` — `push_back`, `insert`, `resize` past capacity — invalidates every reference, pointer and iterator into it. So `for (auto& x : v) { if (cond(x)) v.push_back(x); }` is undefined behavior the moment a push reallocates: the loop's iterators now point into freed memory. Collect the additions in a second container, or `reserve` enough room first.
 :::
 
 ## Iterators
@@ -360,7 +360,7 @@ int main() {
 The last name in the enum, `Count`, is a trick: its value is the number of real entries (here 3), so the array's size updates itself when a name is added.
 
 ::: key Containers are memory decisions
-Every STL container is a memory decision. `std::array` stores its elements inline with the size in the type; `std::span` views contiguous elements it does not own; `std::vector` owns a heap block and reallocates when it grows, invalidating all references into it. Fixed-size containers and views may appear in a control loop; growable and node-based containers are sized at initialisation and never modified afterwards.
+Every STL container is a memory decision. `std::array` stores its elements inline with the size in the type; `std::span` views contiguous elements it does not own; `std::vector` owns a heap block and reallocates when it grows, invalidating all references into it. Fixed-size containers and views may appear in a control loop; growable and node-based containers are sized at initialization and never modified afterwards.
 :::
 
 ::: key Algorithms and ranges
@@ -380,7 +380,7 @@ A colleague proposes `std::vector` for the six-number vehicle state because "it 
 :::
 
 ::: check
-This loop is undefined behaviour: `for (const auto& s : samples) { if (s > threshold) samples.push_back(s * 2.0); }`, where `samples` is a `std::vector`. Explain exactly when it goes wrong.
+This loop is undefined behavior: `for (const auto& s : samples) { if (s > threshold) samples.push_back(s * 2.0); }`, where `samples` is a `std::vector`. Explain exactly when it goes wrong.
 :::
 
 ::: answer

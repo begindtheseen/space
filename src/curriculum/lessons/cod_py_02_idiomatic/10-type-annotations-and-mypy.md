@@ -358,7 +358,7 @@ python3 newtype_units.py
 
 The last call swapped altitude and terrain, both plain floats, and got a clearance of $-5820\,\mathrm{m}$: the aircraft is apparently far underground. mypy reported nothing, because both arguments are floats and that is all the labels said.
 
-**`NewType`** makes a new name for an existing type that the checker treats as different. `Metres` and `Feet` are both ordinary floats while the program runs — the second call happily computed $8420 - 9100 = -680$, mixing units. But to mypy they are distinct, so mixing them was the one error it did report. Use it for the quantities your project really does **[[confuse in practice|unit-mixups]]**: metres against feet, radians against degrees, body frame against inertial frame.
+**`NewType`** makes a new name for an existing type that the checker treats as different. `Metres` and `Feet` are both ordinary floats while the program runs — the second call happily computed $8420 - 9100 = -680$, mixing units. But to mypy they are distinct, so mixing them was the one error it did report. Use it for the quantities your project really does **[[confuse in practice|unit-mixups]]**: meters against feet, radians against degrees, body frame against inertial frame.
 :::
 
 ## Running mypy on a real module
@@ -462,7 +462,7 @@ Both arguments are floats, so passing them in the wrong order is a perfectly val
 
 `Metres = NewType("Metres", float)` gives the checker a distinct type while staying a plain `float` at runtime. `Metres(8420.0)` hands back the same float it was given, and arithmetic on it is ordinary float arithmetic at full speed. The cost is one small function call wherever a value is created, and the discipline of writing `Metres(...)` when a raw number enters the typed part of the code.
 
-Use it where the confusion is real and keeps happening — metres and feet, radians and degrees, seconds and milliseconds, body frame and inertial frame. Do not put it on every parameter, or the clutter will cost more than the errors it prevents.
+Use it where the confusion is real and keeps happening — meters and feet, radians and degrees, seconds and milliseconds, body frame and inertial frame. Do not put it on every parameter, or the clutter will cost more than the errors it prevents.
 :::
 
 ## Summary

@@ -13,8 +13,8 @@ it.
 **Every coding course and nearly every module is now in plain words.** The last courses, C++
 expert and C++ projects, are rewritten one idea at a time with notes in every lesson, and their
 examples never hand you the answer. The career modules (recruiter screens, the project
-presentation, the domain round, first-principles questions and behavioural stories), the rest of
-guidance and trajectory optimisation, the capstone, interview prep and the Simulink modules are
+presentation, the domain round, first-principles questions and behavioral stories), the rest of
+guidance and trajectory optimization, the capstone, interview prep and the Simulink modules are
 rewritten too, with context notes throughout. Four lessons on proportional navigation keep their
 original text for now.
 

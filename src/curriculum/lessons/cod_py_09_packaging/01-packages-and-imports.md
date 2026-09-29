@@ -183,7 +183,7 @@ AttributeError: module 'config' has no attribute 'load'
 The import *succeeded*. Python found a folder, made an empty namespace package out of it, and the error only showed up one line later. On a machine where the real `config` module is installed, the real one wins, because a regular module beats namespace portions. So the bug appears only on some machines, and it points at the wrong line. That is what "baffling" looks like in practice.
 
 ::: key
-Why write `__init__.py` explicitly? It marks a regular package, controls what the package exports, and avoids ambiguity with implicit namespace packages, which silently merge directories and produce baffling import behaviour in a large **[[monorepo|monorepo]]**.
+Why write `__init__.py` explicitly? It marks a regular package, controls what the package exports, and avoids ambiguity with implicit namespace packages, which silently merge directories and produce baffling import behavior in a large **[[monorepo|monorepo]]**.
 :::
 
 So the rule of thumb is short. Give every folder of your own package an `__init__.py`. Use a namespace package only when you really mean "one name, many separately installed pieces" — a company-wide `acme.` prefix shared by dozens of independently released libraries is the classic case.

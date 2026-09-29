@@ -24,7 +24,7 @@ Counted r = make();
 
 Read by the C++14 rules, two things happen after `Counted{}` is built. First, it is moved into a temporary object, the function's return value. Second, that temporary is moved into `r`. Two moves, like the two truck trips.
 
-The C++98 and C++14 standards **allowed** compilers to skip both, and every serious compiler did, an optimisation called **[[return value optimisation|rvo-history]]**, or RVO. But it was only *allowed*. So the language still insisted that the move constructor (or copy constructor) exist and be accessible, in case some compiler did not skip it. A class whose copy and move were both deleted could not be returned by value at all, even though no compiler would ever have called them.
+The C++98 and C++14 standards **allowed** compilers to skip both, and every serious compiler did, an optimization called **[[return value optimization|rvo-history]]**, or RVO. But it was only *allowed*. So the language still insisted that the move constructor (or copy constructor) exist and be accessible, in case some compiler did not skip it. A class whose copy and move were both deleted could not be returned by value at all, even though no compiler would ever have called them.
 
 GCC and Clang have a flag that turns the optional skipping off: `-fno-elide-constructors`. With it you can see the paper story. Compiled as C++14 with that flag, the `make()` above performs exactly 2 moves. Keep that number; you will see it again in a table.
 
@@ -38,11 +38,11 @@ Every expression has a **[[value category|value-category]]**, which says what ki
 - An **xvalue** ("expiring value") is an object you are allowed to steal from, like `std::move(r)`.
 - A **prvalue** ("pure rvalue") is a value with no home yet, like `Counted{}`, `3 + 4`, or the call `make()` when `make` returns by value.
 
-Before C++17, a prvalue of class type was a temporary object that already existed somewhere. Since C++17 it is not an object at all. It is a **recipe**: "here is how to initialise a `Counted`". Nothing is built until the recipe lands in the place where the object will live. Only if there is no such place — say, you bind the prvalue to a `const&` — does the compiler make a temporary to hold it, a step the standard calls **[[temporary materialisation|materialisation]]**.
+Before C++17, a prvalue of class type was a temporary object that already existed somewhere. Since C++17 it is not an object at all. It is a **recipe**: "here is how to initialize a `Counted`". Nothing is built until the recipe lands in the place where the object will live. Only if there is no such place — say, you bind the prvalue to a `const&` — does the compiler make a temporary to hold it, a step the standard calls **[[temporary materialization|materialisation]]**.
 
 So the rule is:
 
-> When an object is initialised from a prvalue of the same type, the prvalue initialises that object directly. There is no intermediate object, so there is no copy or move to skip.
+> When an object is initialized from a prvalue of the same type, the prvalue initializes that object directly. There is no intermediate object, so there is no copy or move to skip.
 
 That is why people say "guaranteed copy elision", even though the standard's own wording is stronger: there is nothing left to elide. It covers:
 
@@ -114,7 +114,7 @@ el1.cpp:22:28: error: use of deleted function 'ImuPort::ImuPort(ImuPort&&)'
 
 Two errors, one for each of the two moves the C++14 rules describe on paper: into the return value, and from it into `imu`. C++17 removed both from the rules, so the deleted move no longer matters.
 
-Sanity check: nothing in the program calls a move, and in C++17 it runs; in C++14 it is rejected for moves that no optimising compiler would ever have performed. That gap is exactly what C++17 closed.
+Sanity check: nothing in the program calls a move, and in C++17 it runs; in C++14 it is rejected for moves that no optimizing compiler would ever have performed. That gap is exactly what C++17 closed.
 :::
 
 The same rule rescues standard types that cannot move. `std::atomic<int> a = 0;` is an error in C++14 (`use of deleted function 'std::atomic<int>::atomic(const std::atomic<int>&)'`) and fine in C++17. A struct holding a `std::mutex` can be returned from a factory with `return Guarded{{}, 42};` in C++17, and not before.
@@ -131,7 +131,7 @@ Matrix6 propagate(const Matrix6& P, const Matrix6& F) {
 }
 ```
 
-`out` is an lvalue, not a prvalue, so the C++17 guarantee does not cover it. Compilers may still build `out` directly in the caller's return slot. That is **named return value optimisation**, **NRVO**, and it remains *allowed but not required*.
+`out` is an lvalue, not a prvalue, so the C++17 guarantee does not cover it. Compilers may still build `out` directly in the caller's return slot. That is **named return value optimization**, **NRVO**, and it remains *allowed but not required*.
 
 When NRVO does not happen, the language has a second safety net. In a `return` statement, a local variable (or a by-value parameter) is treated first as if it were an rvalue, so the **move** constructor is chosen if there is one. C++20 and C++23 widened this "implicit move" to a few more cases, but neither made NRVO mandatory. So returning a named local costs zero moves with NRVO, one move without it, and a copy only when the type cannot move at all.
 
@@ -185,7 +185,7 @@ Built three ways with g++ 13 (`-Wall -Wextra -O2` each time; the C++14 build als
 | e std::move | 0, 1 move | 0, 1 move | 0, 2 moves |
 | f ternary | 1 copy, 0 | 1 copy, 0 | 1 copy, 1 move |
 
-(The plain C++17 column is the same at `-O0`, and clang++ 18 gives the same numbers: elision is not an optimisation-level thing.) Every build also printed one warning, about case e:
+(The plain C++17 column is the same at `-O0`, and clang++ 18 gives the same numbers: elision is not an optimization-level thing.) Every build also printed one warning, about case e:
 
 ```text
 el2.cpp:16:61: warning: moving a local object in a return statement prevents copy elision [-Wpessimizing-move]
@@ -197,7 +197,7 @@ Case by case:
 - **b.** One named local, returned on every path. g++ does NRVO: zero. Turn optional elision off and the implicit move shows up: one move, never a copy.
 - **c.** Two locals, and which one is returned depends on `f`. The compiler cannot build both in the one return slot, so NRVO is off; the implicit move gives 1 move.
 - **d.** A by-value parameter. The *caller* built `p` before the function started, so the function cannot choose where it lives. Never elided; implicitly moved: 1 move.
-- **e.** `return std::move(s);` The expression is now an xvalue, not the name of a local, so NRVO is forbidden, and you get 1 move where case b got 0. The "optimisation" made it worse, and `-Wall` says so.
+- **e.** `return std::move(s);` The expression is now an xvalue, not the name of a local, so NRVO is forbidden, and you get 1 move where case b got 0. The "optimization" made it worse, and `-Wall` says so.
 - **f.** `return f ? x : y;` The conditional expression is an lvalue that is neither `x` nor `y` by name, so there is no implicit move: 1 **[[copy|ternary-copy]]**. Write `if (f) return x; return y;` and it becomes case c, a move.
 
 Sanity check: across the whole table the only copy is case f, and the only extra moves in C++17 are cases where NRVO was impossible or blocked. Nothing ever costs more than one operation in C++17, which matches the rules above.
@@ -269,10 +269,10 @@ check: y[0] = 1.5
 Step by step:
 
 1. **The size.** $131072 \times 8 = 1\,048\,576$ bytes, as computed above.
-2. **Where it was built.** `new State(propagate(0.5))` initialises the heap object from a prvalue, the call. So the heap memory is the return slot. Inside `propagate`, g++ applied NRVO and built `s` *in that heap memory*: the address recorded inside the function equals `x`. Zero bytes were copied to return a megabyte.
+2. **Where it was built.** `new State(propagate(0.5))` initializes the heap object from a prvalue, the call. So the heap memory is the return slot. Inside `propagate`, g++ applied NRVO and built `s` *in that heap memory*: the address recorded inside the function equals `x`. Zero bytes were copied to return a megabyte.
 3. **The values.** Element 10 is $0.5 + 10 = 10.5$. Correct.
 4. **The price of not eliding.** The timing loop copies 1 MiB a thousand times. On this machine one copy took about 42 microseconds; it varies with the machine and from run to run (three runs gave 39 to 42). A 1 kHz control cycle has 1000 microseconds in total, so one stray copy would eat about 4% of it on a fast desktop, and far more on a slower flight processor.
-5. **The check line.** `y[0]` is $0.5 + 1 = 1.5$, because the first pass of the loop added 1 to `x[0]` after copying, and later passes copied that. It is printed so the optimiser must keep the copies.
+5. **The check line.** `y[0]` is $0.5 + 1 = 1.5$, because the first pass of the loop added 1 to `x[0]` after copying, and later passes copied that. It is printed so the optimizer must keep the copies.
 
 Build the same file with `-fno-elide-constructors` and the second line becomes `built in place: no`: without NRVO, `s` is built in the function's own frame and then "moved" — for a `std::array`, copied — into the heap object.
 :::
@@ -344,7 +344,7 @@ The vector's move hands over its three internal pointers, 24 bytes, no matter ho
 | Idea | Meaning | Rule or fact |
 |---|---|---|
 | Copy elision | leaving out a copy or move | since C++98 allowed; since C++17 required for prvalues |
-| prvalue | a recipe, not yet an object | `T{...}`, `f()` returning `T`; initialises its final object directly |
+| prvalue | a recipe, not yet an object | `T{...}`, `f()` returning `T`; initializes its final object directly |
 | Guaranteed elision | `return T{...};`, `T x = f();` | zero copies, zero moves; type need not be movable |
 | NRVO | eliding `return local;` | allowed, not required; falls back to an implicit move |
 | No NRVO possible | two locals, a parameter | one move |
@@ -353,14 +353,14 @@ The vector's move hands over its three internal pointers, 24 bytes, no matter ho
 | In-object data | `std::array`, fixed `Matrix` | move = copy; 1 MiB copy about 40 µs on one machine |
 | `-fno-elide-constructors` | turn off optional elision | shows NRVO's absence; cannot touch prvalue elision |
 
-Next lesson is C++20, the biggest update since C++11: concepts, ranges, `std::span`, `std::format`, the spaceship operator and designated initialisers, with a first look at modules and coroutines.
+Next lesson is C++20, the biggest update since C++11: concepts, ranges, `std::span`, `std::format`, the spaceship operator and designated initializers, with a first look at modules and coroutines.
 
 ::: context rvo-history RVO is older than you might think
-Compilers were allowed to skip the copy on return from the first standard, C++98, and the idea is older still. What C++17 changed was not the optimisation but the rules: the program no longer needs a copy or move constructor that is never called. The proposal that did it, P0135, is titled "Wording for guaranteed copy elision through simplified value categories", which describes the trick: redefine prvalues, and the copies vanish from the rules.
+Compilers were allowed to skip the copy on return from the first standard, C++98, and the idea is older still. What C++17 changed was not the optimization but the rules: the program no longer needs a copy or move constructor that is never called. The proposal that did it, P0135, is titled "Wording for guaranteed copy elision through simplified value categories", which describes the trick: redefine prvalues, and the copies vanish from the rules.
 :::
 
 ::: context value-category The value-category family tree
-Every expression is exactly one of three leaf kinds. The two middle words group them: a **glvalue** ("generalised lvalue") has an identity, a place in memory; an **rvalue** may be moved from.
+Every expression is exactly one of three leaf kinds. The two middle words group them: a **glvalue** ("generalized lvalue") has an identity, a place in memory; an **rvalue** may be moved from.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
@@ -386,7 +386,7 @@ The xvalue sits under both: it has a home, and you may steal from it.
 :::
 
 ::: context materialisation When a recipe must become a thing
-A prvalue stays a recipe until something needs an actual object. Binding it to a reference (`const T& r = make();`), calling a member function on it (`make().size()`), or throwing it away as a statement (`make();`) all need one. At that point the compiler creates a temporary and runs the recipe into it: the temporary materialisation conversion. When the prvalue is used to initialise a `T`, no temporary is ever needed.
+A prvalue stays a recipe until something needs an actual object. Binding it to a reference (`const T& r = make();`), calling a member function on it (`make().size()`), or throwing it away as a statement (`make();`) all need one. At that point the compiler creates a temporary and runs the recipe into it: the temporary materialization conversion. When the prvalue is used to initialize a `T`, no temporary is ever needed.
 :::
 
 ::: context return-slot The hidden address

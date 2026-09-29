@@ -179,7 +179,7 @@ Called on a `const HeapMatrix3 m`, it printed `m(0,0) = 42.0`. The by-value `Mat
 A member function can also be **overloaded on `const`**: two versions with the same name, one `const` and one not. The compiler picks the `const` one for `const` objects. The `Matrix3` in lesson 07 did this with `at`: the non-`const` version returns `double&` so you can write through it, and the `const` version returns a plain `double` copy. Lesson 09 uses the same trick for `operator[]` and `operator()`.
 
 ::: warning Do not cast const away to "fix" an error
-`const_cast<T&>(x)` removes `const`. If the object was *created* `const` — say `const Matrix3 kIdentity = ...;` — and you write through the result, the behaviour is undefined: the compiler may have put the object in read-only memory or assumed it never changes. If a const-correctness error appears, fix the design: add the missing `const` to the function, or pass a non-`const` reference. Cast only when you are calling an old C function that forgot a `const` and you know it does not write.
+`const_cast<T&>(x)` removes `const`. If the object was *created* `const` — say `const Matrix3 kIdentity = ...;` — and you write through the result, the behavior is undefined: the compiler may have put the object in read-only memory or assumed it never changes. If a const-correctness error appears, fix the design: add the missing `const` to the function, or pass a non-`const` reference. Cast only when you are calling an old C function that forgot a `const` and you know it does not write.
 :::
 
 ## static members: one for the whole class
@@ -260,7 +260,7 @@ A counter is a kind of resource, and managing it by hand dragged the class into 
 :::
 
 ::: warning A static member is a global in disguise
-`live_` is one variable shared by every `Track` in the program. If two threads create tracks at once, both can read `live_` as 5 and both write 6 — a **data race**, which is undefined behaviour. Use `inline static std::atomic<int> live_{0};` if more than one thread touches it. More broadly, flight coding standards treat mutable static state with the same suspicion as [[any global variable|static-global]]. Static *constants* and static *functions* are harmless; static *variables* need a reason.
+`live_` is one variable shared by every `Track` in the program. If two threads create tracks at once, both can read `live_` as 5 and both write 6 — a **data race**, which is undefined behavior. Use `inline static std::atomic<int> live_{0};` if more than one thread touches it. More broadly, flight coding standards treat mutable static state with the same suspicion as [[any global variable|static-global]]. Static *constants* and static *functions* are harmless; static *variables* need a reason.
 :::
 
 ## friend: a key for a trusted outsider
@@ -317,7 +317,7 @@ A `Quaternion` class has `double norm() const` and `void normalize()`. A functio
 :::
 
 ::: answer
-`q.normalize()` fails. `q` is a `const Quaternion&`, so only `const` member functions may be called on it, and `normalize()` is not `const` — it changes the four components. g++ reports `passing 'const Quaternion' as 'this' argument discards qualifiers`: calling it would need a non-const `this`. `q.norm()` is fine. The right fix is in the design, not a cast: a logging function should not change what it logs, so remove the `normalize()` call (normalise where the quaternion is updated, not where it is printed). If the function truly must change it, take `Quaternion&` and rename it so that callers know.
+`q.normalize()` fails. `q` is a `const Quaternion&`, so only `const` member functions may be called on it, and `normalize()` is not `const` — it changes the four components. g++ reports `passing 'const Quaternion' as 'this' argument discards qualifiers`: calling it would need a non-const `this`. `q.norm()` is fine. The right fix is in the design, not a cast: a logging function should not change what it logs, so remove the `normalize()` call (normalize where the quaternion is updated, not where it is printed). If the function truly must change it, take `Quaternion&` and rename it so that callers know.
 :::
 
 ::: check
@@ -349,7 +349,7 @@ A class has `static std::array<double, 1000> scratch_;` used by one of its membe
 :::
 
 ::: answer
-A static data member is one array for the whole class, so the two objects, used by two tasks, share the same `scratch_`. If both tasks run the function at overlapping times, they write into the same array — a data race, undefined behaviour, and in practice one task's intermediate results overwritten by the other's. The single-threaded simulator could never show it. Fix: make `scratch_` an ordinary member, so each object owns its own 8,000 bytes, or pass a work buffer in.
+A static data member is one array for the whole class, so the two objects, used by two tasks, share the same `scratch_`. If both tasks run the function at overlapping times, they write into the same array — a data race, undefined behavior, and in practice one task's intermediate results overwritten by the other's. The single-threaded simulator could never show it. Fix: make `scratch_` an ordinary member, so each object owns its own 8,000 bytes, or pass a work buffer in.
 :::
 
 ## Summary
@@ -392,7 +392,7 @@ A **mutex** (short for "mutual exclusion") works like a talking stick in a group
 :::
 
 ::: context const-thread-safe const and threads
-The C++ standard library promises that calling its `const` member functions on the same object from several threads at once is safe, as long as nobody calls a non-`const` one at the same time. It expects the same of your types when they are used with it. A class whose `const` functions quietly write to a cache without a lock breaks that expectation, and the resulting data race is undefined behaviour even though every function "looked" read-only.
+The C++ standard library promises that calling its `const` member functions on the same object from several threads at once is safe, as long as nobody calls a non-`const` one at the same time. It expects the same of your types when they are used with it. A class whose `const` functions quietly write to a cache without a lock breaks that expectation, and the resulting data race is undefined behavior even though every function "looked" read-only.
 :::
 
 ::: context static-storage One counter, many objects

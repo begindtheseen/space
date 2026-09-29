@@ -176,7 +176,7 @@ Compute the residues by cover-up.
 
 The DC gain is $50(4.2)/(4 \times 5 \times 60) = 210/1200 = 0.175$.
 
-So the pole at $-4$ is nearly cancelled by the zero at $-4.2$ and carries little. The pole at $-60$ is both fast and small. The dominant mode is the one at $-5$.
+So the pole at $-4$ is nearly canceled by the zero at $-4.2$ and carries little. The pole at $-60$ is both fast and small. The dominant mode is the one at $-5$.
 
 A defensible reduced model that keeps the DC gain is $G_{\text{red}}(s) = 0.175/(1 + s/5) = 0.875/(s + 5)$: a first-order lag with a $0.2\,\mathrm{s}$ time constant. Check it against the full step response before trusting it, and do not use it above about $1\,\mathrm{rad/s}$.
 :::
@@ -214,7 +214,7 @@ You reduce a model, and the step responses agree to 1%. But the closed loop buil
 ::: answer
 **First, the neglected dynamics may be close to the crossover frequency** rather than close to the poles you compared. Step-response agreement is dominated by low frequencies, where the deleted factors are all near 1. Phase margin is decided at crossover, where they are not. The worked example above loses $15^\circ$ of margin with a 3% step-response error.
 
-**Second, the reduction may have cancelled a pole against a nearby zero.** The cancellation is exact only at the nominal parameter values, and the real hardware's pole and zero sit somewhere else. So the mode you removed from the model is still in the loop, with a residue that is small but no longer zero — and if it is lightly damped, it can ring.
+**Second, the reduction may have canceled a pole against a nearby zero.** The cancellation is exact only at the nominal parameter values, and the real hardware's pole and zero sit somewhere else. So the mode you removed from the model is still in the loop, with a residue that is small but no longer zero — and if it is lightly damped, it can ring.
 
 In both cases the fix is the same: recompute margins on the unreduced model and, where the model is uncertain, at the extremes of the parameter range.
 :::
@@ -229,7 +229,7 @@ In both cases the fix is the same: recompute margins on the unreduced model and,
 | Margin rule | for stability margins, the neglected corner must be $5$–$10\times$ above **gain crossover**, not above the other poles |
 | How to reduce | time-constant form, delete factors whose corner is far above the band; DC gain kept automatically |
 | Pole-zero form trap | deleting $(s + p)$ changes the DC gain by $p$; replace it by the constant $p$ instead |
-| Near cancellation | a pole within ~10% of a zero may be cancelled if well damped; never if lightly damped |
+| Near cancellation | a pole within ~10% of a zero may be canceled if well damped; never if lightly damped |
 | Lightly damped modes | never negligible on nearness alone; peak is $1/(2\zeta)$ |
 
 The next lesson is about the numerator instead of the denominator: what an added zero does to a response, and why a zero in the right half plane is the one feature of a plant that no controller can argue with.

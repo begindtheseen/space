@@ -48,7 +48,7 @@ Our illustrative vehicle has these five design points, spread from subsonic flig
 Across just these five points, $M_\alpha$ changes by a factor of about eleven ($3.2 / 0.3 \approx 10.7$) and $M_\delta$ by a factor of about three ($4.5 / 1.6 \approx 2.8$). Include the moment of lift-off, where $\bar{q}$ is zero, and $M_\alpha$ spans from nothing to its peak. Real vehicles also shift their center of gravity as tanks drain.
 
 ::: key
-Dynamic pressure, mass, centre of gravity and aerodynamic moments change by orders of magnitude between lift-off and **[[MECO|meco]]**, so a single fixed gain set cannot hold margins across the trajectory. Gains are scheduled on a measurable variable such as Mach or time from lift-off.
+Dynamic pressure, mass, center of gravity and aerodynamic moments change by orders of magnitude between lift-off and **[[MECO|meco]]**, so a single fixed gain set cannot hold margins across the trajectory. Gains are scheduled on a measurable variable such as Mach or time from lift-off.
 :::
 
 ## Designing at each point
@@ -67,7 +67,7 @@ $$
 K_p = \frac{\omega_n^2 + M_\alpha}{M_\delta}, \qquad K_d = \frac{2\zeta\omega_n}{M_\delta}
 $$
 
-Read what these say. A bigger $M_\delta$ (more control power) means smaller gains. A bigger $M_\alpha$ (a more unstable vehicle) means a bigger $K_p$, because part of the proportional gain is spent cancelling the air's push before any is left to steer. So we pick the *same* closed-loop behavior everywhere, $\omega_n = 3\,\mathrm{rad/s}$ and $\zeta = 0.7$, and let the gains change to deliver it. That is the heart of scheduling: hold the behavior fixed and let the gains move.
+Read what these say. A bigger $M_\delta$ (more control power) means smaller gains. A bigger $M_\alpha$ (a more unstable vehicle) means a bigger $K_p$, because part of the proportional gain is spent canceling the air's push before any is left to steer. So we pick the *same* closed-loop behavior everywhere, $\omega_n = 3\,\mathrm{rad/s}$ and $\zeta = 0.7$, and let the gains change to deliver it. That is the heart of scheduling: hold the behavior fixed and let the gains move.
 
 To make the loop realistic we add a nozzle actuator, $\frac{25}{s + 25}$, which the gain formulas ignore. Then we check the margins with the real actuator in place.
 

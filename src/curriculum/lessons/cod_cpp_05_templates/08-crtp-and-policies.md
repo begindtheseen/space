@@ -17,7 +17,7 @@ The second is **policy-based design**: a class written once whose parts — wher
 
 ## CRTP as a mixin
 
-A **mixin** is a small base class whose only job is to add a feature to whatever class inherits it. The word comes from ice-cream shops, where you "mix in" nuts or candy to a plain flavour.
+A **mixin** is a small base class whose only job is to add a feature to whatever class inherits it. The word comes from ice-cream shops, where you "mix in" nuts or candy to a plain flavor.
 
 Here is the problem a mixin solves. A 3-D vector and a quaternion (the four-number attitude representation from the kinematics modules) both need `+`, `-` and multiplication by a scalar. The rule for each operator is the same every time: `a + b` is "copy `a`, then `+=` `b`". Writing that for every type is repetition, and repetition is where the one wrong minus sign hides.
 
@@ -105,7 +105,7 @@ sizeof(Vec3) = 24, sizeof(Quat) = 32
 Walk through it.
 
 1. `v * dt` finds `operator*(D a, double k)` from `Arithmetic<Vec3>`, with `D` = `Vec3`. It copies `v`, runs `Vec3::operator*=`, and returns $(0, 3773, 0)$.
-2. `r + ...` uses `operator+` the same way: $(7\,000\,000, 0, 0) + (0, 3773, 0)$. Sanity check: a spacecraft at 7,000 km from Earth's centre moving at 7,546 m/s travels $7546 \times 0.5 = 3773$ m in half a second, all sideways.
+2. `r + ...` uses `operator+` the same way: $(7\,000\,000, 0, 0) + (0, 3773, 0)$. Sanity check: a spacecraft at 7,000 km from Earth's center moving at 7,546 m/s travels $7546 \times 0.5 = 3773$ m in half a second, all sideways.
 3. `dt * qdot` uses the scalar-on-the-left version, which only a non-member function can provide. $0.5 \times 0.005 = 0.0025$, added to the identity quaternion.
 4. `.print()` comes from `Printable`, which calls each type's own `write` and `name`.
 5. The sizes: `Vec3` is three `double`s, 24 bytes, and `Quat` four, 32 bytes. The two mixin bases add **[[nothing at all|empty-base]]**, and there is no vtable pointer.
@@ -114,7 +114,7 @@ Two lines of inheritance gave two types eight operators and a print function eac
 :::
 
 ::: warning Mixins do not replace C++20's comparison rules
-Do not write a `Comparable<D>` mixin to generate `!=`, `<=` and the rest. Since C++20, a defaulted `operator<=>` and `operator==` already give every comparison, as the operator-overloading lesson showed. Mixins earn their place for things the language does not generate: arithmetic from compound assignment, printing, counting instances, serialising.
+Do not write a `Comparable<D>` mixin to generate `!=`, `<=` and the rest. Since C++20, a defaulted `operator<=>` and `operator==` already give every comparison, as the operator-overloading lesson showed. Mixins earn their place for things the language does not generate: arithmetic from compound assignment, printing, counting instances, serializing.
 :::
 
 ## Checking the interface at compile time
@@ -156,7 +156,7 @@ si_ok.cpp:8:23: error: static assertion failed: a sensor must provide: int read_
 
 The first error line states the rule that was broken, in your words. A second error, about `read_raw` missing, still follows, but you have read the answer by then.
 
-The constructor trick guards a different slip. CRTP's classic copy-paste mistake is `class PressureTap : public SensorBase<Thermistor>` — the wrong name in the angle brackets. Then the base would `static_cast` a `PressureTap` to a `Thermistor`, which is undefined behaviour. Making the base's constructor `private` and declaring `friend Derived;` means only the class named in the brackets can construct the base:
+The constructor trick guards a different slip. CRTP's classic copy-paste mistake is `class PressureTap : public SensorBase<Thermistor>` — the wrong name in the angle brackets. Then the base would `static_cast` a `PressureTap` to a `Thermistor`, which is undefined behavior. Making the base's constructor `private` and declaring `friend Derived;` means only the class named in the brackets can construct the base:
 
 ```text
 si.cpp:35:41: error: 'SensorBase<Derived>::SensorBase(double, double) [with Derived = Thermistor]' is private within this context
@@ -358,7 +358,7 @@ Look at the machine code g++ `-O2` produced for `FlightLog::record`: 17 instruct
 :::
 
 ::: key
-Policy-based design: behaviour is injected as template parameters (a storage policy, a locking or checking policy), so the composition is resolved at compile time with no virtual calls. It is how you make a library configurable for both a desktop sim and a flight target from one source.
+Policy-based design: behavior is injected as template parameters (a storage policy, a locking or checking policy), so the composition is resolved at compile time with no virtual calls. It is how you make a library configurable for both a desktop sim and a flight target from one source.
 :::
 
 ### When it beats inheritance
@@ -409,7 +409,7 @@ Your ring storage is `RingStorage<64>`. Someone proposes `RingStorage<100>` "for
 :::
 
 ::: answer
-With `N` = 64 the compiler replaced `% N` with a bit mask (`andl $63`), a single fast instruction, because 64 is a power of two known while compiling. With `N` = 100 it must compute a true remainder; with a constant divisor compilers typically use a multiply-and-shift sequence rather than a divide, which is a few instructions longer. For a log written at 100 Hz the difference is irrelevant. The size does matter for RAM: $100 \times 8 = 800$ bytes of records instead of 512. The point generalises: because `N` is a template parameter, the compiler optimises for the exact value you chose.
+With `N` = 64 the compiler replaced `% N` with a bit mask (`andl $63`), a single fast instruction, because 64 is a power of two known while compiling. With `N` = 100 it must compute a true remainder; with a constant divisor compilers typically use a multiply-and-shift sequence rather than a divide, which is a few instructions longer. For a log written at 100 Hz the difference is irrelevant. The size does matter for RAM: $100 \times 8 = 800$ bytes of records instead of 512. The point generalizes: because `N` is a template parameter, the compiler optimizes for the exact value you chose.
 :::
 
 ::: check
@@ -440,7 +440,7 @@ A friend function defined inside a class body is not visible to ordinary name lo
 :::
 
 ::: context empty-base Why the empty bases take no room
-A class with no data still has size 1 on its own, so that two different objects never share an address. As a base class, though, it may occupy no bytes — the **empty base optimisation**, which g++ and clang apply here.
+A class with no data still has size 1 on its own, so that two different objects never share an address. As a base class, though, it may occupy no bytes — the **empty base optimization**, which g++ and clang apply here.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
@@ -470,7 +470,7 @@ The proposal was paper P0847, "Deducing this", by Gašper Ažman, Sy Brand, Ben 
 :::
 
 ::: context alexandrescu The book that named it
-Andrei Alexandrescu set out policy-based design in *Modern C++ Design* (2001), with a library called Loki that built smart pointers, singletons and object factories from policies. The book was also one of the first to show how far template tricks could go, and much of what it did with elaborate machinery is now written with `if constexpr`, concepts and variadic templates. The idea of injecting behaviour as a template parameter has stayed in everyday use.
+Andrei Alexandrescu set out policy-based design in *Modern C++ Design* (2001), with a library called Loki that built smart pointers, singletons and object factories from policies. The book was also one of the first to show how far template tricks could go, and much of what it did with elaborate machinery is now written with `if constexpr`, concepts and variadic templates. The idea of injecting behavior as a template parameter has stayed in everyday use.
 :::
 
 ::: context type-explosion Every combination is a new type

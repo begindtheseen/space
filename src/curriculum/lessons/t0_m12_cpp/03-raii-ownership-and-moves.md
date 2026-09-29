@@ -13,7 +13,7 @@ C++ works like that hotel. Python frees an object whenever its garbage collector
 
 Flight software leans on this hard. Memory is set aside once, at start-up. A reviewer must see who owns every buffer. A fault check that returns early must not leak a hardware channel or leave a lock held. So modern C++ writes ownership into the types: `std::unique_ptr` means "this object owns that one, alone"; `std::shared_ptr` means "several owners, and the last one out cleans up"; a plain reference or pointer means "borrowed, not owned".
 
-The second half is **move semantics**: handing ownership from one object to another without copying what is owned. It holds a favourite interview question — what does `std::move` actually do? The answer: nothing at run time.
+The second half is **move semantics**: handing ownership from one object to another without copying what is owned. It holds a favorite interview question — what does `std::move` actually do? The answer: nothing at run time.
 
 ## Lifetime: constructors and destructors
 
@@ -57,18 +57,18 @@ int main() {
 // destroy   outer
 ```
 
-The `: name_(name)` after the constructor's parameters is a **member initialiser list**. It builds the member directly instead of assigning to it afterwards, and it is the only way to initialise `const` or reference members.
+The `: name_(name)` after the constructor's parameters is a **member initializer list**. It builds the member directly instead of assigning to it afterwards, and it is the only way to initialize `const` or reference members.
 
 Nothing in `main` calls a destructor. The compiler inserts a destructor call on *every* path out of a scope: the closing brace, a `return`, a `break`, or an **exception** (an error signal thrown up through the calls) passing through. That guarantee is what everything else in this lesson rides on.
 
-## RAII: Resource Acquisition Is Initialisation
+## RAII: Resource Acquisition Is Initialization
 
 A **resource** is anything you must give back: heap memory, an open file, a locked **[[mutex|mutex-word]]**, a **[[DMA channel|dma-channel]]**, a stretch of time with interrupts switched off.
 
 In RAII, a resource is owned by an object: its constructor **acquires** the resource and its destructor **releases** it. The destructor runs on every path out of the scope, so the resource is released on every path — including the untested early return in a fault check, and an exception unwinding through. There are no `free`, `close` or `unlock` calls scattered through the logic; each resource has one release point, written once.
 
 ::: key
-RAII — Resource Acquisition Is Initialisation: a resource is owned by an object, acquired in its constructor and released in its destructor, so scope exit — including by exception — always cleans up. It is the reason well-written C++ needs no explicit free.
+RAII — Resource Acquisition Is Initialization: a resource is owned by an object, acquired in its constructor and released in its destructor, so scope exit — including by exception — always cleans up. It is the reason well-written C++ needs no explicit free.
 :::
 
 ::: example A log file that cannot be left open
@@ -133,7 +133,7 @@ int main() {
 - **First call.** The loop writes five lines, the altitude dropping 12 m each time: 100, 88, 76, 64, 52. It never goes below zero, so the function returns `true`, and the destructor closes the file and prints `log closed`.
 - **Second call.** The folder does not exist, so `fopen` returns null and the function returns early. The destructor still runs, finds a null handle and does nothing — no special case needed.
 
-The two `= delete` lines forbid copying a `LogFile`. A copy would give two objects holding the same handle, and calling `fclose` twice on one handle is undefined behaviour. Deleting the copy operations is how a class says "exactly one owner".
+The two `= delete` lines forbid copying a `LogFile`. A copy would give two objects holding the same handle, and calling `fclose` twice on one handle is undefined behavior. Deleting the copy operations is how a class says "exactly one owner".
 :::
 
 The standard library is built from RAII types. `std::lock_guard` locks a mutex in its constructor and unlocks in its destructor. `std::vector` owns a heap buffer; `std::fstream` owns a file. Whenever you write a matching pair — enable and disable, claim and release — wrap it in a small class and let scope do the rest. Lesson 13 does exactly this with a `ScopedTimer` that records the elapsed time when it is destroyed.
@@ -427,7 +427,7 @@ A class holds a `double* data_` allocated with `new[]` and defines only a destru
 :::
 
 ::: answer
-The compiler's copy constructor copies the pointer, so `a` and `b` share one array. At scope exit both destructors call `delete[]` on it: undefined behaviour, typically a crash or a corrupted heap.
+The compiler's copy constructor copies the pointer, so `a` and `b` share one array. At scope exit both destructors call `delete[]` on it: undefined behavior, typically a crash or a corrupted heap.
 
 The rule of five says a class managing a raw resource must define or delete all five special members. Either write a deep copy and a stealing move, as `SampleBuffer` does, or write `Buffer(const Buffer&) = delete;` and its assignment twin so the copy becomes a compile error. Better still, hold the array in a `std::vector` or `std::unique_ptr` and follow the rule of zero.
 :::
@@ -467,7 +467,7 @@ Following the pointer is not the issue; freeing the object is. A `unique_ptr` de
 | `noexcept` on moves | needed for `std::vector` to move rather than copy when it grows |
 | copy elision | returning a temporary builds it in place; never `return std::move(local)` |
 
-Next: classes proper — how C++ builds interfaces with inheritance and virtual functions, what a virtual call costs in nanoseconds and in how easily the code can be analysed, and when a flight codebase chooses templates instead.
+Next: classes proper — how C++ builds interfaces with inheritance and virtual functions, what a virtual call costs in nanoseconds and in how easily the code can be analyzed, and when a flight codebase chooses templates instead.
 
 ::: context stack-and-heap Two places an object can live
 Local variables live on the **stack**: each function call gets a fresh slab of memory on top, and it is thrown away the moment the call returns. That is fast and automatic, and it is why locals die in reverse order. The **heap** is a separate pool for objects that must outlive the function that made them, or whose size is only known at run time. Only heap objects need an owner to free them.
@@ -530,7 +530,7 @@ Making one of the two links a `std::weak_ptr` fixes it: a weak pointer can look 
 :::
 
 ::: context heap-latency Why delete has no upper bound
-Freeing memory is not one fixed step. The allocator may merge the freed block with its neighbours, search or reorganise its free lists, take a lock because another thread is allocating, or touch memory that has fallen out of the cache. Most calls are quick; a rare one is very slow, and nobody can prove a maximum. A real-time schedule is built on worst cases, so one unbounded call breaks it. Lesson 9 lists this with the other things banned from the hot loop.
+Freeing memory is not one fixed step. The allocator may merge the freed block with its neighbors, search or reorganize its free lists, take a lock because another thread is allocating, or touch memory that has fallen out of the cache. Most calls are quick; a rare one is very slow, and nobody can prove a maximum. A real-time schedule is built on worst cases, so one unbounded call breaks it. Lesson 9 lists this with the other things banned from the hot loop.
 :::
 
 ::: context lvalue-rvalue Where "lvalue" and "rvalue" come from

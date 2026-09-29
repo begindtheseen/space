@@ -3,7 +3,7 @@ id: l07-stiffness
 title: Stiffness and when to switch to an implicit method
 minutes: 21
 covers:
-  - 'Stiffness: how to recognise it and when to switch to an implicit method'
+  - 'Stiffness: how to recognize it and when to switch to an implicit method'
 ---
 
 Think about a car on a long road trip. Between each wheel and the car body sits a very stiff spring. When the wheel hits a pebble, the spring flexes and settles again in a few hundredths of a second. The trip itself takes five hours. Nobody planning the trip cares about the spring. It does its job so fast that it has always finished before anything interesting happens.
@@ -173,7 +173,7 @@ print(np.sort(np.linalg.eigvals(jac(40.0, y40)).real))
 **The cost.** BDF needed $433$ evaluations against RK45's $242\,030$, about $560$ times fewer. Radau was about $320$ times cheaper.
 :::
 
-## Recognising stiffness from the solver's behavior
+## Recognizing stiffness from the solver's behavior
 
 In practice you rarely compute eigenvalues first. You notice that a run is slow, and the solver's behavior tells you why. Here are the symptoms.
 
@@ -204,7 +204,7 @@ Going from $10^{-4}$ to $10^{-2}$ saves not a single step. Going the other way, 
 **An implicit method is dramatically cheaper.** The decisive test takes one line: rerun with `method="Radau"` or `"BDF"`. If the cost falls by a factor of tens or thousands and the answer agrees, the problem was stiff.
 
 ::: key
-You recognise stiffness from solver behavior: the solver takes enormous numbers of tiny steps on a smooth-looking solution, and tightening the tolerance barely changes the answer while multiplying the cost. The fix is an implicit method (Radau, BDF) that is stable at large steps.
+You recognize stiffness from solver behavior: the solver takes enormous numbers of tiny steps on a smooth-looking solution, and tightening the tolerance barely changes the answer while multiplying the cost. The fix is an implicit method (Radau, BDF) that is stable at large steps.
 :::
 
 Stiffness is the most common reason a run crawls, but not the only one. The small steps have other possible causes, and the step-size plot tells them apart.

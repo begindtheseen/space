@@ -363,14 +363,14 @@ The Euler-angle run has quietly built up the same kind of truncation error, plus
 | $\dot{\boldsymbol{\sigma}} = \tfrac{1}{4}[(1 - \boldsymbol{\sigma}^\top\boldsymbol{\sigma})\mathbf{I}_3 + 2[\boldsymbol{\sigma}\times] + 2\boldsymbol{\sigma}\boldsymbol{\sigma}^\top]\boldsymbol{\omega}$ | MRP kinematics; shadow switch when $\lVert\boldsymbol{\sigma}\rVert > 1$ |
 | Worked instant | $\mathbf{q} = (0.5,0.5,0.5,0.5)$, $\boldsymbol{\omega} = (0.02,-0.01,0.05)$ gives $\dot{\mathbf{q}} = (-0.015, 0.02, -0.01, 0.005)$ |
 
-The next lesson hands these exact equations to a numerical integrator, which breaks every constraint they keep. You will measure how fast the DCM stops being a rotation, how fast the quaternion norm drifts, and what re-normalisation costs and buys.
+The next lesson hands these exact equations to a numerical integrator, which breaks every constraint they keep. You will measure how fast the DCM stops being a rotation, how fast the quaternion norm drifts, and what re-normalization costs and buys.
 
 ::: context kinematics-word Motion without the push
-"Kinematics" comes from the Greek *kinema*, "motion" — the same root as "cinema", the moving pictures. It describes *how* something moves without asking *why*. A dance described step by step is kinematics; the muscles that make the steps are dynamics. For attitude, the kinematic equation turns a spin rate into a change of orientation. It would be exactly the same for a gram-sized sensor or a 400-tonne space station, because mass never appears in it.
+"Kinematics" comes from the Greek *kinema*, "motion" — the same root as "cinema", the moving pictures. It describes *how* something moves without asking *why*. A dance described step by step is kinematics; the muscles that make the steps are dynamics. For attitude, the kinematic equation turns a spin rate into a change of orientation. It would be exactly the same for a gram-sized sensor or a 400-metric ton space station, because mass never appears in it.
 :::
 
 ::: context strapdown Strapped down, not floating
-Early inertial systems, like the one on Apollo, kept their gyros on a platform held steady by motorised **gimbals** — nested rings — so the platform stayed fixed in space while the vehicle turned around it. A **strapdown** system bolts the gyros straight to the vehicle's frame. They then measure the vehicle's own turning in body axes, and the computer does the bookkeeping the gimbals used to do mechanically. That bookkeeping is the set of equations in this lesson. Almost every modern rocket, aircraft and phone uses strapdown sensors.
+Early inertial systems, like the one on Apollo, kept their gyros on a platform held steady by motorized **gimbals** — nested rings — so the platform stayed fixed in space while the vehicle turned around it. A **strapdown** system bolts the gyros straight to the vehicle's frame. They then measure the vehicle's own turning in body axes, and the computer does the bookkeeping the gimbals used to do mechanically. That bookkeeping is the set of equations in this lesson. Almost every modern rocket, aircraft and phone uses strapdown sensors.
 :::
 
 ::: context transport-theorem Why a fixed star seems to turn backwards
@@ -412,11 +412,11 @@ A matrix is **symmetric** if it looks the same after flipping across its main di
 </svg>
 ```
 
-Matching colours sit across the mirror from each other with opposite signs. Every "rate of turning" matrix in attitude work has this shape.
+Matching colors sit across the mirror from each other with opposite signs. Every "rate of turning" matrix in attitude work has this shape.
 :::
 
 ::: context quadratic-form Always sideways
-$\mathbf{q}^\top\dot{\mathbf{q}} = 0$ says the rate is perpendicular to the quaternion itself — like the ball on a string, always moving across the string, never along it. Moving perpendicular to the radius can change your direction but never your distance from the centre. That is why the exact quaternion flow stays at length one, whatever the spin rate.
+$\mathbf{q}^\top\dot{\mathbf{q}} = 0$ says the rate is perpendicular to the quaternion itself — like the ball on a string, always moving across the string, never along it. Moving perpendicular to the radius can change your direction but never your distance from the center. That is why the exact quaternion flow stays at length one, whatever the spin rate.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">

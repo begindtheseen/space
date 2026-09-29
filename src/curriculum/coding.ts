@@ -368,7 +368,7 @@ export const CODING: Module[] = [
         id: 'lnx02_ex1',
         title: 'Monte Carlo sweep driver',
         prompt:
-          'Write `sweep.sh` that takes `-n <cases>` and `-o <outdir>`, creates the output directory, runs `./sim --seed $i --out $OUTDIR/case_$i.csv` for i in 1..n, aborts immediately if any case fails, tars the output directory on success, and always removes its temp directory via a trap. It must pass shellcheck. Expected behaviour: exit code 0 and a tarball on success; non-zero exit and no tarball if any case fails.',
+          'Write `sweep.sh` that takes `-n <cases>` and `-o <outdir>`, creates the output directory, runs `./sim --seed $i --out $OUTDIR/case_$i.csv` for i in 1..n, aborts immediately if any case fails, tars the output directory on success, and always removes its temp directory via a trap. It must pass shellcheck. Expected behavior: exit code 0 and a tarball on success; non-zero exit and no tarball if any case fails.',
         kind: 'code',
         lang: 'bash',
         starter: '#!/usr/bin/env bash\nset -euo pipefail\n\n# TODO: parse -n and -o with getopts\n# TODO: mktemp -d and trap cleanup\n# TODO: loop, run sim, tar results\n',
@@ -478,7 +478,7 @@ export const CODING: Module[] = [
         id: 'lnx02_q2',
         q: 'A script contains `rm -rf $DIR/`. $DIR is unset. What happens with and without `set -u`?',
         choices: [
-          'Identical behaviour; bash refuses empty paths',
+          'Identical behavior; bash refuses empty paths',
           'Without -u it becomes `rm -rf /`; with -u the script aborts before running it',
           'Both abort',
           'Without -u it is a no-op',
@@ -583,7 +583,7 @@ export const CODING: Module[] = [
       'Fast-forward vs true merge; resolving a conflict',
       'reset --soft/--mixed/--hard vs revert vs restore',
       'stash and reflog as the undo net',
-      '.gitignore, .gitattributes, Git LFS for large binary artefacts',
+      '.gitignore, .gitattributes, Git LFS for large binary artifacts',
       'Commit message craft: imperative subject, why-not-what body',
       'Tags and semantic versioning',
       'bisect for regression hunting',
@@ -609,7 +609,7 @@ export const CODING: Module[] = [
         kind: 'course',
         url: 'https://learngitbranching.js.org/',
         free: true,
-        note: 'Interactive DAG visualiser. The fastest way to internalise branching and rebasing.',
+        note: 'Interactive DAG visualizer. The fastest way to internalize branching and rebasing.',
       },
       {
         title: 'The Missing Semester: Version Control (Git)',
@@ -684,7 +684,7 @@ export const CODING: Module[] = [
         id: 'git01_c8',
         front: 'What does `.gitattributes` control that `.gitignore` does not?',
         back:
-          'Per-path behaviour for tracked files: text vs binary, end-of-line normalisation, diff and merge drivers, and which paths go through Git LFS. It is how teams stop Git from trying to text-merge a Simulink .slx or a CAD part file.',
+          'Per-path behavior for tracked files: text vs binary, end-of-line normalization, diff and merge drivers, and which paths go through Git LFS. It is how teams stop Git from trying to text-merge a Simulink .slx or a CAD part file.',
       },
       {
         id: 'git01_c9',
@@ -708,7 +708,7 @@ export const CODING: Module[] = [
         id: 'git01_c12',
         front: 'Does Git store diffs?',
         back:
-          'No. Each commit references a complete tree snapshot; identical file contents are shared by hash. Diffs are computed on demand, and packfiles later apply delta compression as a storage optimisation only.',
+          'No. Each commit references a complete tree snapshot; identical file contents are shared by hash. Diffs are computed on demand, and packfiles later apply delta compression as a storage optimization only.',
       },
     ],
     quiz: [
@@ -884,7 +884,7 @@ export const CODING: Module[] = [
         id: 'git02_ex2',
         title: 'Review a numerical pull request',
         prompt:
-          'Given a 300-line PR adding a quaternion-to-DCM conversion and its tests, write ten review comments. At least four must concern correctness of units, frame conventions, quaternion ordering, or division-by-zero/NaN behaviour, and each must be marked blocking or non-blocking.',
+          'Given a 300-line PR adding a quaternion-to-DCM conversion and its tests, write ten review comments. At least four must concern correctness of units, frame conventions, quaternion ordering, or division-by-zero/NaN behavior, and each must be marked blocking or non-blocking.',
         kind: 'analysis',
         hours: 2,
       },
@@ -1061,7 +1061,7 @@ export const CODING: Module[] = [
           'Simulink files are encrypted',
           'Git refuses to track files over 1 MB',
           'The format is not line-oriented, so a three-way text merge produces a corrupt or meaningless model',
-          'Simulink licences forbid version control',
+          'Simulink licenses forbid version control',
         ],
         answer: 2,
         explain:
@@ -1100,7 +1100,7 @@ export const CODING: Module[] = [
       'Alternatives: Podman, Nix, Spack, conda-lock, uv',
     ],
     objectives: [
-      'Containerise a C++ and Python project with a multi-stage build that ships no compiler.',
+      'Containerize a C++ and Python project with a multi-stage build that ships no compiler.',
       'Order a Dockerfile so that a source-only change does not reinstall dependencies.',
       'Bring up a multi-service stack with docker compose and explain each service network binding.',
       'Produce a byte-identical simulation output from a digest-pinned image on two machines.',
@@ -1170,7 +1170,7 @@ export const CODING: Module[] = [
         id: 'ops01_c4',
         front: 'What does a multi-stage build accomplish?',
         back:
-          'Compilation happens in a stage with the full toolchain, then only the artefacts are COPYed into a minimal runtime stage. The shipped image contains no compiler, headers or build caches, shrinking size and attack surface.',
+          'Compilation happens in a stage with the full toolchain, then only the artifacts are COPYed into a minimal runtime stage. The shipped image contains no compiler, headers or build caches, shrinking size and attack surface.',
       },
       {
         id: 'ops01_c5',
@@ -1200,7 +1200,7 @@ export const CODING: Module[] = [
         id: 'ops01_c9',
         front: 'How does a container make a 2026 simulation reproducible in 2031?',
         back:
-          'It pins the OS, compiler, libraries, interpreter and package versions as one addressable artefact. Combined with a seeded RNG and pinned input data, rerunning the digest reproduces the numbers, which is what a configuration-management or anomaly-investigation requirement demands.',
+          'It pins the OS, compiler, libraries, interpreter and package versions as one addressable artifact. Combined with a seeded RNG and pinned input data, rerunning the digest reproduces the numbers, which is what a configuration-management or anomaly-investigation requirement demands.',
       },
       {
         id: 'ops01_c10',
@@ -1218,7 +1218,7 @@ export const CODING: Module[] = [
         id: 'ops01_c12',
         front: 'Where does Kubernetes enter an aerospace data story?',
         back:
-          'Starlink telemetry infrastructure is reported to run on Docker and Kubernetes alongside Kafka, HBase and HDFS, so pods, deployments and services are literacy an engineer touching that pipeline needs, not a specialisation.',
+          'Starlink telemetry infrastructure is reported to run on Docker and Kubernetes alongside Kafka, HBase and HDFS, so pods, deployments and services are literacy an engineer touching that pipeline needs, not a specialization.',
       },
     ],
     quiz: [
@@ -1345,14 +1345,14 @@ export const CODING: Module[] = [
       'What CI buys a simulation team, stated as failure modes it prevents',
       'GitHub Actions: workflows, events, jobs, steps, runners',
       'Matrix builds across OS, compiler and interpreter version',
-      'Caching pip, cargo and ccache; artefacts; secrets; environments',
+      'Caching pip, cargo and ccache; artifacts; secrets; environments',
       'Reusable workflows and composite actions',
       'Self-hosted runners for licensed tools and special hardware',
-      'GitLab CI and Jenkins, still common in defence and aerospace',
-      'A GNC pipeline: lint, static analysis, unit tests, coverage gate, Debug+ASan and Release builds, regression sims with tolerances, benchmark thresholds, docs, artefacts',
+      'GitLab CI and Jenkins, still common in defense and aerospace',
+      'A GNC pipeline: lint, static analysis, unit tests, coverage gate, Debug+ASan and Release builds, regression sims with tolerances, benchmark thresholds, docs, artifacts',
       'Golden-file regression comparison with numerical tolerance',
       'Nightly and scheduled long-running Monte Carlo jobs',
-      'MATLAB and Simulink in CI: setup-matlab, headless Simulink Test, licence servers',
+      'MATLAB and Simulink in CI: setup-matlab, headless Simulink Test, license servers',
       'Flaky-test policy; quarantine rather than retry-until-green',
       'Branch protection, required checks, release automation',
     ],
@@ -1360,8 +1360,8 @@ export const CODING: Module[] = [
       'Write a workflow that builds a matrix of compilers and runs unit tests, sanitizers and coverage with a hard gate.',
       'Compare a simulation output to a golden file with an explicit tolerance rather than exact equality.',
       'Diagnose a flaky test correctly instead of adding a retry.',
-      'Schedule a nightly dispersion run that publishes a report artefact.',
-      'Explain why both a Debug-plus-sanitizer job and an optimised Release job are needed.',
+      'Schedule a nightly dispersion run that publishes a report artifact.',
+      'Explain why both a Debug-plus-sanitizer job and an optimized Release job are needed.',
     ],
     resources: [
       {
@@ -1384,7 +1384,7 @@ export const CODING: Module[] = [
         kind: 'tool',
         url: 'https://github.com/matlab-actions',
         free: true,
-        note: 'setup-matlab and run-tests actions; needs a licence the runner can reach.',
+        note: 'setup-matlab and run-tests actions; needs a license the runner can reach.',
       },
     ],
     exercises: [
@@ -1392,7 +1392,7 @@ export const CODING: Module[] = [
         id: 'ops02_ex1',
         title: 'Pipeline for the Python simulator',
         prompt:
-          'Write a GitHub Actions workflow that on every pull request runs ruff, mypy, pytest with coverage failing under 85 percent, and a regression job that propagates a reference orbit and compares against a committed golden CSV with a relative tolerance of 1e-9. On a nightly schedule it also runs a 500-case dispersion and uploads the report as an artefact.',
+          'Write a GitHub Actions workflow that on every pull request runs ruff, mypy, pytest with coverage failing under 85 percent, and a regression job that propagates a reference orbit and compares against a committed golden CSV with a relative tolerance of 1e-9. On a nightly schedule it also runs a 500-case dispersion and uploads the report as an artifact.',
         kind: 'build',
         hours: 3,
       },
@@ -1436,15 +1436,15 @@ export const CODING: Module[] = [
     cards: [
       {
         id: 'ops02_c1',
-        front: 'Why run both a Debug-plus-ASan job and an optimised Release job?',
+        front: 'Why run both a Debug-plus-ASan job and an optimized Release job?',
         back:
-          'Sanitizers need instrumented, unoptimised builds to report precise faults, but optimisation itself changes behaviour: it exposes undefined behaviour, different floating-point contraction and different timing. Each job catches bugs the other hides.',
+          'Sanitizers need instrumented, unoptimised builds to report precise faults, but optimization itself changes behavior: it exposes undefined behavior, different floating-point contraction and different timing. Each job catches bugs the other hides.',
       },
       {
         id: 'ops02_c2',
         front: 'Why can a simulation regression test not use exact equality?',
         back:
-          'Floating-point results differ across compilers, libm versions, vectorisation and thread counts. Compare with an explicit relative and absolute tolerance chosen from the physics, and record the tolerance as part of the test contract.',
+          'Floating-point results differ across compilers, libm versions, vectorization and thread counts. Compare with an explicit relative and absolute tolerance chosen from the physics, and record the tolerance as part of the test contract.',
       },
       {
         id: 'ops02_c3',
@@ -1462,7 +1462,7 @@ export const CODING: Module[] = [
         id: 'ops02_c5',
         front: 'When do you need a self-hosted CI runner?',
         back:
-          'When the job needs something the hosted runner cannot have: a MATLAB or Simulink licence reachable on a private network, specialised hardware for hardware-in-the-loop, GPUs, or data under export control.',
+          'When the job needs something the hosted runner cannot have: a MATLAB or Simulink license reachable on a private network, specialized hardware for hardware-in-the-loop, GPUs, or data under export control.',
       },
       {
         id: 'ops02_c6',
@@ -1498,7 +1498,7 @@ export const CODING: Module[] = [
         id: 'ops02_c11',
         front: 'How does Simulink fit into CI?',
         back:
-          'Run MATLAB headless on a runner that can reach a licence server, execute Simulink Test suites and coverage programmatically, run Model Advisor checks, and publish the coverage and traceability reports as artefacts.',
+          'Run MATLAB headless on a runner that can reach a license server, execute Simulink Test suites and coverage programmatically, run Model Advisor checks, and publish the coverage and traceability reports as artifacts.',
       },
       {
         id: 'ops02_c12',
@@ -1519,7 +1519,7 @@ export const CODING: Module[] = [
         ],
         answer: 1,
         explain:
-          'Differences at the last bit are normal across libm and vectorisation. A tolerance encodes the real requirement. -ffast-math makes reproducibility worse and breaks NaN handling, and blunt rounding destroys the test sensitivity.',
+          'Differences at the last bit are normal across libm and vectorization. A tolerance encodes the real requirement. -ffast-math makes reproducibility worse and breaks NaN handling, and blunt rounding destroys the test sensitivity.',
         b: 0.3,
         bloom: 'apply',
       },
@@ -1527,14 +1527,14 @@ export const CODING: Module[] = [
         id: 'ops02_q2',
         q: 'Which is NOT a legitimate reason for a self-hosted runner?',
         choices: [
-          'A MATLAB licence server on a private network',
+          'A MATLAB license server on a private network',
           'Hardware-in-the-loop equipment attached to the machine',
           'Wanting to skip code review',
           'Export-controlled data that may not leave managed infrastructure',
         ],
         answer: 2,
         explain:
-          'Runner choice is about access to licences, hardware and controlled data. It has nothing to do with review policy, which is enforced by branch protection.',
+          'Runner choice is about access to licenses, hardware and controlled data. It has nothing to do with review policy, which is enforced by branch protection.',
         b: -0.7,
         bloom: 'understand',
       },
@@ -1573,7 +1573,7 @@ export const CODING: Module[] = [
         q: 'A nightly Monte Carlo occasionally fails with a different random seed each night. What is the design fix?',
         choices: [
           'Retry the job three times',
-          'Seed the run deterministically per case and record the seed in the artefact so any failure is reproducible',
+          'Seed the run deterministically per case and record the seed in the artifact so any failure is reproducible',
           'Reduce the case count',
           'Ignore failures on scheduled runs',
         ],
@@ -1585,7 +1585,7 @@ export const CODING: Module[] = [
       },
       {
         id: 'ops02_q6',
-        q: 'Which pipeline stage would catch a use-after-free that only manifests under optimisation?',
+        q: 'Which pipeline stage would catch a use-after-free that only manifests under optimization?',
         choices: [
           'clang-format',
           'Coverage report',
@@ -1594,7 +1594,7 @@ export const CODING: Module[] = [
         ],
         answer: 2,
         explain:
-          'ASan detects the invalid access deterministically when the code path is exercised; running the same tests in Release confirms behaviour under the flags you ship.',
+          'ASan detects the invalid access deterministically when the code path is exercised; running the same tests in Release confirms behavior under the flags you ship.',
         b: 0.5,
         bloom: 'apply',
       },
@@ -1624,7 +1624,7 @@ export const CODING: Module[] = [
     tier: 5,
     title: 'Debugging and Profiling as a Discipline',
     summary:
-      "Reproduce, minimise, hypothesise, bisect, verify. Then the tools: gdb on a core dump, sanitizers for memory and races, and perf for where the time actually goes rather than where you guessed it went.",
+      "Reproduce, minimize, hypothesize, bisect, verify. Then the tools: gdb on a core dump, sanitizers for memory and races, and perf for where the time actually goes rather than where you guessed it went.",
     prereqs: ['cod_cpp_02_memory', 'cod_lnx_02_scripting'],
     hours: 15,
     topics: [
@@ -1691,7 +1691,7 @@ export const CODING: Module[] = [
       },
       {
         id: 'dbg01_ex2',
-        title: 'Measure before you optimise',
+        title: 'Measure before you optimize',
         prompt:
           'Profile a numerical loop with perf record and a flame graph. Write down your hypothesis BEFORE looking at the profile, then record what the profile actually showed, apply one change, and re-measure. Deliverable: a short note with three numbers (baseline, hypothesis, post-change) and an explanation of why your hypothesis was right or wrong.',
         kind: 'analysis',
@@ -1733,7 +1733,7 @@ export const CODING: Module[] = [
         id: 'dbg01_c6',
         front: 'What does ThreadSanitizer detect that testing rarely does?',
         back:
-          'Data races: two threads accessing the same memory with at least one write and no synchronisation. It reports the race even on an execution where the outcome happened to be correct, which is exactly what stress testing cannot guarantee.',
+          'Data races: two threads accessing the same memory with at least one write and no synchronization. It reports the race even on an execution where the outcome happened to be correct, which is exactly what stress testing cannot guarantee.',
       },
       {
         id: 'dbg01_c7',
@@ -1743,9 +1743,9 @@ export const CODING: Module[] = [
       },
       {
         id: 'dbg01_c8',
-        front: 'Why profile before optimising?',
+        front: 'Why profile before optimizing?',
         back:
-          'Engineers guess wrong about hotspots most of the time, and optimisation always costs readability. A profile turns the work into measurement-driven engineering, and gives you the before number you need to prove the after number.',
+          'Engineers guess wrong about hotspots most of the time, and optimization always costs readability. A profile turns the work into measurement-driven engineering, and gives you the before number you need to prove the after number.',
       },
       {
         id: 'dbg01_c9',
@@ -1763,7 +1763,7 @@ export const CODING: Module[] = [
         id: 'dbg01_c11',
         front: 'How do you debug a process running on a flight computer you cannot rebuild?',
         back:
-          'Attach with gdbserver over the network and connect a local gdb that has the matching unstripped binary and source, or capture a core dump and analyse it offline against the same build artefacts. This is why build artefacts and symbol files are archived per release.',
+          'Attach with gdbserver over the network and connect a local gdb that has the matching unstripped binary and source, or capture a core dump and analyze it offline against the same build artifacts. This is why build artifacts and symbol files are archived per release.',
       },
       {
         id: 'dbg01_c12',
@@ -1775,7 +1775,7 @@ export const CODING: Module[] = [
         id: 'dbg01_c13',
         front: 'What does UBSan catch that ASan does not?',
         back:
-          'Undefined behaviour that is not a memory error: signed integer overflow, shifts past the width, misaligned or null-derived pointer arithmetic, invalid enum or bool values, and float-to-int conversions that do not fit.',
+          'Undefined behavior that is not a memory error: signed integer overflow, shifts past the width, misaligned or null-derived pointer arithmetic, invalid enum or bool values, and float-to-int conversions that do not fit.',
       },
     ],
     quiz: [
@@ -1786,11 +1786,11 @@ export const CODING: Module[] = [
           'Add print statements until it appears',
           'Build with -O2 -g plus ASan/UBSan and run the suite in a loop to make the fault deterministic',
           'Switch compilers',
-          'Disable optimisation and declare it fixed',
+          'Disable optimization and declare it fixed',
         ],
         answer: 1,
         explain:
-          'Intermittency usually means undefined behaviour or a race. Sanitizers convert a probabilistic symptom into a deterministic report; disabling optimisation only hides it.',
+          'Intermittency usually means undefined behavior or a race. Sanitizers convert a probabilistic symptom into a deterministic report; disabling optimization only hides it.',
         b: 0.5,
         bloom: 'apply',
       },
@@ -1840,7 +1840,7 @@ export const CODING: Module[] = [
         ],
         answer: 1,
         explain:
-          'A data race is undefined behaviour regardless of the observed result, and volatile provides no atomicity or ordering. Fix it with an atomic or a mutex.',
+          'A data race is undefined behavior regardless of the observed result, and volatile provides no atomicity or ordering. Fix it with an atomic or a mutex.',
         b: 0.8,
         bloom: 'analyze',
       },
@@ -1946,16 +1946,16 @@ export const CODING: Module[] = [
         id: 'py01_ex1',
         title: 'Unit conversion library',
         prompt:
-          'Implement four conversions with their exact definitional constants: international feet to metres (0.3048 exactly), pound-force to newtons (4.4482216152605 exactly), degrees to radians, and degrees Rankine to kelvin (factor 5/9 exactly). Mixing unit systems is a classic loss-of-mission bug, so exactness matters.',
+          'Implement four conversions with their exact definitional constants: international feet to meters (0.3048 exactly), pound-force to newtons (4.4482216152605 exactly), degrees to radians, and degrees Rankine to kelvin (factor 5/9 exactly). Mixing unit systems is a classic loss-of-mission bug, so exactness matters.',
         kind: 'code',
         lang: 'python',
         starter:
-          'import math\n\n\ndef ft_to_m(ft):\n    """International feet to metres. 1 ft = 0.3048 m exactly."""\n    raise NotImplementedError\n\n\ndef lbf_to_n(lbf):\n    """Pound-force to newtons. 1 lbf = 4.4482216152605 N exactly."""\n    raise NotImplementedError\n\n\ndef deg_to_rad(deg):\n    """Degrees to radians."""\n    raise NotImplementedError\n\n\ndef rankine_to_kelvin(r):\n    """Degrees Rankine to kelvin. 1 R = 5/9 K exactly."""\n    raise NotImplementedError\n',
+          'import math\n\n\ndef ft_to_m(ft):\n    """International feet to meters. 1 ft = 0.3048 m exactly."""\n    raise NotImplementedError\n\n\ndef lbf_to_n(lbf):\n    """Pound-force to newtons. 1 lbf = 4.4482216152605 N exactly."""\n    raise NotImplementedError\n\n\ndef deg_to_rad(deg):\n    """Degrees to radians."""\n    raise NotImplementedError\n\n\ndef rankine_to_kelvin(r):\n    """Degrees Rankine to kelvin. 1 R = 5/9 K exactly."""\n    raise NotImplementedError\n',
         solution:
           'import math\n\nFT_TO_M = 0.3048\nLBF_TO_N = 4.4482216152605\n\n\ndef ft_to_m(ft):\n    return ft * FT_TO_M\n\n\ndef lbf_to_n(lbf):\n    return lbf * LBF_TO_N\n\n\ndef deg_to_rad(deg):\n    return deg * math.pi / 180.0\n\n\ndef rankine_to_kelvin(r):\n    return r * 5.0 / 9.0\n',
         tests: [
           {
-            name: 'feet to metres is exact',
+            name: 'feet to meters is exact',
             assert:
               'assert abs(ft_to_m(1.0) - 0.3048) < 1e-15, "1 ft must be 0.3048 m"\nassert ft_to_m(0.0) == 0.0\nassert abs(ft_to_m(1000.0) - 304.8) < 1e-9\n',
           },
@@ -2164,7 +2164,7 @@ export const CODING: Module[] = [
           'Notebooks cannot import NumPy',
           'Notebooks execute out of order, diff badly and cannot be imported or unit tested as-is',
           'Notebooks are slower at floating-point math',
-          'Notebooks require a paid licence',
+          'Notebooks require a paid license',
         ],
         answer: 1,
         explain:
@@ -2336,7 +2336,7 @@ export const CODING: Module[] = [
         id: 'py02_c1',
         front: 'When does a generator beat a list?',
         back:
-          'When the sequence is large or unbounded and you consume it once: the generator holds one item at a time instead of materialising all of them. It loses when you need random access, len(), or multiple passes.',
+          'When the sequence is large or unbounded and you consume it once: the generator holds one item at a time instead of materializing all of them. It loses when you need random access, len(), or multiple passes.',
       },
       {
         id: 'py02_c2',
@@ -2509,7 +2509,7 @@ export const CODING: Module[] = [
           'Proof the algorithm is correct',
           'Whole-program checking of interface mistakes without executing any code path',
           'Faster execution',
-          'Automatic vectorisation',
+          'Automatic vectorization',
         ],
         answer: 1,
         explain:
@@ -2543,7 +2543,7 @@ export const CODING: Module[] = [
       'Float pitfalls: allclose, catastrophic cancellation, float32 vs float64',
       'Random numbers: default_rng, seeding, reproducibility',
       'save, load, npz, memmap for big telemetry',
-      'Vectorisation as the default, and when it genuinely does not apply',
+      'Vectorization as the default, and when it genuinely does not apply',
     ],
     objectives: [
       'Replace an explicit loop with an array expression and measure at least a fifty-fold speedup.',
@@ -2610,7 +2610,7 @@ export const CODING: Module[] = [
       },
       {
         id: 'py03_ex2',
-        title: 'Vectorise the rotation loop',
+        title: 'Vectorize the rotation loop',
         prompt:
           'Given a 3x3 DCM and an (N,3) array whose rows are vectors, implement `rotate_all(C, v)` returning (N,3) rows of C @ v_i, `norms(v)` returning (N,), and `unit(v)` returning unit vectors with zero-length rows left as zeros (no NaNs, no warnings). No Python-level loop over N is allowed.',
         kind: 'code',
@@ -2663,7 +2663,7 @@ export const CODING: Module[] = [
         id: 'py03_c4',
         front: 'Why prefer solve(A, b) over inv(A) @ b?',
         back:
-          'solve factorises once and back-substitutes, costing about a third of the work of forming an explicit inverse, and it avoids the extra rounding of computing and then multiplying by the inverse. Explicit inverses are for when you genuinely need the matrix itself, which is rare.',
+          'solve factorizes once and back-substitutes, costing about a third of the work of forming an explicit inverse, and it avoids the extra rounding of computing and then multiplying by the inverse. Explicit inverses are for when you genuinely need the matrix itself, which is rare.',
       },
       {
         id: 'py03_c5',
@@ -2693,7 +2693,7 @@ export const CODING: Module[] = [
         id: 'py03_c9',
         front: 'float32 vs float64 in a GNC context',
         back:
-          'float32 has about seven decimal digits, which is not enough for ECI positions in metres or for long-horizon integration. Use float64 by default and drop to float32 only for bulk storage or a memory-bound stage you have measured.',
+          'float32 has about seven decimal digits, which is not enough for ECI positions in meters or for long-horizon integration. Use float64 by default and drop to float32 only for bulk storage or a memory-bound stage you have measured.',
       },
       {
         id: 'py03_c10',
@@ -2711,7 +2711,7 @@ export const CODING: Module[] = [
         id: 'py03_c12',
         front: 'C order vs Fortran order: when does it matter?',
         back:
-          'It determines which axis is contiguous in memory, so it changes cache behaviour of loops and reductions and whether a reshape can be a view. It also matters at library boundaries: LAPACK and Eigen default to column-major.',
+          'It determines which axis is contiguous in memory, so it changes cache behavior of loops and reductions and whether a reshape can be a view. It also matters at library boundaries: LAPACK and Eigen default to column-major.',
       },
       {
         id: 'py03_c13',
@@ -2757,7 +2757,7 @@ export const CODING: Module[] = [
         ],
         answer: 1,
         explain:
-          'solve performs an LU (or Cholesky via scipy for SPD) factorisation and back-substitutes. pinv and lstsq are for rank-deficient or over-determined systems and cost far more, and forming inv is both slower and less accurate.',
+          'solve performs an LU (or Cholesky via scipy for SPD) factorization and back-substitutes. pinv and lstsq are for rank-deficient or over-determined systems and cost far more, and forming inv is both slower and less accurate.',
         b: 0.4,
         bloom: 'apply',
       },
@@ -2793,7 +2793,7 @@ export const CODING: Module[] = [
       },
       {
         id: 'py03_q6',
-        q: 'A loop over 10 million samples takes 40 s; a vectorised version takes 0.3 s. The main reason is:',
+        q: 'A loop over 10 million samples takes 40 s; a vectorized version takes 0.3 s. The main reason is:',
         choices: [
           'NumPy uses the GPU',
           'The per-element Python interpreter overhead and boxing are removed, and the inner loop runs in compiled, cache-friendly C',
@@ -2802,7 +2802,7 @@ export const CODING: Module[] = [
         ],
         answer: 1,
         explain:
-          'Each Python iteration costs tens of nanoseconds of interpreter work and object handling; the array version pays that once and then runs a tight typed loop, often vectorised by the compiler.',
+          'Each Python iteration costs tens of nanoseconds of interpreter work and object handling; the array version pays that once and then runs a tight typed loop, often vectorized by the compiler.',
         b: 0.1,
         bloom: 'understand',
       },
@@ -2811,7 +2811,7 @@ export const CODING: Module[] = [
         q: 'Which statement about np.float32 in an orbit propagator is correct?',
         choices: [
           'It halves memory and is otherwise equivalent',
-          'It gives about seven significant digits, so a position of 7,000,000 m is resolved no better than about a metre',
+          'It gives about seven significant digits, so a position of 7,000,000 m is resolved no better than about a meter',
           'It is more accurate for small numbers',
           'NumPy promotes it to float64 automatically in all operations',
         ],
@@ -2847,7 +2847,7 @@ export const CODING: Module[] = [
     tier: 4,
     title: 'SciPy for Engineering',
     summary:
-      "The engineering half of the scientific stack: root finding and optimisation, dense linear algebra beyond NumPy, signal processing, interpolation, statistics for dispersions, and spatial.transform.Rotation for industrial-strength attitude handling.",
+      "The engineering half of the scientific stack: root finding and optimization, dense linear algebra beyond NumPy, signal processing, interpolation, statistics for dispersions, and spatial.transform.Rotation for industrial-strength attitude handling.",
     prereqs: ['cod_py_03_numpy'],
     hours: 30,
     topics: [
@@ -2993,14 +2993,14 @@ export const CODING: Module[] = [
         id: 'py04_c7',
         front: 'What is an algebraic Riccati equation used for here?',
         back:
-          'Solving it gives the cost-to-go matrix P for an infinite-horizon LQR; the optimal gain is then K = R^-1 B^T P (continuous) or the discrete analogue. scipy.linalg.solve_continuous_are and solve_discrete_are compute P.',
+          'Solving it gives the cost-to-go matrix P for an infinite-horizon LQR; the optimal gain is then K = R^-1 B^T P (continuous) or the discrete analog. scipy.linalg.solve_continuous_are and solve_discrete_are compute P.',
         formula: true,
       },
       {
         id: 'py04_c8',
-        front: 'Why scale decision variables before optimising?',
+        front: 'Why scale decision variables before optimizing?',
         back:
-          'Solvers use one set of tolerances across all variables. If one parameter is 1e-6 and another is 1e6, the trust region and convergence tests are meaningless for one of them. Normalise to order 1, or supply x_scale.',
+          'Solvers use one set of tolerances across all variables. If one parameter is 1e-6 and another is 1e6, the trust region and convergence tests are meaningless for one of them. Normalize to order 1, or supply x_scale.',
       },
       {
         id: 'py04_c9',
@@ -3116,9 +3116,9 @@ export const CODING: Module[] = [
       },
       {
         id: 'py04_q7',
-        q: 'Discretising a continuous controller with cont2discrete at 50 Hz and 500 Hz, what changes?',
+        q: 'Discretizing a continuous controller with cont2discrete at 50 Hz and 500 Hz, what changes?',
         choices: [
-          'Nothing; discretisation is exact',
+          'Nothing; discretization is exact',
           'The 50 Hz version has more phase lag near crossover and may lose stability margin',
           'The 500 Hz version is less accurate',
           'Only the gain changes',
@@ -3149,7 +3149,7 @@ export const CODING: Module[] = [
       'Line, scatter, step, stem, errorbar, fill_between for sigma envelopes',
       'Log and semilog axes; annotated Bode, pole-zero and root-locus plots',
       'Ticks, locators, formatters, datetime axes',
-      'Colour: colourblind-safe cycles, sequential vs diverging, when colour carries data',
+      'Color: colourblind-safe cycles, sequential vs diverging, when color carries data',
       'Text, annotation, legends outside axes, units in every axis label',
       'Saving: vector formats, dpi, font embedding, figure size for a slide vs a report',
       'Animation and interactive review; Plotly for exploratory telemetry',
@@ -3272,7 +3272,7 @@ export const CODING: Module[] = [
         id: 'py05_c2',
         front: 'Mean plus three sigma, or the 0.5th and 99.5th percentiles?',
         back:
-          'Three sigma assumes near-Gaussian behaviour and is what most requirements are written in. Percentiles make no distributional assumption and are what you report when the dispersion is skewed or bounded, for example by a saturation. Show both when the difference is large; it is itself a finding.',
+          'Three sigma assumes near-Gaussian behavior and is what most requirements are written in. Percentiles make no distributional assumption and are what you report when the dispersion is skewed or bounded, for example by a saturation. Show both when the difference is large; it is itself a finding.',
       },
       {
         id: 'py05_c3',
@@ -3302,7 +3302,7 @@ export const CODING: Module[] = [
         id: 'py05_c7',
         front: 'Why label axes with units, always?',
         back:
-          'Because the reader cannot tell metres from feet or radians from degrees from the numbers, and in aerospace that ambiguity has destroyed vehicles. The axis label is the cheapest interface control document in the business.',
+          'Because the reader cannot tell meters from feet or radians from degrees from the numbers, and in aerospace that ambiguity has destroyed vehicles. The axis label is the cheapest interface control document in the business.',
       },
       {
         id: 'py05_c8',
@@ -3312,9 +3312,9 @@ export const CODING: Module[] = [
       },
       {
         id: 'py05_c9',
-        front: 'Rule for colour in an engineering plot',
+        front: 'Rule for color in an engineering plot',
         back:
-          'Colour may encode a category, never a critical distinction on its own: use line style or markers as well, keep to a colourblind-safe cycle, and check the figure in greyscale. Two signals distinguished only by red versus green is a defect.',
+          'Color may encode a category, never a critical distinction on its own: use line style or markers as well, keep to a colourblind-safe cycle, and check the figure in greyscale. Two signals distinguished only by red versus green is a defect.',
       },
       {
         id: 'py05_c10',
@@ -3387,7 +3387,7 @@ export const CODING: Module[] = [
         choices: ['alt', 'Altitude', 'Altitude (m, WGS-84 ellipsoidal)', 'y'],
         answer: 2,
         explain:
-          'Quantity, unit and, where it is ambiguous, the reference. Altitude above the ellipsoid and altitude above mean sea level differ by tens of metres.',
+          'Quantity, unit and, where it is ambiguous, the reference. Altitude above the ellipsoid and altitude above mean sea level differ by tens of meters.',
         b: -0.6,
         bloom: 'understand',
       },
@@ -3427,7 +3427,7 @@ export const CODING: Module[] = [
         choices: [
           'Smaller file size always',
           'Vector output keeps thin phase-margin annotations sharp when the reviewer zooms in',
-          'PDF supports more colours',
+          'PDF supports more colors',
           'PNG cannot show log axes',
         ],
         answer: 1,
@@ -3582,7 +3582,7 @@ export const CODING: Module[] = [
         id: 'py06_c3',
         front: 'Why assert_allclose rather than assert_array_equal for floats?',
         back:
-          'assert_array_equal requires bit-for-bit equality, which differs across BLAS builds, vectorisation and compilers. assert_allclose takes rtol and atol and prints the worst mismatch and its index when it fails.',
+          'assert_array_equal requires bit-for-bit equality, which differs across BLAS builds, vectorization and compilers. assert_allclose takes rtol and atol and prints the worst mismatch and its index when it fails.',
       },
       {
         id: 'py06_c4',
@@ -3624,7 +3624,7 @@ export const CODING: Module[] = [
         id: 'py06_c10',
         front: 'Coverage is 95 percent. What can you still not conclude?',
         back:
-          'That the code is correct. Coverage records executed lines, not checked behaviour, and it says nothing about untested inputs, missing requirements or wrong tolerances. It is a floor for finding untested code, not evidence of correctness.',
+          'That the code is correct. Coverage records executed lines, not checked behavior, and it says nothing about untested inputs, missing requirements or wrong tolerances. It is a floor for finding untested code, not evidence of correctness.',
       },
       {
         id: 'py06_c11',
@@ -3727,7 +3727,7 @@ export const CODING: Module[] = [
         choices: [
           'A false positive, since that input is unlikely',
           'A real defect: gimbal lock is a physical singularity the code must handle explicitly',
-          'A floating-point rounding artefact',
+          'A floating-point rounding artifact',
           'Evidence the property was wrong',
         ],
         answer: 1,
@@ -3740,7 +3740,7 @@ export const CODING: Module[] = [
         id: 'py06_q7',
         q: 'Which statement about coverage is correct?',
         choices: [
-          '100 percent line coverage implies the tests assert correct behaviour',
+          '100 percent line coverage implies the tests assert correct behavior',
           'Coverage measures execution, so a test with no assertions still raises it',
           'Coverage and MC/DC are the same measure',
           'Coverage proves the requirements are met',
@@ -3788,7 +3788,7 @@ export const CODING: Module[] = [
       'rtol and atol: what each controls and how to choose them from the state magnitudes',
       't_eval versus dense_output',
       'Events: terminal, direction, apogee and impact detection',
-      'Stiffness: how to recognise it and when to switch to an implicit method',
+      'Stiffness: how to recognize it and when to switch to an implicit method',
       'Energy and Jacobi-constant drift as an independent accuracy check',
       'Symplectic integrators and long-horizon propagation',
       'Discontinuities: staging, thrust cutoff and why you restart the solver',
@@ -3799,7 +3799,7 @@ export const CODING: Module[] = [
       'Propagate a two-body orbit for many revolutions and bound the relative energy drift.',
       'Choose a method and tolerances for a stated accuracy requirement and defend the choice.',
       'Locate an apogee crossing to sub-millisecond accuracy with an event function.',
-      'Recognise stiffness from solver behaviour rather than from theory alone.',
+      'Recognize stiffness from solver behavior rather than from theory alone.',
     ],
     resources: [
       {
@@ -3860,7 +3860,7 @@ export const CODING: Module[] = [
         id: 'py07_ex2',
         title: 'Two-body propagation and apogee detection',
         prompt:
-          'Using scipy.integrate.solve_ivp, implement `propagate(r0, v0, t_end, mu, rtol, atol)` returning the final position and velocity of a point mass in a two-body gravity field, and `apogee_time(r0, v0, t_max, mu)` returning the time of the first apogee, found with a solver event on the radial rate (the dot product of r and v) crossing zero from positive to negative. Use a high-accuracy method; the tests require sub-metre closure after a full revolution.',
+          'Using scipy.integrate.solve_ivp, implement `propagate(r0, v0, t_end, mu, rtol, atol)` returning the final position and velocity of a point mass in a two-body gravity field, and `apogee_time(r0, v0, t_max, mu)` returning the time of the first apogee, found with a solver event on the radial rate (the dot product of r and v) crossing zero from positive to negative. Use a high-accuracy method; the tests require sub-meter closure after a full revolution.',
         kind: 'code',
         lang: 'python',
         starter:
@@ -3918,7 +3918,7 @@ export const CODING: Module[] = [
       },
       {
         id: 'py07_c5',
-        front: 'How do you recognise stiffness from solver behaviour?',
+        front: 'How do you recognize stiffness from solver behavior?',
         back:
           'The solver takes enormous numbers of tiny steps on a smooth-looking solution, and tightening the tolerance barely changes the answer while multiplying the cost. The fix is an implicit method (Radau, BDF) that is stable at large steps.',
       },
@@ -4103,20 +4103,20 @@ export const CODING: Module[] = [
     tier: 5,
     title: 'Python Performance for Monte Carlo Work',
     summary:
-      "Taking a 500-case dispersion from forty minutes to two. Profile first, fix the algorithm, vectorise, then reach for Numba, multiprocessing or a C++ extension, in that order and only with measurements.",
+      "Taking a 500-case dispersion from forty minutes to two. Profile first, fix the algorithm, vectorize, then reach for Numba, multiprocessing or a C++ extension, in that order and only with measurements.",
     prereqs: ['cod_py_04_scipy', 'cod_py_05_plotting'],
     hours: 25,
     topics: [
       'Measure first: timeit, cProfile, pstats, snakeviz, line_profiler, memory_profiler',
-      'Algorithmic complexity before micro-optimisation',
-      'Vectorisation as the default; when it costs more memory than it saves time',
+      'Algorithmic complexity before micro-optimization',
+      'Vectorization as the default; when it costs more memory than it saves time',
       'Numba njit: nopython mode, supported subset, cache=True, parallel and prange',
       'Why an njit function can be slower: compile time, object mode fallback, unsupported types',
       'Cython and pybind11; calling a C++ simulation core from a Python harness',
       'The GIL: what it does and does not block',
       'Threads for I/O and released-GIL numerics, processes for CPU-bound Python',
       'multiprocessing, concurrent.futures and joblib for embarrassingly parallel Monte Carlo',
-      'Serialisation cost and why passing large arrays between processes can dominate',
+      'Serialization cost and why passing large arrays between processes can dominate',
       'numpy.memmap, chunking and Parquet for telemetry larger than memory',
       'Caching and precomputation: lookup tables, interpolators built once',
       'Benchmark methodology: warmup, repetitions, frequency scaling, noise',
@@ -4124,7 +4124,7 @@ export const CODING: Module[] = [
     objectives: [
       'Profile a simulator and identify the true hotspot before changing any code.',
       'Replace an O(n squared) routine with an O(n) one and show the scaling change.',
-      'Decide correctly between vectorisation, Numba, processes and a native extension.',
+      'Decide correctly between vectorization, Numba, processes and a native extension.',
       'Explain why threads do not speed up pure-Python compute but do speed up NumPy-heavy code.',
       'Report a benchmark honestly, with a baseline, a method and run-to-run variability.',
     ],
@@ -4224,7 +4224,7 @@ export const CODING: Module[] = [
     cards: [
       {
         id: 'py08_c1',
-        front: 'First rule of optimisation',
+        front: 'First rule of optimization',
         back:
           'Measure. Profile the real workload, find where the time actually is, and record a baseline number. Engineers guess wrong about hotspots most of the time, and without a baseline you cannot prove the change helped.',
       },
@@ -4244,7 +4244,7 @@ export const CODING: Module[] = [
         id: 'py08_c4',
         front: 'Threads or processes for a 500-case Monte Carlo in pure Python?',
         back:
-          'Processes. Each case is CPU-bound Python, so threads serialise on the GIL. joblib or ProcessPoolExecutor gives near-linear scaling until memory bandwidth or per-case startup cost dominates.',
+          'Processes. Each case is CPU-bound Python, so threads serialize on the GIL. joblib or ProcessPoolExecutor gives near-linear scaling until memory bandwidth or per-case startup cost dominates.',
       },
       {
         id: 'py08_c5',
@@ -4260,27 +4260,27 @@ export const CODING: Module[] = [
       },
       {
         id: 'py08_c7',
-        front: 'When does vectorisation cost more than it saves?',
+        front: 'When does vectorization cost more than it saves?',
         back:
-          'When the intermediate arrays no longer fit in cache or memory: a broadcast that materialises an N by M temporary can be slower than a loop, and can simply exhaust RAM. Chunk the computation, or use einsum and in-place operations.',
+          'When the intermediate arrays no longer fit in cache or memory: a broadcast that materializes an N by M temporary can be slower than a loop, and can simply exhaust RAM. Chunk the computation, or use einsum and in-place operations.',
       },
       {
         id: 'py08_c8',
         front: 'Why can passing big arrays to worker processes dominate the runtime?',
         back:
-          'Each argument is pickled, copied through a pipe and unpickled per task. If the per-case work is small relative to the data, you pay serialisation for nothing; batch the work, use shared memory, or have workers load data themselves.',
+          'Each argument is pickled, copied through a pipe and unpickled per task. If the per-case work is small relative to the data, you pay serialization for nothing; batch the work, use shared memory, or have workers load data themselves.',
       },
       {
         id: 'py08_c9',
         front: 'What is numpy.memmap for?',
         back:
-          'Treating an on-disk array as an ndarray, with the OS paging in only the parts you touch. It is how you analyse a telemetry file larger than RAM without writing a chunking loop by hand.',
+          'Treating an on-disk array as an ndarray, with the OS paging in only the parts you touch. It is how you analyze a telemetry file larger than RAM without writing a chunking loop by hand.',
       },
       {
         id: 'py08_c10',
         front: 'Why is pybind11 the realistic pattern for a heavy GNC core?',
         back:
-          'The numerics live in tested, optimised C++ that can also be flown or reused, and Python drives the dispersion harness, the plotting and the reporting. You get compiled speed where it matters and scripting speed where it matters.',
+          'The numerics live in tested, optimized C++ that can also be flown or reused, and Python drives the dispersion harness, the plotting and the reporting. You get compiled speed where it matters and scripting speed where it matters.',
       },
       {
         id: 'py08_c11',
@@ -4292,7 +4292,7 @@ export const CODING: Module[] = [
         id: 'py08_c12',
         front: 'Order of attack when a simulation is too slow',
         back:
-          'Profile, fix the algorithm, remove redundant work and recomputation, vectorise, then compile the remaining scalar hotspot with Numba or C++, then parallelise across cases. Parallelising a bad algorithm just buys you the same waste on more cores.',
+          'Profile, fix the algorithm, remove redundant work and recomputation, vectorize, then compile the remaining scalar hotspot with Numba or C++, then parallelise across cases. Parallelising a bad algorithm just buys you the same waste on more cores.',
       },
       {
         id: 'py08_c13',
@@ -4307,7 +4307,7 @@ export const CODING: Module[] = [
         q: 'A 500-case Monte Carlo of pure-Python physics takes 40 minutes on an 8-core machine. Best first change?',
         choices: [
           'Run the cases in 8 threads',
-          'Profile one case, then vectorise or compile the hotspot, and only then parallelise across cases with processes',
+          'Profile one case, then vectorize or compile the hotspot, and only then parallelise across cases with processes',
           'Rewrite the whole simulator in C++',
           'Switch to float32',
         ],
@@ -4328,7 +4328,7 @@ export const CODING: Module[] = [
         ],
         answer: 1,
         explain:
-          'Compiled extensions that release the GIL run genuinely concurrently. Everything expressed as Python bytecode is serialised by the interpreter lock.',
+          'Compiled extensions that release the GIL run genuinely concurrently. Everything expressed as Python bytecode is serialized by the interpreter lock.',
         b: 0.6,
         bloom: 'understand',
       },
@@ -4364,16 +4364,16 @@ export const CODING: Module[] = [
       },
       {
         id: 'py08_q5',
-        q: 'A vectorised rewrite of a loop is slower and uses 30 GB of RAM. Most likely cause?',
+        q: 'A vectorized rewrite of a loop is slower and uses 30 GB of RAM. Most likely cause?',
         choices: [
           'NumPy is misconfigured',
-          'A broadcast materialised a huge intermediate array that no longer fits in cache or memory',
+          'A broadcast materialized a huge intermediate array that no longer fits in cache or memory',
           'The loop version was compiled',
           'float64 is slower than float32 here',
         ],
         answer: 1,
         explain:
-          'Vectorisation trades memory traffic for interpreter overhead. Once the temporaries exceed cache, memory bandwidth dominates; chunk the computation or fuse it with einsum or in-place ops.',
+          'Vectorization trades memory traffic for interpreter overhead. Once the temporaries exceed cache, memory bandwidth dominates; chunk the computation or fuse it with einsum or in-place ops.',
         b: 0.8,
         bloom: 'analyze',
       },
@@ -4388,7 +4388,7 @@ export const CODING: Module[] = [
         ],
         answer: 1,
         explain:
-          'Scaling behaviour is the signature of complexity. A dominant function may just need a better implementation; quadratic growth needs a different algorithm.',
+          'Scaling behavior is the signature of complexity. A dominant function may just need a better implementation; quadratic growth needs a different algorithm.',
         b: 0.7,
         bloom: 'analyze',
       },
@@ -4542,7 +4542,7 @@ export const CODING: Module[] = [
         id: 'py09_c5',
         front: 'How do you decide a semantic version bump?',
         back:
-          'Break a public interface, bump MAJOR. Add capability compatibly, bump MINOR. Fix behaviour without interface change, bump PATCH. For a simulation library, a change that alters numerical results is at minimum a MINOR and arguably a MAJOR, and must be in the changelog.',
+          'Break a public interface, bump MAJOR. Add capability compatibly, bump MINOR. Fix behavior without interface change, bump PATCH. For a simulation library, a change that alters numerical results is at minimum a MINOR and arguably a MAJOR, and must be in the changelog.',
       },
       {
         id: 'py09_c6',
@@ -4578,7 +4578,7 @@ export const CODING: Module[] = [
         id: 'py09_c11',
         front: 'Why is __init__.py still worth writing explicitly?',
         back:
-          'It marks a regular package, controls what the package exports, and avoids ambiguity with implicit namespace packages, which silently merge directories and produce baffling import behaviour in a large monorepo.',
+          'It marks a regular package, controls what the package exports, and avoids ambiguity with implicit namespace packages, which silently merge directories and produce baffling import behavior in a large monorepo.',
       },
       {
         id: 'py09_c12',
@@ -4606,10 +4606,10 @@ export const CODING: Module[] = [
       {
         id: 'py09_q2',
         q: 'Your library changes a default integration tolerance, altering numerical output. What is the minimum correct version bump?',
-        choices: ['PATCH', 'MINOR, with a changelog entry noting the behaviour change', 'No bump', 'Only the build number'],
+        choices: ['PATCH', 'MINOR, with a changelog entry noting the behavior change', 'No bump', 'Only the build number'],
         answer: 1,
         explain:
-          'Users consuming your results would see different numbers, which is a behaviour change rather than a bug fix. Many teams treat it as MAJOR; nobody should treat it as a silent PATCH.',
+          'Users consuming your results would see different numbers, which is a behavior change rather than a bug fix. Many teams treat it as MAJOR; nobody should treat it as a silent PATCH.',
         b: 0.6,
         bloom: 'apply',
       },
@@ -4694,7 +4694,7 @@ export const CODING: Module[] = [
       'g++ and clang++ invocation; -Wall -Wextra -Wpedantic -Werror; -g; -O0 to -O3; -std=c++20',
       'Reading a linker error: undefined reference, multiple definition',
       'Fundamental types; fixed-width types from cstdint; size_t',
-      'Integer promotion, signed/unsigned pitfalls, signed overflow as undefined behaviour',
+      'Integer promotion, signed/unsigned pitfalls, signed overflow as undefined behavior',
       'const, constexpr, consteval, auto',
       'Values, references and the difference from Python names',
       'Functions, overloading, default arguments',
@@ -4708,7 +4708,7 @@ export const CODING: Module[] = [
     objectives: [
       'Build a multi-file program by hand with g++, then with a Makefile, and explain every flag.',
       'Diagnose an undefined-reference and a multiple-definition error from the message alone.',
-      'Explain what undefined behaviour is and name three concrete instances.',
+      'Explain what undefined behavior is and name three concrete instances.',
       'Choose the right fixed-width integer type for a telemetry field and justify it.',
       'Read a small program and state where every object lives and when it dies.',
     ],
@@ -4793,9 +4793,9 @@ export const CODING: Module[] = [
       },
       {
         id: 'cpp01_c4',
-        front: 'What is undefined behaviour? Give three instances.',
+        front: 'What is undefined behavior? Give three instances.',
         back:
-          'Behaviour the standard places no requirement on, so the compiler may assume it never happens and optimise accordingly. Examples: signed integer overflow, reading an uninitialised variable, indexing past the end of an array, dereferencing a null or dangling pointer, and a data race.',
+          'Behavior the standard places no requirement on, so the compiler may assume it never happens and optimize accordingly. Examples: signed integer overflow, reading an uninitialised variable, indexing past the end of an array, dereferencing a null or dangling pointer, and a data race.',
       },
       {
         id: 'cpp01_c5',
@@ -4831,7 +4831,7 @@ export const CODING: Module[] = [
         id: 'cpp01_c10',
         front: 'enum class versus plain enum',
         back:
-          'enum class is scoped (you must write Colour::Red) and does not implicitly convert to int, so it cannot silently mix with unrelated enums or integers. Plain enums leak their enumerators into the surrounding scope.',
+          'enum class is scoped (you must write Color::Red) and does not implicitly convert to int, so it cannot silently mix with unrelated enums or integers. Plain enums leak their enumerators into the surrounding scope.',
       },
       {
         id: 'cpp01_c11',
@@ -4870,7 +4870,7 @@ export const CODING: Module[] = [
       },
       {
         id: 'cpp01_q2',
-        q: 'Which is undefined behaviour?',
+        q: 'Which is undefined behavior?',
         choices: [
           'Unsigned integer overflow',
           'Signed integer overflow',
@@ -4903,13 +4903,13 @@ export const CODING: Module[] = [
         q: 'Which statement about -O2 versus -O0 is most important to a flight-software team?',
         choices: [
           '-O2 always produces the same results as -O0',
-          '-O2 can expose latent undefined behaviour and change floating-point contraction, so both configurations must be tested',
+          '-O2 can expose latent undefined behavior and change floating-point contraction, so both configurations must be tested',
           '-O0 is unsafe to ship',
-          'Optimisation changes the language standard',
+          'Optimization changes the language standard',
         ],
         answer: 1,
         explain:
-          'Optimisers exploit the assumption that UB never happens, so a program that works unoptimised can fail optimised. Test what you ship, and also test instrumented builds.',
+          'Optimizers exploit the assumption that UB never happens, so a program that works unoptimised can fail optimized. Test what you ship, and also test instrumented builds.',
         b: 0.8,
         bloom: 'understand',
       },
@@ -4949,7 +4949,7 @@ export const CODING: Module[] = [
         choices: ['const int n = f();', 'constexpr int n = 8;', 'static int n = 8;', 'int const* n;'],
         answer: 1,
         explain:
-          'constexpr guarantees compile-time evaluation. A const initialised from a runtime call is not a constant expression, and static only affects linkage and storage duration.',
+          'constexpr guarantees compile-time evaluation. A const initialized from a runtime call is not a constant expression, and static only affects linkage and storage duration.',
         b: 0.4,
         bloom: 'apply',
       },
@@ -4968,16 +4968,16 @@ export const CODING: Module[] = [
     prereqs: ['cod_cpp_01_basics'],
     hours: 40,
     topics: [
-      'Storage duration: automatic, static, thread-local, dynamic; lifetime and initialisation order',
+      'Storage duration: automatic, static, thread-local, dynamic; lifetime and initialization order',
       'Pointers: dereference, arithmetic, nullptr, pointer-to-const vs const pointer, void*, function pointers',
       'References: lvalue and rvalue, binding rules, lifetime extension of temporaries',
       'Array-to-pointer decay and why sizeof breaks at a function boundary',
       'new/delete, new[]/delete[], placement new',
       'The stack: frames, stack overflow, why deep recursion is banned in flight code',
-      'The heap: fragmentation, non-deterministic allocation time, allocator behaviour',
+      'The heap: fragmentation, non-deterministic allocation time, allocator behavior',
       'Dangling pointers, use-after-free, double free, buffer overrun, uninitialised reads',
       'Alignment, alignas, struct padding, offsetof, packing and wire formats',
-      'Endianness and serialising telemetry',
+      'Endianness and serializing telemetry',
       'Strict aliasing; memcpy and std::bit_cast as the legal reinterpretation',
       'volatile: what it does (memory-mapped I/O) and does not do (threads)',
       'Value semantics vs reference semantics; the rule of zero, three and five',
@@ -5038,13 +5038,13 @@ export const CODING: Module[] = [
         id: 'cpp02_ex2',
         title: 'Struct layout and a wire format',
         prompt:
-          'Given struct Packet { uint8_t id; uint32_t t_ms; uint16_t flags; double value; }; print sizeof(Packet) and the offsetof each member on a 64-bit build, then reorder the members to minimise padding and print the new size. Finally, write serialise(const Packet&, uint8_t* out) that produces a 15-byte little-endian wire image by shifting each field into place, so the result depends on neither the struct layout nor the host byte order. Expected: the naive struct is 24 bytes, the reordered one is 16, and the wire image is always 15.',
+          'Given struct Packet { uint8_t id; uint32_t t_ms; uint16_t flags; double value; }; print sizeof(Packet) and the offsetof each member on a 64-bit build, then reorder the members to minimize padding and print the new size. Finally, write serialize(const Packet&, uint8_t* out) that produces a 15-byte little-endian wire image by shifting each field into place, so the result depends on neither the struct layout nor the host byte order. Expected: the naive struct is 24 bytes, the reordered one is 16, and the wire image is always 15.',
         kind: 'code',
         lang: 'cpp',
         starter:
-          '#include <cstdint>\n#include <cstddef>\n#include <cstring>\n#include <cstdio>\n\nstruct Packet {\n    std::uint8_t id;\n    std::uint32_t t_ms;\n    std::uint16_t flags;\n    double value;\n};\n\nint main() {\n    std::printf("%zu\\n", sizeof(Packet));\n    // TODO: offsets, reordered struct, serialise()\n    return 0;\n}\n',
+          '#include <cstdint>\n#include <cstddef>\n#include <cstring>\n#include <cstdio>\n\nstruct Packet {\n    std::uint8_t id;\n    std::uint32_t t_ms;\n    std::uint16_t flags;\n    double value;\n};\n\nint main() {\n    std::printf("%zu\\n", sizeof(Packet));\n    // TODO: offsets, reordered struct, serialize()\n    return 0;\n}\n',
         solution:
-          '#include <cstdint>\n#include <cstddef>\n#include <cstring>\n#include <cstdio>\n\nstruct Packet {           // 24 bytes: 1 + 3 pad + 4 + 2 + 6 pad + 8\n    std::uint8_t id;\n    std::uint32_t t_ms;\n    std::uint16_t flags;\n    double value;\n};\n\nstruct PacketOrdered {    // 16 bytes: 8 + 4 + 2 + 1 + 1 pad\n    double value;\n    std::uint32_t t_ms;\n    std::uint16_t flags;\n    std::uint8_t id;\n};\n\n// Shifting is what makes the image little-endian on every host. A memcpy of\n// the field copies the HOST byte order, which only looks right on a\n// little-endian machine.\nstatic void put_u16(std::uint8_t* out, std::uint16_t v) {\n    for (int i = 0; i < 2; ++i) out[i] = std::uint8_t(v >> (8 * i));\n}\nstatic void put_u32(std::uint8_t* out, std::uint32_t v) {\n    for (int i = 0; i < 4; ++i) out[i] = std::uint8_t(v >> (8 * i));\n}\nstatic void put_f64(std::uint8_t* out, double v) {\n    std::uint64_t bits;\n    std::memcpy(&bits, &v, 8);   // type pun only; the shifts below fix the order\n    for (int i = 0; i < 8; ++i) out[i] = std::uint8_t(bits >> (8 * i));\n}\n\n// 15-byte little-endian wire image, independent of struct layout and of host\n// byte order.\nvoid serialise(const Packet& p, std::uint8_t* out) {\n    std::size_t k = 0;\n    out[k] = p.id;              k += 1;\n    put_u32(out + k, p.t_ms);   k += 4;\n    put_u16(out + k, p.flags);  k += 2;\n    put_f64(out + k, p.value);  k += 8;  // k == 15\n}\n\nint main() {\n    std::printf("%zu\\n", sizeof(Packet));        // 24\n    std::printf("%zu\\n", offsetof(Packet, t_ms)); // 4\n    std::printf("%zu\\n", offsetof(Packet, value));// 16\n    std::printf("%zu\\n", sizeof(PacketOrdered));  // 16\n\n    Packet p{0x2a, 0x11223344, 0xbeef, 1.0};\n    std::uint8_t wire[15];\n    serialise(p, wire);\n    for (std::size_t i = 0; i < sizeof wire; ++i) std::printf("%02x ", wire[i]);\n    std::printf("\\n");  // 2a 44 33 22 11 ef be 00 00 00 00 00 00 f0 3f\n    return 0;\n}\n',
+          '#include <cstdint>\n#include <cstddef>\n#include <cstring>\n#include <cstdio>\n\nstruct Packet {           // 24 bytes: 1 + 3 pad + 4 + 2 + 6 pad + 8\n    std::uint8_t id;\n    std::uint32_t t_ms;\n    std::uint16_t flags;\n    double value;\n};\n\nstruct PacketOrdered {    // 16 bytes: 8 + 4 + 2 + 1 + 1 pad\n    double value;\n    std::uint32_t t_ms;\n    std::uint16_t flags;\n    std::uint8_t id;\n};\n\n// Shifting is what makes the image little-endian on every host. A memcpy of\n// the field copies the HOST byte order, which only looks right on a\n// little-endian machine.\nstatic void put_u16(std::uint8_t* out, std::uint16_t v) {\n    for (int i = 0; i < 2; ++i) out[i] = std::uint8_t(v >> (8 * i));\n}\nstatic void put_u32(std::uint8_t* out, std::uint32_t v) {\n    for (int i = 0; i < 4; ++i) out[i] = std::uint8_t(v >> (8 * i));\n}\nstatic void put_f64(std::uint8_t* out, double v) {\n    std::uint64_t bits;\n    std::memcpy(&bits, &v, 8);   // type pun only; the shifts below fix the order\n    for (int i = 0; i < 8; ++i) out[i] = std::uint8_t(bits >> (8 * i));\n}\n\n// 15-byte little-endian wire image, independent of struct layout and of host\n// byte order.\nvoid serialize(const Packet& p, std::uint8_t* out) {\n    std::size_t k = 0;\n    out[k] = p.id;              k += 1;\n    put_u32(out + k, p.t_ms);   k += 4;\n    put_u16(out + k, p.flags);  k += 2;\n    put_f64(out + k, p.value);  k += 8;  // k == 15\n}\n\nint main() {\n    std::printf("%zu\\n", sizeof(Packet));        // 24\n    std::printf("%zu\\n", offsetof(Packet, t_ms)); // 4\n    std::printf("%zu\\n", offsetof(Packet, value));// 16\n    std::printf("%zu\\n", sizeof(PacketOrdered));  // 16\n\n    Packet p{0x2a, 0x11223344, 0xbeef, 1.0};\n    std::uint8_t wire[15];\n    serialize(p, wire);\n    for (std::size_t i = 0; i < sizeof wire; ++i) std::printf("%02x ", wire[i]);\n    std::printf("\\n");  // 2a 44 33 22 11 ef be 00 00 00 00 00 00 f0 3f\n    return 0;\n}\n',
         hours: 3,
       },
     ],
@@ -5059,7 +5059,7 @@ export const CODING: Module[] = [
         id: 'cpp02_c2',
         front: 'Pointer versus reference: the practical differences',
         back:
-          'A reference must be bound at initialisation, cannot be rebound and cannot be null; a pointer can be null, reseated and arithmetic-ed. Use a reference for a required parameter, a pointer (or std::optional) when absence is meaningful.',
+          'A reference must be bound at initialization, cannot be rebound and cannot be null; a pointer can be null, reseated and arithmetic-ed. Use a reference for a required parameter, a pointer (or std::optional) when absence is meaningful.',
       },
       {
         id: 'cpp02_c3',
@@ -5071,7 +5071,7 @@ export const CODING: Module[] = [
         id: 'cpp02_c4',
         front: 'Why is shared_ptr a poor default in a 1 kHz control loop?',
         back:
-          'Its reference count is atomic, so every copy is a synchronised read-modify-write; and destruction happens at an unpredictable point in whichever thread drops the last reference, which makes timing non-deterministic. It also costs a second allocation unless you use make_shared.',
+          'Its reference count is atomic, so every copy is a synchronized read-modify-write; and destruction happens at an unpredictable point in whichever thread drops the last reference, which makes timing non-deterministic. It also costs a second allocation unless you use make_shared.',
       },
       {
         id: 'cpp02_c5',
@@ -5081,7 +5081,7 @@ export const CODING: Module[] = [
       },
       {
         id: 'cpp02_c6',
-        front: 'Why is new banned after initialisation in flight software?',
+        front: 'Why is new banned after initialization in flight software?',
         back:
           'Allocation time is not bounded (the allocator may search free lists or take a lock), and long-running allocation and release fragments the heap so a later request can fail with memory still available. Both are unacceptable when a deadline must be met every cycle for years.',
       },
@@ -5119,7 +5119,7 @@ export const CODING: Module[] = [
         id: 'cpp02_c12',
         front: 'Why does strict aliasing matter, and what is the legal way to reinterpret bytes?',
         back:
-          'The compiler assumes objects of unrelated types do not overlap, so a reinterpret_cast read of a float through an int* is undefined and can be optimised into nonsense. Use std::memcpy or, in C++20, std::bit_cast.',
+          'The compiler assumes objects of unrelated types do not overlap, so a reinterpret_cast read of a float through an int* is undefined and can be optimized into nonsense. Use std::memcpy or, in C++20, std::bit_cast.',
       },
       {
         id: 'cpp02_c13',
@@ -5236,7 +5236,7 @@ export const CODING: Module[] = [
         ],
         answer: 1,
         explain:
-          'The stateless default deleter is empty-base optimised away. The control block and atomic counter belong to shared_ptr.',
+          'The stateless default deleter is empty-base optimized away. The control block and atomic counter belong to shared_ptr.',
         b: 0.5,
         bloom: 'recall',
       },
@@ -5255,8 +5255,8 @@ export const CODING: Module[] = [
     prereqs: ['cod_cpp_02_memory'],
     hours: 35,
     topics: [
-      'Constructors: default, parameterised, delegating, converting, explicit',
-      'Member initialiser lists and the actual initialisation order (declaration order, not list order)',
+      'Constructors: default, parameterized, delegating, converting, explicit',
+      'Member initializer lists and the actual initialization order (declaration order, not list order)',
       'Destructors; virtual destructors for polymorphic bases',
       'Copy constructor and copy assignment; deep versus shallow',
       'Move constructor and move assignment; noexcept on moves and why containers check it',
@@ -5332,15 +5332,15 @@ export const CODING: Module[] = [
     cards: [
       {
         id: 'cpp03_c1',
-        front: 'In what order are members initialised?',
+        front: 'In what order are members initialized?',
         back:
-          'In the order they are declared in the class, regardless of the order written in the member initialiser list. Writing them out of order earns a warning and is a real bug source when one member is initialised from another.',
+          'In the order they are declared in the class, regardless of the order written in the member initializer list. Writing them out of order earns a warning and is a real bug source when one member is initialized from another.',
       },
       {
         id: 'cpp03_c2',
         front: 'Why must a polymorphic base class have a virtual destructor?',
         back:
-          'Deleting a derived object through a base pointer with a non-virtual destructor is undefined behaviour: only the base destructor runs, so derived members leak. Either make it virtual or make the destructor protected and non-virtual to forbid that deletion.',
+          'Deleting a derived object through a base pointer with a non-virtual destructor is undefined behavior: only the base destructor runs, so derived members leak. Either make it virtual or make the destructor protected and non-virtual to forbid that deletion.',
       },
       {
         id: 'cpp03_c3',
@@ -5466,13 +5466,13 @@ export const CODING: Module[] = [
         q: 'struct S { int a; int b; S(int x) : b(x), a(b) {} }; What is the defect?',
         choices: [
           'It will not compile',
-          'a is initialised before b because members initialise in declaration order, so a reads an uninitialised b',
-          'b is initialised twice',
+          'a is initialized before b because members initialize in declaration order, so a reads an uninitialised b',
+          'b is initialized twice',
           'Nothing is wrong',
         ],
         answer: 1,
         explain:
-          'Declaration order wins over list order. Compilers warn with -Wreorder; the fix is to initialise a from x directly.',
+          'Declaration order wins over list order. Compilers warn with -Wreorder; the fix is to initialize a from x directly.',
         b: 1.1,
         bloom: 'analyze',
       },
@@ -5526,13 +5526,13 @@ export const CODING: Module[] = [
         q: 'A hot loop calls a virtual function ten million times. CRTP converts it to a direct call. What is the main source of the speedup?',
         choices: [
           'Smaller object size',
-          'Inlining becomes possible, which also exposes the body to further optimisation',
+          'Inlining becomes possible, which also exposes the body to further optimization',
           'Fewer cache misses on the data',
           'The compiler skips bounds checks',
         ],
         answer: 1,
         explain:
-          'The indirect call itself is cheap; the real cost is the optimisation barrier. Once inlined, constant propagation and vectorisation can apply.',
+          'The indirect call itself is cheap; the real cost is the optimization barrier. Once inlined, constant propagation and vectorization can apply.',
         b: 1.2,
         bloom: 'analyze',
       },
@@ -5571,7 +5571,7 @@ export const CODING: Module[] = [
     ],
     objectives: [
       'Pick the right container for a stated access pattern and defend it against two alternatives.',
-      'Rewrite a loop-heavy file using algorithms without changing behaviour.',
+      'Rewrite a loop-heavy file using algorithms without changing behavior.',
       'State the iterator-invalidation rule for vector, deque, map and unordered_map.',
       'Use chrono correctly for a control-loop period and for a telemetry timestamp.',
       'Explain the erase-remove idiom and why erase alone is the common bug.',
@@ -5691,7 +5691,7 @@ export const CODING: Module[] = [
         id: 'cpp04_c11',
         front: 'Why do many flight-software teams build with -fno-exceptions?',
         back:
-          'Throwing has unbounded, hard-to-analyse worst-case time, it needs unwinding tables and a runtime, and a missed catch terminates the process. Deterministic error returns (error codes, std::expected-style types) are auditable and bounded.',
+          'Throwing has unbounded, hard-to-analyze worst-case time, it needs unwinding tables and a runtime, and a missed catch terminates the process. Deterministic error returns (error codes, std::expected-style types) are auditable and bounded.',
       },
       {
         id: 'cpp04_c12',
@@ -5779,7 +5779,7 @@ export const CODING: Module[] = [
         choices: ['system_clock', 'steady_clock', 'high_resolution_clock, which is portable and monotonic', 'time()'],
         answer: 1,
         explain:
-          'steady_clock is guaranteed monotonic. high_resolution_clock is an alias for one of the others and is not portably monotonic, and system_clock can be stepped by time synchronisation.',
+          'steady_clock is guaranteed monotonic. high_resolution_clock is an alias for one of the others and is not portably monotonic, and system_clock can be stepped by time synchronization.',
         b: 0.6,
         bloom: 'apply',
       },
@@ -5843,7 +5843,7 @@ export const CODING: Module[] = [
     prereqs: ['cod_cpp_04_stl'],
     hours: 35,
     topics: [
-      'Function and class templates; argument deduction; explicit and partial specialisation',
+      'Function and class templates; argument deduction; explicit and partial specialization',
       'Non-type template parameters: the key to Matrix<double,3,3>',
       'Variadic templates, parameter packs, fold expressions',
       'typename vs class; dependent names and the typename/template disambiguators',
@@ -5862,7 +5862,7 @@ export const CODING: Module[] = [
       'Write a Matrix<T, R, C> whose dimension mismatch is a compile error, not a runtime assert.',
       'Constrain a template with a concept and produce a readable diagnostic on misuse.',
       'Explain what an expression template is and why Eigen uses one.',
-      'Use if constexpr to select behaviour on a type property without specialisation.',
+      'Use if constexpr to select behavior on a type property without specialization.',
       'Compute a rotation lookup table at compile time with constexpr.',
     ],
     resources: [
@@ -5950,7 +5950,7 @@ export const CODING: Module[] = [
         id: 'cpp05_c5',
         front: 'if constexpr: what does it change?',
         back:
-          'The untaken branch is not instantiated, so it may contain code that would be ill-formed for that type. It replaces tag dispatch and much specialisation with an ordinary readable if.',
+          'The untaken branch is not instantiated, so it may contain code that would be ill-formed for that type. It replaces tag dispatch and much specialization with an ordinary readable if.',
       },
       {
         id: 'cpp05_c6',
@@ -5978,9 +5978,9 @@ export const CODING: Module[] = [
       },
       {
         id: 'cpp05_c10',
-        front: 'Partial specialisation: what can and cannot be partially specialised?',
+        front: 'Partial specialization: what can and cannot be partially specialized?',
         back:
-          'Class templates and variable templates can; function templates cannot (you overload instead). This is why generic function customisation is usually done with overloads, tag types or if constexpr.',
+          'Class templates and variable templates can; function templates cannot (you overload instead). This is why generic function customization is usually done with overloads, tag types or if constexpr.',
       },
       {
         id: 'cpp05_c11',
@@ -5992,7 +5992,7 @@ export const CODING: Module[] = [
         id: 'cpp05_c12',
         front: 'Policy-based design',
         back:
-          'Behaviour is injected as template parameters (a storage policy, a checking policy), so the composition is resolved at compile time with no virtual calls. It is how you make a library configurable for both a desktop sim and a flight target from one source.',
+          'Behavior is injected as template parameters (a storage policy, a checking policy), so the composition is resolved at compile time with no virtual calls. It is how you make a library configurable for both a desktop sim and a flight target from one source.',
       },
       {
         id: 'cpp05_c13',
@@ -6052,7 +6052,7 @@ export const CODING: Module[] = [
         q: 'Why does if constexpr allow a branch containing code invalid for the current type?',
         choices: [
           'It defers the check to runtime',
-          'The discarded branch is not instantiated for that specialisation',
+          'The discarded branch is not instantiated for that specialization',
           'It disables type checking',
           'It requires the branch to be a template',
         ],
@@ -6066,24 +6066,24 @@ export const CODING: Module[] = [
         id: 'cpp05_q5',
         q: 'Your build time tripled after moving numerical kernels into headers as templates. Which mitigation is most appropriate?',
         choices: [
-          'Disable optimisation',
+          'Disable optimization',
           'Explicitly instantiate the handful of types you actually use and declare them extern template in the header',
           'Increase the parallel job count only',
           'Convert everything to virtual dispatch',
         ],
         answer: 1,
         explain:
-          'Explicit instantiation compiles each specialisation once in one translation unit; extern template stops every other unit from re-instantiating it.',
+          'Explicit instantiation compiles each specialization once in one translation unit; extern template stops every other unit from re-instantiating it.',
         b: 1.2,
         bloom: 'apply',
       },
       {
         id: 'cpp05_q6',
-        q: 'Which can be partially specialised?',
+        q: 'Which can be partially specialized?',
         choices: ['Function templates', 'Class templates', 'Lambdas', 'Concepts'],
         answer: 1,
         explain:
-          'Function templates support overloading but not partial specialisation, which is a frequent source of surprising overload resolution when people try.',
+          'Function templates support overloading but not partial specialization, which is a frequent source of surprising overload resolution when people try.',
         b: 0.7,
         bloom: 'recall',
       },
@@ -6098,7 +6098,7 @@ export const CODING: Module[] = [
         ],
         answer: 1,
         explain:
-          'This is exactly the argument for Eigen fixed-size types in flight code: allocation-free, unrolled and vectorisable.',
+          'This is exactly the argument for Eigen fixed-size types in flight code: allocation-free, unrolled and vectorizable.',
         b: 0.8,
         bloom: 'analyze',
       },
@@ -6120,17 +6120,17 @@ export const CODING: Module[] = [
       'C++11: auto, range-for, lambdas, move semantics, nullptr, enum class, constexpr, smart pointers, thread, override/final, std::array, chrono',
       'C++14: generic lambdas, return type deduction, make_unique, variable templates',
       'C++17: structured bindings, if/switch init statements, if constexpr, fold expressions, optional/variant/any, string_view, filesystem, parallel algorithms, guaranteed copy elision, CTAD',
-      'C++20: concepts, ranges, span, format, three-way comparison, designated initialisers, constinit/consteval, modules, coroutines, atomic_ref',
+      'C++20: concepts, ranges, span, format, three-way comparison, designated initializers, constinit/consteval, modules, coroutines, atomic_ref',
       'C++23 highlights: expected, mdspan, print',
-      'Uniform initialisation and the initializer_list gotcha',
+      'Uniform initialization and the initializer_list gotcha',
       'Guaranteed copy elision and what it means for returning big objects',
       'Why modules adoption is slow and what it will change',
       'Why coroutines are rare in flight code',
       'The flight subset: typically C++11/14/17 core, no exceptions, no RTTI, no dynamic allocation after init, restricted standard library',
-      'Modernising legacy code: what to change first and how to justify each change',
+      'Modernizing legacy code: what to change first and how to justify each change',
     ],
     objectives: [
-      'Modernise a C++98-style file to C++20 and justify every change in terms of defect risk.',
+      'Modernize a C++98-style file to C++20 and justify every change in terms of defect risk.',
       'Write a one-page statement of the C++ subset you would permit in a hard real-time task.',
       'Name three C++17 features that reduce bug risk and explain the mechanism.',
       'Explain why -fno-exceptions and -fno-rtti are common in flight builds.',
@@ -6167,13 +6167,13 @@ export const CODING: Module[] = [
     exercises: [
       {
         id: 'cpp06_ex1',
-        title: 'Modernise a legacy parser',
+        title: 'Modernize a legacy parser',
         prompt:
-          'Take a 120-line C++98 telemetry-frame parser using raw new/delete, C arrays, NULL, index loops and out-parameters. Rewrite it with std::span, std::optional, structured bindings, if-init, enum class and std::string_view, keeping the observable behaviour identical. Deliver a table with one row per change: the old construct, the new one, and the specific defect class it eliminates. Expected: identical output on the supplied sample frames, and at least six distinct defect classes named.',
+          'Take a 120-line C++98 telemetry-frame parser using raw new/delete, C arrays, NULL, index loops and out-parameters. Rewrite it with std::span, std::optional, structured bindings, if-init, enum class and std::string_view, keeping the observable behavior identical. Deliver a table with one row per change: the old construct, the new one, and the specific defect class it eliminates. Expected: identical output on the supplied sample frames, and at least six distinct defect classes named.',
         kind: 'code',
         lang: 'cpp',
         starter:
-          '#include <cstdint>\n#include <cstring>\n\n// Legacy shape to be modernised:\n// bool parse_frame(const unsigned char* buf, int len, int* out_id, double* out_value);\n\nbool parse_frame(const unsigned char* buf, int len, int* out_id, double* out_value) {\n    if (buf == 0 || len < 9) return false;\n    *out_id = buf[0];\n    std::memcpy(out_value, buf + 1, 8);\n    return true;\n}\n',
+          '#include <cstdint>\n#include <cstring>\n\n// Legacy shape to be modernized:\n// bool parse_frame(const unsigned char* buf, int len, int* out_id, double* out_value);\n\nbool parse_frame(const unsigned char* buf, int len, int* out_id, double* out_value) {\n    if (buf == 0 || len < 9) return false;\n    *out_id = buf[0];\n    std::memcpy(out_value, buf + 1, 8);\n    return true;\n}\n',
         solution:
           '#include <cstdint>\n#include <cstring>\n#include <optional>\n#include <span>\n\nenum class ChannelId : std::uint8_t { Unknown = 0, ChamberPressure = 7, TankTemp = 9 };\n\nstruct Sample {\n    ChannelId id{ChannelId::Unknown};\n    double value{};\n};\n\n// Returns nothing rather than a bool plus out-parameters, cannot be called with\n// a mismatched pointer/length pair, and cannot leave outputs half-written.\nstd::optional<Sample> parse_frame(std::span<const std::uint8_t> buf) {\n    if (buf.size() < 9) return std::nullopt;\n    Sample s;\n    s.id = static_cast<ChannelId>(buf[0]);\n    std::memcpy(&s.value, buf.data() + 1, sizeof s.value);\n    return s;\n}\n\n// Call site:\n//   if (const auto sample = parse_frame(frame); sample) {\n//       const auto [id, value] = *sample;\n//       ...\n//   }\n//\n// Defect classes removed: mismatched pointer/length, null pointer argument,\n// partially written outputs on failure, forgetting to check the bool return,\n// implicit conversion of an unrelated integer to a channel id, and\n// sizeof-on-a-decayed-array.\n',
         hours: 4,
@@ -6222,7 +6222,7 @@ export const CODING: Module[] = [
         id: 'cpp06_c6',
         front: 'Why is std::string usually banned in a hard real-time path?',
         back:
-          'It allocates once the content exceeds its small-string buffer, and the threshold is implementation-defined. Fixed-capacity character buffers or string_view over static storage give the same capability with bounded behaviour.',
+          'It allocates once the content exceeds its small-string buffer, and the threshold is implementation-defined. Fixed-capacity character buffers or string_view over static storage give the same capability with bounded behavior.',
       },
       {
         id: 'cpp06_c7',
@@ -6240,7 +6240,7 @@ export const CODING: Module[] = [
         id: 'cpp06_c9',
         front: 'Why do coroutines rarely appear in flight code?',
         back:
-          'The compiler allocates the coroutine frame on the heap unless it can prove elision, and the control flow is harder to analyse for worst-case timing. Both conflict with the no-allocation, analysable-timing rules.',
+          'The compiler allocates the coroutine frame on the heap unless it can prove elision, and the control flow is harder to analyze for worst-case timing. Both conflict with the no-allocation, analysable-timing rules.',
       },
       {
         id: 'cpp06_c10',
@@ -6264,7 +6264,7 @@ export const CODING: Module[] = [
         id: 'cpp06_c13',
         front: 'Which C++ subset do flight teams typically allow?',
         back:
-          'The C++11/14/17 core: RAII, references, const, constexpr, templates for static dispatch, fixed-size containers, no exceptions, no RTTI, no allocation after initialisation, no recursion, and a restricted standard-library whitelist. Modern does not mean unrestricted.',
+          'The C++11/14/17 core: RAII, references, const, constexpr, templates for static dispatch, fixed-size containers, no exceptions, no RTTI, no allocation after initialization, no recursion, and a restricted standard-library whitelist. Modern does not mean unrestricted.',
       },
     ],
     quiz: [
@@ -6319,7 +6319,7 @@ export const CODING: Module[] = [
         ],
         answer: 1,
         explain:
-          'There is no temporary to elide: the object is initialised once, in place. The type does not even need to be movable.',
+          'There is no temporary to elide: the object is initialized once, in place. The type does not even need to be movable.',
         b: 0.9,
         bloom: 'understand',
       },
@@ -6359,7 +6359,7 @@ export const CODING: Module[] = [
         choices: [
           'None; modern C++ is always better',
           'All of them; flight code should be C',
-          'Dynamic allocation after init, exceptions, RTTI and coroutines, because each introduces unbounded or unanalysable behaviour, while keeping RAII, constexpr, templates and fixed-size containers',
+          'Dynamic allocation after init, exceptions, RTTI and coroutines, because each introduces unbounded or unanalysable behavior, while keeping RAII, constexpr, templates and fixed-size containers',
           'Templates, because they increase build time',
         ],
         answer: 2,
@@ -6384,7 +6384,7 @@ export const CODING: Module[] = [
     hours: 35,
     topics: [
       'Processes vs threads; std::thread and jthread; join and detach',
-      'Data races as undefined behaviour, not merely a wrong answer',
+      'Data races as undefined behavior, not merely a wrong answer',
       'mutex, lock_guard, unique_lock, scoped_lock, shared_mutex, recursive_mutex',
       'Deadlock: the four conditions, lock ordering, std::lock and scoped_lock',
       'condition_variable and spurious wakeups; the predicate form of wait',
@@ -6397,7 +6397,7 @@ export const CODING: Module[] = [
       'Hard, firm and soft real time; WCET and why average latency is irrelevant',
       'Priority inversion and priority inheritance; the Mars Pathfinder case',
       'RTOS landscape: FreeRTOS, RTEMS, VxWorks, Linux PREEMPT_RT',
-      'Rate-monotonic scheduling and utilisation bounds',
+      'Rate-monotonic scheduling and utilization bounds',
       'sched_setscheduler, SCHED_FIFO, CPU pinning, mlockall',
       'The SpaceX triple-redundancy architecture as a case study',
     ],
@@ -6456,7 +6456,7 @@ export const CODING: Module[] = [
         id: 'cpp07_ex2',
         title: 'Prove a control task allocates nothing',
         prompt:
-          'Take a control-loop function that currently uses std::vector and std::string internally. Convert it to fixed-capacity storage, then prove there are zero allocations after initialisation by overriding global operator new to increment a counter (and, optionally, to abort once a flag is set). Report the allocation count before and after conversion, and name the two allocations you decided to keep during initialisation. Expected: a non-zero count before, exactly zero during the steady-state loop after.',
+          'Take a control-loop function that currently uses std::vector and std::string internally. Convert it to fixed-capacity storage, then prove there are zero allocations after initialization by overriding global operator new to increment a counter (and, optionally, to abort once a flag is set). Report the allocation count before and after conversion, and name the two allocations you decided to keep during initialization. Expected: a non-zero count before, exactly zero during the steady-state loop after.',
         kind: 'code',
         lang: 'cpp',
         starter:
@@ -6471,7 +6471,7 @@ export const CODING: Module[] = [
         id: 'cpp07_c1',
         front: 'What is a data race, formally?',
         back:
-          'Two threads access the same memory location, at least one writes, and the accesses are not ordered by a synchronisation relationship. It is undefined behaviour, so the program has no defined meaning at all, regardless of what it appears to do.',
+          'Two threads access the same memory location, at least one writes, and the accesses are not ordered by a synchronization relationship. It is undefined behavior, so the program has no defined meaning at all, regardless of what it appears to do.',
       },
       {
         id: 'cpp07_c2',
@@ -6541,9 +6541,9 @@ export const CODING: Module[] = [
       },
       {
         id: 'cpp07_c13',
-        front: 'Rate-monotonic scheduling: the utilisation bound',
+        front: 'Rate-monotonic scheduling: the utilization bound',
         back:
-          'For n independent periodic tasks with deadlines equal to periods, fixed priorities assigned by rate are schedulable if total utilisation is at most n times (2 to the power 1/n minus 1), which tends to about 69 percent. Above that you need an exact response-time analysis.',
+          'For n independent periodic tasks with deadlines equal to periods, fixed priorities assigned by rate are schedulable if total utilization is at most n times (2 to the power 1/n minus 1), which tends to about 69 percent. Above that you need an exact response-time analysis.',
         formula: true,
       },
       {
@@ -6591,7 +6591,7 @@ export const CODING: Module[] = [
           'Yes, the average has huge margin',
           'No: the task misses its deadline in the tail, which is what a hard real-time requirement forbids',
           'Yes, if the tail is rare enough',
-          'It depends on the average CPU utilisation only',
+          'It depends on the average CPU utilization only',
         ],
         answer: 1,
         explain:
@@ -6610,7 +6610,7 @@ export const CODING: Module[] = [
         ],
         answer: 1,
         explain:
-          'Enabling priority inheritance on the offending mutex fixed it, and it remains the canonical teaching example for real-time synchronisation.',
+          'Enabling priority inheritance on the offending mutex fixed it, and it remains the canonical teaching example for real-time synchronization.',
         b: 0.4,
         bloom: 'recall',
       },
@@ -6625,7 +6625,7 @@ export const CODING: Module[] = [
         ],
         answer: 1,
         explain:
-          'Without the release-acquire pair, the data write has no ordering with respect to the index publication. The test passing is luck of the hardware and the optimiser, not correctness.',
+          'Without the release-acquire pair, the data write has no ordering with respect to the index publication. The test passing is luck of the hardware and the optimizer, not correctness.',
         b: 1.2,
         bloom: 'analyze',
       },
@@ -6635,7 +6635,7 @@ export const CODING: Module[] = [
         choices: [
           'Cache thrash from false sharing on one cache line',
           'The counters overflow',
-          'The compiler serialised the loop',
+          'The compiler serialized the loop',
           'Atomic operations are always slower',
         ],
         answer: 0,
@@ -6655,7 +6655,7 @@ export const CODING: Module[] = [
         ],
         answer: 3,
         explain:
-          'nice applies to the normal time-sharing policy and, at 19, lowers priority. Real-time behaviour comes from the real-time scheduling class, memory locking and isolation.',
+          'nice applies to the normal time-sharing policy and, at 19, lowers priority. Real-time behavior comes from the real-time scheduling class, memory locking and isolation.',
         b: 0.7,
         bloom: 'understand',
       },
@@ -6685,7 +6685,7 @@ export const CODING: Module[] = [
     tier: 10,
     title: 'Real-Time Constraints and Allocation-Free Flight Code',
     summary:
-      "The rules that make code flyable: bounded loops, no dynamic allocation after initialisation, static stack bounding, watchdogs, and the coding standards (MISRA C++, JSF++, the NASA/JPL Power of Ten) that encode them.",
+      "The rules that make code flyable: bounded loops, no dynamic allocation after initialization, static stack bounding, watchdogs, and the coding standards (MISRA C++, JSF++, the NASA/JPL Power of Ten) that encode them.",
     prereqs: ['cod_cpp_07_concurrency', 'cod_cpp_09_eigen'],
     hours: 30,
     topics: [
@@ -6777,7 +6777,7 @@ export const CODING: Module[] = [
         id: 'cpp08_c2',
         front: 'Power of Ten rule 3',
         back:
-          'Do not use dynamic memory allocation after initialisation. This removes allocator non-determinism, fragmentation and the whole class of use-after-free and leak defects in one stroke.',
+          'Do not use dynamic memory allocation after initialization. This removes allocator non-determinism, fragmentation and the whole class of use-after-free and leak defects in one stroke.',
       },
       {
         id: 'cpp08_c3',
@@ -6825,7 +6825,7 @@ export const CODING: Module[] = [
         id: 'cpp08_c10',
         front: 'Why is -ffast-math dangerous in GNC code?',
         back:
-          'It permits reassociation and assumes no NaNs or infinities, so results change with optimisation level, NaN-based fault detection stops working, and bit-exact reproducibility across builds is lost. Determinism is a requirement, not a preference.',
+          'It permits reassociation and assumes no NaNs or infinities, so results change with optimization level, NaN-based fault detection stops working, and bit-exact reproducibility across builds is lost. Determinism is a requirement, not a preference.',
       },
       {
         id: 'cpp08_c11',
@@ -6841,9 +6841,9 @@ export const CODING: Module[] = [
       },
       {
         id: 'cpp08_c13',
-        front: 'What does a static analyser prove that tests cannot?',
+        front: 'What does a static analyzer prove that tests cannot?',
         back:
-          'Abstract-interpretation tools such as Polyspace Code Prover can prove the absence of certain run-time errors on all inputs, including paths no test exercises. Tests only demonstrate behaviour on the cases you thought of.',
+          'Abstract-interpretation tools such as Polyspace Code Prover can prove the absence of certain run-time errors on all inputs, including paths no test exercises. Tests only demonstrate behavior on the cases you thought of.',
       },
       {
         id: 'cpp08_c14',
@@ -6855,7 +6855,7 @@ export const CODING: Module[] = [
     quiz: [
       {
         id: 'cpp08_q1',
-        q: 'Which is the strongest reason to forbid allocation after initialisation in flight code?',
+        q: 'Which is the strongest reason to forbid allocation after initialization in flight code?',
         choices: [
           'Allocation is slow on embedded processors',
           'The worst-case allocation time is unbounded and long-run fragmentation can cause a failure with free memory remaining',
@@ -6888,7 +6888,7 @@ export const CODING: Module[] = [
         q: 'Which set of software mitigations addresses single-event upsets?',
         choices: [
           'ECC memory with scrubbing, data and code checksums, redundant computation with voting, watchdog resets',
-          'Compiler optimisation, inlining, loop unrolling',
+          'Compiler optimization, inlining, loop unrolling',
           'Exceptions and RTTI',
           'Dynamic allocation with a custom allocator',
         ],
@@ -6903,7 +6903,7 @@ export const CODING: Module[] = [
         q: 'Your team wants std::vector inside the 1 kHz task for convenience. What is the correct compromise?',
         choices: [
           'Allow it; modern allocators are fast',
-          'Use a fixed-capacity container reserved at initialisation, or a vector with a custom pool allocator whose capacity is reserved before the loop starts',
+          'Use a fixed-capacity container reserved at initialization, or a vector with a custom pool allocator whose capacity is reserved before the loop starts',
           'Use std::list instead',
           'Disable the rule for that file',
         ],
@@ -7002,7 +7002,7 @@ export const CODING: Module[] = [
       'Expression templates, lazy evaluation, aliasing, eval() and noalias()',
       'Proving no allocation with EIGEN_RUNTIME_NO_MALLOC and set_is_malloc_allowed',
       'Eigen to NumPy mental mapping',
-      'Neighbours: Sophus for Lie groups, Ceres and GTSAM for least squares and factor graphs, SymForce for generated C++',
+      'Neighbors: Sophus for Lie groups, Ceres and GTSAM for least squares and factor graphs, SymForce for generated C++',
       'IEEE-754 in practice: fma, Kahan summation, condition number, reproducibility',
     ],
     objectives: [
@@ -7092,13 +7092,13 @@ export const CODING: Module[] = [
         id: 'cpp09_c5',
         front: 'Which decomposition for a covariance matrix and why?',
         back:
-          'LDLT (or LLT). Covariances are symmetric positive semi-definite, so Cholesky-family factorisations are about twice as fast as LU, numerically stable for this class, and LDLT tolerates semi-definiteness without a square root of a negative.',
+          'LDLT (or LLT). Covariances are symmetric positive semi-definite, so Cholesky-family factorizations are about twice as fast as LU, numerically stable for this class, and LDLT tolerates semi-definiteness without a square root of a negative.',
       },
       {
         id: 'cpp09_c6',
         front: 'Why solve rather than invert?',
         back:
-          'Forming the inverse costs roughly three times a factorise-and-solve and adds rounding; solve() uses the factorisation directly. Explicit inverses are for when the matrix itself is the answer, which is rare.',
+          'Forming the inverse costs roughly three times a factorize-and-solve and adds rounding; solve() uses the factorization directly. Explicit inverses are for when the matrix itself is the answer, which is rare.',
       },
       {
         id: 'cpp09_c7',
@@ -7147,7 +7147,7 @@ export const CODING: Module[] = [
         id: 'cpp09_c14',
         front: 'What is SymForce and why mention it here?',
         back:
-          'A Skydio toolchain that writes the mathematics symbolically in Python and generates optimised C++, including analytic Jacobians. It is the production version of the SymPy-plus-lambdify pattern, and it removes the hand-differentiation bug class.',
+          'A Skydio toolchain that writes the mathematics symbolically in Python and generates optimized C++, including analytic Jacobians. It is the production version of the SymPy-plus-lambdify pattern, and it removes the hand-differentiation bug class.',
       },
     ],
     quiz: [
@@ -7177,7 +7177,7 @@ export const CODING: Module[] = [
         ],
         answer: 1,
         explain:
-          'Solving with a Cholesky-family factorisation is faster and more accurate than forming the inverse, and S is symmetric positive definite by construction. The last option is element-wise division, which is simply wrong.',
+          'Solving with a Cholesky-family factorization is faster and more accurate than forming the inverse, and S is symmetric positive definite by construction. The last option is element-wise division, which is simply wrong.',
         b: 1.0,
         bloom: 'apply',
       },
@@ -7246,7 +7246,7 @@ export const CODING: Module[] = [
         q: 'You must expose a C++ Eigen matrix to a Python harness without copying. Which tool?',
         choices: [
           'Eigen::Map over the NumPy buffer through pybind11',
-          'Serialise to CSV',
+          'Serialize to CSV',
           'MatrixXd::Random',
           'std::memcpy into a std::vector',
         ],
@@ -7358,7 +7358,7 @@ export const CODING: Module[] = [
         id: 'cpp10_c4',
         front: 'What is a toolchain file for?',
         back:
-          'Telling CMake about a different target platform before the first compiler test: the cross compiler, the sysroot, the target processor and search behaviour. It is how you build for arm-none-eabi from an x86 host.',
+          'Telling CMake about a different target platform before the first compiler test: the cross compiler, the sysroot, the target processor and search behavior. It is how you build for arm-none-eabi from an x86 host.',
       },
       {
         id: 'cpp10_c5',
@@ -7406,7 +7406,7 @@ export const CODING: Module[] = [
         id: 'cpp10_c12',
         front: 'Why does CMAKE_BUILD_TYPE matter for a numerical library?',
         back:
-          'It selects the optimisation and assertion flags, so Debug and Release can produce different timing, different floating-point contraction and different assertion behaviour. Both must be built and tested, and the type must be stated in any benchmark.',
+          'It selects the optimization and assertion flags, so Debug and Release can produce different timing, different floating-point contraction and different assertion behavior. Both must be built and tested, and the type must be stated in any benchmark.',
       },
     ],
     quiz: [
@@ -7445,7 +7445,7 @@ export const CODING: Module[] = [
         q: 'What belongs in a CMake toolchain file?',
         choices: [
           'Unit test definitions',
-          'CMAKE_SYSTEM_NAME, the cross compiler paths, the sysroot and find-root-path behaviour',
+          'CMAKE_SYSTEM_NAME, the cross compiler paths, the sysroot and find-root-path behavior',
           'The list of source files',
           'Coverage thresholds',
         ],
@@ -7511,15 +7511,15 @@ export const CODING: Module[] = [
     tier: 7,
     title: 'Testing C++ with GoogleTest and GoogleMock',
     summary:
-      "Fixtures, parameterised tests, floating-point assertions, and mocking a sensor or hardware abstraction layer so flight logic can be tested without hardware, wired into CTest and CI with sanitizers and coverage.",
+      "Fixtures, parameterized tests, floating-point assertions, and mocking a sensor or hardware abstraction layer so flight logic can be tested without hardware, wired into CTest and CI with sanitizers and coverage.",
     prereqs: ['cod_cpp_10_cmake', 'cod_cpp_04_stl', 'cod_ops_02_ci'],
     hours: 25,
     topics: [
       'TEST and TEST_F; test suites and fixtures; SetUp and TearDown',
       'ASSERT_* versus EXPECT_* and when a fatal assertion is correct',
       'Floating-point assertions: EXPECT_NEAR, EXPECT_DOUBLE_EQ, and choosing the tolerance',
-      'TEST_P parameterised tests and value generators',
-      'Typed and type-parameterised tests for template code',
+      'TEST_P parameterized tests and value generators',
+      'Typed and type-parameterized tests for template code',
       'Death tests for contract violations',
       'GoogleMock: mocking an ISensor or HAL interface; EXPECT_CALL, matchers, cardinalities',
       'NiceMock, StrictMock and what an uninteresting call means',
@@ -7533,7 +7533,7 @@ export const CODING: Module[] = [
     objectives: [
       'Write a fixture-based suite for a numerical component with meaningful tolerances.',
       'Mock a sensor interface and verify the logic under nominal, degraded and failed inputs.',
-      'Parameterise a test over a table of flight conditions with readable failure output.',
+      'Parameterize a test over a table of flight conditions with readable failure output.',
       'Wire the suite into CTest so CI runs it with ASan and reports coverage.',
       'Explain why a StrictMock failure is often a design signal rather than a test bug.',
     ],
@@ -7565,7 +7565,7 @@ export const CODING: Module[] = [
         id: 'cpp11_ex1',
         title: 'Mock the IMU behind an interface',
         prompt:
-          'Define an interface IImu with read(Vector3& gyro, Vector3& accel) returning a status, make the attitude estimator depend on the interface rather than a concrete driver, and write GoogleMock tests for three cases: nominal data, a stuck sensor returning identical samples, and a read failure. Assert the estimator behaviour in each, including that it does not propagate a stale sample as fresh. Expected: three passing tests, and the failure case must show the estimator flagging invalid rather than silently continuing.',
+          'Define an interface IImu with read(Vector3& gyro, Vector3& accel) returning a status, make the attitude estimator depend on the interface rather than a concrete driver, and write GoogleMock tests for three cases: nominal data, a stuck sensor returning identical samples, and a read failure. Assert the estimator behavior in each, including that it does not propagate a stale sample as fresh. Expected: three passing tests, and the failure case must show the estimator flagging invalid rather than silently continuing.',
         kind: 'code',
         lang: 'cpp',
         starter:
@@ -7576,7 +7576,7 @@ export const CODING: Module[] = [
       },
       {
         id: 'cpp11_ex2',
-        title: 'Parameterised integrator test',
+        title: 'Parameterized integrator test',
         prompt:
           'Write a TEST_P suite that runs a fixed-step integrator over six initial conditions and asserts the end state against an analytic solution with EXPECT_NEAR at a tolerance derived from the step size and method order. Give each case a readable name so a failure identifies the condition immediately. Expected: six named test cases appear in the ctest listing and all pass, and doubling the step makes exactly the cases with the tightest tolerance fail.',
         kind: 'code',
@@ -7609,7 +7609,7 @@ export const CODING: Module[] = [
       },
       {
         id: 'cpp11_c4',
-        front: 'Why parameterise a test rather than loop inside it?',
+        front: 'Why parameterize a test rather than loop inside it?',
         back:
           'Each parameter becomes its own test case, so all cases run, the failing one is named, and you can filter or mark individual cases. A loop stops at the first failure and hides the rest.',
       },
@@ -7660,7 +7660,7 @@ export const CODING: Module[] = [
         id: 'cpp11_c12',
         front: 'Why run the test suite under sanitizers in CI?',
         back:
-          'Tests exercise the code paths, and sanitizers turn latent undefined behaviour on those paths into a deterministic failure. A green suite without sanitizers proves only that the bug did not manifest today.',
+          'Tests exercise the code paths, and sanitizers turn latent undefined behavior on those paths into a deterministic failure. A green suite without sanitizers proves only that the bug did not manifest today.',
       },
     ],
     quiz: [
@@ -7670,7 +7670,7 @@ export const CODING: Module[] = [
         choices: ['EXPECT_EQ', 'ASSERT_EQ', 'Either is equivalent', 'EXPECT_TRUE'],
         answer: 1,
         explain:
-          'If the size is wrong, continuing reads out of bounds. ASSERT stops the test function before the undefined behaviour.',
+          'If the size is wrong, continuing reads out of bounds. ASSERT stops the test function before the undefined behavior.',
         b: 0.3,
         bloom: 'apply',
       },
@@ -7754,7 +7754,7 @@ export const CODING: Module[] = [
         q: 'Which is the strongest argument for testing flight logic against a mocked HAL?',
         choices: [
           'It is faster than hardware-in-the-loop',
-          'It lets you drive degraded and failed sensor behaviour deterministically and repeatedly, which real hardware rarely does on demand',
+          'It lets you drive degraded and failed sensor behavior deterministically and repeatedly, which real hardware rarely does on demand',
           'It removes the need for hardware testing',
           'It improves coverage numbers',
         ],
@@ -7794,7 +7794,7 @@ export const CODING: Module[] = [
       'Local, nested and anonymous functions; function handles; closures',
       'nargin, nargout, varargin; arguments blocks and validateattributes',
       'MATLAB OOP: classdef, handle versus value semantics',
-      'The Profiler, tic/toc, vectorisation, parfor',
+      'The Profiler, tic/toc, vectorization, parfor',
       'Plotting: plot, tiledlayout, yyaxis, semilogx, exportgraphics',
       'timetable, synchronize and retime as the merge_asof equivalent',
     ],
@@ -7802,7 +7802,7 @@ export const CODING: Module[] = [
       'Finish MATLAB Onramp and translate ten Python exercises into idiomatic MATLAB.',
       'Explain A.^2 versus A^2 for a 3x3 matrix without hesitating.',
       'Explain why a script cannot see a function local variable, in terms of workspaces.',
-      'Profile a slow script and make it ten times faster through preallocation and vectorisation.',
+      'Profile a slow script and make it ten times faster through preallocation and vectorization.',
       'Produce a six-panel flight-data figure with a shared time axis and a shaded band.',
     ],
     resources: [
@@ -7840,15 +7840,15 @@ export const CODING: Module[] = [
     exercises: [
       {
         id: 'mat01_ex1',
-        title: 'Vectorise and preallocate',
+        title: 'Vectorize and preallocate',
         prompt:
-          'Given a script that builds a 1e6-element result by x(end+1) = ... inside a loop, rewrite it two ways: preallocated loop, and fully vectorised. Report tic/toc for all three. Expected result: the growing-array version is orders of magnitude slower, the preallocated loop is close to the vectorised one, and all three produce identical output to within 1e-12.',
+          'Given a script that builds a 1e6-element result by x(end+1) = ... inside a loop, rewrite it two ways: preallocated loop, and fully vectorized. Report tic/toc for all three. Expected result: the growing-array version is orders of magnitude slower, the preallocated loop is close to the vectorized one, and all three produce identical output to within 1e-12.',
         kind: 'code',
         lang: 'matlab',
         starter:
-          'n = 1e6;\nt = linspace(0, 10, n);\n\n% Version A: the bug\ntic\nx = [];\nfor k = 1:n\n    x(end+1) = sin(2*pi*t(k)) * exp(-0.1*t(k));   %#ok<AGROW>\nend\ntA = toc;\n\n% TODO: Version B preallocated, Version C vectorised, then compare\n',
+          'n = 1e6;\nt = linspace(0, 10, n);\n\n% Version A: the bug\ntic\nx = [];\nfor k = 1:n\n    x(end+1) = sin(2*pi*t(k)) * exp(-0.1*t(k));   %#ok<AGROW>\nend\ntA = toc;\n\n% TODO: Version B preallocated, Version C vectorized, then compare\n',
         solution:
-          'n = 1e6;\nt = linspace(0, 10, n);\n\ntic\nx = [];\nfor k = 1:n\n    x(end+1) = sin(2*pi*t(k)) * exp(-0.1*t(k));   %#ok<AGROW>\nend\ntA = toc;\n\n% Version B: preallocated. One allocation instead of n reallocations.\ntic\ny = zeros(1, n);\nfor k = 1:n\n    y(k) = sin(2*pi*t(k)) * exp(-0.1*t(k));\nend\ntB = toc;\n\n% Version C: vectorised. No interpreter loop at all.\ntic\nz = sin(2*pi*t) .* exp(-0.1*t);\ntC = toc;\n\nfprintf("grow %.3f s, prealloc %.3f s, vectorised %.3f s\\n", tA, tB, tC);\nassert(max(abs(x - z)) < 1e-12);\nassert(max(abs(y - z)) < 1e-12);\n',
+          'n = 1e6;\nt = linspace(0, 10, n);\n\ntic\nx = [];\nfor k = 1:n\n    x(end+1) = sin(2*pi*t(k)) * exp(-0.1*t(k));   %#ok<AGROW>\nend\ntA = toc;\n\n% Version B: preallocated. One allocation instead of n reallocations.\ntic\ny = zeros(1, n);\nfor k = 1:n\n    y(k) = sin(2*pi*t(k)) * exp(-0.1*t(k));\nend\ntB = toc;\n\n% Version C: vectorized. No interpreter loop at all.\ntic\nz = sin(2*pi*t) .* exp(-0.1*t);\ntC = toc;\n\nfprintf("grow %.3f s, prealloc %.3f s, vectorized %.3f s\\n", tA, tB, tC);\nassert(max(abs(x - z)) < 1e-12);\nassert(max(abs(y - z)) < 1e-12);\n',
         hours: 2,
       },
       {
@@ -7876,13 +7876,13 @@ export const CODING: Module[] = [
         id: 'mat01_c2',
         front: 'Why A\\b rather than inv(A)*b?',
         back:
-          'Backslash chooses an appropriate factorisation for the structure of A and solves directly, which is faster and more accurate than forming an explicit inverse. MATLAB documentation warns against inv for exactly this reason.',
+          'Backslash chooses an appropriate factorization for the structure of A and solves directly, which is faster and more accurate than forming an explicit inverse. MATLAB documentation warns against inv for exactly this reason.',
       },
       {
         id: 'mat01_c3',
         front: 'Why is x(end+1) = v inside a loop a bug?',
         back:
-          'Each assignment may reallocate and copy the whole array, making the loop quadratic in the number of iterations. Preallocate with zeros(1,n) and index, or vectorise.',
+          'Each assignment may reallocate and copy the whole array, making the loop quadratic in the number of iterations. Preallocate with zeros(1,n) and index, or vectorize.',
       },
       {
         id: 'mat01_c4',
@@ -7934,9 +7934,9 @@ export const CODING: Module[] = [
       },
       {
         id: 'mat01_c12',
-        front: 'Is vectorising still necessary given the JIT?',
+        front: 'Is vectorizing still necessary given the JIT?',
         back:
-          'Less than it once was for simple loops, but yes for anything indexing-heavy or growing arrays, and vectorised code is usually clearer about the mathematics. Profile rather than assume, exactly as in Python.',
+          'Less than it once was for simple loops, but yes for anything indexing-heavy or growing arrays, and vectorized code is usually clearer about the mathematics. Profile rather than assume, exactly as in Python.',
       },
     ],
     quiz: [
@@ -7980,7 +7980,7 @@ export const CODING: Module[] = [
         q: 'Why prefer A\\b over inv(A)*b?',
         choices: [
           'Backslash is shorter to type',
-          'It factorises and solves directly, which is faster and more accurate than forming an inverse',
+          'It factorizes and solves directly, which is faster and more accurate than forming an inverse',
           'inv does not exist in MATLAB',
           'Backslash works only for square systems',
         ],
@@ -8016,13 +8016,13 @@ export const CODING: Module[] = [
         ],
         answer: 1,
         explain:
-          'Growing reallocates and copies on most iterations, which is quadratic. Preallocation makes it linear; vectorising removes the loop entirely.',
+          'Growing reallocates and copies on most iterations, which is quadratic. Preallocation makes it linear; vectorizing removes the loop entirely.',
         b: 0.0,
         bloom: 'apply',
       },
       {
         id: 'mat01_q7',
-        q: 'Which is the correct MATLAB analogue of pandas merge_asof for two multi-rate telemetry streams?',
+        q: 'Which is the correct MATLAB analog of pandas merge_asof for two multi-rate telemetry streams?',
         choices: [
           'join on a timestamp column',
           'synchronize on timetables with a nearest or previous method',
@@ -8046,7 +8046,7 @@ export const CODING: Module[] = [
     tier: 3,
     title: 'MATLAB for GNC: Control System and Aerospace Toolboxes',
     summary:
-      "The toolboxes that make MATLAB worth learning for this career: LTI modelling, margins, LQR and discretisation from Control System Toolbox, plus frames, quaternion conventions and environment models from Aerospace Toolbox.",
+      "The toolboxes that make MATLAB worth learning for this career: LTI modeling, margins, LQR and discretization from Control System Toolbox, plus frames, quaternion conventions and environment models from Aerospace Toolbox.",
     prereqs: ['cod_mat_01_core'],
     hours: 30,
     topics: [
@@ -8124,7 +8124,7 @@ export const CODING: Module[] = [
         id: 'mat02_ex2',
         title: 'Frames and the quaternion convention trap',
         prompt:
-          'Take a position in geodetic latitude, longitude and altitude, convert to ECEF with lla2ecef, then to NED about a reference point, and back, reporting the round-trip error in metres. Then build a quaternion with angle2quat for a 30 degree yaw, print it, and print what SciPy Rotation.as_quat() would give for the same rotation. State which element moves and how you would detect the mistake in a code review. Expected: round-trip error below 1e-6 m, and the MathWorks quaternion is [0.9659 0 0 0.2588] while the SciPy ordering places the 0.9659 last.',
+          'Take a position in geodetic latitude, longitude and altitude, convert to ECEF with lla2ecef, then to NED about a reference point, and back, reporting the round-trip error in meters. Then build a quaternion with angle2quat for a 30 degree yaw, print it, and print what SciPy Rotation.as_quat() would give for the same rotation. State which element moves and how you would detect the mistake in a code review. Expected: round-trip error below 1e-6 m, and the MathWorks quaternion is [0.9659 0 0 0.2588] while the SciPy ordering places the 0.9659 last.',
         kind: 'code',
         lang: 'matlab',
         starter:
@@ -8158,7 +8158,7 @@ export const CODING: Module[] = [
         id: 'mat02_c4',
         front: 'Why do launch vehicles need gain scheduling?',
         back:
-          'Dynamic pressure, mass, centre of gravity and aerodynamic moments change by orders of magnitude between lift-off and MECO, so a single fixed gain set cannot hold margins across the trajectory. Gains are scheduled on a measurable variable such as Mach or time from lift-off.',
+          'Dynamic pressure, mass, center of gravity and aerodynamic moments change by orders of magnitude between lift-off and MECO, so a single fixed gain set cannot hold margins across the trajectory. Gains are scheduled on a measurable variable such as Mach or time from lift-off.',
       },
       {
         id: 'mat02_c5',
@@ -8194,7 +8194,7 @@ export const CODING: Module[] = [
         id: 'mat02_c10',
         front: 'Why is NED a local frame, and what does that imply?',
         back:
-          'Its axes are defined relative to the local vertical and the local meridian, so they rotate as you move over the Earth. A trajectory spanning hundreds of kilometres cannot use a single NED frame; integrate in ECI or ECEF and convert for reporting.',
+          'Its axes are defined relative to the local vertical and the local meridian, so they rotate as you move over the Earth. A trajectory spanning hundreds of kilometers cannot use a single NED frame; integrate in ECI or ECEF and convert for reporting.',
       },
       {
         id: 'mat02_c11',
@@ -8234,7 +8234,7 @@ export const CODING: Module[] = [
         choices: ['margin(L)', 'stepinfo(T)', 'damp(T)', 'allmargin(L)'],
         answer: 1,
         explain:
-          'stepinfo summarises a step response into requirement-checkable numbers. margin and allmargin are frequency-domain, damp reports pole damping and frequency.',
+          'stepinfo summarizes a step response into requirement-checkable numbers. margin and allmargin are frequency-domain, damp reports pole damping and frequency.',
         b: 0.1,
         bloom: 'recall',
       },
@@ -8388,7 +8388,7 @@ export const CODING: Module[] = [
         id: 'slk01_ex2',
         title: 'Mux versus Bus, demonstrated',
         prompt:
-          'Build two subsystems with the same three inputs (altitude in metres, Mach dimensionless, and a mode enumeration), one wired with a Mux and one with a Bus Creator using a Simulink.Bus object. Rename one source signal and show what happens in each case. Write a paragraph on why Mux is acceptable for a same-type vector and wrong for a dissimilar signal group. Expected: the Bus version keeps names and types and fails loudly on a mismatch; the Mux version silently concatenates into an unnamed vector.',
+          'Build two subsystems with the same three inputs (altitude in meters, Mach dimensionless, and a mode enumeration), one wired with a Mux and one with a Bus Creator using a Simulink.Bus object. Rename one source signal and show what happens in each case. Write a paragraph on why Mux is acceptable for a same-type vector and wrong for a dissimilar signal group. Expected: the Bus version keeps names and types and fails loudly on a mismatch; the Mux version silently concatenates into an unnamed vector.',
         kind: 'analysis',
         hours: 2,
       },
@@ -8434,7 +8434,7 @@ export const CODING: Module[] = [
         id: 'slk01_c7',
         front: 'What is a Lookup Table (n-D) used for in aerospace models?',
         back:
-          'Aerodynamic coefficients and engine data as functions of Mach, angle of attack and control deflection. Interpolation method and extrapolation behaviour at the table edges are design decisions with real consequences at the envelope boundary.',
+          'Aerodynamic coefficients and engine data as functions of Mach, angle of attack and control deflection. Interpolation method and extrapolation behavior at the table edges are design decisions with real consequences at the envelope boundary.',
       },
       {
         id: 'slk01_c8',
@@ -8446,19 +8446,19 @@ export const CODING: Module[] = [
         id: 'slk01_c9',
         front: 'Saturation and Rate Limiter: why model them early?',
         back:
-          'Actuators always saturate in position and rate, and nearly every surprising closed-loop behaviour in a real vehicle involves one of them, including integrator windup and limit cycles. A linear-only model hides the problem you will be asked about.',
+          'Actuators always saturate in position and rate, and nearly every surprising closed-loop behavior in a real vehicle involves one of them, including integrator windup and limit cycles. A linear-only model hides the problem you will be asked about.',
       },
       {
         id: 'slk01_c10',
         front: 'What does the Simulation Data Inspector add over a Scope?',
         back:
-          'Persisted runs you can compare against each other and against a baseline, with tolerances, plus synchronised cursors and export. It is the tool that turns a run into evidence.',
+          'Persisted runs you can compare against each other and against a baseline, with tolerances, plus synchronized cursors and export. It is the tool that turns a run into evidence.',
       },
       {
         id: 'slk01_c11',
         front: 'Integrator block: which settings matter most?',
         back:
-          'Initial condition (and whether it is an external input), saturation limits with the anti-windup behaviour, and state name for logging and for linearisation. Getting the initial condition wrong is the single most common cause of a model that will not trim.',
+          'Initial condition (and whether it is an external input), saturation limits with the anti-windup behavior, and state name for logging and for linearization. Getting the initial condition wrong is the single most common cause of a model that will not trim.',
       },
       {
         id: 'slk01_c12',
@@ -8549,7 +8549,7 @@ export const CODING: Module[] = [
         ],
         answer: 0,
         explain:
-          'Position and rate limits are the two nonlinearities every real actuator has, and they drive windup and limit-cycle behaviour that a linear model cannot show.',
+          'Position and rate limits are the two nonlinearities every real actuator has, and they drive windup and limit-cycle behavior that a linear model cannot show.',
         b: 0.4,
         bloom: 'apply',
       },
@@ -8576,7 +8576,7 @@ export const CODING: Module[] = [
       'Solver reset method Fast versus Robust',
       'Zero-crossing detection: how it works, chattering, adaptive versus non-adaptive, the consecutive-crossing limit',
       'Fixed-step zero-crossing for real-time: bounded, deterministic event cost',
-      'Sample times: continuous, discrete, inherited, constant; colour coding',
+      'Sample times: continuous, discrete, inherited, constant; color coding',
       'Multirate models and Rate Transition blocks; data integrity versus determinism options',
       'Algebraic loops: what creates them, the Algebraic Constraint block, breaking them with a unit delay and its phase cost',
       'The Solver Profiler',
@@ -8587,7 +8587,7 @@ export const CODING: Module[] = [
       'Find the largest fixed step that keeps a 50 Hz control loop stable and explain the limit.',
       'Diagnose and break an algebraic loop, and quantify the phase cost of the unit delay you inserted.',
       'Explain why a variable-step model cannot be deployed to an embedded target.',
-      'Recognise stiffness from solver behaviour in Simulink and choose an implicit solver.',
+      'Recognize stiffness from solver behavior in Simulink and choose an implicit solver.',
     ],
     resources: [
       {
@@ -8694,7 +8694,7 @@ export const CODING: Module[] = [
         id: 'slk02_c10',
         front: 'Inherited sample time (-1): what does it mean?',
         back:
-          'The block takes the rate of its driving signal, which lets a subsystem be reused at several rates. It also makes the actual rate non-local, so sample-time colour coding and the model display are how you check what you actually got.',
+          'The block takes the rate of its driving signal, which lets a subsystem be reused at several rates. It also makes the actual rate non-local, so sample-time color coding and the model display are how you check what you actually got.',
       },
       {
         id: 'slk02_c11',
@@ -8786,7 +8786,7 @@ export const CODING: Module[] = [
         choices: [
           'Stiffness; switch to ode15s',
           'Zero-crossing chattering; add hysteresis or a deadband to the switching logic',
-          'A licence timeout',
+          'A license timeout',
           'Too tight an AbsTol on an unrelated state',
         ],
         answer: 1,
@@ -8841,7 +8841,7 @@ export const CODING: Module[] = [
     ],
     objectives: [
       'Refactor a flat model into referenced models with bus-object interfaces and show a build-time improvement.',
-      'Explain one observable behavioural difference between a virtual and an atomic subsystem.',
+      'Explain one observable behavioral difference between a virtual and an atomic subsystem.',
       'Build a vehicle mode manager and prove every transition is reachable and every exit condition mutually exclusive.',
       'Choose between a variant subsystem and an if-block for a configuration difference and justify it.',
       'Explain why non-virtual buses matter once code generation is in the picture.',
@@ -8926,7 +8926,7 @@ export const CODING: Module[] = [
       },
       {
         id: 'slk03_c7',
-        front: 'Why do many flight teams ban Stateflow events in favour of conditions?',
+        front: 'Why do many flight teams ban Stateflow events in favor of conditions?',
         back:
           'Events introduce implicit, order-dependent control flow that is hard to review, hard to cover and hard to reason about under code generation. Condition-based transitions evaluated each step are deterministic and readable.',
       },
@@ -8952,7 +8952,7 @@ export const CODING: Module[] = [
         id: 'slk03_c11',
         front: 'What is FDIR and why is Stateflow the usual home for it?',
         back:
-          'Fault detection, isolation and recovery: recognise an anomaly, determine which component is responsible, and command a safe configuration. It is inherently mode logic with hierarchy and parallelism, which is exactly what a chart expresses.',
+          'Fault detection, isolation and recovery: recognize an anomaly, determine which component is responsible, and command a safe configuration. It is inherently mode logic with hierarchy and parallelism, which is exactly what a chart expresses.',
       },
       {
         id: 'slk03_c12',
@@ -9000,7 +9000,7 @@ export const CODING: Module[] = [
       },
       {
         id: 'slk03_q3',
-        q: 'A configuration difference between the flight build and the bench build should be modelled as:',
+        q: 'A configuration difference between the flight build and the bench build should be modeled as:',
         choices: [
           'A variant subsystem or variant model',
           'A Switch block driven by a constant',
@@ -9018,7 +9018,7 @@ export const CODING: Module[] = [
         q: 'In a mode sequencer, two outgoing transitions from GRAVITY_TURN can both be true at one step. What is the defect?',
         choices: [
           'Nothing; Stateflow picks by priority',
-          'The guards are not mutually exclusive, so behaviour depends on an implicit ordering that a reviewer cannot see',
+          'The guards are not mutually exclusive, so behavior depends on an implicit ordering that a reviewer cannot see',
           'The chart needs parallel decomposition',
           'The sample time is wrong',
         ],
@@ -9188,7 +9188,7 @@ export const CODING: Module[] = [
         id: 'slk04_c5',
         front: 'What is the difference between SIL and PIL, and what does each catch?',
         back:
-          'SIL compiles the generated code for the host, catching code-generation and algorithm mismatches. PIL cross-compiles and runs on the actual target, catching target-specific integer width, endianness, floating-point behaviour and execution-time issues that the host cannot show.',
+          'SIL compiles the generated code for the host, catching code-generation and algorithm mismatches. PIL cross-compiles and runs on the actual target, catching target-specific integer width, endianness, floating-point behavior and execution-time issues that the host cannot show.',
       },
       {
         id: 'slk04_c6',
@@ -9224,7 +9224,7 @@ export const CODING: Module[] = [
         id: 'slk04_c11',
         front: 'Your HIL rig shows a 4 ms delay that SIL did not. Where does it come from?',
         back:
-          'The real interfaces: bus arbitration and framing on CAN or 1553, driver and DMA buffering, task scheduling and rate-transition latency, and analogue conversion time. None of those exist in a host simulation, which is why HIL is not optional.',
+          'The real interfaces: bus arbitration and framing on CAN or 1553, driver and DMA buffering, task scheduling and rate-transition latency, and analog conversion time. None of those exist in a host simulation, which is why HIL is not optional.',
       },
       {
         id: 'slk04_c12',
@@ -9242,7 +9242,7 @@ export const CODING: Module[] = [
         id: 'slk04_c14',
         front: 'Why run Simulink Test headless in CI?',
         back:
-          'So that every model change is exercised against its harnesses, coverage and baselines automatically, exactly like a C++ unit-test suite. It needs a runner that can reach a licence server, which is the usual reason such jobs run on self-hosted runners.',
+          'So that every model change is exercised against its harnesses, coverage and baselines automatically, exactly like a C++ unit-test suite. It needs a runner that can reach a license server, which is the usual reason such jobs run on self-hosted runners.',
       },
     ],
     quiz: [
@@ -9252,7 +9252,7 @@ export const CODING: Module[] = [
         choices: ['MIL', 'SIL', 'PIL', 'HIL'],
         answer: 2,
         explain:
-          'PIL runs the cross-compiled code on the actual processor, so target word sizes, endianness and floating-point behaviour appear there. SIL runs on the host and would not show it.',
+          'PIL runs the cross-compiled code on the actual processor, so target word sizes, endianness and floating-point behavior appear there. SIL runs on the host and would not show it.',
         b: 0.8,
         bloom: 'apply',
       },
@@ -9305,7 +9305,7 @@ export const CODING: Module[] = [
         id: 'slk04_q5',
         q: 'Your HIL test shows a 4 ms latency that SIL did not. The most likely source is:',
         choices: [
-          'A different compiler optimisation level',
+          'A different compiler optimization level',
           'Real I/O: bus framing, driver buffering and task scheduling that host simulation does not model',
           'A floating-point rounding difference',
           'A wrong gain value',
@@ -9318,7 +9318,7 @@ export const CODING: Module[] = [
       },
       {
         id: 'slk04_q6',
-        q: 'What is the realistic division of labour when flight software uses generated code?',
+        q: 'What is the realistic division of labor when flight software uses generated code?',
         choices: [
           'Everything is generated from models',
           'Generated control-law code integrated with hand-written scheduler, drivers, middleware and fault management',
@@ -9351,13 +9351,13 @@ export const CODING: Module[] = [
         q: 'Why is HIL still required when SIL and PIL both pass?',
         choices: [
           'Because tools are unreliable',
-          'Because hardware testing exercises real timing, interfaces, power and fault behaviour that no simulation of the plant can fully represent',
+          'Because hardware testing exercises real timing, interfaces, power and fault behavior that no simulation of the plant can fully represent',
           'Because PIL cannot run control laws',
           'It is not; PIL supersedes HIL',
         ],
         answer: 1,
         explain:
-          'Each level closes a different gap. HIL also validates the simulation itself by comparing against hardware behaviour.',
+          'Each level closes a different gap. HIL also validates the simulation itself by comparing against hardware behavior.',
         b: 0.6,
         bloom: 'understand',
       },
@@ -9397,7 +9397,7 @@ export const CODING: Module[] = [
       'Work through the Book chapters 1 to 13 and the matching Rustlings exercises.',
       'Port the Python unit-conversion library to Rust with tests and documentation.',
       'Explain what Option replaces and which defect class it eliminates.',
-      'Describe integer-overflow behaviour in debug versus release and choose the right operation for flight code.',
+      'Describe integer-overflow behavior in debug versus release and choose the right operation for flight code.',
       'Use match exhaustiveness to make an unhandled vehicle mode a compile error.',
     ],
     resources: [
@@ -9436,7 +9436,7 @@ export const CODING: Module[] = [
         id: 'rs01_ex1',
         title: 'Unit conversions with Result',
         prompt:
-          'Write a module with ft_to_m, lbf_to_n, deg_to_rad and rankine_to_kelvin, plus a parse_and_convert(s: &str) -> Result<f64, ConvError> that accepts strings like "12.5 ft" and returns metres, with a ConvError enum distinguishing a bad number from an unknown unit. Include unit tests. Expected output when run on "12.5 ft": 3.81; on "10 xyz": an UnknownUnit error naming xyz.',
+          'Write a module with ft_to_m, lbf_to_n, deg_to_rad and rankine_to_kelvin, plus a parse_and_convert(s: &str) -> Result<f64, ConvError> that accepts strings like "12.5 ft" and returns meters, with a ConvError enum distinguishing a bad number from an unknown unit. Include unit tests. Expected output when run on "12.5 ft": 3.81; on "10 xyz": an UnknownUnit error naming xyz.',
         kind: 'code',
         lang: 'rust',
         starter:
@@ -9506,7 +9506,7 @@ export const CODING: Module[] = [
         id: 'rs01_c8',
         front: 'What does cargo clippy add over the compiler?',
         back:
-          'Several hundred lints about idiom, correctness and performance, from needless clones to suspicious comparisons. For a learner it is the fastest feedback loop from writing C++-flavoured Rust to writing Rust.',
+          'Several hundred lints about idiom, correctness and performance, from needless clones to suspicious comparisons. For a learner it is the fastest feedback loop from writing C++-flavored Rust to writing Rust.',
       },
       {
         id: 'rs01_c9',
@@ -9545,7 +9545,7 @@ export const CODING: Module[] = [
         ],
         answer: 2,
         explain:
-          'Release builds wrap by default while debug builds panic. Flight code should use checked_add or wrapping_add so the behaviour is explicit and identical in both.',
+          'Release builds wrap by default while debug builds panic. Flight code should use checked_add or wrapping_add so the behavior is explicit and identical in both.',
         b: 0.7,
         bloom: 'apply',
       },
@@ -9560,7 +9560,7 @@ export const CODING: Module[] = [
         ],
         answer: 1,
         explain:
-          'Option is often the same size as a pointer thanks to niche optimisation, so the win is not memory: it is that the check cannot be forgotten.',
+          'Option is often the same size as a pointer thanks to niche optimization, so the win is not memory: it is that the check cannot be forgotten.',
         b: 0.1,
         bloom: 'understand',
       },
@@ -9571,7 +9571,7 @@ export const CODING: Module[] = [
           'A warning',
           'A compile error naming the uncovered variant',
           'The new variant silently takes the first arm',
-          'Undefined behaviour',
+          'Undefined behavior',
         ],
         answer: 1,
         explain:
@@ -9609,7 +9609,7 @@ export const CODING: Module[] = [
         q: 'Why do Rust iterator chains usually compile to the same code as a hand-written loop?',
         choices: [
           'They are interpreted',
-          'Generics monomorphise and the adapters inline, so the abstraction disappears before optimisation',
+          'Generics monomorphise and the adapters inline, so the abstraction disappears before optimization',
           'The compiler special-cases them',
           'They use SIMD automatically',
         ],
@@ -9707,7 +9707,7 @@ export const CODING: Module[] = [
         id: 'rs02_ex2',
         title: 'Twenty borrow-checker errors',
         prompt:
-          'Work through a file of twenty snippets that do not compile: a returned reference to a local, a push while a reference is held, two mutable borrows, a moved value used again, a struct holding a reference without a lifetime, and so on. Fix each without calling clone(), and for each write the equivalent C++ code and say whether the C++ compiler would have caught it. Expected: at least twelve of the twenty are silent undefined behaviour in C++ and are compile errors in Rust.',
+          'Work through a file of twenty snippets that do not compile: a returned reference to a local, a push while a reference is held, two mutable borrows, a moved value used again, a struct holding a reference without a lifetime, and so on. Fix each without calling clone(), and for each write the equivalent C++ code and say whether the C++ compiler would have caught it. Expected: at least twelve of the twenty are silent undefined behavior in C++ and are compile errors in Rust.',
         kind: 'analysis',
         hours: 4,
       },
@@ -9795,7 +9795,7 @@ export const CODING: Module[] = [
         id: 'rs02_c14',
         front: 'What is miri for?',
         back:
-          'An interpreter that detects undefined behaviour in unsafe code: out-of-bounds, misaligned access, invalid aliasing under Stacked Borrows, uninitialised reads. It is the Rust equivalent of running everything under a very strict sanitizer.',
+          'An interpreter that detects undefined behavior in unsafe code: out-of-bounds, misaligned access, invalid aliasing under Stacked Borrows, uninitialised reads. It is the Rust equivalent of running everything under a very strict sanitizer.',
       },
     ],
     quiz: [
@@ -9930,7 +9930,7 @@ export const CODING: Module[] = [
       'FFI both directions: extern C, no_mangle, bindgen, cbindgen, and Rust modules inside an existing C or C++ flight codebase',
       'nalgebra: type-level dimensions, SMatrix versus DMatrix, and when it allocates',
       'nalgebra geometry: UnitQuaternion, Rotation3, Isometry3, slerp; no_std support',
-      'Neighbouring crates: ndarray, argmin, nyx-space, hifitime, micromath, libm',
+      'Neighboring crates: ndarray, argmin, nyx-space, hifitime, micromath, libm',
       'Certification: DO-178C DAL levels, structural coverage, DO-330 tool qualification, ECSS-Q-ST-80C',
       'Ferrocene: the qualified Rust toolchain and exactly what its qualification covers',
       'ESA activity: cRustacea in Space (DLR), the armv7-rtems-eabihf target, ADCSS 2024',
@@ -9993,7 +9993,7 @@ export const CODING: Module[] = [
         starter:
           '#![no_std]\n\nuse nalgebra::{UnitQuaternion, Vector3};\n\npub struct Attitude {\n    pub q: UnitQuaternion<f64>,\n}\n\nimpl Attitude {\n    pub fn propagate(&mut self, omega_body: Vector3<f64>, dt: f64) {\n        todo!()\n    }\n}\n',
         solution:
-          '#![no_std]\n\nuse nalgebra::{UnitQuaternion, Vector3};\n\npub struct Attitude {\n    pub q: UnitQuaternion<f64>,\n}\n\nimpl Attitude {\n    pub fn new() -> Self {\n        Self { q: UnitQuaternion::identity() }\n    }\n\n    /// Propagate by the body rate over dt using the exponential map, which\n    /// keeps the result a unit quaternion by construction rather than\n    /// integrating and renormalising.\n    pub fn propagate(&mut self, omega_body: Vector3<f64>, dt: f64) {\n        let dtheta = omega_body * dt;\n        let dq = UnitQuaternion::from_scaled_axis(dtheta);\n        self.q = self.q * dq;\n    }\n}\n\nimpl Default for Attitude {\n    fn default() -> Self { Self::new() }\n}\n\n#[cfg(test)]\nmod tests {\n    use super::*;\n\n    #[test]\n    fn norm_is_preserved() {\n        let mut a = Attitude::new();\n        let w = Vector3::new(0.01, -0.02, 0.005);\n        for _ in 0..100_000 {\n            a.propagate(w, 0.001);\n        }\n        assert!((a.q.norm() - 1.0).abs() < 1e-12);\n    }\n\n    #[test]\n    fn full_turn_returns_to_start() {\n        let mut a = Attitude::new();\n        let w = Vector3::new(0.0, 0.0, core::f64::consts::TAU);\n        for _ in 0..1000 {\n            a.propagate(w, 0.001);\n        }\n        let ang = a.q.angle();\n        assert!(ang < 1e-9 || (core::f64::consts::TAU - ang) < 1e-9);\n    }\n}\n\n// All nalgebra types here are statically sized (UnitQuaternion<f64> and\n// Vector3<f64>), so no heap is touched and the crate links without an\n// allocator on thumbv7em-none-eabihf.\n',
+          '#![no_std]\n\nuse nalgebra::{UnitQuaternion, Vector3};\n\npub struct Attitude {\n    pub q: UnitQuaternion<f64>,\n}\n\nimpl Attitude {\n    pub fn new() -> Self {\n        Self { q: UnitQuaternion::identity() }\n    }\n\n    /// Propagate by the body rate over dt using the exponential map, which\n    /// keeps the result a unit quaternion by construction rather than\n    /// integrating and renormalizing.\n    pub fn propagate(&mut self, omega_body: Vector3<f64>, dt: f64) {\n        let dtheta = omega_body * dt;\n        let dq = UnitQuaternion::from_scaled_axis(dtheta);\n        self.q = self.q * dq;\n    }\n}\n\nimpl Default for Attitude {\n    fn default() -> Self { Self::new() }\n}\n\n#[cfg(test)]\nmod tests {\n    use super::*;\n\n    #[test]\n    fn norm_is_preserved() {\n        let mut a = Attitude::new();\n        let w = Vector3::new(0.01, -0.02, 0.005);\n        for _ in 0..100_000 {\n            a.propagate(w, 0.001);\n        }\n        assert!((a.q.norm() - 1.0).abs() < 1e-12);\n    }\n\n    #[test]\n    fn full_turn_returns_to_start() {\n        let mut a = Attitude::new();\n        let w = Vector3::new(0.0, 0.0, core::f64::consts::TAU);\n        for _ in 0..1000 {\n            a.propagate(w, 0.001);\n        }\n        let ang = a.q.angle();\n        assert!(ang < 1e-9 || (core::f64::consts::TAU - ang) < 1e-9);\n    }\n}\n\n// All nalgebra types here are statically sized (UnitQuaternion<f64> and\n// Vector3<f64>), so no heap is touched and the crate links without an\n// allocator on thumbv7em-none-eabihf.\n',
         hours: 5,
       },
       {
@@ -10022,7 +10022,7 @@ export const CODING: Module[] = [
         id: 'rs03_c3',
         front: 'What is embedded-hal?',
         back:
-          'A set of traits defining what a digital pin, an SPI bus, an I2C bus or a delay does. Drivers are written against the traits, so one sensor driver works on every microcontroller whose HAL implements them; version 1.0 stabilised that contract.',
+          'A set of traits defining what a digital pin, an SPI bus, an I2C bus or a delay does. Drivers are written against the traits, so one sensor driver works on every microcontroller whose HAL implements them; version 1.0 stabilized that contract.',
       },
       {
         id: 'rs03_c4',
@@ -10420,7 +10420,7 @@ DROP TABLE _chk;`,
         id: 'sql01_c10',
         front: 'What is a primary key actually promising?',
         back:
-          'Uniqueness and non-nullability for that combination of columns, enforced by the database with a supporting index. It is the identity contract other tables reference, which is why choosing it is a modelling decision, not a formality.',
+          'Uniqueness and non-nullability for that combination of columns, enforced by the database with a supporting index. It is the identity contract other tables reference, which is why choosing it is a modeling decision, not a formality.',
       },
       {
         id: 'sql01_c11',
@@ -10568,7 +10568,7 @@ DROP TABLE _chk;`,
     objectives: [
       'Compute a per-satellite per-day aggregate from a joined fleet and reading table.',
       'Write an anti-join that finds satellites with no telemetry in a window, and explain why NOT IN is the wrong tool.',
-      'Recognise and fix a fan-out that inflated a SUM.',
+      'Recognize and fix a fan-out that inflated a SUM.',
       'Explain when a LEFT JOIN followed by IS NOT NULL is really an inner join written badly.',
       'Restructure a nested subquery into readable chained CTEs without changing the result.',
     ],
@@ -10854,7 +10854,7 @@ DROP TABLE _chk;`,
         id: 'sql02_c8',
         front: 'When is a CTE better than a nested subquery?',
         back:
-          'When the query has more than one logical step. Named steps read top to bottom and can be tested independently. Be aware that in some engines a CTE is an optimisation fence, so check the plan for hot queries.',
+          'When the query has more than one logical step. Named steps read top to bottom and can be tested independently. Be aware that in some engines a CTE is an optimization fence, so check the plan for hot queries.',
       },
       {
         id: 'sql02_c9',
@@ -11242,7 +11242,7 @@ DROP TABLE _chk;`,
         id: 'sql03_c4',
         front: 'ROWS frame versus RANGE frame',
         back:
-          'ROWS counts a fixed number of neighbouring rows; RANGE spans a value interval of the ORDER BY column, for example five minutes of time. For irregularly sampled telemetry, ROWS gives an inconsistent time window and RANGE gives a consistent one.',
+          'ROWS counts a fixed number of neighboring rows; RANGE spans a value interval of the ORDER BY column, for example five minutes of time. For irregularly sampled telemetry, ROWS gives an inconsistent time window and RANGE gives a consistent one.',
       },
       {
         id: 'sql03_c5',
@@ -11414,7 +11414,7 @@ DROP TABLE _chk;`,
     prereqs: ['cod_sql_03_windows'],
     hours: 14,
     topics: [
-      'Normalisation to third normal form and deliberate denormalisation for analytics',
+      'Normalization to third normal form and deliberate denormalisation for analytics',
       'Star and snowflake schemas; surrogate versus natural keys',
       'Constraints: NOT NULL, UNIQUE, CHECK, foreign keys with ON DELETE',
       'Transactions and ACID; isolation levels; deadlocks',
@@ -11425,7 +11425,7 @@ DROP TABLE _chk;`,
       'EXPLAIN and EXPLAIN ANALYZE: sequential versus index versus bitmap heap scan; nested loop versus hash versus merge join',
       'Estimated versus actual rows as the tell for stale statistics',
       'SARGability: why wrapping an indexed column in a function kills the index',
-      'Range partitioning by time; clustering; materialised views and continuous aggregates',
+      'Range partitioning by time; clustering; materialized views and continuous aggregates',
       'Columnar storage and Parquet; batch versus streaming ingest',
       'Upserts and idempotent ingest for duplicated downlink frames',
       'The telemetry lifecycle: vehicle, downlink, decommutation, time-series store, analysis, report',
@@ -11699,7 +11699,7 @@ DROP TABLE _chk;`,
       },
       {
         id: 'sql04_c11',
-        front: 'What is a continuous aggregate or materialised view for?',
+        front: 'What is a continuous aggregate or materialized view for?',
         back:
           'Precomputing the per-minute or per-hour rollups that dashboards ask for, so a query touches thousands of rows instead of billions. The cost is refresh logic and a lag window you must state on the dashboard.',
       },
@@ -11833,7 +11833,7 @@ DROP TABLE _chk;`,
         q: 'A dashboard query over two years of raw samples takes four minutes. What is the structural fix?',
         choices: [
           'Add more indexes on the raw table',
-          'Precompute rollups as continuous aggregates or materialised views and query those, with a stated refresh lag',
+          'Precompute rollups as continuous aggregates or materialized views and query those, with a stated refresh lag',
           'Increase the statement timeout',
           'Move to a faster disk',
         ],
@@ -11861,7 +11861,7 @@ DROP TABLE _chk;`,
     topics: [
       'Orthographic projection; third-angle (US) versus first-angle (ISO) and the symbol that identifies which',
       'Views: front, top, right, auxiliary, section (full, half, offset, broken-out), detail, isometric',
-      'Line types: visible, hidden, centre, phantom, section; line weights',
+      'Line types: visible, hidden, center, phantom, section; line weights',
       'Scales and their notation',
       'Title block, revision block, revision letters and change bars',
       'The drawing as the legal definition of the part',
@@ -11957,9 +11957,9 @@ DROP TABLE _chk;`,
       },
       {
         id: 'cad01_c6',
-        front: 'Hidden, centre and phantom lines',
+        front: 'Hidden, center and phantom lines',
         back:
-          'Hidden (dashed) shows edges behind the surface; centre (long-short-long) marks axes and symmetry; phantom (long-short-short-long) shows alternate positions, adjacent parts or repeat features. Reading them wrong changes what you think the geometry is.',
+          'Hidden (dashed) shows edges behind the surface; center (long-short-long) marks axes and symmetry; phantom (long-short-short-long) shows alternate positions, adjacent parts or repeat features. Reading them wrong changes what you think the geometry is.',
       },
       {
         id: 'cad01_c7',
@@ -12151,7 +12151,7 @@ DROP TABLE _chk;`,
         id: 'cad02_ex1',
         title: 'Tolerance a bolted bracket',
         prompt:
-          'Given an untoleranced bracket with a mounting face and four clearance holes, apply a complete datum scheme (primary planar, secondary and tertiary), a flatness control on the mounting face, and a position tolerance on the hole pattern at maximum material condition. State, in millimetres, the tolerance zone diameter available when a hole is produced at its least material condition, and show the bonus arithmetic.',
+          'Given an untoleranced bracket with a mounting face and four clearance holes, apply a complete datum scheme (primary planar, secondary and tertiary), a flatness control on the mounting face, and a position tolerance on the hole pattern at maximum material condition. State, in millimeters, the tolerance zone diameter available when a hole is produced at its least material condition, and show the bonus arithmetic.',
         kind: 'derivation',
         hours: 4,
       },
@@ -12340,37 +12340,37 @@ DROP TABLE _chk;`,
     id: 'cod_cad_03_tools',
     track: 'coding',
     tier: 2,
-    title: 'CAD Tools: 2D Drafting, 3D Modelling, and Where AutoCAD Actually Fits',
+    title: 'CAD Tools: 2D Drafting, 3D Modeling, and Where AutoCAD Actually Fits',
     summary:
-      "SpaceX standardised on Siemens NX with Teamcenter, NX Nastran and Femap. AutoCAD is a 2D tool for facilities, ground support equipment and schematics, not the tool rockets are designed in. Learn both, and learn the difference.",
+      "SpaceX standardized on Siemens NX with Teamcenter, NX Nastran and Femap. AutoCAD is a 2D tool for facilities, ground support equipment and schematics, not the tool rockets are designed in. Learn both, and learn the difference.",
     prereqs: ['cod_cad_02_gdt'],
     hours: 30,
     topics: [
       'AutoCAD: the command line as the real interface; absolute, relative and polar coordinate entry',
       'Object snaps, ortho and polar tracking',
       'Draw and modify: line, polyline, arc, offset, trim, extend, fillet, array, stretch',
-      'Layers as the core discipline: name, colour, linetype, lineweight, plot state, freeze versus off',
+      'Layers as the core discipline: name, color, linetype, lineweight, plot state, freeze versus off',
       'Blocks, attributes, dynamic blocks and external references',
       'Annotation: text styles, dimension styles, multileaders, annotative scaling',
       'Model space versus paper space; layouts, viewports and viewport scale; plot styles; sheet sets',
       'Templates, standards files, DWG versus DXF',
       'Where AutoCAD genuinely lives in aerospace: facility and site layouts, ground support equipment, test-stand drawings, electrical and harness schematics, P&IDs, tooling layouts',
-      'Parametric feature-based modelling: sketches, constraints, fully defined sketches',
+      'Parametric feature-based modeling: sketches, constraints, fully defined sketches',
       'Features: extrude, revolve, sweep, loft, fillet, shell, rib, draft, hole wizard, patterns, configurations',
-      'The feature tree, parent-child relationships, design intent, robust versus fragile modelling',
+      'The feature tree, parent-child relationships, design intent, robust versus fragile modeling',
       'Assemblies: mates, sub-assemblies, in-context design and its dangers, interference detection',
-      'Mass properties: where the mass, centre of gravity and inertia tensor for a 6-DOF simulation come from',
+      'Mass properties: where the mass, center of gravity and inertia tensor for a 6-DOF simulation come from',
       'Drawings from models; PMI and model-based definition',
-      'Sheet metal, weldments and surfacing (awareness); outer mould line',
+      'Sheet metal, weldments and surfacing (awareness); outer mold line',
       'Interchange formats: STEP, IGES, Parasolid, JT, and translation fidelity',
-      'The landscape: NX plus Teamcenter at SpaceX; CATIA at Boeing and Airbus; Creo in defence; SolidWorks at suppliers and startups; Onshape and Fusion as cloud-native newcomers',
+      'The landscape: NX plus Teamcenter at SpaceX; CATIA at Boeing and Airbus; Creo in defense; SolidWorks at suppliers and startups; Onshape and Fusion as cloud-native newcomers',
       'PLM concepts: part numbers, revisions versus versions, effectivity, ECO and ECR, as-designed versus as-built versus as-flown',
     ],
     objectives: [
       'Produce a fully dimensioned, title-blocked, plotted 2D drawing with correct layers and annotative dimensions.',
       'Model a bracket parametrically with a fully defined sketch and a feature tree that survives a dimension change.',
       'Extract an inertia tensor from an assembly and feed it into a 6-DOF simulation.',
-      'Say which CAD system a given aerospace organisation uses and why, without guessing.',
+      'Say which CAD system a given aerospace organization uses and why, without guessing.',
       'Explain what Teamcenter does that NX does not.',
     ],
     resources: [
@@ -12380,7 +12380,7 @@ DROP TABLE _chk;`,
         kind: 'course',
         url: 'https://learn.onshape.com/',
         free: true,
-        note: 'Free hobby tier, browser-based, no install. The lowest-friction way to learn parametric modelling.',
+        note: 'Free hobby tier, browser-based, no install. The lowest-friction way to learn parametric modeling.',
       },
       {
         title: 'AutoCAD on-demand learning and certification prep',
@@ -12388,7 +12388,7 @@ DROP TABLE _chk;`,
         kind: 'course',
         url: 'https://www.autodesk.com/learn',
         free: true,
-        note: 'Autodesk also offers a free one-year education licence. The Certified User credential is the beginner-appropriate one.',
+        note: 'Autodesk also offers a free one-year education license. The Certified User credential is the beginner-appropriate one.',
       },
       {
         title: 'Siemens Xcelerator Academy: NX Basics and NX Basic Design',
@@ -12404,7 +12404,7 @@ DROP TABLE _chk;`,
         kind: 'site',
         url: 'https://www.sw.siemens.com/en-US/customer-stories/',
         free: true,
-        note: 'The published account of the NX and Teamcenter standardisation and the large-assembly load-time argument.',
+        note: 'The published account of the NX and Teamcenter standardization and the large-assembly load-time argument.',
       },
     ],
     exercises: [
@@ -12420,7 +12420,7 @@ DROP TABLE _chk;`,
         id: 'cad03_ex2',
         title: 'Inertia tensor into the simulator',
         prompt:
-          'Build a small assembly with at least four parts and assigned materials, extract the mass, centre of gravity and full inertia tensor about the centre of mass in body axes, and feed them into the 6-DOF Python simulator. Then change one part material, re-extract, and report how the principal moments and the resulting attitude dynamics change. State what invalidates a CAD-derived inertia tensor for flight use.',
+          'Build a small assembly with at least four parts and assigned materials, extract the mass, center of gravity and full inertia tensor about the center of mass in body axes, and feed them into the 6-DOF Python simulator. Then change one part material, re-extract, and report how the principal moments and the resulting attitude dynamics change. State what invalidates a CAD-derived inertia tensor for flight use.',
         kind: 'build',
         hours: 6,
       },
@@ -12442,7 +12442,7 @@ DROP TABLE _chk;`,
         id: 'cad03_c3',
         front: 'Who uses CATIA, NX, Creo and SolidWorks?',
         back:
-          'CATIA at Boeing (adopted 1986, the 787 was designed in it) and Airbus; NX at SpaceX and much of automotive and aerospace; Creo heavily in defence; SolidWorks at suppliers, startups and student teams; Onshape and Fusion as cloud-native newcomers.',
+          'CATIA at Boeing (adopted 1986, the 787 was designed in it) and Airbus; NX at SpaceX and much of automotive and aerospace; Creo heavily in defense; SolidWorks at suppliers, startups and student teams; Onshape and Fusion as cloud-native newcomers.',
       },
       {
         id: 'cad03_c4',
@@ -12476,7 +12476,7 @@ DROP TABLE _chk;`,
       },
       {
         id: 'cad03_c9',
-        front: 'Why are layers, not per-object colours, the professional standard?',
+        front: 'Why are layers, not per-object colors, the professional standard?',
         back:
           'Layers let you control visibility, plotting, linetype and lineweight for a whole category at once, and they survive being shared with another firm whose standards map by layer name. Per-object overrides are invisible in the layer manager and unmanageable at scale.',
       },
@@ -12484,7 +12484,7 @@ DROP TABLE _chk;`,
         id: 'cad03_c10',
         front: 'What is in-context design and why is it dangerous?',
         back:
-          'Modelling one part by referencing geometry of another in the assembly. It captures real intent but creates external references, so changing the parent silently changes the child and circular dependencies can make a rebuild non-deterministic.',
+          'Modeling one part by referencing geometry of another in the assembly. It captures real intent but creates external references, so changing the parent silently changes the child and circular dependencies can make a rebuild non-deterministic.',
       },
       {
         id: 'cad03_c11',
@@ -12517,13 +12517,13 @@ DROP TABLE _chk;`,
         q: 'Which statement about SpaceX and CAD is correct?',
         choices: [
           'SpaceX designs its vehicles in AutoCAD',
-          'SpaceX standardised on Siemens NX with Teamcenter, after large assemblies on a mid-range package took over an hour to load',
+          'SpaceX standardized on Siemens NX with Teamcenter, after large assemblies on a mid-range package took over an hour to load',
           'SpaceX uses CATIA exclusively',
           'SpaceX uses no PDM system',
         ],
         answer: 1,
         explain:
-          'The Siemens case study documents the NX and Teamcenter standardisation and the large-assembly performance argument. Other packages appear in pockets, but NX is primary.',
+          'The Siemens case study documents the NX and Teamcenter standardization and the large-assembly performance argument. Other packages appear in pockets, but NX is primary.',
         b: 0.5,
         bloom: 'recall',
       },
@@ -12533,7 +12533,7 @@ DROP TABLE _chk;`,
         choices: [
           'Designing a turbopump impeller',
           'A test-stand and facility layout drawing',
-          'Outer-mould-line surfacing',
+          'Outer-mold-line surfacing',
           'A 25,000-part vehicle assembly',
         ],
         answer: 1,
@@ -12568,7 +12568,7 @@ DROP TABLE _chk;`,
         ],
         answer: 1,
         explain:
-          'CAD is the source, and the usual error is that the model is not complete or not materially correct. Flight programmes reconcile it against measured mass properties.',
+          'CAD is the source, and the usual error is that the model is not complete or not materially correct. Flight programs reconcile it against measured mass properties.',
         b: 0.7,
         bloom: 'analyze',
       },
@@ -12606,7 +12606,7 @@ DROP TABLE _chk;`,
         id: 'cad03_q7',
         q: 'How much CAD depth does a GNC role actually require?',
         choices: [
-          'Full CSWP-level modelling skill',
+          'Full CSWP-level modeling skill',
           'Enough to read a drawing, extract mass properties correctly and talk to mechanical engineers; it is cross-discipline literacy, not a core skill',
           'None at all',
           'NX certification',
@@ -12629,7 +12629,7 @@ DROP TABLE _chk;`,
     tier: 7,
     title: 'Algorithmic Fluency for the SpaceX Screen',
     summary:
-      "Calibrated honestly: medium-level problems in C++ or Python, with emphasis on real-world problem solving rather than exotic algorithms, plus the engineering variants SpaceX actually favours, such as decommutating a binary packet stream or implementing a ring buffer.",
+      "Calibrated honestly: medium-level problems in C++ or Python, with emphasis on real-world problem solving rather than exotic algorithms, plus the engineering variants SpaceX actually favors, such as decommutating a binary packet stream or implementing a ring buffer.",
     prereqs: ['cod_cpp_04_stl', 'cod_py_03_numpy'],
     hours: 40,
     topics: [
@@ -12650,7 +12650,7 @@ DROP TABLE _chk;`,
       'Solve a medium problem in 25 minutes while explaining your reasoning aloud.',
       'State time and space complexity for every solution without being asked.',
       'Implement the six engineering variants from memory: ring buffer, decommutator, dropout detector, time aligner, anti-windup PID and running median.',
-      'Recognise which of the high-yield patterns a new problem belongs to within two minutes.',
+      'Recognize which of the high-yield patterns a new problem belongs to within two minutes.',
       'Write your own test cases, including the empty and single-element cases, before declaring a solution finished.',
     ],
     resources: [
@@ -12667,7 +12667,7 @@ DROP TABLE _chk;`,
         author: 'Gayle Laakmann McDowell',
         kind: 'book',
         free: false,
-        note: 'Use it for interview structure and behaviour, not as the problem set.',
+        note: 'Use it for interview structure and behavior, not as the problem set.',
       },
       {
         title: 'Python struct module documentation',
@@ -12690,11 +12690,11 @@ DROP TABLE _chk;`,
         id: 'int01_ex1',
         title: 'Decommutate a binary telemetry stream',
         prompt:
-          'A downlink blob contains fixed 12-byte frames: one byte of magic 0xA5, a little-endian uint16 channel id, a little-endian uint32 millisecond timestamp, a little-endian float32 value, and one checksum byte equal to the XOR of the preceding eleven bytes. The stream may contain leading garbage and corrupted frames. Implement decommutate(blob) returning a list of dicts with keys channel, t_ms and value, in order, skipping any frame whose magic or checksum does not match and resynchronising byte by byte.',
+          'A downlink blob contains fixed 12-byte frames: one byte of magic 0xA5, a little-endian uint16 channel id, a little-endian uint32 millisecond timestamp, a little-endian float32 value, and one checksum byte equal to the XOR of the preceding eleven bytes. The stream may contain leading garbage and corrupted frames. Implement decommutate(blob) returning a list of dicts with keys channel, t_ms and value, in order, skipping any frame whose magic or checksum does not match and resynchronizing byte by byte.',
         kind: 'code',
         lang: 'python',
         starter:
-          'import struct\n\nMAGIC = 0xA5\nFRAME_LEN = 12\n\n\ndef decommutate(blob):\n    """Parse 12-byte frames from bytes; skip bad frames and resynchronise."""\n    raise NotImplementedError\n',
+          'import struct\n\nMAGIC = 0xA5\nFRAME_LEN = 12\n\n\ndef decommutate(blob):\n    """Parse 12-byte frames from bytes; skip bad frames and resynchronize."""\n    raise NotImplementedError\n',
         solution:
           'import struct\n\nMAGIC = 0xA5\nFRAME_LEN = 12\n\n\ndef decommutate(blob):\n    out = []\n    i = 0\n    n = len(blob)\n    while i + FRAME_LEN <= n:\n        if blob[i] != MAGIC:\n            i += 1\n            continue\n        frame = blob[i:i + FRAME_LEN]\n        chk = 0\n        for b in frame[:FRAME_LEN - 1]:\n            chk ^= b\n        if chk != frame[FRAME_LEN - 1]:\n            i += 1\n            continue\n        channel, t_ms = struct.unpack_from("<HI", frame, 1)\n        (value,) = struct.unpack_from("<f", frame, 7)\n        out.append({"channel": channel, "t_ms": t_ms, "value": value})\n        i += FRAME_LEN\n    return out\n',
         tests: [
@@ -12709,9 +12709,9 @@ DROP TABLE _chk;`,
               'import struct\n\n\ndef _frame(channel, t_ms, value, corrupt=False):\n    body = bytes([0xA5]) + struct.pack("<HI", channel, t_ms) + struct.pack("<f", value)\n    chk = 0\n    for b in body:\n        chk ^= b\n    if corrupt:\n        chk ^= 0xFF\n    return body + bytes([chk])\n\n\nblob = _frame(1, 10, 0.5) + _frame(2, 20, 0.75, corrupt=True) + _frame(3, 30, 1.0)\nassert [f["channel"] for f in decommutate(blob)] == [1, 3], "bad checksum must be skipped"\n',
           },
           {
-            name: 'resynchronises after leading garbage',
+            name: 'resynchronizes after leading garbage',
             assert:
-              'import struct\n\n\ndef _frame(channel, t_ms, value):\n    body = bytes([0xA5]) + struct.pack("<HI", channel, t_ms) + struct.pack("<f", value)\n    chk = 0\n    for b in body:\n        chk ^= b\n    return body + bytes([chk])\n\n\nr = decommutate(b"\\x00\\x11\\x22" + _frame(5, 50, 2.0))\nassert len(r) == 1 and r[0]["channel"] == 5, "must resynchronise on the magic byte"\n',
+              'import struct\n\n\ndef _frame(channel, t_ms, value):\n    body = bytes([0xA5]) + struct.pack("<HI", channel, t_ms) + struct.pack("<f", value)\n    chk = 0\n    for b in body:\n        chk ^= b\n    return body + bytes([chk])\n\n\nr = decommutate(b"\\x00\\x11\\x22" + _frame(5, 50, 2.0))\nassert len(r) == 1 and r[0]["channel"] == 5, "must resynchronize on the magic byte"\n',
           },
           {
             name: 'degenerate inputs',
@@ -12740,7 +12740,7 @@ DROP TABLE _chk;`,
               'rb = RingBuffer(3)\nassert len(rb) == 0 and rb.to_list() == [] and rb.capacity() == 3\nfor v in (1, 2, 3):\n    rb.push(v)\nassert rb.to_list() == [1, 2, 3] and len(rb) == 3\nrb.push(4)\nassert rb.to_list() == [2, 3, 4], "push on a full buffer must drop the oldest"\nassert len(rb) == 3\n',
           },
           {
-            name: 'pop_oldest and empty behaviour',
+            name: 'pop_oldest and empty behavior',
             assert:
               'rb = RingBuffer(2)\nassert rb.pop_oldest() is None, "empty pop must return None, not raise"\nrb.push("a")\nrb.push("b")\nassert rb.pop_oldest() == "a"\nassert rb.to_list() == ["b"] and len(rb) == 1\nrb.push("c")\nrb.push("d")\nassert rb.to_list() == ["c", "d"]\n',
           },
@@ -12807,7 +12807,7 @@ DROP TABLE _chk;`,
         id: 'int01_c6',
         front: 'What can you safely skip?',
         back:
-          'Exotic dynamic programming, advanced graph theory, segment trees and heavy competitive-programming material. They are not what a medium-level, real-world-flavoured bar tests.',
+          'Exotic dynamic programming, advanced graph theory, segment trees and heavy competitive-programming material. They are not what a medium-level, real-world-flavored bar tests.',
       },
       {
         id: 'int01_c7',
@@ -12837,7 +12837,7 @@ DROP TABLE _chk;`,
         id: 'int01_c11',
         front: 'Parsing a binary protocol: what do you have to get right?',
         back:
-          'Endianness, field widths and the exact struct format string, resynchronisation after a corrupt frame, checksum verification, and refusing to emit a truncated trailing frame. Say all five aloud before coding.',
+          'Endianness, field widths and the exact struct format string, resynchronization after a corrupt frame, checksum verification, and refusing to emit a truncated trailing frame. Say all five aloud before coding.',
       },
       {
         id: 'int01_c12',
@@ -12874,7 +12874,7 @@ DROP TABLE _chk;`,
         choices: ['json', 'struct', 'pickle', 'csv'],
         answer: 1,
         explain:
-          'struct handles fixed-width fields and endianness. The real difficulty is resynchronisation and checksum handling, not the unpacking itself.',
+          'struct handles fixed-width fields and endianness. The real difficulty is resynchronization and checksum handling, not the unpacking itself.',
         b: -0.2,
         bloom: 'apply',
       },
@@ -12899,7 +12899,7 @@ DROP TABLE _chk;`,
         ],
         answer: 1,
         explain:
-          'Feasibility is monotone in the rate, so binary search the rate and simulate to check. This pattern appears constantly in engineering-flavoured problems.',
+          'Feasibility is monotone in the rate, so binary search the rate and simulate to check. This pattern appears constantly in engineering-flavored problems.',
         b: 0.7,
         bloom: 'apply',
       },
@@ -12972,29 +12972,29 @@ DROP TABLE _chk;`,
     id: 'cod_int_02_onsite',
     track: 'coding',
     tier: 11,
-    title: 'The SpaceX Onsite: Systems, Design, Presentation and Behavioural',
+    title: 'The SpaceX Onsite: Systems, Design, Presentation and Behavioral',
     summary:
-      "Five to eight rounds over four to six weeks, with a presentation to the team whose question-and-answer runs longer than the talk, and behavioural content reported at 30 to 50 percent of onsite time. Prepare the stories and the system-design answers as deliberately as the code.",
+      "Five to eight rounds over four to six weeks, with a presentation to the team whose question-and-answer runs longer than the talk, and behavioral content reported at 30 to 50 percent of onsite time. Prepare the stories and the system-design answers as deliberately as the code.",
     prereqs: ['cod_int_01_algorithms', 'cod_cpp_08_realtime', 'cod_py_07_integration', 'cod_slk_04_codegen'],
     hours: 40,
     topics: [
-      'The reported process: recruiter screen, a two to four hour take-home or timed challenge, technical rounds, a day-long onsite of four to six rounds, behavioural throughout',
+      'The reported process: recruiter screen, a two to four hour take-home or timed challenge, technical rounds, a day-long onsite of four to six rounds, behavioral throughout',
       'US person status under ITAR as a hard gate for essentially all roles',
-      'Systems C++ round: pointers and memory, double delete, RAII, rule of five, unique_ptr versus shared_ptr, virtual destructors, vtable layout, move semantics, undefined behaviour, static and const and volatile, data races, cache effects',
+      'Systems C++ round: pointers and memory, double delete, RAII, rule of five, unique_ptr versus shared_ptr, virtual destructors, vtable layout, move semantics, undefined behavior, static and const and volatile, data races, cache effects',
       'Live debugging: here is code that crashes or leaks, find it',
       'Engineering system design: GNC simulation infrastructure for a constellation; a telemetry pipeline for six thousand satellites; how you would verify this flight software; how you would architect a fault-tolerant flight computer',
       'Knowing the SpaceX answer: three dual-core x86 flight strings, per-string core cross-check, PowerPC actuator controllers judging three commands',
       'Domain rounds for GNC roles: PD control, orbit determination, frequency domain, aerodynamic drag with real examples',
       'The technical presentation: about twelve minutes of slides and twenty-plus minutes of debate',
-      'Behavioural themes: mission alignment, extreme ownership, operating with ambiguity and speed, intellectual honesty about failure',
-      'Saying what you personally modelled, coded, analysed, tuned, tested or debugged versus what the team did',
+      'Behavioral themes: mission alignment, extreme ownership, operating with ambiguity and speed, intellectual honesty about failure',
+      'Saying what you personally modeled, coded, analyzed, tuned, tested or debugged versus what the team did',
       'Fermi and order-of-magnitude estimation out loud',
       'Building six to eight STAR stories from the capstones, each with a number in it',
       'Questions to ask that show you understand the work',
     ],
     objectives: [
       'Answer a systems C++ round on memory, ownership and concurrency without hesitation.',
-      'Design a GNC simulation infrastructure aloud, covering interfaces, determinism, dispersion, HITL hooks, CI, storage and visualisation.',
+      'Design a GNC simulation infrastructure aloud, covering interfaces, determinism, dispersion, HITL hooks, CI, storage and visualization.',
       'Describe the SpaceX fault-tolerant flight-computer architecture accurately and say why it works.',
       'Deliver a twelve-slide technical talk on a capstone and survive twenty minutes of hostile questions.',
       'Tell six to eight STAR stories that each contain a number and a clear statement of what you personally did.',
@@ -13036,7 +13036,7 @@ DROP TABLE _chk;`,
         id: 'int02_ex1',
         title: 'Design the GNC simulation infrastructure, aloud',
         prompt:
-          'In 25 minutes, design the simulation infrastructure for a satellite constellation GNC team. Cover: module boundaries and interfaces, determinism and seeded reproducibility, the dispersed Monte Carlo layer, hardware-in-the-loop hooks, the C++ core with a Python harness, continuous integration with tolerance-based regression, results storage and the visualisation layer. Record yourself, then critique the recording against the real Starlink GNC-Simulations job description.',
+          'In 25 minutes, design the simulation infrastructure for a satellite constellation GNC team. Cover: module boundaries and interfaces, determinism and seeded reproducibility, the dispersed Monte Carlo layer, hardware-in-the-loop hooks, the C++ core with a Python harness, continuous integration with tolerance-based regression, results storage and the visualization layer. Record yourself, then critique the recording against the real Starlink GNC-Simulations job description.',
         kind: 'analysis',
         hours: 4,
       },
@@ -13066,7 +13066,7 @@ DROP TABLE _chk;`,
       },
       {
         id: 'int02_c2',
-        front: 'How much of the onsite is behavioural?',
+        front: 'How much of the onsite is behavioral?',
         back:
           'Reported at 30 to 50 percent. The themes are mission alignment, ownership end to end, tolerance for ambiguity and pace, and honesty about failure. Treat it as half the interview, because it is.',
       },
@@ -13074,7 +13074,7 @@ DROP TABLE _chk;`,
         id: 'int02_c3',
         front: 'What is the reported dynamic of the team presentation?',
         back:
-          'About twelve minutes of slides and twenty or more minutes of debate. Optimise for defending your assumptions, not for slide polish, and know which numbers on each slide you can derive from first principles.',
+          'About twelve minutes of slides and twenty or more minutes of debate. Optimize for defending your assumptions, not for slide polish, and know which numbers on each slide you can derive from first principles.',
       },
       {
         id: 'int02_c4',
@@ -13098,13 +13098,13 @@ DROP TABLE _chk;`,
         id: 'int02_c7',
         front: 'Systems C++ round: the ten things to have ready',
         back:
-          'What double delete does, RAII in three sentences, rule of five and when moves are suppressed, unique_ptr versus shared_ptr cost, virtual destructors, vtable layout, what std::move actually does, three examples of undefined behaviour, what a data race is, and why you would avoid new in a hot path.',
+          'What double delete does, RAII in three sentences, rule of five and when moves are suppressed, unique_ptr versus shared_ptr cost, virtual destructors, vtable layout, what std::move actually does, three examples of undefined behavior, what a data race is, and why you would avoid new in a hot path.',
       },
       {
         id: 'int02_c8',
         front: 'What is the Katalyst sentence you must be able to answer?',
         back:
-          'What was personally modelled, coded, analysed, tuned, tested or debugged by you versus completed by a team. Build the portfolio so that answer is specific and verifiable, and rehearse saying it without either inflating or deflating your contribution.',
+          'What was personally modeled, coded, analyzed, tuned, tested or debugged by you versus completed by a team. Build the portfolio so that answer is specific and verifiable, and rehearse saying it without either inflating or deflating your contribution.',
       },
       {
         id: 'int02_c9',
@@ -13146,7 +13146,7 @@ DROP TABLE _chk;`,
     quiz: [
       {
         id: 'int02_q1',
-        q: 'How much of a SpaceX onsite is reported to be behavioural?',
+        q: 'How much of a SpaceX onsite is reported to be behavioral?',
         choices: ['Under 10 percent', 'About 30 to 50 percent', 'Exactly one round of 30 minutes', 'None'],
         answer: 1,
         explain:
@@ -13218,14 +13218,14 @@ DROP TABLE _chk;`,
         id: 'int02_q6',
         q: 'A senior GNC engineer asks about aerodynamic drag with real examples. What are they probing?',
         choices: [
-          'Memorisation of the drag equation',
+          'Memorization of the drag equation',
           'Whether you can reason from first principles about dynamic pressure, coefficient variation with Mach, and what that means for loads and control authority in a real trajectory',
           'Your CAD skills',
           'Your knowledge of MATLAB syntax',
         ],
         answer: 1,
         explain:
-          'Reported GNC rounds favour first-principles reasoning tied to real vehicle behaviour, which is also what the Katalyst posting asks for explicitly.',
+          'Reported GNC rounds favor first-principles reasoning tied to real vehicle behavior, which is also what the Katalyst posting asks for explicitly.',
         b: 0.5,
         bloom: 'understand',
       },

@@ -16,7 +16,7 @@ This lesson builds the **[[pinhole model|camera-obscura]]** that turns a point i
 
 ## The pinhole: from a point in space to a spot on the picture
 
-Picture a shoebox with a tiny hole in one end and a sheet of tracing paper at the other. Light from a candle outside passes through the hole in a straight line and makes a small spot on the paper. Every point of the candle sends its own straight line through the hole, so a whole (upside-down) image of the candle appears. That is a **pinhole camera**, and every navigation camera is modelled as one.
+Picture a shoebox with a tiny hole in one end and a sheet of tracing paper at the other. Light from a candle outside passes through the hole in a straight line and makes a small spot on the paper. Every point of the candle sends its own straight line through the hole, so a whole (upside-down) image of the candle appears. That is a **pinhole camera**, and every navigation camera is modeled as one.
 
 To write it down, put the hole at the origin and set up the **camera frame**:
 
@@ -42,9 +42,9 @@ Look at the camera from above. The ray from the hole to the point is the long si
 
 The normalized coordinates are angles in disguise: $x$ is the tangent of the angle off the boresight. A computer does not see those. It sees pixel numbers: column $u$ and row $v$. Two things turn one into the other.
 
-First, a scale. The distance from the hole to the detector is the **focal length**. Measured in pixel widths instead of millimetres, it becomes $f_x$ ("f sub x"), the number of pixels you move per unit of $x$. On most cameras $f_x$ and $f_y$ are equal, but the pixel grid can be very slightly stretched in one direction, so they get one number each.
+First, a scale. The distance from the hole to the detector is the **focal length**. Measured in pixel widths instead of millimeters, it becomes $f_x$ ("f sub x"), the number of pixels you move per unit of $x$. On most cameras $f_x$ and $f_y$ are equal, but the pixel grid can be very slightly stretched in one direction, so they get one number each.
 
-Second, a shift. The spot where the boresight hits the detector is the **principal point** $(c_x, c_y)$. On a $1024 \times 1024$ detector it is near $(512, 512)$, but never exactly, because the lens is never glued on perfectly centred.
+Second, a shift. The spot where the boresight hits the detector is the **principal point** $(c_x, c_y)$. On a $1024 \times 1024$ detector it is near $(512, 512)$, but never exactly, because the lens is never glued on perfectly centered.
 
 Put together:
 
@@ -72,7 +72,7 @@ A camera has $f_x = f_y = 800$ pixels and principal point $(512, 512)$. A rock s
 
 **Divide by depth.** $x = 1.3 / 5.0 = 0.26$ and $y = -0.6 / 5.0 = -0.12$.
 
-**Scale and shift.** $u = 800 \times 0.26 + 512 = 720$ and $v = 800 \times (-0.12) + 512 = 416$. The rock is right of centre (bigger $u$) and above centre (smaller $v$, since rows count down), which matches its positive $X$ and negative $Y$.
+**Scale and shift.** $u = 800 \times 0.26 + 512 = 720$ and $v = 800 \times (-0.12) + 512 = 416$. The rock is right of center (bigger $u$) and above center (smaller $v$, since rows count down), which matches its positive $X$ and negative $Y$.
 
 **Run it backwards.** From the pixel alone, $x = (720 - 512)/800 = 0.26$ and $y = (416 - 512)/800 = -0.12$. So the rock lies somewhere along the ray pointing in the direction $(0.26, -0.12, 1)$. That is all.
 
@@ -98,8 +98,8 @@ print("ray direction:", ray.round(5))
 The second point is five times farther along the same ray, and it lands on exactly the same pixel. The perspective divide threw the distance away. **Sanity check:** the ray's direction is mostly along $Z$ ($0.961$), as it should be for a point well in front of the camera and only a little off to the side.
 :::
 
-::: warning Rows go down, and pixels are not millimetres
-Two slips catch nearly everyone. First, $v$ counts *down* from the top row, so "up in the picture" means *smaller* $v$; flip that and every height comes out with the wrong sign. Second, a lens datasheet gives the focal length in millimetres, but $f_x$ in the model is in pixels. Divide the focal length by the pixel size to convert. A $20\,\mathrm{mm}$ lens on $5.5\,\mu\mathrm{m}$ pixels has $f_x = 20 / 0.0055 \approx 3636$ pixels, not $20$.
+::: warning Rows go down, and pixels are not millimeters
+Two slips catch nearly everyone. First, $v$ counts *down* from the top row, so "up in the picture" means *smaller* $v$; flip that and every height comes out with the wrong sign. Second, a lens datasheet gives the focal length in millimeters, but $f_x$ in the model is in pixels. Divide the focal length by the pixel size to convert. A $20\,\mathrm{mm}$ lens on $5.5\,\mu\mathrm{m}$ pixels has $f_x = 20 / 0.0055 \approx 3636$ pixels, not $20$.
 :::
 
 ## Extrinsics: where the camera is, and which way it points
@@ -120,24 +120,24 @@ The intrinsics are fixed by the hardware. The extrinsics are the unknowns: six n
 
 ## Distortion: a real lens is not a perfect pinhole
 
-A perfect pinhole maps every straight line in the world to a straight line in the picture. A real lens, especially a wide-angle one, does not. Photograph a tiled wall with a cheap wide-angle camera and the lines near the edges bow outward like the sides of a barrel. That is **[[radial distortion|barrel-pincushion]]**: the lens magnifies slightly differently depending on how far from the centre of the picture the light passes.
+A perfect pinhole maps every straight line in the world to a straight line in the picture. A real lens, especially a wide-angle one, does not. Photograph a tiled wall with a cheap wide-angle camera and the lines near the edges bow outward like the sides of a barrel. That is **[[radial distortion|barrel-pincushion]]**: the lens magnifies slightly differently depending on how far from the center of the picture the light passes.
 
-The standard model measures how far a point is from the centre using $r^2 = x^2 + y^2$ (read "r squared"), the squared distance from the boresight in normalized coordinates. It then scales the normalized coordinates by a factor that depends on $r^2$:
+The standard model measures how far a point is from the center using $r^2 = x^2 + y^2$ (read "r squared"), the squared distance from the boresight in normalized coordinates. It then scales the normalized coordinates by a factor that depends on $r^2$:
 
 $$
 x_{\text{dist}} = x\big(1+k_1 r^2+k_2 r^4+\cdots\big), \qquad y_{\text{dist}} = y\big(1+k_1 r^2+k_2 r^4+\cdots\big).
 $$
 
-The **distortion coefficients** $k_1, k_2$ are more intrinsics, found in the same calibration. A negative $k_1$ squeezes points toward the centre (barrel); a positive one pushes them out (pincushion). A smaller **tangential** term, from lens elements sitting slightly tilted or off-centre, is left out here.
+The **distortion coefficients** $k_1, k_2$ are more intrinsics, found in the same calibration. A negative $k_1$ squeezes points toward the center (barrel); a positive one pushes them out (pincushion). A smaller **tangential** term, from lens elements sitting slightly tilted or off-center, is left out here.
 
-Distortion acts on the normalized coordinates *before* $\mathbf{K}$ turns them into pixels. Because it grows with $r^2$ and $r^4$, it is tiny near the centre and large at the corners.
+Distortion acts on the normalized coordinates *before* $\mathbf{K}$ turns them into pixels. Because it grows with $r^2$ and $r^4$, it is tiny near the center and large at the corners.
 
 ::: example How far distortion moves a pixel
-Take the same camera ($f_x = f_y = 800$, centre $512$) with $k_1 = -0.12$ and $k_2 = 0.02$. Work out the corner point $(x, y) = (0.6, 0.6)$ by hand first.
+Take the same camera ($f_x = f_y = 800$, center $512$) with $k_1 = -0.12$ and $k_2 = 0.02$. Work out the corner point $(x, y) = (0.6, 0.6)$ by hand first.
 
 **Radius.** $r^2 = 0.6^2 + 0.6^2 = 0.72$, so $r^4 = 0.72^2 = 0.5184$.
 
-**Scale factor.** $1 + k_1 r^2 + k_2 r^4 = 1 - 0.0864 + 0.0104 = 0.924$. The point is pulled about $7.6\%$ toward the centre.
+**Scale factor.** $1 + k_1 r^2 + k_2 r^4 = 1 - 0.0864 + 0.0104 = 0.924$. The point is pulled about $7.6\%$ toward the center.
 
 **In pixels.** Each coordinate moves from $0.6$ to $0.6 \times 0.924 = 0.5544$, a change of $(0.6 - 0.5544) \times 800 \approx 36.5$ pixels. It moves that much in both $u$ and $v$, so the total shift is $36.5 \times \sqrt{2} \approx 51.6$ pixels.
 
@@ -170,7 +170,7 @@ for name, (x, y) in [("centre", (0.02, -0.01)), ("mid-frame", (0.25, 0.15)),
 # corner     r=0.849  moved 51.61 px
 ```
 
-Near the centre the lens is essentially perfect; at the corner it moves a landmark more than fifty pixels. Next to the tenth-of-a-pixel centroids of the star tracker lessons, that is enormous.
+Near the center the lens is essentially perfect; at the corner it moves a landmark more than fifty pixels. Next to the tenth-of-a-pixel centroids of the star tracker lessons, that is enormous.
 :::
 
 ### Undoing distortion
@@ -320,7 +320,7 @@ for x, y in roots:
 #   candidate predicts landmark 4 off by 5.82 deg
 ```
 
-The true candidate predicts the fourth landmark exactly. The three false ones miss it by about $1^\circ$ to $6^\circ$. On a camera like the one above, where one degree is about $14$ pixels near the centre, that is a miss of roughly $14$ to $80$ pixels — impossible to overlook. Three landmarks give a pose up to a four-way tie; a fourth breaks the tie.
+The true candidate predicts the fourth landmark exactly. The three false ones miss it by about $1^\circ$ to $6^\circ$. On a camera like the one above, where one degree is about $14$ pixels near the center, that is a miss of roughly $14$ to $80$ pixels — impossible to overlook. Three landmarks give a pose up to a four-way tie; a fourth breaks the tie.
 :::
 
 ### Fix 2: move, and look again
@@ -335,10 +335,10 @@ The previous lesson's laser or radar altimeter measures range directly. Put a ra
 
 Take any scene one camera has photographed from several positions. Make every landmark and every camera position twice as far from the origin, all at once. Every ray still points the same way, so every pixel is unchanged.
 
-This means the overall **scale** of a one-camera (**monocular**) reconstruction is **unobservable**: no amount of data from that camera alone can pin it down. To fix it, you need something that knows about real metres: an accelerometer (its reading is in metres per second squared), a known **[[baseline|stereo-baseline]]** such as the fixed gap between two cameras, or an independent range measurement.
+This means the overall **scale** of a one-camera (**monocular**) reconstruction is **unobservable**: no amount of data from that camera alone can pin it down. To fix it, you need something that knows about real meters: an accelerometer (its reading is in meters per second squared), a known **[[baseline|stereo-baseline]]** such as the fixed gap between two cameras, or an independent range measurement.
 
 ::: key What a single pinhole observation constrains
-One pixel fixes a ray: two of three degrees of freedom, with range along the ray unknown. Three known landmarks give the pose up to P3P's four-way ambiguity; a fourth landmark, motion over time, or an independent range resolves it. The scale of monocular visual odometry is unobservable from bearings alone and needs an accelerometer, a known baseline, or an external range to fix it in metres.
+One pixel fixes a ray: two of three degrees of freedom, with range along the ray unknown. Three known landmarks give the pose up to P3P's four-way ambiguity; a fourth landmark, motion over time, or an independent range resolves it. The scale of monocular visual odometry is unobservable from bearings alone and needs an accelerometer, a known baseline, or an external range to fix it in meters.
 :::
 
 ## Check yourself
@@ -362,17 +362,17 @@ Divide by depth: $X/Z = 0.4/8.0 = 0.05$ and $Y/Z = -0.9/8.0 = -0.1125$.
 
 Scale and shift: $u = 1200 \times 0.05 + 640 = 700$ pixels, and $v = 1200 \times (-0.1125) + 640 = 505$ pixels.
 
-Sanity check: the point is a little right of centre and above centre (negative $Y$), and indeed $u$ is a bit more than $640$ and $v$ a bit less.
+Sanity check: the point is a little right of center and above center (negative $Y$), and indeed $u$ is a bit more than $640$ and $v$ a bit less.
 :::
 
 ::: check
-In the distortion example, a landmark near the centre moved $0$ pixels while one in the corner moved more than $50$, with the same lens. Explain this from the form of the distortion model.
+In the distortion example, a landmark near the center moved $0$ pixels while one in the corner moved more than $50$, with the same lens. Explain this from the form of the distortion model.
 :::
 
 ::: answer
-The model multiplies the normalized coordinates by $1 + k_1 r^2 + k_2 r^4$, and that factor depends only on $r^2 = x^2 + y^2$, the squared distance from the centre.
+The model multiplies the normalized coordinates by $1 + k_1 r^2 + k_2 r^4$, and that factor depends only on $r^2 = x^2 + y^2$, the squared distance from the center.
 
-Near the centre $r$ is almost $0$, so the factor is almost exactly $1$ and nothing moves. In the corner $r$ is largest, and because the correction grows with $r^2$ and $r^4$, a point twice as far out gets a correction about four times bigger, applied to a coordinate twice as big. Distortion depends strongly on distance from the centre; it is not a uniform shift.
+Near the center $r$ is almost $0$, so the factor is almost exactly $1$ and nothing moves. In the corner $r$ is largest, and because the correction grows with $r^2$ and $r^4$, a point twice as far out gets a correction about four times bigger, applied to a coordinate twice as big. Distortion depends strongly on distance from the center; it is not a uniform shift.
 :::
 
 ::: check
@@ -402,7 +402,7 @@ Why can a single camera, however long it watches, never measure the overall scal
 ::: answer
 A camera measures only directions. Multiply every 3-D point and every camera position by the same positive number and every direction — so every pixel ever recorded — stays the same. The reconstruction is right in shape but free in size.
 
-Fixing the size needs a measurement that carries real length units: an accelerometer, whose reading is in metres per second squared, so integrating it gives motion in metres; a known physical baseline, like the fixed distance between the two cameras of a stereo pair; or an independent range, such as the previous lesson's lidar or radar altimeter.
+Fixing the size needs a measurement that carries real length units: an accelerometer, whose reading is in meters per second squared, so integrating it gives motion in meters; a known physical baseline, like the fixed distance between the two cameras of a stereo pair; or an independent range, such as the previous lesson's lidar or radar altimeter.
 :::
 
 ## Summary
@@ -413,7 +413,7 @@ Fixing the size needs a measurement that carries real length units: an accelerom
 | $u = f_x x + c_x$, $v = f_y y + c_y$ | Intrinsics turn normalized coordinates into pixels |
 | $\mathbf{K}=\begin{pmatrix}f_x&0&c_x\\0&f_y&c_y\\0&0&1\end{pmatrix}$ | The intrinsic matrix; fixed, found by ground calibration |
 | $\mathbf{P}_{\text{cam}}=\mathbf{R}(\mathbf{P}_{\text{world}}-\mathbf{t})$ | Extrinsics: the six-number pose a navigation camera exists to find |
-| $x_{\text{dist}}=x(1+k_1r^2+k_2r^4+\cdots)$ | Radial distortion: tiny at the centre, large at the edges; undone by fixed-point iteration |
+| $x_{\text{dist}}=x(1+k_1r^2+k_2r^4+\cdots)$ | Radial distortion: tiny at the center, large at the edges; undone by fixed-point iteration |
 | One pixel | A bearing: two degrees of freedom, range unknown |
 | P3P | Three known landmarks give up to four poses; a fourth landmark, motion, or a range picks one |
 | Monocular scale | Unobservable from bearings alone; fixed by an accelerometer, a baseline, or a range |
@@ -450,7 +450,7 @@ Engineers like this because chains of cameras, rotations and shifts become chain
 :::
 
 ::: context barrel-pincushion Barrel and pincushion
-A square grid photographed through a lens with negative $k_1$ bulges outward like a barrel; with positive $k_1$ its edges pinch inward like a pincushion. The centre is almost untouched in both.
+A square grid photographed through a lens with negative $k_1$ bulges outward like a barrel; with positive $k_1$ its edges pinch inward like a pincushion. The center is almost untouched in both.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
@@ -498,9 +498,9 @@ Two cameras (or one camera at two moments) a distance $B$ apart both see the sam
 </svg>
 ```
 
-If you know $B$ in metres, the crossing point comes out in metres too. That is exactly why the baseline, and not the pictures, sets the scale.
+If you know $B$ in meters, the crossing point comes out in meters too. That is exactly why the baseline, and not the pictures, sets the scale.
 :::
 
 ::: context stereo-baseline Why stereo cameras come in pairs
-A **stereo camera** is two cameras bolted a fixed, carefully measured distance apart — the baseline. Mars rovers carry them: Curiosity's and Perseverance's navigation cameras sit in pairs on the mast, so every pair of images gives a depth map in real metres without any other sensor. The catch is range. The angle between the two rays shrinks as the target gets farther away, so a baseline of a few tens of centimetres gives good depth out to some tens of metres and poor depth beyond. That is why a lander high above the ground leans on an altimeter or an IMU for scale instead.
+A **stereo camera** is two cameras bolted a fixed, carefully measured distance apart — the baseline. Mars rovers carry them: Curiosity's and Perseverance's navigation cameras sit in pairs on the mast, so every pair of images gives a depth map in real meters without any other sensor. The catch is range. The angle between the two rays shrinks as the target gets farther away, so a baseline of a few tens of centimeters gives good depth out to some tens of meters and poor depth beyond. That is why a lander high above the ground leans on an altimeter or an IMU for scale instead.
 :::

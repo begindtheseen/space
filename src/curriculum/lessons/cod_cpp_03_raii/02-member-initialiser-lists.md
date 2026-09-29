@@ -1,18 +1,18 @@
 ---
 id: l02-member-initialiser-lists
-title: Member initialiser lists and initialisation order
+title: Member initializer lists and initialization order
 minutes: 19
 covers:
-  - Member initialiser lists and the actual initialisation order (declaration order, not list order)
+  - Member initializer lists and the actual initialization order (declaration order, not list order)
 ---
 
-Picture a factory assembly line. The stations are bolted to the floor in a fixed order: frame, then engine, then wheels, then paint. A work order arrives that says "paint it red, fit the 2-litre engine, use the steel frame". The work order can say *what* each station does. It cannot move the stations. However the order is written, the frame is built first and the paint goes on last, because that is the order of the floor.
+Picture a factory assembly line. The stations are bolted to the floor in a fixed order: frame, then engine, then wheels, then paint. A work order arrives that says "paint it red, fit the 2-liter engine, use the steel frame". The work order can say *what* each station does. It cannot move the stations. However the order is written, the frame is built first and the paint goes on last, because that is the order of the floor.
 
-A C++ object is built the same way. Its members are the stations, and their order on the floor is the order you **declared** them in the class. The **member initialiser list** — the part of a constructor after the colon — is the work order. It says what value each member starts with. It does not change the order they are built in.
+A C++ object is built the same way. Its members are the stations, and their order on the floor is the order you **declared** them in the class. The **member initializer list** — the part of a constructor after the colon — is the work order. It says what value each member starts with. It does not change the order they are built in.
 
 Last lesson used the list to write `Vector3`'s constructors and promised to come back to it. This lesson does that. You will see why the list is better than assigning in the constructor body, which members *must* go in it, how to give members a default right where they are declared, and the ordering rule above — which causes a real, silent bug in flight code when one member is computed from another.
 
-## Initialising is not assigning
+## Initializing is not assigning
 
 There are two places a constructor could give a member its value:
 
@@ -32,7 +32,7 @@ They look like the same thing. They are not. The rule is:
 
 So in form (1), by the time the body runs, `name_` has already been built — as an empty string, by its default constructor — and the body then **assigns** over it. That is two operations: build empty, then overwrite. In form (2), `name_` is built once, directly from `"IMU-A"`. One operation.
 
-In the list, `name_("IMU-A")` is read "name-underscore is initialised from the string IMU-A". Braces work too: `name_{"IMU-A"}`, with the same no-narrowing protection you saw with `Vector3`.
+In the list, `name_("IMU-A")` is read "name-underscore is initialized from the string IMU-A". Braces work too: `name_{"IMU-A"}`, with the same no-narrowing protection you saw with `Vector3`.
 
 ::: example Counting what really happens
 To see the difference, give a member type that prints every time something happens to it.
@@ -106,14 +106,14 @@ For a `double` the extra step costs almost nothing, but for a `std::string` or a
 Here is the rule in its exact form.
 
 ::: key
-Members are initialised **in the order they are declared in the class**, regardless of the order written in the member initialiser list. Writing them out of order earns a warning (`-Wreorder`), and it is a real bug source when one member is initialised from another.
+Members are initialized **in the order they are declared in the class**, regardless of the order written in the member initializer list. Writing them out of order earns a warning (`-Wreorder`), and it is a real bug source when one member is initialized from another.
 :::
 
 (If the class has base classes, those are built even before the first member — [[a detail for later|bases-first]].)
 
-On its own, a list in a strange order is only confusing. It becomes a bug when one member's starting value is **computed from another member**. If the member you read is declared *later*, it has not been built yet when you read it. You are reading an uninitialised value — undefined behaviour, the same garbage bytes you met last lesson.
+On its own, a list in a strange order is only confusing. It becomes a bug when one member's starting value is **computed from another member**. If the member you read is declared *later*, it has not been built yet when you read it. You are reading an uninitialised value — undefined behavior, the same garbage bytes you met last lesson.
 
-Here is what g++ printed while compiling `Ordered` above, and it is worth learning to recognise:
+Here is what g++ printed while compiling `Ordered` above, and it is worth learning to recognize:
 
 ```text
 warning: 'Ordered::second' will be initialized after [-Wreorder]
@@ -124,7 +124,7 @@ warning:   when initialized here [-Wreorder]
    27 |     Ordered() : second("second"), first("first") {}   // list written backwards
 ```
 
-Read the three lines as one sentence: "`second` will be initialised after `first`, even though you wrote it first here." The **[[-Wreorder warning|wreorder]]** is part of `-Wall` for C++, so you get it for free if you compile with warnings on.
+Read the three lines as one sentence: "`second` will be initialized after `first`, even though you wrote it first here." The **[[-Wreorder warning|wreorder]]** is part of `-Wall` for C++, so you get it for free if you compile with warnings on.
 
 ::: example A loop clock that divides by garbage
 A flight computer runs its control loop at a fixed rate. This small class stores the rate in hertz and the time step in seconds, $\Delta t = 1/f$ (read "delta t equals one over f"). At $f = 1000\,\mathrm{Hz}$ the step should be $\Delta t = 0.001\,\mathrm{s}$, one millisecond.
@@ -163,7 +163,7 @@ If you ignore the warnings and run it, on one machine at both `-O0` and `-O2` it
 rate = 1000 Hz, dt = inf s
 ```
 
-The rate is right (it was set from the parameter) and the time step is **[[infinity|inf]]**. That particular run found a zero, or something extremely close to it, in the unset memory, and one divided by zero is infinity in floating point. Another compiler, another optimisation level or another day could print a different wrong number, or a plausible-looking one — undefined behaviour promises nothing. An integrator stepping by `inf`, or by a plausible wrong $\Delta t$, corrupts the navigation state in its first cycle.
+The rate is right (it was set from the parameter) and the time step is **[[infinity|inf]]**. That particular run found a zero, or something extremely close to it, in the unset memory, and one divided by zero is infinity in floating point. Another compiler, another optimization level or another day could print a different wrong number, or a plausible-looking one — undefined behavior promises nothing. An integrator stepping by `inf`, or by a plausible wrong $\Delta t$, corrupts the navigation state in its first cycle.
 
 **The fix.** Compute from the *parameter*, which is always ready, and write the list in declaration order so it reads the way it runs:
 
@@ -178,10 +178,10 @@ Now it compiles with no warnings and prints `rate = 1000 Hz, dt = 0.001 s`. Sani
 Three habits keep you out of this entirely:
 
 1. **Write the list in declaration order**, always. Then the list reads the way it runs.
-2. **Initialise from constructor parameters, not from other members**, whenever you can. Parameters exist before any member does.
+2. **Initialize from constructor parameters, not from other members**, whenever you can. Parameters exist before any member does.
 3. **Build with warnings on, and treat them as errors** (`-Wall -Wextra -Werror`). The compiler caught both mistakes above; it only helps if someone reads what it says.
 
-::: warning Reordering the declarations changes behaviour
+::: warning Reordering the declarations changes behavior
 If a class depends on its members being built in a certain order — a `Buffer` member that must exist before a `Parser` member that is given a reference to it — then moving the declarations around (to "tidy up", or to shrink padding) silently changes the construction order. Put a comment on such members: `// must be declared before parser_`. The [[reason the language uses declaration order|why-declaration-order]] is exactly so that there is one order, fixed in one place.
 :::
 
@@ -189,7 +189,7 @@ If a class depends on its members being built in a certain order — a `Buffer` 
 
 Some members cannot be given a value by assignment at all, so the list is the only place for them.
 
-- A **`const` member** — a member marked `const` can never be assigned, so it must be initialised.
+- A **`const` member** — a member marked `const` can never be assigned, so it must be initialized.
 - A **reference member**, like `Bus& bus_` — read "a reference to a Bus". A reference must be [[bound to something when it is created|reference-binding]], and it can never be re-pointed afterwards. The body is too late.
 - A **member whose type has no default constructor** — for example a member of type `LoopClock`, whose only constructor needs a rate. There is no way to build it "empty first", so it must be built with its argument in the list.
 
@@ -218,7 +218,7 @@ error: uninitialized const member in 'const int' [-fpermissive]
 error: assignment of read-only member 'ImuDriver::address_'
 ```
 
-The first two say the members were never initialised before the body began. The third says the body then tried to assign to a `const`. Worse, `bus_ = bus;` would not re-point the reference even if it compiled — it would copy one `Bus` into whatever `bus_` referred to. The version that works puts both in the list:
+The first two say the members were never initialized before the body began. The third says the body then tried to assign to a `const`. Worse, `bus_ = bus;` would not re-point the reference even if it compiled — it would copy one `Bus` into whatever `bus_` referred to. The version that works puts both in the list:
 
 ```cpp
 class ImuDriver {
@@ -234,14 +234,14 @@ private:
 With `Bus spi1{1}; ImuDriver imu(spi1, 0x68); imu.print();` it prints `IMU at 0x68 on bus 1`. (`0x68` is hexadecimal for 104, a [[common address for an inertial measurement chip|i2c-address]].)
 
 ::: key
-`const` members and reference members must be initialised in the member initialiser list (or with a default member initialiser, below). So must any member whose type has no default constructor. Assigning in the body is too late: every member is already built when the body starts.
+`const` members and reference members must be initialized in the member initializer list (or with a default member initializer, below). So must any member whose type has no default constructor. Assigning in the body is too late: every member is already built when the body starts.
 :::
 
 Before you reach for `const` members, know the [[price of a const member|const-member-price]]: it makes the whole object impossible to assign.
 
-## Default member initialisers
+## Default member initializers
 
-Since C++11 you can give a member a starting value right where it is declared. This is a **[[default member initialiser|nsdmi]]**:
+Since C++11 you can give a member a starting value right where it is declared. This is a **[[default member initializer|nsdmi]]**:
 
 ```cpp
 class RateLimiter {
@@ -273,9 +273,9 @@ Two good reasons to use defaults everywhere you can:
 - **No member is ever forgotten.** A class with five constructors and one new member needs one edit, not five. The alternative is a member left as garbage by the one constructor someone forgot to update.
 - **The declaration tells the whole story.** A reader sees `int saturations_ = 0;` and knows its starting value without reading every constructor.
 
-Many flight-software teams go further and require every data member of a built-in type to have a default member initialiser, so an uninitialised `double` cannot exist at all.
+Many flight-software teams go further and require every data member of a built-in type to have a default member initializer, so an uninitialised `double` cannot exist at all.
 
-::: warning A default member initialiser still obeys declaration order
+::: warning A default member initializer still obeys declaration order
 `double dt_s_ = 1.0 / rate_hz_;` declared above `double rate_hz_ = 1000.0;` has the same bug as the loop clock: `dt_s_` is built first and reads a member that does not exist yet. Defaults are built in declaration order too, interleaved with list entries.
 :::
 
@@ -286,19 +286,19 @@ A class declares `std::vector<double> samples_;` then `std::size_t capacity_;`. 
 :::
 
 ::: answer
-`samples_` is declared first, so it is initialised first — before `capacity_` has a value — and `samples_(capacity_)` reads an uninitialised `std::size_t`. That is undefined behaviour. In practice the vector may be built with whatever number happened to be in that memory: zero (an empty window that fails later), or some huge value (a failed allocation, `std::bad_alloc`, or gigabytes of memory). g++ warns with `-Wreorder` and usually `-Wuninitialized`. The smallest fix is to initialise from the parameter: `samples_(n), capacity_(n)` — written in declaration order so the list reads the way it runs.
+`samples_` is declared first, so it is initialized first — before `capacity_` has a value — and `samples_(capacity_)` reads an uninitialised `std::size_t`. That is undefined behavior. In practice the vector may be built with whatever number happened to be in that memory: zero (an empty window that fails later), or some huge value (a failed allocation, `std::bad_alloc`, or gigabytes of memory). g++ warns with `-Wreorder` and usually `-Wuninitialized`. The smallest fix is to initialize from the parameter: `samples_(n), capacity_(n)` — written in declaration order so the list reads the way it runs.
 :::
 
 ::: check
-Why does a member of type `const double` compile when it has a default member initialiser (`const double g0_ = 9.80665;`) and no mention in any constructor list?
+Why does a member of type `const double` compile when it has a default member initializer (`const double g0_ = 9.80665;`) and no mention in any constructor list?
 :::
 
 ::: answer
-A `const` member must be initialised, not assigned — but a default member initialiser *is* an initialisation. When a constructor's list does not mention `g0_`, the compiler uses the default, so `g0_` is built with 9.80665 at its place in declaration order. The rule "must be in the list" really means "must be initialised by the list or by a default member initialiser". What would fail is leaving it out of both, or trying to set it in the body.
+A `const` member must be initialized, not assigned — but a default member initializer *is* an initialization. When a constructor's list does not mention `g0_`, the compiler uses the default, so `g0_` is built with 9.80665 at its place in declaration order. The rule "must be in the list" really means "must be initialized by the list or by a default member initializer". What would fail is leaving it out of both, or trying to set it in the body.
 :::
 
 ::: check
-Explain, in terms of the order of events, why assigning a `std::string` member in the constructor body is slower than initialising it in the list.
+Explain, in terms of the order of events, why assigning a `std::string` member in the constructor body is slower than initializing it in the list.
 :::
 
 ::: answer
@@ -306,11 +306,11 @@ Every member is fully built before the body begins. With assignment in the body,
 :::
 
 ::: check
-A constructor list is written `: c_(1), a_(2), b_(a_ + 1)` and the members are declared `int a_; int b_; int c_;`. In what order are they initialised, and is the value of `b_` well defined?
+A constructor list is written `: c_(1), a_(2), b_(a_ + 1)` and the members are declared `int a_; int b_; int c_;`. In what order are they initialized, and is the value of `b_` well defined?
 :::
 
 ::: answer
-They are initialised in declaration order: `a_`, then `b_`, then `c_` — the list order `c_, a_, b_` is ignored. `a_` becomes 2. Then `b_` is built from `a_ + 1`, and `a_` already holds 2, so `b_` is 3, well defined. `c_` is built last, as 1. So the code is correct, but only by luck of the declarations; `-Wreorder` still warns because the list is out of order, and rewriting the list as `: a_(2), b_(a_ + 1), c_(1)` removes both the warning and the trap for the next reader.
+They are initialized in declaration order: `a_`, then `b_`, then `c_` — the list order `c_, a_, b_` is ignored. `a_` becomes 2. Then `b_` is built from `a_ + 1`, and `a_` already holds 2, so `b_` is 3, well defined. `c_` is built last, as 1. So the code is correct, but only by luck of the declarations; `-Wreorder` still warns because the list is out of order, and rewriting the list as `: a_(2), b_(a_ + 1), c_(1)` removes both the warning and the trap for the next reader.
 :::
 
 ::: check
@@ -318,21 +318,21 @@ A teammate adds a reference member `const Config& cfg_;` to a class that has two
 :::
 
 ::: answer
-A reference member must be bound when the object is built, so every constructor must bind it in its list — there is no way to give a reference a meaningful default member initialiser in most designs. The constructor that compiles is the one whose list includes `cfg_(something)`. The one that errors ("uninitialized reference member") left `cfg_` out of its list. The fix is to add `cfg_(...)` to that constructor's list, or have it delegate to the one that already does.
+A reference member must be bound when the object is built, so every constructor must bind it in its list — there is no way to give a reference a meaningful default member initializer in most designs. The constructor that compiles is the one whose list includes `cfg_(something)`. The one that errors ("uninitialized reference member") left `cfg_` out of its list. The fix is to add `cfg_(...)` to that constructor's list, or have it delegate to the one that already does.
 :::
 
 ## Summary
 
 | Idea | Meaning | Rule or fact |
 | --- | --- | --- |
-| Member initialiser list | `: a_(x), b_(y)` after the constructor's parameters | builds each member directly from its value |
+| Member initializer list | `: a_(x), b_(y)` after the constructor's parameters | builds each member directly from its value |
 | Body assignment | `a_ = x;` inside `{}` | too late: the member was already built; two steps instead of one |
-| Initialisation order | the order members are built | declaration order in the class, never list order |
+| Initialization order | the order members are built | declaration order in the class, never list order |
 | `-Wreorder` | warning that the list is out of order | part of `-Wall`; list order does not change anything |
-| Member from member | one member's value computed from another | reads garbage if the other is declared later; initialise from parameters |
-| `const` and reference members | cannot be assigned | must be initialised in the list or by a default member initialiser |
+| Member from member | one member's value computed from another | reads garbage if the other is declared later; initialize from parameters |
+| `const` and reference members | cannot be assigned | must be initialized in the list or by a default member initializer |
 | No default constructor | a member type that needs arguments | must be built in the list |
-| Default member initialiser | `double gain_ = 1.0;` at the declaration | used when the list does not mention the member; the list wins otherwise |
+| Default member initializer | `double gain_ = 1.0;` at the declaration | used when the list does not mention the member; the list wins otherwise |
 
 The next lesson follows an object to the end of its life: the destructor, the reverse order in which members and locals are destroyed, and RAII — the idea that ties every resource a program holds to an object's lifetime so that it is released exactly once, even when an exception is thrown.
 
@@ -398,7 +398,7 @@ A reference is a second name for one object, fixed for life (the previous module
 </svg>
 ```
 
-That is why the only moment to choose what a reference member refers to is the member initialiser list.
+That is why the only moment to choose what a reference member refers to is the member initializer list.
 :::
 
 ::: context i2c-address What an I2C address is
@@ -410,5 +410,5 @@ An object with a `const` member, or a reference member, cannot be assigned: `a =
 :::
 
 ::: context nsdmi The name people use
-The standard calls `double gain_ = 1.0;` in a class a *default member initializer*. Many programmers call it an NSDMI, short for "non-static data member initialiser" — "non-static" because it belongs to each object, not to the class as a whole (static members are lesson 08). They arrived in C++11. In C++11 a struct with them stopped counting as a simple aggregate that you could fill with braces; C++14 relaxed that, so `struct Gains { double kp = 1.0; double kd = 0.1; };` can still be written `Gains g{2.0, 0.3};`.
+The standard calls `double gain_ = 1.0;` in a class a *default member initializer*. Many programmers call it an NSDMI, short for "non-static data member initializer" — "non-static" because it belongs to each object, not to the class as a whole (static members are lesson 08). They arrived in C++11. In C++11 a struct with them stopped counting as a simple aggregate that you could fill with braces; C++14 relaxed that, so `struct Gains { double kp = 1.0; double kd = 0.1; };` can still be written `Gains g{2.0, 0.3};`.
 :::

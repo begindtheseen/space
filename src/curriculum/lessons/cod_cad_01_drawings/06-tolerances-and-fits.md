@@ -29,7 +29,7 @@ A tolerance is a *width*, so it is always positive. It does not say where the ba
 
 A part is **in tolerance** if every measured size lands between its limits, including exactly on a limit. If one size lands outside, the part is **out of tolerance**, and inspection rejects it. That is the most common reason a part is rejected, and you can see it coming from the drawing alone: the smaller $T$ is, the [[harder the feature is to make|tolerance-cost]] and the more likely it is to fail.
 
-Drawings in this module are in millimetres, and tolerances on machined parts are often a few hundredths of a millimetre. For a feel of the size: a human hair is roughly $0.07$ mm thick. A tolerance of $\pm 0.02$ mm is a band narrower than a hair.
+Drawings in this module are in millimeters, and tolerances on machined parts are often a few hundredths of a millimeter. For a feel of the size: a human hair is roughly $0.07$ mm thick. A tolerance of $\pm 0.02$ mm is a band narrower than a hair.
 
 ## Four ways to write a tolerance
 
@@ -72,7 +72,7 @@ $$
 8.00\,{}^{\;\;0}_{-0.04}
 $$
 
-This says the diameter may be $8.00$ mm or smaller, down to $7.96$ mm, but never larger than $8.00$. In millimetre drawings, the zero side is usually written as a plain $0$, with no sign.
+This says the diameter may be $8.00$ mm or smaller, down to $7.96$ mm, but never larger than $8.00$. In millimeter drawings, the zero side is usually written as a plain $0$, with no sign.
 
 Why would anyone want this? Because sometimes one direction is harmless and the other is fatal. A shaft that must slide into a bearing bore of exactly $8.00$ mm can be a little small and still go in, but never a little big. The unilateral tolerance points all the allowed variation toward the safe side.
 
@@ -217,7 +217,7 @@ Picture the bracket turning about its middle through a small angle $\theta$ (in 
 
 ### Temperature can change the fit
 
-A fit is computed at room temperature, usually $20\,°\mathrm{C}$. A spacecraft does not stay there. Different materials grow and shrink by different amounts when temperature changes, so a fit between two different metals changes in orbit. A steel shaft in an aluminium housing is the classic case: aluminium shrinks more when cold, so the clearance shrinks, and a sliding fit on the ground can bind in the cold. The check questions below put numbers on this.
+A fit is computed at room temperature, usually $20\,°\mathrm{C}$. A spacecraft does not stay there. Different materials grow and shrink by different amounts when temperature changes, so a fit between two different metals changes in orbit. A steel shaft in an aluminum housing is the classic case: aluminum shrinks more when cold, so the clearance shrinks, and a sliding fit on the ground can bind in the cold. The check questions below put numbers on this.
 
 ## Check yourself
 
@@ -254,7 +254,7 @@ For each part, pick a clearance, transition or interference fit, and give one re
 :::
 
 ::: check
-A steel shaft sits in an aluminium housing, nominal diameter $20$ mm. Aluminium shrinks by about $23 \times 10^{-6}$ of its size per degree Celsius and steel by about $12 \times 10^{-6}$. The assembly cools by $60\,°\mathrm{C}$ in orbit. By how much does the diametral clearance change, and in which direction? What would that do to the H7/g6 fit, whose minimum clearance was $0.007$ mm?
+A steel shaft sits in an aluminum housing, nominal diameter $20$ mm. Aluminum shrinks by about $23 \times 10^{-6}$ of its size per degree Celsius and steel by about $12 \times 10^{-6}$. The assembly cools by $60\,°\mathrm{C}$ in orbit. By how much does the diametral clearance change, and in which direction? What would that do to the H7/g6 fit, whose minimum clearance was $0.007$ mm?
 :::
 
 ::: answer
@@ -307,7 +307,7 @@ In a name like H7/g6, the part before the slash is the hole and the part after i
 :::
 
 ::: context fit-bands Three shafts, one hole
-Each bar is a tolerance band, drawn against the nominal 20 mm line (the dashed zero). Heights are to scale, in thousandths of a millimetre (micrometres).
+Each bar is a tolerance band, drawn against the nominal 20 mm line (the dashed zero). Heights are to scale, in thousandths of a millimeter (micrometers).
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
@@ -337,5 +337,5 @@ A reaction wheel spins on bearings, and a gimbal rotates on them. How tightly th
 :::
 
 ::: context arcseconds Very small angles
-A degree is split into 60 arcminutes, and each arcminute into 60 arcseconds, so one degree is 3,600 arcseconds. Pointing and attitude people work in arcseconds because the angles they care about are tiny. One arcsecond is about the angle a coin 2 cm wide makes when seen from 4 km away. Star trackers, telescopes and laser links all quote their accuracy in arcseconds, which is why a hundredth of a millimetre on a bracket can matter.
+A degree is split into 60 arcminutes, and each arcminute into 60 arcseconds, so one degree is 3,600 arcseconds. Pointing and attitude people work in arcseconds because the angles they care about are tiny. One arcsecond is about the angle a coin 2 cm wide makes when seen from 4 km away. Star trackers, telescopes and laser links all quote their accuracy in arcseconds, which is why a hundredth of a millimeter on a bracket can matter.
 :::

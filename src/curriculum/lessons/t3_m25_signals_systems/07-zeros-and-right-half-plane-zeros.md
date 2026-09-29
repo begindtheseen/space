@@ -10,7 +10,7 @@ Back a car out of a parking space and turn the wheel hard. The front of the car 
 
 In the last few lessons, the poles of a transfer function told you whether a response dies away and how fast. This lesson is about the other half of the pole-zero map, the zeros. Poles decide *whether* a response settles. Zeros decide what it *looks like* on the way there. And one kind of zero, the kind that makes a machine start the wrong way, decides how good a controller you are allowed to build at all.
 
-That last claim is the point of the lesson. Almost every other problem in classical control can be bought off: more gain, a faster actuator, a better sensor, a cleverer controller. A **[[right-half-plane zero|half-planes]]** — a zero of the transfer function at a positive value of $s$ — cannot. It belongs to the plant and to where you measure it. It cannot be cancelled. It cannot be filtered away. It puts a hard ceiling on how fast any closed loop around that plant can be. Spotting one early, from the physics and before any design starts, is worth more than any tuning skill.
+That last claim is the point of the lesson. Almost every other problem in classical control can be bought off: more gain, a faster actuator, a better sensor, a cleverer controller. A **[[right-half-plane zero|half-planes]]** — a zero of the transfer function at a positive value of $s$ — cannot. It belongs to the plant and to where you measure it. It cannot be canceled. It cannot be filtered away. It puts a hard ceiling on how fast any closed loop around that plant can be. Spotting one early, from the physics and before any design starts, is worth more than any tuning skill.
 
 Here is the path. First, what adding any zero does, using one line of algebra that explains both the good case and the bad case. Then the proof that a right-half-plane zero *must* make the response start the wrong way. Then where the name "non-minimum phase" comes from, how much bandwidth the zero costs, and finally a landing booster whose right-half-plane zero falls straight out of Newton's laws.
 
@@ -84,7 +84,7 @@ Nothing you put before or after the plant changes this, because $z$ stays a zero
 The same weighted total also tells you *how big* the dip must be. The wrong-way area, weighted by $e^{-zt}$, must equal the right-way area weighted the same way. The weight fades on a time scale of $1/z$, which the plant fixes. A fast response puts a lot of right-way area early, while the weight is still near $1$. To balance it, the wrong-way dip must be large. So pushing for speed makes the undershoot deeper. That is the whole trade in one sentence.
 
 ::: key
-Signature of a right-half-plane zero: initial **undershoot** in the step response, and phase **lag** rather than the phase lead a left-half-plane zero gives. It hard-limits achievable bandwidth (rule of thumb $\omega_c < z/2$) and cannot be cancelled.
+Signature of a right-half-plane zero: initial **undershoot** in the step response, and phase **lag** rather than the phase lead a left-half-plane zero gives. It hard-limits achievable bandwidth (rule of thumb $\omega_c < z/2$) and cannot be canceled.
 :::
 
 ## Minimum phase, and the all-pass factorization
@@ -114,7 +114,7 @@ Now the bandwidth rule. The **gain crossover frequency** $\omega_c$ (read "omega
 An unstable pole sets the mirror-image limit. It forces crossover *above* roughly twice the pole, because the loop must act faster than the instability grows. So a plant with an unstable pole at $p$ and a right-half-plane zero at $z$ is squeezed from both sides. If $z$ is not comfortably larger than $p$, no controller can do a useful job. That inequality is one of the few truly **[[fundamental limits|fundamental-limits]]** in the subject.
 
 ::: warning
-Do not try to cancel a right-half-plane zero with a controller pole at the same place. A pole at $s = +z$ in the controller means the controller itself is unstable. The moment any real signal excites it — a disturbance, a start-up transient, the tiny difference between the true $z$ and the modeled one — its internal state grows like $e^{zt}$ until the actuator saturates. The transfer function from command to output looks clean on paper, and the hardware diverges. The same ban applies to cancelling an unstable *pole* of the plant with a controller zero, for the mirror-image reason.
+Do not try to cancel a right-half-plane zero with a controller pole at the same place. A pole at $s = +z$ in the controller means the controller itself is unstable. The moment any real signal excites it — a disturbance, a start-up transient, the tiny difference between the true $z$ and the modeled one — its internal state grows like $e^{zt}$ until the actuator saturates. The transfer function from command to output looks clean on paper, and the hardware diverges. The same ban applies to canceling an unstable *pole* of the plant with a controller zero, for the mirror-image reason.
 :::
 
 ## A landing booster that starts the wrong way
@@ -291,7 +291,7 @@ A proportional controller pushes harder the further you are from the target, lik
 :::
 
 ::: context undershoot-picture Three step responses, one set of poles
-All three curves share the poles of $1/(s^2 + s + 1)$. Grey: no zero. Blue: a zero at $-1$, which adds the slope and rises fast, overshooting to about $1.30$. Red: a zero at $+1$, which subtracts the slope. It dips to $-0.28$ at $0.60\,\mathrm{s}$ and crosses zero at $1.37\,\mathrm{s}$ before climbing.
+All three curves share the poles of $1/(s^2 + s + 1)$. Gray: no zero. Blue: a zero at $-1$, which adds the slope and rises fast, overshooting to about $1.30$. Red: a zero at $+1$, which subtracts the slope. It dips to $-0.28$ at $0.60\,\mathrm{s}$ and crosses zero at $1.37\,\mathrm{s}$ before climbing.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">

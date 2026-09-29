@@ -150,7 +150,7 @@ Written in week three of the process, before any outcome is known. Nobody else s
 
 **What I keep regardless.** Six hours of sleep as a floor, not an average. The Sunday call with my mother. Enough exercise that my back holds up. Two evenings a week already committed and not negotiable.
 
-**What I will accept.** Cancelled plans. Poor cooking. Little reading that is not work. Several heavy weeks a year, and a deadline period when I am unavailable to everyone.
+**What I will accept.** Canceled plans. Poor cooking. Little reading that is not work. Several heavy weeks a year, and a deadline period when I am unavailable to everyone.
 
 **What I want to know before I say yes.** What a normal week looks like for two engineers, not one. How many heavy periods a year, and how long. What happened the last time something slipped — especially whether the person who flagged it early was treated as helpful or as a problem. Whether anyone on the team has **[[caring responsibilities|caring-responsibilities]]**, and how that works in practice: the most reliable single test I know of whether stated flexibility is real.
 

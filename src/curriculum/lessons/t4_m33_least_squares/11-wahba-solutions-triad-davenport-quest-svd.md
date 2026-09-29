@@ -394,7 +394,7 @@ TRIAD was published by Harold Black in 1964, a year before Wahba posed her probl
 </svg>
 ```
 
-The secondary arrow $\mathbf{r}_2$ (grey) is not an axis itself; it only decides where $\mathbf{t}_2$ points. $\mathbf{t}_3=\mathbf{t}_1\times\mathbf{t}_2$ lies back in the plane of $\mathbf{r}_1$ and $\mathbf{r}_2$, here drawn coming toward you.
+The secondary arrow $\mathbf{r}_2$ (gray) is not an axis itself; it only decides where $\mathbf{t}_2$ points. $\mathbf{t}_3=\mathbf{t}_1\times\mathbf{t}_2$ lies back in the plane of $\mathbf{r}_1$ and $\mathbf{r}_2$, here drawn coming toward you.
 :::
 
 ::: context cross-product Why the cross product shrinks

@@ -360,7 +360,7 @@ Radio signals bounce. Near a tall building, a GNSS receiver may get a satellite'
 :::
 
 ::: context leverage-seesaw A lonely point on a long lever
-The dots show the six readings after the steady climb of $3.2\,\mathrm{m}$ per second is subtracted, so the true line is flat at zero (grey). The lonely reading at $t=0$ is the glitched one. With nothing else near it, the fitted line (blue) swings up to pass almost through it, and the five far points barely object:
+The dots show the six readings after the steady climb of $3.2\,\mathrm{m}$ per second is subtracted, so the true line is flat at zero (gray). The lonely reading at $t=0$ is the glitched one. With nothing else near it, the fitted line (blue) swings up to pass almost through it, and the five far points barely object:
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
@@ -389,7 +389,7 @@ The name honors William Sealy Gosset, a chemist at the Guinness brewery in Dubli
 :::
 
 ::: context huber-history A statistician's insurance policy
-Peter Huber, a Swiss statistician, introduced this loss in 1964, in a paper that helped found the field of robust statistics. His question was: what estimator does best in the *worst* case, when the noise is mostly Gaussian but a small fraction is something else entirely? The answer was this blend of square and straight line. The picture shows squared loss (grey) and Huber loss with $k = 1$ (blue); they agree inside the dashed marks and part ways outside:
+Peter Huber, a Swiss statistician, introduced this loss in 1964, in a paper that helped found the field of robust statistics. His question was: what estimator does best in the *worst* case, when the noise is mostly Gaussian but a small fraction is something else entirely? The answer was this blend of square and straight line. The picture shows squared loss (gray) and Huber loss with $k = 1$ (blue); they agree inside the dashed marks and part ways outside:
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210" font-family="Inter, Arial, sans-serif">

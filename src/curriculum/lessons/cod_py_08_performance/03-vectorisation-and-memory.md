@@ -1,16 +1,16 @@
 ---
 id: l03-vectorisation-and-memory
-title: Vectorise by default, but watch the memory
+title: Vectorize by default, but watch the memory
 minutes: 22
 covers:
-  - 'Vectorisation as the default; when it costs more memory than it saves time'
+  - 'Vectorization as the default; when it costs more memory than it saves time'
 ---
 
 Picture unloading the groceries from the car. You could carry one can at a time: walk in, put it down, walk back, pick up the next. Most of your time goes on walking, not carrying. So you grab a whole bag per trip, and the job takes a fraction of the time.
 
 Now picture being so pleased with this that you try to carry everything at once, in one giant box. The box does not fit through the door. You have to unpack it on the porch, and you end up slower than if you had carried sensible bags. The best trip is as big as the door allows, and no bigger.
 
-Python code has the same two lessons. Doing arithmetic one number at a time in a Python loop is the one-can-per-trip plan. Handing NumPy a whole array at once is carrying a bag, and it is usually 50 to 100 times faster. That style is called **vectorisation**, and it is step four of the order of attack from the first lesson. But an array expression can also build the giant box: a temporary array so big it no longer fits in the computer's fast memory, or in its memory at all. This lesson is about both halves: vectorise by default, and know when a bag has become a box.
+Python code has the same two lessons. Doing arithmetic one number at a time in a Python loop is the one-can-per-trip plan. Handing NumPy a whole array at once is carrying a bag, and it is usually 50 to 100 times faster. That style is called **vectorization**, and it is step four of the order of attack from the first lesson. But an array expression can also build the giant box: a temporary array so big it no longer fits in the computer's fast memory, or in its memory at all. This lesson is about both halves: vectorize by default, and know when a bag has become a box.
 
 ## Why a Python loop is slow
 
@@ -58,9 +58,9 @@ The actual multiplying is a tiny part of that. All the checking and wrapping is 
 Vectorisation means replacing a Python loop over elements with whole-array operations, so the per-element work runs in NumPy's compiled loops. The interpreter overhead is paid once per array operation instead of once per element.
 :::
 
-## Vectorising a real simulation
+## Vectorizing a real simulation
 
-The dynamic pressure example has no loop left at all. A simulation cannot lose its time loop: step 100 depends on step 99. But a Monte Carlo dispersion has a second direction, the cases, and the cases do not depend on each other. So you can loop over time and vectorise over cases. Every variable becomes an array with one entry per case.
+The dynamic pressure example has no loop left at all. A simulation cannot lose its time loop: step 100 depends on step 99. But a Monte Carlo dispersion has a second direction, the cases, and the cases do not depend on each other. So you can loop over time and vectorize over cases. Every variable becomes an array with one entry per case.
 
 The toy rocket from the first lesson flies until it hits the ground, and different cases land at different times. That is a branch: "if this case is still flying, step it". In array code a branch becomes a **mask**, an array of `True`/`False`, and `np.where(mask, a, b)` picks from `a` where the mask is `True` and from `b` where it is `False`.
 
@@ -91,9 +91,9 @@ print(len(t_land), round(t_land.min(), 2), round(t_land.max(), 2))   # 500 14.12
 ```
 
 ::: example A 500-case dispersion, one case at a time or all at once
-**The setup.** 500 launch speeds between 250 and $350\,\mathrm{m/s}$. The one-case-at-a-time version is the first lesson's fixed `run_case`, called 500 times in a list comprehension. The vectorised version is the function above.
+**The setup.** 500 launch speeds between 250 and $350\,\mathrm{m/s}$. The one-case-at-a-time version is the first lesson's fixed `run_case`, called 500 times in a list comprehension. The vectorized version is the function above.
 
-**Same answers.** The largest difference between the 500 landing times from the two versions is exactly 0.0 seconds. Vectorising must not change the physics, so check this every time.
+**Same answers.** The largest difference between the 500 landing times from the two versions is exactly 0.0 seconds. Vectorizing must not change the physics, so check this every time.
 
 **Timing on one machine.** Best of three: 1.47 s one at a time, 0.033 s all at once.
 
@@ -103,11 +103,11 @@ $$
 \frac{1.47\,\mathrm{s}}{0.033\,\mathrm{s}} \approx 44.
 $$
 
-**Sense check.** Each of the 1,539 time steps now costs about twenty NumPy calls on 500-long arrays instead of 500 passes through the Python loop body. The ratio is smaller than the 75 of the dynamic-pressure example, because 500 numbers is a short array and each NumPy call has a fixed start-up cost of about half a microsecond on this machine. Vectorising pays best on long arrays.
+**Sense check.** Each of the 1,539 time steps now costs about twenty NumPy calls on 500-long arrays instead of 500 passes through the Python loop body. The ratio is smaller than the 75 of the dynamic-pressure example, because 500 numbers is a short array and each NumPy call has a fixed start-up cost of about half a microsecond on this machine. Vectorizing pays best on long arrays.
 :::
 
 ::: warning Vectorised code does the work for everyone
-`np.where` computes both options for every case and then keeps one. Cases that landed early are still pushed through `np.interp` and the drag formula on every step until the last case lands. If one case flies ten times longer than the rest, most of the arithmetic is wasted. It is usually still much faster than the loop, but it is a real cost, and it is one reason a compiled loop (the Numba lessons) sometimes beats a vectorised one.
+`np.where` computes both options for every case and then keeps one. Cases that landed early are still pushed through `np.interp` and the drag formula on every step until the last case lands. If one case flies ten times longer than the rest, most of the arithmetic is wasted. It is usually still much faster than the loop, but it is a real cost, and it is one reason a compiled loop (the Numba lessons) sometimes beats a vectorized one.
 :::
 
 ## The price: temporary arrays
@@ -170,13 +170,13 @@ When all of an operation's arrays fit in cache, NumPy's loop runs at the speed o
 | 10,000,000 | 240 MB | 2.08 ns |
 | 50,000,000 | 1,200 MB | 2.11 ns |
 
-Same code, same arithmetic, about four times slower per element once the data no longer sits in the fast caches. A vectorised expression with several big temporaries pushes every temporary out to slow memory and pulls it back in. That traffic is the price of vectorising.
+Same code, same arithmetic, about four times slower per element once the data no longer sits in the fast caches. A vectorized expression with several big temporaries pushes every temporary out to slow memory and pulls it back in. That traffic is the price of vectorizing.
 
 ## When the bag becomes a box
 
 Broadcasting makes it easy to write a calculation that builds an enormous temporary without noticing. Here is a real kind of job: for each of 500 satellites, find the closest of 100,000 tracked debris pieces. Positions are in kilometers.
 
-The shortest vectorised version broadcasts [[every satellite against every piece of debris|broadcast-grid]]. `a[:, None, :]` has shape (500, 1, 3) and `b[None, :, :]` has shape (1, 100000, 3), so their difference has shape (500, 100000, 3): every pair's separation vector. Then square, add along the last axis, take the square root, and take the smallest along each row.
+The shortest vectorized version broadcasts [[every satellite against every piece of debris|broadcast-grid]]. `a[:, None, :]` has shape (500, 1, 3) and `b[None, :, :]` has shape (1, 100000, 3), so their difference has shape (500, 100000, 3): every pair's separation vector. Then square, add along the last axis, take the square root, and take the smallest along each row.
 
 The **chunked** version does the same maths a few satellites at a time, so each temporary is small. It also uses **`np.einsum`**, which computes a sum of products described by a short string of letters. `np.einsum("ijk,ijk->ij", d, d)` means "multiply `d` by itself element by element, and add over the `k` axis", which is the squared length of each separation vector, without first building a separate `d**2` array. The name comes from **[[Einstein's summation convention|einsum]]**.
 
@@ -228,7 +228,7 @@ This needs about 3 GB of free memory for the broadcast line. If your computer ha
 | Chunks of 64 satellites | 0.98, 1.07, 0.96, 0.99 | 358 MB |
 | Chunks of 4 satellites | 0.66, 0.67, 0.72, 0.68 | 22 MB |
 
-The version with a Python loop in it is three times faster than the "fully vectorised" one at its best, and fifteen times faster than its first run. It also uses about 130 times less memory. The broadcast's times jump around because the operating system has to find and hand over 2.8 GB of fresh memory, and how long that takes depends on what else is going on. The small chunks are steady.
+The version with a Python loop in it is three times faster than the "fully vectorized" one at its best, and fifteen times faster than its first run. It also uses about 130 times less memory. The broadcast's times jump around because the operating system has to find and hand over 2.8 GB of fresh memory, and how long that takes depends on what else is going on. The small chunks are steady.
 
 ::: example Where the 2,800 MB came from, and what happens at scale
 **The separation array.** Shape (500, 100000, 3), 8 bytes per number:
@@ -251,7 +251,7 @@ $$
 Notice the middle row of the table. Chunks of 64 satellites are safer than the full broadcast but slower than chunks of 4, because each 154 MB chunk has outgrown the fast caches. The best chunk is big enough that the Python loop around it runs only a few hundred times, so its overhead is small, and small enough that its temporaries stay in cache. A few megabytes per temporary is a good starting point. Then measure two or three sizes, as with everything in this module.
 
 ::: key
-When does vectorisation cost more than it saves? When the intermediate arrays no longer fit in cache or memory: a broadcast that materialises an N by M temporary can be slower than a loop, and can simply exhaust RAM. Chunk the computation, or use einsum and in-place operations.
+When does vectorization cost more than it saves? When the intermediate arrays no longer fit in cache or memory: a broadcast that materializes an N by M temporary can be slower than a loop, and can simply exhaust RAM. Chunk the computation, or use einsum and in-place operations.
 :::
 
 ::: warning Estimate the biggest temporary before you run it
@@ -266,11 +266,11 @@ Each satellite's closest distance depends only on that satellite's row: its sepa
 
 Putting the two halves together:
 
-1. **Vectorise by default.** Any loop over the elements of a large array, doing the same arithmetic to each, belongs in NumPy. Across Monte Carlo cases is often the best direction to vectorise.
+1. **Vectorize by default.** Any loop over the elements of a large array, doing the same arithmetic to each, belongs in NumPy. Across Monte Carlo cases is often the best direction to vectorize.
 2. **Estimate memory.** Work out the biggest temporary. If it is small, you are done.
 3. **If it is big, cut it down.** Chunk along an axis that does not mix rows, use `einsum` to fuse "multiply then sum" into one step, use in-place operations (`*=`, `out=`) to avoid temporaries, or [[rewrite the maths|expand-square]] so a tuned library routine does the heavy part.
 4. **Measure.** Time the plain and the chunked version, and check the peak memory with `tracemalloc` or `memory_profiler`.
-5. **If the loop cannot be vectorised cleanly**, because each step depends on the last or the branching is messy, that is the job for a compiler, which is where the next lessons go.
+5. **If the loop cannot be vectorized cleanly**, because each step depends on the last or the branching is messy, that is the job for a compiler, which is where the next lessons go.
 
 The memory side matters on a real vehicle program as much as the time side. Monte Carlo runs are often done on shared machines or in batches of parallel processes, each with its own share of memory. A job that needs 22 GB per process cannot run eight at once on a 64 GB machine, however fast it is.
 
@@ -281,7 +281,7 @@ Why does the loop version of $q = \tfrac{1}{2}\rho v^2$ spend most of its time o
 :::
 
 ::: answer
-Because Python's interpreter handles each element separately, and each element carries fixed costs that dwarf one multiplication. Any two of: wrapping each raw number from the array in a new Python float object (boxing) and unwrapping the result; checking the types of the operands before every `*` and `**` and looking up the code for them; creating and discarding a new object for every intermediate result; running the loop machinery itself (`range`, indexing). The vectorised version pays those costs once per array operation instead of once per element.
+Because Python's interpreter handles each element separately, and each element carries fixed costs that dwarf one multiplication. Any two of: wrapping each raw number from the array in a new Python float object (boxing) and unwrapping the result; checking the types of the operands before every `*` and `**` and looking up the code for them; creating and discarding a new object for every intermediate result; running the loop machinery itself (`range`, indexing). The vectorized version pays those costs once per array operation instead of once per element.
 :::
 
 ::: check
@@ -309,7 +309,7 @@ A teammate writes `q = v` and then `q *= 0.5 * rho` to save memory. What goes wr
 :::
 
 ::: check
-A vectorised dispersion with 2,000 cases stores the full state history, 6 float64 numbers per case per step, for 100,000 steps. How much memory is that? Suggest a change that keeps the analysis possible.
+A vectorized dispersion with 2,000 cases stores the full state history, 6 float64 numbers per case per step, for 100,000 steps. How much memory is that? Suggest a change that keeps the analysis possible.
 :::
 
 ::: answer
@@ -320,8 +320,8 @@ $2000 \times 100{,}000 \times 6 \times 8 = 9.6 \times 10^9$ bytes, 9.6 GB, befor
 
 | Idea | Meaning | Fact to carry |
 |---|---|---|
-| Vectorisation | Whole-array operations instead of a Python loop per element | Overhead paid per array, not per element; often 50–100x |
-| Interpreter overhead | Type checks, boxing, object creation per element | About 290 ns per element in the lesson's loop, under 4 ns vectorised |
+| Vectorization | Whole-array operations instead of a Python loop per element | Overhead paid per array, not per element; often 50–100x |
+| Interpreter overhead | Type checks, boxing, object creation per element | About 290 ns per element in the lesson's loop, under 4 ns vectorized |
 | Mask and `np.where` | Branches in array form | Both branches computed for every element |
 | Temporary | Full-size array made mid-expression | Each costs $N \times 8$ bytes for float64 |
 | In place | `*=`, `out=` write into an existing array | Lower peak memory, often faster; beware shared arrays |
@@ -329,7 +329,7 @@ $2000 \times 100{,}000 \times 6 \times 8 = 9.6 \times 10^9$ bytes, 9.6 GB, befor
 | Chunking | Do the work a slice at a time | Memory stays flat; pick chunks of a few MB, then measure |
 | `np.einsum` | Sum of products from a subscript string | Squares and sums without a separate squared array |
 
-The next lesson picks up the loops that cannot be vectorised cleanly: compiling them with Numba's `@njit`, so a plain Python loop runs at the speed of C.
+The next lesson picks up the loops that cannot be vectorized cleanly: compiling them with Numba's `@njit`, so a plain Python loop runs at the speed of C.
 
 ::: context interpreter What the interpreter actually runs
 Python first turns your source code into **bytecode**, a list of small, simple instructions like "load this variable", "multiply the top two things", "store the result". The interpreter is a loop inside CPython that reads one bytecode instruction at a time and carries it out. That loop is written in C and is quick, but every instruction still costs tens of nanoseconds of bookkeeping. You can see the bytecode for any function with the `dis` module: `import dis; dis.dis(q_loop)`.
@@ -340,7 +340,7 @@ A NumPy float64 array stores its numbers as bare 8-byte values, packed side by s
 :::
 
 ::: context simd One instruction, many numbers
-**SIMD** stands for "single instruction, multiple data". Modern processors have wide registers that hold several numbers at once and instructions that work on all of them together. The AVX-512 instructions on the lesson's machine hold 512 bits, which is eight float64 numbers, so one multiply instruction can do eight multiplications. NumPy's simple loops over packed arrays are written so the compiler can use these. This is also where the word **vector** in "vectorisation" comes from: a vector register.
+**SIMD** stands for "single instruction, multiple data". Modern processors have wide registers that hold several numbers at once and instructions that work on all of them together. The AVX-512 instructions on the lesson's machine hold 512 bits, which is eight float64 numbers, so one multiply instruction can do eight multiplications. NumPy's simple loops over packed arrays are written so the compiler can use these. This is also where the word **vector** in "vectorization" comes from: a vector register.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
@@ -371,7 +371,7 @@ A NumPy float64 array stores its numbers as bare 8-byte values, packed side by s
 :::
 
 ::: context elision When NumPy reuses a temporary
-In `0.5 * rho * v**2`, the product at the end combines two temporaries that nobody else can see. NumPy can detect this case (the array has no other references and is large) and write the answer into one of them instead of allocating a third array. This optimisation, added in NumPy 1.13, is called **temporary elision**. It works on common platforms for large arrays, but it is an implementation detail: you cannot count on it, which is why explicit in-place operations are still worth writing when memory is tight.
+In `0.5 * rho * v**2`, the product at the end combines two temporaries that nobody else can see. NumPy can detect this case (the array has no other references and is large) and write the answer into one of them instead of allocating a third array. This optimization, added in NumPy 1.13, is called **temporary elision**. It works on common platforms for large arrays, but it is an implementation detail: you cannot count on it, which is why explicit in-place operations are still worth writing when memory is tight.
 :::
 
 ::: context memory-hierarchy A ladder of memories

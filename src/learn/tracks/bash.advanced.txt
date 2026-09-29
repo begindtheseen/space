@@ -1511,7 +1511,7 @@ echo Hello,
 With single quotes, `$1` goes into the file untouched, and is filled in [[later, when the script runs|two-moments]]. `cat` shows you what really went into the file, so check with it.
 
 ::: context script-word Why "script"
-In a theatre, the script tells the actors what to say and do, in order. A shell script does the same for the computer. People also call scripts "shell scripts" or "bash scripts", and give them names ending in `.sh`. The ending is only a label for people; `bash` will run the file whatever it is called. Most engineering projects keep a handful of them, with names like `build.sh` or `run_tests.sh`, so everyone on the team runs the same steps in the same way.
+In a theater, the script tells the actors what to say and do, in order. A shell script does the same for the computer. People also call scripts "shell scripts" or "bash scripts", and give them names ending in `.sh`. The ending is only a label for people; `bash` will run the file whatever it is called. Most engineering projects keep a handful of them, with names like `build.sh` or `run_tests.sh`, so everyone on the team runs the same steps in the same way.
 :::
 
 ::: context arguments The words after the name
@@ -2160,7 +2160,7 @@ check.sh: line 3: nme: unbound variable
 **Watch out:** do not "fix" the knock-on effects. Making the `archive` folder by hand with `mkdir archive` would stop the `mv` errors, but the script would still be broken: on the next computer it runs on, it fails again. Fix the line that caused the first error.
 
 ::: context debugging-word Where "bug" comes from
-Engineers were calling faults "bugs" long before computers; Thomas Edison used the word for problems in his inventions in the 1870s. A favourite story comes from 1947: operators of the Harvard Mark II computer found a moth stuck in a relay and taped it into their logbook as the "first actual case of bug being found".
+Engineers were calling faults "bugs" long before computers; Thomas Edison used the word for problems in his inventions in the 1870s. A favorite story comes from 1947: operators of the Harvard Mark II computer found a moth stuck in a relay and taped it into their logbook as the "first actual case of bug being found".
 
 The joke works because the word was already common. Debugging now means the whole job: making the fault happen, finding its cause, fixing it and checking the fix.
 :::

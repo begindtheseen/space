@@ -12,7 +12,7 @@ Every formula in the last four lessons was secretly a function. $g(r) = \mu/r^2$
 
 This lesson is about four words. The **domain** is what a formula is allowed to take in. The **range** is what it can give out. **Composition** is how formulas chain together, one feeding the next. The **inverse** is running a formula backwards — from the answer to the question.
 
-Running backwards matters most. Half your equation-solving so far was really that: given the orbit's period, find its radius; given the sensor's current, find the pressure. It only works when no two inputs give the same output, and you will learn the test. Chaining matters too. A vehicle model is a long chain — altitude to distance from Earth's centre, distance to gravity, gravity to acceleration — and calculus will later take such chains apart link by link. The physics is the same as before. What changes is how carefully you say what each formula is allowed to do.
+Running backwards matters most. Half your equation-solving so far was really that: given the orbit's period, find its radius; given the sensor's current, find the pressure. It only works when no two inputs give the same output, and you will learn the test. Chaining matters too. A vehicle model is a long chain — altitude to distance from Earth's center, distance to gravity, gravity to acceleration — and calculus will later take such chains apart link by link. The physics is the same as before. What changes is how carefully you say what each formula is allowed to do.
 
 ## What a function is
 
@@ -72,7 +72,7 @@ The **[[physical domain|ariane]]** is usually smaller. A bathroom scale works up
 
 $g(r)$ describes gravity *outside* Earth, so it only means something for $r \geq R = 6371\,\mathrm{km}$, the planet's radius. Below the surface the inverse-square law is wrong, and the formula would happily give you an enormous answer at $r = 1\,\mathrm{m}$.
 
-The height $h(t) = 100 + 20t - 4.903t^2$ models a ball thrown up from a $100\,\mathrm{m}$ tower. It is only a model from launch, $t = 0$, until the ball hits the ground at $t \approx 6.99\,\mathrm{s}$. The formula still exists at $t = 100\,\mathrm{s}$, where it says the ball is about $47$ kilometres underground. Writing the domain down tells your reader where the model stops being a model.
+The height $h(t) = 100 + 20t - 4.903t^2$ models a ball thrown up from a $100\,\mathrm{m}$ tower. It is only a model from launch, $t = 0$, until the ball hits the ground at $t \approx 6.99\,\mathrm{s}$. The formula still exists at $t = 100\,\mathrm{s}$, where it says the ball is about $47$ kilometers underground. Writing the domain down tells your reader where the model stops being a model.
 
 ### Interval notation
 
@@ -120,7 +120,7 @@ On its physical domain $[0, 6.99]$ the range is therefore $[0, 120.4]\,\mathrm{m
 **Gravity.** For $g(r) = \mu / r^2$ on the physical domain $[R, \infty)$, the function is biggest at the smallest $r$: $g(R) = 9.82\,\mathrm{m/s^2}$. As $r$ grows it heads towards zero without ever reaching it. So the range is $(0, 9.82]$. The round bracket at zero matters: there is no distance at which Earth's gravity is exactly zero. That is what "gravity has infinite reach" means in mathematics.
 
 ::: example Domain and range of the circular-speed function
-The formula $v(r) = \sqrt{\mu / r}$ gives the speed a satellite needs to circle Earth at distance $r$ from its centre.
+The formula $v(r) = \sqrt{\mu / r}$ gives the speed a satellite needs to circle Earth at distance $r$ from its center.
 
 **Natural domain.** The square root needs $\mu / r \geq 0$, and the division forbids $r = 0$. Since $\mu$ is positive, that means $r > 0$.
 
@@ -165,7 +165,7 @@ The domain of $f \circ g$ is every $x$ that $g$ accepts *and* whose output $g(x)
 
 ### Chains on a vehicle
 
-Vehicle models are built from compositions. The altitude $h$ above the ground gives the distance from Earth's centre through $r(h) = R + h$. The distance gives gravity through $g(r) = \mu / r^2$. So gravity as a function of altitude is the composition
+Vehicle models are built from compositions. The altitude $h$ above the ground gives the distance from Earth's center through $r(h) = R + h$. The distance gives gravity through $g(r) = \mu / r^2$. So gravity as a function of altitude is the composition
 
 $$
 g(r(h)) = \frac{\mu}{(R + h)^2} .
@@ -197,7 +197,7 @@ $$
 N(I(P)) = 204.7\,\big((4 + 0.016P) - 4\big) = 204.7 \times 0.016\,P = 3.275\,P .
 $$
 
-The two $4$'s cancelled — the $4\,\mathrm{mA}$ offset was designed so they would.
+The two $4$'s canceled — the $4\,\mathrm{mA}$ offset was designed so they would.
 
 **Check at $P = 550\,\mathrm{psi}$, link by link.** Sensor: $I = 4 + 0.016 \times 550 = 4 + 8.8 = 12.8\,\mathrm{mA}$. Computer: $N = 204.7 \times (12.8 - 4) = 204.7 \times 8.8 = 1801$. The single formula agrees: $3.275 \times 550 = 1801$.
 
@@ -250,7 +250,7 @@ $$
 r = \frac{\mu}{v^2} .
 $$
 
-A circular orbit at $3075\,\mathrm{m/s}$ has $r = 3.986 \times 10^{14} / 3075^2 = 4.215 \times 10^7\,\mathrm{m} = 42\,150\,\mathrm{km}$ from Earth's centre. Take away Earth's radius: about $35\,780\,\mathrm{km}$ up: the **geostationary** belt, where a satellite goes round once a day and seems to hang still over one spot. In the exponents lesson you turned the period formula $T = 2\pi\sqrt{r^3/\mu}$ into $r = (\mu T^2 / 4\pi^2)^{1/3}$. That was this same recipe.
+A circular orbit at $3075\,\mathrm{m/s}$ has $r = 3.986 \times 10^{14} / 3075^2 = 4.215 \times 10^7\,\mathrm{m} = 42\,150\,\mathrm{km}$ from Earth's center. Take away Earth's radius: about $35\,780\,\mathrm{km}$ up: the **geostationary** belt, where a satellite goes round once a day and seems to hang still over one spot. In the exponents lesson you turned the period formula $T = 2\pi\sqrt{r^3/\mu}$ into $r = (\mu T^2 / 4\pi^2)^{1/3}$. That was this same recipe.
 
 **On a graph**, $f^{-1}$ is the graph of $f$ [[flipped in a mirror along the diagonal line|mirror-line]] $y = x$. That flip swaps the two axes — input for output — which is what inverting is.
 
@@ -305,7 +305,7 @@ In general $(g \circ f)(x) = g(3x - 1) = (3x - 1)^2 = 9x^2 - 6x + 1$. Check at $
 :::
 
 ::: check
-A stage's remaining propellant is $m_p(t) = 400 - 2.5t$ tonnes, with $t$ in seconds after ignition. State its physical domain and range, then find the inverse function and say what it is for.
+A stage's remaining propellant is $m_p(t) = 400 - 2.5t$ metric tons, with $t$ in seconds after ignition. State its physical domain and range, then find the inverse function and say what it is for.
 :::
 
 ::: answer
@@ -465,7 +465,7 @@ Every height the ball reaches lies on the blue bar; no input on the orange bar g
 ::: context chain-rule A bridge to calculus
 The **chain rule** answers one question: if each link of a chain changes its output at some rate, how fast does the whole chain change? Multiply the links' rates together.
 
-For gravity against altitude, that is (how fast $g$ changes with $r$) times (how fast $r$ changes with $h$). The second link, $r = R + h$, has a rate of exactly $1$ — climb a metre and you are a metre farther from the centre. So gravity changes with altitude exactly as fast as it changes with distance from the centre. Keep the links visible and calculus becomes bookkeeping.
+For gravity against altitude, that is (how fast $g$ changes with $r$) times (how fast $r$ changes with $h$). The second link, $r = R + h$, has a rate of exactly $1$ — climb a meter and you are a meter farther from the center. So gravity changes with altitude exactly as fast as it changes with distance from the center. Keep the links visible and calculus becomes bookkeeping.
 :::
 
 ::: context mirror-line The mirror line

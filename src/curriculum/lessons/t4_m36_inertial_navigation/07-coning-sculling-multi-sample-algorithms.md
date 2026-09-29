@@ -75,7 +75,7 @@ $$
 
 because $\mathbf a\times\mathbf a=\mathbf 0$, $\mathbf b\times\mathbf b=\mathbf 0$ and $\tfrac12 t^2\,\mathbf b\times\mathbf a=-\tfrac12 t^2\,\mathbf a\times\mathbf b$. Integrating $\tfrac12$ of this from $0$ to $2\Delta t$ gives $\tfrac14\cdot\tfrac{8\Delta t^3}{3}\,\mathbf a\times\mathbf b=\tfrac23\Delta t^3\,\mathbf a\times\mathbf b$.
 
-Now the other side: $\Delta\boldsymbol\theta_1\times\Delta\boldsymbol\theta_2=(\mathbf a\Delta t+\tfrac12\mathbf b\Delta t^2)\times(\mathbf a\Delta t+\tfrac32\mathbf b\Delta t^2)=(\tfrac32-\tfrac12)\Delta t^3\,\mathbf a\times\mathbf b=\Delta t^3\,\mathbf a\times\mathbf b$. So the correction is exactly $\tfrac23\Delta\boldsymbol\theta_1\times\Delta\boldsymbol\theta_2$ for this straight-line rate model. A symbolic check in Python confirms it with every other term cancelling.
+Now the other side: $\Delta\boldsymbol\theta_1\times\Delta\boldsymbol\theta_2=(\mathbf a\Delta t+\tfrac12\mathbf b\Delta t^2)\times(\mathbf a\Delta t+\tfrac32\mathbf b\Delta t^2)=(\tfrac32-\tfrac12)\Delta t^3\,\mathbf a\times\mathbf b=\Delta t^3\,\mathbf a\times\mathbf b$. So the correction is exactly $\tfrac23\Delta\boldsymbol\theta_1\times\Delta\boldsymbol\theta_2$ for this straight-line rate model. A symbolic check in Python confirms it with every other term canceling.
 :::
 
 ::: example Naive against corrected, and how much the correction buys
@@ -182,7 +182,7 @@ A symbolic check confirms this exactly for the straight-line model.
 So sculling is exactly zero under smooth motion. It exists only when the two halves of the interval disagree — which is what vibration that couples rocking and shaking does, and what a quiet bench test never can.
 
 ::: key Sculling error
-The velocity-channel analogue of coning: correlated angular and linear vibration produces a systematic velocity error when specific force is integrated naively. It is corrected with multi-sample sculling algorithms; the two-sample version adds $\tfrac23(\Delta\boldsymbol\theta_1\times\Delta\mathbf v_2+\Delta\mathbf v_1\times\Delta\boldsymbol\theta_2)$ to the specific-force sum after that sum has been rotated by half the interval's total rotation. Like coning, it vanishes under steady motion and is invisible in a static test.
+The velocity-channel analog of coning: correlated angular and linear vibration produces a systematic velocity error when specific force is integrated naively. It is corrected with multi-sample sculling algorithms; the two-sample version adds $\tfrac23(\Delta\boldsymbol\theta_1\times\Delta\mathbf v_2+\Delta\mathbf v_1\times\Delta\boldsymbol\theta_2)$ to the specific-force sum after that sum has been rotated by half the interval's total rotation. Like coning, it vanishes under steady motion and is invisible in a static test.
 :::
 
 ::: warning Keep the two coefficients straight
@@ -214,7 +214,7 @@ The general fix samples the gyro and accelerometer $N$ times per interval and fi
 The engineering trade is between **sample rate** — which costs sensor bandwidth and processing — and **how fast a vibration** the mechanization can absorb without leaving a coning or sculling bias. A launch vehicle's structural modes run into the hundreds of hertz. That environment is what makes this trade a real one rather than a refinement.
 
 ::: warning The correction cannot fix aliasing
-Coning and sculling corrections fix a *modelling* error in how samples are combined. They cannot fix **[[aliasing|aliasing]]**, where the vibration approaches or passes half the sample rate, so the samples themselves no longer describe it. If the coning frequency in the first example rose to $95\,\mathrm{Hz}$ with the same $200\,\mathrm{Hz}$ sampling, there would be barely two samples per cycle. No coefficient rescues that. The fix is a faster sensor, not a better formula.
+Coning and sculling corrections fix a *modeling* error in how samples are combined. They cannot fix **[[aliasing|aliasing]]**, where the vibration approaches or passes half the sample rate, so the samples themselves no longer describe it. If the coning frequency in the first example rose to $95\,\mathrm{Hz}$ with the same $200\,\mathrm{Hz}$ sampling, there would be barely two samples per cycle. No coefficient rescues that. The fix is a faster sensor, not a better formula.
 :::
 
 ## Check yourself

@@ -54,9 +54,9 @@ A type trait is a class template that answers a compile-time question about a ty
 
 ## How a trait is built
 
-There is no magic in `<type_traits>` for most of these. A trait is a template plus some specialisations, exactly the tools of lesson 1. The general template gives the default answer. A specialisation gives the answer for the special cases.
+There is no magic in `<type_traits>` for most of these. A trait is a template plus some specializations, exactly the tools of lesson 1. The general template gives the default answer. A specialization gives the answer for the special cases.
 
-Here is a home-made `is_same`. The general version says "no". A partial specialisation catches the one pattern where both arguments are the same type, and says "yes":
+Here is a home-made `is_same`. The general version says "no". A partial specialization catches the one pattern where both arguments are the same type, and says "yes":
 
 ```cpp
 template <typename A, typename B>
@@ -66,7 +66,7 @@ template <typename A>
 struct same_as_trait<A, A> { static constexpr bool value = true; };  // both the same: yes
 ```
 
-When you ask for `same_as_trait<int, int>`, the compiler checks which versions match. The general one always matches. The specialisation `<A, A>` also matches, with `A = int`, and because it is more specialised, it wins: `value` is `true`. For `same_as_trait<int, long>`, no single `A` can be both `int` and `long`, so only the general version matches: `false`.
+When you ask for `same_as_trait<int, int>`, the compiler checks which versions match. The general one always matches. The specialization `<A, A>` also matches, with `A = int`, and because it is more specialized, it wins: `value` is `true`. For `same_as_trait<int, long>`, no single `A` can be both `int` and `long`, so only the general version matches: `false`.
 
 ::: example Building two traits by hand
 ```cpp
@@ -112,15 +112,15 @@ is_float_v<const double>    : 0
 std::is_floating_point_v<const double> : 1
 ```
 
-The first four lines are what we designed. For `is_float_v<double>`, the explicit specialisation `is_float_trait<double>` matches exactly, so `true`. For `int`, nothing but the general version matches, so `false`.
+The first four lines are what we designed. For `is_float_v<double>`, the explicit specialization `is_float_trait<double>` matches exactly, so `true`. For `int`, nothing but the general version matches, so `false`.
 
-The fifth line is the lesson. `const double` is not the same type as `double`, so none of the three specialisations matches, and the home-made trait says "not floating point". The standard one says yes: it strips `const` and `volatile` first, then asks. Sanity check: a `const double` certainly holds a floating-point number, so the standard answer is the right one. To fix ours, ask about `std::remove_cv_t<T>` instead of `T`.
+The fifth line is the lesson. `const double` is not the same type as `double`, so none of the three specializations matches, and the home-made trait says "not floating point". The standard one says yes: it strips `const` and `volatile` first, then asks. Sanity check: a `const double` certainly holds a floating-point number, so the standard answer is the right one. To fix ours, ask about `std::remove_cv_t<T>` instead of `T`.
 :::
 
 The standard traits add one more piece of polish. Their `value` comes from inheriting a tiny class, `std::true_type` or `std::false_type`, which are **[[bool_constant|bool-constant]]** types. You will see those names in error messages and in library code, and they mean exactly "a type that carries the answer true" or "false".
 
 ::: key
-A trait is built from a primary template (the default answer) plus explicit or partial specialisations (the special cases). `is_same<A, A>` is a partial specialisation; `is_floating_point` is true for `float`, `double` and `long double`, with or without `const` and `volatile`.
+A trait is built from a primary template (the default answer) plus explicit or partial specializations (the special cases). `is_same<A, A>` is a partial specialization; `is_floating_point` is true for `float`, `double` and `long double`, with or without `const` and `volatile`.
 :::
 
 ## is_same and is_floating_point
@@ -229,7 +229,7 @@ When do you want which? Use `remove_cvref_t` when you want "the plain type of th
 
 Sometimes the right type depends on another type. `std::conditional_t<B, X, Y>` is a compile-time choice: if the `bool` `B` is true, it is the type `X`; otherwise it is `Y`. Read it as "if B then X else Y".
 
-It is built the same way as every other trait: a general template for the `true` case, and a specialisation for `false`.
+It is built the same way as every other trait: a general template for the `true` case, and a specialization for `false`.
 
 ```cpp
 template <bool B, typename X, typename Y> struct conditional        { using type = X; };
@@ -391,7 +391,7 @@ using wide_t = std::conditional_t<std::is_integral_v<T> && (sizeof(T) < 8), long
 :::
 
 ::: check
-Sketch a home-made `is_pointer_trait<T>` with a `value` member. Which kind of specialisation do you need, and why?
+Sketch a home-made `is_pointer_trait<T>` with a `value` member. Which kind of specialization do you need, and why?
 :::
 
 ::: answer
@@ -400,7 +400,7 @@ template <typename T> struct is_pointer_trait     { static constexpr bool value 
 template <typename T> struct is_pointer_trait<T*> { static constexpr bool value = true; };
 ```
 
-It needs a **partial** specialisation, `is_pointer_trait<T*>`, because it must match every pointer type (`int*`, `double*`, `Frame*`…), a whole family, not one exact type. An explicit specialisation would name one type only. Like the home-made `is_float_trait`, this version misses `int* const`; the standard `std::is_pointer` also handles the cv-qualified cases.
+It needs a **partial** specialization, `is_pointer_trait<T*>`, because it must match every pointer type (`int*`, `double*`, `Frame*`…), a whole family, not one exact type. An explicit specialization would name one type only. Like the home-made `is_float_trait`, this version misses `int* const`; the standard `std::is_pointer` also handles the cv-qualified cases.
 :::
 
 ::: check
@@ -417,7 +417,7 @@ Many 8-byte types that are not `double`: `long`, `std::int64_t`, `unsigned long 
 | --- | --- | --- |
 | Type trait | A compile-time question about a type | Member `value` (a predicate) or member `type` (a transformation) |
 | `_v`, `_t` helpers | Short forms | `X_v<T>` is `X<T>::value`; `X_t<T>` is `typename X<T>::type` |
-| Building a trait | Primary template + specialisations | `is_same<A, A>` is a partial specialisation |
+| Building a trait | Primary template + specializations | `is_same<A, A>` is a partial specialization |
 | `is_same_v<A, B>` | Exactly the same type? | `int` vs `long`: false; `const int` vs `int`: false |
 | `is_floating_point_v<T>` | `float`, `double`, `long double`? | Ignores cv; false for references |
 | `remove_cvref_t<T>` | Strip `&`/`&&`, then top-level `const`/`volatile` | `const double&` becomes `double` |

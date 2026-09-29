@@ -355,7 +355,7 @@ The compiler's job is to check that your program is valid Rust. It does not tell
 The clippy that comes with Rust 1.94 has 801 lints, sorted into groups. Most groups warn by default; the **correctness** group, for code that is almost certainly a bug, is an error by default. Two groups are off unless you ask: **pedantic**, stricter and more opinionated, and **restriction**, a menu of rules a project may choose to adopt.
 
 ::: key What does cargo clippy add over the compiler?
-Several hundred lints about idiom, correctness and performance, from needless clones to suspicious comparisons. For a learner it is the fastest feedback loop from writing C++-flavoured Rust to writing Rust.
+Several hundred lints about idiom, correctness and performance, from needless clones to suspicious comparisons. For a learner it is the fastest feedback loop from writing C++-flavored Rust to writing Rust.
 :::
 
 ::: example Cleaning up C++-flavored Rust

@@ -224,7 +224,7 @@ A loop has poles at $0$ and $-10$. Why does adding a zero at $-20$ bend the locu
 ::: answer
 With $n = 2$ and $m = 1$ there is one asymptote, at $180^\circ$. The real-axis segments are $[-10, 0]$ (one pole to the right) and $(-\infty, -20]$ (two poles and a zero, three in all). $[-20, -10]$ has two and is off.
 
-So the two branches must leave the first segment and rejoin the second. They break away between $0$ and $-10$, swing through the complex plane, and break in to the left of $-20$. Applying the angle condition to a general point shows the complex part is exactly a circle centred on the zero, with radius $\sqrt{(z-p_1)(z-p_2)} = \sqrt{20\times10} = 14.14$. So the breakaway is at $-20 + 14.14 = -5.86$ and the break-in at $-20 - 14.14 = -34.14$.
+So the two branches must leave the first segment and rejoin the second. They break away between $0$ and $-10$, swing through the complex plane, and break in to the left of $-20$. Applying the angle condition to a general point shows the complex part is exactly a circle centered on the zero, with radius $\sqrt{(z-p_1)(z-p_2)} = \sqrt{20\times10} = 14.14$. So the breakaway is at $-20 + 14.14 = -5.86$ and the break-in at $-20 - 14.14 = -34.14$.
 
 What it buys is damping. Without the zero the two branches would run straight up the line $\operatorname{Re}s = -5$, and the damping ratio would fall as gain rose. With it, the branches curve back to the real axis, so high gain gives *more* damping, not less. That is the root-locus picture of what derivative action does.
 
@@ -232,7 +232,7 @@ With the zero at $-5$, between the poles, the segments become $[-5, 0]$ and $(-\
 :::
 
 ::: check
-The rate channel's PI loop has closed-loop poles at $-37.3$, $-10$ and $-2.68$ at $k_p = 12\,000$. The vehicle flies with 30% more inertia than modelled. Where do the poles move, and how could you see this on the locus without recomputing?
+The rate channel's PI loop has closed-loop poles at $-37.3$, $-10$ and $-2.68$ at $k_p = 12\,000$. The vehicle flies with 30% more inertia than modeled. Where do the poles move, and how could you see this on the locus without recomputing?
 :::
 
 ::: answer
@@ -240,7 +240,7 @@ The plant gain is $1/J$. With 30% more inertia, $L$ is scaled by $1/1.3$, exactl
 
 $K = 385$ is only slightly above the break-in gain of 367. So the two lower poles are still real but close to colliding near the break-in point at $-4.20$: they sit at $-3.40$ and $-5.50$, and the fast pole is at $-41.10$.
 
-The pole that was at $-10$ has moved right to $-5.50$. Since the slow pole is mostly cancelled by the zero at $-2$, this pole sets the speed, so the response is slower. Meanwhile the slow pole has moved from $-2.68$ to $-3.40$, further from the zero, so the cancellation is less complete and a slow tail shows up in the response. Both are what a 23% loss of loop gain must do. No new locus is needed, because an inertia error *is* a gain change.
+The pole that was at $-10$ has moved right to $-5.50$. Since the slow pole is mostly canceled by the zero at $-2$, this pole sets the speed, so the response is slower. Meanwhile the slow pole has moved from $-2.68$ to $-3.40$, further from the zero, so the cancellation is less complete and a slow tail shows up in the response. Both are what a 23% loss of loop gain must do. No new locus is needed, because an inertia error *is* a gain change.
 :::
 
 ::: check
@@ -252,7 +252,7 @@ The new pole at $-50$ is far to the left of the dominant pair — about twelve t
 
 The main effect is at high gain. There is one more branch, which runs off to the left from $-50$, and one more asymptote, so the asymptote angles swing closer to the right half plane (for example $\pm 90^\circ$ becomes $\pm 60^\circ$ and $180^\circ$).
 
-The reasoning fails when the loop gain is high enough that the dominant branches have already travelled far out along the asymptotes — then they are no longer far from the new pole, and the new asymptotes bend them toward instability. It fails completely if the "far" pole is really a lightly damped pair. A resonance swings its angle through nearly $180^\circ$ over a narrow range of frequency, however far away it looks.
+The reasoning fails when the loop gain is high enough that the dominant branches have already traveled far out along the asymptotes — then they are no longer far from the new pole, and the new asymptotes bend them toward instability. It fails completely if the "far" pole is really a lightly damped pair. A resonance swings its angle through nearly $180^\circ$ over a narrow range of frequency, however far away it looks.
 :::
 
 ::: check
@@ -369,11 +369,11 @@ The rate plant is $1/(Js)$ times the actuator. Change $J$ and every point of $L(
 :::
 
 ::: context aero-unstable Why the booster is unstable
-Air pushes on a rocket at a point called the **centre of pressure**. On many boosters it sits ahead of the centre of mass, especially without big fins. Tilt the nose a little, and the air pushes it further round, the way a dart thrown backwards flips over. That tendency is $\mu_\alpha$. Only the swivelling engine, $\mu_\delta$, holds the vehicle straight, and it can only do so with feedback.
+Air pushes on a rocket at a point called the **center of pressure**. On many boosters it sits ahead of the center of mass, especially without big fins. Tilt the nose a little, and the air pushes it further round, the way a dart thrown backwards flips over. That tendency is $\mu_\alpha$. Only the swiveling engine, $\mu_\delta$, holds the vehicle straight, and it can only do so with feedback.
 :::
 
 ::: context booster-circle The booster's locus, to scale
-The complex part of the booster locus is a circle centred on the zero at $-1.1824$, with radius $\sqrt{(1.1824 + 0.4775)(1.1824 - 0.4775)} = 1.082$. The breakaway point $-0.1007$ and the break-in point $-2.2641$ are its right and left ends. The design poles $-1.047 \pm 1.073j$ sit on it.
+The complex part of the booster locus is a circle centered on the zero at $-1.1824$, with radius $\sqrt{(1.1824 + 0.4775)(1.1824 - 0.4775)} = 1.082$. The breakaway point $-0.1007$ and the break-in point $-2.2641$ are its right and left ends. The design poles $-1.047 \pm 1.073j$ sit on it.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">

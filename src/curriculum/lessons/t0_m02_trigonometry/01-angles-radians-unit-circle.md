@@ -311,7 +311,7 @@ A satellite at orbit radius $6771$ km travels at $7.67$ km/s. What is its angula
 :::
 
 ::: answer
-$\omega = v/r = 7.67/6771 \approx 1.133 \times 10^{-3}$ rad/s (the kilometres cancel).
+$\omega = v/r = 7.67/6771 \approx 1.133 \times 10^{-3}$ rad/s (the kilometers cancel).
 
 In degrees: $1.133 \times 10^{-3} \times 57.296 \approx 0.0649^\circ$ per second. So one degree takes $1/0.0649 \approx 15.4$ s. Roughly: a satellite in low orbit sweeps about $4^\circ$ around Earth every minute.
 :::
@@ -333,7 +333,7 @@ A star tracker has a $2$ arcsecond error. The spacecraft is $400$ km up and poin
 ::: answer
 Convert to radians first. $2'' = 2/3600$ degree $\approx 5.556 \times 10^{-4}$ degree, and multiplying by $\pi/180$ gives about $9.70 \times 10^{-6}$ rad.
 
-Then $s = r\theta = 400\,000 \times 9.70 \times 10^{-6} \approx 3.9$ m. From low orbit, a few arcseconds is worth a few metres on the ground.
+Then $s = r\theta = 400\,000 \times 9.70 \times 10^{-6} \approx 3.9$ m. From low orbit, a few arcseconds is worth a few meters on the ground.
 :::
 
 ::: check
@@ -409,7 +409,7 @@ About $6.28$ of these arcs fit around the whole circle, whatever its size.
 :::
 
 ::: context dimensionless Units that cancel
-An arc length is measured in metres, and so is a radius. Divide metres by metres and the units cancel, leaving a plain number. That is what **dimensionless** means.
+An arc length is measured in meters, and so is a radius. Divide meters by meters and the units cancel, leaving a plain number. That is what **dimensionless** means.
 
 It is also why a radian works on any scale: a slice of a pizza, a turn of a wheel and a satellite's trip around Earth all measure their angles the same way, whatever length unit you used. You can even check it — the arc and the radius could both be in inches and you would get the same angle.
 :::
@@ -429,7 +429,7 @@ Spacecraft use **reaction wheels**: heavy wheels spun by electric motors, often 
 ::: context arcsecond How small is an arcsecond?
 One arcsecond is $1/3600$ of a degree. A US quarter coin, about $24$ mm across, looks one arcsecond wide from about $5$ km away.
 
-Astronomers and spacecraft engineers work at this scale all the time. A star tracker compares the stars it sees with a map of thousands of stars stored in its memory, and from their positions works out which way the spacecraft points to within a few arcseconds. That lets a camera in orbit know where on the ground it is looking to within a few metres.
+Astronomers and spacecraft engineers work at this scale all the time. A star tracker compares the stars it sees with a map of thousands of stars stored in its memory, and from their positions works out which way the spacecraft points to within a few arcseconds. That lets a camera in orbit know where on the ground it is looking to within a few meters.
 :::
 
 ::: context unit-circle-picture The unit circle, drawn

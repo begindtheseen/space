@@ -90,7 +90,7 @@ $$
 \frac{\partial\mathbf{a}}{\partial\mathbf{r}} = \mathbf{G} + \frac{\partial\mathbf{a}_{J_2}}{\partial\mathbf{r}} .
 $$
 
-You can differentiate $\mathbf{a}_{J_2}$ by hand, or estimate its $3\times3$ gradient by central differences: nudge each of $x$, $y$, $z$ by about a metre each way and difference the two accelerations. (Here the step-size trap is harmless: $\mathbf{a}_{J_2}$ is a smooth formula, not a whole trajectory.) Leave the extra term out and $\boldsymbol{\Phi}$ describes the wrong dynamics. You will see what that costs below.
+You can differentiate $\mathbf{a}_{J_2}$ by hand, or estimate its $3\times3$ gradient by central differences: nudge each of $x$, $y$, $z$ by about a meter each way and difference the two accelerations. (Here the step-size trap is harmless: $\mathbf{a}_{J_2}$ is a smooth formula, not a whole trajectory.) Leave the extra term out and $\boldsymbol{\Phi}$ describes the wrong dynamics. You will see what that costs below.
 
 ::: example The miss a two-body Lambert leaves behind
 **Set-up.** Start at
@@ -113,7 +113,7 @@ $$
 \lVert\delta\mathbf{r}_f\rVert = 67\,342\,\mathrm{m} \approx 67.3\,\mathrm{km} .
 $$
 
-**Does that make sense?** A crude check: a steady $0.0146\,\mathrm{m/s^2}$ acting for $10\,800\,\mathrm{s}$ would move something by $\tfrac12 a t^2 \approx \tfrac12 \times 0.0146 \times 10\,800^2 \approx 850\,\mathrm{km}$. The real miss is much smaller, because the bulge's pull changes direction around the orbit and mostly cancels itself. Tens of kilometres from a force this small over two orbits is reasonable.
+**Does that make sense?** A crude check: a steady $0.0146\,\mathrm{m/s^2}$ acting for $10\,800\,\mathrm{s}$ would move something by $\tfrac12 a t^2 \approx \tfrac12 \times 0.0146 \times 10\,800^2 \approx 850\,\mathrm{km}$. The real miss is much smaller, because the bulge's pull changes direction around the orbit and mostly cancels itself. Tens of kilometers from a force this small over two orbits is reasonable.
 
 That miss comes purely from the bulge Lambert never knew about. For a rendezvous or a precision flyby it is enormous — and it is the reason differential correction exists. The two-body Lambert answer is an excellent *starting point*, not a final answer.
 :::
@@ -128,7 +128,7 @@ That miss comes purely from the bulge Lambert never knew about. For a rendezvous
 | 2 | $1.89\,\mathrm{m}$ |
 | 3 | $4\times10^{-7}\,\mathrm{m}$ |
 
-**Reading it.** Three corrections take the miss from tens of kilometres to under a micrometre, which is the integrator's own accuracy. The last step is the tell-tale: from about $2\,\mathrm{m}$ to below a micrometre in one go, a reduction of millions. A method that shrinks the error by a fixed factor each time could not do that; Newton's method in its quadratic phase does.
+**Reading it.** Three corrections take the miss from tens of kilometers to under a micrometer, which is the integrator's own accuracy. The last step is the tell-tale: from about $2\,\mathrm{m}$ to below a micrometer in one go, a reduction of millions. A method that shrinks the error by a fixed factor each time could not do that; Newton's method in its quadratic phase does.
 
 **The answer.** The total correction is
 
@@ -138,7 +138,7 @@ $$
 
 That is the departure velocity that actually reaches $\mathbf{r}_2$ under the real forces.
 
-**Sanity check.** A few metres per second is the size of a real trajectory correction for a few-hour arc in Earth orbit — tiny next to the $7.67\,\mathrm{km/s}$ orbital speed, as a correction for a $1/590$-strength force should be.
+**Sanity check.** A few meters per second is the size of a real trajectory correction for a few-hour arc in Earth orbit — tiny next to the $7.67\,\mathrm{km/s}$ orbital speed, as a correction for a $1/590$-strength force should be.
 :::
 
 ### What if you reuse the two-body $\boldsymbol{\Phi}$?
@@ -175,7 +175,7 @@ $$
 It diverges. Look at the guesses behind those numbers:
 
 - The first correction asks for a departure speed of $23.8\,\mathrm{km/s}$. Escape speed at that height is about $10.8\,\mathrm{km/s}$, so this orbit leaves Earth for good — hence a miss of $233\,000\,\mathrm{km}$.
-- The next guess, $4.24\,\mathrm{km/s}$, is far too slow: the path falls straight into Earth, and the math, which has no ground, carries it to within metres of the planet's center. Its miss, $6.79\times10^6\,\mathrm{m}$, is about the distance from Earth's center to $\mathbf{r}_2$.
+- The next guess, $4.24\,\mathrm{km/s}$, is far too slow: the path falls straight into Earth, and the math, which has no ground, carries it to within meters of the planet's center. Its miss, $6.79\times10^6\,\mathrm{m}$, is about the distance from Earth's center to $\mathbf{r}_2$.
 - The next correction asks for about $17.6$ million $\mathrm{km/s}$ — some sixty times the speed of light.
 
 **Why.** Nothing is wrong with the arithmetic: $\boldsymbol{\Phi}_{rv}$ is computed correctly at every step. But the straight-line approximation the whole method rests on no longer describes the true, curved miss-versus-velocity map this far from the answer. Newton's method has no built-in brake against stepping somewhere the approximation is worthless.
@@ -206,7 +206,7 @@ In the good-start worked example, the miss goes from about $67\,\mathrm{km}$ to 
 ::: answer
 No. Quadratic convergence is a statement about what happens *near* the root, where the straight-line approximation is very accurate. There the new error is roughly a constant times the square of the old one. That constant depends on how curved the map is, and here also on direction: $\boldsymbol{\Phi}_{rv}$ for this three-hour arc is lopsided (it responds about a hundred times more strongly in one direction than in the others), so some misses need a proportionally larger velocity step, and larger steps meet more curvature. So the first steps need not follow a clean pattern.
 
-The unmistakable sign comes at the end: the miss falls from about $2\,\mathrm{m}$ to below a micrometre in one step, a reduction of millions. A linearly converging method, which cuts the error by a roughly fixed factor each step, could never make that jump — compare the two-body-$\boldsymbol{\Phi}$ run, which crawls down by a steady factor per step.
+The unmistakable sign comes at the end: the miss falls from about $2\,\mathrm{m}$ to below a micrometer in one step, a reduction of millions. A linearly converging method, which cuts the error by a roughly fixed factor each step, could never make that jump — compare the two-body-$\boldsymbol{\Phi}$ run, which crawls down by a steady factor per step.
 :::
 
 ::: check
@@ -300,7 +300,7 @@ Suppose an answer is correct to $2$ digits. Quadratic convergence means the next
 </svg>
 ```
 
-Both runs are this lesson's example. The blue line plunges at the end; the grey one steps down steadily.
+Both runs are this lesson's example. The blue line plunges at the end; the gray one steps down steadily.
 :::
 
 ::: context j2-name Where the name J₂ comes from

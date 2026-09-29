@@ -151,7 +151,7 @@ A `std::size_t` is 8 bytes on a 64-bit computer, so it can count up to 184467440
 :::
 
 ::: context iterator-preview Why the task promises at least one reading
-`std::min_element` searches from `begin()` up to, but not including, `end()`. If there are several equal smallest values, it points at the first one. For an empty vector there is nothing to find, so it gives back `end()`, a mark one past the last element that is not an element at all. Putting `*` in front of that is undefined behaviour, like following `nullptr`. That is why the task lets you assume at least one reading. Iterators get their own lesson soon, "Iterators and range-for".
+`std::min_element` searches from `begin()` up to, but not including, `end()`. If there are several equal smallest values, it points at the first one. For an empty vector there is nothing to find, so it gives back `end()`, a mark one past the last element that is not an element at all. Putting `*` in front of that is undefined behavior, like following `nullptr`. That is why the task lets you assume at least one reading. Iterators get their own lesson soon, "Iterators and range-for".
 :::
 --- task
 Finish the `Thermometer` class in the starter so it is const-correct. It keeps its readings in a private vector called `readings_`.
@@ -291,7 +291,7 @@ With two items and round prices, you know the right answer before you run anythi
 :::
 
 ::: context prints-and-debuggers Prints, debuggers and telemetry
-Adding print lines is the oldest debugging tool, and still one of the most used. Programs called debuggers, such as gdb and lldb, can instead pause a running program at any line and show every variable, without editing the code at all. Either way the idea is the same: stop guessing and look at the real values. Delete your print lines once the bug is fixed. A spacecraft does a version of this all the time: it sends a stream of measurements called *telemetry* back to Earth, so engineers can see inside a program running millions of kilometres away.
+Adding print lines is the oldest debugging tool, and still one of the most used. Programs called debuggers, such as gdb and lldb, can instead pause a running program at any line and show every variable, without editing the code at all. Either way the idea is the same: stop guessing and look at the real values. Delete your print lines once the bug is fixed. A spacecraft does a version of this all the time: it sends a stream of measurements called *telemetry* back to Earth, so engineers can see inside a program running millions of kilometers away.
 :::
 
 ::: context cause-not-symptom Symptom or cause
@@ -493,7 +493,7 @@ A hand-written loop has three places to slip: where it starts, where it stops, a
 :::
 
 ::: context how-sort-works How fast is std::sort?
-Sorting by comparing neighbours over and over is slow on long lists: roughly n × n comparisons for n elements. Since C++11, `std::sort` must finish in about n × log₂(n) comparisons. For a million readings that is about 20 million comparisons instead of a trillion. Library writers usually build it as *introsort*, a mix of quicksort, heapsort and insertion sort. Equal elements may come out in any order; `std::stable_sort` keeps them in their original order when that matters.
+Sorting by comparing neighbors over and over is slow on long lists: roughly n × n comparisons for n elements. Since C++11, `std::sort` must finish in about n × log₂(n) comparisons. For a million readings that is about 20 million comparisons instead of a trillion. Library writers usually build it as *introsort*, a mix of quicksort, heapsort and insertion sort. Equal elements may come out in any order; `std::stable_sort` keeps them in their original order when that matters.
 :::
 
 ::: context function-objects Rules you can hand over
@@ -501,7 +501,7 @@ Sorting by comparing neighbours over and over is slow on long lists: roughly n �
 :::
 
 ::: context overflow Overflow, and a rocket lost to it
-An `int` holds at most 2,147,483,647. Going past that in a signed type is *overflow*, and in C++ it is undefined behaviour: the rules say nothing about the result. A `long long` reaches 9,223,372,036,854,775,807. On 4 June 1996, the first Ariane 5 rocket veered off course about 37 seconds after lift-off and destroyed itself. Its guidance software converted a 64-bit floating-point number (a decimal, like a `double`) into a 16-bit whole number, the value was too big to fit, and the error shut the guidance system down. The code had come from Ariane 4, whose slower flight never produced such a big number.
+An `int` holds at most 2,147,483,647. Going past that in a signed type is *overflow*, and in C++ it is undefined behavior: the rules say nothing about the result. A `long long` reaches 9,223,372,036,854,775,807. On 4 June 1996, the first Ariane 5 rocket veered off course about 37 seconds after lift-off and destroyed itself. Its guidance software converted a 64-bit floating-point number (a decimal, like a `double`) into a 16-bit whole number, the value was too big to fit, and the error shut the guidance system down. The code had come from Ariane 4, whose slower flight never produced such a big number.
 :::
 
 ::: context round-vs-curly Round brackets or curly braces
@@ -714,7 +714,7 @@ if (!w.empty()) {
 }
 ```
 
-**Watch out:** `end()` is not an element, so check before you follow an iterator that might be `end()`. On an empty vector, `std::max_element` gives back `end()`, and putting `*` in front of that is undefined behaviour. The same goes for `w[0]` on an empty string: there is no first letter there that you may change. Check `v.empty()` or `w.empty()` first.
+**Watch out:** `end()` is not an element, so check before you follow an iterator that might be `end()`. On an empty vector, `std::max_element` gives back `end()`, and putting `*` in front of that is undefined behavior. The same goes for `w[0]` on an empty string: there is no first letter there that you may change. Check `v.empty()` or `w.empty()` first.
 
 ::: context why-iterators One idea for every container
 A vector keeps its elements in one row, but a `std::map` usually keeps its keys in a tree, and other containers link elements together in chains. Each kind of container supplies its own iterators, and they all answer to the same `*`, `++`, `==` and `!=`. So one `std::find_if` or `std::count_if` works on all of them. This design is the heart of the Standard Template Library (STL), created by Alexander Stepanov and Meng Lee and voted into the draft C++ standard in 1994.
@@ -749,7 +749,7 @@ The range-for loop arrived in C++11. For `for (int x : v) { … }`, the compiler
 :::
 
 ::: context invalidation Why you must not grow a vector while looping over it
-When a vector runs out of room, `push_back` moves every element to a bigger block of memory. Every iterator into the old block, including the hidden one inside a range-for, now marks memory that is no longer the vector's. Using it is undefined behaviour. This is called *iterator invalidation*. The safe habit: while looping over a container, change its elements, but do not add or remove any. Build a new vector instead, or collect the changes and make them after the loop.
+When a vector runs out of room, `push_back` moves every element to a bigger block of memory. Every iterator into the old block, including the hidden one inside a range-for, now marks memory that is no longer the vector's. Using it is undefined behavior. This is called *iterator invalidation*. The safe habit: while looping over a container, change its elements, but do not add or remove any. Build a new vector instead, or collect the changes and make them after the loop.
 :::
 
 ::: context palindrome-pairs Forwards and backwards at once
@@ -1119,7 +1119,7 @@ Go through it one piece at a time:
 - `tick()` counts down by one, but only while there is something left. `--seconds_`, read "decrement", takes one away; it is the opposite of `++`. The `if` guard means the count can never go below 0.
 - `done()` only looks, so it is marked `const`, as in the const correctness lesson.
 
-Two habits from the basics course matter here. The **member initialiser list**, `: seconds_(…)`, gives each member its first value before the constructor body runs; prefer it to assigning in the body. And `explicit` on a constructor that takes one value stops surprise conversions like `Timer t = 5;`.
+Two habits from the basics course matter here. The **member initializer list**, `: seconds_(…)`, gives each member its first value before the constructor body runs; prefer it to assigning in the body. And `explicit` on a constructor that takes one value stops surprise conversions like `Timer t = 5;`.
 
 ### Store the data in the shape that makes the rule easy
 
@@ -1644,7 +1644,7 @@ Put the numbers round a circle and turning becomes counting: right is +1, left i
 :::
 
 ::: context flight-modes Modes on a spacecraft
-Spacecraft software is often organised around a mode: a value from a short list such as launch, cruise, science and safe mode, with a switch that decides what the craft does in each one. **Safe mode** is the famous one: when something unexpected happens, the craft stops its normal work, turns its solar panels towards the Sun, keeps in touch with Earth, and waits for instructions. An `enum class` with a switch that the compiler checks is exactly how such a list of modes is written in modern C++.
+Spacecraft software is often organized around a mode: a value from a short list such as launch, cruise, science and safe mode, with a switch that decides what the craft does in each one. **Safe mode** is the famous one: when something unexpected happens, the craft stops its normal work, turns its solar panels towards the Sun, keeps in touch with Earth, and waits for instructions. An `enum class` with a switch that the compiler checks is exactly how such a list of modes is written in modern C++.
 :::
 --- task
 The starter declares:
@@ -1807,7 +1807,7 @@ find_age("Bob") == std::nullopt   // true
 find_age("Bob") == 0              // false: an empty box equals no number
 ```
 
-**Watch out:** never put `*` in front of an optional you have not checked. With nothing inside, `*age` is **undefined behaviour**: C++ makes no promise about what happens, and [[no error message will tell you|empty-star]]. Check with `if (age)` first, or use `value_or`.
+**Watch out:** never put `*` in front of an optional you have not checked. With nothing inside, `*age` is **undefined behavior**: C++ makes no promise about what happens, and [[no error message will tell you|empty-star]]. Check with `if (age)` first, or use `value_or`.
 
 ### Decide the edge cases first
 
@@ -1853,7 +1853,7 @@ In the pointers lesson, `*p` followed a pointer to the value it points at. Optio
 :::
 
 ::: context nine-digits Why stop at nine digits
-The largest `int` is 2,147,483,647, which has ten digits. Every nine-digit number, up to 999,999,999, fits easily, but many ten-digit numbers, such as 9,999,999,999, do not. Building a number past the largest `int` is overflow, which is undefined behaviour. Allowing at most nine digits is a simple rule that makes overflow impossible, at the cost of turning away a few numbers that would fit. Overflow has cost rockets: in 1996, Ariane 5 Flight 501 was destroyed about 40 seconds after launch when a 64-bit floating-point value was converted to a 16-bit integer that could not hold it. A debugging lesson later in this course comes back to overflow.
+The largest `int` is 2,147,483,647, which has ten digits. Every nine-digit number, up to 999,999,999, fits easily, but many ten-digit numbers, such as 9,999,999,999, do not. Building a number past the largest `int` is overflow, which is undefined behavior. Allowing at most nine digits is a simple rule that makes overflow impossible, at the cost of turning away a few numbers that would fit. Overflow has cost rockets: in 1996, Ariane 5 Flight 501 was destroyed about 40 seconds after launch when a 64-bit floating-point value was converted to a 16-bit integer that could not hold it. A debugging lesson later in this course comes back to overflow.
 :::
 
 ::: context digit-codes Characters are small numbers
@@ -2041,7 +2041,7 @@ auto make_greeter() {
 }
 ```
 
-**Watch out:** do not capture a local variable **by reference** in a lambda that outlives it. When the function that made the lambda ends, its local variables are gone, and the reference [[dangles|dangling]]: it names memory that no longer holds that variable. Using it is undefined behaviour, and it compiles without complaint.
+**Watch out:** do not capture a local variable **by reference** in a lambda that outlives it. When the function that made the lambda ends, its local variables are gone, and the reference [[dangles|dangling]]: it names memory that no longer holds that variable. Using it is undefined behavior, and it compiles without complaint.
 
 ```cpp
 auto make_bad() {
@@ -2090,7 +2090,7 @@ A lambda is shorthand. For each lambda, the compiler writes a small class with n
 :::
 
 ::: context back-inserter Writing past the end, safely
-Algorithms like `copy_if` write through an iterator: "put the value here, then move one along". If you passed `out.begin()` of an empty vector, there would be no room, and writing there would be undefined behaviour. The algorithms lesson avoided that by making `out` the right size first. When you do not know how many values will pass the test, that is impossible, so `std::back_inserter` gives a different kind of iterator: writing through it calls `out.push_back(value)`, and the vector grows exactly as needed.
+Algorithms like `copy_if` write through an iterator: "put the value here, then move one along". If you passed `out.begin()` of an empty vector, there would be no room, and writing there would be undefined behavior. The algorithms lesson avoided that by making `out` the right size first. When you do not know how many values will pass the test, that is impossible, so `std::back_inserter` gives a different kind of iterator: writing through it calls `out.push_back(value)`, and the vector grows exactly as needed.
 :::
 
 ::: context capture-all Name what you capture
@@ -2102,7 +2102,7 @@ A function's local variables live in a piece of memory set aside for that call, 
 :::
 
 ::: context strict-order The rules a comparator must follow
-`std::sort` trusts its comparator to behave like "less than". In particular, it must return false when `a` and `b` are equal. So write `<`, never `<=`: with `<=`, two equal values would each claim to come before the other, and the C++ rules call sorting with such a comparator undefined behaviour. Breaking ties with a second test, as here, keeps the comparator a proper "less than" and makes the result the same on every computer.
+`std::sort` trusts its comparator to behave like "less than". In particular, it must return false when `a` and `b` are equal. So write `<`, never `<=`: with `<=`, two equal values would each claim to come before the other, and the C++ rules call sorting with such a comparator undefined behavior. Breaking ties with a second test, as here, keeps the comparator a proper "less than" and makes the result the same on every computer.
 :::
 --- task
 Write three functions. No `main`: the checker supplies it.
@@ -2249,7 +2249,7 @@ To split a whole string, keep a `start` index. Find the next separator from `sta
 
 ### Trimming whitespace
 
-**Whitespace** means the invisible characters: spaces, tabs (`\t`) and newlines (`\n`). **Trimming** a string means removing whitespace from both ends and keeping everything between. `std::isspace` from `<cctype>` recognises [[all kinds of whitespace|whitespace-kinds]]; convert to `unsigned char` first, as always.
+**Whitespace** means the invisible characters: spaces, tabs (`\t`) and newlines (`\n`). **Trimming** a string means removing whitespace from both ends and keeping everything between. `std::isspace` from `<cctype>` recognizes [[all kinds of whitespace|whitespace-kinds]]; convert to `unsigned char` first, as always.
 
 The idea is two indexes that walk inward. One starts at the front and steps forward past whitespace:
 
@@ -2548,9 +2548,9 @@ Last lesson you built text with a string stream. This one is a debugging lesson:
 
 ### The fence-post mistake
 
-A fence 10 metres long, with a post every metre, needs 11 posts, not 10: one at each end. Counting the gaps when you meant the posts, or the other way round, is so easy that it has a name. An **off-by-one** error means a loop runs one time too many, or one time too few. It is also called a [[fence-post error|fence-post]].
+A fence 10 meters long, with a post every meter, needs 11 posts, not 10: one at each end. Counting the gaps when you meant the posts, or the other way round, is so easy that it has a name. An **off-by-one** error means a loop runs one time too many, or one time too few. It is also called a [[fence-post error|fence-post]].
 
-In C++ it is dangerous, because `v[i]` does no checking, as you saw in the basics vector lesson. Reading one past the end does not stop the program. It reads [[whatever memory happens to be there|past-the-end]] (undefined behaviour) and carries on with a wrong number.
+In C++ it is dangerous, because `v[i]` does no checking, as you saw in the basics vector lesson. Reading one past the end does not stop the program. It reads [[whatever memory happens to be there|past-the-end]] (undefined behavior) and carries on with a wrong number.
 
 ### A method for loops that misbehave
 
@@ -2627,7 +2627,7 @@ Checking every index takes a comparison each time, and in a tight loop over mill
 Picture a car's trip counter rolling back from 000.0 to 999.9 when it goes backwards: an unsigned number going below 0 wraps to its largest value. On a 64-bit computer that is 18,446,744,073,709,551,615, which is 2⁶⁴ − 1. So 2 − 3 gives that number, not −1. C++ defines this wrap-around for unsigned numbers on purpose, so there is no warning. Many experts, including C++'s creator Bjarne Stroustrup, have said that making sizes unsigned was a mistake. C++20 added `std::ssize(v)`, which gives the size as a signed number that can go below zero.
 :::
 --- task
-**Bug report:** "`window_sums({1, 2, 3, 4}, 2)` should be `{3, 5, 7}`, the sums of each pair of neighbours, but the numbers are wrong. And when `k` is bigger than the list, the program crashes."
+**Bug report:** "`window_sums({1, 2, 3, 4}, 2)` should be `{3, 5, 7}`, the sums of each pair of neighbors, but the numbers are wrong. And when `k` is bigger than the list, the program crashes."
 
 `window_sums(v, k)` returns the sum of every window of `k` values next to each other, in order. If `k` is 0 or bigger than `v.size()`, it returns an empty vector. `window_sums({1, 2, 3, 4}, 4)` is `{10}`, and `window_sums({5, -2, 8}, 1)` is `{5, -2, 8}`.
 
@@ -2703,7 +2703,7 @@ int b = 2000000000;    // fits
 int c = a + b;         // 4 billion does not fit in an int
 ```
 
-For an `int`, which can be negative (a **signed** type), overflow is **[[undefined behaviour|ub-overflow]]**: the C++ rules make no promise at all about what happens. In practice you usually get a [[large negative number|wrap-around]]. Here `c` usually comes out as -294,967,296. But the compiler is also allowed to assume overflow never happens, and plan the rest of the program around that, so the wrong answer can change from one build to the next.
+For an `int`, which can be negative (a **signed** type), overflow is **[[undefined behavior|ub-overflow]]**: the C++ rules make no promise at all about what happens. In practice you usually get a [[large negative number|wrap-around]]. Here `c` usually comes out as -294,967,296. But the compiler is also allowed to assume overflow never happens, and plan the rest of the program around that, so the wrong answer can change from one build to the next.
 
 ### The fix: a box big enough for the result
 
@@ -2732,7 +2732,7 @@ In the second line, `static_cast<long long>(a)` turns `a` into a `long long` fir
 
 ### Bug two: a variable with no starting value
 
-`int lowest;` does not mean zero. A local variable made without a starting value (an **initialiser**) holds [[whatever was left in that memory|leftover-memory]]. Reading it before you store something in it is undefined behaviour too: the program may seem to work today and fail tomorrow.
+`int lowest;` does not mean zero. A local variable made without a starting value (an **initializer**) holds [[whatever was left in that memory|leftover-memory]]. Reading it before you store something in it is undefined behavior too: the program may seem to work today and fail tomorrow.
 
 ```cpp
 int lowest;            // no initialiser: leftover junk
@@ -2787,7 +2787,7 @@ A function's local variables live in a scratch area of memory called the stack, 
 :::
 
 ::: context warnings-not-enough Warnings help, but do not catch everything
-With the same flags, g++ warns that `lowest` in this lesson's starter "may be used uninitialized", but clang++, the compiler this app runs, says nothing about it: the read happens inside a loop, which is harder to analyse. So treat warnings as free help, and still test. NASA JPL's "Power of Ten" rules for safety-critical code ask for every warning to be turned on from the first day, and for the code to compile with no warnings at all.
+With the same flags, g++ warns that `lowest` in this lesson's starter "may be used uninitialized", but clang++, the compiler this app runs, says nothing about it: the read happens inside a loop, which is harder to analyze. So treat warnings as free help, and still test. NASA JPL's "Power of Ten" rules for safety-critical code ask for every warning to be turned on from the first day, and for the code to compile with no warnings at all.
 :::
 --- task
 **Bug report:** "`total_bytes` of three 1.5 GB files (1,500,000,000 bytes each) comes out as 205,032,704 instead of 4,500,000,000. And `coldest({5, 7, 9})` returns nonsense instead of 5."
@@ -3087,7 +3087,7 @@ It beats the alternatives. Three [[output parameters|out-params]] (references th
 
 ### Step 4: replace each copy with a call
 
-Swap every copy for a call to the new function, then re-run the checks. They are your [[safety net|regression]]: behaviour must not change, except for fixing bugs the duplication was hiding.
+Swap every copy for a call to the new function, then re-run the checks. They are your [[safety net|regression]]: behavior must not change, except for fixing bugs the duplication was hiding.
 
 ### One place to get it right
 
@@ -3107,7 +3107,7 @@ Read it slowly, because two pieces are new:
 
 Then `*lo` follows the iterator to the value, and `return {*lo, *hi};` fills the `Range` in member order: `low` first, then `high`. For `{4, -1, 9, 3}` you get low -1 and high 9.
 
-**Watch out:** on an empty vector there is no smallest element, and both iterators are `end()`. Following `end()` with `*` is undefined behaviour. So a function like this only works on a non-empty list, and the code that calls it must check `empty()` first.
+**Watch out:** on an empty vector there is no smallest element, and both iterators are `end()`. Following `end()` with `*` is undefined behavior. So a function like this only works on a non-empty list, and the code that calls it must check `empty()` first.
 
 ### Computing apart from presenting
 
@@ -3130,7 +3130,7 @@ Programmers have a name for this rule: **DRY**, short for "Don't Repeat Yourself
 :::
 
 ::: context refactoring-word Where "refactoring" comes from
-The word borrows from algebra. Factoring rewrites 6x + 6y as 6(x + y): a different shape, the same value. Refactoring does the same to code. Martin Fowler's 1999 book *Refactoring* made the word famous, with a catalogue of small, safe steps. One of them, pulling repeated code out into its own function, is exactly what this lesson does. Each step is small enough to check before taking the next, so the program works after every one.
+The word borrows from algebra. Factoring rewrites 6x + 6y as 6(x + y): a different shape, the same value. Refactoring does the same to code. Martin Fowler's 1999 book *Refactoring* made the word famous, with a catalog of small, safe steps. One of them, pulling repeated code out into its own function, is exactly what this lesson does. Each step is small enough to check before taking the next, so the program works after every one.
 :::
 
 ::: context out-params Answers through references

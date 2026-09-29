@@ -197,7 +197,7 @@ The left side is the density change felt riding along: the change at a fixed poi
 
 Now the curl. Picture a sheet of graph paper and a field of arrows over it. Lesson 8 showed that the circulation around one small square of area $\Delta S$, with unit normal $\hat{\mathbf{n}}$, is about $(\nabla\times\mathbf{F})\cdot\hat{\mathbf{n}}\,\Delta S$.
 
-Walk around every little square of the paper in the same turning direction and add up all the circulations. Each inside edge belongs to two squares. You walk it one way for the first square and the opposite way for the second, so those two pieces cancel. Only the outer edge of the whole sheet survives. And the sheet need not be flat: any curved surface can be tiled with tiny, nearly flat patches, and the same cancelling happens.
+Walk around every little square of the paper in the same turning direction and add up all the circulations. Each inside edge belongs to two squares. You walk it one way for the first square and the opposite way for the second, so those two pieces cancel. Only the outer edge of the whole sheet survives. And the sheet need not be flat: any curved surface can be tiled with tiny, nearly flat patches, and the same canceling happens.
 
 That gives **Stokes' theorem**: for an oriented surface $S$ whose edge is the closed curve $C$,
 

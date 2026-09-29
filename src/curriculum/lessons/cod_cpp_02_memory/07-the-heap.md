@@ -3,7 +3,7 @@ id: l07-the-heap
 title: The heap: what the allocator does, how long it takes, and how it fragments
 minutes: 21
 covers:
-  - 'The heap: fragmentation, non-deterministic allocation time, allocator behaviour'
+  - 'The heap: fragmentation, non-deterministic allocation time, allocator behavior'
 ---
 
 Picture a busy parking garage with no assigned spots. Most days you drive in and find a space in seconds. Some days you circle for ten minutes. And now and then the garage has plenty of empty space in total, but it is all single gaps between parked cars, and your trailer will not fit in any of them. How long parking takes, and whether it works at all, depends on everyone who parked before you.
@@ -370,5 +370,5 @@ An arena is one long block with a marker. Each request moves the marker forward 
 </svg>
 ```
 
-The grey sliver is padding from rounding up, so block B starts on its alignment.
+The gray sliver is padding from rounding up, so block B starts on its alignment.
 :::

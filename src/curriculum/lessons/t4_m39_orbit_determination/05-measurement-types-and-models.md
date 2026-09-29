@@ -24,7 +24,7 @@ $$
 
 Read the partial in plain words. Move the spacecraft $1\,\mathrm m$ straight along the line of sight, and the range grows by $1\,\mathrm m$. Move it $1\,\mathrm m$ sideways, and the range hardly changes. The dot product with $\hat{\boldsymbol\rho}$ picks out exactly the along-the-line part of any small move. And range does not care how fast the spacecraft is going, so its partial with respect to velocity $\mathbf v$ is zero.
 
-This is not a new derivation. It is the same unit line-of-sight Jacobian the least-squares module used for its multi-station range fix. The only orbit-specific detail is that $\mathbf R$ is not fixed. A ground station rides around with the spinning Earth, so in the inertial frame $\mathbf R = \mathbf R(t)$ must be worked out at the exact time of the measurement — the same site-rotation construction the initial-orbit-determination lesson used to place stations in an inertial frame. The very best ranging comes from **[[laser ranging|laser-ranging]]**, which reaches millimetres.
+This is not a new derivation. It is the same unit line-of-sight Jacobian the least-squares module used for its multi-station range fix. The only orbit-specific detail is that $\mathbf R$ is not fixed. A ground station rides around with the spinning Earth, so in the inertial frame $\mathbf R = \mathbf R(t)$ must be worked out at the exact time of the measurement — the same site-rotation construction the initial-orbit-determination lesson used to place stations in an inertial frame. The very best ranging comes from **[[laser ranging|laser-ranging]]**, which reaches millimeters.
 
 ## Range-rate (Doppler): how fast along the line
 
@@ -163,11 +163,11 @@ with $\delta t_{\text{clock}}$ a fourth unknown solved for alongside position �
 
 For orbit determination of a spacecraft carrying a GPS receiver, the same pseudoranges become tracking data. $\mathbf H$ gains one more column, $\partial\tilde\rho/\partial(\delta t_{\text{clock}})=c$, a constant, next to the usual $\hat{\boldsymbol\rho}$ block for position. The clock bias can be solved for as an extra state, or removed by **differencing** — subtracting two measurements that share the same bias, as carrier-phase and differential techniques do. That is the same solve-for-or-eliminate choice that comes back with every nuisance parameter in this module.
 
-## VLBI: two ears thousands of kilometres apart
+## VLBI: two ears thousands of kilometers apart
 
 Your two ears tell you which way a sound comes from, because a sound from your left reaches your left ear a fraction of a millisecond earlier. **Very-long-baseline interferometry**, or **VLBI**, does the same with two radio dishes. It does not measure range at all.
 
-Put two antennas at $\mathbf R_1$ and $\mathbf R_2$. The arrow between them, $\mathbf b=\mathbf R_2-\mathbf R_1$, is the **baseline**, often thousands of kilometres long. Both receive the same signal. If the spacecraft is far enough away that the arriving wavefront is flat across the baseline — the **far-field**, or plane-wave, approximation — the far antenna hears it later by
+Put two antennas at $\mathbf R_1$ and $\mathbf R_2$. The arrow between them, $\mathbf b=\mathbf R_2-\mathbf R_1$, is the **baseline**, often thousands of kilometers long. Both receive the same signal. If the spacecraft is far enough away that the arriving wavefront is flat across the baseline — the **far-field**, or plane-wave, approximation — the far antenna hears it later by
 
 $$
 \Delta\tau \approx -\frac{\mathbf b\cdot\hat{\boldsymbol\rho}}{c},
@@ -218,7 +218,7 @@ $$
 \frac{\partial\rho_{AB}}{\partial\mathbf r_A} = \hat{\boldsymbol\rho}_{AB}, \qquad \frac{\partial\rho_{AB}}{\partial\mathbf r_B} = -\hat{\boldsymbol\rho}_{AB}.
 $$
 
-Here $\hat{\boldsymbol\rho}_{AB}$ is the unit vector from $B$ to $A$. Move $A$ a metre along it and the range grows a metre; move $B$ a metre the same way and the range shrinks a metre. Move both together and nothing changes. So a single **[[crosslink|crosslink]]** constrains the *relative* position of the two spacecraft along the link far better than it constrains either one's absolute position. That is a preview of why relative orbit determination for a constellation, built from many crosslinks, can reach much better relative accuracy than either spacecraft's absolute state — a theme the module returns to in its closing lesson.
+Here $\hat{\boldsymbol\rho}_{AB}$ is the unit vector from $B$ to $A$. Move $A$ a meter along it and the range grows a meter; move $B$ a meter the same way and the range shrinks a meter. Move both together and nothing changes. So a single **[[crosslink|crosslink]]** constrains the *relative* position of the two spacecraft along the link far better than it constrains either one's absolute position. That is a preview of why relative orbit determination for a constellation, built from many crosslinks, can reach much better relative accuracy than either spacecraft's absolute state — a theme the module returns to in its closing lesson.
 
 ::: key Six measurement types, two physical quantities
 Range, GNSS pseudorange and inter-satellite range are all the same quantity — a line-of-sight distance — differing only in what sits at the far end (a fixed station, a GNSS satellite carrying its own clock error, or another spacecraft). Angles and VLBI delay are both direction-only measurements; VLBI reaches far higher angular precision by using a very long physical baseline instead of a single antenna's own resolution. Range-rate adds the time derivative of the first family. Every one of them reduces to a line-of-sight vector, or a baseline projected onto one, differentiated with respect to the state.
@@ -295,8 +295,8 @@ Every measurement type here adds rows to the same $\mathbf H$ the batch and sequ
 A transponder receives the ground's signal and sends it straight back, but at a slightly different frequency so the two do not drown each other out. The ratio is fixed exactly — for NASA's S-band links it is $240/221$ — and the returned wave keeps step with the incoming one. Because of that lock, the ground can compare the returning wave with the one it sent, count the cycles, and read both the round-trip time (range) and the frequency shift (Doppler) with its own very stable clock. The spacecraft needs no precise clock of its own.
 :::
 
-::: context laser-ranging Millimetres by bouncing light
-Satellite laser ranging fires short laser pulses at a spacecraft carrying corner-cube reflectors — prisms that send light straight back where it came from, like a bicycle reflector. Timing the round trip gives the range to within millimetres. The LAGEOS satellites, launched in 1976 and 1992, are dense metal balls covered in these reflectors and do nothing else. Laser ranging needs clear skies and cooperative reflectors, so it is used to check and calibrate other tracking rather than for everyday operations.
+::: context laser-ranging Millimeters by bouncing light
+Satellite laser ranging fires short laser pulses at a spacecraft carrying corner-cube reflectors — prisms that send light straight back where it came from, like a bicycle reflector. Timing the round trip gives the range to within millimeters. The LAGEOS satellites, launched in 1976 and 1992, are dense metal balls covered in these reflectors and do nothing else. Laser ranging needs clear skies and cooperative reflectors, so it is used to check and calibrate other tracking rather than for everyday operations.
 :::
 
 ::: context doppler-siren Why the pitch changes
@@ -355,5 +355,5 @@ The spacecraft is up and to the right, so the flat wavefront (dashed) reaches an
 :::
 
 ::: context crosslink Measuring the gap between two satellites
-The GRACE mission (2002 to 2017) flew two satellites about $220\,\mathrm{km}$ apart in the same orbit, linked by a microwave ranging system that tracked changes in their separation to within a few micrometres. When the front satellite passed over a heavier region of Earth, it was pulled ahead slightly before the rear one, and the link saw the gap change. From those tiny changes scientists mapped Earth's gravity month by month, including melting ice sheets. It is an extreme example of how well a crosslink sees *relative* motion.
+The GRACE mission (2002 to 2017) flew two satellites about $220\,\mathrm{km}$ apart in the same orbit, linked by a microwave ranging system that tracked changes in their separation to within a few micrometers. When the front satellite passed over a heavier region of Earth, it was pulled ahead slightly before the rear one, and the link saw the gap change. From those tiny changes scientists mapped Earth's gravity month by month, including melting ice sheets. It is an extreme example of how well a crosslink sees *relative* motion.
 :::

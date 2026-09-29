@@ -32,7 +32,7 @@ The capture is no longer dynamic. The arm takes out nearly all the leftover rela
 The cost is **dependency**. Berthing needs the arm, and usually a crew member to fly it for the capture, to be available and ready. That ties the arrival to the station's schedule in a way a self-contained docking does not.
 
 ::: key Docking vs berthing
-Docking: the visiting vehicle flies itself into the mechanism under its own GNC and the capture is dynamic. Berthing: the vehicle holds a station a few metres away, is grappled by a robotic arm and is then bolted on. Berthing is gentler on the structure; docking is autonomous and faster.
+Docking: the visiting vehicle flies itself into the mechanism under its own GNC and the capture is dynamic. Berthing: the vehicle holds a station a few meters away, is grappled by a robotic arm and is then bolted on. Berthing is gentler on the structure; docking is autonomous and faster.
 
 Docking demands tight final-approach precision, which the capture mechanism's compliance must still absorb. Berthing is more forgiving of final-approach precision but depends on the arm and the crew being available.
 :::

@@ -29,7 +29,7 @@ The **[[bending moment|bending-beam]]** at a point along the body is the twistin
 The exact bending moment is the structures team's job. What matters to control is that every one of those loads grows in step with the normal force:
 
 - The air load is $N = \bar{q} S C_{N\alpha}\alpha$, with $S$ the reference area and $C_{N\alpha}$ the normal-force slope from lesson 5.
-- The engine's trim force is $N\ell_\alpha/\ell_T$. Here $\ell_\alpha$ ("ell alpha") is the lever arm of the air force about the centre of gravity and $\ell_T$ that of the engine. It is a fixed multiple of $N$.
+- The engine's trim force is $N\ell_\alpha/\ell_T$. Here $\ell_\alpha$ ("ell alpha") is the lever arm of the air force about the center of gravity and $\ell_T$ that of the engine. It is a fixed multiple of $N$.
 - The inertial relief is $m a_{\text{lat}}$, and $a_{\text{lat}}$ is set by those same two forces divided by the mass $m$.
 
 So for a given vehicle at a given Mach number,
@@ -67,7 +67,7 @@ $$
 
 Dividing the moment by it gives a bending stress of about $1.8 \times 10^6 / 0.042 \approx 4.3 \times 10^7$ pascals, or 43 MPa — of order $40\ \mathrm{MPa}$.
 
-**Sanity check.** That is modest next to the strength of aluminium alloy (hundreds of MPa). But it adds to the squeeze from thrust and drag, the tank pressure loads and the shaking of a gusty ride, and thin pressurized shells fail by **[[buckling|buckling]]** — crumpling sideways — long before the metal yields. The envelope is set by that combination, and 125 kPa·deg would exceed it on many vehicles.
+**Sanity check.** That is modest next to the strength of aluminum alloy (hundreds of MPa). But it adds to the squeeze from thrust and drag, the tank pressure loads and the shaking of a gusty ride, and thin pressurized shells fail by **[[buckling|buckling]]** — crumpling sideways — long before the metal yields. The envelope is set by that combination, and 125 kPa·deg would exceed it on many vehicles.
 :::
 
 ::: key
@@ -235,13 +235,13 @@ Load relief: the controller partially steers into the wind, accepting attitude a
 
 ## What the trade costs later
 
-The sideways speed built up during load relief does not vanish when $\bar{q}$ does. Through the thick air, ascent guidance is **open-loop**: it follows a stored, wind-biased pitch program and does not try to fix the path. The **[[closed-loop guidance|guidance-takeover]]** that steers to the target orbit takes over only once dynamic pressure has fallen away, typically two to three minutes into flight. It must then steer out the error, using thrust that would otherwise have gone into the orbit: a few metres per second of $\Delta v$ ("delta-v", change in velocity) for a typical wind, tens for a severe one, plus a scatter in the state at staging that the upper stage must absorb. That is the "insertion accuracy and extra $\Delta v$" of the key statement.
+The sideways speed built up during load relief does not vanish when $\bar{q}$ does. Through the thick air, ascent guidance is **open-loop**: it follows a stored, wind-biased pitch program and does not try to fix the path. The **[[closed-loop guidance|guidance-takeover]]** that steers to the target orbit takes over only once dynamic pressure has fallen away, typically two to three minutes into flight. It must then steer out the error, using thrust that would otherwise have gone into the orbit: a few meters per second of $\Delta v$ ("delta-v", change in velocity) for a typical wind, tens for a severe one, plus a scatter in the state at staging that the upper stage must absorb. That is the "insertion accuracy and extra $\Delta v$" of the key statement.
 
 The benefit exists only when $\bar{q}$ is large, so the accelerometer gain is **[[scheduled|gain-schedule]]** — changed with time along the flight. It is zero at lift-off, ramps up entering the high-$\bar{q}$ window (roughly 40 to 100 s for the vehicle of lesson 2), and ramps back to zero as dynamic pressure collapses. Outside that window it would only add drift and noise.
 
 Two warnings about the settled picture. First, it assumes the loop has had time to settle. A gust that rises in one second hits a loop with a 0.36 Hz crossover almost at full strength, so the *momentary* $\bar{q}\alpha$ overshoots the settled value; design gust allowances cover that.
 
-Second, the accelerometer feels more than the air. It feels the gimbal's own sideways force $-T\delta/m$, and if it sits a distance $\ell_{\text{acc}}$ from the centre of gravity it feels the spin-up $\ell_{\text{acc}}\ddot\theta$ too. Both feed back through the actuator and reshape the loop, so too large a $K_a$ eats into the phase margin. Load relief is a stability design as much as a load design.
+Second, the accelerometer feels more than the air. It feels the gimbal's own sideways force $-T\delta/m$, and if it sits a distance $\ell_{\text{acc}}$ from the center of gravity it feels the spin-up $\ell_{\text{acc}}\ddot\theta$ too. Both feed back through the actuator and reshape the loop, so too large a $K_a$ eats into the phase margin. Load relief is a stability design as much as a load design.
 
 ::: warning
 Load relief does not mean flying at zero angle of attack. Zero $\alpha$ is the load-minimum extreme, and it steers the vehicle upwind at $T\alpha_w/m$ — three times faster than the wind pushes an attitude-holding vehicle downwind. Every practical design carries part of the wind as angle of attack. Even the drift-minimum point, where the two pushes cancel, still carries three quarters of it.
@@ -264,11 +264,11 @@ Attitude hold gives $\alpha \approx \alpha_w$, or a little more with a finite-ga
 :::
 
 ::: check
-Explain in physical terms why the gimbal's trim force adds to the air's side force instead of cancelling it. What does that do to the drift of an attitude-holding vehicle?
+Explain in physical terms why the gimbal's trim force adds to the air's side force instead of canceling it. What does that do to the drift of an attitude-holding vehicle?
 :::
 
 ::: answer
-The centre of pressure is forward of the centre of gravity, so the normal force turns the nose away from the wind. To hold attitude, the engine at the tail must push the tail *away* from the wind — the same direction the normal force pushes the nose. Both forces point downwind, and the net sideways force is $N(1 + \ell_\alpha/\ell_T)$, about twice $N$ for the example booster. So an attitude-holding vehicle drifts downwind faster than the air alone would carry it.
+The center of pressure is forward of the center of gravity, so the normal force turns the nose away from the wind. To hold attitude, the engine at the tail must push the tail *away* from the wind — the same direction the normal force pushes the nose. Both forces point downwind, and the net sideways force is $N(1 + \ell_\alpha/\ell_T)$, about twice $N$ for the example booster. So an attitude-holding vehicle drifts downwind faster than the air alone would carry it.
 :::
 
 ::: check
@@ -294,7 +294,7 @@ Its benefit, a smaller $\bar{q}\alpha$, is only worth having when $\bar{q}$ is b
 :::
 
 ::: check
-A 30 m/s wind shear over one kilometre of altitude is crossed in three seconds at 420 m/s airspeed. Using the settled formula, what does the load-relief loop of the worked example do to the resulting $\alpha$? Why will the real peak $\bar{q}\alpha$ be higher than that?
+A 30 m/s wind shear over one kilometer of altitude is crossed in three seconds at 420 m/s airspeed. Using the settled formula, what does the load-relief loop of the worked example do to the resulting $\alpha$? Why will the real peak $\bar{q}\alpha$ be higher than that?
 :::
 
 ::: answer
@@ -410,7 +410,7 @@ Once dynamic pressure has fallen away, the closed-loop guidance switches on. It 
 :::
 
 ::: context gain-schedule A gain that follows the dynamic pressure
-The load-relief gain $K_a$ (blue) is off at lift-off, ramps up as $\bar{q}$ (grey sketch) grows, holds through the peak and ramps off again as the air thins. The times are illustrative for a vehicle whose max-Q is near 70 s.
+The load-relief gain $K_a$ (blue) is off at lift-off, ramps up as $\bar{q}$ (gray sketch) grows, holds through the peak and ramps off again as the air thins. The times are illustrative for a vehicle whose max-Q is near 70 s.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">

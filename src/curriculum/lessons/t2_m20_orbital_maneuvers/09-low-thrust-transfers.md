@@ -238,7 +238,7 @@ The catch is power. About one and a half kilowatts buys only about a tenth of a 
 ::: context all-electric-geo Half a year to geostationary orbit
 In March 2015, one Falcon 9 carried two Boeing 702SP satellites, ABS-3A and Eutelsat 115 West B. They were the first "all-electric" communications satellites: no chemical engine for orbit-raising at all. Carrying so little propellant made them light enough to launch two at once.
 
-The price was patience. They spiralled from their transfer orbit to geostationary height for about six to seven months before starting work — the time-for-mass trade of this lesson, in commercial form.
+The price was patience. They spiraled from their transfer orbit to geostationary height for about six to seven months before starting work — the time-for-mass trade of this lesson, in commercial form.
 :::
 
 ::: context chain-rule Rates that pass through a middle quantity

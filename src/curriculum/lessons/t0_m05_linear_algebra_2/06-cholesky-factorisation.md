@@ -1,9 +1,9 @@
 ---
 id: l06-cholesky-factorisation
-title: The Cholesky factorisation
+title: The Cholesky factorization
 minutes: 21
 covers:
-  - Cholesky factorisation
+  - Cholesky factorization
 ---
 
 You know that $9 = 3 \times 3$: the number $3$ is a square root of $9$. This lesson does the same thing for a matrix. It writes a positive definite matrix as a triangle times its own mirror image, $\mathbf{A} = \mathbf{L}\mathbf{L}^\mathsf{T}$. The triangle $\mathbf{L}$ acts like a square root of $\mathbf{A}$, and it is the most used factorization in all of estimation.
@@ -38,8 +38,8 @@ Rename $\mathbf{G}$ as $\mathbf{L}$. From here on, $\mathbf{L}$ means this lower
 
 It also works backwards. If $\mathbf{A} = \mathbf{L}\mathbf{L}^\mathsf{T}$ with $\mathbf{L}$ invertible, then $\mathbf{x}^\mathsf{T}\mathbf{A}\mathbf{x} = (\mathbf{L}^\mathsf{T}\mathbf{x})^\mathsf{T}(\mathbf{L}^\mathsf{T}\mathbf{x}) = \|\mathbf{L}^\mathsf{T}\mathbf{x}\|^2$. That is positive for every $\mathbf{x} \neq \mathbf{0}$, so $\mathbf{A}$ is positive definite. The two statements are equivalent.
 
-::: key The Cholesky factorisation
-Every symmetric positive definite matrix has a unique factorisation $\mathbf{A} = \mathbf{L}\mathbf{L}^\mathsf{T}$ with $\mathbf{L}$ lower triangular and positive diagonal, computed in about $n^3/3$ flops — half the cost of LU — with no pivoting. The factorisation exists if and only if $\mathbf{A}$ is positive definite, so a failed Cholesky is the standard PD test. GNC uses $\mathbf{L}$ as the covariance square root: for sigma-point generation in a UKF, and in square-root filters that keep $\mathbf{P} = \mathbf{L}\mathbf{L}^\mathsf{T}$ positive definite by construction.
+::: key The Cholesky factorization
+Every symmetric positive definite matrix has a unique factorization $\mathbf{A} = \mathbf{L}\mathbf{L}^\mathsf{T}$ with $\mathbf{L}$ lower triangular and positive diagonal, computed in about $n^3/3$ flops — half the cost of LU — with no pivoting. The factorization exists if and only if $\mathbf{A}$ is positive definite, so a failed Cholesky is the standard PD test. GNC uses $\mathbf{L}$ as the covariance square root: for sigma-point generation in a UKF, and in square-root filters that keep $\mathbf{P} = \mathbf{L}\mathbf{L}^\mathsf{T}$ positive definite by construction.
 :::
 
 ## The algorithm
@@ -312,7 +312,7 @@ The individual samples differ for the same $\mathbf{z}$. With $\mathbf{L}\mathbf
 The next lesson turns to calculus. The normal equations that Cholesky is so often asked to solve come from setting a gradient to zero. And the Jacobians $\mathbf{F}$ and $\mathbf{H}$ that a Kalman filter sandwiches its covariance between are matrices of partial derivatives. Lesson 7 is about computing those reliably.
 
 ::: context cholesky-history A surveyor's shortcut
-André-Louis Cholesky was a French army officer and surveyor. Mapping land means fitting many measured angles and distances at once — a least-squares problem — and in the early 1900s every step was done by hand. He found this factorization as a faster way to solve the equations that came out. He was killed in the First World War in 1918, before publishing it. A fellow officer, Commandant Benoît, published the method in 1924. "Factorisation" with an s is the British spelling; both appear in the literature.
+André-Louis Cholesky was a French army officer and surveyor. Mapping land means fitting many measured angles and distances at once — a least-squares problem — and in the early 1900s every step was done by hand. He found this factorization as a faster way to solve the equations that came out. He was killed in the First World War in 1918, before publishing it. A fellow officer, Commandant Benoît, published the method in 1924. "Factorization" with an s is the British spelling; both appear in the literature.
 :::
 
 ::: context lu-recap LU in one paragraph

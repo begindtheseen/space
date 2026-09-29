@@ -57,7 +57,7 @@ Each element lives in a **node**: a heap block with the key (and value, for a ma
 
 The danger is balance. Insert 1, 2, 3, … in order into a plain binary search tree and every new key goes to the right of the last one: the "tree" is a list, and a search takes $n$ steps instead of $\log_2 n$. The standard's worst-case promise rules that out, so every major library builds `std::map` and `std::set` as a **red-black tree** — a binary search tree that repairs its own shape after every insert and erase.
 
-Every node carries one extra bit, a colour, red or black, and the tree keeps three rules:
+Every node carries one extra bit, a color, red or black, and the tree keeps three rules:
 
 1. The root is black.
 2. A red node never has a red child.
@@ -69,7 +69,7 @@ Rule 3 says the black nodes are perfectly balanced. Rule 2 says red nodes can on
 Call the number of black nodes on any path from a node down to an empty spot (not counting the node itself) its **black height**, $b$. By rule 3 this is the same on every path. A subtree whose root has black height $b$ contains at least $2^b - 1$ nodes: true for an empty subtree ($b = 0$, zero nodes), and each child of a node with black height $b$ has black height at least $b - 1$, so the node plus two children's subtrees hold at least $1 + 2(2^{b-1} - 1) = 2^b - 1$. Now take the whole tree, with height $h$ nodes on its longest path. By rule 2, at least half the nodes on that path are black, so the root's black height is at least $h/2$. Therefore $n \ge 2^{h/2} - 1$, and rearranging, $h \le 2\log_2(n + 1)$. For 128 keys: $2\log_2 129 \approx 14.0$, so no search ever visits more than 14 nodes. Inserting the keys 1 to 128 in order into a libstdc++ `std::map` gave a tree 12 nodes tall — inside the bound, where a plain tree would be 128 tall.
 :::
 
-The name, and the idea, come from a **[[1978 paper|rb-history]]**; the tree for seven channel ids appears in the example below, colours and all.
+The name, and the idea, come from a **[[1978 paper|rb-history]]**; the tree for seven channel ids appears in the example below, colors and all.
 
 ::: example Opening up a map's nodes
 This program counts the heap allocations a `std::map` and a `std::set` make, using the same replaced `operator new` trick as a test harness would, and then uses the ordering:
@@ -125,7 +125,7 @@ ids from 15 to 60: 20 40 55
 Step by step:
 
 1. **One allocation per key.** Seven inserts, seven trips to the heap. There is no `reserve` for a tree.
-2. **48 bytes per node, 16 of them data.** The pair is a 2-byte key padded to 8, plus an 8-byte double: 16 bytes. The other 32 bytes are the node's bookkeeping: the colour (padded to 8 bytes) and three pointers of 8 bytes each. The tree spends twice as much memory on structure as on data.
+2. **48 bytes per node, 16 of them data.** The pair is a 2-byte key padded to 8, plus an 8-byte double: 16 bytes. The other 32 bytes are the node's bookkeeping: the color (padded to 8 bytes) and three pointers of 8 bytes each. The tree spends twice as much memory on structure as on data.
 3. **Keys come out sorted,** though they went in as 40, 12, 97, 3, 55, 71, 20.
 4. **A set node is 40 bytes:** the same 32 bytes of bookkeeping plus a 2-byte key, rounded up to a multiple of 8.
 5. **`lower_bound(15)` and `upper_bound(60)`** marked the range, and walking between them printed 20, 40 and 55 — every stored id from 15 to 60.
@@ -254,7 +254,7 @@ cold walk (all)     6422 ns        349 ns
 The other two runs gave 33 against 41 and 45 ns hot, 865 and 783 ns against 377 and 333 ns cold, and walks of 6856 and 6651 ns against 374 and 328 ns. Read it row by row.
 
 1. **Hot lookup: the map won**, 33 ns to about 42. Everything fits in the fastest cache, so pointer chasing costs little, and both do about eight comparisons. The vector's binary search is slowed by **[[branch mispredictions|branch-prediction]]**: with random keys, the processor cannot guess which half comes next.
-2. **Cold lookup: the vector won by about two times**, 388 ns to 787. Now each step down the tree is a separate trip to memory for a node that could be anywhere. The array's steps converge on a few neighbouring lines.
+2. **Cold lookup: the vector won by about two times**, 388 ns to 787. Now each step down the tree is a separate trip to memory for a node that could be anywhere. The array's steps converge on a few neighboring lines.
 3. **Cold walk: the vector won by about eighteen times**, 349 ns to 6422. The walk touches every element, and the vector's 2048 bytes arrive in 32 predictable lines, while the map visits 128 scattered nodes one pointer at a time.
 
 Sanity check: 787 ns for about 8 to 12 dependent memory reads is 65 to 100 ns each, the right size for a trip to main memory on a server. Timings vary between machines and runs; which column wins, and by roughly how much, is what repeated here.
@@ -319,7 +319,7 @@ A telemetry monitor writes `if (limits[channel] < reading) raise_alarm(channel);
 :::
 
 ::: answer
-The first time, `limits[60000]` finds no key, so it inserts one with a value-initialised `double`, 0.0 — a heap allocation inside the monitoring code. The comparison is then `0.0 < reading`, so any positive reading raises a false alarm. The second time, the key exists, so there is no new allocation, but the entry with limit 0.0 stays in the table for good and the false alarm repeats. The fix is `find` (or `contains`) and an explicit decision about unknown channels, probably rejecting the packet.
+The first time, `limits[60000]` finds no key, so it inserts one with a value-initialized `double`, 0.0 — a heap allocation inside the monitoring code. The comparison is then `0.0 < reading`, so any positive reading raises a false alarm. The second time, the key exists, so there is no new allocation, but the entry with limit 0.0 stays in the table for good and the false alarm repeats. The fix is `find` (or `contains`) and an explicit decision about unknown channels, probably rejecting the packet.
 :::
 
 ::: check
@@ -335,7 +335,7 @@ A mission planner stores upcoming ground-station passes keyed by start time, add
 :::
 
 ::: answer
-In the planner, yes: keys arrive and leave at run time, the container must stay sorted, and "first pass after t" is `upper_bound(t)`, logarithmic and exact. It runs on the ground or in a slow background task, so the allocations are acceptable. In the attitude loop, no: every new key allocates a node, which the no-allocation-after-initialisation rule forbids, and a lookup through scattered nodes costs a cold cache miss per level. There a fixed, sorted array built at start-up does the job.
+In the planner, yes: keys arrive and leave at run time, the container must stay sorted, and "first pass after t" is `upper_bound(t)`, logarithmic and exact. It runs on the ground or in a slow background task, so the allocations are acceptable. In the attitude loop, no: every new key allocates a node, which the no-allocation-after-initialization rule forbids, and a lookup through scattered nodes costs a cold cache miss per level. There a fixed, sorted array built at start-up does the job.
 :::
 
 ## Summary
@@ -388,11 +388,11 @@ A left rotation at node x lifts its right child y into x's place. x becomes y's 
 :::
 
 ::: context rb-history Where red-black trees come from
-Rudolf Bayer described the underlying structure in 1972 under the name "symmetric binary B-trees". Leonidas Guibas and Robert Sedgewick recast it in 1978 in a paper titled "A dichromatic framework for balanced trees", which introduced the two colours; "dichromatic" means two-coloured. The standard does not require a red-black tree, only the guarantees, but in practice libstdc++, LLVM's libc++ and Microsoft's library all use one.
+Rudolf Bayer described the underlying structure in 1972 under the name "symmetric binary B-trees". Leonidas Guibas and Robert Sedgewick recast it in 1978 in a paper titled "A dichromatic framework for balanced trees", which introduced the two colors; "dichromatic" means two-colored. The standard does not require a red-black tree, only the guarantees, but in practice libstdc++, LLVM's libc++ and Microsoft's library all use one.
 :::
 
 ::: context rb-picture The seven channel ids, as a tree
-Reading libstdc++'s own node colours and parent pointers after inserting 40, 12, 97, 3, 55, 71 and 20 gives this tree. Black nodes are dark, red nodes red. Every path from the root down has two black nodes, and no red node has a red child.
+Reading libstdc++'s own node colors and parent pointers after inserting 40, 12, 97, 3, 55, 71 and 20 gives this tree. Black nodes are dark, red nodes red. Every path from the root down has two black nodes, and no red node has a red child.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
@@ -426,7 +426,7 @@ A processor can have many memory reads in flight at once, as long as it knows th
 :::
 
 ::: context branch-prediction Guessing which way the code goes
-A modern processor starts working on the instructions after an `if` before it knows the answer, betting on the way the branch went recently. A correct bet costs nothing; a wrong one throws away the partial work, typically 15 to 20 cycles. A binary search over random keys is a string of coin-flip branches, so it loses many bets. The map's search has branches too, but its time was also being spent waiting for nodes, so the lost bets overlap with waiting. Branch-free versions of binary search exist, and are a later optimisation topic.
+A modern processor starts working on the instructions after an `if` before it knows the answer, betting on the way the branch went recently. A correct bet costs nothing; a wrong one throws away the partial work, typically 15 to 20 cycles. A binary search over random keys is a string of coin-flip branches, so it loses many bets. The map's search has branches too, but its time was also being spent waiting for nodes, so the lost bets overlap with waiting. Branch-free versions of binary search exist, and are a later optimization topic.
 :::
 
 ::: context strict-weak What "the same key" means to a map

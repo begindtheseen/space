@@ -168,7 +168,7 @@ Matrix<T, R, C> operator*(const Matrix<T, R, K>& a, const Matrix<T, K, C>& b) {
 
 The trick is one letter. `K` appears **twice**: as the column count of `a` and as the row count of `b`. When you write `A * B`, the compiler deduces the template parameters from both arguments, exactly as `clamp_to` did last lesson. `A`'s type votes for a value of `K`; `B`'s type votes for a value of `K`. If the votes agree, the function exists, and its return type `Matrix<T, R, C>` has the right shape automatically. If they disagree, deduction fails, there is no `operator*` for that pair, and the program does not compile. There is no run-time check inside the function, because by the time it runs, the shapes are already known to be right.
 
-`T s{}` — read "T `s`, value-initialised" — starts the sum at zero for any arithmetic `T`.
+`T s{}` — read "T `s`, value-initialized" — starts the sum at zero for any arithmetic `T`.
 
 ::: example Rotating a body vector, and a product that cannot compile
 A spacecraft measures a vector in its own **body frame** and needs it in the navigation frame. A **[[rotation matrix|dcm]]** does that. Here the body is turned $90^\circ$ about the $z$ axis.
@@ -281,7 +281,7 @@ struct DynMatrix {
 
 1. **No allocation.** A `Matrix<double, 3, 3>` is 72 bytes of doubles sitting inside the object — on the stack if it is a local variable. A `DynMatrix` is 40 bytes of bookkeeping (two sizes and a vector's three pointers) whose numbers live on the heap. Every product that returns a new `DynMatrix` calls the allocator, and a flight rule set commonly [[forbids that after start-up|no-heap]] anyway.
 2. **No run-time shape check.** The dynamic multiply must compare `a.cols` with `b.rows` every call and decide what to do if they differ. The template version has nothing to compare.
-3. **Known loop bounds.** With `K = 3` written into the type, the innermost loop is "exactly three times". The optimiser can **[[unroll|unroll-vectorise]]** it — replace the loop with three copies of its body — and then pack independent multiplications into single instructions that do two or four at once, which is called **vectorising**. With bounds that are run-time numbers, it has to keep the loops as loops.
+3. **Known loop bounds.** With `K = 3` written into the type, the innermost loop is "exactly three times". The optimizer can **[[unroll|unroll-vectorise]]** it — replace the loop with three copies of its body — and then pack independent multiplications into single instructions that do two or four at once, which is called **vectorizing**. With bounds that are run-time numbers, it has to keep the loops as loops.
 
 ::: example Measuring it, honestly
 The benchmark multiplies a batch of 1000 different 3-by-3 matrices by one fixed 3-by-3 matrix, 2000 times over — two million products per timing — and keeps the best of five runs. It times three versions: the template; a dynamic multiply that returns a freshly allocated result; and the same dynamic loops writing into a result the caller already owns, so there is no allocation.
@@ -394,18 +394,18 @@ sizes 72 and 40 bytes; checksums 2899.250 2899.250
 Read the three lines as a story.
 
 1. Taking the allocation away (line 2 to line 3) saved about $29.8 - 18.4 = 11.4\,\mathrm{ns}$ per product. That is the cost of asking the heap for 72 bytes and giving them back.
-2. Knowing the sizes (line 3 to line 1) saved another $18.4 - 4.3 = 14.1\,\mathrm{ns}$. That is unrolling and vectorising. Looking at the machine code g++ produced for the 3-by-3 product shows it: no loops at all, and the 27 multiplications done as 12 two-at-a-time instructions plus 3 single ones, $12 \times 2 + 3 = 27$.
+2. Knowing the sizes (line 3 to line 1) saved another $18.4 - 4.3 = 14.1\,\mathrm{ns}$. That is unrolling and vectorizing. Looking at the machine code g++ produced for the 3-by-3 product shows it: no loops at all, and the 27 multiplications done as 12 two-at-a-time instructions plus 3 single ones, $12 \times 2 + 3 = 27$.
 3. Overall the fixed version is about $29.8 / 4.3 \approx 6.9$ times faster than the naive dynamic one.
 
 The checksums match, so all versions computed the same numbers.
 
-Now the honest part. The same program built with `-O2` instead of `-O3` gave about 27 ns for the fixed version — slower than the dynamic one with no allocation. g++ 13 at `-O2` left the three loops as loops, so the known sizes bought nothing. clang 18 at `-O2` did unroll, and gave about 4 ns. The fixed size makes the fast code *possible*; the optimiser still has to write it. So measure with the compiler and flags you will fly, and treat these numbers as one machine's, which will vary on yours.
+Now the honest part. The same program built with `-O2` instead of `-O3` gave about 27 ns for the fixed version — slower than the dynamic one with no allocation. g++ 13 at `-O2` left the three loops as loops, so the known sizes bought nothing. clang 18 at `-O2` did unroll, and gave about 4 ns. The fixed size makes the fast code *possible*; the optimizer still has to write it. So measure with the compiler and flags you will fly, and treat these numbers as one machine's, which will vary on yours.
 :::
 
 That is exactly why fixed-size types are the default for small matrices in flight code, and why [[Eigen, the matrix library|eigen]] behind many GNC projects offers `Matrix3d` alongside its dynamic `MatrixXd`.
 
 ::: key
-A fixed-size `Matrix<double,3,3>` multiply beats a dynamically sized one because the sizes are compile-time constants: the storage sits in the object (no heap allocation), there is no run-time size check, and the loops can be unrolled and vectorised.
+A fixed-size `Matrix<double,3,3>` multiply beats a dynamically sized one because the sizes are compile-time constants: the storage sits in the object (no heap allocation), there is no run-time size check, and the loops can be unrolled and vectorized.
 :::
 
 ## Check yourself
@@ -480,7 +480,7 @@ T trace(const Matrix<T, N, N>& a);
 | shared `K` in `operator*` | `(R×K)·(K×C) → R×C` | mismatch means deduction of `K` fails: no viable `operator*` |
 | `static_assert` version | separate `K1`, `K2`, then check | readable message; but the operator then "exists" for every pair |
 | compile-time vs runtime check | build fails vs maybe fires | a type error cannot reach flight |
-| fixed-size speed | no heap, no shape check, known loop bounds | unrolled and vectorised — when the optimiser does it; measure |
+| fixed-size speed | no heap, no shape check, known loop bounds | unrolled and vectorized — when the optimizer does it; measure |
 
 The next lesson lets a template take not one or two parameters but any number of them. That is how `std::tuple` holds any mix of types and how one telemetry logger can accept any list of fields.
 
@@ -536,7 +536,7 @@ On 4 June 1996, the first Ariane 5 broke up about 37 seconds after lift-off. The
 :::
 
 ::: context no-heap Why flight code avoids the heap
-Gerard Holzmann's "Power of Ten" rules for safety-critical code, written at NASA's Jet Propulsion Laboratory, include: do not use dynamic memory allocation after initialisation. The heap's timing is hard to bound, it can fragment until a request fails, and every allocation is a chance for a leak or a use-after-free. Many aerospace coding standards carry a similar rule. A `Matrix<double, 3, 3>` meets it without effort, because its storage is part of the object.
+Gerard Holzmann's "Power of Ten" rules for safety-critical code, written at NASA's Jet Propulsion Laboratory, include: do not use dynamic memory allocation after initialization. The heap's timing is hard to bound, it can fragment until a request fails, and every allocation is a chance for a leak or a use-after-free. Many aerospace coding standards carry a similar rule. A `Matrix<double, 3, 3>` meets it without effort, because its storage is part of the object.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
@@ -562,8 +562,8 @@ Gerard Holzmann's "Power of Ten" rules for safety-critical code, written at NASA
 ```
 :::
 
-::: context unroll-vectorise Unrolling and vectorising, drawn
-Unrolling replaces "do this three times" with the three copies written out, so there is no counter, no comparison and no jump. Vectorising then notices independent multiplications and does them in one instruction on a wide register. An SSE2 register holds two doubles, so one `mulpd` instruction multiplies two pairs at once; newer AVX registers hold four.
+::: context unroll-vectorise Unrolling and vectorizing, drawn
+Unrolling replaces "do this three times" with the three copies written out, so there is no counter, no comparison and no jump. Vectorizing then notices independent multiplications and does them in one instruction on a wide register. An SSE2 register holds two doubles, so one `mulpd` instruction multiplies two pairs at once; newer AVX registers hold four.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">

@@ -127,7 +127,7 @@ Walk through it. The fake gyro drops out whenever `cycle % 7 == 3` — the remai
 
 `update_attitude` checks `read_gyro`'s status. If it is not `Ok`, it hands the same status straight back and never touches the angle. Only on success does it add $\text{rate} \times dt$. Check cycle 4: the rate is $0.04$ rad/s, times $dt = 0.1$ s is $0.004$ rad, and $0.0030 + 0.004 = 0.0070$. That matches.
 
-So a failed read leaves the estimate exactly where it was. That is the **[[hold last good value|hold-last-good]]** behaviour a control loop wants during a one-cycle dropout. The caller counts faults, and could equally switch to a **[[redundant gyro|redundant-sensors]]** after three in a row.
+So a failed read leaves the estimate exactly where it was. That is the **[[hold last good value|hold-last-good]]** behavior a control loop wants during a one-cycle dropout. The caller counts faults, and could equally switch to a **[[redundant gyro|redundant-sensors]]** after three in a row.
 
 Every path is visible. Now try to cheat: call `update_attitude(cycle, 0.1, angle);` as a bare statement, throwing the status away. The compiler says
 
@@ -291,7 +291,7 @@ int main() {
 
 Check the good packet by hand. Its four payload bytes are stored lowest byte first, so the value is $0x2710$, and $0x2710 = 2 \times 4096 + 7 \times 256 + 1 \times 16 = 10\,000$. At 1 mbar per count that is $10.000$ bar. Its checksum is the byte sum $0x10 + 0x27 = 0x37$, which matches. The "corrupt" packet carries $0x38$ instead, so it fails. The "huge" packet decodes to $0x100000 = 1\,048\,576$ mbar, about $1049$ bar, which is over the 400 bar limit.
 
-Notice the division of labour. `tank_pressure_bar` neither knows nor cares which check `decode` failed; it forwards the `Error`. `main` is the level with the context to print it — or, in flight, to log it and mark the sensor suspect.
+Notice the division of labor. `tank_pressure_bar` neither knows nor cares which check `decode` failed; it forwards the `Error`. `main` is the level with the context to print it — or, in flight, to log it and mark the sensor suspect.
 
 `std::get` on the wrong alternative throws. That is why `value()` and `error()` state their preconditions and callers test `ok()` first. A flight version would check those preconditions with the kind of assertion in the next section.
 :::
@@ -307,7 +307,7 @@ Status codes are for failures you *expect*. A sensor will time out sooner or lat
 The standard `assert`, from the `cassert` header, prints a message and aborts when its condition is false. It is also removed completely when the program is compiled with `-DNDEBUG` ("no debug"). Both of those are wrong for flight:
 
 - A crash in flight is the worst possible response to one bad value. **[[Ariane 5's first flight|ariane-501]]** was lost that way.
-- The flight build *is* the optimised build, where `NDEBUG` is usually defined. An assertion that vanishes there protects only the developer's laptop.
+- The flight build *is* the optimized build, where `NDEBUG` is usually defined. An assertion that vanishes there protects only the developer's laptop.
 
 So flight projects define their own assertion, as a macro — the one use of the preprocessor every flight coding standard allows. It never compiles out. When it fires, it *records* the fault — a counter, the failed expression, the line number — for telemetry and for the fault manager. Then it lets the function carry on with a safe value, so the loop meets its deadline and the vehicle keeps flying while a higher level decides what to do.
 
@@ -374,7 +374,7 @@ Under `-fno-exceptions`, `std::optional::value()`, `std::vector::at()`, `std::ge
 :::
 
 ::: warning
-`assert` disappears with `-DNDEBUG`, which most release configurations define, so an `assert` that guards a flight computation guards nothing on the vehicle. Use the project's assertion macro in flight code; keep `assert` for tests and tooling, where an abort is the behaviour you want.
+`assert` disappears with `-DNDEBUG`, which most release configurations define, so an `assert` that guards a flight computation guards nothing on the vehicle. Use the project's assertion macro in flight code; keep `assert` for tests and tooling, where an abort is the behavior you want.
 :::
 
 ## Choosing the mechanism

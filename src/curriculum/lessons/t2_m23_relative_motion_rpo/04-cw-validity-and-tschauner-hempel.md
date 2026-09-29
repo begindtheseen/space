@@ -46,7 +46,7 @@ Use this module's reference orbit: $r_0 = 6791\,\mathrm{km}$, $n = 1.1282\times1
 
 For each separation $d$, start the chaser at $x_0 = d$ (straight above the target) with in-track velocity $\dot y_0 = -2nd$ and everything else zero. That puts it on a closed loop around the target, the 2:1 ellipse that lesson 6 explains in full. The point of this choice is that the loop's size grows in step with $d$, so bigger $d$ really does mean "farther away".
 
-Here is the position error, in metres, at several times (in fractions of an orbit):
+Here is the position error, in meters, at several times (in fractions of an orbit):
 
 | Separation | 0.05 $T$ | 0.25 $T$ | 0.50 $T$ | 1 $T$ | 2 $T$ | 3 $T$ | 5 $T$ |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -71,17 +71,17 @@ $$
 confirmed from 100 m to 50 km of separation (within about 2% even at 50 km, where the $d^2$ scaling begins to show its own higher-order correction).
 :::
 
-The dot over $\varepsilon$ means "rate of change": metres of error added per orbit.
+The dot over $\varepsilon$ means "rate of change": meters of error added per orbit.
 
 ### What that means for an approach
 
 Now you can say plainly where CW can be trusted.
 
-- **At 100 m**, the error does not reach 1 m until about 72 orbits — nearly five days. For any real close-in operation, CW is good to well under a metre.
+- **At 100 m**, the error does not reach 1 m until about 72 orbits — nearly five days. For any real close-in operation, CW is good to well under a meter.
 - **At 1 km**, the error passes 1 m after only 0.57 orbits, about 53 minutes. Fine for a single transfer; tight for anything longer.
-- **At 10 km**, the error is past 2 m within $0.05\,T$, under five minutes. At that range CW is a planning tool, not a metre-level guidance model.
+- **At 10 km**, the error is past 2 m within $0.05\,T$, under five minutes. At that range CW is a planning tool, not a meter-level guidance model.
 
-This is why real rendezvous profiles use CW-style targeting at kilometre ranges, then switch to **[[closed-loop|closed-loop]]** guidance — steering by fresh sensor measurements — once inside a few hundred metres. They do not trust a single open-loop CW prediction there for more than the shortest times.
+This is why real rendezvous profiles use CW-style targeting at kilometer ranges, then switch to **[[closed-loop|closed-loop]]** guidance — steering by fresh sensor measurements — once inside a few hundred meters. They do not trust a single open-loop CW prediction there for more than the shortest times.
 
 ::: example Reading the table as a design rule
 A planner wants to know whether a 30-minute transfer computed with CW, starting 1 km out, stays accurate to 1 m the whole way.
@@ -129,7 +129,7 @@ $$
 \dot\theta = n\,\frac{(1 + e\cos f)^2}{(1-e^2)^{3/2}},
 $$
 
-where $f$ is the **true anomaly**, the angle travelled since periapsis. It follows from the conservation of angular momentum, $r^2\dot\theta = h$, which you met in the two-body module.
+where $f$ is the **true anomaly**, the angle traveled since periapsis. It follows from the conservation of angular momentum, $r^2\dot\theta = h$, which you met in the two-body module.
 
 **At periapsis**, $f = 0$ and $\cos f = 1$:
 
@@ -168,7 +168,7 @@ $$
 \end{aligned}
 $$
 
-Here $r_t$ is the target's distance from Earth's centre, $r_c$ the chaser's, $\dot\theta$ the frame's turning rate, and $\ddot\theta$ ("theta double-dot") how fast that rate is changing.
+Here $r_t$ is the target's distance from Earth's center, $r_c$ the chaser's, $\dot\theta$ the frame's turning rate, and $\ddot\theta$ ("theta double-dot") how fast that rate is changing.
 
 **Step 1: linearize gravity, as before.** Lesson 2's small-separation algebra never used the fact that $r_t$ was constant. So the right-hand sides become $2(\mu/r_t^3)\,x$, then $-(\mu/r_t^3)\,y$, then $-(\mu/r_t^3)\,z$ — the same as before.
 
@@ -234,7 +234,7 @@ The eccentric test started at periapsis. Would starting at apoapsis, or anywhere
 :::
 
 ::: answer
-No. The trouble is that $r_t$ and $\dot\theta$ vary around the orbit while CW holds them fixed. That variation belongs to the whole orbit, not to the starting point. Starting elsewhere changes which part of the variation you meet first, not whether you meet it. Periapsis was chosen only because it is a clean, repeatable place to start (true anomaly zero), not because it favours CW.
+No. The trouble is that $r_t$ and $\dot\theta$ vary around the orbit while CW holds them fixed. That variation belongs to the whole orbit, not to the starting point. Starting elsewhere changes which part of the variation you meet first, not whether you meet it. Periapsis was chosen only because it is a clean, repeatable place to start (true anomaly zero), not because it favors CW.
 :::
 
 ::: check
@@ -266,7 +266,7 @@ No. At $e = 0.05$ the turning rate swung by about 22% between periapsis and apoa
 | Yamanaka-Ankersen (2002) | Closed-form state transition matrix for the Tschauner-Hempel equations |
 | Two independent error sources | Separation ($\propto d^2$, present even for $e=0$) and eccentricity (present even for small $d$) — fixing one leaves the other |
 
-With CW's range now measured instead of assumed, the next two lessons step back inside it. They use the closed-form solution to explain the two most important behaviours of relative motion: why some starting states drift away forever while others do not, and why firing forward leaves you behind.
+With CW's range now measured instead of assumed, the next two lessons step back inside it. They use the closed-form solution to explain the two most important behaviors of relative motion: why some starting states drift away forever while others do not, and why firing forward leaves you behind.
 
 ::: context linearizing Swapping a curve for a straight line
 Gravity weakens as one over distance squared: a curve. Near the target's radius, CW replaces that curve with the straight line touching it there. Close in, you cannot tell them apart. Farther out, the gap opens — and it opens like the distance *squared*, which is exactly the $d^2$ in this lesson's error table.
@@ -309,7 +309,7 @@ A CW prediction flown open loop inherits every error in the model. Close in, a v
 :::
 
 ::: context eccentricity How round is e = 0.05?
-Here is an orbit with $e = 0.05$ (solid) drawn over a circle of the same average size (dashed), to scale. The oval is only about 0.1% narrower than it is long. What *does* show is that Earth, marked by the dot, sits off-centre, at a **focus** of the ellipse. That offset, $ae = 340\,\mathrm{km}$ here, is what makes the target speed up and slow down.
+Here is an orbit with $e = 0.05$ (solid) drawn over a circle of the same average size (dashed), to scale. The oval is only about 0.1% narrower than it is long. What *does* show is that Earth, marked by the dot, sits off-center, at a **focus** of the ellipse. That offset, $ae = 340\,\mathrm{km}$ here, is what makes the target speed up and slow down.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">

@@ -58,7 +58,7 @@ For the *calculations* of GNC it usually is not. Seven digits are not enough for
 - **Long integrations.** Every step of a simulation rounds. With 7 digits, those roundings pile up quickly, as the next example shows.
 
 ::: key float32 vs float64 in a GNC context
-float32 has about seven decimal digits, which is not enough for ECI positions in metres or for long-horizon integration. Use float64 by default and drop to float32 only for bulk storage or a memory-bound stage you have measured.
+float32 has about seven decimal digits, which is not enough for ECI positions in meters or for long-horizon integration. Use float64 by default and drop to float32 only for bulk storage or a memory-bound stage you have measured.
 :::
 
 ::: example A clock kept in float32
@@ -156,7 +156,7 @@ Two more details. `nan` is never close to anything, including itself, unless you
 
 ## Catastrophic cancellation
 
-Measure the heights of two skyscrapers to the nearest meter: $442\,\mathrm{m}$ and $443\,\mathrm{m}$. Subtract and you get $1\,\mathrm{m}$. But each measurement could be off by half a meter, so the real difference could be anywhere from $0$ to $2\,\mathrm{m}$. The subtraction itself was exact. What happened is that the leading digits, the ones you knew well, cancelled, and what is left is mostly the uncertainty you started with.
+Measure the heights of two skyscrapers to the nearest meter: $442\,\mathrm{m}$ and $443\,\mathrm{m}$. Subtract and you get $1\,\mathrm{m}$. But each measurement could be off by half a meter, so the real difference could be anywhere from $0$ to $2\,\mathrm{m}$. The subtraction itself was exact. What happened is that the leading digits, the ones you knew well, canceled, and what is left is mostly the uncertainty you started with.
 
 Floats do this too. **Catastrophic cancellation** is the loss of accuracy when you subtract two nearly equal floating-point numbers: the matching leading digits cancel, and the few digits left are mostly rounding error.
 
@@ -184,7 +184,7 @@ print(x**2 / 2)
 # [5.e-05 5.e-09 5.e-13 5.e-17]
 ```
 
-At $x = 10^{-2}$ both agree. At $10^{-6}$ the subtraction is already wrong in the fifth digit ($5.00044$ instead of $5.00000$). At $10^{-8}$ it returns exactly zero — $\cos(10^{-8})$ rounds to $1.0$, and every digit cancelled. The rewritten form is right everywhere. In float32 the naive form is already zero at $x = 10^{-4}$.
+At $x = 10^{-2}$ both agree. At $10^{-6}$ the subtraction is already wrong in the fifth digit ($5.00044$ instead of $5.00000$). At $10^{-8}$ it returns exactly zero — $\cos(10^{-8})$ rounds to $1.0$, and every digit canceled. The rewritten form is right everywhere. In float32 the naive form is already zero at $x = 10^{-4}$.
 
 You meet this whenever you work out the angle between two nearly parallel directions — a star tracker's pointing error, say. `np.arccos(a @ b)` for unit vectors 10 nanoradians apart returns exactly $0$, because the dot product rounds to $1.0$. `np.arctan2(np.linalg.norm(np.cross(a, b)), a @ b)` returns $1.0 \times 10^{-8}$, correct, because it never subtracts from $1$.
 

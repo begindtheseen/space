@@ -396,7 +396,7 @@ WGS84, the World Geodetic System of 1984, is the reference that GPS uses. It def
 :::
 
 ::: context latitude-picture Two latitudes, drawn
-An ellipse much flatter than Earth, so the effect is visible. The normal to the surface (blue) crosses the equator away from the center; the radius (grey) runs to the center.
+An ellipse much flatter than Earth, so the effect is visible. The normal to the surface (blue) crosses the equator away from the center; the radius (gray) runs to the center.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210" font-family="Inter, Arial, sans-serif">

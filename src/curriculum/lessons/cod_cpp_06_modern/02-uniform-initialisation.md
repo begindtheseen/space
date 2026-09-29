@@ -1,14 +1,14 @@
 ---
 id: l02-uniform-initialisation
-title: Brace initialisation and the initializer_list trap
+title: Brace initialization and the initializer_list trap
 minutes: 22
 covers:
-  - Uniform initialisation and the initializer_list gotcha
+  - Uniform initialization and the initializer_list gotcha
 ---
 
 Picture a universal remote control. You had three remotes, one for the TV, one for the speaker and one for the streaming box, each with its own buttons. The universal remote promises one set of buttons for all of them. It mostly works. Then one day you press "3" to pick a channel on one particular TV, and it sets the volume to 3 instead, because that TV's maker gave the button a special meaning.
 
-C++11's **brace initialisation** is that universal remote. Before it, C++ had several different ways to give an object its first value, and each one worked in some places and not others. Braces, `{ }`, were meant to work everywhere, for every type. They almost do. They also add a safety check the old forms lacked. And there is one button with a special meaning: when a class has a constructor that takes a list, braces press that one first.
+C++11's **brace initialization** is that universal remote. Before it, C++ had several different ways to give an object its first value, and each one worked in some places and not others. Braces, `{ }`, were meant to work everywhere, for every type. They almost do. They also add a safety check the old forms lacked. And there is one button with a special meaning: when a class has a constructor that takes a list, braces press that one first.
 
 Last lesson toured C++11 as a whole. This lesson takes its most surprising feature on its own. You met braces in the basics module (lesson 6) and in the RAII module (lesson 1). Here we pull the rules together, including the one trap every C++ programmer falls into at least once.
 
@@ -24,14 +24,14 @@ std::vector<int> v;        // no way to give a vector its elements here
 v.push_back(1);            // ... so you added them one at a time
 ```
 
-C++11 lets you use braces for all of them: `int a{5};`, `std::vector<int> v{1, 2, 3};`, a struct `Vec3 p{0.0, 0.0, 9.81};`, a temporary `draw(Vec3{1.0, 2.0, 3.0})`, a returned value `return {x, y, z};`, a heap object `new Vec3{...}`, and a member in a constructor's initialiser list, `x_{x}`. The official name for this is **[[list-initialisation|list-init-name]]**; "uniform initialisation" was the nickname it launched with.
+C++11 lets you use braces for all of them: `int a{5};`, `std::vector<int> v{1, 2, 3};`, a struct `Vec3 p{0.0, 0.0, 9.81};`, a temporary `draw(Vec3{1.0, 2.0, 3.0})`, a returned value `return {x, y, z};`, a heap object `new Vec3{...}`, and a member in a constructor's initializer list, `x_{x}`. The official name for this is **[[list-initialization|list-init-name]]**; "uniform initialization" was the nickname it launched with.
 
 There are two brace forms, and the difference is small but real:
 
-- `T x{args};` is **direct-list-initialisation**. It may call any constructor, including one marked `explicit`.
-- `T x = {args};` is **copy-list-initialisation**. It may not call an `explicit` constructor, the same way `T x = value;` may not (RAII module, lesson 1).
+- `T x{args};` is **direct-list-initialization**. It may call any constructor, including one marked `explicit`.
+- `T x = {args};` is **copy-list-initialization**. It may not call an `explicit` constructor, the same way `T x = value;` may not (RAII module, lesson 1).
 
-Empty braces are special and useful. `double x{};` sets `x` to zero, and `Vec3 p{};` sets every member to zero. This is called **value-initialisation**: for a class with a constructor you wrote, it calls the default constructor; for everything else, it zero-fills. One pair of braces removes the whole class of "read an uninitialised variable" bugs.
+Empty braces are special and useful. `double x{};` sets `x` to zero, and `Vec3 p{};` sets every member to zero. This is called **value-initialization**: for a class with a constructor you wrote, it calls the default constructor; for everything else, it zero-fills. One pair of braces removes the whole class of "read an uninitialised variable" bugs.
 
 ## Braces refuse narrowing
 
@@ -114,7 +114,7 @@ error: request for member 'start' in 't', which is of non-class type 'Timer(Cloc
 The fix is in the compiler's own note. `Timer t{Clock{}};` cannot be a function declaration, because a function's parameter list is never written in braces. With that one change the program compiles and prints `42`.
 
 ::: key Braces
-`{}` works for every kind of initialisation, refuses narrowing conversions (a constant that fits is allowed), value-initialises with empty braces, and can never be parsed as a function declaration.
+`{}` works for every kind of initialization, refuses narrowing conversions (a constant that fits is allowed), value-initializes with empty braces, and can never be parsed as a function declaration.
 :::
 
 ## The initializer_list gotcha
@@ -173,7 +173,7 @@ Go through the six lines.
 
 1. `a(10, 1)`: parentheses never look at the list constructor, so this is `vector(count, value)`: ten ones.
 2. `b{10, 1}`: braces try the list constructor first. `{10, 1}` is a perfectly good list of `int`, so it wins: two elements, 10 and 1.
-3. `c(10)`: `vector(count)`, ten value-initialised `int`s, all zero.
+3. `c(10)`: `vector(count)`, ten value-initialized `int`s, all zero.
 4. `d{10}`: a list of one `int`. One element, 10. This is the line that turns "reserve room for ten samples" into a one-sample vector.
 5. `e{}`: empty braces are the one exception. They mean "default constructor", not "empty list". (Both give an empty vector here, so you only see the difference in your own classes.)
 6. `s{3}`: a `std::string` cannot be made from the number 3, so a list of strings is not viable. Only then does the compiler fall back to the other constructors, and `vector(count)` makes three empty strings.
@@ -228,15 +228,15 @@ The line to watch is `b`. As C++11 was first published, `auto b{1};` made `b` a 
 `auto limit = {5.0};` does not make a `double`. It makes a `std::initializer_list<double>`, and `limit * 2.0` will not compile. With `auto`, write `auto limit = 5.0;` or `auto limit{5.0};`, never `= { }`.
 :::
 
-## Aggregate initialisation
+## Aggregate initialization
 
 An **aggregate** is a plain bundle of data: an array, or a class with no constructors you declared, no private or protected data members, no virtual functions and no virtual base classes. Aggregates do not need a constructor to be filled with braces. The values go into the members in declaration order, and the rules for **[[what counts as an aggregate|aggregate-history]]** have loosened with each standard.
 
 Three rules do most of the work:
 
-- **Missing members are value-initialised.** `Gains g{1.5};` sets the first member to 1.5 and the rest to zero (or to their default member initialiser, if they have one).
+- **Missing members are value-initialized.** `Gains g{1.5};` sets the first member to 1.5 and the rest to zero (or to their default member initializer, if they have one).
 - **Nested braces fill nested aggregates.** A `Vec3` inside a struct takes its own `{x, y, z}`. You may leave the inner braces out — **brace elision** — which is why `std::array<int, 4> counts{1, 2};` works: `std::array` is a struct holding a C array, and the one pair of braces reaches through it.
-- **Since C++14, an aggregate may have default member initialisers**, like `std::uint8_t status = 0xFF;`. In C++11 that line stopped the struct being an aggregate at all.
+- **Since C++14, an aggregate may have default member initializers**, like `std::uint8_t status = 0xFF;`. In C++11 that line stopped the struct being an aggregate at all.
 
 ::: example Filling an IMU sample
 ```cpp
@@ -285,16 +285,16 @@ Step by step:
 
 1. `full` names every member in declaration order: `seq`, then the gyro `Vec3` in its own braces, then the accelerometer, then `status`.
 2. `partial` stops early. The gyro's missing `z` becomes $0.0$, the whole accelerometer becomes zeros, and `status` takes its default, `0xFF`. g++ with `-Wextra` also warns `missing initializer for member 'Vec3::z' [-Wmissing-field-initializers]` for this line: legal, but perhaps not what you meant.
-3. `blank{}` value-initialises everything, and the default member initialiser still applies. No warning, because empty braces are an unmistakable request for "all defaults".
+3. `blank{}` value-initializes everything, and the default member initializer still applies. No warning, because empty braces are an unmistakable request for "all defaults".
 4. `counts{1, 2}` uses brace elision; the last two elements are zero.
 
 Sanity check: compile the same file with `-std=c++11` and g++ rejects `full` and `partial` with `no matching function for call to 'ImuSample::ImuSample(<brace-enclosed initializer list>)'`, because in C++11 the `= 0xFF` made `ImuSample` a non-aggregate. That is the C++14 rule change, observed.
 :::
 
-In telemetry code the danger in aggregate initialisation is order. `{8, {0.01, -0.02}}` depends on the member order in the struct; swap two `double` members in the header and every call site silently fills the wrong fields, with no narrowing to catch it. C++20's **[[designated initialisers|designated-bridge]]**, `ImuSample s{.seq = 8, .status = 0}`, name each member and remove that risk.
+In telemetry code the danger in aggregate initialization is order. `{8, {0.01, -0.02}}` depends on the member order in the struct; swap two `double` members in the header and every call site silently fills the wrong fields, with no narrowing to catch it. C++20's **[[designated initializers|designated-bridge]]**, `ImuSample s{.seq = 8, .status = 0}`, name each member and remove that risk.
 
 ::: key Aggregates
-An aggregate is filled in member declaration order; missing members are value-initialised or take their default member initialiser; inner braces may be elided. Since C++14 an aggregate may have default member initialisers.
+An aggregate is filled in member declaration order; missing members are value-initialized or take their default member initializer; inner braces may be elided. Since C++14 an aggregate may have default member initializers.
 :::
 
 ## A house style that avoids every trap
@@ -304,9 +304,9 @@ Put it together into habits a flight team can check in review:
 1. Use braces by default for values, structs and objects: `double x{};`, `Vec3 p{0.0, 0.0, 9.81};`. You get narrowing checks, zeroing, and no vexing parse.
 2. Use parentheses for a container's *size* or *count* constructor: `std::vector<double> buf(1000);`. Braces there would give you one element.
 3. With `auto`, use `auto x = value;` or `auto x{value};`, never `auto x = {value};`.
-4. Build with `-Werror=narrowing`, and `-Wextra` for missing-initialiser warnings.
+4. Build with `-Werror=narrowing`, and `-Wextra` for missing-initializer warnings.
 
-The C++ Core Guidelines give the same advice: rule **[[ES.23|core-guidelines]]** says to prefer the `{}` initialiser syntax, and lists the container case as its exception.
+The C++ Core Guidelines give the same advice: rule **[[ES.23|core-guidelines]]** says to prefer the `{}` initializer syntax, and lists the container case as its exception.
 
 ## Check yourself
 
@@ -321,7 +321,7 @@ For each line, give the number of elements and their values: `std::vector<double
 
 `r{4}`: a list of one `int`: one element, `4`.
 
-`s(4)`: count 4, value-initialised: four elements, `0 0 0 0`.
+`s(4)`: count 4, value-initialized: four elements, `0 0 0 0`.
 :::
 
 ::: check
@@ -353,7 +353,7 @@ What type does each variable get? `auto a{2.5};` `auto b = {2.5};` `auto c = {1,
 :::
 
 ::: answer
-`a` is `double`: direct-list-initialisation of `auto` with exactly one element deduces that element's type (the rule from C++17, applied by modern compilers in all modes).
+`a` is `double`: direct-list-initialization of `auto` with exactly one element deduces that element's type (the rule from C++17, applied by modern compilers in all modes).
 
 `b` is `std::initializer_list<double>`: the `=` form with braces always deduces an initializer_list.
 
@@ -365,28 +365,28 @@ What type does each variable get? `auto a{2.5};` `auto b = {2.5};` `auto c = {1,
 :::
 
 ::: answer
-`min_kpa` is `9000.0`, `max_kpa` is value-initialised to `0.0`, and `armed` takes its default member initialiser, `false`. `Limits` is still an aggregate because it has no user-declared constructors, private members or virtual functions.
+`min_kpa` is `9000.0`, `max_kpa` is value-initialized to `0.0`, and `armed` takes its default member initializer, `false`. `Limits` is still an aggregate because it has no user-declared constructors, private members or virtual functions.
 
-C++14 is the first to accept it: in C++11, the `= false` default member initialiser made `Limits` a non-aggregate, and braces would then look for a constructor that does not exist. With `-Wextra`, g++ warns `missing initializer for member 'Limits::max_kpa'`, a useful hint here, since a maximum of zero would make every reading look out of range.
+C++14 is the first to accept it: in C++11, the `= false` default member initializer made `Limits` a non-aggregate, and braces would then look for a constructor that does not exist. With `-Wextra`, g++ warns `missing initializer for member 'Limits::max_kpa'`, a useful hint here, since a maximum of zero would make every reading look out of range.
 :::
 
 ## Summary
 
 | Idea | Meaning | Rule or fact |
 | --- | --- | --- |
-| list-initialisation | `T x{args}` or `T x = {args}` | the `=` form cannot call `explicit` constructors |
-| value-initialisation | `T x{}` | zero for built-ins and aggregates; default constructor otherwise |
+| list-initialization | `T x{args}` or `T x = {args}` | the `=` form cannot call `explicit` constructors |
+| value-initialization | `T x{}` | zero for built-ins and aggregates; default constructor otherwise |
 | narrowing | a conversion that can lose information | ill-formed in braces; a constant that fits is allowed |
 | most vexing parse | `T t(U());` declares a function | braces cannot be a declaration: `T t{U{}};` |
 | initializer_list gotcha | braces prefer a list constructor | `v{3, 0}` has 2 elements; `v(3, 0)` has three zeros |
 | empty braces | `v{}` | default constructor, not an empty list |
 | `auto` with braces | `auto x{1}` and `auto x = {1}` | `int` and `std::initializer_list<int>` |
-| aggregate | plain data, filled in member order | missing members value-initialised; default member initialisers allowed since C++14 |
+| aggregate | plain data, filled in member order | missing members value-initialized; default member initializers allowed since C++14 |
 
 Next lesson turns to C++14, the smaller standard that finished what C++11 started: generic lambdas, `auto` return types, `make_unique` at last, and variable templates.
 
 ::: context list-init-name Not quite uniform
-The standard never uses the word "uniform". Its term is list-initialisation, and it splits into direct-list and copy-list forms, each with its own rules. "Uniform initialisation" was how C++11 was explained to programmers, because braces really can go in every place a starting value can. What is not uniform is the meaning: a class with an initializer_list constructor treats braces differently from one without, which is this lesson's whole trap.
+The standard never uses the word "uniform". Its term is list-initialization, and it splits into direct-list and copy-list forms, each with its own rules. "Uniform initialization" was how C++11 was explained to programmers, because braces really can go in every place a starting value can. What is not uniform is the meaning: a class with an initializer_list constructor treats braces differently from one without, which is this lesson's whole trap.
 :::
 
 ::: context narrowing-range Fits, or does not fit
@@ -450,17 +450,17 @@ An `std::initializer_list<int>` does not own anything. The compiler builds a hid
 :::
 
 ::: context auto-brace-history A rule fixed after the fact
-The original C++11 rule deduced `std::initializer_list` for any `auto` with braces, so `auto n{5};` was not an `int`, and people who had been told "prefer braces" were bitten at once. A 2014 committee paper, N3922, proposed the rules you see today: one element in direct braces gives that element's type; several elements there is an error; the `= {}` form keeps giving a list. It went into C++17, and compiler vendors applied it to older modes as a defect fix, which is why very old compilers are the only place the original behaviour survives.
+The original C++11 rule deduced `std::initializer_list` for any `auto` with braces, so `auto n{5};` was not an `int`, and people who had been told "prefer braces" were bitten at once. A 2014 committee paper, N3922, proposed the rules you see today: one element in direct braces gives that element's type; several elements there is an error; the `= {}` form keeps giving a list. It went into C++17, and compiler vendors applied it to older modes as a defect fix, which is why very old compilers are the only place the original behavior survives.
 :::
 
 ::: context aggregate-history An aggregate, standard by standard
-The definition has changed several times. In C++11, a default member initialiser disqualified a class. C++14 allowed them. C++17 allowed public, non-virtual base classes, which are filled first, in their own braces. C++20 stopped counting a class with any user-declared constructor, even one written `= default` or `= delete`, as an aggregate, and also allowed aggregates to be filled with parentheses, `Vec3 p(1.0, 2.0, 3.0)`. When legacy code upgrades its standard and a brace initialiser stops compiling, a changed aggregate rule is a likely cause.
+The definition has changed several times. In C++11, a default member initializer disqualified a class. C++14 allowed them. C++17 allowed public, non-virtual base classes, which are filled first, in their own braces. C++20 stopped counting a class with any user-declared constructor, even one written `= default` or `= delete`, as an aggregate, and also allowed aggregates to be filled with parentheses, `Vec3 p(1.0, 2.0, 3.0)`. When legacy code upgrades its standard and a brace initializer stops compiling, a changed aggregate rule is a likely cause.
 :::
 
 ::: context designated-bridge Naming the fields
-Lesson 6 of this module covers designated initialisers from C++20: `ImuSample s{.seq = 8, .gyro_rad_s = {0.01, -0.02, 0.0}}`. The names must appear in declaration order, and any you skip are value-initialised or take their defaults. They turn a reordered struct from a silent data bug into a compile error, which is why telemetry and configuration structs are their favourite use.
+Lesson 6 of this module covers designated initializers from C++20: `ImuSample s{.seq = 8, .gyro_rad_s = {0.01, -0.02, 0.0}}`. The names must appear in declaration order, and any you skip are value-initialized or take their defaults. They turn a reordered struct from a silent data bug into a compile error, which is why telemetry and configuration structs are their favorite use.
 :::
 
 ::: context core-guidelines The C++ Core Guidelines
-The C++ Core Guidelines are a free, online set of rules for modern C++, edited by Bjarne Stroustrup, who created the language, and Herb Sutter. Rules are numbered by section: ES is "expressions and statements". ES.23 recommends the `{}` initialiser syntax because it is the most widely applicable form, forbids narrowing, and avoids the vexing parse, and it names the container-size case as a place to use parentheses instead. Many static analysers can check Core Guidelines rules automatically.
+The C++ Core Guidelines are a free, online set of rules for modern C++, edited by Bjarne Stroustrup, who created the language, and Herb Sutter. Rules are numbered by section: ES is "expressions and statements". ES.23 recommends the `{}` initializer syntax because it is the most widely applicable form, forbids narrowing, and avoids the vexing parse, and it names the container-size case as a place to use parentheses instead. Many static analyzers can check Core Guidelines rules automatically.
 :::

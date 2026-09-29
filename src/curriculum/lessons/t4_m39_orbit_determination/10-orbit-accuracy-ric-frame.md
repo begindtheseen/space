@@ -173,7 +173,7 @@ Here is the three-pass fit from the batch lesson: the same $420\,\mathrm{km}$, $
 # +7 days        0.316        12.064         0.213       38.2    56.6
 ```
 
-**Step 1: read the columns.** Radial and cross-track stay below half a metre all week. They wander a little but never grow. In-track goes from $1.6\,\mathrm m$ to $12\,\mathrm m$, and the ratio $I/R$ ("I over R") climbs from about $3$ to about $38$.
+**Step 1: read the columns.** Radial and cross-track stay below half a meter all week. They wander a little but never grow. In-track goes from $1.6\,\mathrm m$ to $12\,\mathrm m$, and the ratio $I/R$ ("I over R") climbs from about $3$ to about $38$.
 
 **Step 2: check it is linear.** From day 1 to day 3, in-track sigma grows by $5.349 - 2.028 = 3.321\,\mathrm m$, which is $1.66\,\mathrm m$ per day. From day 3 to day 7 it grows by $12.064 - 5.349 = 6.715\,\mathrm m$, which is $1.68\,\mathrm m$ per day. Steady, as the runner picture promised.
 

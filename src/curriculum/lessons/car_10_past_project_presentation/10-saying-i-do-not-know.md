@@ -201,7 +201,7 @@ The next lesson builds a whole talk out of this same honesty: the project whose 
 In poker, to **bluff** is to bet as if you hold a strong hand when you do not, hoping the other players fold before anyone sees your cards. It can win a single hand. But the players at the table remember, and a player caught bluffing has every later bet doubted. An interview panel is a table where the cards always get turned over — the next follow-up question shows what you were holding.
 :::
 
-::: context trust-all-at-once One caught guess greys out everything
+::: context trust-all-at-once One caught guess grays out everything
 Before the guess, each claim you made is taken at face value. After one guess is caught, the panel cannot tell which of your claims were measured, so all of them lose value at once — including the ones that were true.
 
 ```svg

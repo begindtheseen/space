@@ -8,7 +8,7 @@ covers:
 
 You are on a road trip. You filled the tank this morning and have driven about 200 km, so from memory you think the tank is roughly half full. Then you glance at the fuel gauge, and its needle bounces over every bump: right now it says a third. What do you believe? Not only your memory, and not only the jumpy needle. You blend them, leaning toward whichever you trust more. If the gauge is famously unreliable, you lean toward your memory. If you are unsure how far you drove, you lean toward the gauge.
 
-Every estimator so far in this module started from nothing. Before the data arrived, $\mathbf{x}$ could have been anything. Real problems almost never look like that. A batch orbit determination carries a state and covariance from the previous solution. A calibration knows the sensor left the factory within its spec. A landing site is known to within a kilometre from the map before a single range is taken. **Maximum a posteriori (MAP) estimation** is the rule for blending a belief like that — a **prior**, meaning what you believed before the new data — with new measurements, using Bayes' theorem from the probability module.
+Every estimator so far in this module started from nothing. Before the data arrived, $\mathbf{x}$ could have been anything. Real problems almost never look like that. A batch orbit determination carries a state and covariance from the previous solution. A calibration knows the sensor left the factory within its spec. A landing site is known to within a kilometer from the map before a single range is taken. **Maximum a posteriori (MAP) estimation** is the rule for blending a belief like that — a **prior**, meaning what you believed before the new data — with new measurements, using Bayes' theorem from the probability module.
 
 The answer looks almost the same as weighted least squares (WLS). That is the point. MAP is what WLS becomes once you drop the "no prior information" assumption. Seeing exactly how it changes shows what a prior buys you and what it costs.
 
@@ -216,7 +216,7 @@ $$
 
 It vanishes only if $\mathbf{x}_0=\mathbf{x}$ or $\mathbf{P}_0^{-1}\to\mathbf{0}$. Lesson three's Gauss-Markov theorem promised that no *unbiased linear* estimator beats WLS in variance. MAP does not contradict that, because MAP is not unbiased. It buys lower variance by giving up exactly the property the theorem required.
 
-Is the trade worth it? Think of an archer. One archer's arrows are centred on the bullseye but scattered widely. Another's land in a tight cluster slightly off-centre. Which is better depends on the total miss. That total is the **mean squared error**:
+Is the trade worth it? Think of an archer. One archer's arrows are centered on the bullseye but scattered widely. Another's land in a tight cluster slightly off-center. Which is better depends on the total miss. That total is the **mean squared error**:
 
 $$
 \mathrm{MSE}=\lVert\text{bias}\rVert^2+\operatorname{tr}(\text{sampling covariance}),
@@ -242,7 +242,7 @@ Take the $\kappa(\mathbf{H})=1000$ problem above ($m=50$, $\sigma=0.02$, prior $
 :::
 
 ::: warning A strong, wrong prior can still hurt
-The example favoured MAP. The prior was weak — sigma $3$ per unknown — and it mattered only in a direction where WLS's own sigma is about $14$. A *strong* prior (small $\mathbf{P}_0$) placed on a direction the data measure well drags the estimate toward $\mathbf{x}_0$ whatever the data say. If $\mathbf{x}_0$ is wrong there, the bias is imposed, not merely left over from ignorance. Match the prior's confidence to how much you actually trust it, direction by direction, not to one convenient number.
+The example favored MAP. The prior was weak — sigma $3$ per unknown — and it mattered only in a direction where WLS's own sigma is about $14$. A *strong* prior (small $\mathbf{P}_0$) placed on a direction the data measure well drags the estimate toward $\mathbf{x}_0$ whatever the data say. If $\mathbf{x}_0$ is wrong there, the bias is imposed, not merely left over from ignorance. Match the prior's confidence to how much you actually trust it, direction by direction, not to one convenient number.
 :::
 
 ## Check yourself
@@ -330,7 +330,7 @@ Thomas Bayes was an English minister with a taste for mathematics. His essay on 
 :::
 
 ::: context information-adds Two blurry pictures make a sharper one
-Below, the dashed grey curve is the prior belief about the propellant ($100 \pm 15\,\mathrm{kg}$). The orange curve is what the gauge alone says ($80 \pm 25\,\mathrm{kg}$). Multiply them together, as Bayes says, and the result is the blue curve: centred at $94.7\,\mathrm{kg}$ and narrower than either, with sigma $12.9\,\mathrm{kg}$. It sits nearer the prior, because the prior is the sharper of the two. Multiplying two Gaussians always gives another Gaussian, which is why MAP with Gaussian beliefs has a closed-form answer.
+Below, the dashed gray curve is the prior belief about the propellant ($100 \pm 15\,\mathrm{kg}$). The orange curve is what the gauge alone says ($80 \pm 25\,\mathrm{kg}$). Multiply them together, as Bayes says, and the result is the blue curve: centered at $94.7\,\mathrm{kg}$ and narrower than either, with sigma $12.9\,\mathrm{kg}$. It sits nearer the prior, because the prior is the sharper of the two. Multiplying two Gaussians always gives another Gaussian, which is why MAP with Gaussian beliefs has a closed-form answer.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
@@ -369,8 +369,8 @@ A Monte Carlo experiment answers a question about randomness by simulating it ma
 In a hardware-in-the-loop test, the real flight computer runs the real flight software, but its sensors are fed signals from a simulation instead of the real sky. Because the simulation knows the true state exactly, engineers can repeat a scenario many times with fresh noise and see how the estimates scatter. That is precisely the fixed-truth question. It is why the sandwich covariance, not the posterior $\mathbf{P}$, is the right thing to compare against such a test.
 :::
 
-::: context bias-variance Tight and slightly off can beat centred and wild
-Each dot is one estimate from one run of the experiment; the bullseye is the truth. WLS (left) is unbiased — its dots centre on the bullseye — but they scatter widely. MAP (right) is a little off-centre, yet its dots cluster tightly, so on average they land closer. Statisticians call the idea "shrinkage": pulling estimates toward a sensible guess. The same trick appears in machine learning as ridge regression, and in numerical analysis as Tikhonov regularization — a prior centred at zero under a different name.
+::: context bias-variance Tight and slightly off can beat centered and wild
+Each dot is one estimate from one run of the experiment; the bullseye is the truth. WLS (left) is unbiased — its dots center on the bullseye — but they scatter widely. MAP (right) is a little off-center, yet its dots cluster tightly, so on average they land closer. Statisticians call the idea "shrinkage": pulling estimates toward a sensible guess. The same trick appears in machine learning as ridge regression, and in numerical analysis as Tikhonov regularization — a prior centered at zero under a different name.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">

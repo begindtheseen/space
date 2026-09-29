@@ -149,7 +149,7 @@ A simulated engagement flown at $N = 1.5$ shows $\dot\lambda$ rising from $1.37\
 :::
 
 ::: answer
-No — it is exactly what the closed form predicts for $N < 2$. With $N=1.5$, the exponent $N-2=-0.5$ is negative, so $\dot\lambda(t_{go}) = \dot\lambda_0(t_{go}/t_{go,0})^{-0.5}$ grows as $t_{go}$ shrinks, unboundedly as $t_{go}\to0$. $N=1.5$ still nulls the range to the stopping tolerance in this particular run because the simulation was stopped at a few metres rather than run to an exact geometric zero, but the LOS rate — and with it the commanded acceleration $NV_c\dot\lambda$ — is diverging exactly the way pursuit's did in the previous lesson. This is the practical reason $N > 2$ is a hard floor, not a suggestion.
+No — it is exactly what the closed form predicts for $N < 2$. With $N=1.5$, the exponent $N-2=-0.5$ is negative, so $\dot\lambda(t_{go}) = \dot\lambda_0(t_{go}/t_{go,0})^{-0.5}$ grows as $t_{go}$ shrinks, unboundedly as $t_{go}\to0$. $N=1.5$ still nulls the range to the stopping tolerance in this particular run because the simulation was stopped at a few meters rather than run to an exact geometric zero, but the LOS rate — and with it the commanded acceleration $NV_c\dot\lambda$ — is diverging exactly the way pursuit's did in the previous lesson. This is the practical reason $N > 2$ is a hard floor, not a suggestion.
 :::
 
 ## Summary

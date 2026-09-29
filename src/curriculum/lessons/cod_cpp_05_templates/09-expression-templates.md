@@ -313,7 +313,7 @@ In the tiny library, why does `Vec::operator=` have to be a template, and what d
 :::
 
 ::: answer
-Each different expression shape has a different type, so one ordinary `operator=(const Vec&)` could not accept them all. As a template taking `const VecExpr<E>&`, it accepts any node that derives from `VecExpr`. For `a = b + c + d`, deduction gives `E = Sum<Sum<Vec, Vec>, Vec>`, and the compiler writes a version of the loop specialised for exactly that tree, which it can then inline into one plain loop.
+Each different expression shape has a different type, so one ordinary `operator=(const Vec&)` could not accept them all. As a template taking `const VecExpr<E>&`, it accepts any node that derives from `VecExpr`. For `a = b + c + d`, deduction gives `E = Sum<Sum<Vec, Vec>, Vec>`, and the compiler writes a version of the loop specialized for exactly that tree, which it can then inline into one plain loop.
 :::
 
 ::: check

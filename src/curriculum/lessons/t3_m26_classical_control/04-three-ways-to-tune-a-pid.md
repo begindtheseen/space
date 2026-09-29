@@ -1,6 +1,6 @@
 ---
 id: l04-three-ways-to-tune-a-pid
-title: Three ways to tune a PID, and what each one optimises
+title: Three ways to tune a PID, and what each one optimizes
 minutes: 22
 covers:
   - 'PID tuning: Ziegler-Nichols, loop shaping, pole placement'
@@ -200,7 +200,7 @@ Here are all four designs on the same delayed plant, each given the same step. T
 | Loop-shaped PI | 12 000 | 24 000 | 0 | 10.0 | 62.8° | 22.1 dB | 14.8% | 1.179 s |
 | Pole-placed PI | 11 965 | 59 597 | 0 | 10.7 | 48.1° | 21.5 dB | 30.4% | 0.593 s |
 
-Read the table as a statement about what each method optimises, not about which one is best.
+Read the table as a statement about what each method optimizes, not about which one is best.
 
 Ziegler–Nichols trades margin for speed. On this plant it settles three and a half to six times faster than the loop-shaped design. That is a real advantage if you have the actuator, the structural clearance and the sample rate to support a 36–56 rad/s crossover. It is a liability if you do not.
 
@@ -209,7 +209,7 @@ Loop shaping meets a margin specification exactly, and lets the settling time fa
 Pole placement hits a time-domain target in the model it was given, and tells you nothing about margins until you go and compute them.
 
 ::: note Every method is only a starting point
-Real tuning ends with a sweep over the **[[dispersed plant|dispersions]]**: inertia, centre of gravity, actuator gain, delay and modal frequency, each pushed to its extremes and in combinations. The gains that survive that sweep are usually more conservative than any single-point method gives. The sweep is also where you find out that the margins themselves can mislead — the subject of lesson 8.
+Real tuning ends with a sweep over the **[[dispersed plant|dispersions]]**: inertia, center of gravity, actuator gain, delay and modal frequency, each pushed to its extremes and in combinations. The gains that survive that sweep are usually more conservative than any single-point method gives. The sweep is also where you find out that the margins themselves can mislead — the subject of lesson 8.
 :::
 
 ## Check yourself

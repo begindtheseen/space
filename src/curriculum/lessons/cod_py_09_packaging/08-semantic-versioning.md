@@ -27,7 +27,7 @@ When one number goes up, the ones to its right go back to zero. After `2.4.1`, a
 The "interface" in those promises has a name: the **[[public API|public-api]]**. API stands for application programming interface. It is everything a user is allowed to rely on: the importable names, the arguments of each function and their defaults, what each function returns, its units, the exceptions it raises, a command-line tool's flags, the format of files it writes. Semver is a promise about the public API, so the first step of any release is knowing what yours is. Anything not in it — a module named `_internal`, a function starting with an underscore — can change in any release.
 
 ::: key
-How do you decide a semantic version bump? Break a public interface, bump MAJOR. Add capability compatibly, bump MINOR. Fix behaviour without interface change, bump PATCH. For a simulation library, a change that alters numerical results is at minimum a MINOR and arguably a MAJOR, and must be in the changelog.
+How do you decide a semantic version bump? Break a public interface, bump MAJOR. Add capability compatibly, bump MINOR. Fix behavior without interface change, bump PATCH. For a simulation library, a change that alters numerical results is at minimum a MINOR and arguably a MAJOR, and must be in the changelog.
 :::
 
 The scheme was written down by **[[Tom Preston-Werner|semver-origin]]** at semver.org. It adds a few more rules worth knowing:

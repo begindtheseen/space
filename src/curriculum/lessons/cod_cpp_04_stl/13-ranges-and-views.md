@@ -387,7 +387,7 @@ Sanity check: three names and three rates gave three zipped lines. Had `rates` h
 
 Views fit flight code well in one way. The standard views allocate nothing, so a pipeline over a fixed buffer is allowed inside a 1 kHz loop where a `copy_if` into a growing vector is not. They also state the steps in the order they happen, which a reviewer can check against the requirement.
 
-They have costs too. Each stage is a template, so pipelines lean on the optimiser to inline everything; in an unoptimised debug build, every step is a real function call. They add compile time. Their error messages are long, though concepts help. And the dangling cases above are easy to write. A sensible house rule: build and use a pipeline in the same block, over data that block can see, and store containers, not views.
+They have costs too. Each stage is a template, so pipelines lean on the optimizer to inline everything; in an unoptimised debug build, every step is a real function call. They add compile time. Their error messages are long, though concepts help. And the dangling cases above are easy to write. A sensible house rule: build and use a pipeline in the same block, over data that block can see, and store containers, not views.
 
 ## Check yourself
 
@@ -485,7 +485,7 @@ In a Unix shell, `ls | grep log | wc -l` sends the output of `ls` into `grep`, a
 :::
 
 ::: context lazy-trace Following each sample through the pipeline
-The picture shows the eight pressure samples of the example and how far each one got. Blue boxes passed the filter and were converted; the orange one passed the filter but was never converted; red ones were rejected; grey ones were never looked at.
+The picture shows the eight pressure samples of the example and how far each one got. Blue boxes passed the filter and were converted; the orange one passed the filter but was never converted; red ones were rejected; gray ones were never looked at.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">

@@ -381,7 +381,7 @@ The only required check on `main` is `test (ubuntu-22.04, 3.11)`. The team updat
 :::
 
 ::: answer
-Required checks are matched by name. The old name is never reported again, so GitHub waits for it forever. Add a summary job with a fixed name (for example `all-checks`) that `needs:` every other job, has `if: always()` and fails if any needed job failed or was cancelled. Make only that job required. Matrix changes no longer touch the required name.
+Required checks are matched by name. The old name is never reported again, so GitHub waits for it forever. Add a summary job with a fixed name (for example `all-checks`) that `needs:` every other job, has `if: always()` and fails if any needed job failed or was canceled. Make only that job required. Matrix changes no longer touch the required name.
 :::
 
 ::: check
@@ -402,7 +402,7 @@ The tag matches the pattern `v[0-9]+.[0-9]+.[0-9]+`, so the workflow starts. The
 | Quarantine | Out of the gate, still running | marker + ticket + owner + expiry; `pytest -m "not quarantine"` |
 | Proving a fix | Enough clean runs to trust it | $n \ge \ln 0.05 / \ln(1-p)$; 149 runs for a 2% flake |
 | Branch protection | Rules GitHub enforces on `main` | PRs, approvals, required checks, up to date, no bypass |
-| Summary job | One stable required check | `needs:` all jobs, `if: always()`, fail on failure or cancelled |
+| Summary job | One stable required check | `needs:` all jobs, `if: always()`, fail on failure or canceled |
 | Semantic versioning | What a version number promises | MAJOR.MINOR.PATCH; `1.10.0` after `1.9.0` |
 | Release workflow | Tag to tested, published release | `on: push: tags:`, version check, `softprops/action-gh-release` or `gh release create` |
 

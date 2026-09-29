@@ -12,7 +12,7 @@ An orbit is that strange wheel. This lesson answers two questions. The first is 
 
 Times of flight show up all over spacecraft operations. The coast between the two burns of a transfer. The time from a de-orbit burn to **[[entry interface|entry-interface]]**. The window while a satellite is above a **[[ground station's|ground-station-pass]]** horizon. The wait while one spacecraft catches up with another before a docking. On the vehicle, the propagator is what the navigation software uses to carry the state forward between measurements, and what an onboard planner uses to look ahead. Getting these times right to the second matters; getting them right to the millisecond is routine.
 
-The lesson has three parts. First, the time-of-flight recipe for every kind of conic, with care about "wrapping". Second, the same recipe turned around into an exact propagator. Third, a test that pits that exact propagator against a numerical integrator and shows the two agree to millionths of a metre.
+The lesson has three parts. First, the time-of-flight recipe for every kind of conic, with care about "wrapping". Second, the same recipe turned around into an exact propagator. Third, a test that pits that exact propagator against a numerical integrator and shows the two agree to millionths of a meter.
 
 ## The recipe
 
@@ -164,7 +164,7 @@ Run the recipe backwards and you have a **propagator**: give it a state now and 
 
 Five of the six elements never change: in pure two-body motion the orbit itself is frozen, and only the spacecraft's place on it moves. Step 3 is the only place time enters.
 
-It is called **analytic** because every step is a formula, not a long chain of small steps. Only step 4 iterates, and it converges to the last digit the computer can hold. The result is the exact two-body state at $t_0 + \Delta t$, limited only by round-off — about $10^{-12}$ relative, or around a micrometre on a $7000\,\mathrm{km}$ orbit.
+It is called **analytic** because every step is a formula, not a long chain of small steps. Only step 4 iterates, and it converges to the last digit the computer can hold. The result is the exact two-body state at $t_0 + \Delta t$, limited only by round-off — about $10^{-12}$ relative, or around a micrometer on a $7000\,\mathrm{km}$ orbit.
 
 ### Backwards, forwards and far ahead
 
@@ -172,7 +172,7 @@ Nothing in the recipe needs $\Delta t > 0$. A negative time step subtracts from 
 
 Nor is there a limit on how far ahead you may look, and the error does not grow with the distance. Propagating a year ahead costs the same, and is as accurate, as propagating a minute ahead. One detail needs care when $\Delta t$ is large.
 
-After ten years an ISS-like satellite has made about $57\,000$ revolutions, and $n\,\Delta t$ is about $3.6 \times 10^{5}\,\mathrm{rad}$. In **[[double precision|double-precision]]** a number that size is stored to about $6 \times 10^{-11}\,\mathrm{rad}$, which is less than half a millimetre along the orbit. So one multiplication and one wrap are harmless. Getting the same number by adding $n\,\delta t$ a million times is not: the rounding error of every addition piles up into metres. So compute $M$ from the elapsed time in one step, and keep the starting mean anomaly $M_0$ and the elapsed time as separate numbers until the last moment.
+After ten years an ISS-like satellite has made about $57\,000$ revolutions, and $n\,\Delta t$ is about $3.6 \times 10^{5}\,\mathrm{rad}$. In **[[double precision|double-precision]]** a number that size is stored to about $6 \times 10^{-11}\,\mathrm{rad}$, which is less than half a millimeter along the orbit. So one multiplication and one wrap are harmless. Getting the same number by adding $n\,\delta t$ a million times is not: the rounding error of every addition piles up into meters. So compute $M$ from the elapsed time in one step, and keep the starting mean anomaly $M_0$ and the elapsed time as separate numbers until the last moment.
 
 ### Picking the branch when you start from a radius
 
@@ -221,7 +221,7 @@ The test is plain: start both from the same state, run both for the same $\Delta
 
 Read the table two ways.
 
-**Down the tolerance column.** At tight tolerance the two agree to micrometres over a day and to under a millimetre over a week. That is far below any real force the model leaves out, so it checks *both* codes at once. A wrong $\mu$, a sign error, a mixed-up `atan2`, or a quadrant slip in either one would show up as metres or kilometres, not micrometres.
+**Down the tolerance column.** At tight tolerance the two agree to micrometers over a day and to under a millimeter over a week. That is far below any real force the model leaves out, so it checks *both* codes at once. A wrong $\mu$, a sign error, a mixed-up `atan2`, or a quadrant slip in either one would show up as meters or kilometers, not micrometers.
 
 **Across the rows.** The difference shrinks when the tolerance is tightened and grows with elapsed time, exactly as integration error should. That tells you the leftover difference belongs to the integrator, not to the analytic solution.
 
@@ -283,7 +283,7 @@ Why does analytic propagation of a two-body orbit not pile up error with time, w
 ::: answer
 The analytic solution evaluates a formula at the target time. Its only errors are round-off in a fixed number of arithmetic operations and the Kepler solver's tolerance, which is at machine precision. Neither depends on how far ahead you look.
 
-A numerical integrator builds the answer step by step. Each step makes a small truncation error, and that error is carried forward and amplified by the dynamics in every later step. So the error grows with the number of steps, and therefore with $\Delta t$. The table shows it: even at $10^{-13}$ tolerance, micrometres after a day become most of a millimetre after a week.
+A numerical integrator builds the answer step by step. Each step makes a small truncation error, and that error is carried forward and amplified by the dynamics in every later step. So the error grows with the number of steps, and therefore with $\Delta t$. The table shows it: even at $10^{-13}$ tolerance, micrometers after a day become most of a millimeter after a week.
 :::
 
 ::: check

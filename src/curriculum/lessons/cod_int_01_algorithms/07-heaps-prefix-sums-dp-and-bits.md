@@ -454,7 +454,7 @@ These topics are real, and some are beautiful, but a medium bar with real-world 
 - **Heavy competitive programming:** number-theory tricks, hard geometry, and problems built to be solved only by people who have seen that exact trick.
 
 ::: key What you can safely skip
-Exotic dynamic programming, advanced graph theory, segment trees and heavy competitive-programming material. They are not what a medium-level, real-world-flavoured bar tests.
+Exotic dynamic programming, advanced graph theory, segment trees and heavy competitive-programming material. They are not what a medium-level, real-world-flavored bar tests.
 :::
 
 If a practice problem needs one of these, log it as "skipped on purpose" and move on. The hours are better spent on the patterns in lessons 3 to 7 and the engineering variants in lessons 9 to 12.

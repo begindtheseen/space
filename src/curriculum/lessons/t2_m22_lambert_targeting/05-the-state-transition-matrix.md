@@ -6,7 +6,7 @@ covers:
   - the state transition matrix and its use in targeting
 ---
 
-Throw a dart. If your hand drifts a centimetre to the left as you let go, the dart lands a bit to the left of the bullseye. If your hand is a little fast, it lands high. A good darts player has a feel for this: *this* much wobble at the hand gives *that* much miss at the board. With that feel, a miss tells you how to fix the next throw.
+Throw a dart. If your hand drifts a centimeter to the left as you let go, the dart lands a bit to the left of the bullseye. If your hand is a little fast, it lands high. A good darts player has a feel for this: *this* much wobble at the hand gives *that* much miss at the board. With that feel, a miss tells you how to fix the next throw.
 
 A spacecraft needs the same feel, written down as numbers. A Lambert solve gives a departure velocity computed for an ideal world: a perfect point-mass planet, a perfect instant burn, nothing else pulling. Fly it for real and the spacecraft lands a little off. To fix that, you need to know *how sensitive* the arrival is to a small change at departure, so you can compute a correction instead of guessing one. That table of sensitivities is the **state transition matrix**, or STM.
 
@@ -183,7 +183,7 @@ The first letter of each label says what comes *out*; the second says what goes 
 - $\boldsymbol{\Phi}_{vv}$: how a starting velocity error becomes an arrival velocity error.
 - $\boldsymbol{\Phi}_{vr}$ and $\boldsymbol{\Phi}_{rv}$: the mixed ones.
 
-The next lesson needs $\boldsymbol{\Phi}_{rv}$ most: how the **arrival position** responds to a small change in the **departure velocity**. A burn is a velocity change, and a miss is a position error, so this is exactly the block a targeting correction must invert. Its units are kilometres per (km/s), which is **[[seconds|phi-rv-seconds]]**.
+The next lesson needs $\boldsymbol{\Phi}_{rv}$ most: how the **arrival position** responds to a small change in the **departure velocity**. A burn is a velocity change, and a miss is a position error, so this is exactly the block a targeting correction must invert. Its units are kilometers per (km/s), which is **[[seconds|phi-rv-seconds]]**.
 
 ### A tempting shortcut, and why it fails
 
@@ -281,7 +281,7 @@ As $\Delta t$ grows, the higher-order terms stop being negligible, and the true 
 :::
 
 ::: check
-The gravity-gradient matrix $\mathbf{G}$ has eigenvalue $+2\mu/r^3$ along the radial direction and $-\mu/r^3$ (twice) transverse to it. Which direction of position perturbation grows fastest under the linearised dynamics, and is this consistent with tidal stretching?
+The gravity-gradient matrix $\mathbf{G}$ has eigenvalue $+2\mu/r^3$ along the radial direction and $-\mu/r^3$ (twice) transverse to it. Which direction of position perturbation grows fastest under the linearized dynamics, and is this consistent with tidal stretching?
 :::
 
 ::: answer
@@ -368,7 +368,7 @@ With gravity the shape also bends, but the area — in six dimensions, the volum
 :::
 
 ::: context phi-rv-seconds Why the units are seconds
-$\boldsymbol{\Phi}_{rv}$ turns a velocity change (km/s) into a position change (km). Kilometres divided by kilometres-per-second leaves seconds. A good way to read an entry: "a $1\,\mathrm{m/s}$ change at departure moves the arrival this many metres, as if you had coasted with it for this many seconds." For very short flights the answer is the flight time itself. For longer ones, gravity reshapes it — an entry of $8673\,\mathrm{s}$ after a one-hour flight means a $1\,\mathrm{m/s}$ change moves the arrival by about $8.7\,\mathrm{km}$ in that direction.
+$\boldsymbol{\Phi}_{rv}$ turns a velocity change (km/s) into a position change (km). Kilometers divided by kilometers-per-second leaves seconds. A good way to read an entry: "a $1\,\mathrm{m/s}$ change at departure moves the arrival this many meters, as if you had coasted with it for this many seconds." For very short flights the answer is the flight time itself. For longer ones, gravity reshapes it — an entry of $8673\,\mathrm{s}$ after a one-hour flight means a $1\,\mathrm{m/s}$ change moves the arrival by about $8.7\,\mathrm{km}$ in that direction.
 :::
 
 ::: context chain-picture Chaining STMs like legs of a trip

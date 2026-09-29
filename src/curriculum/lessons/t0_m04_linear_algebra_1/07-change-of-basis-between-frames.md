@@ -417,7 +417,7 @@ The dot product of two unit vectors is the cosine of the angle between them. So 
 "O" is for orthogonal: $\mathbf{R}^T\mathbf{R} = \mathbf{I}$. "S" is for special: determinant exactly $+1$. The "3" is the size, $3 \times 3$. A **group** is a set closed under an operation — here, multiply two rotations and you get another rotation, and every rotation has an inverse that is also a rotation. Later modules on attitude lean on that closure every time they chain frames.
 :::
 
-::: context labels-cancel Like units cancelling
+::: context labels-cancel Like units canceling
 The cancellation rule works the way units do. Hours times kilometers-per-hour leaves kilometers; "$C$ from $B$" times "$B$ from $A$" leaves "$C$ from $A$".
 
 ```svg

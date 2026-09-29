@@ -148,7 +148,7 @@ CONFLICT (content): Merge conflict in gravity.py
 The stash entry is kept in case you need it again.
 ```
 
-The file now has conflict markers labelled `Updated upstream` (what was committed) and `Stashed changes` (her stash). Fix the file as in lesson 05, `git add gravity.py`, and then run `git stash drop` yourself, because Git kept the stash on purpose. Forgetting that last step leaves an old stash on the list that you will not recognise in a month.
+The file now has conflict markers labeled `Updated upstream` (what was committed) and `Stashed changes` (her stash). Fix the file as in lesson 05, `git add gravity.py`, and then run `git stash drop` yourself, because Git kept the stash on purpose. Forgetting that last step leaves an old stash on the list that you will not recognize in a month.
 :::
 
 ::: key Stash in five commands
@@ -211,7 +211,7 @@ The reflog lives only in *your* `.git` folder. It is **[[not copied by clone|ref
 
 Lesson 01 gave you the word **reachable**: a commit is reachable if you can get to it from some ref (a branch, a tag, HEAD) by following parent arrows. `git log` shows only reachable commits.
 
-Here is the key fact. When a commit becomes unreachable, **Git does not delete it**. Its object file stays in `.git/objects`, byte for byte, exactly as before. It is like a book that fell off the library catalogue: the book is still on the shelf; only the card that pointed to it is gone.
+Here is the key fact. When a commit becomes unreachable, **Git does not delete it**. Its object file stays in `.git/objects`, byte for byte, exactly as before. It is like a book that fell off the library catalog: the book is still on the shelf; only the card that pointed to it is gone.
 
 Commits do eventually disappear, through the clean-up command **`git gc`** ("**[[garbage collection|gc-timing]]**"), which Git also runs by itself now and then. But gc is deliberately slow:
 
@@ -552,5 +552,5 @@ The name `lost-found` comes from Unix. When a disk check program called `fsck` r
 :::
 
 ::: context rebase-preview The botched rebase
-The flashcard mentions "a botched rebase". **Rebase**, taught in the next module, rewrites a branch by replaying its commits on top of a different starting point, creating new commits with new hashes. If it goes wrong — a conflict resolved the wrong way, a commit accidentally dropped — the old commits are no longer on the branch. The reflog still has a line from right before the rebase started, often labelled `rebase (start)`, and `git reset --hard <branch>@{1}` or `HEAD@{n}` from that line takes you back to the branch exactly as it was.
+The flashcard mentions "a botched rebase". **Rebase**, taught in the next module, rewrites a branch by replaying its commits on top of a different starting point, creating new commits with new hashes. If it goes wrong — a conflict resolved the wrong way, a commit accidentally dropped — the old commits are no longer on the branch. The reflog still has a line from right before the rebase started, often labeled `rebase (start)`, and `git reset --hard <branch>@{1}` or `HEAD@{n}` from that line takes you back to the branch exactly as it was.
 :::

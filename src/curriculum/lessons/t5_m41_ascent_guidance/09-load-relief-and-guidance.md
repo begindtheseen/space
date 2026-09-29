@@ -45,7 +45,7 @@ Use the module's vehicle at max-Q: $\bar q = 44.6\ \mathrm{kPa}$, speed $v = 495
 
 **Over the window.** Max-Q's high-pressure stretch lasts about $20\ \mathrm{s}$. Speed gained sideways: $0.33 \times 20 = 6.6\ \mathrm{m/s}$. Distance drifted: $\tfrac12 \times 0.33 \times 20^2 = 66\ \mathrm{m}$.
 
-**Sanity check.** A few metres per second and some tens of metres, against a rocket moving at $495\ \mathrm{m/s}$ — small, as the atmospheric flight module found for realistic gusts with a well-tuned gain. This rough sum leaves out the extra sideways push of the engine's own trim and the way the drift itself changes the wind angle; the atmospheric flight module does the full model.
+**Sanity check.** A few meters per second and some tens of meters, against a rocket moving at $495\ \mathrm{m/s}$ — small, as the atmospheric flight module found for realistic gusts with a well-tuned gain. This rough sum leaves out the extra sideways push of the engine's own trim and the way the drift itself changes the wind angle; the atmospheric flight module does the full model.
 :::
 
 ## What guidance actually receives
@@ -102,9 +102,9 @@ With $\Delta v_{\text{burn}} = 6165\ \mathrm{m/s}$:
 
 Take the crosswind example's $6.6\ \mathrm{m/s}$: $6.6^2/12{,}330 = 43.56/12{,}330 = 0.0035\ \mathrm{m/s}$.
 
-What is that in propellant? At the end of the burn the stage weighs about $18{,}457\ \mathrm{kg}$, and each extra metre per second there costs about $m/v_e = 18{,}457/3412.7 = 5.4\ \mathrm{kg}$. So $0.0035\ \mathrm{m/s}$ costs about $0.02\ \mathrm{kg}$ — twenty grams.
+What is that in propellant? At the end of the burn the stage weighs about $18{,}457\ \mathrm{kg}$, and each extra meter per second there costs about $m/v_e = 18{,}457/3412.7 = 5.4\ \mathrm{kg}$. So $0.0035\ \mathrm{m/s}$ costs about $0.02\ \mathrm{kg}$ — twenty grams.
 
-**Sanity check.** Even $20\ \mathrm{m/s}$ of cross-range error, far more than load relief normally leaves, costs three hundredths of a metre per second. A small tilt of a big burn barely shortens it.
+**Sanity check.** Even $20\ \mathrm{m/s}$ of cross-range error, far more than load relief normally leaves, costs three hundredths of a meter per second. A small tilt of a big burn barely shortens it.
 :::
 
 ::: key
@@ -120,9 +120,9 @@ A too-low start is expensive for a plain reason: the rocket must still climb to 
 ::: example What in-plane errors at handoff cost
 Fly the module's stage 2 to the 400 km circular orbit, with the steering solved on the full curved-Earth equations, from handoff states nudged away from nominal. Record the propellant left at insertion compared with the unnudged run.
 
-**Altitude.** Start $10\ \mathrm{km}$ higher: $607\ \mathrm{kg}$ *more* left. Start $10\ \mathrm{km}$ lower: $604\ \mathrm{kg}$ *less*. That is about $60\ \mathrm{kg}$ per kilometre.
+**Altitude.** Start $10\ \mathrm{km}$ higher: $607\ \mathrm{kg}$ *more* left. Start $10\ \mathrm{km}$ lower: $604\ \mathrm{kg}$ *less*. That is about $60\ \mathrm{kg}$ per kilometer.
 
-**Climb rate.** Start with the radial (upward) speed $5\ \mathrm{m/s}$ higher: $71\ \mathrm{kg}$ more left. $5\ \mathrm{m/s}$ lower: $71\ \mathrm{kg}$ less. That is about $14\ \mathrm{kg}$ per metre per second.
+**Climb rate.** Start with the radial (upward) speed $5\ \mathrm{m/s}$ higher: $71\ \mathrm{kg}$ more left. $5\ \mathrm{m/s}$ lower: $71\ \mathrm{kg}$ less. That is about $14\ \mathrm{kg}$ per meter per second.
 
 **Compare with the crosswind.** Suppose the same $6.6\ \mathrm{m/s}$ from the load-relief example had landed in the climb rate instead of cross-range: $6.6 \times 14.3 \approx 94\ \mathrm{kg}$. Cross-range it cost about $0.02\ \mathrm{kg}$. Same size of error, roughly five thousand times the price.
 
@@ -152,7 +152,7 @@ A load-relief event leaves the rocket with a $6\ \mathrm{m/s}$ cross-range veloc
 ::: answer
 $\Delta v_{\text{penalty}} \approx \delta v_\perp^2 / (2\,\Delta v_{\text{burn}}) = 6^2/(2 \times 6165) = 36/12{,}330 = 0.0029\ \mathrm{m/s}$.
 
-That is about three thousandths of a metre per second — around 16 grams of propellant at the end of the burn ($0.0029 \times 5.4\ \mathrm{kg}$ per m/s). Negligible against any real propellant budget.
+That is about three thousandths of a meter per second — around 16 grams of propellant at the end of the burn ($0.0029 \times 5.4\ \mathrm{kg}$ per m/s). Negligible against any real propellant budget.
 :::
 
 ::: check
@@ -166,7 +166,7 @@ A height error is not at right angles to the burn's work. The rocket still has t
 :::
 
 ::: check
-Using the lesson's numbers (about $60\ \mathrm{kg}$ of reserve per kilometre), estimate the reserve cost of starting $3\ \mathrm{km}$ low at handoff. Then give one reason the true cost need not scale exactly in a straight line from the $10\ \mathrm{km}$ figure.
+Using the lesson's numbers (about $60\ \mathrm{kg}$ of reserve per kilometer), estimate the reserve cost of starting $3\ \mathrm{km}$ low at handoff. Then give one reason the true cost need not scale exactly in a straight line from the $10\ \mathrm{km}$ figure.
 :::
 
 ::: answer
@@ -188,7 +188,7 @@ A load-relief gain is retuned to cut the typical cross-range velocity error in h
 :::
 
 ::: answer
-No — it may well be the opposite. This lesson found cross-range velocity errors cheap for guidance (hundredths of a metre per second even for errors of tens of metres per second), while in-plane errors are the expensive kind (tens of kilograms per kilometre of height, or per few metres per second of climb rate). A retune that shrinks the already-cheap error while growing the already-expensive one could cost guidance more propellant overall, even though it looks like an improvement measured in velocity alone. The fair test prices both changes in the currency that matters to guidance — reserve consumed.
+No — it may well be the opposite. This lesson found cross-range velocity errors cheap for guidance (hundredths of a meter per second even for errors of tens of meters per second), while in-plane errors are the expensive kind (tens of kilograms per kilometer of height, or per few meters per second of climb rate). A retune that shrinks the already-cheap error while growing the already-expensive one could cost guidance more propellant overall, even though it looks like an improvement measured in velocity alone. The fair test prices both changes in the currency that matters to guidance — reserve consumed.
 :::
 
 ## Summary
@@ -276,7 +276,7 @@ The short side here is drawn about thirty times its true proportion so you can s
 :::
 
 ::: context wind-shear When the wind changes with height
-Wind shear is a change in wind speed or direction over a short distance — here, over a short change in altitude. The jet stream, a river of fast wind about 10 km up, often has sharp shear at its edges. A rocket climbing through it can meet a wind that changes by tens of metres per second in a few hundred metres of height, which the autopilot feels as a sudden gust. Shear in the pitch plane is what makes load relief tip the nose up or down.
+Wind shear is a change in wind speed or direction over a short distance — here, over a short change in altitude. The jet stream, a river of fast wind about 10 km up, often has sharp shear at its edges. A rocket climbing through it can meet a wind that changes by tens of meters per second in a few hundred meters of height, which the autopilot feels as a sudden gust. Shear in the pitch plane is what makes load relief tip the nose up or down.
 :::
 
 ::: context bridge-wind-update Where this goes next

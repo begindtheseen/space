@@ -6,7 +6,7 @@ covers:
   - "Strapdown mechanization in ECI, ECEF and local-level (NED) frames"
 ---
 
-Close your eyes in the back seat of a car and try to keep track of where you are. You feel the car speed up, slow down and turn. If you remember which way you are facing, you can add up every push into a speed, and add up the speed into a distance travelled. That is dead reckoning with your inner ear, and it is exactly what an inertial navigator does — except that it does it hundreds of times a second, with instruments instead of an inner ear, and with no guessing.
+Close your eyes in the back seat of a car and try to keep track of where you are. You feel the car speed up, slow down and turn. If you remember which way you are facing, you can add up every push into a speed, and add up the speed into a distance traveled. That is dead reckoning with your inner ear, and it is exactly what an inertial navigator does — except that it does it hundreds of times a second, with instruments instead of an inner ear, and with no guessing.
 
 A **strapdown mechanization** is the software that does this. Its inputs are the corrected gyro and accelerometer samples from the previous lessons. Its outputs are a running estimate of **attitude** (which way the vehicle faces), **velocity** and **position**. "Strapdown" means the sensors are bolted, or strapped, straight to the vehicle's body and turn with it, and "mechanization" is the old name for the equations that turn their readings into navigation.
 
@@ -276,7 +276,7 @@ Walk over a curved surface and your "down" arrow keeps pointing at the center, s
 </svg>
 ```
 
-The traveller has moved north over the curve. At the new spot, both the north (blue) and down (red) arrows have turned by the same angle, in the same sense. The rate of that turning is $v_N/(R_M+h)$.
+The traveler has moved north over the curve. At the new spot, both the north (blue) and down (red) arrows have turned by the same angle, in the same sense. The rate of that turning is $v_N/(R_M+h)$.
 :::
 
 ::: context why-twice Two Earth rates, one transport rate
@@ -284,7 +284,7 @@ Here, $\mathbf v^n$ is velocity *relative to the Earth*, written in NED axes. To
 :::
 
 ::: context ellipsoid A squashed Earth
-Earth spins, and the spin flings the equator outward a little. The result is an ellipsoid whose equatorial radius is about $21.4\,\mathrm{km}$ longer than its polar radius: $a = 6\,378\,137\,\mathrm m$ against $b = 6\,356\,752\,\mathrm m$. That difference is only one part in $298$ — draw Earth as a circle $30\,\mathrm{cm}$ across and the squashing is about a millimetre, thinner than the pencil line. But navigation cares about metres, and $21\,\mathrm{km}$ is a lot of metres. **WGS84** (World Geodetic System 1984) is the version maintained by the US military for GPS, and nearly every navigation system on Earth uses it.
+Earth spins, and the spin flings the equator outward a little. The result is an ellipsoid whose equatorial radius is about $21.4\,\mathrm{km}$ longer than its polar radius: $a = 6\,378\,137\,\mathrm m$ against $b = 6\,356\,752\,\mathrm m$. That difference is only one part in $298$ — draw Earth as a circle $30\,\mathrm{cm}$ across and the squashing is about a millimeter, thinner than the pencil line. But navigation cares about meters, and $21\,\mathrm{km}$ is a lot of meters. **WGS84** (World Geodetic System 1984) is the version maintained by the US military for GPS, and nearly every navigation system on Earth uses it.
 :::
 
 ::: context geodetic-latitude Which way is down?
@@ -305,7 +305,7 @@ On an ellipsoid, the local vertical — the line straight down, square to the gr
 </svg>
 ```
 
-The red local vertical crosses the equator's plane off-center, at an angle $\varphi$ steeper than the grey line to the center (squashing exaggerated here). On the real Earth the two latitudes differ by at most about $0.19^\circ$, near $45^\circ$ — some $21\,\mathrm{km}$ on the ground.
+The red local vertical crosses the equator's plane off-center, at an angle $\varphi$ steeper than the gray line to the center (squashing exaggerated here). On the real Earth the two latitudes differ by at most about $0.19^\circ$, near $45^\circ$ — some $21\,\mathrm{km}$ on the ground.
 :::
 
 ::: context right-hand-rule Which way is a positive turn?

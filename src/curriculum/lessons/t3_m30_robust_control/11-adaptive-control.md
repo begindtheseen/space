@@ -165,7 +165,7 @@ $$u(s) = -C(s)\left[\hat{\eta}(s) - k_g\,r(s)\right],$$
 where $\hat{\eta}$ ("eta hat") is the estimated total uncertainty and $k_g$ a feedforward gain on the command. The estimator may run as fast as the processor allows, because its high-frequency noise is removed before it reaches the plant. What survives is the low-frequency part of the estimate, which is the part worth canceling.
 
 ::: key Why L1 is the variant that gets flown
-MRAC can lose robustness to unmodelled dynamics and time delay, and its transient behaviour is hard to certify. L1 adaptive control decouples adaptation rate from robustness with a low-pass filter, which is why it is the variant that actually gets flown.
+MRAC can lose robustness to unmodelled dynamics and time delay, and its transient behavior is hard to certify. L1 adaptive control decouples adaptation rate from robustness with a low-pass filter, which is why it is the variant that actually gets flown.
 :::
 
 Two properties follow.

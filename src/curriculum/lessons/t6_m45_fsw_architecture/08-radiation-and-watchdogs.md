@@ -3,7 +3,7 @@ id: l08-radiation-and-watchdogs
 title: Radiation effects and watchdog timers
 minutes: 26
 covers:
-  - "Radiation effects: single-event upsets, latch-up, total ionising dose; EDAC and ECC memory; memory scrubbing"
+  - "Radiation effects: single-event upsets, latch-up, total ionizing dose; EDAC and ECC memory; memory scrubbing"
   - "Watchdog timers: what they catch, what they miss, and why a reset is a real-time decision"
 ---
 
@@ -24,7 +24,7 @@ Radiation harms electronics in three distinct ways. They need three distinct def
 **Total ionizing dose (TID).** SEU and SEL are single, sudden events. TID is slow and adds up. Radiation gradually shifts the voltages at which transistors switch and makes them leak more current. Performance degrades over the mission, and past a certain dose the part fails outright. No software response can undo it. The only levers are at design time: shielding, choosing tougher parts, and running them below their limits.
 
 ::: key
-Radiation effects vocabulary. SEU: a bit flips, corrected by ECC and scrubbing. SEL: latch-up, a parasitic conducting path that needs the power cycled to clear and can destroy the part. TID: total ionising dose, cumulative degradation over the mission life.
+Radiation effects vocabulary. SEU: a bit flips, corrected by ECC and scrubbing. SEL: latch-up, a parasitic conducting path that needs the power cycled to clear and can destroy the part. TID: total ionizing dose, cumulative degradation over the mission life.
 :::
 
 ::: example A dose budget for a five-year mission

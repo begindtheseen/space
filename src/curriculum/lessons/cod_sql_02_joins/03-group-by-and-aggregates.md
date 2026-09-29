@@ -102,7 +102,7 @@ After GROUP BY, every SELECT expression must be a grouping column, an aggregate,
 
 ### Grouping by more than one column
 
-List several columns and a group is formed for each **combination** that occurs. To summarise per satellite *per day*, group by the satellite and by the day. With ISO-8601 text timestamps, the day is the first ten characters, [[`substr(ts, 1, 10)`|substr-one]] — "substring of ts, starting at character 1, ten characters long", which turns `2026-03-01T06:00:00Z` into `2026-03-01`.
+List several columns and a group is formed for each **combination** that occurs. To summarize per satellite *per day*, group by the satellite and by the day. With ISO-8601 text timestamps, the day is the first ten characters, [[`substr(ts, 1, 10)`|substr-one]] — "substring of ts, starting at character 1, ten characters long", which turns `2026-03-01T06:00:00Z` into `2026-03-01`.
 
 ::: example A per-satellite, per-day summary
 **Question.** For each satellite and each calendar day (UTC), how many bus-temperature samples arrived, and what were the lowest and highest?
@@ -520,7 +520,7 @@ In `substr(ts, 1, 10)` the first character is number 1, so this takes characters
 :::
 
 ::: context battery-soc Why operators watch the battery
-A satellite in low Earth orbit passes into Earth's shadow on most orbits — up to about 35 minutes of every 95 or so. With no sunlight on the solar panels, everything runs from the battery. The state of charge dips in every eclipse and recovers in sunlight, so a daily mean that drifts down, or a minimum that gets lower each day, is an early warning of ageing cells or a power budget that no longer balances.
+A satellite in low Earth orbit passes into Earth's shadow on most orbits — up to about 35 minutes of every 95 or so. With no sunlight on the solar panels, everything runs from the battery. The state of charge dips in every eclipse and recovers in sunlight, so a daily mean that drifts down, or a minimum that gets lower each day, is an early warning of aging cells or a power budget that no longer balances.
 :::
 
 ::: context sum-null Why the sum of nothing is not zero

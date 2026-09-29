@@ -87,7 +87,7 @@ Some books call the off-diagonal *entries* the products of inertia, so their $I_
 
 ## Typical sizes, and a quick error check
 
-Moments of inertia grow like mass times size squared, so they span a huge range. A 3U CubeSat — $4\,\mathrm{kg}$, $10\times 10\times 30\,\mathrm{cm}$ — has about $0.03\,\mathrm{kg\,m^2}$ across its length and $0.007$ along it. A one-tonne communications satellite is around $1{,}000$ to $2{,}000\,\mathrm{kg\,m^2}$; this module's running example uses $\mathrm{diag}(1200, 1500, 2000)\,\mathrm{kg\,m^2}$ (a matrix with those numbers on the diagonal and zeros elsewhere). The ISS is around $10^8\,\mathrm{kg\,m^2}$, because its $420$ tonnes are spread over a $100\,\mathrm{m}$ truss. A loaded first stage, worked out below, has a sideways moment near $6\times 10^7$ and a roll moment almost a hundred times smaller.
+Moments of inertia grow like mass times size squared, so they span a huge range. A 3U CubeSat — $4\,\mathrm{kg}$, $10\times 10\times 30\,\mathrm{cm}$ — has about $0.03\,\mathrm{kg\,m^2}$ across its length and $0.007$ along it. A one-metric ton communications satellite is around $1{,}000$ to $2{,}000\,\mathrm{kg\,m^2}$; this module's running example uses $\mathrm{diag}(1200, 1500, 2000)\,\mathrm{kg\,m^2}$ (a matrix with those numbers on the diagonal and zeros elsewhere). The ISS is around $10^8\,\mathrm{kg\,m^2}$, because its $420$ metric tons are spread over a $100\,\mathrm{m}$ truss. A loaded first stage, worked out below, has a sideways moment near $6\times 10^7$ and a roll moment almost a hundred times smaller.
 
 The diagonal entries also obey a rule that catches mistakes. From the definitions,
 

@@ -217,7 +217,7 @@ Walk through it:
 The steps are in the order you said them. Each has a name that tells you what its rows are. And `daily` is used twice — by `fleet` and by `hot_days` — without being written twice. Change the channel in one place and both uses change together.
 
 ::: key When a CTE is better than a nested subquery
-When the query has more than one logical step. Named steps read top to bottom and can be tested independently. Be aware that in some engines a CTE is an optimisation fence, so check the plan for hot queries.
+When the query has more than one logical step. Named steps read top to bottom and can be tested independently. Be aware that in some engines a CTE is an optimization fence, so check the plan for hot queries.
 :::
 
 ## Proving the rewrite changed nothing
@@ -301,7 +301,7 @@ Add the `fleet` step back and select from it:
 
 Step 2 is right too. You tested each step against numbers you worked out by hand, which is the same habit as a sanity check in an arithmetic example. On a real team this is how a report gets **reviewed**: the reviewer runs each step and asks "is this what the name promises?"
 
-The same shape — one step that summarises, then a step that joins — is the fix for the fan-out trap from lesson 04. Aggregate the many side in its own CTE first, so it has one row per key, and only then join it to the one side. As a CTE, the order of the fix is written right there on the page.
+The same shape — one step that summarizes, then a step that joins — is the fix for the fan-out trap from lesson 04. Aggregate the many side in its own CTE first, so it has one row per key, and only then join it to the one side. As a CTE, the order of the fix is written right there on the page.
 
 ## What a CTE may cost
 
@@ -310,11 +310,11 @@ A CTE is about how the query reads. It should not change what the query computes
 A database has two ways to run a CTE:
 
 - **Inline it**: paste the CTE's query into the place where it is used, as if you had written a subquery, and plan the whole thing together. Then a filter in the main query can be pushed down into the CTE's scan.
-- **Materialise it**: run the CTE once on its own, store its rows in a temporary result, and let the main query read that stored result. The main query's filters cannot reach inside.
+- **Materialize it**: run the CTE once on its own, store its rows in a temporary result, and let the main query read that stored result. The main query's filters cannot reach inside.
 
-When the database materialises, the CTE is an **[[optimisation fence|fence]]**: the planner does not look across it. Sometimes that is good (an expensive step used three times is computed once). Sometimes it is bad (a filter on one satellite cannot shrink a scan of the whole fleet).
+When the database materializes, the CTE is an **[[optimization fence|fence]]**: the planner does not look across it. Sometimes that is good (an expensive step used three times is computed once). Sometimes it is bad (a filter on one satellite cannot shrink a scan of the whole fleet).
 
-PostgreSQL before [[version 12|pg12]] always materialised every CTE. Since version 12, it inlines a CTE that is used once, is not recursive, and does not change data. A CTE used two or more times is still materialised. You can overrule the choice with `AS MATERIALIZED (…)` or `AS NOT MATERIALIZED (…)`.
+PostgreSQL before [[version 12|pg12]] always materialized every CTE. Since version 12, it inlines a CTE that is used once, is not recursive, and does not change data. A CTE used two or more times is still materialized. You can overrule the choice with `AS MATERIALIZED (…)` or `AS NOT MATERIALIZED (…)`.
 
 You can see the difference with `EXPLAIN`, which shows the plan without running the query. Here a one-use CTE is inlined, and both conditions end up in one scan:
 
@@ -350,7 +350,7 @@ On six rows this makes no difference. On a reading table with a billion rows and
 SQLite has supported `WITH` since version 3.8.3 (2014), including inside `CREATE VIEW`, so everything in this lesson works in [[the exercises|sqlite-cte]]. It decides for itself whether to inline, and since version 3.35 it accepts the same `MATERIALIZED` and `NOT MATERIALIZED` hints.
 
 ::: key Readable first, then check the plan
-A CTE changes how a query reads, not what it returns. PostgreSQL 12 and later inline a CTE used once; a CTE used more than once, or marked `AS MATERIALIZED`, is computed on its own first and acts as an optimisation fence. For a hot query, run `EXPLAIN` and choose `MATERIALIZED` or `NOT MATERIALIZED` on purpose.
+A CTE changes how a query reads, not what it returns. PostgreSQL 12 and later inline a CTE used once; a CTE used more than once, or marked `AS MATERIALIZED`, is computed on its own first and acts as an optimization fence. For a hot query, run `EXPLAIN` and choose `MATERIALIZED` or `NOT MATERIALIZED` on purpose.
 :::
 
 ## Check yourself
@@ -436,7 +436,7 @@ In PostgreSQL 16, a CTE named `daily` is used by two later steps. Is it computed
 :::
 
 ::: answer
-Once. A CTE referenced more than once is materialised: computed on its own, its rows stored, and both later steps read the stored rows. To ask for inlining instead, write `daily AS NOT MATERIALIZED (…)`. Then each use is planned as if the query had been pasted in, which lets filters from each use reach the scan of `reading`, at the price of doing the work twice. Which is faster depends on the data, so compare the plans with `EXPLAIN`.
+Once. A CTE referenced more than once is materialized: computed on its own, its rows stored, and both later steps read the stored rows. To ask for inlining instead, write `daily AS NOT MATERIALIZED (…)`. Then each use is planned as if the query had been pasted in, which lets filters from each use reach the scan of `reading`, at the price of doing the work twice. Which is faster depends on the data, so compare the plans with `EXPLAIN`.
 :::
 
 ::: check
@@ -507,7 +507,7 @@ Each box is one named step; each arrow says "reads from". Notice that `daily` fe
 :::
 
 ::: context code-review Queries get reviewed like flight code
-On a flight software or operations team, a query that feeds a report people act on — a daily battery-health summary, a list of satellites due for a manoeuvre — is stored in version control and changed through a review, the same as code that flies. A second engineer reads the change and has to be convinced it is right before it merges. A reviewer can check a chain of named steps one at a time; a four-level nest mostly gets a shrug and an approval, which is how wrong numbers reach a status meeting.
+On a flight software or operations team, a query that feeds a report people act on — a daily battery-health summary, a list of satellites due for a maneuver — is stored in version control and changed through a review, the same as code that flies. A second engineer reads the change and has to be convinced it is right before it merges. A reviewer can check a chain of named steps one at a time; a four-level nest mostly gets a shrug and an approval, which is how wrong numbers reach a status meeting.
 :::
 
 ::: context except-both-ways Two empty differences mean the same rows
@@ -540,7 +540,7 @@ A computer stores a number like 0.1 in binary, and most decimals cannot be writt
 :::
 
 ::: context fence Why it is called a fence
-A planner improves a query by moving work around: pushing a filter down so it runs before a join, or using an index because a later condition narrows the rows. A fence is a boundary it will not move work across. When a CTE is materialised, its query is planned on its own, and the conditions written in the main query stay on the outside.
+A planner improves a query by moving work around: pushing a filter down so it runs before a join, or using an index because a later condition narrows the rows. A fence is a boundary it will not move work across. When a CTE is materialized, its query is planned on its own, and the conditions written in the main query stay on the outside.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
@@ -567,7 +567,7 @@ A planner improves a query by moving work around: pushing a filter down so it ru
 :::
 
 ::: context pg12 The PostgreSQL 12 change
-PostgreSQL 12 came out in October 2019. Before it, every CTE was materialised, and experienced PostgreSQL users learned to avoid CTEs in performance-critical queries, or to use them on purpose as a fence to force a plan. Version 12 made single-use CTEs inline by default and added the `MATERIALIZED` and `NOT MATERIALIZED` keywords so the old behaviour is still available when you want it. Older blog posts that say "CTEs are always a fence in PostgreSQL" describe the world before 2019.
+PostgreSQL 12 came out in October 2019. Before it, every CTE was materialized, and experienced PostgreSQL users learned to avoid CTEs in performance-critical queries, or to use them on purpose as a fence to force a plan. Version 12 made single-use CTEs inline by default and added the `MATERIALIZED` and `NOT MATERIALIZED` keywords so the old behavior is still available when you want it. Older blog posts that say "CTEs are always a fence in PostgreSQL" describe the world before 2019.
 :::
 
 ::: context sqlite-cte CTEs in the exercises

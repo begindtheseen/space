@@ -338,7 +338,7 @@ The boom example, drawn in the $xz$ plane. The instrument lies $9.1^\circ$ above
 :::
 
 ::: context inertia-ellipsoid The ellipsoid, sliced
-A slice through the inertia ellipsoid in the plane of two principal axes, with $I_1 = 1$ and $I_2 = 4$ (in some unit), so the half-widths are $1$ and $\tfrac{1}{2}$. Where $\boldsymbol{\omega}$ (grey) pierces the surface, the normal to the surface (red) points along $\mathbf{H}$. They agree only at the ends of the axes.
+A slice through the inertia ellipsoid in the plane of two principal axes, with $I_1 = 1$ and $I_2 = 4$ (in some unit), so the half-widths are $1$ and $\tfrac{1}{2}$. Where $\boldsymbol{\omega}$ (gray) pierces the surface, the normal to the surface (red) points along $\mathbf{H}$. They agree only at the ends of the axes.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" font-family="Inter, Arial, sans-serif">

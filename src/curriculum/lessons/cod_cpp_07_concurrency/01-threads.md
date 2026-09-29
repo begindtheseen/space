@@ -314,7 +314,7 @@ The stop request is **[[cooperative|cooperative-stop]]**: it sets a flag and not
 
 `std::thread::hardware_concurrency()` returns how many threads the hardware can run truly at the same time — the number of **[[hardware threads|hardware-threads]]**. The standard calls it a hint, and it may return `0` if it cannot tell. On the machine used for this module, a cloud virtual machine with 4 cores, it printed `4`, and the Linux command `nproc` also prints `4`.
 
-Using it well means remembering what extra threads cost. On that same machine, creating an empty thread and joining it took about 40 µs each, averaged over 10,000 tries; it will be different on yours. Forty microseconds is 4 percent of a 1 ms control period, spent before any useful work happens, and its worst case is far longer than its average. That is why flight software [[makes all its threads at initialisation|flight-threads]], fixes their number and priorities, and never creates one inside a control cycle.
+Using it well means remembering what extra threads cost. On that same machine, creating an empty thread and joining it took about 40 µs each, averaged over 10,000 tries; it will be different on yours. Forty microseconds is 4 percent of a 1 ms control period, spent before any useful work happens, and its worst case is far longer than its average. That is why flight software [[makes all its threads at initialization|flight-threads]], fixes their number and priorities, and never creates one inside a control cycle.
 
 More threads than cores does not make a program faster: past the core count, threads take turns, and every switch costs time. A ground tool might start `hardware_concurrency()` workers. A flight computer runs exactly as many threads as the design names, and a later lesson shows how to prove they all meet their deadlines.
 
@@ -375,7 +375,7 @@ The destructor calls `request_stop()` and then `join()`. The request only sets a
 | `std::stop_token` | read-only view of a stop request | cooperative: the thread must check `stop_requested()` |
 | `hardware_concurrency()` | how many threads can truly run at once | a hint, may be `0`; printed 4 on a 4-core machine |
 
-Threads share memory, and so far every example was careful to read shared data only after a `join`. Next lesson removes that care, and shows why two threads touching the same variable at the same time is not merely a wrong answer but undefined behaviour.
+Threads share memory, and so far every example was careful to read shared data only after a `join`. Next lesson removes that care, and shows why two threads touching the same variable at the same time is not merely a wrong answer but undefined behavior.
 
 ::: context address-space Every process gets its own map of memory
 Each process sees addresses from zero up to a huge number, as if it had the machine to itself. The operating system and the processor's memory-management unit translate each of those virtual addresses into a real location in the memory chips, using a separate table per process. Two processes can both use address `0x4010` and mean different bytes. Inside one process, all threads use the same table:
@@ -449,6 +449,6 @@ The cycle in progress when the request arrives finishes; the next check ends the
 A **core** is one complete processor that runs instructions. Some processors let each core keep two threads loaded at once and interleave them to fill idle moments; Intel calls this Hyper-Threading, and the general name is simultaneous multithreading. Then one core counts as two **hardware threads**. The machine used here has 4 cores and 1 thread per core, so both numbers are 4. Flight processors are often simpler, with a few cores and no multithreading, and real-time designs frequently turn multithreading off because two hardware threads sharing one core slow each other down unpredictably.
 :::
 
-::: context flight-threads How flight frameworks organise threads
+::: context flight-threads How flight frameworks organize threads
 NASA's open-source flight frameworks both fix their threads at start-up. In the core Flight System (cFS), used on many NASA missions, each application runs as its own task — a thread with a set priority — created when the system boots. In JPL's F Prime, which flew on the Ingenuity Mars helicopter, an **active component** owns a thread and a message queue, and other components talk to it by putting messages on that queue instead of touching its data. Both designs keep the number of threads known and small, which is what makes the timing analysis of later lessons possible.
 :::

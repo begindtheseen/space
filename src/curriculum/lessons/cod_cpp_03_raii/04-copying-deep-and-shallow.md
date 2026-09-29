@@ -10,7 +10,7 @@ Your friend lends you a house key, and you get a copy cut at the hardware store.
 
 A copy of a key is not a copy of the house. That one sentence is the whole of this lesson. A C++ object often holds a pointer, and a pointer is a key: an address that leads to memory somewhere else. Copy the object the lazy way and you copy the key. Copy it the careful way and you build a second house with the same furniture inside.
 
-The last three lessons built objects and tore them down: constructors, member initialiser lists, and destructors that release what the object owns. Now we ask what happens in between, when one object is made *from* another. C++ gives you two functions for that. The **copy constructor** builds a brand-new object as a copy of an existing one. The **copy assignment operator** overwrites an object that already exists with a copy of another. Get either one wrong in a class that owns memory and the program frees the same block twice, reads memory that has been given back, or quietly shares data that was meant to be separate. On a flight computer those are exactly the bugs that pass every bench test and fail on day 40 of a mission.
+The last three lessons built objects and tore them down: constructors, member initializer lists, and destructors that release what the object owns. Now we ask what happens in between, when one object is made *from* another. C++ gives you two functions for that. The **copy constructor** builds a brand-new object as a copy of an existing one. The **copy assignment operator** overwrites an object that already exists with a copy of another. Get either one wrong in a class that owns memory and the program frees the same block twice, reads memory that has been given back, or quietly shares data that was meant to be separate. On a flight computer those are exactly the bugs that pass every bench test and fail on day 40 of a mission.
 
 ## Two ways to copy, and when each one runs
 
@@ -327,7 +327,7 @@ Follow the line numbers. Line 12 freed `data_`. Because `other` *is* this object
 Sanity check: move the `delete[]` below the copy loop, as in the previous example, and the sanitizer report disappears even without the `this == &other` test. The safe order (allocate, copy, then free) survives self-assignment on its own. The early return only saves the wasted work.
 :::
 
-Two defences, then: allocate and copy before you free, and check for self-assignment. Lesson 07 shows a third way, called **copy-and-swap**, which writes the assignment operator in terms of the copy constructor and gets both defences with no extra thought. Here, it is enough to know it exists.
+Two defences, then: allocate and copy before you free, and check for self-assignment. Lesson 07 shows a third way, called **copy-and-swap**, which writes the assignment operator in terms of the copy constructor and gets both defenses with no extra thought. Here, it is enough to know it exists.
 
 ::: key
 A shallow copy duplicates the pointer, so two objects share one block, and the second destructor frees it again: a double free. A deep copy allocates a new block and copies the contents, so each object owns its own. Copy assignment must also release the old block, and must survive self-assignment `a = a`: allocate and copy first, free the old block last.
@@ -350,7 +350,7 @@ For each line, say whether the copy constructor, copy assignment, or neither run
 :::
 
 ::: answer
-(a) Copy constructor: `y` is born from `x`. (b) Copy constructor: `z` is born on this line, so the `=` is initialisation, not assignment. (c) Copy assignment: `z` already exists and is overwritten with `y`'s value. (d) Neither: `r` is a reference, a second name for `x`, and no new `Tracer` is made. (e) Copy constructor: `push_back` with a named object stores a copy inside the vector's own memory, and that copy is a new object.
+(a) Copy constructor: `y` is born from `x`. (b) Copy constructor: `z` is born on this line, so the `=` is initialization, not assignment. (c) Copy assignment: `z` already exists and is overwritten with `y`'s value. (d) Neither: `r` is a reference, a second name for `x`, and no new `Tracer` is made. (e) Copy constructor: `push_back` with a named object stores a copy inside the vector's own memory, and that copy is a new object.
 :::
 
 ::: check
@@ -366,7 +366,7 @@ Why does the copy constructor not need a self-assignment check, while copy assig
 :::
 
 ::: answer
-A constructor builds an object that did not exist a moment ago, so it cannot also be the source: there is no way to write `T a = a;` meaningfully and get the same object on both sides. (The code compiles, but it reads `a` before `a` is initialised, which is a separate bug that `-Wall` warns about.) Assignment works on two objects that both already exist, and two references or two array indexes can name the same one. So only assignment can be handed itself, and only assignment frees an old block that might also be the source.
+A constructor builds an object that did not exist a moment ago, so it cannot also be the source: there is no way to write `T a = a;` meaningfully and get the same object on both sides. (The code compiles, but it reads `a` before `a` is initialized, which is a separate bug that `-Wall` warns about.) Assignment works on two objects that both already exist, and two references or two array indexes can name the same one. So only assignment can be handed itself, and only assignment frees an old block that might also be the source.
 :::
 
 ::: check
@@ -405,7 +405,7 @@ Passing by value always builds a new parameter object. Returning by value usuall
 :::
 
 ::: context memberwise One member at a time
-The generated copy constructor behaves as if you had written a member initialiser list that copies each member from `other`, in declaration order. For a class with `int n_; double* data_;` that is `n_(other.n_), data_(other.data_)`. Each member is copied with its own rules: a `std::string` member runs the string's copy constructor, a nested struct runs that struct's copy, and a raw pointer copies the address. The class never looks inside a pointer. That is why a class made only of well-behaved members is copied correctly for free, and one raw owning pointer ruins it.
+The generated copy constructor behaves as if you had written a member initializer list that copies each member from `other`, in declaration order. For a class with `int n_; double* data_;` that is `n_(other.n_), data_(other.data_)`. Each member is copied with its own rules: a `std::string` member runs the string's copy constructor, a nested struct runs that struct's copy, and a raw pointer copies the address. The class never looks inside a pointer. That is why a class made only of well-behaved members is copied correctly for free, and one raw owning pointer ruins it.
 :::
 
 ::: context shallow-deep Two pictures of one copy
@@ -491,5 +491,5 @@ Aliasing is the ordinary state of affairs in C++, not a rare trick. References a
 :::
 
 ::: context no-heap Why flight code avoids the heap in flight
-Gerard Holzmann's "Power of Ten" rules, written at NASA's Jet Propulsion Laboratory for safety-critical code, include a rule against dynamic memory allocation after initialisation. The reasons are the ones this lesson touched: allocation time is hard to bound, memory can fragment over a long mission, and ownership bugs like double frees become impossible if nothing is freed. So a flight program typically allocates its buffers once at start-up and then only copies *into* existing storage. A copy assignment that reuses the existing block when the sizes match fits that style; a copy constructor that calls `new` in the control loop does not.
+Gerard Holzmann's "Power of Ten" rules, written at NASA's Jet Propulsion Laboratory for safety-critical code, include a rule against dynamic memory allocation after initialization. The reasons are the ones this lesson touched: allocation time is hard to bound, memory can fragment over a long mission, and ownership bugs like double frees become impossible if nothing is freed. So a flight program typically allocates its buffers once at start-up and then only copies *into* existing storage. A copy assignment that reuses the existing block when the sizes match fits that style; a copy constructor that calls `new` in the control loop does not.
 :::

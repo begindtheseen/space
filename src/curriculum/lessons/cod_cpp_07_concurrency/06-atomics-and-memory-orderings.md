@@ -175,7 +175,7 @@ r = 6771000 m, v = 7672 m/s, t = 1000000 us
 
 Step by step:
 
-1. The producer fills in `nav`: a position of 6,771,000 m from Earth's centre (about 400 km up, a space-station orbit) and a speed of 7,672 m/s.
+1. The producer fills in `nav`: a position of 6,771,000 m from Earth's center (about 400 km up, a space-station orbit) and a speed of 7,672 m/s.
 2. It stores `true` into `nav_ready` with release, so every write to `nav` above is visible no later than the flag.
 3. The consumer spins until its acquire load reads that `true`. The pair is complete, so it sees all of `nav`, and its plain reads are not a data race.
 
@@ -198,11 +198,11 @@ Sanity check: 6,771,000 − 6,371,000 m (Earth's radius) is 400 km, and circular
 :::
 
 ::: warning "It prints the right answer" is not evidence
-On x86, relaxed message passing usually works because the hardware keeps stores in order. On ARM, which is weaker ordered, the flag can arrive before the data, and on any processor the optimiser may move plain writes past a relaxed store. A million passing runs prove only that you have not met the reordering yet. ThreadSanitizer checks the rules, not the lucky outcome.
+On x86, relaxed message passing usually works because the hardware keeps stores in order. On ARM, which is weaker ordered, the flag can arrive before the data, and on any processor the optimizer may move plain writes past a relaxed store. A million passing runs prove only that you have not met the reordering yet. ThreadSanitizer checks the rules, not the lucky outcome.
 :::
 
 ::: warning Getting the pair wrong
-Release belongs on the *store* that publishes; acquire belongs on the *load* that receives. `store(v, memory_order_acquire)` and `load(memory_order_release)` are not "the other way round": they are not allowed at all, and the behaviour is undefined. And `volatile` is no substitute. In C++, `volatile` tells the compiler to perform every read and write of that variable exactly as written, which is for **[[memory-mapped hardware registers|volatile-for-hardware]]**. It makes nothing atomic and orders nothing between threads, so a `volatile bool` flag is still a data race.
+Release belongs on the *store* that publishes; acquire belongs on the *load* that receives. `store(v, memory_order_acquire)` and `load(memory_order_release)` are not "the other way round": they are not allowed at all, and the behavior is undefined. And `volatile` is no substitute. In C++, `volatile` tells the compiler to perform every read and write of that variable exactly as written, which is for **[[memory-mapped hardware registers|volatile-for-hardware]]**. It makes nothing atomic and orders nothing between threads, so a `volatile bool` flag is still a data race.
 :::
 
 For read-modify-write operations, `std::memory_order_acq_rel` acts as an acquire for what it reads and a release for what it writes. Taking a lock is an acquire and releasing it is a release; that is where the names come from.

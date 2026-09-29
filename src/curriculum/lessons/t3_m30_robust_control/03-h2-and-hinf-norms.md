@@ -10,7 +10,7 @@ How loud is a rock concert? You could answer two ways. You could give the *avera
 
 A control engineer measures the "size" of a transfer function in the same two ways, and almost every modern control method is the minimization of one of them. The **H2 norm** is the average kind: a **[[root-mean-square|rms]]** size, the typical output when the input is broadband noise that never stops — sensor noise, turbulence, the steady buzz of a reaction wheel. The **H-infinity norm** is the loudest-moment kind: the largest amplification of any single input of limited energy — one gust, one thruster misfire, one unknown perturbation shaped as if by an enemy to do the most harm.
 
-LQG minimizes an H2 norm. Robust synthesis minimizes an H-infinity norm. The small gain theorem of the last lesson is an H-infinity statement, and the weight-covering of the lesson before is an H-infinity statement in disguise. Knowing which norm a method optimises tells you at once what it protects you from and what it ignores. A design that is best on average can be terrible in the worst case. That one fact is why the "LQG has no guaranteed margins" result, and the loop-transfer-recovery patch for it, exist in the optimal control module.
+LQG minimizes an H2 norm. Robust synthesis minimizes an H-infinity norm. The small gain theorem of the last lesson is an H-infinity statement, and the weight-covering of the lesson before is an H-infinity statement in disguise. Knowing which norm a method optimizes tells you at once what it protects you from and what it ignores. A design that is best on average can be terrible in the worst case. That one fact is why the "LQG has no guaranteed margins" result, and the loop-transfer-recovery patch for it, exist in the optimal control module.
 
 This lesson defines both norms, says what each one physically measures with units attached, gives closed forms for the systems you meet most, and shows how to compute both from a state-space model with only linear algebra.
 
@@ -83,7 +83,7 @@ For a stable, strictly proper $\mathbf{G}(s)$,
 
 $$\lVert\mathbf{G}\rVert_2 = \left(\frac{1}{2\pi}\int_{-\infty}^{\infty}\operatorname{tr}\big(\mathbf{G}(j\omega)^\mathsf{H}\mathbf{G}(j\omega)\big)\,d\omega\right)^{1/2} = \left(\int_0^\infty\operatorname{tr}\big(\mathbf{g}(t)^\mathsf{T}\mathbf{g}(t)\big)\,dt\right)^{1/2},$$
 
-with $\mathbf{g}(t)$ the impulse-response matrix. It is the root-mean-square output when the input is white noise of unit intensity, and LQG minimises it.
+with $\mathbf{g}(t)$ the impulse-response matrix. It is the root-mean-square output when the input is white noise of unit intensity, and LQG minimizes it.
 :::
 
 The **trace**, $\operatorname{tr}$, is the sum of the diagonal entries of a matrix. Here it adds up the squared gains from every input to every output. **Strictly proper** means the gain falls to zero at very high frequency (no direct feedthrough, $\mathbf{D} = \mathbf{0}$).
@@ -94,7 +94,7 @@ This one number has three readings, worth keeping apart.
 
 **Stochastic RMS.** Drive the system with **[[white noise|white-noise]]** $w$ of intensity $\mathbf{Q}$, meaning $\mathbb{E}[w(t)w(t+\tau)^\mathsf{T}] = \mathbf{Q}\,\delta(\tau)$. Here $\mathbb{E}$ is the average ("expected value") and $\delta$ is the impulse. The steady output covariance is $\mathbb{E}[yy^\mathsf{T}] = \frac{1}{2\pi}\int\mathbf{G}\mathbf{Q}\mathbf{G}^\mathsf{H}d\omega$. For $\mathbf{Q} = q\mathbf{I}$, the output RMS is exactly $\sqrt{q}\,\lVert\mathbf{G}\rVert_2$.
 
-This reading gives the norm units. If $\mathbf{G}$ maps newton-metres to radians, $\lVert\mathbf{G}\rVert_2$ carries $\mathrm{rad}/(\mathrm{N\,m})$ times $\sqrt{\mathrm{rad/s}}$. Multiply by the square root of a torque intensity in $(\mathrm{N\,m})^2\mathrm{s}$ and you get radians.
+This reading gives the norm units. If $\mathbf{G}$ maps newton-meters to radians, $\lVert\mathbf{G}\rVert_2$ carries $\mathrm{rad}/(\mathrm{N\,m})$ times $\sqrt{\mathrm{rad/s}}$. Multiply by the square root of a torque intensity in $(\mathrm{N\,m})^2\mathrm{s}$ and you get radians.
 
 **What it is not.** The H2 norm is *not* a worst-case gain. There is no pair of signal norms for which it is the worst-case ratio. So it is not submultiplicative — $\lVert\mathbf{G}\mathbf{H}\rVert_2 \le \lVert\mathbf{G}\rVert_2\lVert\mathbf{H}\rVert_2$ is false in general — and it cannot appear in a small gain argument.
 
@@ -195,7 +195,7 @@ $$\lVert G\rVert_2 = 1.068\ (\times\,1.51), \qquad \lVert G\rVert_\infty = 5.083
 
 **Where that comes from.** The mode on its own has $\lVert\cdot\rVert_\infty \approx 1/(2\zeta_1) = 1/0.004 = 250$ and $\lVert\cdot\rVert_2 = \sqrt{\omega_1/(4\zeta_1)} = \sqrt{12/0.008} = 38.7$. Scaled by $\varepsilon = 0.02$, these are $5.0$ and $0.77$. The peak adds almost directly to the rigid part's small gain at $12\,\mathrm{rad/s}$; the H2 parts add roughly as squares, $\sqrt{0.707^2 + 0.77^2} \approx 1.05$, close to the computed $1.068$. With $\zeta_1 = 0.005$ instead, the same $\varepsilon$ gives $\lVert G\rVert_\infty = 2.08$ and $\lVert G\rVert_2 = 0.883$.
 
-The lesson survives any choice of numbers. The H-infinity norm scales as $1/\zeta$ and the H2 norm as $1/\sqrt{\zeta}$. Halving the damping doubles one and multiplies the other by only $1.41$. An optimiser minimizing an H2 cost sees a lightly damped mode as a modest part of a broadband average, and will happily leave it undamped near crossover. To H-infinity the same mode is the whole norm. That is the mechanism behind the LQG margin problem, and it is why flexible-structure designs are posed in H-infinity.
+The lesson survives any choice of numbers. The H-infinity norm scales as $1/\zeta$ and the H2 norm as $1/\sqrt{\zeta}$. Halving the damping doubles one and multiplies the other by only $1.41$. An optimizer minimizing an H2 cost sees a lightly damped mode as a modest part of a broadband average, and will happily leave it undamped near crossover. To H-infinity the same mode is the whole norm. That is the mechanism behind the LQG margin problem, and it is why flexible-structure designs are posed in H-infinity.
 :::
 
 ::: warning An H2 norm needs a strictly proper system
@@ -255,7 +255,7 @@ Three.
 
 First: twenty percent of *what*? An H2 cost is a weighted sum of state and control variances. Without the weights, the number has no units and no meaning.
 
-Second: what happened to $\lVert S\rVert_\infty$ and $\lVert T\rVert_\infty$? An H2 optimiser trades broadband average for peak, and a small gain in the average is routinely bought with a much worse worst case — which is where the margins live.
+Second: what happened to $\lVert S\rVert_\infty$ and $\lVert T\rVert_\infty$? An H2 optimizer trades broadband average for peak, and a small gain in the average is routinely bought with a much worse worst case — which is where the margins live.
 
 Third: what does the loop look like near any lightly damped mode? As the flexible example shows, a mode can be nearly invisible in H2 while dominating H-infinity, so the H2 number can improve while the design becomes fragile.
 
@@ -365,7 +365,7 @@ The H-infinity norm squared is the height of the tallest point, $6.41\times 10^{
 ::: context white-noise Why it is called white
 White light is a mix of every color at equal strength. **White noise** is a signal with every frequency at equal strength: its power spectrum is flat. Sampled in time, it looks like a jagged hiss in which each instant has nothing to do with the last.
 
-True white noise would carry infinite power, so it is an idealisation. It works because every real system rolls off at high frequency: as long as the noise is flat over the band where the system responds, the system cannot tell the difference.
+True white noise would carry infinite power, so it is an idealization. It works because every real system rolls off at high frequency: as long as the noise is flat over the band where the system responds, the system cannot tell the difference.
 :::
 
 ::: context lyapunov The equation that adds up a whole response

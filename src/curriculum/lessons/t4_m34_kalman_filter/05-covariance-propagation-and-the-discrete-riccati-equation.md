@@ -6,7 +6,7 @@ covers:
   - Covariance propagation and the discrete Riccati equation
 ---
 
-Go back to the dark field from the last lesson. You are counting steps, and every step adds a little doubt: your stride is not exactly one metre, so after a hundred steps you could be several metres off. Now and then a friend with a flashlight calls out where you are, and your doubt shrinks. Here is the surprising part. You could work out, *before you start walking*, how unsure you will be at step fifty — as long as you know how sloppy your stride is, how good your friend's calls are, and when they will come. You do not need to know *what* your friend will shout. How far off you are depends on the shouts. How far off you *expect* to be does not.
+Go back to the dark field from the last lesson. You are counting steps, and every step adds a little doubt: your stride is not exactly one meter, so after a hundred steps you could be several meters off. Now and then a friend with a flashlight calls out where you are, and your doubt shrinks. Here is the surprising part. You could work out, *before you start walking*, how unsure you will be at step fifty — as long as you know how sloppy your stride is, how good your friend's calls are, and when they will come. You do not need to know *what* your friend will shout. How far off you are depends on the shouts. How far off you *expect* to be does not.
 
 A Kalman filter has exactly this split. The state estimate $\hat{\mathbf{x}}_k$ ("x hat sub k") needs the measurement $\mathbf{z}_k$ at every step. But the covariance $\mathbf{P}_k$ — the filter's own record of how unsure it is — never reads the *value* of a measurement. It uses only $\mathbf{H}$ (what the sensor looks at) and $\mathbf{R}$ (how noisy the sensor is). Those are fixed facts about the sensor, not numbers that come off it each cycle.
 
@@ -136,7 +136,7 @@ Run the descending-booster filter twice. Both runs start from the same $\mathbf{
 | $\mathbf{K}_4$ | $(0.35735,\ 0.72104)^{\mathsf{T}}$ | $(0.35735,\ 0.72104)^{\mathsf{T}}$ |
 | $\operatorname{diag}(\mathbf{P}_4^-)$ | $(2.22427,\ 22.2070)$ | $(2.22427,\ 22.2070)$ |
 
-**The estimates differ,** by about half a metre, as they must — different data should give different answers.
+**The estimates differ,** by about half a meter, as they must — different data should give different answers.
 
 **The gains and covariances agree to every digit.** Run the comparison in full double precision and the largest difference in any gain over six steps is exactly $0.0$ — not small, zero. Both runs compute the identical numbers by identical arithmetic, because neither the Riccati equation nor the gain built from it ever looks at $\mathbf{z}$.
 

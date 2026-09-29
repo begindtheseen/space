@@ -187,7 +187,7 @@ Because polish is not what is being judged, and fragility has a real cost. A mem
 The scene is the only part that makes no claim about you, so it grows in front of the part that does. The next lesson takes the Action on its own and deals with its other structural failure: telling your work as *we*, which makes your contribution impossible to judge no matter how good the rest of the answer is.
 
 ::: context behavioral-interview Why ask about the past at all
-The idea behind this kind of interview is simple: what you actually did in a real situation tells an employer more than what you say you would do in an imagined one. Anyone can describe an ideal response to a hypothetical conflict. Fewer people can describe a real conflict in detail, with names of systems, numbers, and a decision they now regret or stand by. That is why the questions start with "tell me about a time…" and why vague or hypothetical answers score poorly. You will also hear it called a "behavioural" interview in British spelling — same thing.
+The idea behind this kind of interview is simple: what you actually did in a real situation tells an employer more than what you say you would do in an imagined one. Anyone can describe an ideal response to a hypothetical conflict. Fewer people can describe a real conflict in detail, with names of systems, numbers, and a decision they now regret or stand by. That is why the questions start with "tell me about a time…" and why vague or hypothetical answers score poorly. You will also hear it called a "behavioral" interview in British spelling — same thing.
 :::
 
 ::: context recruiter The person who runs your process
@@ -207,7 +207,7 @@ Your speaking rate is how many words you say per minute. Calm conversation for m
 :::
 
 ::: context scene-swell Where a rambling answer spends its time
-Here is the check-yourself answer's 110-second story next to the 90-second target. The grey scene shrinks; the blue Action and orange Result grow. The strong answer is shorter and carries more.
+Here is the check-yourself answer's 110-second story next to the 90-second target. The gray scene shrinks; the blue Action and orange Result grow. The strong answer is shorter and carries more.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">

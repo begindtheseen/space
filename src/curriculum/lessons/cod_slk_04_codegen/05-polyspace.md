@@ -108,7 +108,7 @@ Bug Finder is built for speed and for few false alarms. To get that, it does not
 
 ## Code Prover: reasoning about every input at once
 
-Go back to the bridge. The engineer does not try every truck. She works with ranges: "any truck is between 2 and 40 tonnes, so the load on this beam is between this and that". If the whole range is safe, every truck is safe.
+Go back to the bridge. The engineer does not try every truck. She works with ranges: "any truck is between 2 and 40 metric tons, so the load on this beam is between this and that". If the whole range is safe, every truck is safe.
 
 **Polyspace Code Prover** does the same with the values in a program. Instead of one number per variable, it tracks the *set* of values each variable could have at each line, for every possible input, and pushes those sets through every operation. The mathematics behind this is called **[[abstract interpretation|abstract-interpretation]]**: running the program on descriptions of values (such as "any integer from 0 to 4095") instead of on single values. Then, at every operation that could fail, it asks: can any value in the set make this operation fail?
 

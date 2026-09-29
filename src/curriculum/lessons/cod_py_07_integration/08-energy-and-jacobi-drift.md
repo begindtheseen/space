@@ -102,12 +102,12 @@ for method, rtol, atol in settings:
 
 **DOP853 at the same tolerance.** The drift is about $40$ times smaller, and it took fewer than half the function evaluations ($6137$ against $14\,378$). The eighth-order method takes longer steps and makes a smaller error per step. The growth is still roughly straight-line.
 
-**DOP853 at `rtol=1e-12`.** The drift is $10^{-13}$ to $10^{-12}$ and does not grow steadily; it goes up and then down. At this level the integrator's own error is so small that round-off from the arithmetic takes over, and round-off errors add up like random steps, partly cancelling. This run meets the $10^{-10}$ bar with a margin of almost a hundred.
+**DOP853 at `rtol=1e-12`.** The drift is $10^{-13}$ to $10^{-12}$ and does not grow steadily; it goes up and then down. At this level the integrator's own error is so small that round-off from the arithmetic takes over, and round-off errors add up like random steps, partly canceling. This run meets the $10^{-10}$ bar with a margin of almost a hundred.
 
 **Sanity check.** The best run cost about the same as RK45 at `rtol=1e-9` but is about $100\,000$ times better. For tight orbit work the method matters as much as the tolerance, which matches the advice of the `solve_ivp` lesson.
 :::
 
-Three shapes of drift are worth learning to recognise:
+Three shapes of drift are worth learning to recognize:
 
 - **Straight-line (secular) growth.** Each step makes a small error of the same sign. Typical of Runge–Kutta methods at a tolerance well above round-off. Tightening the tolerance lowers the line but does not change its shape. The next lesson shows a kind of method that removes this shape altogether.
 - **A slow, noisy wander.** Round-off. It grows roughly like the square root of the number of steps. It is the floor you cannot go below in `float64`.

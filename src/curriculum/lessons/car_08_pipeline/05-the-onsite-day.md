@@ -239,7 +239,7 @@ A **high bay** is a factory or assembly space with a very tall ceiling and overh
 :::
 
 ::: context day-timeline The example day, drawn to scale
-Each letter is a round: P presentation, C coding, S systems, D domain, B behavioral. Blue blocks are rounds, orange is lunch, grey is the welcome and the tour. Notice how much of the bar is not blue — 3 hours 15 minutes of the 8 hours 15 minutes.
+Each letter is a round: P presentation, C coding, S systems, D domain, B behavioral. Blue blocks are rounds, orange is lunch, gray is the welcome and the tour. Notice how much of the bar is not blue — 3 hours 15 minutes of the 8 hours 15 minutes.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">

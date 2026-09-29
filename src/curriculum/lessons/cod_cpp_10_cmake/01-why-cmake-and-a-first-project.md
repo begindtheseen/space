@@ -388,7 +388,7 @@ With fusing, there is no rounding between the multiply and the add. The processo
 So for GNC code the build type is not a detail. A navigation filter's output can differ in its last digits between Debug and Release, an `assert` guarding a zero time step exists in only one of them, and "the filter update takes 40 microseconds" means nothing until you say which build was measured.
 
 ::: key
-Why does CMAKE_BUILD_TYPE matter for a numerical library? It selects the optimisation and assertion flags, so Debug and Release can produce different timing, different floating-point contraction and different assertion behaviour. Both must be built and tested, and the type must be stated in any benchmark.
+Why does CMAKE_BUILD_TYPE matter for a numerical library? It selects the optimization and assertion flags, so Debug and Release can produce different timing, different floating-point contraction and different assertion behavior. Both must be built and tested, and the type must be stated in any benchmark.
 :::
 
 ::: warning Testing only one build type

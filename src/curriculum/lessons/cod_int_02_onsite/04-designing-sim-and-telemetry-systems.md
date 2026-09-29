@@ -70,9 +70,9 @@ The catch: with floating-point numbers, harmless changes (a new compiler, a reor
 
 Every run stores its inputs (code version, seed, dispersion settings) next to its outputs. Then any plot can be traced back to exactly what produced it. Summary numbers go in a database you can query; full time histories go in cheaper bulk storage.
 
-### 8. The visualisation layer
+### 8. The visualization layer
 
-Engineers need to see results: dashboards of nightly pass rates, scatter plots of Monte Carlo outcomes, a 3-D replay of one failing case. The visualisation reads only from results storage, never from a live run, so every picture is reproducible.
+Engineers need to see results: dashboards of nightly pass rates, scatter plots of Monte Carlo outcomes, a 3-D replay of one failing case. The visualization reads only from results storage, never from a live run, so every picture is reproducible.
 
 ::: example Sizing the nightly Monte Carlo
 Numbers first. Suppose (our assumptions, stated out loud) each case simulates one day of flight at $100$ steps per second, each step costs $2$ microseconds of CPU time, and the nightly campaign runs $1000$ cases.
@@ -146,7 +146,7 @@ Now the skeleton. Each item below is one box.
 
 - **Ingest through a [[streaming bus|streaming-bus]].** Ground stations push raw frames onto a bus — a durable, ordered log that many readers can consume at their own pace. If a downstream box stops, data waits on the bus instead of being lost.
 - **[[Decommutation|decom]] and schema handling.** Raw frames are packed bytes. Decommutation unpacks them into named channels with units, using a **schema** — the description of which bytes mean what. Schemas change when flight software changes, so every frame must say which schema version it uses.
-- **A hot time-series store plus a columnar archive.** The **hot store** keeps recent data (say the last 30 days) on fast storage for live dashboards. The **[[columnar archive|columnar]]** keeps everything, compressed, on cheap storage, organised by column so a query for one channel across months reads only that channel.
+- **A hot time-series store plus a columnar archive.** The **hot store** keeps recent data (say the last 30 days) on fast storage for live dashboards. The **[[columnar archive|columnar]]** keeps everything, compressed, on cheap storage, organized by column so a query for one channel across months reads only that channel.
 - **Partitioning by time.** Data is split into chunks by hour or day. Queries touch only the chunks they need, and old chunks can be moved or deleted as a unit.
 - **Continuous aggregates for dashboards.** A dashboard of $6000$ satellites cannot redraw from raw one-second data. The pipeline keeps pre-computed summaries — the minute-by-minute minimum, mean and maximum — updated as data arrives.
 - **Gap and duplicate detection.** Links drop, and ground stations overlap, so the same frame can arrive twice or not at all. Every frame carries a satellite ID and a sequence counter. A jump in the counter is a gap; a repeat is a duplicate, dropped before storage.
@@ -230,7 +230,7 @@ In a system design round you usually get a whiteboard, or a shared online drawin
 :::
 
 ::: context back-of-envelope Arithmetic small enough for an envelope
-The phrase comes from the idea that the sum is short enough to scribble on the back of an envelope. The goal is the right *size* — a factor of two either way is fine — not a precise figure. Engineers use it to find which part of a system is hard before spending weeks on it. You will practise the same skill, named Fermi estimation, two lessons from now.
+The phrase comes from the idea that the sum is short enough to scribble on the back of an envelope. The goal is the right *size* — a factor of two either way is fine — not a precise figure. Engineers use it to find which part of a system is hard before spending weeks on it. You will practice the same skill, named Fermi estimation, two lessons from now.
 :::
 
 ::: context monte-carlo-name Named after a casino
@@ -291,7 +291,7 @@ To save radio bandwidth, a spacecraft packs its measurements tightly: a 12-bit t
 :::
 
 ::: context columnar Rows versus columns
-A row store keeps each moment's values together; a column store keeps each channel's values together. Asking "battery voltage for the last six months" in a column store reads one tidy strip instead of every row. Neighbouring values in one column are also similar, so they compress very well.
+A row store keeps each moment's values together; a column store keeps each channel's values together. Asking "battery voltage for the last six months" in a column store reads one tidy strip instead of every row. Neighboring values in one column are also similar, so they compress very well.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 140" font-family="Inter, Arial, sans-serif">

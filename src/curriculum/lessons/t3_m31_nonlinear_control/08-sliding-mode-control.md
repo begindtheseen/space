@@ -148,7 +148,7 @@ $$
 
 **The switching law.** Its pointing is excellent, and its actuator behavior is unflyable: $134$ full torque reversals every second, with the wheel torque swinging across $92\,\mathrm{N\,m}$ forever — on a vehicle whose disturbance is only $5\,\mathrm{N\,m}$. That is bearing wear, heat and structural shaking bought for nothing.
 
-**The boundary layer.** Replacing $\mathrm{sign}(s)$ with $\mathrm{sat}(s/\phi)$ stops it outright: zero reversals, and a $4\,\mathrm{N\,m}$ swing that is no more than the disturbance being cancelled. The cost is pointing — about eleven times worse at $\phi = 0.01$. The error grows in proportion to $\phi$: five times the $\phi$ gives $280.2/56.1 \approx 4.99$ times the error.
+**The boundary layer.** Replacing $\mathrm{sign}(s)$ with $\mathrm{sat}(s/\phi)$ stops it outright: zero reversals, and a $4\,\mathrm{N\,m}$ swing that is no more than the disturbance being canceled. The cost is pointing — about eleven times worse at $\phi = 0.01$. The error grows in proportion to $\phi$: five times the $\phi$ gives $280.2/56.1 \approx 4.99$ times the error.
 
 **The design rule.** The knee of this trade sits at the smallest $\phi$ that removes the chattering, which here lies between $\phi = 0$ and $\phi = 0.01$. Set $\phi$ so the layer is a bit wider than the excursion that the sample rate and actuator lag produce, and no wider.
 :::
@@ -206,7 +206,7 @@ used in place of the $-\eta\,\mathrm{sign}(s)$ term. The switching now happens i
 In the table above, super-twisting with $k_1 = 1.0$ and $k_2 = 0.5$ gives $0.099\,\mathrm{mdeg}$ of pointing error. That is about fifty times better than the pure switching law and more than five hundred times better than the $\phi = 0.01$ boundary layer — with a smooth $5.06\,\mathrm{N\,m}$ actuator command and no reversals. It needs only $s$, not $\dot{s}$, which is a large part of why it is the variant engineers reach for. Exact convergence plus a continuous command is why super-twisting is now often chosen over the classical boundary layer in new designs.
 
 ::: warning Size the switching gain against the matched part only
-The switching gain must exceed the *matched* uncertainty, and only the matched part. A disturbance entering through a different channel — say an unmodeled flexible mode's contribution to the measured rate — is not cancelled by the switching. Raising $\eta$ against it makes chattering worse without helping. Sort your uncertainty into matched and unmatched before choosing $\eta$.
+The switching gain must exceed the *matched* uncertainty, and only the matched part. A disturbance entering through a different channel — say an unmodeled flexible mode's contribution to the measured rate — is not canceled by the switching. Raising $\eta$ against it makes chattering worse without helping. Sort your uncertainty into matched and unmatched before choosing $\eta$.
 :::
 
 ::: warning Do not chase a small boundary layer
@@ -258,7 +258,7 @@ An engineer removes the $u_{\text{eq}} = -J\Lambda\omega$ term, arguing that the
 ::: answer
 Without it, $\dot{s} = -\eta\,\mathrm{sign}(s) + \Lambda\omega + d/J$. The surface is still reached, but only if $\eta$ is big enough to beat the uncancelled term *and* the disturbance: $\eta > \Lambda|\omega|_{\max} + D/J$.
 
-So the design still works, at the price of a larger switching gain and worse chattering, and the gain you need now depends on how fast the vehicle turns. The equivalent-control term is what lets you size $\eta$ against the *uncertainty* instead of against the whole dynamics: the known part is cancelled openly, the unknown part is switched against. Cancelling more of what you know always buys a smaller $\eta$.
+So the design still works, at the price of a larger switching gain and worse chattering, and the gain you need now depends on how fast the vehicle turns. The equivalent-control term is what lets you size $\eta$ against the *uncertainty* instead of against the whole dynamics: the known part is canceled openly, the unknown part is switched against. Canceling more of what you know always buys a smaller $\eta$.
 :::
 
 ::: check

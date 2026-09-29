@@ -1,9 +1,9 @@
 ---
 id: l01-modelling-uncertainty
-title: Modelling uncertainty
+title: Modeling uncertainty
 minutes: 24
 covers:
-  - 'Modelling uncertainty: additive, multiplicative (input and output), parametric, unstructured'
+  - 'Modeling uncertainty: additive, multiplicative (input and output), parametric, unstructured'
 ---
 
 Suppose a friend asks how long your walk to school takes. You could say "twelve minutes". But on a good day it is ten, and when the light at the big crossing is red it is fifteen. The honest answer is a *range*: "ten to fifteen minutes". Plan on twelve and you will sometimes be late.
@@ -69,11 +69,11 @@ $$l_I(\omega) = \max_{\mathbf{G}_p \in \Pi}\ \bar{\sigma}\big((\mathbf{G}_p(j\om
 For a **MIMO** plant — multi-input, multi-output — they are *not* the same, because $\mathbf{A}\mathbf{B}$ is usually not $\mathbf{B}\mathbf{A}$.
 
 - An error at the **input** is an **actuator** error: a thruster that fires ten percent hot, a gimbal with a scale-factor error, a reaction wheel whose torque constant drifts.
-- An error at the **output** is a **sensor** or alignment error: a star tracker tilted slightly in the body frame, a rate gyro that picks up a little of the neighbouring axis.
+- An error at the **output** is a **sensor** or alignment error: a star tracker tilted slightly in the body frame, a rate gyro that picks up a little of the neighboring axis.
 
 Put the block where the physics puts it. Moving an input error round to the output needs $\mathbf{W}_O\boldsymbol{\Delta}_O = \mathbf{G}\mathbf{W}_I\boldsymbol{\Delta}_I\mathbf{G}^{-1}$, which changes both the size and the pattern of the block — a lot, for a plant much stronger in some directions than others.
 
-Two more forms are worth recognising. The **inverse** multiplicative forms, such as $\mathbf{G}_p = (\mathbf{I} - \mathbf{W}\boldsymbol{\Delta})^{-1}\mathbf{G}$, allow plants whose number of right-half-plane poles changes with the perturbation; the ordinary form cannot. And **[[coprime factor|coprime-factors]]** uncertainty writes $\mathbf{G}$ as a fraction of two stable pieces and perturbs top and bottom separately — the description behind Glover–McFarlane loop shaping.
+Two more forms are worth recognizing. The **inverse** multiplicative forms, such as $\mathbf{G}_p = (\mathbf{I} - \mathbf{W}\boldsymbol{\Delta})^{-1}\mathbf{G}$, allow plants whose number of right-half-plane poles changes with the perturbation; the ordinary form cannot. And **[[coprime factor|coprime-factors]]** uncertainty writes $\mathbf{G}$ as a fraction of two stable pieces and perturbs top and bottom separately — the description behind Glover–McFarlane loop shaping.
 
 ::: example An actuator weight from a datasheet
 A gimbal actuator's gain is specified as anywhere within $\pm 20\,\%$ of nominal. Its **[[transport delay|transport-delay]]** — the dead time from computation, sensor filtering and valve response — is anywhere from $0$ to $10\,\mathrm{ms}$. The nominal model is unity gain with no delay, $G = 1$.

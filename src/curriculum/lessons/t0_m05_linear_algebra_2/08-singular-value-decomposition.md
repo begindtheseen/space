@@ -314,7 +314,7 @@ Follow two marked points through $\mathbf{A} = \begin{pmatrix} 2 & 2 \\ -1 & 1 \
 :::
 
 ::: context golden-shear Where the golden ratio comes from
-For the shear, $\mathbf{A}^\mathsf{T}\mathbf{A} = \begin{pmatrix} 1 & 1 \\ 1 & 2 \end{pmatrix}$, with eigenvalues $(3 \pm \sqrt{5})/2$. Their square roots are $(1 + \sqrt{5})/2 = 1.618$, the golden ratio $\varphi$ ("phi"), and $1/\varphi = 0.618$. In the picture, the dashed unit circle becomes the blue ellipse. The only eigenvector direction, the $x$-axis (grey), is left where it was — yet the long axis of the ellipse (red, length $1.618$) points $31.7^\circ$ above it.
+For the shear, $\mathbf{A}^\mathsf{T}\mathbf{A} = \begin{pmatrix} 1 & 1 \\ 1 & 2 \end{pmatrix}$, with eigenvalues $(3 \pm \sqrt{5})/2$. Their square roots are $(1 + \sqrt{5})/2 = 1.618$, the golden ratio $\varphi$ ("phi"), and $1/\varphi = 0.618$. In the picture, the dashed unit circle becomes the blue ellipse. The only eigenvector direction, the $x$-axis (gray), is left where it was — yet the long axis of the ellipse (red, length $1.618$) points $31.7^\circ$ above it.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
@@ -351,7 +351,7 @@ Carl Eckart and Gale Young published this result in 1936 in *Psychometrika*, a j
 :::
 
 ::: context gdop-picture Why bunched beacons hurt
-On the left, three beacons spread at $120^\circ$ (grey rays) give a small round error circle, $0.816\,\mathrm{m}$ across each way. On the right, beacons at $0^\circ$, $5^\circ$ and $10^\circ$ give an ellipse only $0.579\,\mathrm{m}$ along the rays but $8.11\,\mathrm{m}$ across them. Both are drawn at the same scale, $10$ pixels per meter. GPS receivers report this effect as a DOP number, and a large one warns that the satellites overhead are poorly spread.
+On the left, three beacons spread at $120^\circ$ (gray rays) give a small round error circle, $0.816\,\mathrm{m}$ across each way. On the right, beacons at $0^\circ$, $5^\circ$ and $10^\circ$ give an ellipse only $0.579\,\mathrm{m}$ along the rays but $8.11\,\mathrm{m}$ across them. Both are drawn at the same scale, $10$ pixels per meter. GPS receivers report this effect as a DOP number, and a large one warns that the satellites overhead are poorly spread.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210" font-family="Inter, Arial, sans-serif">

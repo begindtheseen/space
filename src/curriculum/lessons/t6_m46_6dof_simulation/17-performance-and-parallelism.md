@@ -3,7 +3,7 @@ id: l17-performance-and-parallelism
 title: Performance and parallelism
 minutes: 19
 covers:
-  - "Performance: vectorisation, parallelism over cases rather than within a case, and why Monte Carlo runs on a cluster"
+  - "Performance: vectorization, parallelism over cases rather than within a case, and why Monte Carlo runs on a cluster"
 ---
 
 Imagine a bakery that has to make ten thousand cakes by Saturday. There are only two honest ways to go faster. You can make each cake quicker — for example, by mixing a whole tray of batter at once instead of one bowl at a time. Or you can make many cakes at the same time, by buying more ovens.

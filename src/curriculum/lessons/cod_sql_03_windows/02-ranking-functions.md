@@ -49,7 +49,7 @@ Three things to notice.
 
 ### The tie-breaker
 
-SAT-003 has two readings of 0.78, at 00:10 and 00:20. Which one is "second lowest"? With only `ORDER BY value`, the two rows are equal, and the database may put them in either order. It may even pick a different one next week, after the table has been reorganised on disk, with no change to the query. That is why the query above orders by `value, ts`: when values tie, the earlier time wins. The second column is a **tie-breaker**.
+SAT-003 has two readings of 0.78, at 00:10 and 00:20. Which one is "second lowest"? With only `ORDER BY value`, the two rows are equal, and the database may put them in either order. It may even pick a different one next week, after the table has been reorganized on disk, with no change to the query. That is why the query above orders by `value, ts`: when values tie, the earlier time wins. The second column is a **tie-breaker**.
 
 ::: warning ROW_NUMBER over ties is a coin toss
 ROW_NUMBER always hands out distinct numbers, even to rows that are equal on the ORDER BY. Which tied row gets the smaller number is not defined unless your ORDER BY decides it. Add columns until the order is unique — usually the timestamp, and then a key — or the same query can return **[[different rows on different days|nondeterministic]]**.
@@ -315,7 +315,7 @@ WHERE n = 1
 ORDER BY sat_id;
 ```
 
-ROW_NUMBER, because exactly one row per satellite is wanted. `value DESC` puts the highest first; `ts` (ascending) breaks ties in favour of the earlier reading. SAT-003's highest value is 0.81 at 00:00, which has no tie, so that is its row. SAT-001 gives 0.90 at 00:00 and SAT-002 gives 0.63 at 00:50.
+ROW_NUMBER, because exactly one row per satellite is wanted. `value DESC` puts the highest first; `ts` (ascending) breaks ties in favor of the earlier reading. SAT-003's highest value is 0.81 at 00:00, which has no tie, so that is its row. SAT-001 gives 0.90 at 00:00 and SAT-002 gives 0.63 at 00:50.
 :::
 
 ## Summary

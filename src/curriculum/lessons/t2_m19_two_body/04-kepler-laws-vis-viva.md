@@ -71,7 +71,7 @@ $$
 T = \frac{2\pi\,a \cdot a\sqrt{1 - e^2}}{\sqrt{\mu a}\,\sqrt{1 - e^2}} = \frac{2\pi a^2}{\sqrt{\mu a}} = 2\pi\sqrt{\frac{a^3}{\mu}}.
 $$
 
-Look what happened: the $\sqrt{1 - e^2}$ on top and bottom cancelled. The eccentricity is gone.
+Look what happened: the $\sqrt{1 - e^2}$ on top and bottom canceled. The eccentricity is gone.
 
 So *the square of the period is proportional to the cube of the semi-major axis*. The constant of proportionality, $4\pi^2/\mu$, is the same for everything orbiting the same body.
 

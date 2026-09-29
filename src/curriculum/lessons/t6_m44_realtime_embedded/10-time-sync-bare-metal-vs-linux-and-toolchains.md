@@ -1,9 +1,9 @@
 ---
 id: l10-time-sync-bare-metal-toolchains
-title: Time synchronisation, bare metal versus Linux, and the toolchain
+title: Time synchronization, bare metal versus Linux, and the toolchain
 minutes: 22
 covers:
-  - "Time synchronisation: GPS pulse-per-second, PTP, and disciplined timestamping of every sample"
+  - "Time synchronization: GPS pulse-per-second, PTP, and disciplined timestamping of every sample"
   - Bare-metal microcontrollers vs embedded Linux, and where the boundary sits on a real vehicle
   - Cross-compilation, toolchains, bootloaders and firmware update
 ---

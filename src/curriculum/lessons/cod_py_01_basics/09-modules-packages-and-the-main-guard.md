@@ -500,7 +500,7 @@ A package is a folder with an `__init__.py` in it. The `__pycache__` folder appe
 ```
 :::
 
-::: context nautical-mile Why a mile of the sea is 1852 metres
+::: context nautical-mile Why a mile of the sea is 1852 meters
 The nautical mile comes from navigation: it was meant to be one minute of arc of latitude, one sixtieth of a degree, so that distances on a chart match angles on the globe. Because Earth is not a perfect sphere, that length varies a little with latitude, so it was fixed by international agreement in 1929 as exactly 1852 m. Ships and aircraft still navigate by it, which is why a conversion constant like this belongs in one shared module.
 :::
 

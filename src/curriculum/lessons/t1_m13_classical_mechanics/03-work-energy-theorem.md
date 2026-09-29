@@ -210,7 +210,7 @@ A $30\,\mathrm{t}$ stage flying at $1300\,\mathrm{m/s}$ starts an entry burn tha
 ::: answer
 Work equals the change in kinetic energy: $W_T = \tfrac{1}{2} \times 30{,}000 \times (700^2 - 1300^2) = 15{,}000 \times (490{,}000 - 1{,}690{,}000) = -1.80 \times 10^{10}\,\mathrm{J}$. Negative, because thrust opposed the motion.
 
-With the force pointing straight against the motion, $W_T = -T s$, so $s = 1.80 \times 10^{10} / 2.5 \times 10^{6} = 7200\,\mathrm{m}$, about $7.2\,\mathrm{km}$ of path. (Really, about a tonne of propellant burns and gravity also acts; both change the answer by a few percent.)
+With the force pointing straight against the motion, $W_T = -T s$, so $s = 1.80 \times 10^{10} / 2.5 \times 10^{6} = 7200\,\mathrm{m}$, about $7.2\,\mathrm{km}$ of path. (Really, about a metric ton of propellant burns and gravity also acts; both change the answer by a few percent.)
 :::
 
 ::: check

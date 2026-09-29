@@ -6,20 +6,20 @@ covers:
   - units and dimensional analysis
 ---
 
-In September 1999 a spacecraft called the [[Mars Climate Orbiter|mco]] reached Mars and was never heard from again. It had flown too low and burned up in the Martian air. The cause was not a hard physics mistake. One piece of software reported the push from the thrusters in American units (pound-force seconds). The software that read those numbers expected metric units (newton seconds). Every number was calculated correctly. But one pound-force is about $4.45$ newtons, and nobody applied that factor. Over months of small course corrections the path drifted by more than a hundred kilometres. The mission had cost hundreds of millions of dollars. That is why this lesson exists, and why the module's coding exercise asks you to build a converter that *refuses* to turn a force into a mass.
+In September 1999 a spacecraft called the [[Mars Climate Orbiter|mco]] reached Mars and was never heard from again. It had flown too low and burned up in the Martian air. The cause was not a hard physics mistake. One piece of software reported the push from the thrusters in American units (pound-force seconds). The software that read those numbers expected metric units (newton seconds). Every number was calculated correctly. But one pound-force is about $4.45$ newtons, and nobody applied that factor. Over months of small course corrections the path drifted by more than a hundred kilometers. The mission had cost hundreds of millions of dollars. That is why this lesson exists, and why the module's coding exercise asks you to build a converter that *refuses* to turn a force into a mass.
 
 Aerospace lives in two unit systems at once — a bit like a kitchen where half the recipes use cups and half use grams. Engine thrust is given in pounds-force in one document and kilonewtons in the next. Tank pressures come in psi. Ranges come in nautical miles, altitudes in feet. You cannot avoid the second system, so you need to move between them mechanically, and to notice when a number is [[in the wrong one|gimli-glider]]. The method is the algebra you have been doing all module — units are symbols that multiply, divide and cancel — plus a short table of exact factors.
 
-The second half of the lesson is about **dimensions**, the idea underneath units. A length is a length whether you measure it in metres or feet. An equation that adds a length to a time is wrong in every unit system. Checking that every piece of an equation has the same dimensions takes thirty seconds and catches a surprising number of algebra mistakes before any number is worked out. It is the cheapest error check you own.
+The second half of the lesson is about **dimensions**, the idea underneath units. A length is a length whether you measure it in meters or feet. An equation that adds a length to a time is wrong in every unit system. Checking that every piece of an equation has the same dimensions takes thirty seconds and catches a surprising number of algebra mistakes before any number is worked out. It is the cheapest error check you own.
 
 ## Dimensions and units
 
-Ask someone how far away school is and they say "two". Two what? Miles? Kilometres? Minutes on the bus? A number without its unit is half a message.
+Ask someone how far away school is and they say "two". Two what? Miles? Kilometers? Minutes on the bus? A number without its unit is half a message.
 
 Two words sort this out.
 
 - A **dimension** is the *kind* of thing being measured: length, mass or time. We write them with the letters $\mathsf{L}$, $\mathsf{M}$ and $\mathsf{T}$. Those three are all that mechanics (the physics of motion) needs. Temperature, electric current and a few others cover the rest of physics.
-- A **unit** is an agreed-upon amount of that kind, used to put a number on it. Metres, feet and nautical miles are all units of length.
+- A **unit** is an agreed-upon amount of that kind, used to put a number on it. Meters, feet and nautical miles are all units of length.
 
 Change the unit and the number changes: $1\,\mathrm{m}$ is about $3.28\,\mathrm{ft}$. The dimension stays the same: both are lengths.
 
@@ -35,7 +35,7 @@ A **dimensionless** quantity has no dimensions at all — every power is zero. E
 
 ### The SI system
 
-The **[[SI|si-name]]** (the international metric system) has three base units for mechanics: the metre ($\mathrm{m}$), the kilogram ($\mathrm{kg}$) and the second ($\mathrm{s}$). Every other unit is built from these, and the ones with their own names are shorthand:
+The **[[SI|si-name]]** (the international metric system) has three base units for mechanics: the meter ($\mathrm{m}$), the kilogram ($\mathrm{kg}$) and the second ($\mathrm{s}$). Every other unit is built from these, and the ones with their own names are shorthand:
 
 | Quantity | Unit | In base units |
 | --- | --- | --- |
@@ -45,15 +45,15 @@ The **[[SI|si-name]]** (the international metric system) has three base units fo
 | power | watt, $\mathrm{W}$ | $\mathrm{J/s} = \mathrm{kg\,m^2/s^3}$ |
 | impulse | $\mathrm{N\,s}$ | $\mathrm{kg\,m/s}$ (same as momentum) |
 
-A **[[newton|newton-apple]]** is the force that makes one kilogram speed up by one metre per second, every second: $F = ma$ with $m = 1\,\mathrm{kg}$ and $a = 1\,\mathrm{m/s^2}$. Because every SI unit is defined this way, no stray conversion numbers ever appear inside SI formulas. The factor is always one. That property is called being **coherent**.
+A **[[newton|newton-apple]]** is the force that makes one kilogram speed up by one meter per second, every second: $F = ma$ with $m = 1\,\mathrm{kg}$ and $a = 1\,\mathrm{m/s^2}$. Because every SI unit is defined this way, no stray conversion numbers ever appear inside SI formulas. The factor is always one. That property is called being **coherent**.
 
-The SI prefixes from the exponents lesson scale any unit by a power of ten: $\mathrm{kN} = 10^3\,\mathrm{N}$, $\mathrm{MPa} = 10^6\,\mathrm{Pa}$, $\mathrm{km} = 10^3\,\mathrm{m}$. Two extra units are used alongside SI. The **tonne**, $\mathrm{t} = 1000\,\mathrm{kg}$, is the natural size for rocket masses. The **bar**, $10^5\,\mathrm{Pa}$, is common for tank pressures and is almost one atmosphere ($1\,\mathrm{atm} = 101\,325\,\mathrm{Pa}$).
+The SI prefixes from the exponents lesson scale any unit by a power of ten: $\mathrm{kN} = 10^3\,\mathrm{N}$, $\mathrm{MPa} = 10^6\,\mathrm{Pa}$, $\mathrm{km} = 10^3\,\mathrm{m}$. Two extra units are used alongside SI. The **metric ton**, $\mathrm{t} = 1000\,\mathrm{kg}$, is the natural size for rocket masses. The **bar**, $10^5\,\mathrm{Pa}$, is common for tank pressures and is almost one atmosphere ($1\,\mathrm{atm} = 101\,325\,\mathrm{Pa}$).
 
 ## Units are algebraic symbols
 
 The whole method of converting units rests on one idea: a unit is a factor that multiplies the number, and it follows the same rules as any letter in algebra.
 
-- $5\,\mathrm{m} \times 3\,\mathrm{m} = 15\,\mathrm{m^2}$ (metres times metres is square metres).
+- $5\,\mathrm{m} \times 3\,\mathrm{m} = 15\,\mathrm{m^2}$ (meters times meters is square meters).
 - $\dfrac{100\,\mathrm{m}}{20\,\mathrm{s}} = 5\,\mathrm{m/s}$.
 - $\dfrac{\mathrm{m^3/s^2}}{\mathrm{m^2}} = \mathrm{m/s^2}$ — the unit check on $g = \mu/r^2$ from the exponents lesson.
 
@@ -61,7 +61,7 @@ Units on the top and bottom of a fraction cancel, exactly as the $x$ does in $\f
 
 ### Multiplying by one
 
-Twelve eggs and one dozen eggs are the same amount of eggs. So the fraction $\frac{12\,\text{eggs}}{1\,\text{dozen}}$ equals one. A **[[conversion factor|conversion-chain]]** is a fraction like that: the top and bottom are the same physical amount written in two different units. For example, a nautical mile is exactly $1852$ metres, so
+Twelve eggs and one dozen eggs are the same amount of eggs. So the fraction $\frac{12\,\text{eggs}}{1\,\text{dozen}}$ equals one. A **[[conversion factor|conversion-chain]]** is a fraction like that: the top and bottom are the same physical amount written in two different units. For example, a nautical mile is exactly $1852$ meters, so
 
 $$
 \frac{1852\,\mathrm{m}}{1\,\mathrm{nmi}} = 1 .
@@ -73,13 +73,13 @@ $$
 400\,\mathrm{km} \times \frac{1000\,\mathrm{m}}{1\,\mathrm{km}} \times \frac{1\,\mathrm{nmi}}{1852\,\mathrm{m}} = \frac{400 \times 1000}{1852}\,\mathrm{nmi} = 216\,\mathrm{nmi} .
 $$
 
-The kilometres cancelled against the kilometres. The metres cancelled against the metres. Only nautical miles survived. Sanity check: a nautical mile is a bit under two kilometres, so the number of nautical miles should be a bit more than half of $400$, and $216$ is.
+The kilometers canceled against the kilometers. The meters canceled against the meters. Only nautical miles survived. Sanity check: a nautical mile is a bit under two kilometers, so the number of nautical miles should be a bit more than half of $400$, and $216$ is.
 
 If you had written the second factor upside down, the units would have come out as $\mathrm{m^2/nmi}$, which is not a length at all, and the mistake would have announced itself. Always write the units in the chain. The whole point of the method is that the units tell you when the chain is wrong.
 
 ### Squares and cubes
 
-Powers of a unit convert with the same power of the factor. One foot is exactly $0.3048\,\mathrm{m}$. A square foot is a square $0.3048\,\mathrm{m}$ on each side, so it is $0.3048^2 = 0.0929\,\mathrm{m^2}$. A cubic foot is $0.3048^3 = 0.02832\,\mathrm{m^3}$. Turn that around and a cubic metre is $35.3\,\mathrm{ft^3}$ — not $3.28$. A box one metre on each side holds about $3.28 \times 3.28 \times 3.28$ boxes one foot on each side.
+Powers of a unit convert with the same power of the factor. One foot is exactly $0.3048\,\mathrm{m}$. A square foot is a square $0.3048\,\mathrm{m}$ on each side, so it is $0.3048^2 = 0.0929\,\mathrm{m^2}$. A cubic foot is $0.3048^3 = 0.02832\,\mathrm{m^3}$. Turn that around and a cubic meter is $35.3\,\mathrm{ft^3}$ — not $3.28$. A box one meter on each side holds about $3.28 \times 3.28 \times 3.28$ boxes one foot on each side.
 
 A density of $810\,\mathrm{kg/m^3}$ (kerosene) in pounds-mass per cubic foot needs the mass factor once and the length factor cubed:
 
@@ -90,7 +90,7 @@ $$
 The cubed factor has $\mathrm{m^3}$ on top to cancel the $\mathrm{m^3}$ on the bottom of the density, and leaves $\mathrm{ft^3}$ on the bottom.
 
 ::: warning Temperature is the exception
-Every conversion above is a pure multiplication, because every unit starts from the same zero: zero metres is zero feet. Temperature scales have different zeros. $0\,^\circ\mathrm{C}$ is $32\,^\circ\mathrm{F}$, and $F = \tfrac{9}{5}C + 32$ has an added $32$. So you cannot convert $^\circ\mathrm{C}$ to $^\circ\mathrm{F}$ with a single factor. And a temperature *difference* converts differently (times $\tfrac{9}{5}$, no $32$) from a temperature *reading*. Kelvin and Rankine are the scales that start at absolute zero, $K = C + 273.15$ and $R = F + 459.67$, and the gas laws need them. Everything else in this lesson is multiply-only.
+Every conversion above is a pure multiplication, because every unit starts from the same zero: zero meters is zero feet. Temperature scales have different zeros. $0\,^\circ\mathrm{C}$ is $32\,^\circ\mathrm{F}$, and $F = \tfrac{9}{5}C + 32$ has an added $32$. So you cannot convert $^\circ\mathrm{C}$ to $^\circ\mathrm{F}$ with a single factor. And a temperature *difference* converts differently (times $\tfrac{9}{5}$, no $32$) from a temperature *reading*. Kelvin and Rankine are the scales that start at absolute zero, $K = C + 273.15$ and $R = F + 459.67$, and the gas laws need them. Everything else in this lesson is multiply-only.
 :::
 
 ## US customary units
@@ -101,7 +101,7 @@ The **US customary** system — also called foot–pound–second, or "English" 
 
 The foot is exactly $1\,\mathrm{ft} = 0.3048\,\mathrm{m}$. The inch is $\tfrac{1}{12}$ of a foot, exactly $25.4\,\mathrm{mm}$. The ordinary (statute) mile is $5280\,\mathrm{ft} = 1609.344\,\mathrm{m}$.
 
-The **nautical mile** is a separate unit, used at sea and in the air: $1\,\mathrm{nmi} = 1852\,\mathrm{m}$ exactly. It started life as [[one minute of latitude|minute-of-latitude]] — one sixtieth of a degree, measured north–south along the Earth's surface — which is why navigation charts use it. The modern definition fixes it at a round number of metres. Speeds in navigation are in **knots**, nautical miles per hour: $1\,\mathrm{kn} = 1852/3600 = 0.5144\,\mathrm{m/s}$.
+The **nautical mile** is a separate unit, used at sea and in the air: $1\,\mathrm{nmi} = 1852\,\mathrm{m}$ exactly. It started life as [[one minute of latitude|minute-of-latitude]] — one sixtieth of a degree, measured north–south along the Earth's surface — which is why navigation charts use it. The modern definition fixes it at a round number of meters. Speeds in navigation are in **knots**, nautical miles per hour: $1\,\mathrm{kn} = 1852/3600 = 0.5144\,\mathrm{m/s}$.
 
 ### Mass and force: two different "pounds"
 
@@ -216,12 +216,12 @@ A helium bottle is rated to $3000\,\mathrm{psi}$. The regulator after it is set 
 
 **The bottle.** $3000\,\mathrm{psi} \times 6894.76 = 2.068 \times 10^7\,\mathrm{Pa} = 20.7\,\mathrm{MPa}$. The regulator sits at $700/3000 = 23\%$ of the bottle's rating.
 
-**Sanity checks.** $700\,\mathrm{psi}$ is about $700/14.7 = 48$ atmospheres. And $4.83\,\mathrm{MPa}$ is $48.3\,\mathrm{bar}$, and a bar is almost an atmosphere. The two routes agree, and both say "about fifty atmospheres", a normal tank pressure. Had you divided by the factor instead of multiplying, you would have got about $0.1\,\mathrm{Pa}$ — a millionth of an atmosphere, absurd for a pressurised tank. The sanity check would have caught what the arithmetic did not.
+**Sanity checks.** $700\,\mathrm{psi}$ is about $700/14.7 = 48$ atmospheres. And $4.83\,\mathrm{MPa}$ is $48.3\,\mathrm{bar}$, and a bar is almost an atmosphere. The two routes agree, and both say "about fifty atmospheres", a normal tank pressure. Had you divided by the factor instead of multiplying, you would have got about $0.1\,\mathrm{Pa}$ — a millionth of an atmosphere, absurd for a pressurized tank. The sanity check would have caught what the arithmetic did not.
 :::
 
 ## Units in code
 
-A program does not carry units. It carries plain numbers, and the units live in the programmer's head — which is exactly where the Mars Climate Orbiter's factor of $4.45$ lived. There are three defences, from weakest to strongest.
+A program does not carry units. It carries plain numbers, and the units live in the programmer's head — which is exactly where the Mars Climate Orbiter's factor of $4.45$ lived. There are three defenses, from weakest to strongest.
 
 1. **Put the unit in the name**: `thrust_N`, `pressure_Pa`, `range_nmi`. Then a line like `total = thrust_N + weight_lbf` looks wrong at a glance.
 2. **Convert at the door.** Turn everything into SI base units the moment data enters the program, do all the work in SI, and convert back only for display. Then the inside of the program has one unit system and no factors.
@@ -335,7 +335,7 @@ Mars Climate Orbiter was launched in December 1998. Software written by the spac
 :::
 
 ::: context gimli-glider The Gimli Glider
-In July 1983 an Air Canada Boeing 767 ran out of fuel at $41\,000$ feet over Canada. The country was switching to metric, and the fuel load had been worked out with a pounds-per-litre factor where a kilograms-per-litre one belonged. The plane took off with less than half the fuel it needed, and both engines stopped. The captain happened to be an experienced glider pilot. He glided the jet down to a disused air-force runway at Gimli, Manitoba, and everyone on board survived.
+In July 1983 an Air Canada Boeing 767 ran out of fuel at $41\,000$ feet over Canada. The country was switching to metric, and the fuel load had been worked out with a pounds-per-liter factor where a kilograms-per-liter one belonged. The plane took off with less than half the fuel it needed, and both engines stopped. The captain happened to be an experienced glider pilot. He glided the jet down to a disused air-force runway at Gimli, Manitoba, and everyone on board survived.
 :::
 
 ::: context radian An angle with no units
@@ -374,7 +374,7 @@ The unit is named after Isaac Newton, whose laws of motion define it. A handy an
 :::
 
 ::: context conversion-chain Watching the units cancel
-Here is the nautical-mile chain from this section with the cancelling marked. Treat each unit like a letter in algebra: the same unit on top and underneath cancels out.
+Here is the nautical-mile chain from this section with the canceling marked. Treat each unit like a letter in algebra: the same unit on top and underneath cancels out.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 144" font-family="Inter, Arial, sans-serif">
@@ -424,8 +424,8 @@ Go once around the Earth through both poles. That is $360$ degrees, and each deg
 That is why a navigator can measure distance straight off the latitude scale on the side of a chart: one minute of latitude, one nautical mile.
 :::
 
-::: context tyre-gauge What a tyre gauge really reads
-A tyre gauge that reads $32\,\mathrm{psi}$ is measuring how much harder the air inside pushes than the air outside. The absolute pressure inside is $32 + 14.7 = 46.7\,\mathrm{psia}$. A flat tyre reads zero, yet it still holds air at $14.7\,\mathrm{psia}$ — just no more than outside. On a spacecraft the difference is serious. Outside becomes vacuum, so a sealed tank's gauge pressure rises by about $14.7\,\mathrm{psi}$ between the launch pad and orbit, with nothing inside it changing at all.
+::: context tyre-gauge What a tire gauge really reads
+A tire gauge that reads $32\,\mathrm{psi}$ is measuring how much harder the air inside pushes than the air outside. The absolute pressure inside is $32 + 14.7 = 46.7\,\mathrm{psia}$. A flat tire reads zero, yet it still holds air at $14.7\,\mathrm{psia}$ — just no more than outside. On a spacecraft the difference is serious. Outside becomes vacuum, so a sealed tank's gauge pressure rises by about $14.7\,\mathrm{psi}$ between the launch pad and orbit, with nothing inside it changing at all.
 :::
 
 ::: context taylor-blast Guessing a secret from photographs

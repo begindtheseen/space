@@ -26,7 +26,7 @@ Spacecraft are full of exactly this. A **resource** is anything one part of the 
 Where the two brackets overlap is a narrower band than either one. Opening with *"let me bound this from the supply side, then check it against what the payload actually needs"* is strong, and the two answers agreeing is a much better finish than any single number.
 
 ::: key
-Worked space estimates bound a resource from both ends: supply, what the vehicle can produce, and demand, what the payload requires. The two routes use different assumptions, so their brackets overlap in a narrower band than either alone. Headline results to carry: about 33 MJ per kilogram to low Earth orbit, roughly one litre of petrol; a broadband satellite radiating a couple of kilowatts in total, of which a few hundred watts is radio frequency.
+Worked space estimates bound a resource from both ends: supply, what the vehicle can produce, and demand, what the payload requires. The two routes use different assumptions, so their brackets overlap in a narrower band than either alone. Headline results to carry: about 33 MJ per kilogram to low Earth orbit, roughly one liter of petrol; a broadband satellite radiating a couple of kilowatts in total, of which a few hundred watts is radio frequency.
 :::
 
 ::: example How much energy does it take to put a kilogram into low Earth orbit?
@@ -47,7 +47,7 @@ The difference is $6.256\times 10^7 - 2.943\times 10^7 = 3.313\times 10^7\,\math
 
 **Where it goes.** Orbital speed here is $v = \sqrt{\mu/a} = 7673\,\mathrm{m/s}$. The kinetic energy is $\tfrac12 v^2 = 29.4\,\mathrm{MJ/kg}$. The rest, 3.70 MJ/kg, is the climb. Speed wins by a factor of eight. That is the physical point worth making: getting to orbit is about going sideways fast, not about going up.
 
-**Sanity check against something known.** Petrol (gasoline) holds about 43 to 46 MJ per kilogram, depending on whether you count the heat in the water vapor it makes, and a litre weighs about 0.745 kg. So a litre holds $46 \times 0.745 = 34.3\,\mathrm{MJ}$ at the top end, or 32 MJ at the bottom. **One litre of petrol is about the energy needed to put one kilogram into orbit.** That is memorable and checkable, and it answers the second half of the module's own Fermi drill.
+**Sanity check against something known.** Petrol (gasoline) holds about 43 to 46 MJ per kilogram, depending on whether you count the heat in the water vapor it makes, and a liter weighs about 0.745 kg. So a liter holds $46 \times 0.745 = 34.3\,\mathrm{MJ}$ at the top end, or 32 MJ at the bottom. **One liter of petrol is about the energy needed to put one kilogram into orbit.** That is memorable and checkable, and it answers the second half of the module's own Fermi drill.
 
 **Second check, against a real vehicle.** Take a medium launcher burning about 400 t of propellant to deliver 15 t — round numbers, not a quoted specification. If the propellant releases about 10 MJ per kilogram, the total is roughly $4.00\times 10^5\,\mathrm{kg} \times 10^7\,\mathrm{J/kg} = 4.00\times 10^{12}\,\mathrm{J}$. Per kilogram of payload that is $4.00\times 10^{12}/15\,000 = 2.67\times 10^8\,\mathrm{J/kg}$. So the overall efficiency is $3.313\times 10^7/2.67\times 10^8 = 0.124$ — about twelve percent. Plausible: the rest is lost to gravity and drag, to the exponential of the rocket equation, and to the fact that most of the propellant is spent speeding up other propellant.
 
@@ -235,7 +235,7 @@ The insight to state: deployment cadence is set by how fast you want the service
 | Estimate | Result | Dominant uncertainty |
 | --- | --- | --- |
 | Energy to low Earth orbit | 33.1 MJ/kg, of which 29.4 is kinetic | None — it is a constant-driven calculation |
-| Comparison | About one litre of petrol per kilogram to orbit | Fuel energy density, a few percent |
+| Comparison | About one liter of petrol per kilogram to orbit | Fuel energy density, a few percent |
 | Real vehicle efficiency | About 12 % | Propellant energy density and payload figure |
 | Satellite total radiated power | About 2.2 kW orbit-average; radiator at 295 K | Array area |
 | Satellite radio-frequency power | 110–430 W, middle about 220 W | Amplifier efficiency and link margin |

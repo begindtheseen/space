@@ -43,7 +43,7 @@ In modern C++ rule 1 costs little. A tree walk becomes a loop with a fixed-size 
 Lesson 04 covered the reasons in detail. In short: an allocator's worst-case time is hard to bound, and after long running, **[[fragmentation|fragmentation]]** can make an allocation fail even though plenty of memory is free in total. The rule removes both problems at once, plus a whole family of bugs — leaks, use-after-free, double-free — because memory that is never freed cannot be freed wrongly.
 
 ::: key
-Power of Ten rule 3: Do not use dynamic memory allocation after initialisation. This removes allocator non-determinism, fragmentation and the whole class of use-after-free and leak defects in one stroke.
+Power of Ten rule 3: Do not use dynamic memory allocation after initialization. This removes allocator non-determinism, fragmentation and the whole class of use-after-free and leak defects in one stroke.
 :::
 
 ## Rules 4 and 5: short functions and assertions

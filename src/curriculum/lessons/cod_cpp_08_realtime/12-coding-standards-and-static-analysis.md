@@ -202,7 +202,7 @@ Sanity check on why proof beats testing here: with one 12-bit input you *could* 
 :::
 
 ::: key
-What does a static analyser prove that tests cannot? Abstract-interpretation tools such as Polyspace Code Prover can prove the absence of certain run-time errors on all inputs, including paths no test exercises. Tests only demonstrate behaviour on the cases you thought of.
+What does a static analyzer prove that tests cannot? Abstract-interpretation tools such as Polyspace Code Prover can prove the absence of certain run-time errors on all inputs, including paths no test exercises. Tests only demonstrate behavior on the cases you thought of.
 :::
 
 ::: warning

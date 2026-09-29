@@ -697,7 +697,7 @@ Every process on Linux has a parent. When a parent dies before its children, the
 ```
 :::
 
-::: context process-group Signalling a whole family
+::: context process-group Signaling a whole family
 When the shell starts a pipeline or a script, it puts that job's processes into one **process group**, identified by a number. `kill 0` means "send this signal to every process in my own process group", and `kill -TERM -1234` (a minus in front) means "to every process in group 1234".
 
 It is blunt on purpose. It reaches children you forgot to record — and, inside the handler, the script itself — so pair it with `trap - TERM` first, or the handler will catch its own signal.

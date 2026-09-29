@@ -428,7 +428,7 @@ It only removes one way of reporting them. Every `at()`, `value()` and throwing 
 ## Why flight code turns exceptions off
 
 ::: key
-Many flight-software teams build with `-fno-exceptions` because throwing has unbounded, hard-to-analyse worst-case time; it needs unwinding tables and a runtime (and allocates on the heap); and a missed `catch` terminates the process. Deterministic error returns — error codes, `std::expected`-style types — are auditable and bounded.
+Many flight-software teams build with `-fno-exceptions` because throwing has unbounded, hard-to-analyze worst-case time; it needs unwinding tables and a runtime (and allocates on the heap); and a missed `catch` terminates the process. Deterministic error returns — error codes, `std::expected`-style types — are auditable and bounded.
 :::
 
 You saw three of the reasons above: timing with no defensible worst case, a heap allocation per throw, and tables and cleanup code in the image. Two more matter as much. Any call might throw, so any line might be a hidden exit from the function, which a reviewer or a static-analysis tool must consider; with error returns, every path is on the page. And one forgotten handler turns a recoverable fault into `std::terminate` and a dead process — on a vehicle, possibly the flight software itself.

@@ -35,7 +35,7 @@ Read $N(A)$ as "N of A": it depends on the input's size, which is exactly what a
 For a nonlinearity with no memory — the output depends only on the input *right now* — $a_1 = 0$, and $N(A)$ is a plain real number. Relay, saturation and **[[dead zone|nonlinearity-shapes]]** are all like that, and so is every case in this lesson.
 
 ::: note Why it has to be true: a memoryless nonlinearity has $a_1 = 0$
-The output is $y(\theta) = f(A\sin\theta)$ for some function $f$. Compare the moments $\theta$ and $\pi - \theta$. The input is the same at both, because $\sin(\pi - \theta) = \sin\theta$, so the output is the same too. But $\cos(\pi - \theta) = -\cos\theta$. So in the integral for $a_1$, each moment's contribution $y\cos\theta$ is cancelled by its partner's, and $a_1 = 0$.
+The output is $y(\theta) = f(A\sin\theta)$ for some function $f$. Compare the moments $\theta$ and $\pi - \theta$. The input is the same at both, because $\sin(\pi - \theta) = \sin\theta$, so the output is the same too. But $\cos(\pi - \theta) = -\cos\theta$. So in the integral for $a_1$, each moment's contribution $y\cos\theta$ is canceled by its partner's, and $a_1 = 0$.
 
 A relay with **hysteresis** breaks this. It switches at different levels on the way up and on the way down, so the same input can give different outputs, and the output lags the input. Then $a_1 \ne 0$ and $N(A)$ is complex. Lesson 14 needs that case for exactly one device.
 :::

@@ -16,7 +16,7 @@ The Kalman filter module's last lesson met the **consider** idea as the Schmidt-
 
 ## One reading, two unknowns
 
-Here is the simplest problem that shows everything. A target sits at range $r$ (read "r"), in metres, and moves away at a known $2\,\mathrm{m}$ every second. A sensor measures that range, but it adds a constant bias $c$ that nobody knows. Each measurement is
+Here is the simplest problem that shows everything. A target sits at range $r$ (read "r"), in meters, and moves away at a known $2\,\mathrm{m}$ every second. A sensor measures that range, but it adds a constant bias $c$ that nobody knows. Each measurement is
 
 $$
 z_k = r_k + c + v_k .
@@ -38,7 +38,7 @@ $$
 \mathbf H = \begin{pmatrix} 1 & 1 \end{pmatrix}.
 $$
 
-$P_{rr}$ ("P sub r r") is the variance of the range estimate, $P_{cc}$ the variance of the bias estimate, and $P_{rc}$ the **covariance** between them — whether their errors tend to move together. The row $\mathbf H$ says "the measurement is one $r$ plus one $c$". The update uses the usual pieces: the innovation variance $S = \mathbf H\mathbf P\mathbf H^{\mathsf T} + \sigma_v^2$, and the gain $\mathbf K = \mathbf P\mathbf H^{\mathsf T}/S$. The gain has two rows: $K_r$ says how far to move $\hat r$ ("r hat", the estimate of $r$) per metre of surprise, and $K_c$ says how far to move $\hat c$.
+$P_{rr}$ ("P sub r r") is the variance of the range estimate, $P_{cc}$ the variance of the bias estimate, and $P_{rc}$ the **covariance** between them — whether their errors tend to move together. The row $\mathbf H$ says "the measurement is one $r$ plus one $c$". The update uses the usual pieces: the innovation variance $S = \mathbf H\mathbf P\mathbf H^{\mathsf T} + \sigma_v^2$, and the gain $\mathbf K = \mathbf P\mathbf H^{\mathsf T}/S$. The gain has two rows: $K_r$ says how far to move $\hat r$ ("r hat", the estimate of $r$) per meter of surprise, and $K_c$ says how far to move $\hat c$.
 
 ::: key Ignore, consider, or augment
 **Ignore**: filter state is $r$ alone; $c$ is assumed exactly zero, and its uncertainty never enters $\mathbf S$ or $\mathbf P$ at all. **Consider (Schmidt-Kalman)**: filter state is $(r,c)$ jointly, propagated and folded into $\mathbf S$ normally, but the Kalman **gain's row for $c$ is forced to zero** every cycle — $c$'s own estimate never moves, while its correlation with $r$ still correctly shapes how much $r$'s own uncertainty shrinks. **Augment**: filter state is $(r,c)$ jointly, with an ordinary, unconstrained gain on both rows — $c$ is actively estimated, exactly like any other state.
@@ -278,7 +278,7 @@ Consider analysis is standard practice in orbit determination, the job of workin
 :::
 
 ::: context confounded A long, thin cloud of doubt
-Draw the error in $r$ across and the error in $c$ up. The prior is the tall grey ellipse: $\pm 5\,\mathrm m$ across, $\pm 8\,\mathrm m$ up, no tilt. After 40 readings, the augmented filter's one-sigma ellipse is the thin blue sliver. Along the direction "$r$ up, $c$ down by the same amount" it is still about $\pm 6\,\mathrm m$ long, because the readings cannot see that direction at all. Across it, where $r + c$ changes, it is only about $\pm 0.4\,\mathrm m$ thick. The tilt is the correlation of $-0.991$.
+Draw the error in $r$ across and the error in $c$ up. The prior is the tall gray ellipse: $\pm 5\,\mathrm m$ across, $\pm 8\,\mathrm m$ up, no tilt. After 40 readings, the augmented filter's one-sigma ellipse is the thin blue sliver. Along the direction "$r$ up, $c$ down by the same amount" it is still about $\pm 6\,\mathrm m$ long, because the readings cannot see that direction at all. Across it, where $r + c$ changes, it is only about $\pm 0.4\,\mathrm m$ thick. The tilt is the correlation of $-0.991$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" font-family="Inter, Arial, sans-serif">

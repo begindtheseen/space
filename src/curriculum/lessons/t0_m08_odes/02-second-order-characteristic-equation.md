@@ -144,7 +144,7 @@ $$
 The **[[extra factor of t|why-t-factor]]** is the signature of a repeated root. It means the response is not a pure exponential. The piece $te^{s_1t}$ first rises from zero, peaks at $t = -1/s_1$, then decays. When $s_1 < 0$ it still goes to zero in the end, because a decaying exponential always beats a growing polynomial.
 
 ::: example A deployment hinge at critical damping
-A spring-loaded hinge that swings open a **[[solar array|solar-array]]** is modelled as $2\ddot{x} + 20\dot{x} + 50x = 0$. Here $x$ is the angle in radians, $2\,\mathrm{kg\,m^2}$ is the inertia, $20\,\mathrm{N\,m\,s}$ is the damper and $50\,\mathrm{N\,m}$ is the spring stiffness.
+A spring-loaded hinge that swings open a **[[solar array|solar-array]]** is modeled as $2\ddot{x} + 20\dot{x} + 50x = 0$. Here $x$ is the angle in radians, $2\,\mathrm{kg\,m^2}$ is the inertia, $20\,\mathrm{N\,m\,s}$ is the damper and $50\,\mathrm{N\,m}$ is the spring stiffness.
 
 **Roots.** Divide by 2: $\ddot{x} + 10\dot{x} + 25x = 0$. Then $s^2 + 10s + 25 = (s + 5)^2$, so the root $s_1 = -5\,\mathrm{s^{-1}}$ is repeated, and
 
@@ -226,7 +226,7 @@ Put the three cases side by side and a pattern appears that runs through the who
 - The **real part** of the root decides growth or decay, and how fast. That mode's time constant is $1/|\operatorname{Re}s|$ (read "Re" as "the real part of").
 - The **imaginary part** decides whether the mode swings, and how fast. Its period is $2\pi/\operatorname{Im}s$ ("Im" is "the imaginary part of").
 
-A root on the negative real axis is a plain decay. A complex pair in the left half of the plane is a decaying swing. A pair sitting on the imaginary axis is a swing that never stops. Anything in the right half of the plane grows. That is why engineers draw roots as points on the **[[complex plane|pole-map]]** and call them poles: the picture *is* the behaviour.
+A root on the negative real axis is a plain decay. A complex pair in the left half of the plane is a decaying swing. A pair sitting on the imaginary axis is a swing that never stops. Anything in the right half of the plane grows. That is why engineers draw roots as points on the **[[complex plane|pole-map]]** and call them poles: the picture *is* the behavior.
 
 ::: note When there is no spring
 If $c = 0$, the characteristic equation $as^2 + bs = 0$ has a root at $s = 0$. Its mode is $e^{0t} = 1$, a constant. Physically, the system has no spring: push it and it stays pushed. A rigid body with rate damping but no attitude feedback behaves like this. With neither ($b = c = 0$), there is a double root at zero and the modes are $1$ and $t$: the body drifts at a constant rate. That **double integrator** is the starting point of every attitude control design.
@@ -365,7 +365,7 @@ Position is where you are. Velocity is how fast position changes — its first d
 :::
 
 ::: context mass-spring-damper The three parts of a bouncing system
-A spring pulls back harder the farther you stretch it (force $kx$). A damper — like a car's shock absorber, a piston pushing oil through a small hole — resists harder the faster you move it (force $c\dot{x}$). The mass resists changes in speed. Almost any structure that wobbles, from a car to a rocket's fuel sloshing in its tank, is modelled as some mix of these three pieces.
+A spring pulls back harder the farther you stretch it (force $kx$). A damper — like a car's shock absorber, a piston pushing oil through a small hole — resists harder the faster you move it (force $c\dot{x}$). The mass resists changes in speed. Almost any structure that wobbles, from a car to a rocket's fuel sloshing in its tank, is modeled as some mix of these three pieces.
 :::
 
 ::: context wronskian A test named after a mathematician
@@ -435,7 +435,7 @@ The blue curve is $e^{-t}(\cos 2t + \tfrac{1}{2}\sin 2t)$ from the example. The 
 ```
 :::
 
-::: context pole-map A map of behaviours
+::: context pole-map A map of behaviors
 Each root is a point: its real part left or right, its imaginary part up or down. Left of the vertical axis, motion dies away; right of it, motion grows. Roots on the horizontal axis give plain decays; roots off it, always in mirror-image pairs, give swings. The farther a pair is from the horizontal axis, the faster it swings.
 
 ```svg

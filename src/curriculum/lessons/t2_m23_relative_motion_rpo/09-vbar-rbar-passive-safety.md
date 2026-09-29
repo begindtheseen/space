@@ -34,7 +34,7 @@ Here is the central idea of the lesson, in one sentence: assume the engine dies 
 "Dies" means *every* later burn fails — a total loss of propulsion from this instant on. What is left is **free drift**: the chaser coasts under gravity alone, following the CW equations. If that free-drift path stays outside the **[[keep-out sphere|keep-out-sphere]]** — a protected bubble around the target — for a long enough time, the approach point is **passively safe**. "Passive" means the safety comes from the path itself, with nothing needing to work.
 
 ::: key Passive safety, defined
-An approach point is **passively safe** if, assuming every subsequent manoeuvre fails to execute — total loss of propulsion from that instant on — the resulting free-drift trajectory stays outside the keep-out volume for a specified time, often **[[24 hours|twenty-four-hours]]**. It is a design requirement, not a hope. It is verified by propagating forward from every point on the planned approach with all later burns set to zero — never assumed because an approach's geometry looks careful.
+An approach point is **passively safe** if, assuming every subsequent maneuver fails to execute — total loss of propulsion from that instant on — the resulting free-drift trajectory stays outside the keep-out volume for a specified time, often **[[24 hours|twenty-four-hours]]**. It is a design requirement, not a hope. It is verified by propagating forward from every point on the planned approach with all later burns set to zero — never assumed because an approach's geometry looks careful.
 :::
 
 That last sentence matters. You will often hear "R-bar is the safe one". That is a half-truth repeated until it sounds like a law of physics. The numbers below show the R-bar advantage is real and measurable, but *not absolute*. They also show that the V-bar's weakness is a specific, computable amount, not a vague danger.
@@ -125,14 +125,14 @@ Biasing the approach slightly *up* reduces the depth. Biasing it *down* makes it
 
 ## A collision avoidance burn is not automatically effective
 
-When a burn is missed, the instinct is to fire whatever thrusters still work, right away. That is a **collision avoidance manoeuvre**, or **CAM**, and the next lesson treats it properly. Here is a preview: not every CAM direction is equally good.
+When a burn is missed, the instinct is to fire whatever thrusters still work, right away. That is a **collision avoidance maneuver**, or **CAM**, and the next lesson treats it properly. Here is a preview: not every CAM direction is equally good.
 
 Add an instant upward (radially outward) kick to the missed-burn V-bar state above:
 
 - $0.05\,\mathrm{m/s}$ upward raises the minimum range from $162.2$ to $178.0\,\mathrm{m}$.
 - $0.10\,\mathrm{m/s}$ upward reaches only $186.0\,\mathrm{m}$ — still inside the $200\,\mathrm{m}$ sphere.
 
-Now try a **retrograde** burn of the same $0.10\,\mathrm{m/s}$ instead — backward along the in-track line, cancelling the closing speed. The minimum range is exactly $200.0\,\mathrm{m}$. The chaser never enters the sphere at all.
+Now try a **retrograde** burn of the same $0.10\,\mathrm{m/s}$ instead — backward along the in-track line, canceling the closing speed. The minimum range is exactly $200.0\,\mathrm{m}$. The chaser never enters the sphere at all.
 
 The reason: after that burn the chaser is sitting still on the V-bar, $200\,\mathrm{m}$ behind the target. That point is on the target's own orbit, so it is a natural parking spot. With no relative velocity and no radial offset, nothing pushes it anywhere. For this geometry, the best use of propellant is not to push away but to *stop closing*.
 
@@ -144,7 +144,7 @@ In the test, the R-bar went $6.5\,\mathrm{m}$ inside the sphere and the V-bar $3
 
 So far the chaser has flown along a line. There is another way to stay safe near a target: park on a closed loop around it that *cannot* hit it, even when something goes wrong. That loop is a **safety ellipse**.
 
-Start from the football orbit of the football-orbits lesson. A pure radial velocity kick $\dot x_0$ from a point on the V-bar gives a closed 2:1 ellipse in the $x$–$y$ plane. Its radial half-width is $A_x = \dot x_0/n$. Pick the start $y_0 = 2A_x$ ahead of the target and the loop is centred on it:
+Start from the football orbit of the football-orbits lesson. A pure radial velocity kick $\dot x_0$ from a point on the V-bar gives a closed 2:1 ellipse in the $x$–$y$ plane. Its radial half-width is $A_x = \dot x_0/n$. Pick the start $y_0 = 2A_x$ ahead of the target and the loop is centered on it:
 
 $$
 x(t) = A_x\sin nt, \qquad y(t) = 2A_x\cos nt.
@@ -242,7 +242,7 @@ The second term is the one that matters. A chaser above the target is on a sligh
 :::
 
 ::: check
-A plain football orbit centred on a target is closed and never touches the target in the CW model. Why is it still not considered passively safe for a long stay, and what does adding cross-track motion fix?
+A plain football orbit centered on a target is closed and never touches the target in the CW model. Why is it still not considered passively safe for a long stay, and what does adding cross-track motion fix?
 :::
 
 ::: answer
@@ -266,7 +266,7 @@ Adding cross-track motion a quarter-cycle out of step, $z = A_z\cos nt$, means t
 | Best single CAM here | A retrograde burn that stops the closing beats an equal upward push |
 | Safety ellipse | $x = A_x\sin nt$, $z = A_z\cos nt$: circles the V-bar, never crosses it |
 
-Passive safety at a single point is the building block. The next lesson scales it up to a whole approach: the corridor and keep-out sphere that bound where a chaser may be, and the collision avoidance manoeuvres that rescue a trajectory when a burn really does fail partway in.
+Passive safety at a single point is the building block. The next lesson scales it up to a whole approach: the corridor and keep-out sphere that bound where a chaser may be, and the collision avoidance maneuvers that rescue a trajectory when a burn really does fail partway in.
 
 ::: context vbar-rbar-picture The two lines through the target
 Stand in the target's frame. The V-bar runs forward and backward along the direction of flight. The R-bar runs straight up and down, toward and away from Earth. A chaser can come in along either one; the circle is the $200\,\mathrm{m}$ keep-out sphere.

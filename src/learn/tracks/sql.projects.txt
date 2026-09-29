@@ -89,11 +89,11 @@ The shop has been running on spreadsheets. Its export is already here, as a tabl
 | 1002 | BO@mail.com | Bo Chen | LAMP | Desk lamp | 45.00 | 1 | SHIPPED |
 | 1006 | bo@mail.com | Bo Chen | HEAD | Headphones | 79.99 | 1 | paid |
 
-The customer and the product are copied onto every line. That is the "notebook" from the lesson "Design: normalising a flat table". The other columns are `placed` (when the order was made), `country` and `category`. You will clean this data in the next lesson and load it in the one after.
+The customer and the product are copied onto every line. That is the "notebook" from the lesson "Design: normalizing a flat table". The other columns are `placed` (when the order was made), `country` and `category`. You will clean this data in the next lesson and load it in the one after.
 
 ### Four tables, each about one thing
 
-As in "Design: normalising a flat table", each fact goes in the table it describes:
+As in "Design: normalizing a flat table", each fact goes in the table it describes:
 
 - `customers`: who buys.
 - `products`: what is sold.
@@ -118,7 +118,7 @@ A 9.00 mug is stored as `900`. You divide by `100.0` only at the very end, when 
 
 `products` keeps today's **list price**, the price the shop is asking now, in `price_cents`. But each line in `order_items` keeps its own `unit_cents`: the price **charged** on that line, for one unit.
 
-Why both? Prices change, and history must not. In the export, the headphones sold for 89.99 in February and 79.99 in a March sale. If the old orders only pointed at today's price, a price change would rewrite what customers paid. This is the `unit_price` idea from "Design: normalising a flat table", now in cents.
+Why both? Prices change, and history must not. In the export, the headphones sold for 89.99 in February and 79.99 in a March sale. If the old orders only pointed at today's price, a price change would rewrite what customers paid. This is the `unit_price` idea from "Design: normalizing a flat table", now in cents.
 
 ### Decision 3: natural keys stay unique
 
@@ -128,7 +128,7 @@ Each customer gets an `id` that the database fills in. That `id` is what `orders
 email TEXT NOT NULL UNIQUE
 ```
 
-Without it, the same person could [[end up as two customers|two-customers]], each with half the orders. As you saw in "Design: normalising a flat table", an email or a SKU is a natural key, and the `id` is an invented one.
+Without it, the same person could [[end up as two customers|two-customers]], each with half the orders. As you saw in "Design: normalizing a flat table", an email or a SKU is a natural key, and the `id` is an invented one.
 
 ### Decision 4: states are a closed list
 
@@ -355,7 +355,7 @@ The `␣` marks a space. On screen, spaces [[do not show|invisible-spaces]], so 
 
 `'BO@mail.com '` has capitals and a space at the end. `' ana@mail.com'` has a space at the start. To the database, `'BO@mail.com '` and `'bo@mail.com'` are two different emails, so Bo would become two customers.
 
-The fix is the one from the lesson "Working with text": **normalise**, meaning make every value follow the same form. `trim` removes the spaces at both ends, and `lower` turns capitals into small letters:
+The fix is the one from the lesson "Working with text": **normalize**, meaning make every value follow the same form. `trim` removes the spaces at both ends, and `lower` turns capitals into small letters:
 
 ```sql
 SELECT email, lower(trim(email)) AS clean FROM import_rows WHERE order_ref IN (1002, 1004);
@@ -576,7 +576,7 @@ From last lesson:
 
 ### Parents before children
 
-Each table is filled with `INSERT … SELECT`, from the lesson "Design: normalising a flat table": the rows a `SELECT` returns are inserted. One table at a time, and **parents before children**. A **parent** is a table that others point at; a **child** points at it. An order points at a customer, so the customer must exist first, or the foreign key refuses the order. That gives [[this order|load-order]]: `customers` and `products`, then `orders`, then `order_items`.
+Each table is filled with `INSERT … SELECT`, from the lesson "Design: normalizing a flat table": the rows a `SELECT` returns are inserted. One table at a time, and **parents before children**. A **parent** is a table that others point at; a **child** points at it. An order points at a customer, so the customer must exist first, or the foreign key refuses the order. That gives [[this order|load-order]]: `customers` and `products`, then `orders`, then `order_items`.
 
 ### Step 1: one customer per email
 
@@ -1207,7 +1207,7 @@ CASE WHEN cents >= 10000 THEN 'vip'
 
 `CASE` takes the first `WHEN` that is true, so the order matters. The boundaries are written into the task, and it is worth [[testing the edges|edge-tests]]: 10000 cents gives `'vip'`, 9999 gives `'active'`, and 0 gives `'inactive'`. These labels are a small version of a well-known way to [[score customers|rfm]].
 
-**Watch out:** write the `WHEN`s from the strictest down. With `WHEN cents > 0 THEN 'active'` first, Ana's 14049 cents is above 0, so she is labelled `'active'` and the `'vip'` line is never reached. No error, and no VIPs.
+**Watch out:** write the `WHEN`s from the strictest down. With `WHEN cents > 0 THEN 'active'` first, Ana's 14049 cents is above 0, so she is labeled `'active'` and the `'vip'` line is never reached. No error, and no VIPs.
 
 ::: context win-back Customers who have not bought yet
 Shops send special emails to people who signed up but never ordered, or who have not ordered for a while: a reminder, a discount, a "we miss you". Marketing teams call these **win-back** or re-engagement campaigns. They can only send them if the report lists those people. Drop the customers with no orders, and the very list marketing wanted is empty. That is why this report starts from `customers`, not from `orders`.
@@ -1247,7 +1247,7 @@ Bugs gather at boundaries. Is "100 dollars or more" written `>=` or `>`? Only a 
 :::
 
 ::: context rfm Recency, frequency, money
-This report holds three classic measures of a customer. **Recency**: how long since the last order (`last_order`). **Frequency**: how many orders (`orders`). **Monetary value**: how much they spent (`spent`). Marketers call this **RFM**, and it has been used since long before online shops, by mail-order catalogues. Real RFM gives each measure a score, often 1 to 5, and combines them. This lesson's segment uses spend alone, which is a fine place to start.
+This report holds three classic measures of a customer. **Recency**: how long since the last order (`last_order`). **Frequency**: how many orders (`orders`). **Monetary value**: how much they spent (`spent`). Marketers call this **RFM**, and it has been used since long before online shops, by mail-order catalogs. Real RFM gives each measure a score, often 1 to 5, and combines them. This lesson's segment uses spend alone, which is a fine place to start.
 :::
 --- task
 Write one query that returns one row per customer, all six of them, with these five columns in this order:
@@ -2249,14 +2249,14 @@ You design everything else.
 
 ### A book is not a copy
 
-Walk into a library and ask for *Dune*. The catalogue has one entry for it: the title, the author, the [[ISBN|isbn]]. On the shelf there may be three physical *Dune*s, each with its own barcode sticker. One is out with a member, one is on the shelf, one has coffee spilled on page 40.
+Walk into a library and ask for *Dune*. The catalog has one entry for it: the title, the author, the [[ISBN|isbn]]. On the shelf there may be three physical *Dune*s, each with its own barcode sticker. One is out with a member, one is on the shelf, one has coffee spilled on page 40.
 
 So there are two different things here:
 
 - A **book** is the title as a whole: one row for *Dune*, however many copies there are.
 - A **copy** is one physical item you can hold, with its own barcode.
 
-You lend copies, not books. This is the first [[modelling decision|type-and-instance]] of the project, and a classic one. Get it wrong, with a single `books` table and a `quantity` column, and you cannot say *which* copy is overdue or damaged. "Two of three are out" does not tell you who has which.
+You lend copies, not books. This is the first [[modeling decision|type-and-instance]] of the project, and a classic one. Get it wrong, with a single `books` table and a `quantity` column, and you cannot say *which* copy is overdue or damaged. "Two of three are out" does not tell you who has which.
 
 ### Three new tables
 
@@ -2524,7 +2524,7 @@ These are the four tables from "Library 1: the schema": `members`, `books`, `cop
 | 3 | Ubik | 5 U-1, 6 U-2 |
 | 4 | Kindred | none yet |
 
-*Kindred* has only now been [[catalogued|catalogue]] and has no copies yet. And here are the loans:
+*Kindred* has only now been [[cataloged|catalogue]] and has no copies yet. And here are the loans:
 
 | id | copy_id | member_id | loaned_on | due_on | returned_on |
 | --- | --- | --- | --- | --- | --- |
@@ -2638,8 +2638,8 @@ Because each copy has at most one open loan, this join cannot fan out: one copy 
 
 **Watch out:** do not count with `COUNT(*)`. Kindred has no copies, but it still has one joined row full of NULLs, and `COUNT(*)` counts that row, so Kindred would show 1 copy. Count `c.id` and `l.id`.
 
-::: context catalogue What "catalogued" means
-A library's **catalogue** is its list of every title it holds, with the author, ISBN and subject, so people can search it. To **catalogue** a book is to add its entry to that list. That often happens before the physical copies arrive, or while they are still being labelled, which is exactly why *Kindred* has a row in `books` and none in `copies`. A good report shows it with 0 copies rather than leaving it out. A missing row reads as "we have never heard of this book", which is a different answer.
+::: context catalogue What "cataloged" means
+A library's **catalog** is its list of every title it holds, with the author, ISBN and subject, so people can search it. To **catalog** a book is to add its entry to that list. That often happens before the physical copies arrive, or while they are still being labeled, which is exactly why *Kindred* has a row in `books` and none in `copies`. A good report shows it with 0 copies rather than leaving it out. A missing row reads as "we have never heard of this book", which is a different answer.
 :::
 
 ::: context one-definition Why one shared definition matters
@@ -3090,7 +3090,7 @@ A fine is money owed, so it is [[kept even if the loan record is edited later|le
 :::
 
 ::: context zero-fine Why the late test matters twice
-Without `NEW.returned_on > NEW.due_on`, returning Emma on her due date would make the trigger insert a fine of 0 cents. The `CHECK (cents > 0)` refuses it, and because a trigger runs inside the same statement as the change, the error cancels the whole `UPDATE`. The return itself would fail, and the desk could never check an on-time book back in. So the `WHEN` is not only tidier: it keeps on-time returns working. The `CHECK` stays as a second line of defence.
+Without `NEW.returned_on > NEW.due_on`, returning Emma on her due date would make the trigger insert a fine of 0 cents. The `CHECK (cents > 0)` refuses it, and because a trigger runs inside the same statement as the change, the error cancels the whole `UPDATE`. The return itself would fail, and the desk could never check an on-time book back in. So the `WHEN` is not only tidier: it keeps on-time returns working. The `CHECK` stays as a second line of defense.
 :::
 
 ::: context ledger Money is never quietly rewritten
@@ -3259,7 +3259,7 @@ On a busy sale, two people can click the same seat in the same second. The app a
 :::
 
 ::: context cancel-history Deleting is not the only way
-In this spec, cancelling an event deletes its tickets, and `ON DELETE CASCADE` does that in one statement. Real ticket systems are often more careful. A sold ticket is a record of money paid, and a cancelled show usually means refunds. So many systems keep the rows and set a column such as `status` to `'cancelled'` instead. The history stays, and a report can still say how much must be paid back. Keeping a row but marking it as gone is called a **soft delete**. The appointment capstone, two lessons from now, uses exactly this idea.
+In this spec, canceling an event deletes its tickets, and `ON DELETE CASCADE` does that in one statement. Real ticket systems are often more careful. A sold ticket is a record of money paid, and a canceled show usually means refunds. So many systems keep the rows and set a column such as `status` to `'cancelled'` instead. The history stays, and a report can still say how much must be paid back. Keeping a row but marking it as gone is called a **soft delete**. The appointment capstone, two lessons from now, uses exactly this idea.
 :::
 
 ::: context break-it Test the refusals, not only the successes
@@ -3380,7 +3380,7 @@ The last column is each person's **net balance**: what they paid minus what they
 | --- | --- | --- |
 | 1, 2, 3, 4 | `PRAGMA foreign_keys = ON`, `REFERENCES`, `ON DELETE CASCADE` | "Foreign keys" |
 | 2, 3 | `NOT NULL`, `CHECK` | "Constraints: rules the database enforces" |
-| 5 | a primary key made of two columns | "Design: normalising a flat table" |
+| 5 | a primary key made of two columns | "Design: normalizing a flat table" |
 | 6 | one total per step, joined at the end | "CTEs: a query in named steps", "Debugging: the join that double-counts" |
 | 6, 7 | `LEFT JOIN`, `COALESCE` | "LEFT JOIN: where the filter goes", "Testing for NULL" |
 | 7 | `HAVING`, `<>` | "Grouping", "Filtering with WHERE" |
@@ -3556,7 +3556,7 @@ The staff list already exists, as `staff`:
 1. `clients`: `id` (integer primary key), `email` (required, and unique **ignoring case**: `ANA@x.io` and `ana@x.io` are the same client), `name`.
 2. `appointments`: `id` (integer primary key), `staff_id` (required, a real staff member), `client_id` (required, a real client), `starts_at` and `ends_at` (required timestamps stored as text, `'YYYY-MM-DD HH:MM'`), `status` (required; `'booked'` or `'cancelled'`; **defaults to `'booked'`**).
 3. An appointment must **end after it starts**.
-4. A view `double_bookings` with the columns `staff_id`, `first_id` and `second_id`: every pair of **booked** appointments for the same staff member whose times overlap, with `first_id` less than `second_id`. Two time slots overlap when each starts before the other ends. Back-to-back appointments (one ends at 09:30, the next starts at 09:30) do **not** overlap. Cancelled appointments never count.
+4. A view `double_bookings` with the columns `staff_id`, `first_id` and `second_id`: every pair of **booked** appointments for the same staff member whose times overlap, with `first_id` less than `second_id`. Two time slots overlap when each starts before the other ends. Back-to-back appointments (one ends at 09:30, the next starts at 09:30) do **not** overlap. Canceled appointments never count.
 5. A view `daily_schedule` with the columns `staff_id`, `day`, `appointments` and `booked_minutes`: for each staff member and calendar day (`'YYYY-MM-DD'`) that has booked appointments, how many there are and their total length in whole minutes.
 6. An index that lets the app list one staff member's appointments [[in time order without a separate sort|index-order]]: its first column `staff_id`, its second `starts_at`.
 
@@ -3657,7 +3657,7 @@ SELECT (unixepoch('2024-09-02 10:30') - unixepoch('2024-09-02 09:59')) / 60;
 
 Both numbers are whole, so the division gives a whole number, as in the note on dividing whole numbers in "Choosing columns". For the day, `date('2024-09-02 09:59')` gives `'2024-09-02'`, from "Date arithmetic and date ranges".
 
-**Watch out:** cancelled appointments must drop out of both views. In the self-join, test the status of **both** copies: `a.status = 'booked' AND b.status = 'booked'`. Test only `a`, and a cancelled `b` can still be reported as a clash.
+**Watch out:** canceled appointments must drop out of both views. In the self-join, test the status of **both** copies: `a.status = 'booked' AND b.status = 'booked'`. Test only `a`, and a canceled `b` can still be reported as a clash.
 
 ::: context what-next Where SQL goes from here
 Every lesson here has run on SQLite, a small database that lives inside the program using it. It is built into every Android phone and iPhone and into most web browsers. Bigger systems, with many users writing at once, often use a database server such as PostgreSQL or MySQL. The SQL you learned carries over almost unchanged: `SELECT`, joins, `GROUP BY`, window functions, constraints, views. What changes is small, like some function names for dates and times.

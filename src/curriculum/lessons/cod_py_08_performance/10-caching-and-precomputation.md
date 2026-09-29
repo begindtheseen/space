@@ -121,7 +121,7 @@ Why is caching an interpolator outside the loop a big win? Constructing a spline
 
 **Built once.** $4 \times 10^7 \times 4.4 \times 10^{-6}\,\mathrm{s} = 176\,\mathrm{s}$, or about $2.9$ minutes.
 
-**Sense check.** $6490 / 176 \approx 37$, the same ratio as the single-call timing, as it should be: every call saved the same construction. And if the simulator can hand the spline a whole array of Mach numbers at once, the price per value drops again. Evaluating $100{,}000$ Mach numbers in one call took about $1.05\,\mathrm{ms}$ on the same machine, about $10.5\,\mathrm{ns}$ each. That is the vectorisation lesson again: fewer, bigger calls.
+**Sense check.** $6490 / 176 \approx 37$, the same ratio as the single-call timing, as it should be: every call saved the same construction. And if the simulator can hand the spline a whole array of Mach numbers at once, the price per value drops again. Evaluating $100{,}000$ Mach numbers in one call took about $1.05\,\mathrm{ms}$ on the same machine, about $10.5\,\mathrm{ns}$ each. That is the vectorization lesson again: fewer, bigger calls.
 :::
 
 ### What happens past the end of the table
@@ -157,7 +157,7 @@ Hoisting works when the input never changes. Sometimes the input does change, bu
 
 It is only safe for a **pure function**: one whose answer depends on its arguments and nothing else, and which changes nothing outside itself.
 
-Python has memoisation built in. The **decorator** `functools.lru_cache` — a line starting with `@` that wraps a function in extra behaviour — keeps a dictionary from arguments to results. On a call it looks the arguments up. If they are there, a **hit**, it returns the stored result without running the function. If not, a **miss**, it runs the function and stores the result.
+Python has memoisation built in. The **decorator** `functools.lru_cache` — a line starting with `@` that wraps a function in extra behavior — keeps a dictionary from arguments to results. On a call it looks the arguments up. If they are there, a **hit**, it returns the stored result without running the function. If not, a **miss**, it runs the function and stores the result.
 
 A real place this pays off is a **[[gain schedule|gain-schedule]]**: control gains worked out for a set of flight conditions and picked by the current condition. Here the gains for a pitch controller are computed from the vehicle's mass by solving a matrix equation with `scipy.linalg.solve_continuous_are`. You do not need the control theory for this lesson. What matters is that each solve costs about half a millisecond, and the mass is rounded to the nearest $10\,\mathrm{kg}$, so the same few masses come up again and again as the propellant burns off.
 
@@ -216,7 +216,7 @@ The name tells you what happens when the cache is full. **LRU** stands for **[[l
 
 ::: warning Four ways a cache bites
 - **Arrays cannot be keys.** The cache stores arguments in a dictionary, so they must be **[[hashable|hashable]]**. Passing a NumPy array raises `TypeError: unhashable type: 'numpy.ndarray'`. Pass a tuple or a float instead.
-- **Floats must match exactly.** $500.0$ and $500.0000001$ are different keys, so an unrounded mass would miss every time and the cache would only grow. Rounding to bins fixes that, but rounding is a modelling choice: the gain for $503\,\mathrm{kg}$ is now the gain for $500\,\mathrm{kg}$. Decide that on purpose.
+- **Floats must match exactly.** $500.0$ and $500.0000001$ are different keys, so an unrounded mass would miss every time and the cache would only grow. Rounding to bins fixes that, but rounding is a modeling choice: the gain for $503\,\mathrm{kg}$ is now the gain for $500\,\mathrm{kg}$. Decide that on purpose.
 - **Returned objects are shared.** A cached function hands every caller the same object. If it returns a list and one caller changes it, every later caller sees the change. Return tuples, or arrays you never modify.
 - **Stale answers.** If the function reads anything besides its arguments — a global table, a file — and that thing changes, the cache keeps returning the old answer. Call `cache_clear()`, or better, pass that thing in as an argument.
 :::
@@ -310,7 +310,7 @@ The product $(x - a)(x - a - \Delta)$ is largest in size at the middle of the ga
 
 Timing one call of each on the same machine gave about $0.68\,\mu\mathrm{s}$ for `kepler_E(1.0, 0.3)` and about $1.02\,\mu\mathrm{s}$ for `kepler_table(1.0)`. The table was *slower*. Newton's method needs only a handful of passes for this orbit, and each pass is a few fast `math` calls. `np.interp` on a single number spends most of its time on the overhead of a NumPy call.
 
-The table wins when the function it replaces is expensive, or when you look up many values at once. Solving a million random $M$ values took about $271\,\mathrm{ms}$ with a vectorised six-pass Newton loop and about $91\,\mathrm{ms}$ with one `np.interp` call on the whole array: three times faster, at a known accuracy cost.
+The table wins when the function it replaces is expensive, or when you look up many values at once. Solving a million random $M$ values took about $271\,\mathrm{ms}$ with a vectorized six-pass Newton loop and about $91\,\mathrm{ms}$ with one `np.interp` call on the whole array: three times faster, at a known accuracy cost.
 
 ::: warning Measure the table too
 A lookup table replaces computation with memory reads, and both have a price. For a cheap function like `math.exp` (about $47\,\mathrm{ns}$ a call here) a table is almost always slower. Time the table against the function it replaces, and check its error against the accuracy you need, before you keep it.
@@ -387,7 +387,7 @@ You wrap `density(h)` in `@lru_cache(maxsize=None)` and pass the unrounded altit
 ::: answer
 The cache only matches exact keys. The integrator's altitude is a float that is different on every step (it is almost never exactly the same number twice), so every call is a miss: `hits=0`. Every miss stores a new entry, and with `maxsize=None` nothing is ever thrown out, so `currsize` grows by one each call. The cache made each call slower (it now does a lookup and a store) and used memory for nothing.
 
-Either round the altitude to bins on purpose, accepting the modelling error that brings, or better, use a lookup table with interpolation, which is built for continuous inputs.
+Either round the altitude to bins on purpose, accepting the modeling error that brings, or better, use a lookup table with interpolation, which is built for continuous inputs.
 :::
 
 ::: check
@@ -420,11 +420,11 @@ Onboard computers must finish every control cycle before a hard deadline, often 
 :::
 
 ::: context loop-invariant Why Python does not do this for you
-Compilers for C and C++ move loop-invariant code out of loops automatically; the optimisation is called loop-invariant code motion. Python's interpreter does not. It cannot be sure that `np.array` still means the same function on the next pass, because any line of the program could reassign the name `np` or change the list it was given. So it runs every line exactly as written, every time. Numba, from earlier in this module, compiles the loop and can hoist some work, but only for code it can compile.
+Compilers for C and C++ move loop-invariant code out of loops automatically; the optimization is called loop-invariant code motion. Python's interpreter does not. It cannot be sure that `np.array` still means the same function on the next pass, because any line of the program could reassign the name `np` or change the list it was given. So it runs every line exactly as written, every time. Numba, from earlier in this module, compiles the loop and can hoist some work, but only for code it can compile.
 :::
 
 ::: context spline-setup What a spline has to work out first
-A cubic spline puts a separate cubic curve in every gap between table points and insists that neighbouring pieces meet with the same height, slope and bend. Those joining rules link each point's bend to its neighbours', which gives one equation per point. The equations form a banded system: each one involves only a point and its two neighbours, so it can be solved in time proportional to the number of points. That solve is the construction cost. Evaluation afterward only has to find the right gap and work out one small cubic.
+A cubic spline puts a separate cubic curve in every gap between table points and insists that neighboring pieces meet with the same height, slope and bend. Those joining rules link each point's bend to its neighbors', which gives one equation per point. The equations form a banded system: each one involves only a point and its two neighbors, so it can be solved in time proportional to the number of points. That solve is the construction cost. Evaluation afterward only has to find the right gap and work out one small cubic.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
@@ -464,7 +464,7 @@ Past the last table point there is no data, so any value is a guess. The three S
 :::
 
 ::: context memoisation A word with a missing r
-Memoisation is not a typo for "memorisation". The British researcher Donald Michie coined "memo functions" in a 1968 paper in *Nature*: a function that keeps a memo, a written note, of answers it has already given. The idea is older than the word, since people have always kept tables of hard-won results, from logarithm tables to star positions. Today it is used everywhere, from web servers to compilers to scientific codes.
+Memoisation is not a typo for "memorization". The British researcher Donald Michie coined "memo functions" in a 1968 paper in *Nature*: a function that keeps a memo, a written note, of answers it has already given. The idea is older than the word, since people have always kept tables of hard-won results, from logarithm tables to star positions. Today it is used everywhere, from web servers to compilers to scientific codes.
 :::
 
 ::: context gain-schedule Gains that change with the flight
@@ -493,7 +493,7 @@ A Python dictionary finds a key fast by turning it into a number called its hash
 :::
 
 ::: context kepler Four hundred years old and still solved by iteration
-Johannes Kepler published his laws of planetary motion in 1609. The equation $E - e\sin E = M$ connects time along an orbit to position on it. $M$, the mean anomaly, grows steadily with time. $E$, the eccentric anomaly, is an angle measured from the centre of the ellipse. For a circle, $e = 0$ and the two are equal. For any other orbit there is no neat formula for $E$ in terms of $M$, so every orbit propagator that works in these angles solves it by iteration, usually Newton's method, millions of times in a long simulation.
+Johannes Kepler published his laws of planetary motion in 1609. The equation $E - e\sin E = M$ connects time along an orbit to position on it. $M$, the mean anomaly, grows steadily with time. $E$, the eccentric anomaly, is an angle measured from the center of the ellipse. For a circle, $e = 0$ and the two are equal. For any other orbit there is no neat formula for $E$ in terms of $M$, so every orbit propagator that works in these angles solves it by iteration, usually Newton's method, millions of times in a long simulation.
 :::
 
 ::: context chord-error Where the straight line misses

@@ -345,7 +345,7 @@ left after burn = 0 g
 clock overflow: raise a fault
 ```
 
-Check each line. The counter goes $65\,534$, $65\,535$, then $65\,536 - 65\,536 = 0$, which the ground software expects. The propellant: $1500 - 2000 = -500$, saturated to 0; wrapped it would be $-500 + 2^{32} = 4\,294\,966\,796$ grams, about 4 300 tonnes of phantom fuel. The clock: $4\,294\,000\,000 + 2\,000\,000 = 4\,296\,000\,000$, which is more than the `u32` limit of $4\,294\,967\,295$, so `checked_add` said `None` and the code took the fault branch. (The `match` there picks a branch by which case the `Option` holds; lesson 4 teaches it.)
+Check each line. The counter goes $65\,534$, $65\,535$, then $65\,536 - 65\,536 = 0$, which the ground software expects. The propellant: $1500 - 2000 = -500$, saturated to 0; wrapped it would be $-500 + 2^{32} = 4\,294\,966\,796$ grams, about 4 300 metric tons of phantom fuel. The clock: $4\,294\,000\,000 + 2\,000\,000 = 4\,296\,000\,000$, which is more than the `u32` limit of $4\,294\,967\,295$, so `checked_add` said `None` and the code took the fault branch. (The `match` there picks a branch by which case the `Option` holds; lesson 4 teaches it.)
 
 How long does a `u32` millisecond clock last? $2^{32}\,\mathrm{ms} = 4\,294\,967\,296\,\mathrm{ms}$. Divide by $1000$ for seconds, then by $86\,400$ seconds per day: about $49.7$ days. A spacecraft that stays powered for two months would hit it — the kind of bug that has [[grounded real aircraft|real-counter-bugs]].
 :::

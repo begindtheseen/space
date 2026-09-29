@@ -383,7 +383,7 @@ The **scale height** $H$ is the climb over which density drops by a factor of $e
 :::
 
 ::: context runge Runge's wiggles
-Carl Runge — the same Runge as in Runge–Kutta — showed in 1901 that fitting one polynomial through evenly spaced points of a smooth, harmless curve can go badly wrong near the ends. In the picture, the grey curve is the drag model, the dots are the 11 tabulated points, and the red curve is the degree-10 polynomial through them. It passes through every dot and still dips below zero near $M = 2.9$.
+Carl Runge — the same Runge as in Runge–Kutta — showed in 1901 that fitting one polynomial through evenly spaced points of a smooth, harmless curve can go badly wrong near the ends. In the picture, the gray curve is the drag model, the dots are the 11 tabulated points, and the red curve is the degree-10 polynomial through them. It passes through every dot and still dips below zero near $M = 2.9$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">

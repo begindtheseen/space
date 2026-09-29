@@ -39,7 +39,7 @@ struct Sample {
 };
 ```
 
-Read `= default` as "equals default": "use the compiler's standard definition for this function". A defaulted default constructor runs each member's default initialisation, including the `= 0.0` written on the member. A defaulted copy constructor does last lesson's memberwise copy. A defaulted move constructor moves each member in declaration order, and it is `noexcept` automatically when every member's move is.
+Read `= default` as "equals default": "use the compiler's standard definition for this function". A defaulted default constructor runs each member's default initialization, including the `= 0.0` written on the member. A defaulted copy constructor does last lesson's memberwise copy. A defaulted move constructor moves each member in declaration order, and it is `noexcept` automatically when every member's move is.
 
 The second use is documentation. Writing `T(const T&) = default;` tells the next reader: "I thought about copying, and the memberwise copy is right." That is different from writing nothing, where the reader cannot tell whether you thought about it.
 
@@ -51,7 +51,7 @@ The second use is documentation. Writing `T(const T&) = default;` tells the next
 
 `= delete` ("equals delete") declares a function and forbids every use of it. Any code that would call it fails to compile, with an error that names the deleted function. This is how you say "this type cannot be copied".
 
-Lesson 03 built `MutexLock`, which locks a mutex in its constructor and unlocks it in its destructor. Copying one would be a disaster: two objects would each unlock the same mutex, and the second unlock is undefined behaviour. So it deletes its copy pair. What about moving? `MutexLock` holds a *reference* to its mutex, and [[a reference cannot be re-pointed or emptied|lock-guard]], so there is no sensible "moved-from" state. The exercise asks for it to be non-copyable *and* non-movable, and the generation rules give us that for free.
+Lesson 03 built `MutexLock`, which locks a mutex in its constructor and unlocks it in its destructor. Copying one would be a disaster: two objects would each unlock the same mutex, and the second unlock is undefined behavior. So it deletes its copy pair. What about moving? `MutexLock` holds a *reference* to its mutex, and [[a reference cannot be re-pointed or emptied|lock-guard]], so there is no sensible "moved-from" state. The exercise asks for it to be non-copyable *and* non-movable, and the generation rules give us that for free.
 
 ::: example `MutexLock`: no copies, and no moves either
 ```cpp

@@ -3,7 +3,7 @@ id: l03-lines-and-scales
 title: The lines on a drawing, and its scale
 minutes: 21
 covers:
-  - 'Line types: visible, hidden, centre, phantom, section; line weights'
+  - 'Line types: visible, hidden, center, phantom, section; line weights'
   - Scales and their notation
 ---
 
@@ -38,7 +38,7 @@ A **hidden line** is a **thin line of short, evenly spaced dashes**. It shows an
 
 ### Centerlines
 
-A **centerline** (spelled "centre line" in British and ISO drawings) is a **thin line of long and short dashes, alternating: long, short, long**. It marks an axis or a line of symmetry: the axis of a hole, a shaft, a cylinder, or the middle of a symmetric part. It is not an edge. There is nothing there to touch.
+A **centerline** (spelled "center line" in British and ISO drawings) is a **thin line of long and short dashes, alternating: long, short, long**. It marks an axis or a line of symmetry: the axis of a hole, a shaft, a cylinder, or the middle of a symmetric part. It is not an edge. There is nothing there to touch.
 
 On a round hole seen end-on, two centerlines cross at the center of the circle, and they cross at their short dashes, so the center is marked by a small cross. The centerlines run a little past the circle's edge. On a hand drawing, a long dash is about $20$ to $40\,\mathrm{mm}$, a short dash about $3\,\mathrm{mm}$, and the gaps about $1.5\,\mathrm{mm}$.
 
@@ -62,8 +62,8 @@ The **cutting-plane line** is **thick**, because it must stand out on top of the
 
 Several more thin, continuous lines carry the dimensions and notes, which later lessons explain in detail: **dimension lines** (with arrowheads, carrying a size), **extension lines** (carrying an edge out from the part so a dimension can reach it) and **leader lines** (pointing from a note to the feature it describes). They are thin so they never get confused with the part's outline. A last one, the **break line**, marks where a view is broken off or shortened: a thin freehand wavy line for short breaks, or a long thin line with zigzags for long ones.
 
-::: key Hidden, centre and phantom lines
-Hidden (dashed) shows edges behind the surface; centre (long-short-long) marks axes and symmetry; phantom (long-short-short-long) shows alternate positions, adjacent parts or repeat features. Reading them wrong changes what you think the geometry is.
+::: key Hidden, center and phantom lines
+Hidden (dashed) shows edges behind the surface; center (long-short-long) marks axes and symmetry; phantom (long-short-short-long) shows alternate positions, adjacent parts or repeat features. Reading them wrong changes what you think the geometry is.
 :::
 
 ::: warning Count the short dashes

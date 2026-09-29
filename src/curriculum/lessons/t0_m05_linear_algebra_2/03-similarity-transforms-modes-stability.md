@@ -10,7 +10,7 @@ Measure a table in meters and a friend measures it in feet. You write down diffe
 
 Dynamics matrices work the same way. Two engineers can describe one vehicle with two different matrices and both be right. One keeps attitude error in the body frame, the other in an inertial frame. One measures angular rate in radians per second, the other in **[[milliradians|milliradian]]** per second. One uses physical states, the other the eigenvector coordinates of the last two lessons. The relation between their matrices is a **similarity transform**, $\mathbf{B} = \mathbf{P}^{-1}\mathbf{A}\mathbf{P}$. The things that survive it — eigenvalues above all — belong to the vehicle. Everything else belongs to the bookkeeping.
 
-That is what makes eigenvalues worth computing. A closed control loop $\mathbf{A} - \mathbf{B}\mathbf{K}$ has different entries in every frame and every set of units, but the same eigenvalues in all of them. Those eigenvalues decide whether the loop is stable, how fast it settles and whether it rings. Diagonalisation from Lesson 1 is itself a similarity transform — the one that picks the eigenvectors as the basis — and in that basis the dynamics fall apart into independent pieces called modes.
+That is what makes eigenvalues worth computing. A closed control loop $\mathbf{A} - \mathbf{B}\mathbf{K}$ has different entries in every frame and every set of units, but the same eigenvalues in all of them. Those eigenvalues decide whether the loop is stable, how fast it settles and whether it rings. Diagonalization from Lesson 1 is itself a similarity transform — the one that picks the eigenvectors as the basis — and in that basis the dynamics fall apart into independent pieces called modes.
 
 This lesson defines similarity, proves what it keeps, shows its two everyday forms on a vehicle (a change of frame and a change of units), uses it to split $\dot{\mathbf{x}} = \mathbf{A}\mathbf{x}$ into modes, reads what each eigenvalue means physically, and states the stability test every later controls and estimation module uses without comment.
 
@@ -31,7 +31,7 @@ $$\dot{\mathbf{z}} = \mathbf{P}^{-1}\dot{\mathbf{x}} = \mathbf{P}^{-1}\mathbf{A}
 The new state obeys $\dot{\mathbf{z}} = \mathbf{B}\mathbf{z}$ with the similar matrix $\mathbf{B}$. A change of state coordinates *is* a similarity transform of the dynamics matrix. Nothing physical changed — only the numbers that describe it.
 
 ::: key Similarity transform
-$\mathbf{B} = \mathbf{P}^{-1}\mathbf{A}\mathbf{P}$ with $\mathbf{P}$ invertible. $\mathbf{A}$ and $\mathbf{B}$ are the same linear map written in two bases, related by $\mathbf{x} = \mathbf{P}\mathbf{z}$. If $\dot{\mathbf{x}} = \mathbf{A}\mathbf{x}$ then $\mathbf{z} = \mathbf{P}^{-1}\mathbf{x}$ obeys $\dot{\mathbf{z}} = \mathbf{B}\mathbf{z}$. Diagonalisation, $\boldsymbol{\Lambda} = \mathbf{V}^{-1}\mathbf{A}\mathbf{V}$, is the similarity transform whose new basis is the eigenvectors.
+$\mathbf{B} = \mathbf{P}^{-1}\mathbf{A}\mathbf{P}$ with $\mathbf{P}$ invertible. $\mathbf{A}$ and $\mathbf{B}$ are the same linear map written in two bases, related by $\mathbf{x} = \mathbf{P}\mathbf{z}$. If $\dot{\mathbf{x}} = \mathbf{A}\mathbf{x}$ then $\mathbf{z} = \mathbf{P}^{-1}\mathbf{x}$ obeys $\dot{\mathbf{z}} = \mathbf{B}\mathbf{z}$. Diagonalization, $\boldsymbol{\Lambda} = \mathbf{V}^{-1}\mathbf{A}\mathbf{V}$, is the similarity transform whose new basis is the eigenvectors.
 :::
 
 ## What similarity keeps
@@ -42,7 +42,7 @@ If $\mathbf{A}$ and $\mathbf{B}$ describe one map, everything that belongs to th
 
 $$\mathbf{B}\mathbf{w} = \mathbf{P}^{-1}\mathbf{A}\mathbf{P}\mathbf{P}^{-1}\mathbf{v} = \mathbf{P}^{-1}\mathbf{A}\mathbf{v} = \lambda\,\mathbf{P}^{-1}\mathbf{v} = \lambda\mathbf{w}.$$
 
-The middle $\mathbf{P}\mathbf{P}^{-1}$ cancelled. So $\lambda$ is an eigenvalue of $\mathbf{B}$ too, with eigenvector $\mathbf{P}^{-1}\mathbf{v}$. Similar matrices have the same eigenvalues, repeated the same number of times.
+The middle $\mathbf{P}\mathbf{P}^{-1}$ canceled. So $\lambda$ is an eigenvalue of $\mathbf{B}$ too, with eigenvector $\mathbf{P}^{-1}\mathbf{v}$. Similar matrices have the same eigenvalues, repeated the same number of times.
 
 **Characteristic polynomial.** The whole polynomial matches, not only its roots. Write $\mathbf{I} = \mathbf{P}^{-1}\mathbf{I}\mathbf{P}$ and use the rule that the determinant of a product is the product of determinants:
 
@@ -109,7 +109,7 @@ $$[\boldsymbol{\omega}^I\times] = \begin{pmatrix} 0 & -0.3 & 0.2232 \\ 0.3 & 0 &
 
 ## Modal coordinates
 
-Now pick the eigenvectors as the basis. If $\mathbf{A}$ is diagonalisable, $\mathbf{P} = \mathbf{V}$ gives $\mathbf{B} = \mathbf{V}^{-1}\mathbf{A}\mathbf{V} = \boldsymbol{\Lambda}$, and the new state $\mathbf{z} = \mathbf{V}^{-1}\mathbf{x}$ obeys
+Now pick the eigenvectors as the basis. If $\mathbf{A}$ is diagonalizable, $\mathbf{P} = \mathbf{V}$ gives $\mathbf{B} = \mathbf{V}^{-1}\mathbf{A}\mathbf{V} = \boldsymbol{\Lambda}$, and the new state $\mathbf{z} = \mathbf{V}^{-1}\mathbf{x}$ obeys
 
 $$\dot{\mathbf{z}} = \boldsymbol{\Lambda}\mathbf{z} \quad\Longleftrightarrow\quad \dot{z}_i = \lambda_i z_i, \qquad z_i(t) = e^{\lambda_i t}z_i(0).$$
 
@@ -230,7 +230,7 @@ $\mathbf{A} = \begin{pmatrix} 1 & 2 \\ 0 & 3 \end{pmatrix}$ and $\mathbf{B} = \b
 ::: answer
 **Invariants.** Both are triangular, so their eigenvalues are their diagonal entries: $\{1, 3\}$ in each case. Both have trace $4$, determinant $3$ and characteristic polynomial $\lambda^2 - 4\lambda + 3$. The invariants agree.
 
-**Similar?** Yes. Each has two different eigenvalues, so each is diagonalisable: $\mathbf{A} = \mathbf{V}_A\operatorname{diag}(1,3)\mathbf{V}_A^{-1}$ and $\mathbf{B} = \mathbf{V}_B\operatorname{diag}(1,3)\mathbf{V}_B^{-1}$. Solve the second for $\operatorname{diag}(1, 3)$ and substitute into the first: $\mathbf{B} = \mathbf{P}^{-1}\mathbf{A}\mathbf{P}$ with $\mathbf{P} = \mathbf{V}_A\mathbf{V}_B^{-1}$.
+**Similar?** Yes. Each has two different eigenvalues, so each is diagonalizable: $\mathbf{A} = \mathbf{V}_A\operatorname{diag}(1,3)\mathbf{V}_A^{-1}$ and $\mathbf{B} = \mathbf{V}_B\operatorname{diag}(1,3)\mathbf{V}_B^{-1}$. Solve the second for $\operatorname{diag}(1, 3)$ and substitute into the first: $\mathbf{B} = \mathbf{P}^{-1}\mathbf{A}\mathbf{P}$ with $\mathbf{P} = \mathbf{V}_A\mathbf{V}_B^{-1}$.
 
 **Why invariants alone were not proof.** $\begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$ and $\mathbf{I}$ share every invariant, yet they are not similar: anything similar to $\mathbf{I}$ is $\mathbf{P}^{-1}\mathbf{I}\mathbf{P} = \mathbf{I}$ itself. With distinct eigenvalues, though, matching eigenvalues is enough.
 :::

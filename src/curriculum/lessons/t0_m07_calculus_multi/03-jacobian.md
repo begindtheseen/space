@@ -428,7 +428,7 @@ A passing ambulance's siren sounds higher as it comes toward you and lower as it
 :::
 
 ::: context h-picture The shape of H
-Rows are the two measurements; columns are the six state numbers. Blue blocks hold the unit line of sight; the red block is the small across-the-beam term; grey blocks are zero.
+Rows are the two measurements; columns are the six state numbers. Blue blocks hold the unit line of sight; the red block is the small across-the-beam term; gray blocks are zero.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">

@@ -70,7 +70,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   q('fo1', 'formulas', 'If $a = 3$ and $b = 4$, what is $2a + b$?', ['10', '24', '9', '14'], 0,
     '$2a$ means 2 times $a$: $2 \\times 3 + 4 = 6 + 4 = 10$.'),
   q('fo2', 'formulas', 'Distance is speed times time, $d = v \\cdot t$. How far does a car going $20\\,\\mathrm{m/s}$ travel in $15\\,\\mathrm{s}$?', ['300 m', '35 m', '1.33 m', '3000 m'], 0,
-    '$d = 20 \\times 15 = 300\\,\\mathrm{m}$. Metres per second times seconds leaves metres.'),
+    '$d = 20 \\times 15 = 300\\,\\mathrm{m}$. Meters per second times seconds leaves meters.'),
 
   q('eq1', 'simple-equations', 'Solve $x + 9 = 23$.', ['$x = 14$', '$x = 32$', '$x = 9$', '$x = 23$'], 0,
     'Take 9 from both sides: $x = 23 - 9 = 14$. Check: $14 + 9 = 23$.'),
@@ -88,7 +88,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     'Angles on a straight line add to $180^\\circ$: $180 - 35 = 145$. ($55^\\circ$ would make a right angle, $90^\\circ$.)'),
 
   q('av1', 'area-volume', 'What is the area of a rectangle $6\\,\\mathrm{m}$ long and $4\\,\\mathrm{m}$ wide?', ['$24\\,\\mathrm{m^2}$', '$20\\,\\mathrm{m}$', '$10\\,\\mathrm{m^2}$', '$24\\,\\mathrm{m}$'], 0,
-    'Length times width: $6 \\times 4 = 24$, in square metres. $20\\,\\mathrm{m}$ is the perimeter.'),
+    'Length times width: $6 \\times 4 = 24$, in square meters. $20\\,\\mathrm{m}$ is the perimeter.'),
   q('av2', 'area-volume', 'What is the area of a circle of radius $2\\,\\mathrm{m}$? (Use $\\pi \\approx 3.14$.)', ['About $12.6\\,\\mathrm{m^2}$', 'About $6.3\\,\\mathrm{m^2}$', '$4\\,\\mathrm{m^2}$', 'About $25.1\\,\\mathrm{m^2}$'], 0,
     '$A = \\pi r^2 = 3.14 \\times 2^2 = 3.14 \\times 4 \\approx 12.6\\,\\mathrm{m^2}$. $6.3$ forgets to square the radius; $25.1$ uses the diameter.'),
 
@@ -99,8 +99,8 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
 
   q('me1', 'metric', 'How many grams are in $2.5\\,\\mathrm{kg}$?', ['2,500 g', '250 g', '25 g', '0.0025 g'], 0,
     'Kilo- means 1,000, so $2.5 \\times 1000 = 2500\\,\\mathrm{g}$.'),
-  q('me2', 'metric', 'One centimetre is what fraction of a metre?', ['$\\tfrac{1}{100}$', '$\\tfrac{1}{10}$', '$\\tfrac{1}{1000}$', '100'], 0,
-    'Centi- means one hundredth: 100 centimetres make a metre. A millimetre is a thousandth.'),
+  q('me2', 'metric', 'One centimeter is what fraction of a meter?', ['$\\tfrac{1}{100}$', '$\\tfrac{1}{10}$', '$\\tfrac{1}{1000}$', '100'], 0,
+    'Centi- means one hundredth: 100 centimeters make a meter. A millimeter is a thousandth.'),
 
   q('ra1', 'rates', 'A train travels $150\\,\\mathrm{km}$ in 2 hours. What is its average speed?', ['75 km/h', '300 km/h', '152 km/h', '148 km/h'], 0,
     'Speed is distance divided by time: $150 \\div 2 = 75\\,\\mathrm{km/h}$.'),

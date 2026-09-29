@@ -150,7 +150,7 @@ $$
 \mu(t) = \exp\!\left(\int p(t)\,dt\right).
 $$
 
-(Here $\exp(x)$ means $e^x$.) Any constant of integration in the exponent only rescales $\mu$, and it cancels later, so leave it out. Now multiply the equation by $\mu$ and recognise the left side:
+(Here $\exp(x)$ means $e^x$.) Any constant of integration in the exponent only rescales $\mu$, and it cancels later, so leave it out. Now multiply the equation by $\mu$ and recognize the left side:
 
 $$
 \frac{d}{dt}\bigl(\mu y\bigr) = \mu\,q \quad\Longrightarrow\quad y(t) = \frac{1}{\mu(t)}\left(\int \mu(t)\,q(t)\,dt + C\right).
@@ -173,7 +173,7 @@ Check by differentiating: $\dot{y} = t/2 - 2C/t^3$, and $\dot{y} + 2y/t = t/2 - 
 
 ### The constant-coefficient case: the first-order lag
 
-Think of a shower. You turn the knob to "warm", and the water does not jump to warm. It drifts there — fast at first, while the gap is big, then slower as it closes in. On a vehicle, $p$ is very often a constant, and this drifting behaviour is written
+Think of a shower. You turn the knob to "warm", and the water does not jump to warm. It drifts there — fast at first, while the gap is big, then slower as it closes in. On a vehicle, $p$ is very often a constant, and this drifting behavior is written
 
 $$
 \tau\,\dot{y} + y = u(t).
@@ -202,7 +202,7 @@ Read it in words: the output starts at $y(0)$, and the gap to the final value $U
 The starting slope is $U/\tau$. If the output kept rising at that first rate, it would reach $U$ in exactly one time constant. That **[[tangent-line picture|tangent-line]]** is how engineers read $\tau$ off a recorded step response.
 
 ::: example A thrust-vector actuator answering a step
-A TVC actuator is modelled as a first-order lag with $\tau = 0.05\,\mathrm{s}$. At $t = 0$ the autopilot commands a nozzle deflection of $2^\circ$, starting from a nozzle at rest at zero. Then $y(t) = 2(1 - e^{-t/0.05})$ degrees.
+A TVC actuator is modeled as a first-order lag with $\tau = 0.05\,\mathrm{s}$. At $t = 0$ the autopilot commands a nozzle deflection of $2^\circ$, starting from a nozzle at rest at zero. Then $y(t) = 2(1 - e^{-t/0.05})$ degrees.
 
 **After one, two and four time constants:**
 
@@ -286,7 +286,7 @@ This one-dimensional picture is the seed of the whole theory of stability. The n
 
 The direction field makes the sign visible. When $a < 0$, the arrows above $y_e$ point down and the arrows below point up, funnelling every curve onto the equilibrium. When $a > 0$ they point away. The speed of approach is set by $|a|$ — a time constant of $1/|a|$ — and nothing else.
 
-A slowly drifting gyro error, called a **bias**, is often modelled exactly this way: $\dot{b} = -b/\tau_c + w(t)$. Here $\tau_c$ is a correlation time of an hour or more, and $w$ is a random push. Left alone, the bias relaxes toward zero over hours, while the random push keeps nudging it. That is the **[[first-order Gauss–Markov process|gauss-markov]]** you will meet again when you study navigation filters.
+A slowly drifting gyro error, called a **bias**, is often modeled exactly this way: $\dot{b} = -b/\tau_c + w(t)$. Here $\tau_c$ is a correlation time of an hour or more, and $w$ is a random push. Left alone, the bias relaxes toward zero over hours, while the random push keeps nudging it. That is the **[[first-order Gauss–Markov process|gauss-markov]]** you will meet again when you study navigation filters.
 
 ::: key
 Exponential response: $\dot{y} = ay$ gives $y = y_0e^{at}$. With $a = -1/\tau$ the solution decays with time constant $\tau$; 63.2% of a step is complete after $\tau$, 98.2% after $4\tau$. The equilibrium of $\dot{y} = ay + b$ is stable when $a < 0$, unstable when $a > 0$.
@@ -375,9 +375,9 @@ No linear constant-coefficient equation can do this. Its solutions have the form
 | $y = y_p + Cy_h$ | Particular (steady-state) plus homogeneous (transient) |
 | $\dot{y} = ay + b$ | Equilibrium $y_e = -b/a$, stable if and only if $a < 0$ |
 
-Next lesson adds one more derivative. Second-order equations can swing back and forth, and the characteristic equation — whose roots, the poles, organise everything that follows — is the key to them.
+Next lesson adds one more derivative. Second-order equations can swing back and forth, and the characteristic equation — whose roots, the poles, organize everything that follows — is the key to them.
 
-::: context tvc-actuator Steering by swivelling the engine
+::: context tvc-actuator Steering by swiveling the engine
 A rocket has no rudder that works in empty space. Instead it tilts its engine a few degrees, so the thrust pushes slightly sideways and turns the vehicle. This is **thrust vector control** (TVC). The engine is mounted on a joint called a **gimbal**, and two actuators — powerful electric or hydraulic pistons — push it around. Because the actuator cannot move instantly, its response to a command is the first-order lag you meet in this lesson.
 :::
 
@@ -390,7 +390,7 @@ A reaction wheel is a heavy disc spun by an electric motor inside a satellite. S
 :::
 
 ::: context direction-field A field of little slopes
-Here is the direction field of $\dot{y} = 1 - y$. Each grey dash is tilted to the slope the rule gives at that point. Above the line $y = 1$ the slope is negative, so the dashes tilt down; below it they tilt up. The three coloured curves start at different values and follow the dashes — each is one solution, and none crosses another.
+Here is the direction field of $\dot{y} = 1 - y$. Each gray dash is tilted to the slope the rule gives at that point. Above the line $y = 1$ the slope is negative, so the dashes tilt down; below it they tilt up. The three colored curves start at different values and follow the dashes — each is one solution, and none crosses another.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
@@ -478,5 +478,5 @@ Plot the amplitude ratio against frequency on logarithmic scales and the curve l
 :::
 
 ::: context gauss-markov A random walk on a leash
-A gyro's error does not stay fixed; it wanders. Modelling it as $\dot{b} = -b/\tau_c + w$ gives the wandering a leash: random pushes $w$ move the bias around, and the $-b/\tau_c$ term keeps pulling it back toward zero. The correlation time $\tau_c$ says how long the bias "remembers" where it was. Navigation filters, such as the Kalman filter, carry exactly this equation inside them to estimate and remove gyro bias in flight.
+A gyro's error does not stay fixed; it wanders. Modeling it as $\dot{b} = -b/\tau_c + w$ gives the wandering a leash: random pushes $w$ move the bias around, and the $-b/\tau_c$ term keeps pulling it back toward zero. The correlation time $\tau_c$ says how long the bias "remembers" where it was. Navigation filters, such as the Kalman filter, carry exactly this equation inside them to estimate and remove gyro bias in flight.
 :::

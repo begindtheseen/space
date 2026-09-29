@@ -207,11 +207,11 @@ Run the descending-booster filter two ways against the same simulated flight —
 | $100$ | $1801.55$ | $1801.12$ | $1801.16$ | $-0.03$ |
 | $200$ | $1116.25$ | $1115.67$ | $1115.67$ | $-0.00005$ |
 
-**Step 1.** Filter A starts with $P^-_{pp} = 100.25$, so its gain is $0.962$: it trusts the first measurement almost completely and lands $1.2\,\mathrm{m}$ from the truth. Filter B uses $K_{ss,p} = 0.139$, the trust level of a filter that already knows the position to under a metre. It moves only $14\%$ of the way to a measurement that was about $104\,\mathrm{m}$ from its prediction, and ends $85\,\mathrm{m}$ off.
+**Step 1.** Filter A starts with $P^-_{pp} = 100.25$, so its gain is $0.962$: it trusts the first measurement almost completely and lands $1.2\,\mathrm{m}$ from the truth. Filter B uses $K_{ss,p} = 0.139$, the trust level of a filter that already knows the position to under a meter. It moves only $14\%$ of the way to a measurement that was about $104\,\mathrm{m}$ from its prediction, and ends $85\,\mathrm{m}$ off.
 
 **Steps 10 to 20.** Filter B's error does not shrink steadily. It swings past zero and comes back, about $22\,\mathrm{m}$ off the other way at step $20$ — the spiral of the complex eigenvalues, seen in real numbers.
 
-**Late on.** By step $100$ the two agree to $3\,\mathrm{cm}$, and by step $200$ to a twentieth of a millimetre. Over the last hundred steps their root-mean-square position errors are $0.862\,\mathrm{m}$ for A and $0.856\,\mathrm{m}$ for B: no real difference. (The tiny edge for B is luck of this one noise sequence.) Over the first twenty steps it is $1.31\,\mathrm{m}$ for A against $34.3\,\mathrm{m}$ for B.
+**Late on.** By step $100$ the two agree to $3\,\mathrm{cm}$, and by step $200$ to a twentieth of a millimeter. Over the last hundred steps their root-mean-square position errors are $0.862\,\mathrm{m}$ for A and $0.856\,\mathrm{m}$ for B: no real difference. (The tiny edge for B is luck of this one noise sequence.) Over the first twenty steps it is $1.31\,\mathrm{m}$ for A against $34.3\,\mathrm{m}$ for B.
 
 Sanity check: the filter's own steady-state standard deviation is $\sqrt{P^+_{ss,pp}} = 0.745\,\mathrm{m}$, and the measured errors near $0.86\,\mathrm{m}$ are the same size. Nothing is broken.
 :::
@@ -267,7 +267,7 @@ Without computing anything new, describe how the comparison table would change i
 ::: answer
 The time-varying gain at step 1 comes from $\mathbf{P}^-_1 = \mathbf{F}\mathbf{P}_0\mathbf{F}^{\mathsf{T}} + \mathbf{Q}$. If $\mathbf{P}_0 \approx \mathbf{P}_{ss}$, this is already close to the settled value, so the time-varying gain starts close to $\mathbf{K}_{ss}$ and stays close.
 
-The big early gaps in the table — tens of metres at steps 1 to 20 — would shrink to almost nothing at every step. There would be no large start-up uncertainty for the fixed-gain filter to under-correct. The two filters would track closely from the first measurement, and using $\mathbf{K}_{ss}$ immediately would cost very little.
+The big early gaps in the table — tens of meters at steps 1 to 20 — would shrink to almost nothing at every step. There would be no large start-up uncertainty for the fixed-gain filter to under-correct. The two filters would track closely from the first measurement, and using $\mathbf{K}_{ss}$ immediately would cost very little.
 :::
 
 ## Summary
@@ -289,7 +289,7 @@ A **fixed point** of a rule is an input the rule returns unchanged. Type any num
 :::
 
 ::: context concave Why "bending downward" forces one crossing
-Here is the scalar rule $f(y) = 0.2 + y/(y+1)$ (blue curve) against the diagonal "output = input" (grey), with the filter's steps drawn as a staircase from $y_0 = 0$. The curve starts above the diagonal and flattens, so it can cross it only once. Each stair lands closer to the crossing at $0.558$, and none can jump past it. This staircase drawing is called a **cobweb plot**.
+Here is the scalar rule $f(y) = 0.2 + y/(y+1)$ (blue curve) against the diagonal "output = input" (gray), with the filter's steps drawn as a staircase from $y_0 = 0$. The curve starts above the diagonal and flattens, so it can cross it only once. Each stair lands closer to the crossing at $0.558$, and none can jump past it. This staircase drawing is called a **cobweb plot**.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210" font-family="Inter, Arial, sans-serif">

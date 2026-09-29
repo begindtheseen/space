@@ -100,7 +100,7 @@ python3 protocol.py
 
 The last line is the rule that separates the two roles. An iterator's own `__iter__` method returns *itself*, so `iter(it) is it` is `True` (read `is` as "is the very same object as"). This is **[[why a list can be looped over twice but a generator cannot|iterable-vs-iterator]]**. Each `for` loop over a list calls `iter(samples)` and gets a *fresh* bookmark at the start. A generator is its own bookmark, so `iter(gen)` hands back the same half-used generator.
 
-You can write the protocol by hand. Do it once, because it shows exactly how much work `yield` saves. Both of the pieces below produce overlapping neighbouring pairs, which is what you need to find the change from one sample to the next:
+You can write the protocol by hand. Do it once, because it shows exactly how much work `yield` saves. Both of the pieces below produce overlapping neighboring pairs, which is what you need to find the change from one sample to the next:
 
 ```python
 # window_class.py
@@ -148,7 +148,7 @@ The class (lesson 4 covers classes properly) has to carry its own position, `sel
 
 The generator has no index at all. Its position *is* the paused spot in its own code. It works on any iterable, including a file or another generator.
 
-The last output line is the biggest jump between neighbouring samples: $12.4 - 9.79 = 2.61$. It prints as `2.610000000000001` because computers store decimals in binary and $9.79$ cannot be stored exactly. That is ordinary floating point, not a fault in the generator.
+The last output line is the biggest jump between neighboring samples: $12.4 - 9.79 = 2.61$. It prints as `2.610000000000001` because computers store decimals in binary and $9.79$ cannot be stored exactly. That is ordinary floating point, not a fault in the generator.
 
 ::: warning An empty input breaks `pairs`
 `pairs([])` looks harmless and is not. `next(it)` on an empty input raises `StopIteration` *inside* the generator's body. Since Python 3.7 that is **[[turned into a `RuntimeError`|pep-479]]** rather than being mistaken for "the generator finished normally":
@@ -394,7 +394,7 @@ TypeError: 'generator' object is not subscriptable
 No length. No indexing ("not subscriptable" means you cannot use square brackets on it). One pass only. And the second pass fails *silently*, by returning the "empty" answer — `0` for a sum — instead of raising. Those four facts are the whole case for turning a generator into a list with `list(...)` when the data fits and you need it more than once.
 
 ::: key
-A generator beats a list when the sequence is large or unbounded and you consume it once: the generator holds one item at a time instead of materialising all of them. It loses when you need random access, `len()`, or multiple passes.
+A generator beats a list when the sequence is large or unbounded and you consume it once: the generator holds one item at a time instead of materializing all of them. It loses when you need random access, `len()`, or multiple passes.
 :::
 
 ::: warning A generator can hold a file open
@@ -472,7 +472,7 @@ The same logic applies to `sorted(gen)[0]` against `min(gen)`, and to `len(list(
 | Measured here | Eager read peak 84,591 kB; the same read with `yield`, 35 kB |
 | Measured here | `next(r for r in rows(...) if ...)` read 18,209 of 300,000 rows |
 | `itertools.islice` | The lazy `[:n]`; takes n items from any iterator |
-| Materialise | `list(gen)` when you need length, indexing or a second pass |
+| Materialize | `list(gen)` when you need length, indexing or a second pass |
 
 The next lesson stays with functions but changes the question from "how do I produce the items?" to "how do I say what to do with each one?" — `sorted` with a `key`, and the small nameless functions that go with it.
 
@@ -550,7 +550,7 @@ That single shared position is why the second `sum` over a generator returns `0`
 :::
 
 ::: context off-by-one The off-by-one mistake
-An **off-by-one** error is being wrong by exactly one: a loop that runs ten times instead of nine, or reads index `i` when it should read `i - 1`. It is sometimes called a **fencepost error**, after the puzzle "a 10-metre fence with a post every metre needs how many posts?" — eleven, not ten.
+An **off-by-one** error is being wrong by exactly one: a loop that runs ten times instead of nine, or reads index `i` when it should read `i - 1`. It is sometimes called a **fencepost error**, after the puzzle "a 10-meter fence with a post every meter needs how many posts?" — eleven, not ten.
 
 Hand-written index arithmetic is where these live. Code with no indexes, like the `pairs` generator, has nowhere for them to hide.
 :::
@@ -629,7 +629,7 @@ When a program exceeds the limit, the next `open` fails with `OSError: [Errno 24
 :::
 
 ::: context one-pass-statistics Mean and spread in a single pass
-The textbook shortcut for the variance is "the mean of the squares minus the square of the mean". Both parts can be huge and nearly equal — think of altitudes near $400{,}000\,\mathrm{m}$ that vary by a few metres — and subtracting two nearly equal big numbers wipes out most of the significant digits.
+The textbook shortcut for the variance is "the mean of the squares minus the square of the mean". Both parts can be huge and nearly equal — think of altitudes near $400{,}000\,\mathrm{m}$ that vary by a few meters — and subtracting two nearly equal big numbers wipes out most of the significant digits.
 
 The cure is to update the mean and the spread a little with each new value, instead of keeping giant sums. The standard recipe is **Welford's method**, published by B. P. Welford in 1962. It still reads the data once and keeps only three numbers, but stays accurate. You will meet the cancellation problem itself in the floating-point part of the NumPy module.
 :::

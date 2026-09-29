@@ -314,7 +314,7 @@ The statistician Ronald Fisher defined, in the 1920s, a measure of how sharply t
 :::
 
 ::: context one-direction A measurement squeezes one way
-Start with a round cloud of uncertainty about a position (grey). A single range measurement along $\mathbf{h}$ squeezes the cloud along $\mathbf{h}$ (blue) and leaves it untouched across $\mathbf{h}$. To shrink it in every direction you need rows pointing in different directions.
+Start with a round cloud of uncertainty about a position (gray). A single range measurement along $\mathbf{h}$ squeezes the cloud along $\mathbf{h}$ (blue) and leaves it untouched across $\mathbf{h}$. To shrink it in every direction you need rows pointing in different directions.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">

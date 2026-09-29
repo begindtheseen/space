@@ -79,7 +79,7 @@ When you combine conditions with `AND`, `OR` and `NOT`, UNKNOWN behaves like "co
 | FALSE | UNKNOWN | FALSE | UNKNOWN |
 | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN |
 
-And `NOT UNKNOWN` is UNKNOWN. You do not need to memorise this. Ask, "if the unknown were TRUE, and then if it were FALSE, would the answer change?" `FALSE AND anything` is FALSE either way. `TRUE OR anything` is TRUE either way. `TRUE AND UNKNOWN` could go either way, so it stays UNKNOWN.
+And `NOT UNKNOWN` is UNKNOWN. You do not need to memorize this. Ask, "if the unknown were TRUE, and then if it were FALSE, would the answer change?" `FALSE AND anything` is FALSE either way. `TRUE OR anything` is TRUE either way. `TRUE AND UNKNOWN` could go either way, so it stays UNKNOWN.
 
 Here is the rule that turns all of this into real results: **WHERE keeps a row only when its condition is TRUE.** FALSE rows are dropped, and so are UNKNOWN rows. The same goes for a `WHEN` in CASE: only a TRUE condition picks its branch. That is exactly why, last lesson, the missing reading skipped every `WHEN` and landed in `ELSE`.
 

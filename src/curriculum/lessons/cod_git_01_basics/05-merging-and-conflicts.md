@@ -365,7 +365,7 @@ That is why `git add` is the "resolved" signal: it replaces the three stages wit
 
 ### Backing out: `git merge --abort`
 
-If you start a merge and realise you are not ready — the conflict needs Leo, and Leo is at lunch — run:
+If you start a merge and realize you are not ready — the conflict needs Leo, and Leo is at lunch — run:
 
 ```bash
 git merge --abort
@@ -453,7 +453,7 @@ You started `git merge egm96-mu`, saw the conflict, edited `gravity.py` halfway,
 | Stages | during a conflict the index holds 1 base, 2 ours, 3 theirs (`git ls-files -u`) |
 | `git merge --abort` | put everything back as it was before the merge |
 
-Merging only ever adds to history. Next lesson is about going backward: moving a branch to an older commit with `reset`, cancelling a commit with a new one using `revert`, and bringing back a file's old contents with `restore` — and exactly what each of them touches.
+Merging only ever adds to history. Next lesson is about going backward: moving a branch to an older commit with `reset`, canceling a commit with a new one using `revert`, and bringing back a file's old contents with `restore` — and exactly what each of them touches.
 
 ::: context merge-base-picture The fork where two branches last agreed
 The merge base is the newest commit you reach by following parent arrows back from *both* tips. Here the tips are `40885d2` (`main`) and `fc496ae` (`j2-constant`), and the merge base is `4fff28f`.

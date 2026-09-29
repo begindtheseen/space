@@ -81,7 +81,7 @@ What HIL catches that simulation cannot: real I/O timing (bus framing, driver bu
 - **CPU load.** On a rig, the control task shares the processor with navigation, telemetry, the file system and interrupts. A step that took 0.3 ms alone might take 0.9 ms at the worst moment of a busy frame.
 
 ::: key
-Your HIL rig shows a 4 ms delay that SIL did not. Where does it come from? The real interfaces: bus arbitration and framing on CAN or 1553, driver and DMA buffering, task scheduling and rate-transition latency, and analogue conversion time. None of those exist in a host simulation, which is why HIL is not optional.
+Your HIL rig shows a 4 ms delay that SIL did not. Where does it come from? The real interfaces: bus arbitration and framing on CAN or 1553, driver and DMA buffering, task scheduling and rate-transition latency, and analog conversion time. None of those exist in a host simulation, which is why HIL is not optional.
 :::
 
 ::: example What 0.3 ms of jitter does

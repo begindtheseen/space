@@ -83,7 +83,7 @@ Now the comparison is PIL against MIL (or against SIL), and what changed is exac
 The hardware implementation settings in the model tell the code generator the target's word sizes and byte order. PIL is how you find out whether those settings match the real chip and its compiler. A later lesson in this module sets them up.
 
 ::: key
-What is the difference between SIL and PIL, and what does each catch? SIL compiles the generated code for the host, catching code-generation and algorithm mismatches. PIL cross-compiles and runs on the actual target, catching target-specific integer width, endianness, floating-point behaviour and execution-time issues that the host cannot show.
+What is the difference between SIL and PIL, and what does each catch? SIL compiles the generated code for the host, catching code-generation and algorithm mismatches. PIL cross-compiles and runs on the actual target, catching target-specific integer width, endianness, floating-point behavior and execution-time issues that the host cannot show.
 :::
 
 ::: example A clock that runs slow on the target
@@ -138,7 +138,7 @@ For the first time, nothing waits. Sensor data arrives over the real data bus, t
 - **Real hardware behavior.** Power-up, reset, watchdogs, and what happens when you [[inject a fault|fault-injection]]: a sensor wire cut, a bus message corrupted, a voltage sagging.
 
 ::: key
-Your HIL rig shows a 4 ms delay that SIL did not. Where does it come from? The real interfaces: bus arbitration and framing on CAN or 1553, driver and DMA buffering, task scheduling and rate-transition latency, and analogue conversion time. None of those exist in a host simulation, which is why HIL is not optional.
+Your HIL rig shows a 4 ms delay that SIL did not. Where does it come from? The real interfaces: bus arbitration and framing on CAN or 1553, driver and DMA buffering, task scheduling and rate-transition latency, and analog conversion time. None of those exist in a host simulation, which is why HIL is not optional.
 :::
 
 ::: example Adding up an interface delay

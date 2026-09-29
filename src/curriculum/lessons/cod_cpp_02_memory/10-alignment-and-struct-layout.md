@@ -319,7 +319,7 @@ Two programs built by different compilers can call each other only because both 
 :::
 
 ::: context packet-picture The Packet, byte by byte
-Each small square is one byte. Colored blocks are members; grey blocks are padding. The top row is `Packet` as declared: 24 bytes, 9 of them padding. The bottom row is the same four fields, widest first: 16 bytes, 1 of them padding.
+Each small square is one byte. Colored blocks are members; gray blocks are padding. The top row is `Packet` as declared: 24 bytes, 9 of them padding. The bottom row is the same four fields, widest first: 16 bytes, 1 of them padding.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">

@@ -145,7 +145,7 @@ matlab -batch "run_pitch_tests"
 The first line of the script clears any test files already loaded in the Test Manager. The next two load the test file and run every test in it. Then it writes a report, prints the counts, and the `assert` turns any failure into an error, so the job goes red. Simulink Test tests can also be run through the MATLAB unit-test framework, which can write results in the JUnit XML format that most CI servers display as a table of passed and failed tests.
 
 ::: key
-Why run Simulink Test headless in CI? So that every model change is exercised against its harnesses, coverage and baselines automatically, exactly like a C++ unit-test suite. It needs a runner that can reach a licence server, which is the usual reason such jobs run on self-hosted runners.
+Why run Simulink Test headless in CI? So that every model change is exercised against its harnesses, coverage and baselines automatically, exactly like a C++ unit-test suite. It needs a runner that can reach a license server, which is the usual reason such jobs run on self-hosted runners.
 :::
 
 A **runner** is the machine that executes a CI job. Cloud runners are fresh machines that vanish after each job, and they cannot usually reach a company's MATLAB **[[license server|license-server]]**. So teams run these jobs on their own machines, **self-hosted runners**, which sit inside the company network with MATLAB, Simulink, Simulink Test and the code-generation tools already installed.

@@ -289,7 +289,7 @@ Rebuilt with TSan, it prints the same count, no warnings, and exits with status 
 :::
 
 ::: key
-ThreadSanitizer detects data races: two threads accessing the same memory with at least one write and no synchronisation. It reports the race even on an execution where the outcome happened to be correct, which is exactly what stress testing cannot guarantee.
+ThreadSanitizer detects data races: two threads accessing the same memory with at least one write and no synchronization. It reports the race even on an execution where the outcome happened to be correct, which is exactly what stress testing cannot guarantee.
 :::
 
 ::: warning A reported race is a real bug, even when the answer is right

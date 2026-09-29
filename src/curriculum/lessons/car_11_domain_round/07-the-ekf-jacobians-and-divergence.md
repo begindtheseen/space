@@ -3,7 +3,7 @@ id: l07-the-ekf-jacobians-and-divergence
 title: "The EKF: Jacobians, where it fails, and how it diverges"
 minutes: 24
 covers:
-  - "the extended Kalman filter: Jacobians, where linearisation fails, and divergence modes"
+  - "the extended Kalman filter: Jacobians, where linearization fails, and divergence modes"
 ---
 
 Stand on a hill in thick fog. You cannot see the land, but you can feel the slope under your feet. Take one small step, and the slope tells you almost exactly how much higher or lower you will be. Take a giant leap, and it is no longer a good guide — the hill may curve away under you.

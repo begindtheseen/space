@@ -138,7 +138,7 @@ $$
 \varepsilon = \frac{\mu}{r_p}\cdot\frac{-r_p}{2a} = -\frac{\mu}{2a}.
 $$
 
-Everything that depended on eccentricity — $r_p$, $r_a$, $v_p$ — cancelled. That cancellation *is* the result, not a lucky tidy-up: two orbits with very different eccentricity but the same semi-major axis carry exactly the same energy.
+Everything that depended on eccentricity — $r_p$, $r_a$, $v_p$ — canceled. That cancellation *is* the result, not a lucky tidy-up: two orbits with very different eccentricity but the same semi-major axis carry exactly the same energy.
 
 ::: key
 Specific orbital energy is $\varepsilon = -\mu/(2a)$: it depends only on the semi-major axis, not on the eccentricity.

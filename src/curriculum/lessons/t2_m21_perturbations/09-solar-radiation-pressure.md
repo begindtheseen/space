@@ -1,9 +1,9 @@
 ---
 id: l09-solar-radiation-pressure
-title: Solar radiation pressure and eclipse modelling
+title: Solar radiation pressure and eclipse modeling
 minutes: 20
 covers:
-  - solar radiation pressure and eclipse modelling
+  - solar radiation pressure and eclipse modeling
 ---
 
 Stand in front of a garden hose and the spray pushes you. Each drop carries a little momentum, and when it hits you, that momentum becomes yours. Sunlight does the same thing, only far more gently. Light carries momentum, and a spacecraft that soaks up or bounces back sunlight feels a steady push directly away from the Sun. That push is **solar radiation pressure**, or **SRP**.
@@ -12,7 +12,7 @@ It is tiny — in low orbit, about five orders of magnitude smaller than $J_2$. 
 
 First, it barely depends on altitude. It depends on the distance from the *Sun*, and that hardly changes as a spacecraft circles Earth. So it does not fade with height the way the gravity-based nudges do.
 
-Second, it switches off, and back on, every time the spacecraft passes through Earth's shadow. That makes **eclipse modelling** — working out when the spacecraft is in shadow — part of SRP itself. Get the shadow boundary wrong and a small but systematic error builds up orbit after orbit, exactly the "small push, long time" danger this module warned about in its first lesson.
+Second, it switches off, and back on, every time the spacecraft passes through Earth's shadow. That makes **eclipse modeling** — working out when the spacecraft is in shadow — part of SRP itself. Get the shadow boundary wrong and a small but systematic error builds up orbit after orbit, exactly the "small push, long time" danger this module warned about in its first lesson.
 
 ## Light carries momentum
 
@@ -316,7 +316,7 @@ $\beta$ drifts over weeks as the orbit's node turns (the $J_2$ regression) and a
 :::
 
 ::: context eclipse-picture The shadow, drawn to scale
-Here is the $\beta = 0$ case at $400\,\mathrm{km}$, drawn to scale, with sunlight coming from the left. The grey band is the cylinder of shadow behind Earth. The red arc is the part of the orbit inside it.
+Here is the $\beta = 0$ case at $400\,\mathrm{km}$, drawn to scale, with sunlight coming from the left. The gray band is the cylinder of shadow behind Earth. The red arc is the part of the orbit inside it.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210" font-family="Inter, Arial, sans-serif">

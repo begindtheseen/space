@@ -108,7 +108,7 @@ That is almost the $2.64\times10^{-3}\,{}^\circ/\mathrm{s}$ from the $16$-bit co
 **Actuation jitter** is variation in *when* the command is written to the actuator. That is a delay that changes from frame to frame — a **time-varying delay** — and it is the kind that threatens stability.
 
 ::: key
-**Jitter versus delay.** A fixed delay can be modelled and compensated. Jitter is a time-varying delay: it cannot be compensated, it injects broadband noise, and it invalidates the LTI analysis your margins came from. Bound it, do not correct it.
+**Jitter versus delay.** A fixed delay can be modeled and compensated. Jitter is a time-varying delay: it cannot be compensated, it injects broadband noise, and it invalidates the LTI analysis your margins came from. Bound it, do not correct it.
 :::
 
 ## How much jitter a loop can take
@@ -266,7 +266,7 @@ For the control loop the answer is simpler. At $1\,\mathrm{Hz}$, GPS is far belo
 | Fast to slow | Decimation: needs a digital anti-alias filter before the rate drops; its delay joins the slow loop |
 | Skew | Constant when phases are fixed; jitter when they are not |
 | Non-integer ratio | Measurement age cycles: a $100\,\mathrm{Hz}$ sensor read at $150\,\mathrm{Hz}$ varies between $0$ and $6.67\,\mathrm{ms}$ at $50\,\mathrm{Hz}$ |
-| Cascade separation | At $8\times$ the inner loop is unity to $2\%$ and $0.1^\circ$; below about $3\times$ its gain and phase must be modelled |
+| Cascade separation | At $8\times$ the inner loop is unity to $2\%$ and $0.1^\circ$; below about $3\times$ its gain and phase must be modeled |
 | Sampling jitter | Error $\dot{x}\varepsilon$; for a sinusoid, $\sigma = \sigma_\varepsilon A\omega/\sqrt2$ — broadband noise that grows with vibration |
 | Actuation jitter | A time-varying delay; not covered by delay margin |
 | Jitter bound | Varying delay: $\Delta < 1/\sup_\omega \omega\lvert T(j\omega)\rvert$. Fixed unknown delay: $\sup_\omega \lvert T\rvert \cdot 2\lvert\sin(\omega\Delta/2)\rvert < 1$ |
@@ -312,7 +312,7 @@ In signal processing it means keeping only one sample in every $k$ and discardin
 :::
 
 ::: context age-pattern The sawtooth of stale data
-The grey sawtooth is the age of the newest sensor value, which resets to zero at every $10\,\mathrm{ms}$ sensor update. The red dots are the moments the $150\,\mathrm{Hz}$ task looks. It sees ages of $0$, $6.67$ and $3.33\,\mathrm{ms}$, over and over.
+The gray sawtooth is the age of the newest sensor value, which resets to zero at every $10\,\mathrm{ms}$ sensor update. The red dots are the moments the $150\,\mathrm{Hz}$ task looks. It sees ages of $0$, $6.67$ and $3.33\,\mathrm{ms}$, over and over.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">

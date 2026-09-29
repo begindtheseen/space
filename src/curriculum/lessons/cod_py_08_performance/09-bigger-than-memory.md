@@ -34,7 +34,7 @@ On a $16\,\mathrm{GB}$ laptop, one hour fits (barely, with room for little else)
 Sanity check: $200$ channels at $1000\,\mathrm{Hz}$ is $200{,}000$ numbers a second, $1.6\,\mathrm{MB}$ a second at $8$ bytes each, and about $5.8\,\mathrm{GB}$ an hour. The two ways of counting agree.
 :::
 
-There is a second, sneakier limit. A computation often needs more RAM than the data it starts from. `x - x.mean()` makes a new array the same size as `x`. Reading a text file with pandas can need several times the file's size while it parses. So "the file is $10\,\mathrm{GB}$ and I have $16\,\mathrm{GB}$" is not a safe plan — the vectorisation lesson showed how temporaries pile up.
+There is a second, sneakier limit. A computation often needs more RAM than the data it starts from. `x - x.mean()` makes a new array the same size as `x`. Reading a text file with pandas can need several times the file's size while it parses. So "the file is $10\,\mathrm{GB}$ and I have $16\,\mathrm{GB}$" is not a safe plan — the vectorization lesson showed how temporaries pile up.
 
 ## numpy.memmap: an array that lives on disk
 
@@ -104,7 +104,7 @@ Opening took half a millisecond: nothing was read, because nothing was touched y
 `reshape(-1, 8)` needs a word. A raw memory map of a plain binary file is one long row of numbers; the file does not know its own shape. `reshape(-1, 8)` means "8 columns, and work out the number of rows yourself" ($-1$ is the "you figure it out" value).
 
 ::: key
-What is numpy.memmap for? Treating an on-disk array as an ndarray, with the OS paging in only the parts you touch. It is how you analyse a telemetry file larger than RAM without writing a chunking loop by hand.
+What is numpy.memmap for? Treating an on-disk array as an ndarray, with the OS paging in only the parts you touch. It is how you analyze a telemetry file larger than RAM without writing a chunking loop by hand.
 :::
 
 ::: example What one second of one channel really reads

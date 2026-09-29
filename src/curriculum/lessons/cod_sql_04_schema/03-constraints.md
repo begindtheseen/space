@@ -266,7 +266,7 @@ CREATE TABLE anomaly (
 
 `chan_limit` holds each satellite's alarm limits: the low (`lo`) and high (`hi`) values outside which a channel raises an alarm. `anomaly` holds investigation tickets, each optionally tagged with the ground station where the problem was seen.
 
-::: example Three deletes, three behaviours
+::: example Three deletes, three behaviors
 The fleet holds SAT-001, SAT-002 and a test entry SAT-099. SAT-001 has one telemetry row and one limit row; SAT-099 has two limit rows and nothing else. Tickets 101 and 102 were seen at HAWAII, ticket 103 at SVALBARD.
 
 **RESTRICT: telemetry protects its satellite.**

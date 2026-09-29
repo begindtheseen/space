@@ -125,7 +125,7 @@ and the process exits with status 1. The report gives the file, line 10, column 
 The `-fno-sanitize-recover=all` flag is what makes the exit status non-zero. By default UBSan prints the message and *carries on*. (Here, carrying on means the real null dereference happens next and the program dies with a segmentation fault, exit 139. With other kinds of undefined behavior it can run on quietly.) In a test suite, a message nobody reads scrolls past and the test reports a pass. In CI you want the failing exit code, so you want that flag.
 
 ::: key
-`nullptr` is a value meaning "no object", usable and testable; dereferencing it is undefined behaviour. Prefer a reference for a parameter that must be present, a pointer when absence is meaningful, and check the pointer once at the boundary rather than at every use.
+`nullptr` is a value meaning "no object", usable and testable; dereferencing it is undefined behavior. Prefer a reference for a parameter that must be present, a pointer when absence is meaningful, and check the pointer once at the boundary rather than at every use.
 :::
 
 ## The four positions of `const`
@@ -409,7 +409,7 @@ Both obligations are invisible at the call site. That is why the convention is t
 | "read-only variable" | g++'s wording when the *pointer* is const |
 | `void*` | an address with the type erased; cast back with `static_cast` to the original type |
 | `double (*)(const State&)` | pointer to a function; name it with `using` |
-| `-fsanitize=undefined -fno-sanitize-recover=all` | report undefined behaviour and exit non-zero |
+| `-fsanitize=undefined -fno-sanitize-recover=all` | report undefined behavior and exit non-zero |
 
 Lesson 03 gives the pointer arithmetic: what `p + 1` means, why the step is the pointee's size, where the arithmetic becomes undefined, and how an array loses its length the moment it is passed to a function.
 
@@ -519,7 +519,7 @@ The C standard library is full of them. `qsort` takes a pointer to your comparis
 :::
 
 ::: context p-controller Push back in proportion to the error
-A proportional controller measures how far you are from what you want — the error — and pushes back by a fixed multiple of it, the **gain**. Here the error is $v - (-2) = v + 2$ and the gain is $0.8\,\mathrm{s^{-1}}$, so each metre per second of extra sink rate asks for $0.8\,\mathrm{m/s^2}$ of upward acceleration.
+A proportional controller measures how far you are from what you want — the error — and pushes back by a fixed multiple of it, the **gain**. Here the error is $v - (-2) = v + 2$ and the gain is $0.8\,\mathrm{s^{-1}}$, so each meter per second of extra sink rate asks for $0.8\,\mathrm{m/s^2}$ of upward acceleration.
 
 It is the simplest feedback law there is, and the starting point of the control-systems modules later in the course, which add integral and derivative terms to fix what a pure proportional law cannot.
 :::

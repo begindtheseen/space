@@ -43,7 +43,7 @@ $$
 T_{max} = 5.0\times 10^6 \times 18 \times \sin 6^\circ = 9.0\times 10^7 \times 0.10453 = 9.41\times 10^6\,\mathrm{N\,m}.
 $$
 
-**Maximum angular acceleration.** Divide by the inertia: $9.41\times 10^6/1.5\times 10^8 = 6.27\times 10^{-2}\,\mathrm{rad/s^2}$. Times $180/\pi$, that is $3.59\,^\circ/\mathrm{s^2}$. A four-hundred-tonne vehicle can be spun up at three and a half degrees per second, every second — sluggish next to an airplane, plenty for a slow pitch-over.
+**Maximum angular acceleration.** Divide by the inertia: $9.41\times 10^6/1.5\times 10^8 = 6.27\times 10^{-2}\,\mathrm{rad/s^2}$. Times $180/\pi$, that is $3.59\,^\circ/\mathrm{s^2}$. A four-hundred-metric ton vehicle can be spun up at three and a half degrees per second, every second — sluggish next to an airplane, plenty for a slow pitch-over.
 
 **Run it backward**, which is how the formula is used in practice. A pitch acceleration of $0.3\,^\circ/\mathrm{s^2} = 5.24\times 10^{-3}\,\mathrm{rad/s^2}$ needs torque $I\ddot{\theta} = 1.5\times 10^8 \times 5.24\times 10^{-3} = 7.85\times 10^5\,\mathrm{N\,m}$ ($\ddot{\theta}$, "theta double-dot", is the angular acceleration). That takes
 
@@ -130,7 +130,7 @@ Rate saturation is worse than it sounds. A rate-limited actuator does not only g
 
 ## Two complications worth knowing
 
-**The engine has mass.** Swinging a two-tonne engine about its gimbal with angular acceleration $\ddot{\delta}$ pushes back on the vehicle with a reaction torque of roughly $-J_e\ddot{\delta}$ ($J_e$ is the engine's inertia about the pivot), plus a sideways force at the mount. For a sine motion, $\ddot{\delta}$ grows like $\omega^2$, while the thrust torque does not depend on $\omega$ at all. So the reaction is negligible at low frequency and grows fast. Near the first bending modes it is no longer small, and it acts with the *opposite* sign to the thrust torque. Above a certain frequency the vehicle first rotates the wrong way. Engineers call it **[[tail wags dog|tail-wags-dog]]**. In control terms it puts a pair of zeros into the response from gimbal command to rate gyro, at the frequency where the two torques cancel, and that sets a hard ceiling on bandwidth that no amount of gain can lift.
+**The engine has mass.** Swinging a two-metric ton engine about its gimbal with angular acceleration $\ddot{\delta}$ pushes back on the vehicle with a reaction torque of roughly $-J_e\ddot{\delta}$ ($J_e$ is the engine's inertia about the pivot), plus a sideways force at the mount. For a sine motion, $\ddot{\delta}$ grows like $\omega^2$, while the thrust torque does not depend on $\omega$ at all. So the reaction is negligible at low frequency and grows fast. Near the first bending modes it is no longer small, and it acts with the *opposite* sign to the thrust torque. Above a certain frequency the vehicle first rotates the wrong way. Engineers call it **[[tail wags dog|tail-wags-dog]]**. In control terms it puts a pair of zeros into the response from gimbal command to rate gyro, at the frequency where the two torques cancel, and that sets a hard ceiling on bandwidth that no amount of gain can lift.
 
 **A centerline engine cannot roll the vehicle.** A single engine whose thrust line passes through the roll axis makes pitch and yaw torque, and exactly zero roll torque, because its arm about the roll axis is zero. Vehicles solve this by gimbaling several engines differently — tilting them sideways around the circle so their side forces form a couple about the centerline — or by carrying separate roll thrusters, or angled fixed vernier engines. It is a standard interview question, and a standard surprise when a single-engine upper stage needs a cold-gas system for roll alone.
 
@@ -278,7 +278,7 @@ Dynamic pressure $\tfrac{1}{2}\rho v^2$ measures how hard the air hits the vehic
 :::
 
 ::: context slosh-word Propellant sloshing
-Carry a full bowl of soup and it sloshes. The hundreds of tonnes of liquid in a rocket's tanks do the same, rocking at a natural frequency of around a hertz or less. That moving mass pushes on the vehicle, and if the autopilot happens to push at the same frequency it can pump the slosh up. Tanks carry baffles (internal rings) to damp it, and the control filters are shaped to stay away from it.
+Carry a full bowl of soup and it sloshes. The hundreds of metric tons of liquid in a rocket's tanks do the same, rocking at a natural frequency of around a hertz or less. That moving mass pushes on the vehicle, and if the autopilot happens to push at the same frequency it can pump the slosh up. Tanks carry baffles (internal rings) to damp it, and the control filters are shaped to stay away from it.
 :::
 
 ::: context phase-lag Answering late
@@ -313,5 +313,5 @@ Ask a rate-limited gimbal for a big, fast sine wave. It swings at its top speed 
 :::
 
 ::: context tail-wags-dog Tail wags dog
-The name says it: the thing that should be moved (the tail, the engine) moves the thing it is attached to (the dog, the rocket). A big engine is several tonnes. Swing it fast, and the push-back from accelerating that mass can outweigh the steering torque from its thrust, so the rocket twitches the wrong way first. Designers check where this crossover frequency sits and keep the autopilot's bandwidth well below it.
+The name says it: the thing that should be moved (the tail, the engine) moves the thing it is attached to (the dog, the rocket). A big engine is several metric tons. Swing it fast, and the push-back from accelerating that mass can outweigh the steering torque from its thrust, so the rocket twitches the wrong way first. Designers check where this crossover frequency sits and keep the autopilot's bandwidth well below it.
 :::

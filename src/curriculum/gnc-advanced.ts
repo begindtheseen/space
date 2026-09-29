@@ -40,7 +40,7 @@ export const GNC_ADVANCED: Module[] = [
       'Pseudospectral methods: Legendre-Gauss, Legendre-Gauss-Radau and Legendre-Gauss-Lobatto nodes',
       'Spectral convergence, the covector mapping theorem, and what pseudospectral costates buy you',
       'Mesh refinement driven by an interpolated-defect error estimate',
-      'Differential dynamic programming and iLQR as the shooting-flavoured alternative',
+      'Differential dynamic programming and iLQR as the shooting-flavored alternative',
       'NLP sparsity structure, the Jacobian and Hessian block pattern, and why sparsity decides solve time',
       'Scaling and conditioning: non-dimensionalising states, controls and constraints before you solve anything',
       'Warm starting, homotopy and continuation from an easy problem to the real one',
@@ -302,7 +302,7 @@ for (x0, v0) in [(1.0, 0.0), (0.0, 1.0), (2.0, -0.5), (-3.0, 1.5)]:
         title: 'The Goddard rocket and its singular arc',
         kind: 'build',
         hours: 14,
-        prompt: `Solve the classic Goddard problem — maximise the final altitude of a vertically ascending rocket with drag, thrust bounded by 0 <= T <= Tmax, fixed propellant.
+        prompt: `Solve the classic Goddard problem — maximize the final altitude of a vertically ascending rocket with drag, thrust bounded by 0 <= T <= Tmax, fixed propellant.
 
 1. Transcribe it with Hermite-Simpson collocation in CasADi (or PSOPT/Dymos) and solve with IPOPT. Non-dimensionalise altitude, velocity and mass first; the un-scaled problem will not converge.
 2. Plot the thrust history. You should see **full thrust, then an intermediate arc that sits strictly between the bounds, then thrust off**. That middle arc is a singular arc: the switching function is identically zero over an interval, so the Minimum Principle cannot determine the control pointwise and it is fixed instead by differentiating the switching function until the control reappears.
@@ -332,13 +332,13 @@ Success: a short written comparison whose conclusion you could defend in an inte
         q: 'For a control-affine system with a bounded control, why does the Minimum Principle generically produce bang-bang control?',
         choices: [
           'Because the cost is quadratic, so the optimum lies at the vertex of the feasible set',
-          'Because the Hamiltonian is affine in the control, so minimising it over a box pushes the control to whichever bound the sign of the switching function selects; the control is interior only where the switching function is identically zero',
+          'Because the Hamiltonian is affine in the control, so minimizing it over a box pushes the control to whichever bound the sign of the switching function selects; the control is interior only where the switching function is identically zero',
           'Because the dynamics are linear and linear systems always saturate',
           'Because numerical solvers cannot represent intermediate control values',
         ],
         answer: 1,
         explain:
-          'Write H = L + p^T (f(x) + g(x) u). If L does not depend on u, then H is affine in u with slope s = g(x)^T p, the switching function. Minimising an affine function over a box puts u at its lower bound where s > 0 and at its upper bound where s < 0 — bang-bang. The only escape is s = 0 on a whole interval, which is a singular arc, and there the control is recovered by differentiating s in time until u reappears. A control cost that is strictly convex in u (for example quadratic) destroys the affine structure and gives smooth interior control instead.',
+          'Write H = L + p^T (f(x) + g(x) u). If L does not depend on u, then H is affine in u with slope s = g(x)^T p, the switching function. Minimizing an affine function over a box puts u at its lower bound where s > 0 and at its upper bound where s < 0 — bang-bang. The only escape is s = 0 on a whole interval, which is a singular arc, and there the control is recovered by differentiating s in time until u reappears. A control cost that is strictly convex in u (for example quadratic) destroys the affine structure and gives smooth interior control instead.',
         b: 1.0,
         bloom: 'analyze',
       },
@@ -383,7 +383,7 @@ Success: a short written comparison whose conclusion you could defend in an inte
         ],
         answer: 1,
         explain:
-          'Two separate problems. First, shooting on costates is exponentially ill-conditioned: a costate perturbation of 1e-6 can move a long-duration terminal state by kilometres, so the convergence basin is tiny and you cannot guess into it from physical intuition. Second, constraints are structural: adding a state-path constraint introduces interior arcs, junction conditions and jump multipliers that must be worked out by hand for each new constraint set. Indirect solutions are typically more accurate when they converge — which is why they are still used to certify direct answers — but direct transcription is what you can actually iterate a vehicle design with.',
+          'Two separate problems. First, shooting on costates is exponentially ill-conditioned: a costate perturbation of 1e-6 can move a long-duration terminal state by kilometers, so the convergence basin is tiny and you cannot guess into it from physical intuition. Second, constraints are structural: adding a state-path constraint introduces interior arcs, junction conditions and jump multipliers that must be worked out by hand for each new constraint set. Indirect solutions are typically more accurate when they converge — which is why they are still used to certify direct answers — but direct transcription is what you can actually iterate a vehicle design with.',
         b: 1.1,
         bloom: 'analyze',
       },
@@ -407,13 +407,13 @@ Success: a short written comparison whose conclusion you could defend in an inte
         q: 'What does the covector mapping theorem give you?',
         choices: [
           'A proof that the direct NLP solution is the global optimum',
-          'A relation between the NLP Lagrange multipliers of the discretised problem and the costates of the original continuous optimal control problem, so a direct solve can be checked against the Minimum Principle',
+          'A relation between the NLP Lagrange multipliers of the discretized problem and the costates of the original continuous optimal control problem, so a direct solve can be checked against the Minimum Principle',
           'A method of transforming state constraints into control constraints',
           'A way to compute the Hessian of the Hamiltonian without differentiating',
         ],
         answer: 1,
         explain:
-          'The discretised problem has KKT multipliers on its defect constraints; the continuous problem has costates. The covector mapping theorem says that with the right node set and the right scaling — and the mapping is not the identity, which is precisely the content of the theorem — those multipliers converge to the continuous costates. That gives you a free optimality check: solve directly, map the multipliers to costates, and verify that the Hamiltonian is constant (for a time-invariant problem), that it is zero for free final time, and that the switching structure is what the Minimum Principle predicts. Any mismatch usually means the mesh is too coarse or the problem is badly scaled.',
+          'The discretized problem has KKT multipliers on its defect constraints; the continuous problem has costates. The covector mapping theorem says that with the right node set and the right scaling — and the mapping is not the identity, which is precisely the content of the theorem — those multipliers converge to the continuous costates. That gives you a free optimality check: solve directly, map the multipliers to costates, and verify that the Hamiltonian is constant (for a time-invariant problem), that it is zero for free final time, and that the switching structure is what the Minimum Principle predicts. Any mismatch usually means the mesh is too coarse or the problem is badly scaled.',
         b: 1.8,
         bloom: 'understand',
       },
@@ -428,7 +428,7 @@ Success: a short written comparison whose conclusion you could defend in an inte
         ],
         answer: 1,
         explain:
-          'Single shooting has few variables — just the controls — but the map from an early control to the terminal state is the composition of the entire flow, so the Jacobian is dense and, for unstable dynamics, exponentially badly conditioned. Collocation has many more variables but each constraint is local, giving a banded Jacobian a sparse interior-point solver handles in time linear in the horizon. It also lets you initialise the states with a physically sensible guess rather than hoping the shot lands nearby. More variables, a much better-conditioned problem: that trade is the reason transcription won.',
+          'Single shooting has few variables — just the controls — but the map from an early control to the terminal state is the composition of the entire flow, so the Jacobian is dense and, for unstable dynamics, exponentially badly conditioned. Collocation has many more variables but each constraint is local, giving a banded Jacobian a sparse interior-point solver handles in time linear in the horizon. It also lets you initialize the states with a physically sensible guess rather than hoping the shot lands nearby. More variables, a much better-conditioned problem: that trade is the reason transcription won.',
         b: 1.3,
         bloom: 'analyze',
       },
@@ -437,13 +437,13 @@ Success: a short written comparison whose conclusion you could defend in an inte
         q: 'In the Goddard rocket problem the optimal thrust sits strictly between its bounds for part of the flight. What is happening?',
         choices: [
           'The solver has not converged; the true optimum is bang-bang',
-          'It is a singular arc: the switching function is identically zero over an interval, so minimising the Hamiltonian does not determine the control pointwise, and the control is instead fixed by requiring the time derivatives of the switching function to vanish',
+          'It is a singular arc: the switching function is identically zero over an interval, so minimizing the Hamiltonian does not determine the control pointwise, and the control is instead fixed by requiring the time derivatives of the switching function to vanish',
           'The thrust bound is inactive because the constraint was written incorrectly',
           'The problem has multiple local optima and this is one of them',
         ],
         answer: 1,
         explain:
-          'On a singular arc the coefficient of u in the Hamiltonian vanishes over a whole interval, so H carries no information about u there. The control is recovered by differentiating the switching function with respect to time — twice for the Goddard problem — until u appears explicitly, then solving for it. Physically the arc exists because drag grows with the square of velocity: flying at maximum thrust through the dense atmosphere buys speed that is immediately paid back in drag, so the optimum throttles to hold a velocity-dependent balance. Numerically, singular arcs are exactly where a direct solver produces chattering thrust, and the fix is mesh refinement at the junctions or a small regularisation.',
+          'On a singular arc the coefficient of u in the Hamiltonian vanishes over a whole interval, so H carries no information about u there. The control is recovered by differentiating the switching function with respect to time — twice for the Goddard problem — until u appears explicitly, then solving for it. Physically the arc exists because drag grows with the square of velocity: flying at maximum thrust through the dense atmosphere buys speed that is immediately paid back in drag, so the optimum throttles to hold a velocity-dependent balance. Numerically, singular arcs are exactly where a direct solver produces chattering thrust, and the fix is mesh refinement at the junctions or a small regularization.',
         b: 1.5,
         bloom: 'understand',
       },
@@ -485,7 +485,7 @@ Success: a short written comparison whose conclusion you could defend in an inte
       {
         id: 'c_m42_pmp',
         front: "Pontryagin's Minimum Principle",
-        back: 'The optimal control at each instant minimises H over the admissible set U: u*(t) = argmin_{u in U} H(x*, u, p*, t). Stronger than dH/du = 0, because it still holds when the optimum is on a bound.',
+        back: 'The optimal control at each instant minimizes H over the admissible set U: u*(t) = argmin_{u in U} H(x*, u, p*, t). Stronger than dH/du = 0, because it still holds when the optimum is on a bound.',
         formula: true,
       },
       {
@@ -508,7 +508,7 @@ Success: a short written comparison whose conclusion you could defend in an inte
       {
         id: 'c_m42_direct_vs_indirect',
         front: 'Direct vs indirect methods in one line',
-        back: 'Indirect: derive the optimality conditions, then discretise (optimise-then-discretise). Direct: discretise the problem, then optimise the resulting NLP (discretise-then-optimise).',
+        back: 'Indirect: derive the optimality conditions, then discretize (optimise-then-discretise). Direct: discretize the problem, then optimize the resulting NLP (discretise-then-optimise).',
       },
       {
         id: 'c_m42_trap_defect',
@@ -535,7 +535,7 @@ Success: a short written comparison whose conclusion you could defend in an inte
       {
         id: 'c_m42_covector',
         front: 'Covector mapping theorem',
-        back: 'The KKT multipliers of the discretised problem map, under the right node set and scaling, to the costates of the continuous problem. It lets a direct solution be verified against the Minimum Principle.',
+        back: 'The KKT multipliers of the discretized problem map, under the right node set and scaling, to the costates of the continuous problem. It lets a direct solution be verified against the Minimum Principle.',
       },
       {
         id: 'c_m42_scaling',
@@ -568,8 +568,8 @@ Success: a short written comparison whose conclusion you could defend in an inte
       'The JPL/Masten Xombie flight demonstrations of G-FOLD and what they proved',
       'Glideslope, velocity, and thrust-pointing constraints as cones',
       'Flight time as the one non-convex parameter, and solving it by a line search over an inner SOCP',
-      'Discrete-time lossless convexification and what survives discretisation',
-      'Successive convexification (SCvx): linearise about a reference, solve, update, repeat',
+      'Discrete-time lossless convexification and what survives discretization',
+      'Successive convexification (SCvx): linearize about a reference, solve, update, repeat',
       'Trust regions and artificial unboundedness; virtual control (virtual buffers) and artificial infeasibility',
       'The convergence ratio rho and the accept/reject/resize rule',
       'Free-final-time formulation by time dilation, and the notation clash with the thrust slack',
@@ -617,7 +617,7 @@ Success: a short written comparison whose conclusion you could defend in an inte
         author: 'Blackmore, Acikmese & Scharf, JGCD, 2010',
         kind: 'paper',
         free: false,
-        note: 'The G-FOLD two-stage formulation: minimise landing error first, then minimise fuel subject to that error.',
+        note: 'The G-FOLD two-stage formulation: minimize landing error first, then minimize fuel subject to that error.',
       },
       {
         title: 'Successive Convexification for 6-DoF Mars Rocket Powered Landing with Free-Final-Time',
@@ -810,7 +810,7 @@ alpha = alpha_from_isp(225.0)
 u = -g
 sigma = float(np.linalg.norm(u))
 r1, v1, z1 = propagate(r, v, z, u, sigma, g, alpha, 1.0)
-assert np.allclose(v1, v, atol=1e-12), "thrust cancelling gravity leaves velocity unchanged"
+assert np.allclose(v1, v, atol=1e-12), "thrust canceling gravity leaves velocity unchanged"
 assert np.allclose(r1, r + v, atol=1e-12), "position advances linearly"
 assert abs(z1 - (z - alpha * sigma)) < 1e-12, "zdot = -alpha*sigma"`,
           },
@@ -833,9 +833,9 @@ assert abs(relaxation_gap(u, loose) - 0.25) < 1e-12, "a slack node must be repor
         hours: 24,
         prompt: `Build the full two-stage G-FOLD solve in CVXPY on the Mars-lander parameters from Acikmese & Ploen, then use it to map a landing footprint.
 
-**Stage 1 — minimum landing error.** Minimise the distance from the touchdown point to the target, subject to the transformed dynamics, the convexified thrust bounds, the glideslope cone, a thrust-pointing cone, and the propellant available. Call the optimum d*.
+**Stage 1 — minimum landing error.** Minimize the distance from the touchdown point to the target, subject to the transformed dynamics, the convexified thrust bounds, the glideslope cone, a thrust-pointing cone, and the propellant available. Call the optimum d*.
 
-**Stage 2 — minimum fuel.** Minimise propellant (equivalently, maximise terminal z) subject to landing error <= d*. This is the part that matters: if the target is reachable, d* is zero and stage 2 is the fuel-optimal solution to the target; if it is not reachable, stage 2 spends the least fuel getting as close as stage 1 proved possible.
+**Stage 2 — minimum fuel.** Minimize propellant (equivalently, maximize terminal z) subject to landing error <= d*. This is the part that matters: if the target is reachable, d* is zero and stage 2 is the fuel-optimal solution to the target; if it is not reachable, stage 2 spends the least fuel getting as close as stage 1 proved possible.
 
 Then:
 1. Flight time is the only parameter that is not convex. Wrap both stages in a golden-section line search over tf and plot cost against tf — you should see a single well-defined minimum. Short flight times are infeasible (no landing exists at all), so the search must handle an infeasible tf, for example by scoring it as +inf.
@@ -851,13 +851,13 @@ Success: a footprint plot from at least 200 converged solves, all with a stage-2
         kind: 'code',
         lang: 'python',
         hours: 14,
-        prompt: `Successive convexification is a loop: linearise the non-convex problem about the current reference, solve the resulting convex subproblem, decide whether to accept the step, resize the trust region, repeat. Two devices make it work, and both exist to stop the subproblem lying to you.
+        prompt: `Successive convexification is a loop: linearize the non-convex problem about the current reference, solve the resulting convex subproblem, decide whether to accept the step, resize the trust region, repeat. Two devices make it work, and both exist to stop the subproblem lying to you.
 
-**Virtual control** is an unconstrained additive term in the linearised dynamics, heavily penalised in the cost. Without it, a linearisation about a poor reference can be *infeasible* even though the true non-convex problem is perfectly feasible — artificial infeasibility — and the solver returns nothing at all. With it, every subproblem is feasible by construction, and a non-zero virtual control at the solution is a signal telling you the linearisation is bad there.
+**Virtual control** is an unconstrained additive term in the linearized dynamics, heavily penalized in the cost. Without it, a linearization about a poor reference can be *infeasible* even though the true non-convex problem is perfectly feasible — artificial infeasibility — and the solver returns nothing at all. With it, every subproblem is feasible by construction, and a non-zero virtual control at the solution is a signal telling you the linearization is bad there.
 
-**The trust region** bounds the deviation from the reference. Without it, the linearised dynamics can be exploited far from the reference where they are meaningless, giving a subproblem whose optimum is unbounded or wildly wrong — artificial unboundedness.
+**The trust region** bounds the deviation from the reference. Without it, the linearized dynamics can be exploited far from the reference where they are meaningless, giving a subproblem whose optimum is unbounded or wildly wrong — artificial unboundedness.
 
-1. Implement **virtual_control**: the residual that makes a linearised step exact.
+1. Implement **virtual_control**: the residual that makes a linearized step exact.
 2. Implement **penalised_cost**: the subproblem objective, original cost plus a weighted one-norm of the virtual control.
 3. Implement **trust_region_update**: the standard accept/reject/resize rule keyed on rho, the ratio of actual to predicted cost reduction.
 4. Then wire them into a full SCvx solve of the 6-DoF free-final-time landing (start from the EmbersArc reference implementation if you need scaffolding) and plot the virtual-control norm and trust-region radius against iteration. Both should fall toward zero; when the virtual control is numerically zero the iterate is dynamically feasible for the true nonlinear system.
@@ -867,11 +867,11 @@ Success: tests pass, the 6-DoF problem converges from a straight-line initial gu
 
 
 def virtual_control(x_next, A, x, B, u, c):
-    """Residual that makes the linearised step exact.
+    """Residual that makes the linearized step exact.
 
     nu = x_next - (A @ x + B @ u + c)
 
-    A non-zero nu at the subproblem optimum means the linearisation about the
+    A non-zero nu at the subproblem optimum means the linearization about the
     reference cannot reproduce the commanded transition.
     """
     raise NotImplementedError
@@ -891,7 +891,7 @@ def trust_region_update(rho, radius, rho0=0.0, rho1=0.25, rho2=0.7,
                         alpha=2.0, beta=2.0, r_min=1e-3, r_max=10.0):
     """Standard SCvx trust-region rule.
 
-    rho is the ratio of actual to predicted reduction in the penalised cost.
+    rho is the ratio of actual to predicted reduction in the penalized cost.
 
         rho <  rho0            : reject the step, radius / alpha
         rho0 <= rho < rho1     : accept,          radius / alpha
@@ -995,7 +995,7 @@ Success: a plot of solve time and iteration count against N, a stated worst case
         ],
         answer: 1,
         explain:
-          'The slack lifts the problem into a higher-dimensional space where the feasible set is convex: the pair (T, Gamma) lives in a second-order cone intersected with a slab. The relaxation would be useless if its solution had ||T|| strictly below Gamma, because then the trajectory would not correspond to any real thrust programme. The theorem says that cannot happen on a set of positive measure: since mass depletion is driven by Gamma and the cost is strictly increasing in propellant, any interior arc could be improved by lowering Gamma, which the maximum principle conditions forbid at an optimum. So the relaxed solution is feasible for and optimal for the original non-convex problem — not an approximation of it. Controllability of the linearised dynamics is the technical condition.',
+          'The slack lifts the problem into a higher-dimensional space where the feasible set is convex: the pair (T, Gamma) lives in a second-order cone intersected with a slab. The relaxation would be useless if its solution had ||T|| strictly below Gamma, because then the trajectory would not correspond to any real thrust program. The theorem says that cannot happen on a set of positive measure: since mass depletion is driven by Gamma and the cost is strictly increasing in propellant, any interior arc could be improved by lowering Gamma, which the maximum principle conditions forbid at an optimum. So the relaxed solution is feasible for and optimal for the original non-convex problem — not an approximation of it. Controllability of the linearized dynamics is the technical condition.',
         b: 1.5,
         bloom: 'analyze',
       },
@@ -1019,13 +1019,13 @@ Success: a plot of solve time and iteration count against N, a stated worst case
         q: 'In successive convexification, what is a virtual control and what specific failure does it prevent?',
         choices: [
           'A relaxation of the actuator limits that keeps the control within bounds',
-          'An unconstrained, heavily penalised additive term in the linearised dynamics that guarantees every convex subproblem is feasible, preventing artificial infeasibility — the case where the linearisation about a poor reference admits no solution even though the true non-convex problem is feasible',
+          'An unconstrained, heavily penalized additive term in the linearized dynamics that guarantees every convex subproblem is feasible, preventing artificial infeasibility — the case where the linearization about a poor reference admits no solution even though the true non-convex problem is feasible',
           'A fictitious control used to estimate the Jacobian by finite differences',
           'The difference between the commanded and achieved control, used for integral action',
         ],
         answer: 1,
         explain:
-          'Linearising nonlinear dynamics about a bad reference can produce a convex subproblem with an empty feasible set: the linear model simply cannot get from the initial to the terminal state under the imposed constraints. The solver then returns infeasible and the iteration dies, even though the original problem has a perfectly good solution. Adding an unconstrained slack to the dynamics makes the subproblem feasible by construction; the large penalty drives that slack to zero as the reference improves. Its norm doubles as a diagnostic: where the virtual control is large, the linearisation is poor, and at convergence it must be numerically zero or the trajectory is not dynamically feasible for the real system.',
+          'Linearizing nonlinear dynamics about a bad reference can produce a convex subproblem with an empty feasible set: the linear model simply cannot get from the initial to the terminal state under the imposed constraints. The solver then returns infeasible and the iteration dies, even though the original problem has a perfectly good solution. Adding an unconstrained slack to the dynamics makes the subproblem feasible by construction; the large penalty drives that slack to zero as the reference improves. Its norm doubles as a diagnostic: where the virtual control is large, the linearization is poor, and at convergence it must be numerically zero or the trajectory is not dynamically feasible for the real system.',
         b: 1.4,
         bloom: 'understand',
       },
@@ -1033,20 +1033,20 @@ Success: a plot of solve time and iteration count against N, a stated worst case
         id: 'q_m43_trust_region',
         q: 'What does the trust region in SCvx protect against, and how is its size chosen?',
         choices: [
-          'Against artificial unboundedness — the linearised subproblem exploiting a model that is only valid near the reference — with the radius resized each iteration by the ratio of actual to predicted cost reduction: shrink on a poor ratio, grow on a good one',
+          'Against artificial unboundedness — the linearized subproblem exploiting a model that is only valid near the reference — with the radius resized each iteration by the ratio of actual to predicted cost reduction: shrink on a poor ratio, grow on a good one',
           'Against the solver taking too many interior-point iterations',
           'Against the trajectory violating the thrust bounds',
           'Against numerical overflow in the state variables',
         ],
         answer: 0,
         explain:
-          'Far from the reference, the linearised dynamics are fiction, and an optimiser will happily drive into that fiction to reduce cost; in the worst case the subproblem is unbounded. Constraining the deviation from the reference keeps the iterate where the model is trustworthy. The update rule is borrowed from classical trust-region nonlinear programming: compute rho as the ratio of the actual reduction in the true penalised cost to the reduction the convex model predicted; reject and shrink if rho is negative, accept and shrink if it is small, keep if it is moderate, accept and grow if the model predicted well. Virtual control and trust region are complementary — one guarantees the subproblem has a solution, the other guarantees the solution means something.',
+          'Far from the reference, the linearized dynamics are fiction, and an optimizer will happily drive into that fiction to reduce cost; in the worst case the subproblem is unbounded. Constraining the deviation from the reference keeps the iterate where the model is trustworthy. The update rule is borrowed from classical trust-region nonlinear programming: compute rho as the ratio of the actual reduction in the true penalized cost to the reduction the convex model predicted; reject and shrink if rho is negative, accept and shrink if it is small, keep if it is moderate, accept and grow if the model predicted well. Virtual control and trust region are complementary — one guarantees the subproblem has a solution, the other guarantees the solution means something.',
         b: 1.4,
         bloom: 'analyze',
       },
       {
         id: 'q_m43_why_convex_flies',
-        q: 'Why would a flight programme accept a convex SOCP guidance algorithm but reject a general nonlinear programming one, even if the NLP found better trajectories in testing?',
+        q: 'Why would a flight program accept a convex SOCP guidance algorithm but reject a general nonlinear programming one, even if the NLP found better trajectories in testing?',
         choices: [
           'Because SOCPs are faster in every case',
           'Because a convex problem has no local minima and interior-point methods solve it to a prescribed accuracy in a number of iterations that can be bounded a priori, so the onboard worst-case execution time is provable rather than empirical; a general NLP can stall, find a local minimum, or fail to converge at all, and no amount of testing proves it will not',
@@ -1055,7 +1055,7 @@ Success: a plot of solve time and iteration count against N, a stated worst case
         ],
         answer: 1,
         explain:
-          'This is the core certification argument and the reason this whole field exists. Flight software must have a bounded worst-case execution time and a deterministic outcome. Convexity gives both: any local optimum is global, and interior-point methods have polynomial iteration complexity with practical iteration counts in the tens, essentially independent of the data. A general NLP has none of these guarantees — it can converge to a poor local minimum, cycle, or hit an iteration limit with nothing usable, and its behaviour on the one dispersed case you did not test is unknown. Testing can raise confidence in an NLP; only convexity turns it into a proof. Smaller code and fixed-point implementability are real secondary benefits, not the argument.',
+          'This is the core certification argument and the reason this whole field exists. Flight software must have a bounded worst-case execution time and a deterministic outcome. Convexity gives both: any local optimum is global, and interior-point methods have polynomial iteration complexity with practical iteration counts in the tens, essentially independent of the data. A general NLP has none of these guarantees — it can converge to a poor local minimum, cycle, or hit an iteration limit with nothing usable, and its behavior on the one dispersed case you did not test is unknown. Testing can raise confidence in an NLP; only convexity turns it into a proof. Smaller code and fixed-point implementability are real secondary benefits, not the argument.',
         b: 1.2,
         bloom: 'analyze',
       },
@@ -1064,7 +1064,7 @@ Success: a plot of solve time and iteration count against N, a stated worst case
         q: 'What is a state-triggered constraint, and what problem does it solve?',
         choices: [
           'A constraint activated by the ground operator during flight',
-          'A continuous formulation of if-then logic — the constraint is enforced only where a trigger function of the state is satisfied — so conditional behaviour can be embedded in a continuous optimization without introducing integer variables and turning the problem into a mixed-integer programme',
+          'A continuous formulation of if-then logic — the constraint is enforced only where a trigger function of the state is satisfied — so conditional behavior can be embedded in a continuous optimization without introducing integer variables and turning the problem into a mixed-integer program',
           'A constraint on the rate of change of the state',
           'A soft constraint whose weight varies with the state',
         ],
@@ -1081,11 +1081,11 @@ Success: a plot of solve time and iteration count against N, a stated worst case
           'It is fixed at a value chosen offline and never varied',
           'It is added to the decision vector; the problem stays an SOCP',
           'The inner problem is solved as an SOCP for a fixed tf and an outer one-dimensional search — usually golden section or a simple bisection on the cost gradient — is run over tf, which is cheap because the cost behaves unimodally in tf',
-          'It is eliminated by normalising time to [0, 1], which removes the dependence entirely',
+          'It is eliminated by normalizing time to [0, 1], which removes the dependence entirely',
         ],
         answer: 2,
         explain:
-          'The discretised dynamics matrices depend on tf, so making tf a variable destroys the conic structure. The practical answer is a line search: for each candidate tf, solve one SOCP; the optimal cost as a function of tf is well behaved with a single interior minimum, so golden-section converges in a dozen or so solves. That is affordable because each inner solve is tens of milliseconds. Normalising time to the unit interval does not remove the dependence, it just moves tf into the dynamics as a scale factor — which is precisely what SCvx exploits as time dilation, where the dilation factor becomes a decision variable and the linearisation handles the resulting nonlinearity.',
+          'The discretized dynamics matrices depend on tf, so making tf a variable destroys the conic structure. The practical answer is a line search: for each candidate tf, solve one SOCP; the optimal cost as a function of tf is well behaved with a single interior minimum, so golden-section converges in a dozen or so solves. That is affordable because each inner solve is tens of milliseconds. Normalizing time to the unit interval does not remove the dependence, it just moves tf into the dynamics as a scale factor — which is precisely what SCvx exploits as time dilation, where the dilation factor becomes a decision variable and the linearization handles the resulting nonlinearity.',
         b: 1.6,
         bloom: 'apply',
       },
@@ -1100,7 +1100,7 @@ Success: a plot of solve time and iteration count against N, a stated worst case
         ],
         answer: 1,
         explain:
-          'Both are solving the same optimal control problem and at the optimum they agree — the convex solution satisfies the maximum principle conditions the indirect method solves directly, which is a useful cross-check. The difference is engineering, not physics. The indirect formulation reduces the problem to a small set of nonlinear equations in a few unknowns, which is extremely fast and accurate, but the Newton iteration has no global convergence guarantee and structural assumptions about the thrust profile have to be verified. The convex formulation is larger but deterministic. A mature programme often carries both: the convex solver onboard and the indirect solution as the ground-based truth reference against which onboard optimality is verified.',
+          'Both are solving the same optimal control problem and at the optimum they agree — the convex solution satisfies the maximum principle conditions the indirect method solves directly, which is a useful cross-check. The difference is engineering, not physics. The indirect formulation reduces the problem to a small set of nonlinear equations in a few unknowns, which is extremely fast and accurate, but the Newton iteration has no global convergence guarantee and structural assumptions about the thrust profile have to be verified. The convex formulation is larger but deterministic. A mature program often carries both: the convex solver onboard and the indirect solution as the ground-based truth reference against which onboard optimality is verified.',
         b: 1.9,
         bloom: 'analyze',
       },
@@ -1109,13 +1109,13 @@ Success: a plot of solve time and iteration count against N, a stated worst case
         q: 'Why does G-FOLD solve two problems in sequence rather than one weighted problem that trades landing error against fuel?',
         choices: [
           'Because a weighted objective is not convex',
-          'Because the two-stage form answers the operationally correct question without needing a weight: stage one establishes the smallest achievable landing error given the propellant, and stage two then minimises propellant subject to achieving that error, so the vehicle never trades away accuracy it could have had and never spends fuel it does not need',
+          'Because the two-stage form answers the operationally correct question without needing a weight: stage one establishes the smallest achievable landing error given the propellant, and stage two then minimizes propellant subject to achieving that error, so the vehicle never trades away accuracy it could have had and never spends fuel it does not need',
           'Because the solver cannot handle two objectives at once',
           'Because the fuel cost is not known until the landing site is fixed',
         ],
         answer: 1,
         explain:
-          'A weighted sum requires choosing a number of metres per kilogram of propellant, which nobody can defend and which changes meaning with the dispersion. The lexicographic two-stage form removes the choice. Stage one minimises the terminal position error, which is a convex objective over the same feasible set and answers "is the target even reachable?". If the optimum is zero, the target is reachable and stage two returns the fuel-optimal trajectory to it. If the optimum is positive, the target is out of reach and stage two lands as close as physically possible while spending the least propellant to do it — exactly the behaviour you want from a diverting lander. Both stages are SOCPs, so this costs one extra solve.',
+          'A weighted sum requires choosing a number of meters per kilogram of propellant, which nobody can defend and which changes meaning with the dispersion. The lexicographic two-stage form removes the choice. Stage one minimizes the terminal position error, which is a convex objective over the same feasible set and answers "is the target even reachable?". If the optimum is zero, the target is reachable and stage two returns the fuel-optimal trajectory to it. If the optimum is positive, the target is out of reach and stage two lands as close as physically possible while spending the least propellant to do it — exactly the behavior you want from a diverting lander. Both stages are SOCPs, so this costs one extra solve.',
         b: 1.3,
         bloom: 'analyze',
       },
@@ -1140,7 +1140,7 @@ Success: a plot of solve time and iteration count against N, a stated worst case
       {
         id: 'c_m43_tightness',
         front: 'Why the LCvx relaxation is tight',
-        back: 'Mass depletion is driven by Gamma and the cost is strictly increasing in propellant, so an arc with ||T|| < Gamma could be improved by lowering Gamma. The maximum principle forbids that at an optimum, so ||T|| = Gamma almost everywhere. Requires controllability of the linearised dynamics.',
+        back: 'Mass depletion is driven by Gamma and the cost is strictly increasing in propellant, so an arc with ||T|| < Gamma could be improved by lowering Gamma. The maximum principle forbids that at an optimum, so ||T|| = Gamma almost everywhere. Requires controllability of the linearized dynamics.',
       },
       {
         id: 'c_m43_change_of_vars',
@@ -1163,27 +1163,27 @@ Success: a plot of solve time and iteration count against N, a stated worst case
       {
         id: 'c_m43_gfold',
         front: 'G-FOLD and its two stages',
-        back: 'Guidance for Fuel-Optimal Large Diverts. Stage 1: minimise landing error, giving d*. Stage 2: minimise propellant subject to landing error <= d*. Lexicographic, so no error-vs-fuel weight has to be invented. Flight-demonstrated by JPL on the Masten Xombie vehicle.',
+        back: 'Guidance for Fuel-Optimal Large Diverts. Stage 1: minimize landing error, giving d*. Stage 2: minimize propellant subject to landing error <= d*. Lexicographic, so no error-vs-fuel weight has to be invented. Flight-demonstrated by JPL on the Masten Xombie vehicle.',
       },
       {
         id: 'c_m43_tf',
         front: 'How flight time is handled in the convex 3-DoF formulation',
-        back: 'It is not a convex variable — the discretisation matrices depend on it. Fix tf, solve the SOCP, and run a golden-section search on tf outside. The cost is unimodal in tf, so a dozen inner solves suffice.',
+        back: 'It is not a convex variable — the discretization matrices depend on it. Fix tf, solve the SOCP, and run a golden-section search on tf outside. The cost is unimodal in tf, so a dozen inner solves suffice.',
       },
       {
         id: 'c_m43_scvx_loop',
         front: 'The SCvx iteration',
-        back: 'Linearise the dynamics and non-convex constraints about the reference; solve the convex subproblem with a trust region and penalised virtual control; compute rho = actual/predicted reduction; accept or reject and resize; repeat until the virtual control and the step are both negligible.',
+        back: 'Linearize the dynamics and non-convex constraints about the reference; solve the convex subproblem with a trust region and penalized virtual control; compute rho = actual/predicted reduction; accept or reject and resize; repeat until the virtual control and the step are both negligible.',
       },
       {
         id: 'c_m43_virtual_control',
         front: 'Virtual control vs trust region',
-        back: 'Virtual control: an unconstrained, heavily penalised slack in the linearised dynamics that prevents artificial INFEASIBILITY. Trust region: a bound on deviation from the reference that prevents artificial UNBOUNDEDNESS. Different failures, different fixes.',
+        back: 'Virtual control: an unconstrained, heavily penalized slack in the linearized dynamics that prevents artificial INFEASIBILITY. Trust region: a bound on deviation from the reference that prevents artificial UNBOUNDEDNESS. Different failures, different fixes.',
       },
       {
         id: 'c_m43_time_dilation',
         front: 'Free final time by time dilation',
-        back: 'Normalise time to tau in [0, 1] and introduce the dilation factor s = tf as a decision variable, so dx/dtau = s f(x, u). The nonlinearity in s is then absorbed by the same successive linearisation as everything else.',
+        back: 'Normalize time to tau in [0, 1] and introduce the dilation factor s = tf as a decision variable, so dx/dtau = s f(x, u). The nonlinearity in s is then absorbed by the same successive linearization as everything else.',
         formula: true,
       },
       {
@@ -1217,28 +1217,28 @@ Success: a plot of solve time and iteration count against N, a stated worst case
     topics: [
       'Hard vs soft vs firm real-time, and why "fast" and "real-time" are unrelated properties',
       'Determinism, worst-case execution time, and jitter as the three things you actually measure',
-      'Fixed-priority scheduling: rate-monotonic priority assignment and the Liu-Layland utilisation bound',
-      'Earliest-deadline-first and why it achieves higher utilisation but degrades worse on overload',
-      'Exact schedulability by response-time analysis, and why the utilisation bound is only sufficient',
+      'Fixed-priority scheduling: rate-monotonic priority assignment and the Liu-Layland utilization bound',
+      'Earliest-deadline-first and why it achieves higher utilization but degrades worse on overload',
+      'Exact schedulability by response-time analysis, and why the utilization bound is only sufficient',
       'Priority inversion, priority inheritance and priority ceiling; the Mars Pathfinder failure and its fix',
       'RTOS primitives: tasks, semaphores, mutexes, message queues, and which of them can block unboundedly',
       'Real-time Linux: PREEMPT_RT, SCHED_FIFO and SCHED_DEADLINE, CPU isolation, IRQ affinity, mlockall',
-      'Why a flight programme can fly Linux at all, and what it has to switch off to do so',
+      'Why a flight program can fly Linux at all, and what it has to switch off to do so',
       'Interrupt handling, interrupt latency, and the split between the handler and the deferred half',
-      'No dynamic allocation after initialisation: static pools, fixed-capacity containers, and placement construction',
+      'No dynamic allocation after initialization: static pools, fixed-capacity containers, and placement construction',
       'Bounded loops, no recursion, and the rest of the Power of Ten rules',
       'Memory protection with an MMU or MPU; stack sizing and stack-overflow detection',
       'Cache and branch-predictor effects on determinism; why the fastest code is not always the most predictable',
       'Device drivers, memory-mapped I/O, and the volatile keyword',
       'Buses: UART, SPI, I2C, CAN, RS-422, Ethernet/UDP, and time-triggered protocols',
-      'Time synchronisation: GPS pulse-per-second, PTP, and disciplined timestamping of every sample',
+      'Time synchronization: GPS pulse-per-second, PTP, and disciplined timestamping of every sample',
       'Bare-metal microcontrollers vs embedded Linux, and where the boundary sits on a real vehicle',
       'Cross-compilation, toolchains, bootloaders and firmware update',
       'Logging and telemetry under a real-time budget: lock-free ring buffers and never blocking the control task',
       'Fixed-point arithmetic and when it is still the right answer',
     ],
     objectives: [
-      'Assign rate-monotonic priorities to a task set and prove schedulability by response-time analysis when the utilisation bound fails',
+      'Assign rate-monotonic priorities to a task set and prove schedulability by response-time analysis when the utilization bound fails',
       'Build a control loop on PREEMPT_RT Linux that holds a hard period with bounded jitter, and measure the jitter honestly',
       'Measure and report worst-case execution time, and explain why the mean is the wrong statistic',
       'Reproduce a priority inversion and fix it with priority inheritance',
@@ -1317,10 +1317,10 @@ Success: a plot of solve time and iteration count against N, a stated worst case
    R = C_i + sum over all higher-priority tasks j of ceil(R / T_j) * C_j
 
    starting from R = C_i and iterating until it stops changing, with rate-monotonic priorities (shortest period highest). The task is schedulable when R <= its deadline, taken equal to its period.
-4. Implement **is_schedulable_rta** and find a task set that fails the utilisation bound but passes exact analysis. Explain in one sentence where the bound throws away information.
+4. Implement **is_schedulable_rta** and find a task set that fails the utilization bound but passes exact analysis. Explain in one sentence where the bound throws away information.
 5. Implement **wcet_margin** and use it on real measurements from the next exercise.
 
-Success: all tests pass, and you can state from memory what the utilisation bound converges to and why it is conservative.`,
+Success: all tests pass, and you can state from memory what the utilization bound converges to and why it is conservative.`,
         starter: `import math
 
 
@@ -1330,7 +1330,7 @@ def rm_utilization_bound(n):
 
 
 def is_rm_schedulable_ll(tasks):
-    """Sufficient utilisation test. tasks is a list of (C, T) in the same units."""
+    """Sufficient utilization test. tasks is a list of (C, T) in the same units."""
     raise NotImplementedError
 
 
@@ -1349,13 +1349,13 @@ def is_schedulable_rta(tasks):
 
 
 def wcet_margin(samples, period):
-    """Return (worst, utilisation) where worst is the largest execution-time
-    sample and utilisation is worst / period. The mean is never the answer."""
+    """Return (worst, utilization) where worst is the largest execution-time
+    sample and utilization is worst / period. The mean is never the answer."""
     raise NotImplementedError
 `,
         tests: [
           {
-            name: 'the utilisation bound has the right values and limit',
+            name: 'the utilization bound has the right values and limit',
             assert: `import math
 assert abs(rm_utilization_bound(1) - 1.0) < 1e-12, "one task can use the whole CPU"
 assert abs(rm_utilization_bound(2) - 0.82842712) < 1e-6, "two tasks: 2*(sqrt(2)-1)"
@@ -1392,7 +1392,7 @@ assert util > 1.0, "this task cannot meet a 100 Hz deadline and the mean would h
         title: 'A 200 Hz loop that actually holds 200 Hz',
         kind: 'build',
         hours: 16,
-        prompt: `Build a periodic control task on PREEMPT_RT Linux and characterise it properly.
+        prompt: `Build a periodic control task on PREEMPT_RT Linux and characterize it properly.
 
 1. Write it in C or C++: SCHED_FIFO at a sensible priority, clock_nanosleep with TIMER_ABSTIME against CLOCK_MONOTONIC so period error does not accumulate, mlockall to prevent page faults, and all buffers allocated before the loop starts.
 2. Log the wake-up timestamp every cycle into a preallocated ring buffer and write it out after the run. Never call printf, never call malloc, never take a lock the logger also takes, inside the loop.
@@ -1421,7 +1421,7 @@ Success: two measured blocking-time distributions, before and after, and a parag
     quiz: [
       {
         id: 'q_m44_malloc',
-        q: 'Why is malloc forbidden after initialisation in flight software?',
+        q: 'Why is malloc forbidden after initialization in flight software?',
         choices: [
           'Because it is slow',
           'Because its execution time is not bounded, it can fail at any point in the mission once the heap fragments, and both failure modes appear only under specific allocation histories that testing is unlikely to reproduce',
@@ -1430,7 +1430,7 @@ Success: two measured blocking-time distributions, before and after, and a parag
         ],
         answer: 1,
         explain:
-          'Two independent problems, and both are about determinism rather than speed. First, an allocator walks free lists, so its worst-case execution time depends on the history of every allocation ever made; you cannot put a number on it, and a real-time analysis needs a number. Second, fragmentation means a request can fail after hours of perfectly normal operation, in a state you never reached in test, and the code path that handles that failure is the least-tested path in the system. The standard answer is to allocate everything during initialisation, use fixed-capacity containers and static pools thereafter, and let the initialisation phase be the only place a shortage can appear — where it is a ground-testable, fail-to-launch condition rather than an in-flight one.',
+          'Two independent problems, and both are about determinism rather than speed. First, an allocator walks free lists, so its worst-case execution time depends on the history of every allocation ever made; you cannot put a number on it, and a real-time analysis needs a number. Second, fragmentation means a request can fail after hours of perfectly normal operation, in a state you never reached in test, and the code path that handles that failure is the least-tested path in the system. The standard answer is to allocate everything during initialization, use fixed-capacity containers and static pools thereafter, and let the initialization phase be the only place a shortage can appear — where it is a ground-testable, fail-to-launch condition rather than an in-flight one.',
         b: 0.6,
         bloom: 'understand',
       },
@@ -1445,7 +1445,7 @@ Success: two measured blocking-time distributions, before and after, and a parag
         ],
         answer: 1,
         explain:
-          'Real-time correctness is a property of every instance, not of the distribution. Response-time analysis is built entirely on worst-case execution times, so a schedulability proof using averages proves nothing. This also drives how you write the code: bounded loops so the worst case is computable, no allocation so it is not history-dependent, avoidance of data-dependent algorithmic complexity, and awareness of cache behaviour, since a cold-cache instance can be several times slower than a warm one. In practice WCET is bounded by a combination of measurement over a long dispersed campaign and static analysis of the loop bounds, and the two must be reconciled.',
+          'Real-time correctness is a property of every instance, not of the distribution. Response-time analysis is built entirely on worst-case execution times, so a schedulability proof using averages proves nothing. This also drives how you write the code: bounded loops so the worst case is computable, no allocation so it is not history-dependent, avoidance of data-dependent algorithmic complexity, and awareness of cache behavior, since a cold-cache instance can be several times slower than a warm one. In practice WCET is bounded by a combination of measurement over a long dispersed campaign and static analysis of the loop bounds, and the two must be reconciled.',
         b: 0.8,
         bloom: 'understand',
       },
@@ -1466,16 +1466,16 @@ Success: two measured blocking-time distributions, before and after, and a parag
       },
       {
         id: 'q_m44_ll_bound',
-        q: 'A three-task set has total utilisation 0.83, above the Liu-Layland bound of 0.78. What can you conclude?',
+        q: 'A three-task set has total utilization 0.83, above the Liu-Layland bound of 0.78. What can you conclude?',
         choices: [
           'The task set is not schedulable under rate-monotonic priorities',
-          'Nothing yet — the utilisation bound is sufficient but not necessary, so you must run exact response-time analysis, which frequently passes sets up to and beyond 0.9 utilisation',
+          'Nothing yet — the utilization bound is sufficient but not necessary, so you must run exact response-time analysis, which frequently passes sets up to and beyond 0.9 utilization',
           'The task set is schedulable under EDF but not under rate-monotonic',
           'The periods must be harmonic for the set to be schedulable',
         ],
         answer: 1,
         explain:
-          'The bound is derived from the worst possible relationship between the periods, so it is pessimistic for any particular set. Exact analysis computes the worst-case response time of each task by the fixed-point iteration R = C_i + sum of ceil(R/T_j) C_j over higher-priority tasks, and compares it to the deadline. Harmonic period sets are the extreme case: with periods that divide one another, rate-monotonic is schedulable right up to 100% utilisation. EDF does have a simple necessary and sufficient test at utilisation not exceeding one, but it is a separate question, and EDF degrades far worse than fixed priority when the system is overloaded — which is a serious argument against it in flight.',
+          'The bound is derived from the worst possible relationship between the periods, so it is pessimistic for any particular set. Exact analysis computes the worst-case response time of each task by the fixed-point iteration R = C_i + sum of ceil(R/T_j) C_j over higher-priority tasks, and compares it to the deadline. Harmonic period sets are the extreme case: with periods that divide one another, rate-monotonic is schedulable right up to 100% utilization. EDF does have a simple necessary and sufficient test at utilization not exceeding one, but it is a separate question, and EDF degrades far worse than fixed priority when the system is overloaded — which is a serious argument against it in flight.',
         b: 1.1,
         bloom: 'analyze',
       },
@@ -1505,7 +1505,7 @@ Success: two measured blocking-time distributions, before and after, and a parag
         ],
         answer: 1,
         explain:
-          'A stock kernel has long non-preemptible regions, so a high-priority user task can wait an unbounded time while the kernel finishes something. PREEMPT_RT attacks exactly that: kernel spinlocks become priority-inheriting sleeping locks, most interrupt handlers become threads you can prioritise, and the remaining non-preemptible sections are made short and audited. Throughput goes slightly down and latency determinism goes sharply up — which is the trade a control loop wants. It is why a modern launch vehicle can run its flight application on ordinary multi-core hardware under Linux instead of a classical RTOS, given core isolation, locked memory and an application written to real-time rules.',
+          'A stock kernel has long non-preemptible regions, so a high-priority user task can wait an unbounded time while the kernel finishes something. PREEMPT_RT attacks exactly that: kernel spinlocks become priority-inheriting sleeping locks, most interrupt handlers become threads you can prioritize, and the remaining non-preemptible sections are made short and audited. Throughput goes slightly down and latency determinism goes sharply up — which is the trade a control loop wants. It is why a modern launch vehicle can run its flight application on ordinary multi-core hardware under Linux instead of a classical RTOS, given core isolation, locked memory and an application written to real-time rules.',
         b: 1.2,
         bloom: 'understand',
       },
@@ -1515,7 +1515,7 @@ Success: two measured blocking-time distributions, before and after, and a parag
         choices: [
           'Because recursive functions are slower than iterative ones',
           'Because stack usage becomes data-dependent and cannot be statically bounded, so stack overflow — which typically corrupts adjacent memory silently rather than faulting cleanly — becomes a possibility no analysis can rule out',
-          'Because compilers optimise recursion inconsistently',
+          'Because compilers optimize recursion inconsistently',
           'Because recursion prevents the use of const correctness',
         ],
         answer: 1,
@@ -1558,7 +1558,7 @@ Success: two measured blocking-time distributions, before and after, and a parag
       },
       {
         id: 'c_m44_ll_bound',
-        front: 'Liu-Layland utilisation bound',
+        front: 'Liu-Layland utilization bound',
         back: 'U <= n (2^(1/n) - 1) is SUFFICIENT for rate-monotonic schedulability. n = 2 gives 0.828, n = 3 gives 0.780, and it decreases to ln 2 = 0.693. Failing it proves nothing — run exact analysis.',
         formula: true,
       },
@@ -1571,7 +1571,7 @@ Success: two measured blocking-time distributions, before and after, and a parag
       {
         id: 'c_m44_rm',
         front: 'Rate-monotonic priority assignment',
-        back: 'Shorter period gets higher priority. Optimal among fixed-priority assignments for independent periodic tasks with deadlines equal to periods. Deadline-monotonic generalises it when deadlines are shorter than periods.',
+        back: 'Shorter period gets higher priority. Optimal among fixed-priority assignments for independent periodic tasks with deadlines equal to periods. Deadline-monotonic generalizes it when deadlines are shorter than periods.',
       },
       {
         id: 'c_m44_priority_inversion',
@@ -1596,17 +1596,17 @@ Success: two measured blocking-time distributions, before and after, and a parag
       {
         id: 'c_m44_no_malloc',
         front: 'Why no dynamic allocation after init',
-        back: 'Unbounded and history-dependent execution time, plus the possibility of failing mid-mission once the heap fragments — in a code path that is by construction the least tested. Allocate at initialisation, then fixed-capacity containers and static pools.',
+        back: 'Unbounded and history-dependent execution time, plus the possibility of failing mid-mission once the heap fragments — in a code path that is by construction the least tested. Allocate at initialization, then fixed-capacity containers and static pools.',
       },
       {
         id: 'c_m44_power_of_ten',
         front: 'The Power of Ten rules, in spirit',
-        back: 'Simple control flow, no recursion; a statically provable bound on every loop; no allocation after initialisation; short functions; assertion density; smallest possible scope for data; check every return value; restricted preprocessor; restricted pointer use; compile with all warnings on, zero warnings, plus static analysers.',
+        back: 'Simple control flow, no recursion; a statically provable bound on every loop; no allocation after initialization; short functions; assertion density; smallest possible scope for data; check every return value; restricted preprocessor; restricted pointer use; compile with all warnings on, zero warnings, plus static analyzers.',
       },
       {
         id: 'c_m44_volatile',
         front: 'What volatile does and does not do',
-        back: 'It stops the compiler from caching or reordering accesses to that object, which is what a memory-mapped register needs. It is NOT a synchronisation primitive: it provides no atomicity and no memory ordering between threads. For that, use atomics.',
+        back: 'It stops the compiler from caching or reordering accesses to that object, which is what a memory-mapped register needs. It is NOT a synchronization primitive: it provides no atomicity and no memory ordering between threads. For that, use atomics.',
       },
       {
         id: 'c_m44_timestamping',
@@ -1635,7 +1635,7 @@ Success: two measured blocking-time distributions, before and after, and a parag
       'Triple modular redundancy and voting; mid-value select; what a voter can and cannot detect',
       'Byzantine faults and why a majority vote does not handle an asymmetric liar',
       'Commodity multi-core computers running Linux with redundant flight strings and voted output, as publicly described for modern launch and crew vehicles',
-      'Radiation effects: single-event upsets, latch-up, total ionising dose; EDAC and ECC memory; memory scrubbing',
+      'Radiation effects: single-event upsets, latch-up, total ionizing dose; EDAC and ECC memory; memory scrubbing',
       'Watchdog timers: what they catch, what they miss, and why a reset is a real-time decision',
       'Fault detection, isolation and recovery: residual monitors, hypothesis tests, persistence counters and hysteresis',
       'FMEA and fault trees; identifying the single points of failure a voter does not cover',
@@ -1799,7 +1799,7 @@ assert mode == "coast" and reason == "", "staying put is always legal"`,
         prompt: `Redundancy management is two separate jobs: deciding which value to use, and deciding which unit to stop trusting.
 
 1. Implement **vote**, a mid-value select over three inputs with agreement checking. Output the median. Report as faulted the index of any channel that disagrees with **both** of the others by more than the tolerance. If no two channels agree, there is no majority: return no output and flag all three, because a voter with no majority must fail loudly rather than pick one.
-2. Implement **nis**, the normalised innovation squared nu^T S^-1 nu. This is the standard filter-residual health metric: under the filter's own assumptions it is chi-squared distributed with as many degrees of freedom as the measurement, so its expected value is the measurement dimension.
+2. Implement **nis**, the normalized innovation squared nu^T S^-1 nu. This is the standard filter-residual health metric: under the filter's own assumptions it is chi-squared distributed with as many degrees of freedom as the measurement, so its expected value is the measurement dimension.
 3. Implement **persistence_trip**. A single sample above threshold is noise; a monitor must require N consecutive exceedances before it declares a fault, and reset its counter on any sample below. Tune N against the false-alarm rate you can accept.
 4. Then run a campaign: inject stuck-at, slow-drift, and noisy-but-plausible gyro faults into your 6-DOF sim, and report detection latency and false-alarm rate for each. The slow drift is the one that will embarrass you.
 
@@ -1819,7 +1819,7 @@ def vote(values, tolerance):
 
 
 def nis(residual, S):
-    """Normalised innovation squared: residual^T inv(S) residual."""
+    """Normalized innovation squared: residual^T inv(S) residual."""
     raise NotImplementedError
 
 
@@ -1952,7 +1952,7 @@ Success: two traced paths, and a written comparison specific enough that somebod
         ],
         answer: 1,
         explain:
-          'A benign or fail-silent fault produces the same wrong value, or nothing, for everyone; two good units then trivially outvote it. A Byzantine fault is arbitrary and may be asymmetric — including a signal that sits exactly on a threshold so that two receivers sample it differently, which is a common physical cause. With asymmetric information, each replica has a different view of the world and they cannot agree by voting once. The classical results require 3f+1 nodes and f+1 rounds of exchange, plus a synchronised time base. Real avionics buses address this with interactive consistency exchanges, self-checking pairs, or hardware that makes asymmetry impossible.',
+          'A benign or fail-silent fault produces the same wrong value, or nothing, for everyone; two good units then trivially outvote it. A Byzantine fault is arbitrary and may be asymmetric — including a signal that sits exactly on a threshold so that two receivers sample it differently, which is a common physical cause. With asymmetric information, each replica has a different view of the world and they cannot agree by voting once. The classical results require 3f+1 nodes and f+1 rounds of exchange, plus a synchronized time base. Real avionics buses address this with interactive consistency exchanges, self-checking pairs, or hardware that makes asymmetry impossible.',
         b: 1.5,
         bloom: 'understand',
       },
@@ -1982,7 +1982,7 @@ Success: two traced paths, and a written comparison specific enough that somebod
         ],
         answer: 1,
         explain:
-          'Voting only works if agreement is the expected outcome for healthy units. Anything that makes two healthy strings disagree — an iteration count that depends on timing, an unseeded random number, a reduction whose order depends on thread scheduling, a solver that stops on wall-clock time rather than an iteration count — turns healthy behaviour into apparent faults. This is one more argument for a convex guidance solver with a fixed iteration budget over an NLP that stops when it happens to converge. Where exact bit-for-bit agreement is impossible, the system must either synchronise the strings tightly at frame boundaries and compare at defined points, or designate one string as commanding and use the others as monitors with an explicitly justified tolerance.',
+          'Voting only works if agreement is the expected outcome for healthy units. Anything that makes two healthy strings disagree — an iteration count that depends on timing, an unseeded random number, a reduction whose order depends on thread scheduling, a solver that stops on wall-clock time rather than an iteration count — turns healthy behavior into apparent faults. This is one more argument for a convex guidance solver with a fixed iteration budget over an NLP that stops when it happens to converge. Where exact bit-for-bit agreement is impossible, the system must either synchronize the strings tightly at frame boundaries and compare at defined points, or designate one string as commanding and use the others as monitors with an explicitly justified tolerance.',
         b: 1.3,
         bloom: 'analyze',
       },
@@ -2007,7 +2007,7 @@ Success: two traced paths, and a written comparison specific enough that somebod
         choices: [
           'By using only radiation-hardened parts, which are immune',
           'By accepting that upsets will occur and handling them at the system level: ECC on memory with background scrubbing, redundant computing strings with output voting so an upset string is outvoted, integrity checks on data and code, watchdogs, and fast restart of an affected string back into the running set',
-          'By shielding the electronics box with enough aluminium to stop the particles',
+          'By shielding the electronics box with enough aluminum to stop the particles',
           'By running the software slowly enough that upsets cannot accumulate',
         ],
         answer: 1,
@@ -2060,7 +2060,7 @@ Success: two traced paths, and a written comparison specific enough that somebod
       },
       {
         id: 'c_m45_nis',
-        front: 'Normalised innovation squared',
+        front: 'Normalized innovation squared',
         back: 'NIS = nu^T S^-1 nu, with nu the filter innovation and S its covariance. Under the filter assumptions it is chi-squared with the measurement dimension as degrees of freedom, so its mean equals that dimension. The standard sensor and filter health monitor.',
         formula: true,
       },
@@ -2072,7 +2072,7 @@ Success: two traced paths, and a written comparison specific enough that somebod
       {
         id: 'c_m45_seu',
         front: 'Radiation effects vocabulary',
-        back: 'SEU: a bit flips, corrected by ECC and scrubbing. SEL: latch-up, a parasitic conducting path that needs the power cycled to clear and can destroy the part. TID: total ionising dose, cumulative degradation over the mission life.',
+        back: 'SEU: a bit flips, corrected by ECC and scrubbing. SEL: latch-up, a parasitic conducting path that needs the power cycled to clear and can destroy the part. TID: total ionizing dose, cumulative degradation over the mission life.',
       },
       {
         id: 'c_m45_determinism_vote',
@@ -2100,7 +2100,7 @@ Success: two traced paths, and a written comparison specific enough that somebod
     tier: 6,
     title: '6-DOF Simulation Architecture',
     summary:
-      'Build the simulation everything else in this curriculum is judged against: a modular, deterministic, closed-loop 6-DOF that runs your actual flight code at its true rate against modelled sensors, actuators and atmosphere. You will validate it against analytic cases and energy conservation, handle staging with proper event detection, and instrument it so a ten-thousand-case Monte Carlo is a configuration change rather than a rewrite.',
+      'Build the simulation everything else in this curriculum is judged against: a modular, deterministic, closed-loop 6-DOF that runs your actual flight code at its true rate against modeled sensors, actuators and atmosphere. You will validate it against analytic cases and energy conservation, handle staging with proper event detection, and instrument it so a ten-thousand-case Monte Carlo is a configuration change rather than a rewrite.',
     prereqs: [
       't1_m17_attitude_kinematics',
       't1_m18_atmospheric_flight',
@@ -2114,9 +2114,9 @@ Success: two traced paths, and a written comparison specific enough that somebod
       'Running the plant at a fine step while the flight software runs at its true rate, with zero-order hold between updates',
       'Frame and unit discipline: naming every vector by its frame, and the conventions that stop a sign error becoming a three-week debugging session',
       'Environment models: gravity field, atmosphere, wind and gust, magnetic field, ephemeris, solar radiation pressure',
-      'Sensor models: noise, bias and bias instability, scale factor, misalignment, quantisation, latency, dropout, saturation, update rate',
+      'Sensor models: noise, bias and bias instability, scale factor, misalignment, quantization, latency, dropout, saturation, update rate',
       'Actuator models: thrust curves and start-up transients, TVC gimbal dynamics and rate limits, reaction wheel friction, thruster minimum impulse bit, valve delay',
-      'Mass properties against time: propellant depletion, centre of mass migration, inertia tensor change',
+      'Mass properties against time: propellant depletion, center of mass migration, inertia tensor change',
       'Slosh and structural flex models, and where they get inserted in the loop',
       'Staging and other discontinuous events; zero-crossing detection and bisection to the event time',
       'The flight-software-in-the-loop boundary: compiling the actual flight code into the sim rather than a Python re-implementation of it',
@@ -2125,14 +2125,14 @@ Success: two traced paths, and a written comparison specific enough that somebod
       'Validation against analytic solutions, conservation laws, and eventually flight data',
       'Regression testing and golden-file comparison; what to do when a legitimate model improvement breaks every golden file',
       'Determinism and reproducibility: seeded random number streams, per-case seeds, and bit-exact replay of a single case out of a campaign',
-      'Performance: vectorisation, parallelism over cases rather than within a case, and why Monte Carlo runs on a cluster',
+      'Performance: vectorization, parallelism over cases rather than within a case, and why Monte Carlo runs on a cluster',
       'Configuration management of the sim: models, parameters and scenarios versioned separately from the code',
     ],
     objectives: [
       'Build a modular, deterministic, closed-loop 6-DOF simulation that hosts your actual flight code at a fixed rate',
       'Validate it against a vacuum analytic case and an energy-conservation case, and state the residual error in each',
       'Implement event detection that lands exactly on a staging event instead of stepping over it',
-      'Model sensors and actuators well enough that the controller sees latency, quantisation and rate limits, not perfect information',
+      'Model sensors and actuators well enough that the controller sees latency, quantization and rate limits, not perfect information',
       'Instrument the sim for Monte Carlo: per-case seeding, bit-exact replay, and a headless batch interface',
     ],
     resources: [
@@ -2183,7 +2183,7 @@ Success: two traced paths, and a written comparison specific enough that somebod
         title: 'NASA-STD-7009 — Standard for Models and Simulations',
         kind: 'docs',
         free: true,
-        note: 'What it takes to claim a simulation is credible: verification, validation, uncertainty characterisation, and the credibility assessment scale.',
+        note: 'What it takes to claim a simulation is credible: verification, validation, uncertainty characterization, and the credibility assessment scale.',
       },
     ],
     exercises: [
@@ -2197,7 +2197,7 @@ Success: two traced paths, and a written comparison specific enough that somebod
 
 1. Implement **rk4_step**, classical fourth-order Runge-Kutta. Verify that its error falls as h^4 and that it integrates a cubic exactly.
 2. Implement **simulate_two_rate**. The plant integrates at dt_plant; the controller runs at dt_ctrl and its output is **held constant between updates**. This is the single most important structural decision in a closed-loop sim: the flight code must see exactly the sample rate and the zero-order hold it will see in flight, or every margin you compute is a fiction. dt_ctrl must be an integer multiple of dt_plant, and you should assert that rather than silently resampling.
-3. Implement **bisect_event**. Given a scalar event function that changes sign across a step, find the crossing time. Without this, staging happens at whatever time the integrator happened to step to, which puts a random quantisation of up to one step into every case in your Monte Carlo — and it will show up as a suspiciously fat tail in burnout velocity.
+3. Implement **bisect_event**. Given a scalar event function that changes sign across a step, find the crossing time. Without this, staging happens at whatever time the integrator happened to step to, which puts a random quantization of up to one step into every case in your Monte Carlo — and it will show up as a suspiciously fat tail in burnout velocity.
 
 Success: all tests pass, and you can explain why stepping over an event is worse than a slightly inaccurate integrator.`,
         starter: `import numpy as np
@@ -2291,12 +2291,12 @@ assert abs(t2 - (2.0 * 100.0 / 9.80665) ** 0.5) < 1e-8, "ground impact time is w
 
    a_meas = (I + diag(scale_factor) + misalignment) a_true + bias + noise,
 
-   then quantised by rounding to the nearest multiple of the quantum. Keep noise as an additive argument so the model is deterministic and testable; the caller draws it from a seeded stream.
+   then quantized by rounding to the nearest multiple of the quantum. Keep noise as an additive argument so the model is deterministic and testable; the caller draws it from a seeded stream.
 2. Implement **rate_limit**, the first-order actuator constraint everybody forgets until the TVC starts limit-cycling.
 3. Implement **transport_delay**, a fixed-length buffer that returns the sample from n steps ago. Latency is the error source that most often turns a nominally stable design unstable, because it eats phase exactly at crossover.
 4. Then sweep: with your booster controller, increase actuator latency in 5 ms steps and find the value at which the closed loop goes unstable. Compare it to the phase margin you designed for, converted to a delay margin at crossover. They should agree to within a few milliseconds, and if they do not, you have learned something about your model.
 
-Success: tests pass, and you can predict the destabilising latency from the Bode plot before you run the sweep.`,
+Success: tests pass, and you can predict the destabilizing latency from the Bode plot before you run the sweep.`,
         starter: `import numpy as np
 
 
@@ -2307,7 +2307,7 @@ def imu_error_model(a_true, bias, scale_factor, misalignment, quantum, noise=Non
     bias          : (3,)
     scale_factor  : (3,) fractional scale factor errors
     misalignment  : (3, 3) small off-diagonal misalignment matrix
-    quantum       : quantisation step; use 0 for no quantisation
+    quantum       : quantization step; use 0 for no quantization
     noise         : (3,) additive noise sample, or None
 
     Returns the (3,) measured specific force.
@@ -2350,7 +2350,7 @@ assert abs(out[1] - 0.002) < 1e-12, "misalignment couples x into y"
 assert abs(out[2] - 0.05) < 1e-12, "bias adds after the sensitivity matrix"`,
           },
           {
-            name: 'quantisation rounds to the nearest level',
+            name: 'quantization rounds to the nearest level',
             assert: `import numpy as np
 out = imu_error_model(np.array([1.2345, 0.0, 0.0]), np.zeros(3), np.zeros(3),
                       np.zeros((3, 3)), 0.01)
@@ -2381,10 +2381,10 @@ assert abs(outs[0] - 1.0) < 1e-12, "before the line fills, hold the oldest sampl
         prompt: `Build the 6-DOF you will use for the rest of the curriculum. Structure it as five separable modules — plant, environment, sensors, GNC, actuators — with explicit interfaces, because in the Monte Carlo module you will need to swap each of them independently.
 
 Required:
-1. **Plant**: rigid-body translational and rotational dynamics with a quaternion, variable mass, a time-varying inertia tensor and a migrating centre of mass.
+1. **Plant**: rigid-body translational and rotational dynamics with a quaternion, variable mass, a time-varying inertia tensor and a migrating center of mass.
 2. **Environment**: an atmosphere model with density, pressure and speed of sound against altitude; a wind profile with a shear layer and a gust model; inverse-square gravity.
 3. **Actuators**: TVC with second-order gimbal dynamics, deflection and rate limits, and an engine thrust model with start-up and shutdown transients.
-4. **Sensors**: IMU with bias, scale factor, misalignment, quantisation and latency, at its own update rate; a radar altimeter with dropout.
+4. **Sensors**: IMU with bias, scale factor, misalignment, quantization and latency, at its own update rate; a radar altimeter with dropout.
 5. **GNC**: your actual flight code, compiled or imported, called at a fixed 100 Hz through a zero-order hold.
 
 Then validate, in this order:
@@ -2405,7 +2405,7 @@ Success: all six validation cases documented with their residuals, plus a headle
         prompt: `You have built a simulation of a vehicle that has never flown. Write the argument that it can be trusted, addressing each of the following, with evidence rather than assertion.
 
 1. **Verification** — is the code solving the equations you wrote? Analytic cases, conservation laws, method-of-manufactured-solutions, step-size refinement studies, independent reimplementation of a critical module.
-2. **Validation** — are they the right equations? Component-level test data (engine hot fire, TVC frequency response, sensor bench characterisation), wind tunnel and CFD comparison, structural modal survey, and analogous vehicles.
+2. **Validation** — are they the right equations? Component-level test data (engine hot fire, TVC frequency response, sensor bench characterization), wind tunnel and CFD comparison, structural modal survey, and analogous vehicles.
 3. **Uncertainty** — what does the sim not know, and how is that ignorance represented as a dispersion rather than assumed away?
 4. State explicitly the phenomena your model does not contain at all, and argue why each one is either negligible or covered by a margin.
 5. Read NASA-STD-7009 and score your simulation against its credibility assessment scale. Be honest about the low scores.
@@ -2425,7 +2425,7 @@ Success: a written validation argument with a table of evidence per model, and a
         ],
         answer: 1,
         explain:
-          'A discrete controller has a sample period baked into its difference equation — every gain, every filter pole and the half-sample phase lag of the hold all assume it. Call it on the integrator schedule and it silently becomes a different controller, one you never designed or analysed. There is also a subtler trap: an adaptive integrator evaluates the derivative several times per step, including at rejected trial points, so a controller called from inside the derivative function would see time move backwards and any internal state it keeps would be corrupted. The architecture that works is to make each controller tick a hard step boundary, compute the control there once, hold it as a constant input across the step, and let the integrator do whatever it likes strictly inside.',
+          'A discrete controller has a sample period baked into its difference equation — every gain, every filter pole and the half-sample phase lag of the hold all assume it. Call it on the integrator schedule and it silently becomes a different controller, one you never designed or analyzed. There is also a subtler trap: an adaptive integrator evaluates the derivative several times per step, including at rejected trial points, so a controller called from inside the derivative function would see time move backwards and any internal state it keeps would be corrupted. The architecture that works is to make each controller tick a hard step boundary, compute the control there once, hold it as a constant input across the step, and let the integrator do whatever it likes strictly inside.',
         b: 1.1,
         bloom: 'analyze',
       },
@@ -2434,13 +2434,13 @@ Success: a written validation argument with a table of evidence per model, and a
         q: 'Your simulation gives different answers on two runs with the same seed. What are the likely causes?',
         choices: [
           'Only an uninitialised variable',
-          'An uninitialised variable or unzeroed buffer; a shared random stream consumed in an order that depends on thread scheduling; floating-point reduction order changing under parallelism or a different vectorisation path; and dependence on wall-clock time, system entropy, iteration counts that stop on time, or hash-map iteration order',
+          'An uninitialised variable or unzeroed buffer; a shared random stream consumed in an order that depends on thread scheduling; floating-point reduction order changing under parallelism or a different vectorization path; and dependence on wall-clock time, system entropy, iteration counts that stop on time, or hash-map iteration order',
           'Only a difference in compiler version between the two runs',
           'Only the use of an adaptive integrator',
         ],
         answer: 1,
         explain:
-          'Reproducibility is a property you design in, not one you get. The four classic causes are: state that is not initialised, so the run depends on whatever was in memory; a single random stream shared between modules, so a change anywhere shifts every downstream draw — the fix is one seeded stream per model, derived deterministically from the case seed; floating-point non-associativity, so a parallel reduction or a different SIMD path sums in a different order; and any dependence on time, entropy or container ordering. Without bit-exact replay you cannot debug a single failing case out of ten thousand, which is exactly when you need to, so this is worth the engineering.',
+          'Reproducibility is a property you design in, not one you get. The four classic causes are: state that is not initialized, so the run depends on whatever was in memory; a single random stream shared between modules, so a change anywhere shifts every downstream draw — the fix is one seeded stream per model, derived deterministically from the case seed; floating-point non-associativity, so a parallel reduction or a different SIMD path sums in a different order; and any dependence on time, entropy or container ordering. Without bit-exact replay you cannot debug a single failing case out of ten thousand, which is exactly when you need to, so this is worth the engineering.',
         b: 1.0,
         bloom: 'analyze',
       },
@@ -2449,13 +2449,13 @@ Success: a written validation argument with a table of evidence per model, and a
         q: 'What does hardware-in-the-loop catch that software-in-the-loop cannot?',
         choices: [
           'Errors in the equations of motion',
-          'Everything that depends on real hardware and real time: actual bus timing and latency, driver behaviour, interrupt interaction, processor loading and timing margin on the real computer, sensor electrical interfaces and their failure modes, power transients, and integration defects in wiring, endianness and scaling',
+          'Everything that depends on real hardware and real time: actual bus timing and latency, driver behavior, interrupt interaction, processor loading and timing margin on the real computer, sensor electrical interfaces and their failure modes, power transients, and integration defects in wiring, endianness and scaling',
           'Errors in the aerodynamic database',
           'Numerical integration errors',
         ],
         answer: 1,
         explain:
-          'SIL tests the algorithms; PIL adds the real processor and so the real timing and arithmetic; HIL adds the real hardware and so everything at the boundary. The defects HIL finds are overwhelmingly integration defects rather than algorithm defects: a message arriving one frame later than the design assumed, an interrupt storm under a condition nobody modelled, a scaling or endianness mismatch in a driver, a sensor whose failure mode is nothing like the model, a power transient on actuator commutation. None of these exist in a pure software model, because in a software model you wrote both sides of every interface. What HIL does not improve is the physics: a wrong aerodynamic database is just as wrong with real hardware attached.',
+          'SIL tests the algorithms; PIL adds the real processor and so the real timing and arithmetic; HIL adds the real hardware and so everything at the boundary. The defects HIL finds are overwhelmingly integration defects rather than algorithm defects: a message arriving one frame later than the design assumed, an interrupt storm under a condition nobody modeled, a scaling or endianness mismatch in a driver, a sensor whose failure mode is nothing like the model, a power transient on actuator commutation. None of these exist in a pure software model, because in a software model you wrote both sides of every interface. What HIL does not improve is the physics: a wrong aerodynamic database is just as wrong with real hardware attached.',
         b: 0.9,
         bloom: 'understand',
       },
@@ -2464,13 +2464,13 @@ Success: a written validation argument with a table of evidence per model, and a
         q: 'Why is stepping over a staging event worse than a slightly less accurate integrator?',
         choices: [
           'It is not; a small step size makes the error negligible',
-          'Because the event time gets quantised to the integrator grid, which injects an error of up to one step into every case, appears as an artificial spread in burnout conditions across a Monte Carlo, and can corrupt the state through a discontinuity applied at the wrong instant; integrator truncation error is smooth and reducible, event quantisation is neither',
+          'Because the event time gets quantized to the integrator grid, which injects an error of up to one step into every case, appears as an artificial spread in burnout conditions across a Monte Carlo, and can corrupt the state through a discontinuity applied at the wrong instant; integrator truncation error is smooth and reducible, event quantization is neither',
           'Because the integrator becomes unstable at discontinuities',
           'Because the mass would become negative',
         ],
         answer: 1,
         explain:
-          'Two different kinds of error. Truncation error is a smooth function of step size that you can drive down and bound. Event quantisation is a discrete error that does not shrink proportionally, is different for every case in a dispersion campaign because the event lands at a different point in the step each time, and therefore shows up as scatter in your results that is a property of the simulation rather than the vehicle. It also breaks the integrator itself: a multi-stage method evaluating derivatives across a discontinuity computes a meaningless step, so the right handling is to detect the sign change, bisect to the event time, step exactly to it, apply the discontinuity, and restart the integrator cleanly on the far side.',
+          'Two different kinds of error. Truncation error is a smooth function of step size that you can drive down and bound. Event quantization is a discrete error that does not shrink proportionally, is different for every case in a dispersion campaign because the event lands at a different point in the step each time, and therefore shows up as scatter in your results that is a property of the simulation rather than the vehicle. It also breaks the integrator itself: a multi-stage method evaluating derivatives across a discontinuity computes a meaningless step, so the right handling is to detect the sign change, bisect to the event time, step exactly to it, apply the discontinuity, and restart the integrator cleanly on the far side.',
         b: 1.2,
         bloom: 'analyze',
       },
@@ -2479,13 +2479,13 @@ Success: a written validation argument with a table of evidence per model, and a
         q: 'How do you validate a 6-DOF simulation of a vehicle that has never flown?',
         choices: [
           'You cannot; you must fly first',
-          'Separate verification from validation, and build the validation case component by component: verify the code against analytic solutions and conservation laws, validate each model against its own test data — engine hot fire, TVC frequency response, wind tunnel and CFD, modal survey, sensor bench characterisation — validate the assembled sim against analogous vehicles, and represent everything still unknown as an explicit dispersion',
+          'Separate verification from validation, and build the validation case component by component: verify the code against analytic solutions and conservation laws, validate each model against its own test data — engine hot fire, TVC frequency response, wind tunnel and CFD, modal survey, sensor bench characterization — validate the assembled sim against analogous vehicles, and represent everything still unknown as an explicit dispersion',
           'Compare against a second simulation written by the same team',
           'Tune the model parameters until the simulation matches the design requirements',
         ],
         answer: 1,
         explain:
-          'The distinction is the whole answer: verification asks whether the code solves the equations correctly, and is settled by analytic cases, conservation checks, refinement studies and independent reimplementation. Validation asks whether they are the right equations, and before flight it can only be answered one model at a time, against data from the test of that component. The system-level claim is then an argument: each model is validated, the composition is verified, and what remains unvalidated is carried as a dispersion wide enough to cover the ignorance. NASA-STD-7009 formalises exactly this, including the requirement to state the simulation limitations. A second simulation from the same team shares the same misconceptions, and tuning parameters until the answer matches the requirement is how a simulation stops being evidence.',
+          'The distinction is the whole answer: verification asks whether the code solves the equations correctly, and is settled by analytic cases, conservation checks, refinement studies and independent reimplementation. Validation asks whether they are the right equations, and before flight it can only be answered one model at a time, against data from the test of that component. The system-level claim is then an argument: each model is validated, the composition is verified, and what remains unvalidated is carried as a dispersion wide enough to cover the ignorance. NASA-STD-7009 formalizes exactly this, including the requirement to state the simulation limitations. A second simulation from the same team shares the same misconceptions, and tuning parameters until the answer matches the requirement is how a simulation stops being evidence.',
         b: 1.3,
         bloom: 'analyze',
       },
@@ -2521,16 +2521,16 @@ Success: a written validation argument with a table of evidence per model, and a
       },
       {
         id: 'q_m46_latency',
-        q: 'Why does modelling sensor and actuator latency matter more than modelling their noise?',
+        q: 'Why does modeling sensor and actuator latency matter more than modeling their noise?',
         choices: [
           'It does not; noise dominates the error budget',
-          'Because latency is a phase lag that eats stability margin directly at crossover and can destabilise a loop that looks perfectly healthy without it, whereas zero-mean noise mostly degrades performance rather than stability — and latency is systematic, so it does not average out over a campaign',
+          'Because latency is a phase lag that eats stability margin directly at crossover and can destabilize a loop that looks perfectly healthy without it, whereas zero-mean noise mostly degrades performance rather than stability — and latency is systematic, so it does not average out over a campaign',
           'Because noise is impossible to model accurately',
           'Because latency changes the sensor scale factor',
         ],
         answer: 1,
         explain:
-          'A pure delay has unit magnitude and phase of minus omega times the delay, so it subtracts phase without warning you in the magnitude plot, and it subtracts the most at high frequency where your crossover is. A loop with 40 degrees of phase margin at 10 rad/s has a delay margin of about 70 ms; add 80 ms of unmodelled sensor-to-actuator latency and it is unstable, with nothing in the noise budget hinting at it. Noise, by contrast, is zero-mean and mostly costs performance and actuator duty cycle. This is why a credible simulation accounts for the whole chain — sample instant, bus transfer, task wake-up, algorithm, command transport, actuator response — and why measuring the real end-to-end latency on a HIL rig is one of the highest-value tests in the programme.',
+          'A pure delay has unit magnitude and phase of minus omega times the delay, so it subtracts phase without warning you in the magnitude plot, and it subtracts the most at high frequency where your crossover is. A loop with 40 degrees of phase margin at 10 rad/s has a delay margin of about 70 ms; add 80 ms of unmodelled sensor-to-actuator latency and it is unstable, with nothing in the noise budget hinting at it. Noise, by contrast, is zero-mean and mostly costs performance and actuator duty cycle. This is why a credible simulation accounts for the whole chain — sample instant, bus transfer, task wake-up, algorithm, command transport, actuator response — and why measuring the real end-to-end latency on a HIL rig is one of the highest-value tests in the program.',
         b: 1.3,
         bloom: 'analyze',
       },
@@ -2570,12 +2570,12 @@ Success: a written validation argument with a table of evidence per model, and a
       {
         id: 'c_m46_sensor_errors',
         front: 'The IMU error model terms',
-        back: 'Bias (and its instability), scale factor, misalignment and non-orthogonality, random walk noise, quantisation, latency, saturation, and finite update rate. Bias and latency hurt a navigation filter far more than white noise does.',
+        back: 'Bias (and its instability), scale factor, misalignment and non-orthogonality, random walk noise, quantization, latency, saturation, and finite update rate. Bias and latency hurt a navigation filter far more than white noise does.',
       },
       {
         id: 'c_m46_sensitivity_matrix',
         front: 'IMU measurement model',
-        back: 'a_meas = (I + diag(sf) + M) a_true + b + n, then quantised. The sensitivity matrix acts on truth first; bias and noise add afterwards, which is why calibration must estimate them in that order.',
+        back: 'a_meas = (I + diag(sf) + M) a_true + b + n, then quantized. The sensitivity matrix acts on truth first; bias and noise add afterwards, which is why calibration must estimate them in that order.',
         formula: true,
       },
       {
@@ -2631,7 +2631,7 @@ Success: a written validation argument with a table of evidence per model, and a
       'Three sigma versus the 99.73rd percentile, and why they differ for anything non-Gaussian',
       'Sensitivity analysis and driver identification: regression on the dispersion inputs, and scatter plots you actually look at',
       'Flight-envelope coverage and the difference between random coverage and designed coverage',
-      'Stability margin verification across the envelope: frozen-time linearisation, gain, phase and delay margin against flight time',
+      'Stability margin verification across the envelope: frozen-time linearization, gain, phase and delay margin against flight time',
       'Code verification: unit, integration and regression tests; statement, branch and MC-DC coverage',
       'Static analysis and formal methods: Coverity, Polyspace, model checking with SPIN',
       'Requirements-based testing, and why coverage without requirements-based tests proves very little',
@@ -2640,7 +2640,7 @@ Success: a written validation argument with a table of evidence per model, and a
       'Anomaly investigation, flight data reconstruction, and closing the loop by updating the models',
     ],
     objectives: [
-      'Build a dispersion set where every distribution can be justified by test data, heritage or a stated engineering judgement',
+      'Build a dispersion set where every distribution can be justified by test data, heritage or a stated engineering judgment',
       'Compute the number of runs needed to support a reliability claim at a stated confidence, and explain the assumption behind the formula',
       'Execute a Monte Carlo campaign, report CEP and a high percentile of landing error, and identify the top sensitivity drivers',
       'Implement linear covariance analysis for the same scenario and reconcile it against the Monte Carlo sample covariance',
@@ -2673,7 +2673,7 @@ Success: a written validation argument with a table of evidence per model, and a
         title: 'DO-178C — Software Considerations in Airborne Systems and Equipment Certification',
         kind: 'docs',
         free: false,
-        note: 'The aviation analogue. Worth knowing for the objectives structure and for MC-DC coverage, which is where the term comes from.',
+        note: 'The aviation analog. Worth knowing for the objectives structure and for MC-DC coverage, which is where the term comes from.',
       },
       {
         title: 'NASA Engineering and Safety Center (NESC) technical reports',
@@ -2806,7 +2806,7 @@ def propagate_covariance(P, Phi, Q):
 
 
 def sample_covariance(samples):
-    """Unbiased sample covariance of an (N, n) array of realisations."""
+    """Unbiased sample covariance of an (N, n) array of realizations."""
     raise NotImplementedError
 
 
@@ -2860,12 +2860,12 @@ assert np.allclose(Pf, Pmc, rtol=0.05, atol=1e-6), "linear propagation must matc
         hours: 24,
         prompt: `Run a real dispersion campaign on your 6-DOF landing simulation.
 
-1. **Build the dispersion set.** Every dispersed parameter gets a distribution, a source and a one-line justification: mass properties, centre of mass, inertia, aerodynamic coefficients, thrust and Isp, engine start-up timing, winds (as correlated profiles, not independent samples per altitude), IMU errors, altimeter errors, initial state, and atmospheric density. Where you have no data, say so and disperse wider.
+1. **Build the dispersion set.** Every dispersed parameter gets a distribution, a source and a one-line justification: mass properties, center of mass, inertia, aerodynamic coefficients, thrust and Isp, engine start-up timing, winds (as correlated profiles, not independent samples per altitude), IMU errors, altimeter errors, initial state, and atmospheric density. Where you have no data, say so and disperse wider.
 2. **Define failure before you run.** Touchdown velocity, tilt, lateral miss, propellant remaining, structural load, minimum stability margin. A case is a failure if any criterion is violated. Write this down first — deciding afterwards is how campaigns lie.
 3. **Run 10,000 cases**, with per-case seeds recorded so any case can be replayed bit-exactly.
 4. **Report**: CEP, the 99.87th percentile miss, touchdown velocity and tilt distributions, propellant margin, the failure count and the reliability claim it supports at 95% confidence.
-5. **Find the drivers.** Regress each output on the dispersed inputs, rank by standardised coefficient, and plot the top three as scatter. Name the three parameters that dominate and say what you would do about each: tighten the hardware, change the design, or carry the margin.
-6. **Investigate every failure individually.** Replay it, find the mechanism, and classify it as a real vehicle limitation, a controller deficiency, or a simulation artefact. "Three out of ten thousand, so it meets the requirement" is not an engineering conclusion.
+5. **Find the drivers.** Regress each output on the dispersed inputs, rank by standardized coefficient, and plot the top three as scatter. Name the three parameters that dominate and say what you would do about each: tighten the hardware, change the design, or carry the margin.
+6. **Investigate every failure individually.** Replay it, find the mechanism, and classify it as a real vehicle limitation, a controller deficiency, or a simulation artifact. "Three out of ten thousand, so it meets the requirement" is not an engineering conclusion.
 
 Success: a written verification report with the numbers above, a driver table, and a one-page write-up of each failed case with its mechanism.`,
       },
@@ -2876,8 +2876,8 @@ Success: a written verification report with the numbers above, a driver table, a
         hours: 12,
         prompt: `Make the verification run itself.
 
-1. On every push: build the flight code with all warnings as errors, run the unit tests, run a static analyser, and run a **reduced** Monte Carlo of 200 fixed-seed cases. Fail the build if any case fails a success criterion, or if the minimum gain or phase margin across the envelope drops below the requirement.
-2. Nightly: the full 10,000-case campaign on a parallel matrix, publishing the report as an artefact and trending the key statistics over time. A slow drift in the 99th-percentile miss over two weeks of commits is exactly what you want to see coming.
+1. On every push: build the flight code with all warnings as errors, run the unit tests, run a static analyzer, and run a **reduced** Monte Carlo of 200 fixed-seed cases. Fail the build if any case fails a success criterion, or if the minimum gain or phase margin across the envelope drops below the requirement.
+2. Nightly: the full 10,000-case campaign on a parallel matrix, publishing the report as an artifact and trending the key statistics over time. A slow drift in the 99th-percentile miss over two weeks of commits is exactly what you want to see coming.
 3. Add a performance gate: fail if the flight-code worst-case execution time regresses beyond a threshold.
 4. Report code coverage and make an uncovered branch in flight code a build failure. Then find a branch that is covered but not tested against any requirement, and explain why coverage alone is a weak criterion.
 5. Make the whole thing reproducible: pin every dependency, record the sim version and the dispersion-set version in every result record.
@@ -2906,13 +2906,13 @@ Success: a CI configuration that genuinely fails on an injected regression — p
         q: 'When is linear covariance analysis valid, and when must you use Monte Carlo?',
         choices: [
           'LinCov is always valid and Monte Carlo is only used for presentation',
-          'LinCov is valid when deviations stay small enough that the dynamics, sensors and control are well approximated by their linearisation about the reference and the driving uncertainties are Gaussian; Monte Carlo is required for saturation, deadbands, discrete logic and mode switching, non-Gaussian dispersions, and any question about the tail',
+          'LinCov is valid when deviations stay small enough that the dynamics, sensors and control are well approximated by their linearization about the reference and the driving uncertainties are Gaussian; Monte Carlo is required for saturation, deadbands, discrete logic and mode switching, non-Gaussian dispersions, and any question about the tail',
           'LinCov is valid only for linear systems with no control',
           'Monte Carlo is required whenever the state dimension exceeds ten',
         ],
         answer: 1,
         explain:
-          'LinCov propagates a covariance through the linearised closed-loop system and gives, in one run, what thousands of Monte Carlo cases estimate noisily. That makes it superb for navigation design trades, sensor sizing and early sensitivity work — you can sweep a parameter in seconds. Its assumptions are real, though: linearity about the reference and Gaussian inputs. Every nonlinearity a real vehicle has — actuator saturation, thrust limits, a deadband, a mode switch, an FDIR trip — breaks them, and it breaks them exactly in the tail, where the answer matters. The professional pattern is to use both: LinCov for design iteration and for sanity-checking the Monte Carlo covariance, Monte Carlo for the verification claim.',
+          'LinCov propagates a covariance through the linearized closed-loop system and gives, in one run, what thousands of Monte Carlo cases estimate noisily. That makes it superb for navigation design trades, sensor sizing and early sensitivity work — you can sweep a parameter in seconds. Its assumptions are real, though: linearity about the reference and Gaussian inputs. Every nonlinearity a real vehicle has — actuator saturation, thrust limits, a deadband, a mode switch, an FDIR trip — breaks them, and it breaks them exactly in the tail, where the answer matters. The professional pattern is to use both: LinCov for design iteration and for sanity-checking the Monte Carlo covariance, Monte Carlo for the verification claim.',
         b: 1.3,
         bloom: 'analyze',
       },
@@ -2927,7 +2927,7 @@ Success: a CI configuration that genuinely fails on an injected regression — p
         ],
         answer: 1,
         explain:
-          'Statement coverage can be satisfied while a compound condition is never exercised in a way that shows it matters; decision coverage only requires the whole expression to be both true and false. MC-DC additionally requires, for each condition, a pair of test cases that differ only in that condition and produce different outcomes — proving the condition is live and correctly polarised. It costs roughly N+1 tests for N conditions rather than 2^N, which is why it is the level DO-178C mandates for the highest criticality. The essential caveat: coverage is a measure of test adequacy, not of correctness. You get MC-DC by writing requirements-based tests and then measuring coverage to find what the requirements missed; writing tests to chase a coverage number produces tests that assert whatever the code already does.',
+          'Statement coverage can be satisfied while a compound condition is never exercised in a way that shows it matters; decision coverage only requires the whole expression to be both true and false. MC-DC additionally requires, for each condition, a pair of test cases that differ only in that condition and produce different outcomes — proving the condition is live and correctly polarized. It costs roughly N+1 tests for N conditions rather than 2^N, which is why it is the level DO-178C mandates for the highest criticality. The essential caveat: coverage is a measure of test adequacy, not of correctness. You get MC-DC by writing requirements-based tests and then measuring coverage to find what the requirements missed; writing tests to chase a coverage number produces tests that assert whatever the code already does.',
         b: 1.4,
         bloom: 'understand',
       },
@@ -2936,13 +2936,13 @@ Success: a CI configuration that genuinely fails on an injected regression — p
         q: 'Your Monte Carlo shows 3 failures in 5000 cases, clustered in one corner of the envelope. What do you do next?',
         choices: [
           'Report 99.94% success and move on, since the requirement is 99.9%',
-          'Replay each failure bit-exactly, find the physical mechanism, determine whether it is a vehicle limitation, a controller deficiency or a simulation artefact, then run a focused campaign in that corner at much higher density to find the true boundary and the sensitivity that drives it',
+          'Replay each failure bit-exactly, find the physical mechanism, determine whether it is a vehicle limitation, a controller deficiency or a simulation artifact, then run a focused campaign in that corner at much higher density to find the true boundary and the sensitivity that drives it',
           'Increase the run count until the failure fraction drops below the requirement',
           'Remove the corner of the envelope from the dispersion set',
         ],
         answer: 1,
         explain:
-          'A cluster is a mechanism, not noise, and three cases in a corner is the campaign telling you where the cliff is. The order of work is: replay each case exactly, which requires the per-case seeding you built in; trace the mechanism through the time histories; classify it. If it is a simulation artefact, fix the sim and rerun, because you now know your other results are suspect too. If it is real, characterise the boundary with a dense focused campaign or a direct worst-case search in that corner, since random sampling is a terrible way to map a cliff edge. Then decide: change the design, tighten a hardware requirement, restrict the operating envelope, or accept with a documented rationale. Quoting the aggregate rate ignores the fact that the failures are not randomly distributed, and reducing the dispersion set to make the failures disappear is how programmes lose vehicles.',
+          'A cluster is a mechanism, not noise, and three cases in a corner is the campaign telling you where the cliff is. The order of work is: replay each case exactly, which requires the per-case seeding you built in; trace the mechanism through the time histories; classify it. If it is a simulation artifact, fix the sim and rerun, because you now know your other results are suspect too. If it is real, characterize the boundary with a dense focused campaign or a direct worst-case search in that corner, since random sampling is a terrible way to map a cliff edge. Then decide: change the design, tighten a hardware requirement, restrict the operating envelope, or accept with a documented rationale. Quoting the aggregate rate ignores the fact that the failures are not randomly distributed, and reducing the dispersion set to make the failures disappear is how programs lose vehicles.',
         b: 1.2,
         bloom: 'apply',
       },
@@ -2972,7 +2972,7 @@ Success: a CI configuration that genuinely fails on an injected regression — p
         ],
         answer: 1,
         explain:
-          'The intuition that "independent means wider means safer" is wrong, and the wind case shows why. Sample each altitude bin independently and you get a profile that oscillates violently with altitude — physically impossible, and so filtered out by the vehicle, producing loads that are too low. The real atmosphere has coherent shear layers that persist over kilometres, and it is precisely that coherence that drives the q-alpha load. The correct approach is to sample from measured profile databases or from a model that reproduces the real spatial correlation structure. The same applies to mass properties, which move together with the propellant load, and to aerodynamic coefficients, which share a common wind-tunnel uncertainty. Correlation is part of the physics, and dropping it is a modelling error, not a conservatism.',
+          'The intuition that "independent means wider means safer" is wrong, and the wind case shows why. Sample each altitude bin independently and you get a profile that oscillates violently with altitude — physically impossible, and so filtered out by the vehicle, producing loads that are too low. The real atmosphere has coherent shear layers that persist over kilometers, and it is precisely that coherence that drives the q-alpha load. The correct approach is to sample from measured profile databases or from a model that reproduces the real spatial correlation structure. The same applies to mass properties, which move together with the propellant load, and to aerodynamic coefficients, which share a common wind-tunnel uncertainty. Correlation is part of the physics, and dropping it is a modeling error, not a conservatism.',
         b: 1.5,
         bloom: 'analyze',
       },
@@ -2981,7 +2981,7 @@ Success: a CI configuration that genuinely fails on an injected regression — p
         q: 'How are stability margins verified across a flight envelope that changes continuously?',
         choices: [
           'By checking the margins at the nominal design point',
-          'By frozen-time linearisation: linearise the plant at closely spaced flight times and dispersed conditions, compute gain, phase and delay margins for each, and plot the minimum against flight time against the requirement — plus a nonlinear check, since frozen-time analysis assumes the parameters vary slowly compared with the loop dynamics',
+          'By frozen-time linearization: linearize the plant at closely spaced flight times and dispersed conditions, compute gain, phase and delay margins for each, and plot the minimum against flight time against the requirement — plus a nonlinear check, since frozen-time analysis assumes the parameters vary slowly compared with the loop dynamics',
           'By running a single nonlinear simulation and observing that it does not diverge',
           'By computing the eigenvalues of the closed-loop system once per flight phase',
         ],
@@ -2997,12 +2997,12 @@ Success: a CI configuration that genuinely fails on an injected regression — p
         choices: [
           'Because 6-DOF simulations cannot be run on a single machine',
           'Because the unit of work is a campaign, not a run: thousands of cases per configuration, many configurations per design iteration, re-run on every meaningful commit — and the value is in the iteration rate, since a campaign that takes a week means a design decision per week',
-          'Because the optimisation solver requires a GPU cluster',
+          'Because the optimization solver requires a GPU cluster',
           'Because flight data must be reprocessed continuously',
         ],
         answer: 1,
         explain:
-          'One case is cheap; the campaign is not. Ten thousand cases times several vehicle configurations times every design iteration times every phase of flight, plus focused campaigns around each corner you find, plus the reduced set that runs on every commit — that is the workload, and it is embarrassingly parallel across cases, which is why it scales linearly with cores. The real argument is cycle time. A verification campaign that takes overnight means you test a design change per day; one that takes a week means you stop testing changes. Making the campaign fast is therefore a design-velocity decision rather than an infrastructure detail, and it is why organisations that iterate hardware quickly also invest heavily in simulation throughput.',
+          'One case is cheap; the campaign is not. Ten thousand cases times several vehicle configurations times every design iteration times every phase of flight, plus focused campaigns around each corner you find, plus the reduced set that runs on every commit — that is the workload, and it is embarrassingly parallel across cases, which is why it scales linearly with cores. The real argument is cycle time. A verification campaign that takes overnight means you test a design change per day; one that takes a week means you stop testing changes. Making the campaign fast is therefore a design-velocity decision rather than an infrastructure detail, and it is why organizations that iterate hardware quickly also invest heavily in simulation throughput.',
         b: 0.8,
         bloom: 'understand',
       },
@@ -3032,7 +3032,7 @@ Success: a CI configuration that genuinely fails on an injected regression — p
       {
         id: 'c_m47_dispersion_set',
         front: 'What goes in a launch-vehicle dispersion set',
-        back: 'Mass properties and centre of mass, inertia, aerodynamic coefficients, thrust and Isp and their transients, engine timing, winds as correlated profiles, atmospheric density, sensor and actuator errors, and initial conditions. Every one with a distribution and a stated source.',
+        back: 'Mass properties and center of mass, inertia, aerodynamic coefficients, thrust and Isp and their transients, engine timing, winds as correlated profiles, atmospheric density, sensor and actuator errors, and initial conditions. Every one with a distribution and a stated source.',
       },
       {
         id: 'c_m47_correlation',
@@ -3047,13 +3047,13 @@ Success: a CI configuration that genuinely fails on an injected regression — p
       {
         id: 'c_m47_lincov',
         front: 'Linear covariance analysis',
-        back: 'Propagate P <- Phi P Phi^T + Q through the linearised closed loop: one run gives the covariance Monte Carlo estimates with thousands. Valid while deviations stay linear and inputs stay Gaussian; breaks at saturations, deadbands and mode logic — that is, in the tail.',
+        back: 'Propagate P <- Phi P Phi^T + Q through the linearized closed loop: one run gives the covariance Monte Carlo estimates with thousands. Valid while deviations stay linear and inputs stay Gaussian; breaks at saturations, deadbands and mode logic — that is, in the tail.',
         formula: true,
       },
       {
         id: 'c_m47_frozen_time',
         front: 'Frozen-time margin verification',
-        back: 'Linearise at closely spaced flight times over dispersed cases, compute gain, phase and DELAY margin at each, and plot the worst case against flight time. Include flex and slosh modes — the binding margin is usually there, not at rigid-body crossover.',
+        back: 'Linearize at closely spaced flight times over dispersed cases, compute gain, phase and DELAY margin at each, and plot the worst case against flight time. Include flex and slosh modes — the binding margin is usually there, not at rigid-body crossover.',
       },
       {
         id: 'c_m47_mcdc',
@@ -3162,7 +3162,7 @@ Success: a CI configuration that genuinely fails on an injected regression — p
         kind: 'tool',
         url: 'https://hanspeterschaub.info/basilisk/',
         free: true,
-        note: 'Read its module interfaces and Monte Carlo layer before finalising your own architecture.',
+        note: 'Read its module interfaces and Monte Carlo layer before finalizing your own architecture.',
       },
       {
         title: 'Space Vehicle Dynamics and Control',
@@ -3270,7 +3270,7 @@ assert s == "fallback" and np.allclose(a, fb), "a stale solution must be dropped
         title: 'The error budget, before any code is written',
         kind: 'analysis',
         hours: 10,
-        prompt: `Start the capstone the way a real programme starts it: with a requirement and an allocation, not with an algorithm.
+        prompt: `Start the capstone the way a real program starts it: with a requirement and an allocation, not with an algorithm.
 
 Take a landing-accuracy requirement — say a 10 m radius at 99.87% — and allocate it.
 
@@ -3289,7 +3289,7 @@ Success: a one-page budget tree with numbers at every leaf, a stated total with 
         hours: 90,
         prompt: `Build the full GNC stack against the 6-DOF simulation from the simulation module. Work in this order, because each stage is only testable once the previous one holds.
 
-1. **Navigation.** A multiplicative EKF in error-state form: IMU mechanisation at sensor rate, GNSS position and velocity updates, radar altimeter updates below its acquisition altitude. Attitude error as a three-parameter local perturbation with the reference quaternion reset every update. Verify against truth with the filter's own covariance: the normalised estimation error squared should sit inside its chi-squared bounds, and if it does not, the filter is lying about its confidence.
+1. **Navigation.** A multiplicative EKF in error-state form: IMU mechanization at sensor rate, GNSS position and velocity updates, radar altimeter updates below its acquisition altitude. Attitude error as a three-parameter local perturbation with the reference quaternion reset every update. Verify against truth with the filter's own covariance: the normalized estimation error squared should sit inside its chi-squared bounds, and if it does not, the filter is lying about its confidence.
 2. **Control.** TVC attitude control with gain schedules against dynamic pressure and mass, a notch or roll-off for the first bending mode, and slosh handled by bandwidth separation. Verify margins across the envelope before anything else is connected.
 3. **Guidance.** Ascent: your PEG-style closed-loop steering from the ascent module. Descent: the convex solver, re-solved at 1 to 2 Hz with warm starting, plus the deadline policy from the first exercise.
 4. **Mode management and FDIR.** The state machine, with the unconditional exit to safe, and the residual monitors driving isolation and reconfiguration.
@@ -3305,7 +3305,7 @@ Success: the full mission flown in closed loop from liftoff to touchdown across 
         title: 'The V&V report',
         kind: 'analysis',
         hours: 24,
-        prompt: `Write the document that makes the capstone count — for the project and for the interview loop, where this is the artefact you will be asked about.
+        prompt: `Write the document that makes the capstone count — for the project and for the interview loop, where this is the artifact you will be asked about.
 
 Required sections:
 1. **System description**: architecture, rates, interfaces, one diagram that fits on a page.
@@ -3334,7 +3334,7 @@ Success: a report someone who has never seen the project could audit, with every
         ],
         answer: 1,
         explain:
-          'Rate selection follows bandwidth, not convenience. Inertial mechanisation must sample fast enough to capture vehicle angular rates and vibration without aliasing, which puts it at hundreds of hertz or more. The control loop needs roughly twenty to forty times its crossover frequency so the zero-order-hold phase lag stays small, plus enough headroom to filter flex modes. Guidance solves a boundary-value problem whose answer evolves on the timescale of the trajectory itself, so a fresh optimum once or twice a second is ample, and between solves the control loop tracks the existing plan. That separation is also what makes the deadline policy workable: a missed guidance cycle means flying a plan that is one second old, which is survivable, whereas a missed control cycle is not.',
+          'Rate selection follows bandwidth, not convenience. Inertial mechanization must sample fast enough to capture vehicle angular rates and vibration without aliasing, which puts it at hundreds of hertz or more. The control loop needs roughly twenty to forty times its crossover frequency so the zero-order-hold phase lag stays small, plus enough headroom to filter flex modes. Guidance solves a boundary-value problem whose answer evolves on the timescale of the trajectory itself, so a fresh optimum once or twice a second is ample, and between solves the control loop tracks the existing plan. That separation is also what makes the deadline policy workable: a missed guidance cycle means flying a plan that is one second old, which is survivable, whereas a missed control cycle is not.',
         b: 1.0,
         bloom: 'analyze',
       },
@@ -3349,7 +3349,7 @@ Success: a report someone who has never seen the project could audit, with every
         ],
         answer: 1,
         explain:
-          'The constraint is the whole issue. A four-component unit quaternion carries three degrees of freedom, so a 4x4 covariance is necessarily singular, and an additive Kalman update moves the estimate off the unit sphere, requiring a renormalisation the filter never accounted for. The multiplicative formulation splits the attitude into a reference quaternion, which carries the large rotation and stays exactly unit norm, and a small three-parameter error, which is what the filter estimates with a well-conditioned 3x3 covariance block. After each update the error is folded into the reference and reset to zero, so the linearisation is always about zero error, where it is excellent. This is the standard spacecraft and launch-vehicle navigation formulation, and being able to explain why is routine interview material.',
+          'The constraint is the whole issue. A four-component unit quaternion carries three degrees of freedom, so a 4x4 covariance is necessarily singular, and an additive Kalman update moves the estimate off the unit sphere, requiring a renormalization the filter never accounted for. The multiplicative formulation splits the attitude into a reference quaternion, which carries the large rotation and stays exactly unit norm, and a small three-parameter error, which is what the filter estimates with a well-conditioned 3x3 covariance block. After each update the error is folded into the reference and reset to zero, so the linearization is always about zero error, where it is excellent. This is the standard spacecraft and launch-vehicle navigation formulation, and being able to explain why is routine interview material.',
         b: 1.4,
         bloom: 'understand',
       },
@@ -3364,7 +3364,7 @@ Success: a report someone who has never seen the project could audit, with every
         ],
         answer: 1,
         explain:
-          'A landing burn has no passive safe state, so terminating is usually the worst option available. The previous guidance solution is a full open-loop plan valid for its whole horizon, so flying it for one more cycle costs only the divergence accumulated in that cycle — small, and measurable. The staleness limit is what makes this safe: after some age the plan no longer matches the state and must be abandoned for something computed from the current state, which is what a closed-form law gives you instantly. Retrying within the cycle risks missing the next deadline too and is exactly the behaviour a hard real-time design forbids. Holding the last thrust vector is subtly worse than holding the last plan, because the plan knows how the command was supposed to evolve.',
+          'A landing burn has no passive safe state, so terminating is usually the worst option available. The previous guidance solution is a full open-loop plan valid for its whole horizon, so flying it for one more cycle costs only the divergence accumulated in that cycle — small, and measurable. The staleness limit is what makes this safe: after some age the plan no longer matches the state and must be abandoned for something computed from the current state, which is what a closed-form law gives you instantly. Retrying within the cycle risks missing the next deadline too and is exactly the behavior a hard real-time design forbids. Holding the last thrust vector is subtly worse than holding the last plan, because the plan knows how the command was supposed to evolve.',
         b: 1.2,
         bloom: 'apply',
       },
@@ -3394,7 +3394,7 @@ Success: a report someone who has never seen the project could audit, with every
         ],
         answer: 1,
         explain:
-          'An overconfident filter is more dangerous than an inaccurate one, because it corrupts every decision made downstream. The Kalman gain is set by the ratio of state to measurement covariance, so an understated P makes the filter ignore the very measurements that would correct it — the classic divergence mechanism. Gating tests reject good data. FDIR monitors normalised by S trip on healthy noise or, worse, stay quiet through real faults. And guidance sizes its margins on a confidence that does not exist. The standard checks are the normalised estimation error squared against truth in simulation, and the normalised innovation squared, which works in flight because it needs no truth; both should sit inside their chi-squared bounds. The usual cures are honest process noise, modelling the unmodelled dynamics rather than tuning around them, and consistent handling of time correlation.',
+          'An overconfident filter is more dangerous than an inaccurate one, because it corrupts every decision made downstream. The Kalman gain is set by the ratio of state to measurement covariance, so an understated P makes the filter ignore the very measurements that would correct it — the classic divergence mechanism. Gating tests reject good data. FDIR monitors normalized by S trip on healthy noise or, worse, stay quiet through real faults. And guidance sizes its margins on a confidence that does not exist. The standard checks are the normalized estimation error squared against truth in simulation, and the normalized innovation squared, which works in flight because it needs no truth; both should sit inside their chi-squared bounds. The usual cures are honest process noise, modeling the unmodelled dynamics rather than tuning around them, and consistent handling of time correlation.',
         b: 1.3,
         bloom: 'analyze',
       },
@@ -3409,7 +3409,7 @@ Success: a report someone who has never seen the project could audit, with every
         ],
         answer: 1,
         explain:
-          'The reason is diagnostic, not aesthetic. Connect everything at once and a failure could come from any of half a dozen places and their interactions, and the search space is the product rather than the sum. Adding one element at a time makes each new failure attributable by construction. The specific order matters too: the controller with perfect state feedback establishes that the control design is sound before navigation error is allowed to confuse the picture; real navigation then shows how much of the tracking error is estimation; real guidance adds plan-level behaviour; fault management goes last because it reacts to everything else and will mask problems if it is present during earlier debugging. Each gate gets a written note recording what was measured, which is what makes the eventual V&V report writable.',
+          'The reason is diagnostic, not aesthetic. Connect everything at once and a failure could come from any of half a dozen places and their interactions, and the search space is the product rather than the sum. Adding one element at a time makes each new failure attributable by construction. The specific order matters too: the controller with perfect state feedback establishes that the control design is sound before navigation error is allowed to confuse the picture; real navigation then shows how much of the tracking error is estimation; real guidance adds plan-level behavior; fault management goes last because it reacts to everything else and will mask problems if it is present during earlier debugging. Each gate gets a written note recording what was measured, which is what makes the eventual V&V report writable.',
         b: 0.9,
         bloom: 'apply',
       },
@@ -3424,7 +3424,7 @@ Success: a report someone who has never seen the project could audit, with every
         ],
         answer: 1,
         explain:
-          'This is one of the most common and most expensive mistakes in a real programme. A prototype exists in Python, the flight version is written in C++, and from then on every fix, every gain change and every edge case has to be applied twice. They diverge within weeks, usually in the corner cases nobody exercises, and the analysis then certifies an algorithm that differs from the one flying. Bind the flight core into Python instead — pybind11 or an equivalent — so there is exactly one implementation, verified once, used by both the simulation and the analysis. The Python layer then owns scenarios, plotting, campaigns and reporting, which is what it is good at, and none of the algorithms.',
+          'This is one of the most common and most expensive mistakes in a real program. A prototype exists in Python, the flight version is written in C++, and from then on every fix, every gain change and every edge case has to be applied twice. They diverge within weeks, usually in the corner cases nobody exercises, and the analysis then certifies an algorithm that differs from the one flying. Bind the flight core into Python instead — pybind11 or an equivalent — so there is exactly one implementation, verified once, used by both the simulation and the analysis. The Python layer then owns scenarios, plotting, campaigns and reporting, which is what it is good at, and none of the algorithms.',
         b: 1.0,
         bloom: 'understand',
       },
@@ -3459,7 +3459,7 @@ Success: a report someone who has never seen the project could audit, with every
       {
         id: 'c_m48_filter_consistency',
         front: 'Filter consistency checks',
-        back: 'NEES (normalised estimation error squared) against truth in simulation, and NIS (normalised innovation squared) in flight, since it needs no truth. Both should sit inside their chi-squared bounds. An overconfident filter corrupts gating, FDIR thresholds and guidance margins alike.',
+        back: 'NEES (normalized estimation error squared) against truth in simulation, and NIS (normalized innovation squared) in flight, since it needs no truth. Both should sit inside their chi-squared bounds. An overconfident filter corrupts gating, FDIR thresholds and guidance margins alike.',
       },
       {
         id: 'c_m48_integration_order',
@@ -3497,29 +3497,29 @@ Success: a report someone who has never seen the project could audit, with every
     tier: 7,
     title: 'GNC Interview Preparation',
     summary:
-      'Convert everything you have built into performance under time pressure: five rehearsed project talks you can defend against a hostile panel, five derivations you can do at a whiteboard from memory, embedded-flavoured C++ that runs in a fixed footprint, and system-design answers that sound like someone who has shipped. Ends with a full timed mock loop.',
+      'Convert everything you have built into performance under time pressure: five rehearsed project talks you can defend against a hostile panel, five derivations you can do at a whiteboard from memory, embedded-flavored C++ that runs in a fixed footprint, and system-design answers that sound like someone who has shipped. Ends with a full timed mock loop.',
     prereqs: ['t7_m48_capstone'],
     hours: 100,
     topics: [
-      'The project presentation: choosing five topics, building a 10 to 20 minute talk for each, and rehearsing the defence rather than the delivery',
+      'The project presentation: choosing five topics, building a 10 to 20 minute talk for each, and rehearsing the defense rather than the delivery',
       'Answering "what would you do differently" and "what was the hardest bug" without either arrogance or apology',
       'Whiteboard derivations under time pressure: the rocket equation, rigid-body equations of motion under thrust, the Kalman filter update, proportional navigation, Euler equations, the Clohessy-Wiltshire equations',
       'Deriving out loud: narrating assumptions, stating what you are about to do before doing it, and recovering visibly from an error',
-      'C++ coding rounds: the standard algorithmic problems plus embedded-flavoured ones — ring buffers, fixed-point arithmetic, bit manipulation, memory-constrained algorithms, no allocation in the hot path',
+      'C++ coding rounds: the standard algorithmic problems plus embedded-flavored ones — ring buffers, fixed-point arithmetic, bit manipulation, memory-constrained algorithms, no allocation in the hot path',
       'Explaining a design decision in terms of a trade rather than a preference',
       'Systems and architecture rounds: design a GNC flight software stack, a Monte Carlo pipeline, an FDIR scheme, a sensor suite for a given mission',
       'Fermi estimation drills with vehicle numbers you should already know',
-      'Controls, estimation and dynamics rounds: the questions that recur, and the follow-ups that separate memorisation from understanding',
-      'Behavioural and STAR stories emphasising ownership, speed, and recovery from failure',
+      'Controls, estimation and dynamics rounds: the questions that recur, and the follow-ups that separate memorization from understanding',
+      'Behavioral and STAR stories emphasizing ownership, speed, and recovery from failure',
       'Framing self-taught projects as engineering results with numbers: RMSE, margins, run counts, solve times, not adjectives',
-      'Resume and portfolio construction around artefacts that can be read: repositories, reports, plots',
-      'Work authorisation and export-control eligibility documentation, handled early rather than at offer stage',
+      'Resume and portfolio construction around artifacts that can be read: repositories, reports, plots',
+      'Work authorization and export-control eligibility documentation, handled early rather than at offer stage',
       'Adjacent entry roles — simulation, GNC software, site reliability for GNC infrastructure — as realistic vectors into the field',
     ],
     objectives: [
       'Deliver five distinct project talks of 10 to 20 minutes and defend each under adversarial questioning',
       'Reproduce six core derivations at a whiteboard from memory, narrating assumptions as you go',
-      'Solve embedded-flavoured C++ problems with fixed memory and no allocation in the hot path',
+      'Solve embedded-flavored C++ problems with fixed memory and no allocation in the hot path',
       'Answer a systems-design prompt with a rate architecture, interface contracts, failure modes and a stated trade',
       'Quote the quantitative results of your own work from memory, with units',
     ],
@@ -3557,7 +3557,7 @@ Success: a report someone who has never seen the project could audit, with every
         kind: 'site',
         url: 'https://leetcode.com/',
         free: true,
-        note: 'Medium difficulty, solved in C++, with attention to allocation and cache behaviour rather than only to big-O.',
+        note: 'Medium difficulty, solved in C++, with attention to allocation and cache behavior rather than only to big-O.',
       },
       {
         title: 'CppCon talks on real-time and embedded C++',
@@ -3589,7 +3589,7 @@ For each:
 3. Show one plot that carries the argument, and be able to explain every axis, every unit and every outlier on it.
 4. Close with limitations and what you would do next.
 
-Then rehearse the **defence**, which is the part that is actually evaluated. Write out the twenty hardest questions somebody could ask — "why not an NLP?", "how do you know your filter is consistent?", "what is your worst case, not your average?", "what would break if the vehicle were twice as heavy?", "did you validate that, or just verify it?" — and answer each out loud, timed.
+Then rehearse the **defense**, which is the part that is actually evaluated. Write out the twenty hardest questions somebody could ask — "why not an NLP?", "how do you know your filter is consistent?", "what is your worst case, not your average?", "what would break if the vehicle were twice as heavy?", "did you validate that, or just verify it?" — and answer each out loud, timed.
 
 Success: five talks delivered to a real audience, and a written answer to all twenty questions. If you cannot answer one, that is a gap in the work, not in the talk.`,
       },
@@ -3602,10 +3602,10 @@ Success: five talks delivered to a real audience, and a written answer to all tw
 
 1. **The rocket equation.** From momentum conservation to dv = ve ln(m0/mf). Then: what does it say about staging, and why does it not contain thrust?
 2. **Equations of motion of a rocket in powered flight.** Translational and rotational, in a body frame, with variable mass. Be explicit about why a naive application of F = ma to a variable-mass body is wrong and what the correct momentum argument gives.
-3. **The Kalman filter measurement update.** Derive the gain that minimises the trace of the posterior covariance, then explain in one sentence what the gain does when R is enormous and when P is enormous.
+3. **The Kalman filter measurement update.** Derive the gain that minimizes the trace of the posterior covariance, then explain in one sentence what the gain does when R is enormous and when P is enormous.
 4. **Proportional navigation.** From the line-of-sight rate to a_cmd = N Vc lambda_dot, and why N between 3 and 5.
 5. **Euler's equations** for a rigid body, and from them the stability of rotation about each principal axis — including why the intermediate axis is unstable.
-6. **The Clohessy-Wiltshire equations.** Linearise relative motion about a circular orbit, and read off the behaviour: the along-track drift from a radial offset, and the closed relative ellipse.
+6. **The Clohessy-Wiltshire equations.** Linearize relative motion about a circular orbit, and read off the behavior: the along-track drift from a radial offset, and the closed relative ellipse.
 
 For each, write the assumptions you made in the margin. Half of what is being assessed is whether you know what you assumed.
 
@@ -3613,11 +3613,11 @@ Success: all six delivered inside the time limit, twice, on separate days, with 
       },
       {
         id: 'ex_m49_embedded_cpp',
-        title: 'The embedded-flavoured coding round',
+        title: 'The embedded-flavored coding round',
         kind: 'code',
         lang: 'python',
         hours: 16,
-        prompt: `Aerospace coding rounds lean toward fixed memory, no allocation, and integer arithmetic. Build the classic pieces here in Python to fix the algorithms in your head, then **re-implement every one of them in C++ with no heap allocation and a GoogleTest suite** — that version is the artefact you bring to the interview.
+        prompt: `Aerospace coding rounds lean toward fixed memory, no allocation, and integer arithmetic. Build the classic pieces here in Python to fix the algorithms in your head, then **re-implement every one of them in C++ with no heap allocation and a GoogleTest suite** — that version is the artifact you bring to the interview.
 
 1. **RingBuffer**, fixed capacity, overwriting the oldest element when full. The one every flight system has, for telemetry, for delay lines, for moving averages. Get the wrap arithmetic right without a modulo in the hot path.
 2. **Q15 fixed point.** q15_from_float saturates rather than wrapping — saturation is a design decision, and wrapping in a control loop means a full-scale sign reversal. q15_mul rounds rather than truncating: truncation biases every product downward (toward -infinity), and a biased integrator drifts.
@@ -3706,7 +3706,7 @@ assert rb.to_list() == [98, 99], "and must stay in order"`,
 1. **Design the GNC flight software stack for a reusable booster.** Layers, rates, interfaces, mode management, redundancy, FDIR, what runs on which computer, what the failure response is at each level.
 2. **Design a Monte Carlo verification pipeline.** Dispersion definition, case generation and seeding, execution and scale-out, scoring, storage, reporting, replay of a single case, and how it hooks into CI.
 3. **Design an FDIR scheme for a sensor suite.** What is monitored, by what test, with what threshold and persistence, what isolation is possible with what redundancy, and what the recovery is for each fault.
-4. **Choose a sensor suite for a propulsive landing** and defend it on cost, mass, accuracy, and failure behaviour.
+4. **Choose a sensor suite for a propulsive landing** and defend it on cost, mass, accuracy, and failure behavior.
 
 Use the same skeleton each time: restate the requirement and ask the clarifying question that most changes the answer; state assumptions; give the decomposition; go deep on one part; then state failure modes, the trade you made, and what you would measure to know you were right.
 
@@ -3721,7 +3721,7 @@ Success: four answers delivered out loud in twenty minutes each, with a diagram,
 
 - 30 minute project presentation to a panel, with 15 minutes of questions.
 - Two coding rounds, 45 minutes each, in C++, on a whiteboard or a shared editor with no autocomplete.
-- One controls round: margins, discretisation, a right-half-plane zero, a gain schedule.
+- One controls round: margins, discretization, a right-half-plane zero, a gain schedule.
 - One estimation round: derive the update, explain consistency, handle a non-Gaussian measurement, explain what happens when the filter is overconfident.
 - One dynamics round: rotational equations of motion, attitude representations, a variable-mass argument.
 - One systems round from the previous exercise.
@@ -3775,7 +3775,7 @@ Success: two full loops, recorded, with a written self-assessment and a measurab
         ],
         answer: 1,
         explain:
-          'K = P H^T (H P H^T + R)^-1 is a ratio of confidences, and saying it that way is what an interviewer is listening for. When R dominates the denominator, K goes to zero: an untrustworthy measurement moves the estimate hardly at all. When P dominates, K approaches a pseudo-inverse of H: the prior is worthless and the filter takes the measurement at face value. The whole filter is that trade, computed optimally at every step in the sense of minimising the posterior error covariance. The useful follow-ups are that the gain is not confined to [0, 1] for a multi-state system, that P and R are the things you actually tune, and that a filter is overconfident — the most common real failure — when P is too small for the modelling error actually present.',
+          'K = P H^T (H P H^T + R)^-1 is a ratio of confidences, and saying it that way is what an interviewer is listening for. When R dominates the denominator, K goes to zero: an untrustworthy measurement moves the estimate hardly at all. When P dominates, K approaches a pseudo-inverse of H: the prior is worthless and the filter takes the measurement at face value. The whole filter is that trade, computed optimally at every step in the sense of minimizing the posterior error covariance. The useful follow-ups are that the gain is not confined to [0, 1] for a multi-state system, that P and R are the things you actually tune, and that a filter is overconfident — the most common real failure — when P is too small for the modeling error actually present.',
         b: 0.9,
         bloom: 'understand',
       },
@@ -3784,13 +3784,13 @@ Success: two full loops, recorded, with a written self-assessment and a measurab
         q: 'Why is the proportional navigation constant typically chosen between 3 and 5?',
         choices: [
           'Because larger values are numerically unstable',
-          'Because N = 3 is the optimal value under a linear-quadratic formulation against a non-manoeuvring target with perfect information, while values slightly above it converge faster and tolerate estimation error and target manoeuvre better; much larger N amplifies line-of-sight rate noise into commanded acceleration and saturates the actuator',
+          'Because N = 3 is the optimal value under a linear-quadratic formulation against a non-maneuvering target with perfect information, while values slightly above it converge faster and tolerate estimation error and target maneuver better; much larger N amplifies line-of-sight rate noise into commanded acceleration and saturates the actuator',
           'Because N is limited by the number of gimbal axes',
           'Because N must be an integer for the guidance law to be well posed',
         ],
         answer: 1,
         explain:
-          'The linear-quadratic derivation of intercept guidance with a free terminal miss and a quadratic acceleration cost produces exactly the PN structure with an effective navigation ratio of 3, which is the satisfying part of the derivation — PN is not a heuristic, it falls out of an optimal control problem. Values a little higher pull the trajectory straighter earlier, which leaves more control authority for late corrections and copes better with a manoeuvring target, and augmented PN adds a term proportional to the estimated target acceleration for exactly that reason. The upper limit is noise: the command is proportional to line-of-sight rate, which is the noisiest quantity in the seeker, so a large N converts seeker noise into full-scale acceleration commands and saturates the airframe. Three to five is where those two effects balance.',
+          'The linear-quadratic derivation of intercept guidance with a free terminal miss and a quadratic acceleration cost produces exactly the PN structure with an effective navigation ratio of 3, which is the satisfying part of the derivation — PN is not a heuristic, it falls out of an optimal control problem. Values a little higher pull the trajectory straighter earlier, which leaves more control authority for late corrections and copes better with a maneuvering target, and augmented PN adds a term proportional to the estimated target acceleration for exactly that reason. The upper limit is noise: the command is proportional to line-of-sight rate, which is the noisiest quantity in the seeker, so a large N converts seeker noise into full-scale acceleration commands and saturates the airframe. Three to five is where those two effects balance.',
         b: 1.1,
         bloom: 'understand',
       },
@@ -3805,7 +3805,7 @@ Success: two full loops, recorded, with a written self-assessment and a measurab
         ],
         answer: 1,
         explain:
-          'Panels are trying to establish whether you measured anything. Adjectives — robust, accurate, efficient — carry no information and invite exactly the follow-up you do not want. A number, its unit, how it was obtained and the sample it came from establishes in one sentence that the work was engineered rather than demonstrated. Give the worst case beside the central value, because that is what an aerospace panel actually cares about, and say what would break the result. The same discipline applies to the resume: "reduced attitude estimation error from 0.8 to 0.2 degrees RMS by modelling gyro bias instability, verified over 2,000 dispersed cases" is a line that has to be true, and it reads as such.',
+          'Panels are trying to establish whether you measured anything. Adjectives — robust, accurate, efficient — carry no information and invite exactly the follow-up you do not want. A number, its unit, how it was obtained and the sample it came from establishes in one sentence that the work was engineered rather than demonstrated. Give the worst case beside the central value, because that is what an aerospace panel actually cares about, and say what would break the result. The same discipline applies to the resume: "reduced attitude estimation error from 0.8 to 0.2 degrees RMS by modeling gyro bias instability, verified over 2,000 dispersed cases" is a line that has to be true, and it reads as such.',
         b: 0.6,
         bloom: 'apply',
       },
@@ -3820,7 +3820,7 @@ Success: two full loops, recorded, with a written self-assessment and a measurab
         ],
         answer: 1,
         explain:
-          'Correctness is the entry ticket, not the differentiator. What distinguishes a candidate for a flight software role is noticing the properties the domain cares about — allocation, worst-case behaviour, bounded loops, fixed footprint — and raising them before the interviewer does. Saying "this works, but it allocates per iteration, which I would not do in a control loop; here is the version with a preallocated buffer" demonstrates the judgement the job needs, and it costs thirty seconds. Arguing that allocators are fast misses the point entirely: the objection is determinism, not speed. The same instinct applies to unbounded recursion, to error handling on a path with no error return, and to anything whose execution time depends on data.',
+          'Correctness is the entry ticket, not the differentiator. What distinguishes a candidate for a flight software role is noticing the properties the domain cares about — allocation, worst-case behavior, bounded loops, fixed footprint — and raising them before the interviewer does. Saying "this works, but it allocates per iteration, which I would not do in a control loop; here is the version with a preallocated buffer" demonstrates the judgment the job needs, and it costs thirty seconds. Arguing that allocators are fast misses the point entirely: the objection is determinism, not speed. The same instinct applies to unbounded recursion, to error handling on a path with no error return, and to anything whose execution time depends on data.',
         b: 0.8,
         bloom: 'apply',
       },
@@ -3861,7 +3861,7 @@ Success: two full loops, recorded, with a written self-assessment and a measurab
       {
         id: 'c_m49_pn',
         front: 'Proportional navigation command',
-        back: 'a_cmd = N * Vc * lambda_dot, applied perpendicular to the line of sight. N = 3 is LQ-optimal against a non-manoeuvring target; 3 to 5 in practice, because higher N amplifies seeker noise into saturating acceleration commands.',
+        back: 'a_cmd = N * Vc * lambda_dot, applied perpendicular to the line of sight. N = 3 is LQ-optimal against a non-maneuvering target; 3 to 5 in practice, because higher N amplifies seeker noise into saturating acceleration commands.',
         formula: true,
       },
       {
@@ -3872,8 +3872,8 @@ Success: two full loops, recorded, with a written self-assessment and a measurab
       },
       {
         id: 'c_m49_cw',
-        front: 'Clohessy-Wiltshire behaviour, in words',
-        back: 'Linearised relative motion about a circular orbit. A radial offset produces along-track DRIFT at 3n/2 per unit offset; a properly phased radial and along-track pair produces a closed 2-by-1 ellipse. The counterintuitive result: thrusting forward raises you and makes you fall behind.',
+        front: 'Clohessy-Wiltshire behavior, in words',
+        back: 'Linearized relative motion about a circular orbit. A radial offset produces along-track DRIFT at 3n/2 per unit offset; a properly phased radial and along-track pair produces a closed 2-by-1 ellipse. The counterintuitive result: thrusting forward raises you and makes you fall behind.',
       },
       {
         id: 'c_m49_quaternion_kin',

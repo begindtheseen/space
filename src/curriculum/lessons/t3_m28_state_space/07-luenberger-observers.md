@@ -22,7 +22,7 @@ The **estimation error** is the gap between truth and guess, $\mathbf{e} = \math
 
 $$\dot{\mathbf{e}} = \mathbf{A}\mathbf{x} + \mathbf{B}\mathbf{u} - \mathbf{A}\hat{\mathbf{x}} - \mathbf{B}\mathbf{u} = \mathbf{A}\mathbf{e}.$$
 
-The command $\mathbf{B}\mathbf{u}$ appeared once with each sign and cancelled. What is left says the error behaves exactly like the plant itself.
+The command $\mathbf{B}\mathbf{u}$ appeared once with each sign and canceled. What is left says the error behaves exactly like the plant itself.
 
 That is bad news. If $\mathbf{A}$ is unstable, the error grows. If $\mathbf{A}$ has an integrator — and every rigid-body model does — the error never shrinks at all. Start the guess one degree off and it stays one degree off forever. Worse, the model in the computer is never the real vehicle. A $1\,\%$ inertia error, a disturbance torque nobody modeled, an actuator that pushes a little harder than it says — each one makes the guess **[[drift away|dead-reckoning]]**, with nothing to pull it back. A model run with no feedback behaves exactly like any system with no feedback.
 

@@ -345,7 +345,7 @@ DETAIL:  Reason code: Canceled on identification as a pivot, during write.
 HINT:  The transaction might succeed if retried.
 ```
 
-and plane 1 kept SAT-002 active. PostgreSQL saw that each transaction had read rows the other then wrote — a pattern no one-after-the-other order could produce — and cancelled one. Retried, B reads a count of 1 and declines.
+and plane 1 kept SAT-002 active. PostgreSQL saw that each transaction had read rows the other then wrote — a pattern no one-after-the-other order could produce — and canceled one. Retried, B reads a count of 1 and declines.
 
 **Check.** Serial order A-then-B would give "A takes SAT-001 down; B sees 1 active, refuses". B-then-A is the mirror. Neither order ends with zero active, so ending with zero active cannot be serializable — which is exactly what the error said.
 :::
@@ -397,7 +397,7 @@ UPDATE 1
 COMMIT
 ```
 
-**Reading the error.** After a transaction has waited for `deadlock_timeout` (1 second by default), PostgreSQL looks for a cycle in who-waits-for-whom. It found one — process 3287 waits for 3288, and 3288 waits for 3287 — and cancelled A to break it. A's whole transaction rolled back; B got its lock and committed, leaving SAT-001 at 0.92 and SAT-002 at 0.39. The run took about 2.1 seconds: 1 second of sleep, about 1 of waiting.
+**Reading the error.** After a transaction has waited for `deadlock_timeout` (1 second by default), PostgreSQL looks for a cycle in who-waits-for-whom. It found one — process 3287 waits for 3288, and 3288 waits for 3287 — and canceled A to break it. A's whole transaction rolled back; B got its lock and committed, leaving SAT-001 at 0.92 and SAT-002 at 0.39. The run took about 2.1 seconds: 1 second of sleep, about 1 of waiting.
 
 **The fix: one order for everyone.** Change B to update SAT-001 first, then SAT-002, the same order as A. Real output:
 
@@ -449,7 +449,7 @@ It replies `ROLLBACK`. After the error, the transaction is aborted: the third `I
 :::
 
 ::: check
-A nightly report runs eight queries in one transaction to summarise the fleet: counts by mode, mean battery by plane, and so on. Ingest keeps writing the whole time. Which isolation level should the report use, and why does READ COMMITTED risk a report that does not add up?
+A nightly report runs eight queries in one transaction to summarize the fleet: counts by mode, mean battery by plane, and so on. Ingest keeps writing the whole time. Which isolation level should the report use, and why does READ COMMITTED risk a report that does not add up?
 :::
 
 ::: answer
@@ -505,7 +505,7 @@ The properties were worked out by database researchers through the 1970s, and th
 :::
 
 ::: context wal Write it down before you do it
-The write-ahead log is like a pilot's logbook written before each manoeuvre: record the intent first, then act. Changing a data page on disk in place is slow and could be torn in half by a crash; appending a short record to the end of one file is fast and safe. PostgreSQL forces the WAL to disk at `COMMIT` and writes the actual table pages later, at its own pace. After a crash, it reads the WAL from the last checkpoint and replays every committed change. The same log is what streams to a replica server, which is how a second copy of a telemetry database stays up to date.
+The write-ahead log is like a pilot's logbook written before each maneuver: record the intent first, then act. Changing a data page on disk in place is slow and could be torn in half by a crash; appending a short record to the end of one file is fast and safe. PostgreSQL forces the WAL to disk at `COMMIT` and writes the actual table pages later, at its own pace. After a crash, it reads the WAL from the last checkpoint and replays every committed change. The same log is what streams to a replica server, which is how a second copy of a telemetry database stays up to date.
 :::
 
 ::: context mvcc Several versions of one row

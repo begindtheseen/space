@@ -51,7 +51,7 @@ $$
 That makes it by far the biggest single item in a GEO satellite's lifetime propellant budget. A satellite built for fifteen years of service needs about $15 \times 45.6 \approx 684\,\mathrm{m/s}$ — call it $700\,\mathrm{m/s}$ — for north-south correction alone.
 :::
 
-The other direction, east-west, is much cheaper. Earth's equator is not a perfect circle. It is very slightly oval, a shape called **[[triaxiality|triaxiality]]** (Earth has three different axis lengths instead of two). That oval pulls a GEO satellite slowly east or west along the equator, toward one of two stable resting longitudes. Holding the satellite's assigned longitude against this pull costs only a few metres per second a year, because the oval is a far weaker effect than the Moon and Sun's pull out of the plane.
+The other direction, east-west, is much cheaper. Earth's equator is not a perfect circle. It is very slightly oval, a shape called **[[triaxiality|triaxiality]]** (Earth has three different axis lengths instead of two). That oval pulls a GEO satellite slowly east or west along the equator, toward one of two stable resting longitudes. Holding the satellite's assigned longitude against this pull costs only a few meters per second a year, because the oval is a far weaker effect than the Moon and Sun's pull out of the plane.
 
 ::: key GEO station-keeping is dominated by north-south
 North-south (inclination) correction, driven by lunisolar perturbation, costs roughly $45$–$55\,\mathrm{m/s}$ per year and dominates. You get it from the plane-change formula $\Delta v = 2v\sin(\Delta i/2)$ applied to the yearly drift. East-west (longitude drift from Earth's triaxiality) costs only about $2$–$4\,\mathrm{m/s}$ per year, because the perturbing pull behind it is much weaker.
@@ -76,15 +76,15 @@ $$
 
 **How it scales.** Repeat for other amounts of sinking. A $1\,\mathrm{km}$ loss costs $0.553\,\mathrm{m/s}$ to restore. A $4\,\mathrm{km}$ loss costs $2.215\,\mathrm{m/s}$. Double the loss, double the cost: for small changes the cost is **[[proportional to the lost height|why-linear]]**.
 
-**Sanity check.** About half a metre per second per kilometre. That is tiny next to the $7.6\,\mathrm{km/s}$ orbital speed, as it should be for such a small change.
+**Sanity check.** About half a meter per second per kilometer. That is tiny next to the $7.6\,\mathrm{km/s}$ orbital speed, as it should be for such a small change.
 :::
 
-That proportionality is handy. An operator can measure how many kilometres a satellite loses per year, multiply by about $0.55\,\mathrm{m/s}$ per kilometre, and have a yearly reboost budget without working the maneuver out again each time.
+That proportionality is handy. An operator can measure how many kilometers a satellite loses per year, multiply by about $0.55\,\mathrm{m/s}$ per kilometer, and have a yearly reboost budget without working the maneuver out again each time.
 
 The catch is the decay rate itself. At a given altitude it can change by a factor of ten or more between the quiet and busy phases of the solar cycle. That is why LEO station-keeping budgets are far less certain than GEO's. The Moon and Sun follow a slow, well-known schedule; the Sun's weather does not.
 
 ::: warning A yearly LEO reboost budget hides a lot of variability
-GEO's north-south budget is driven by a slow, well-modelled lunisolar cycle. LEO drag is driven by solar activity, which can change the air density at your altitude by ten times or more within one solar cycle. A reboost budget sized for typical conditions can be badly wrong at solar maximum. Real missions carry extra margin on this line in particular, and the next module treats uncertainty in density models as a subject of its own.
+GEO's north-south budget is driven by a slow, well-modeled lunisolar cycle. LEO drag is driven by solar activity, which can change the air density at your altitude by ten times or more within one solar cycle. A reboost budget sized for typical conditions can be badly wrong at solar maximum. Real missions carry extra margin on this line in particular, and the next module treats uncertainty in density models as a subject of its own.
 :::
 
 ## Drift orbits: moving on purpose
@@ -167,7 +167,7 @@ $$
 **Sanity check.** About $2\%$ of the orbital speed. A small slow-down, but many times any single station-keeping burn.
 :::
 
-GEO is different. It is too high to drop into the atmosphere at any sensible cost. Instead, international guidelines ask operators to raise a dead satellite into a **[[graveyard orbit|graveyard]]** — a "supersynchronous" orbit a few hundred kilometres *above* GEO, out of the way of working satellites.
+GEO is different. It is too high to drop into the atmosphere at any sensible cost. Instead, international guidelines ask operators to raise a dead satellite into a **[[graveyard orbit|graveyard]]** — a "supersynchronous" orbit a few hundred kilometers *above* GEO, out of the way of working satellites.
 
 ::: example Retiring a GEO satellite instead
 Raise the orbit by $300\,\mathrm{km}$, from $42\,164\,\mathrm{km}$ to $42\,464\,\mathrm{km}$, with a Hohmann transfer:
@@ -208,21 +208,21 @@ Explain why GEO east-west station-keeping costs so much less than north-south, i
 :::
 
 ::: answer
-North-south correction fights the Moon and Sun pulling the orbit plane out of the equator. That is a fairly strong perturbation, and the plane-change formula turns its drift into tens of metres per second each year.
+North-south correction fights the Moon and Sun pulling the orbit plane out of the equator. That is a fairly strong perturbation, and the plane-change formula turns its drift into tens of meters per second each year.
 
-East-west drift comes from Earth's equator being very slightly oval (triaxiality). That is a much weaker pull, so it causes a much slower drift and needs a much smaller correction — a few metres per second a year.
+East-west drift comes from Earth's equator being very slightly oval (triaxiality). That is a much weaker pull, so it causes a much slower drift and needs a much smaller correction — a few meters per second a year.
 
 The method is the same for both: take the drift rate and turn it into Δv with the right burn formula. The difference is the strength of the physical cause, roughly ten times apart.
 :::
 
 ::: check
-The LEO reboost example gives a precise Δv per kilometre, but refuses to give a precise yearly budget. Why?
+The LEO reboost example gives a precise Δv per kilometer, but refuses to give a precise yearly budget. Why?
 :::
 
 ::: answer
-The per-kilometre figure is pure orbital mechanics. A $2\,\mathrm{km}$ mini-Hohmann at $500\,\mathrm{km}$ has one exact Δv, whatever the air is doing.
+The per-kilometer figure is pure orbital mechanics. A $2\,\mathrm{km}$ mini-Hohmann at $500\,\mathrm{km}$ has one exact Δv, whatever the air is doing.
 
-The yearly budget also needs the decay rate — how many kilometres are lost per year. That depends on air density, which can change by ten times or more with solar activity. This module has not modelled density; the next one does. Stating a confident yearly number without that model would claim a precision the physics does not support.
+The yearly budget also needs the decay rate — how many kilometers are lost per year. That depends on air density, which can change by ten times or more with solar activity. This module has not modeled density; the next one does. Stating a confident yearly number without that model would claim a precision the physics does not support.
 :::
 
 ::: check
@@ -244,7 +244,7 @@ Why does GEO disposal raise the satellite into a graveyard orbit, instead of low
 ::: answer
 Lowering a GEO satellite until its perigee touches the atmosphere would cost about $1.49\,\mathrm{km/s}$ — far more than any satellite keeps in reserve at the end of its life.
 
-Raising it a few hundred kilometres into a graveyard orbit costs only about $11\,\mathrm{m/s}$. The goal is only to clear the narrow, valuable GEO belt, not to fall all the way down the gravity well into the air.
+Raising it a few hundred kilometers into a graveyard orbit costs only about $11\,\mathrm{m/s}$. The goal is only to clear the narrow, valuable GEO belt, not to fall all the way down the gravity well into the air.
 :::
 
 ## Summary
@@ -277,7 +277,7 @@ If the orbit tilts by $i$, the satellite swings north and south by about $i$ deg
 ::: context triaxiality Earth's slightly oval equator
 Earth is fat at the equator — that is its big, well-known bulge. But the equator itself is also very slightly oval rather than a perfect circle. So Earth has three different "radii": pole to pole, and two across the equator. That is what **triaxial** means: three unequal axes.
 
-The difference across the equator is tiny — tens of metres out of $6378\,\mathrm{km}$ — but a GEO satellite feels it over months. It gets pulled along the equator toward one of two stable longitudes, near $75^\circ$ east (over the Indian Ocean) and near $105^\circ$ west (over the eastern Pacific). A satellite parked anywhere else drifts toward the nearer one unless small east-west burns hold it in place.
+The difference across the equator is tiny — tens of meters out of $6378\,\mathrm{km}$ — but a GEO satellite feels it over months. It gets pulled along the equator toward one of two stable longitudes, near $75^\circ$ east (over the Indian Ocean) and near $105^\circ$ west (over the eastern Pacific). A satellite parked anywhere else drifts toward the nearer one unless small east-west burns hold it in place.
 :::
 
 ::: context solar-cycle The Sun's eleven-year weather
@@ -372,5 +372,5 @@ Here the bar is drawn to scale: north-south correction swamps everything else.
 :::
 
 ::: context graveyard How high is high enough
-The international debris guidelines give a formula for how far above GEO a retired satellite's lowest point should be: at least $235\,\mathrm{km}$, plus an extra amount that grows with how much sunlight pressure can push the satellite around (large, light satellites get pushed more). For most satellites that works out to a few hundred kilometres, which is why the example used $300\,\mathrm{km}$. The $235\,\mathrm{km}$ itself is GEO's protected band ($200\,\mathrm{km}$) plus $35\,\mathrm{km}$ of room for the Moon, the Sun and Earth's lumpy gravity to disturb the old orbit without letting it wander back in.
+The international debris guidelines give a formula for how far above GEO a retired satellite's lowest point should be: at least $235\,\mathrm{km}$, plus an extra amount that grows with how much sunlight pressure can push the satellite around (large, light satellites get pushed more). For most satellites that works out to a few hundred kilometers, which is why the example used $300\,\mathrm{km}$. The $235\,\mathrm{km}$ itself is GEO's protected band ($200\,\mathrm{km}$) plus $35\,\mathrm{km}$ of room for the Moon, the Sun and Earth's lumpy gravity to disturb the old orbit without letting it wander back in.
 :::

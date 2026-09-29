@@ -151,7 +151,7 @@ Using it takes three moves.
 The runs stay after the model stops. Change a gain, run again, and yesterday's behavior is still there to compare against, cursor by cursor, all plots in step.
 
 ::: key
-What does the Simulation Data Inspector add over a Scope? Persisted runs you can compare against each other and against a baseline, with tolerances, plus synchronised cursors and export. It is the tool that turns a run into evidence.
+What does the Simulation Data Inspector add over a Scope? Persisted runs you can compare against each other and against a baseline, with tolerances, plus synchronized cursors and export. It is the tool that turns a run into evidence.
 :::
 
 ::: warning A Scope shows only the run you just did

@@ -8,7 +8,7 @@ covers:
 
 Four people walk a circular track in the dark. The first takes straight strides and drifts outward. The second takes a stride, looks at where it landed, and corrects. The third takes four careful looks per stride. The fourth has a map of the curve and simply walks along it. They all end up somewhere near the finish — but how far off the track, and how far along it?
 
-The previous lesson split every numerical step's error into two parts: a part that moves the attitude (along the track) and a part that leaves the constraint (off the track). Re-normalisation removes only the second. This lesson picks four real schemes, works out exactly how much of each error they make, measures both, and then shows an update that has no norm drift at all — because it never leaves the sphere in the first place.
+The previous lesson split every numerical step's error into two parts: a part that moves the attitude (along the track) and a part that leaves the constraint (off the track). Re-normalization removes only the second. This lesson picks four real schemes, works out exactly how much of each error they make, measures both, and then shows an update that has no norm drift at all — because it never leaves the sphere in the first place.
 
 These four are the ones that actually appear in attitude code:
 
@@ -58,7 +58,7 @@ Here $\boldsymbol{\phi}$ ("phi") is the **rotation vector** for one step: its di
 Two things make this update special. First, the step quaternion has length one for any $\boldsymbol{\phi}$, because $\cos^2 + \sin^2 = 1$, and the product of two unit quaternions is a unit quaternion. So the update *cannot* leave the sphere. Second, it is **exact** when $\boldsymbol{\omega}$ is constant over the step, for any step size. There is no truncation error to make small.
 
 ::: key The norm-preserving update
-$\mathbf{q}_{k+1} = \mathbf{q}_k \otimes \exp(\tfrac{1}{2}\boldsymbol{\omega}\Delta t)$, with $\exp(\tfrac{1}{2}\boldsymbol{\phi}) = [\cos(\phi/2),\, \hat{\boldsymbol{\phi}}\sin(\phi/2)]$. Unit norm by construction, exact for constant $\boldsymbol{\omega}$ at any step size, and one of the two standard answers when a quaternion norm has drifted — the other being to re-normalise every step.
+$\mathbf{q}_{k+1} = \mathbf{q}_k \otimes \exp(\tfrac{1}{2}\boldsymbol{\omega}\Delta t)$, with $\exp(\tfrac{1}{2}\boldsymbol{\phi}) = [\cos(\phi/2),\, \hat{\boldsymbol{\phi}}\sin(\phi/2)]$. Unit norm by construction, exact for constant $\boldsymbol{\omega}$ at any step size, and one of the two standard answers when a quaternion norm has drifted — the other being to re-normalize every step.
 :::
 
 Guard the tiny-angle case. When $\phi \to 0$, the factor $\sin(\phi/2)/\phi$ becomes **[[0/0|zero-over-zero]]**, so a direct implementation divides by zero on a vehicle sitting still. Below a threshold of about $10^{-8}\,\mathrm{rad}$, use the small-angle series instead:
@@ -170,7 +170,7 @@ Here is why. Think of each step as multiplying by a complex number, which rotate
 - Forward Euler multiplies by $1 + i\theta$. Its angle is $\arctan\theta = \theta - \theta^3/3 + \cdots$, so each step turns **short** by $\theta^3/3$.
 - Heun multiplies by $1 - \theta^2/2 + i\theta$. Its angle is $\arctan\bigl(\theta/(1 - \theta^2/2)\bigr) = \theta + \theta^3/6 + \cdots$, so each step turns **long** by $\theta^3/6$.
 
-Euler dumps its big first-order mistake entirely into the stretch, where re-normalisation throws it away. What is left in the angle is small.
+Euler dumps its big first-order mistake entirely into the stretch, where re-normalization throws it away. What is left in the angle is small.
 
 The attitude angle is twice the quaternion's angle, so after $N$ steps the attitude errors are
 
@@ -183,14 +183,14 @@ opposite in sign and a factor of two apart. Put in the numbers: $2 \times 10^5 \
 Both are therefore **second order in attitude**. Since $N = T/\Delta t$ and $\theta \propto \Delta t$, the error $N\theta^3$ grows like $\Delta t^2$. Halving the step quarters the error for both. The measured Euler errors at $\Delta t = 0.8,\, 0.4,\, 0.2,\, 0.1\,\mathrm{s}$ are $5.020^\circ,\, 1.255^\circ,\, 0.3138^\circ,\, 0.07846^\circ$ — ratios of $4.000$.
 
 ::: warning Never rank schemes by norm drift
-Forward Euler looks catastrophic on the norm and merely poor on the attitude. RK4 looks perfect on the norm and is genuinely excellent. The link is an accident of which error each scheme happens to favour. To know how accurate a propagator is, compare it with a case whose exact answer you know, or with itself at half the step, and measure the *angle* of the error rotation. The norm tells you about the constraint and the health of the arithmetic, and nothing else.
+Forward Euler looks catastrophic on the norm and merely poor on the attitude. RK4 looks perfect on the norm and is genuinely excellent. The link is an accident of which error each scheme happens to favor. To know how accurate a propagator is, compare it with a case whose exact answer you know, or with itself at half the step, and measure the *angle* of the error rotation. The norm tells you about the constraint and the health of the arithmetic, and nothing else.
 :::
 
-Two caveats keep this from being a defence of forward Euler.
+Two caveats keep this from being a defense of forward Euler.
 
-First, the second-order behaviour only holds when the rate is constant. If $\boldsymbol{\omega}$ changes over time and Euler samples it once at the start of each step, Euler drops back to first order. Try a rate vector that itself swings around: $\boldsymbol{\omega}(t) = (0.1\sin 2t,\, 0.1\cos 2t,\, 0.3)\,\mathrm{rad/s}$, over 20 s. Forward Euler (re-normalised) gives errors of $0.2609^\circ$, $0.1304^\circ$ and $0.0652^\circ$ at $\Delta t = 0.04,\, 0.02,\, 0.01\,\mathrm{s}$. The ratios are 2 — first order — and that is a tenth of a degree at a perfectly ordinary step size.
+First, the second-order behavior only holds when the rate is constant. If $\boldsymbol{\omega}$ changes over time and Euler samples it once at the start of each step, Euler drops back to first order. Try a rate vector that itself swings around: $\boldsymbol{\omega}(t) = (0.1\sin 2t,\, 0.1\cos 2t,\, 0.3)\,\mathrm{rad/s}$, over 20 s. Forward Euler (re-normalised) gives errors of $0.2609^\circ$, $0.1304^\circ$ and $0.0652^\circ$ at $\Delta t = 0.04,\, 0.02,\, 0.01\,\mathrm{s}$. The ratios are 2 — first order — and that is a tenth of a degree at a perfectly ordinary step size.
 
-Second, a norm that has grown by $45\,\%$ has to be re-normalised anyway, or the state overflows.
+Second, a norm that has grown by $45\,\%$ has to be re-normalized anyway, or the state overflows.
 
 ## The exponential map is not exempt
 
@@ -213,7 +213,7 @@ Look at the sign on the RK4 line: it is *positive*, although RK4's truncation er
 
 And the exponential map — the scheme that cannot drift — drifts $5.37\times 10^{-3}/1.3\times 10^{-5} \approx 400$ times further than RK4, because its error is the compounding bias.
 
-The practical lesson is the same for both: carry the attitude in double precision if you possibly can, and re-normalise every cycle whichever scheme you chose.
+The practical lesson is the same for both: carry the attitude in double precision if you possibly can, and re-normalize every cycle whichever scheme you chose.
 :::
 
 ::: example Reading a norm of 1.0003
@@ -223,7 +223,7 @@ A flight-software report says the quaternion norm reached $1.0003$ after $10^6$ 
 
 **What has happened.** Classical RK4 on the exact kinematic equation *shrinks* the norm for any $\theta$ below its stability limit of $2\sqrt{2}$. So growth to $1.0003$ is not RK4 truncation error. The realistic causes are single-precision arithmetic (a $10^6$-step random walk at 32-bit round-off lands in the $10^{-5}$ to $10^{-3}$ range, as the last example showed), a lower-order update hiding somewhere in the loop, or a corrupted $\boldsymbol{\omega}$ that makes the effective $\boldsymbol{\Omega}$ no longer skew.
 
-**The two fixes.** Re-normalise every step, $\mathbf{q} \leftarrow \mathbf{q}/\lVert\mathbf{q}\rVert$ or its Newton form — cheap and standard. Or switch to the norm-preserving update $\mathbf{q}_{k+1} = \mathbf{q}_k \otimes \exp(\tfrac{1}{2}\boldsymbol{\omega}\Delta t)$, which has no norm error to remove by construction. Then find out which of the three causes it was, because the fix hides the symptom and the cause may be damaging something else.
+**The two fixes.** Re-normalize every step, $\mathbf{q} \leftarrow \mathbf{q}/\lVert\mathbf{q}\rVert$ or its Newton form — cheap and standard. Or switch to the norm-preserving update $\mathbf{q}_{k+1} = \mathbf{q}_k \otimes \exp(\tfrac{1}{2}\boldsymbol{\omega}\Delta t)$, which has no norm error to remove by construction. Then find out which of the three causes it was, because the fix hides the symptom and the cause may be damaging something else.
 :::
 
 ::: note Cost, for the record
@@ -239,11 +239,11 @@ A vehicle rotates at a steady $200^\circ/\mathrm{s}$ and the attitude loop runs 
 ::: answer
 $\lVert\boldsymbol{\omega}\rVert = 200^\circ/\mathrm{s} = 3.4907\,\mathrm{rad/s}$ and $\Delta t = 1/50 = 0.02\,\mathrm{s}$. So $\theta = 3.4907 \times 0.02/2 = 0.034907$. One hour at 50 Hz is $N = 3600 \times 50 = 180\,000$ steps.
 
-**Forward Euler:** per-step factor $1 + \theta^2/2 = 1 + 6.093\times 10^{-4}$. The norm reaches $\exp(180\,000 \times 6.093\times 10^{-4}) = e^{109.7} \approx 4\times 10^{47}$. Unusable without re-normalisation; it would overflow single precision within a minute.
+**Forward Euler:** per-step factor $1 + \theta^2/2 = 1 + 6.093\times 10^{-4}$. The norm reaches $\exp(180\,000 \times 6.093\times 10^{-4}) = e^{109.7} \approx 4\times 10^{47}$. Unusable without re-normalization; it would overflow single precision within a minute.
 
-**Heun:** $1 + \theta^4/8 = 1 + 1.856\times 10^{-7}$, giving $\exp(180\,000 \times 1.856\times 10^{-7}) = e^{0.0334} = 1.034$. Three per cent, which becomes a seven per cent scale factor in the DCM ($1.034^2 = 1.069$) — bad, but slow enough that re-normalising once per cycle handles it.
+**Heun:** $1 + \theta^4/8 = 1 + 1.856\times 10^{-7}$, giving $\exp(180\,000 \times 1.856\times 10^{-7}) = e^{0.0334} = 1.034$. Three per cent, which becomes a seven per cent scale factor in the DCM ($1.034^2 = 1.069$) — bad, but slow enough that re-normalizing once per cycle handles it.
 
-**RK4:** $1 - \theta^6/144 = 1 - 1.256\times 10^{-11}$, giving $\exp(-180\,000 \times 1.256\times 10^{-11}) = 1 - 2.26\times 10^{-6}$. Small, but two parts per million of DCM scale error is already bigger than most star trackers' noise, so re-normalise anyway.
+**RK4:** $1 - \theta^6/144 = 1 - 1.256\times 10^{-11}$, giving $\exp(-180\,000 \times 1.256\times 10^{-11}) = 1 - 2.26\times 10^{-6}$. Small, but two parts per million of DCM scale error is already bigger than most star trackers' noise, so re-normalize anyway.
 :::
 
 ::: check
@@ -281,15 +281,15 @@ For a constant rate, the exponential map multiplies by the *same* stored quatern
 
 RK4's round-off is a fresh rounding of a different number each step, with no fixed lean, so it adds up as a random walk: about $\sqrt{N}$ times the unit round-off, $1000 \times 5.96\times 10^{-8} = 6.0\times 10^{-5}$. The measured $1.3\times 10^{-5}$ is one run of that walk.
 
-A steady bias beats a random walk by a factor of about $\sqrt{N}$, here a thousand. "Cannot drift in perfect arithmetic" says nothing about a fixed multiplier reused a million times. Re-normalise, or compute the multiplier in double precision.
+A steady bias beats a random walk by a factor of about $\sqrt{N}$, here a thousand. "Cannot drift in perfect arithmetic" says nothing about a fixed multiplier reused a million times. Re-normalize, or compute the multiplier in double precision.
 :::
 
 ::: check
-For constant $\boldsymbol{\omega}$, forward Euler with per-step re-normalisation is second-order accurate in attitude. Why does that not make it a reasonable choice for a real vehicle?
+For constant $\boldsymbol{\omega}$, forward Euler with per-step re-normalization is second-order accurate in attitude. Why does that not make it a reasonable choice for a real vehicle?
 :::
 
 ::: answer
-Because real vehicles do not have constant rates. The second-order result came from a cancellation special to the constant-rate case: Euler's first-order error points straight off the sphere, and re-normalisation throws it away. Once $\boldsymbol{\omega}$ varies across the step, sampling it only at the start adds an error of order $\dot{\boldsymbol{\omega}}\Delta t^2/2$ per step that points *along* the sphere, and re-normalisation cannot remove that. The swinging-rate case above shows the ratios falling from 4 to 2 — first order — and an error of $0.065^\circ$ after only 20 s at $\Delta t = 0.01\,\mathrm{s}$, which is enormous for an attitude propagator.
+Because real vehicles do not have constant rates. The second-order result came from a cancellation special to the constant-rate case: Euler's first-order error points straight off the sphere, and re-normalization throws it away. Once $\boldsymbol{\omega}$ varies across the step, sampling it only at the start adds an error of order $\dot{\boldsymbol{\omega}}\Delta t^2/2$ per step that points *along* the sphere, and re-normalization cannot remove that. The swinging-rate case above shows the ratios falling from 4 to 2 — first order — and an error of $0.065^\circ$ after only 20 s at $\Delta t = 0.01\,\mathrm{s}$, which is enormous for an attitude propagator.
 
 There is also no reason to accept it. RK4 costs four derivative evaluations for eight orders of magnitude of improvement, and the exponential map costs one product and a sine for even better accuracy on smooth rates.
 :::
@@ -304,7 +304,7 @@ There is also no reason to accept it. RK4 costs four derivative evaluations for 
 | RK4: four stages | Norm factor $1 - \theta^6/144$; attitude error fourth order |
 | $\mathbf{q}_{k+1} = \mathbf{q}_k\otimes\exp(\tfrac{1}{2}\boldsymbol{\omega}\Delta t)$ | Unit by construction; exact for constant $\boldsymbol{\omega}$ at any step |
 | $\exp(\tfrac{1}{2}\boldsymbol{\phi}) = [\cos(\phi/2),\ \hat{\boldsymbol{\phi}}\sin(\phi/2)]$ | Guard with $\cos \approx 1 - \phi^2/8$, $\sin(\phi/2)/\phi \approx \tfrac{1}{2}(1 - \phi^2/24)$ |
-| Norm $1.0003$ | DCM scale factor $1.0006$; fix by re-normalising or by the exponential map |
+| Norm $1.0003$ | DCM scale factor $1.0006$; fix by re-normalizing or by the exponential map |
 | Single precision, $10^6$ steps | RK4 drifts $1.3\times 10^{-5}$ (random walk); exponential map $-5.4\times 10^{-3}$ (compounding bias) |
 | Norm drift vs accuracy | Unrelated; measure accuracy as the angle of the error rotation |
 
@@ -327,7 +327,7 @@ A computer keeps only a fixed number of binary digits, so most results are round
 :::
 
 ::: context step-arrows Short, long and exact
-Each scheme's step as an arrow from the centre (angle exaggerated to $\theta = 0.6$). Euler's arrow is long but turns too little. Heun's is nearly the right length but turns a little too far. The exponential map lands exactly on the circle at angle $\theta$.
+Each scheme's step as an arrow from the center (angle exaggerated to $\theta = 0.6$). Euler's arrow is long but turns too little. Heun's is nearly the right length but turns a little too far. The exponential map lands exactly on the circle at angle $\theta$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">

@@ -390,7 +390,7 @@ A Python Monte Carlo harness passes a float64 array of shape $(10000, 6)$ to a C
 The next lesson, *Block operations*, uses the same idea of a view inside a single matrix: pulling out a corner, a row, a column or a stretch of a vector — the position half of a state vector, the velocity block of a covariance — and reading or writing it without copying.
 
 ::: context memory-tape One matrix, two tapes
-The same $2 \times 3$ matrix laid along memory both ways. The numbers in the boxes are the entries; the small grey numbers are the offsets.
+The same $2 \times 3$ matrix laid along memory both ways. The numbers in the boxes are the entries; the small gray numbers are the offsets.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">

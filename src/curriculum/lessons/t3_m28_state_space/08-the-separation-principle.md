@@ -243,7 +243,7 @@ Why does an anti-windup scheme matter more for an observer-based controller than
 :::
 
 ::: answer
-Because saturation breaks the observer as well as the controller. When the actuator saturates, the plant receives a command different from $-\mathbf{K}\hat{\mathbf{x}}$. But the observer runs its model with the command it *thinks* was applied. The $\mathbf{B}\mathbf{u}$ terms stop cancelling, and the guess wanders away from the truth — exactly when the vehicle is farthest from where you want it.
+Because saturation breaks the observer as well as the controller. When the actuator saturates, the plant receives a command different from $-\mathbf{K}\hat{\mathbf{x}}$. But the observer runs its model with the command it *thinks* was applied. The $\mathbf{B}\mathbf{u}$ terms stop canceling, and the guess wanders away from the truth — exactly when the vehicle is farthest from where you want it.
 
 When the actuator comes off its limit, the guess is wrong, the loop drops into a transient the design never considered, and every separated pole is irrelevant during the episode. The fix is the PID anti-windup idea applied one level deeper: feed the observer the command the actuator *actually* delivered. That needs either telemetry from the actuator or a model of its limit inside the flight software.
 :::
@@ -316,7 +316,7 @@ Computers store numbers with about $16$ significant digits, so most calculations
 :::
 
 ::: context excursion-picture The needless swing, drawn
-The vehicle's pointing (blue) and the estimation error (grey) for the first minute. The error starts at $1^\circ$ and is gone in about $12\,\mathrm{s}$. The vehicle, which started perfectly on target, is shoved to $-0.651^\circ$ at $10.9\,\mathrm{s}$ and creeps back.
+The vehicle's pointing (blue) and the estimation error (gray) for the first minute. The error starts at $1^\circ$ and is gone in about $12\,\mathrm{s}$. The vehicle, which started perfectly on target, is shoved to $-0.651^\circ$ at $10.9\,\mathrm{s}$ and creeps back.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">

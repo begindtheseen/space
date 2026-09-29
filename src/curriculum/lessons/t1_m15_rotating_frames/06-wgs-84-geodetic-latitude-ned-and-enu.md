@@ -345,7 +345,7 @@ To settle it, France sent expeditions in the 1730s to Lapland, near the Arctic C
 :::
 
 ::: context geoid-heights Three heights, one point
-The smooth ellipsoid (grey) is the math surface. The geoid (blue) is where calm sea level would be, bumped up and down by uneven mass. A GNSS receiver at the top measures $h$, its height above the ellipsoid. A map gives $H$, height above the geoid. The gap between the two surfaces is the undulation $N_g$, so $h = H + N_g$.
+The smooth ellipsoid (gray) is the math surface. The geoid (blue) is where calm sea level would be, bumped up and down by uneven mass. A GNSS receiver at the top measures $h$, its height above the ellipsoid. A map gives $H$, height above the geoid. The gap between the two surfaces is the undulation $N_g$, so $h = H + N_g$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">

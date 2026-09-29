@@ -375,7 +375,7 @@ The name comes from "white noise", noise with no pattern from one sample to the 
 :::
 
 ::: context two-errors The two ways to be wrong, drawn
-The healthy residual (blue) and the faulty residual (grey) are both spread out by noise. The threshold (red line) cuts between them.
+The healthy residual (blue) and the faulty residual (gray) are both spread out by noise. The threshold (red line) cuts between them.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">

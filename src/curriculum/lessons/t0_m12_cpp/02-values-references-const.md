@@ -201,7 +201,7 @@ In modern C++ a raw pointer never *owns* anything — it never decides when the 
 
 `const` appears in three places, with three meanings.
 
-- **On a variable:** it cannot change after it is initialised.
+- **On a variable:** it cannot change after it is initialized.
 - **On a reference or pointer parameter:** a read-only view of the caller's object.
 - **After a member function's parameter list,** as in `double bias() const`: a promise that the function does not change the object. Only such functions may be called on a `const` object, or through a `const` reference.
 
@@ -266,10 +266,10 @@ consterr.cpp:10:21: error: passing 'const RateGyro' as 'this' argument discards
 
 The habit to build is **const by default**. Declare every variable, parameter and member function `const` unless it must change. Remove the `const` only when the compiler shows you a real reason. Physical constants go one step further: `constexpr double kMuEarth = 3.986004418e14;` is `const` plus "known at compile time", which lesson 7 develops.
 
-The gain is not mainly speed; the optimiser can often work out constness for itself. The gain is that the data flow of a 300-line estimator can be read straight from its declarations.
+The gain is not mainly speed; the optimizer can often work out constness for itself. The gain is that the data flow of a 300-line estimator can be read straight from its declarations.
 
 ::: key
-A C++ variable is an object with its own storage; `b = a` copies the value. A reference `T&` is another name for an existing object — always initialised, never reseated, never null. Pass small types by value, large types you only read by `const T&`, and use plain `T&` only when the function's purpose is to modify the caller's object.
+A C++ variable is an object with its own storage; `b = a` copies the value. A reference `T&` is another name for an existing object — always initialized, never reseated, never null. Pass small types by value, large types you only read by `const T&`, and use plain `T&` only when the function's purpose is to modify the caller's object.
 :::
 
 ::: key
@@ -278,7 +278,7 @@ A C++ variable is an object with its own storage; `b = a` copies the value. A re
 
 ## Lifetime and dangling references
 
-A reference is a nickname, and a nickname does not keep anyone alive. If the object is destroyed, the reference **dangles** — it names something that no longer exists — and using it is undefined behaviour. The classic case is returning a reference to a local variable:
+A reference is a nickname, and a nickname does not keep anyone alive. If the object is destroyed, the reference **dangles** — it names something that no longer exists — and using it is undefined behavior. The classic case is returning a reference to a local variable:
 
 ```cpp
 const Vec3& make_unit_x() {
@@ -303,11 +303,11 @@ Similarly, `auto v = get_state();` copies. And `const auto& v = get_state();`, o
 
 ## Units as types
 
-A `double` carries no unit. `fall_distance(3.0)` looks fine whether the argument is seconds or metres, and the compiler cannot help. Mixing units up is not a small risk: it has **[[destroyed a spacecraft|mars-climate-orbiter]]**.
+A `double` carries no unit. `fall_distance(3.0)` looks fine whether the argument is seconds or meters, and the compiler cannot help. Mixing units up is not a small risk: it has **[[destroyed a spacecraft|mars-climate-orbiter]]**.
 
 Wrap each value in a one-member struct, and the compiler can help. A `struct Seconds { double value; }` has the same size as a `double` and compiles to the same instructions, so it costs nothing at run time. But now a mixed-up call is a compile error.
 
-::: example Seconds and metres that cannot be swapped
+::: example Seconds and meters that cannot be swapped
 ```cpp
 #include <iostream>
 
@@ -338,7 +338,7 @@ $$
 \tfrac{1}{2} g_0 t^2 = 0.5 \times 9.80665 \times 3^2 = 0.5 \times 9.80665 \times 9 \approx 44.13\,\mathrm{m}.
 $$
 
-Sanity check: that is about the height of a 14-storey building, a fair drop for three seconds.
+Sanity check: that is about the height of a 14-story building, a fair drop for three seconds.
 
 The `static_assert` is a check the compiler runs while building; it proves the wrapper adds no size. Uncomment either wrong call and the build stops with `could not convert 'd' from 'Meters' to 'Seconds'`. The mistake fails before the program exists.
 :::
@@ -400,7 +400,7 @@ Each matrix is $36 \times 8 = 288$ bytes. The loop copies one matrix into `P` pe
 | Item | Meaning |
 | --- | --- |
 | value semantics | `b = a` copies; each variable is its own object with its own storage |
-| `T&` | reference: another name for an existing object; initialised once, never null |
+| `T&` | reference: another name for an existing object; initialized once, never null |
 | `const T&` | read-only alias; the default for passing anything larger than a few words |
 | `T v` by value | a copy; right for `double`, enums, `Vec3`-sized structs |
 | `T*` | pointer: an address that may be null or re-pointed; non-owning in modern code |
@@ -438,7 +438,7 @@ Change the list through `b` in Python and `a` sees it. Change `b` in C++ and `a`
 :::
 
 ::: context memory-addresses Memory is a row of numbered mailboxes
-A computer's memory is a long row of bytes, and each byte has a number — its **address** — the way houses on a street have numbers. An 8-byte `double` fills eight neighbouring bytes, and its address is the number of the first one. A pointer is a variable whose value is one of those numbers.
+A computer's memory is a long row of bytes, and each byte has a number — its **address** — the way houses on a street have numbers. An 8-byte `double` fills eight neighboring bytes, and its address is the number of the first one. A pointer is a variable whose value is one of those numbers.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
@@ -470,7 +470,7 @@ A **word** is the chunk of data a processor handles in one step — on today's 6
 :::
 
 ::: context billion-dollar-mistake The billion-dollar mistake
-The British computer scientist Tony Hoare added the null reference to a programming language in 1965, because it was easy to build. In a 2009 talk he called it his "billion-dollar mistake", for the crashes and errors it has caused ever since. Following a null pointer in C++ is undefined behaviour — usually a crash, sometimes worse. C++ references were designed so they can never be null, which is why they are the default whenever an object must exist.
+The British computer scientist Tony Hoare added the null reference to a programming language in 1965, because it was easy to build. In a 2009 talk he called it his "billion-dollar mistake", for the crashes and errors it has caused ever since. Following a null pointer in C++ is undefined behavior — usually a crash, sometimes worse. C++ references were designed so they can never be null, which is why they are the default whenever an object must exist.
 :::
 
 ::: context const-right-to-left Two pointers, two different locks
@@ -504,5 +504,5 @@ A `std::vector` keeps its elements side by side in one block of heap memory with
 :::
 
 ::: context mars-climate-orbiter The spacecraft lost to a unit mix-up
-In September 1999, NASA's Mars Climate Orbiter flew too deep into the Martian atmosphere and was lost. The investigation found that ground software from one team reported thruster impulse in pound-force seconds, while the navigation software that used it expected newton-seconds — a factor of about 4.45. Every small thruster firing was mis-modelled, and the trajectory error built up over months. Both numbers were plain floating-point values, so nothing could flag the mismatch. Wrapping each unit in its own type turns that kind of mistake into a compile error.
+In September 1999, NASA's Mars Climate Orbiter flew too deep into the Martian atmosphere and was lost. The investigation found that ground software from one team reported thruster impulse in pound-force seconds, while the navigation software that used it expected newton-seconds — a factor of about 4.45. Every small thruster firing was mis-modeled, and the trajectory error built up over months. Both numbers were plain floating-point values, so nothing could flag the mismatch. Wrapping each unit in its own type turns that kind of mistake into a compile error.
 :::

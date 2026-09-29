@@ -182,7 +182,7 @@ print(w, np.shares_memory(w, v))
 (The 99 is from the ravel demonstration above.) The numbers `99, 3, 6, 9` are 24 bytes apart in memory, but then `1` is back near the start. No single stride can describe that walk, so NumPy quietly made a copy. That is fine — but it means writing into `w` will never change `v`.
 
 ::: key C order vs Fortran order
-C order vs Fortran order determines which axis is contiguous in memory, so it changes cache behaviour of loops and reductions and whether a reshape can be a view. It also matters at library boundaries: LAPACK and Eigen default to column-major. NumPy defaults to C order (row-major, last axis contiguous); `order='F'` gives column-major (first axis contiguous). The transpose of a C-order array is a Fortran-order view.
+C order vs Fortran order determines which axis is contiguous in memory, so it changes cache behavior of loops and reductions and whether a reshape can be a view. It also matters at library boundaries: LAPACK and Eigen default to column-major. NumPy defaults to C order (row-major, last axis contiguous); `order='F'` gives column-major (first axis contiguous). The transpose of a C-order array is a Fortran-order view.
 :::
 
 ### When order changes speed

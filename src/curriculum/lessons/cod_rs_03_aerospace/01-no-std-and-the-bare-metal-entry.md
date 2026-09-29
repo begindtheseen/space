@@ -284,7 +284,7 @@ rustflags = ["-C", "link-arg=-Tlink.x"]
 and the project's `Cargo.toml` lists `cortex-m = "0.7"` and `cortex-m-rt = "0.7"` under `[dependencies]`. After that, plain `cargo build --release` builds for the chip.
 
 ::: key The bare-metal checklist
-`#![no_std]` drops std; `#![no_main]` drops the OS start-up; cortex-m-rt's `Reset` handler initialises `.bss` and `.data` and calls the `#[entry] fn main() -> !`; the vector table at the start of flash holds the initial stack pointer, then the reset vector, then exception and interrupt handlers; `memory.x` gives the linker the FLASH and RAM origins and lengths.
+`#![no_std]` drops std; `#![no_main]` drops the OS start-up; cortex-m-rt's `Reset` handler initializes `.bss` and `.data` and calls the `#[entry] fn main() -> !`; the vector table at the start of flash holds the initial stack pointer, then the reset vector, then exception and interrupt handlers; `memory.x` gives the linker the FLASH and RAM origins and lengths.
 :::
 
 ::: warning A wrong memory.x builds fine and fails on the bench

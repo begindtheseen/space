@@ -262,7 +262,7 @@ $$
 \frac{x^2 - 9}{x^2 + x - 6} = \frac{(x - 3)(x + 3)}{(x + 3)(x - 2)} = \frac{x - 3}{x - 2}, \qquad x \neq -3,\ x \neq 2 .
 $$
 
-($\neq$ means "is not equal to".) The [[excluded values|excluded-values]] are where the *original* bottom is zero. Cancelling $(x + 3)$ does not make $x = -3$ allowed. It only hides the problem, like a hole in a road covered with a tarp.
+($\neq$ means "is not equal to".) The [[excluded values|excluded-values]] are where the *original* bottom is zero. Canceling $(x + 3)$ does not make $x = -3$ allowed. It only hides the problem, like a hole in a road covered with a tarp.
 
 To add, build a common denominator from the factored forms:
 
@@ -283,7 +283,7 @@ A derivation is a chain of steps, and each link should carry its own reason: "di
 Two habits make this cheap:
 
 - **Write the definitions at the top of the page**, so every symbol is pinned down before you push it around.
-- **Test with small numbers.** After any step that rearranges more than one term, put the same small numbers into both sides. Equal answers do not prove the step right, but unequal answers prove it wrong instantly. That catches most sign and cancelling mistakes before they spread.
+- **Test with small numbers.** After any step that rearranges more than one term, put the same small numbers into both sides. Equal answers do not prove the step right, but unequal answers prove it wrong instantly. That catches most sign and canceling mistakes before they spread.
 
 Take the rocket stage masses from the first lesson: dry mass $m_d$, propellant $m_p$, payload $m_L$, with $m_0 = m_d + m_p + m_L$ at lift-off and $m_f = m_d + m_L$ at burnout. That means $m_0 = m_f + m_p$. For testing, use $m_d = 2$, $m_p = 10$, $m_L = 1$. Then $m_0 = 13$ and $m_f = 3$ — small enough to check everything below in your head.
 
@@ -358,7 +358,7 @@ Simplify $\dfrac{x^2 - 4}{x^2 - 4x + 4}$ and list the values of $x$ for which th
 :::
 
 ::: answer
-Factor both: $x^2 - 4 = (x - 2)(x + 2)$ and $x^2 - 4x + 4 = (x - 2)^2$. Cancelling one shared factor of $(x - 2)$ leaves $\dfrac{x + 2}{x - 2}$.
+Factor both: $x^2 - 4 = (x - 2)(x + 2)$ and $x^2 - 4x + 4 = (x - 2)^2$. Canceling one shared factor of $(x - 2)$ leaves $\dfrac{x + 2}{x - 2}$.
 
 The original is undefined only at $x = 2$, where its bottom is zero. The simplified form is also undefined there, so this time nothing is hidden. Check at $x = 5$: $\tfrac{21}{9} = \tfrac{7}{3}$ both ways.
 :::
@@ -481,7 +481,7 @@ The blue row gives $(a + b)^4 = a^4 + 4a^3b + 6a^2b^2 + 4ab^3 + b^4$. The same n
 :::
 
 ::: context small-change Your first taste of calculus
-Dropping the square of a tiny number is one of the most used moves in all of engineering. It is called **linearising**: close to a known point, treat a curve as if it were a straight line.
+Dropping the square of a tiny number is one of the most used moves in all of engineering. It is called **linearizing**: close to a known point, treat a curve as if it were a straight line.
 
 Guidance software does this constantly. It works out how a small change — in engine angle, say — shifts the path, and ignores the far smaller "change times change" pieces. Calculus will make the idea exact: the $2$ in $1 + 2\varepsilon$ is the steepness (the slope) of the curve $x^2$ at $x = 1$.
 :::

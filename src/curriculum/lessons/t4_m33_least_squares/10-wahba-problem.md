@@ -321,7 +321,7 @@ The **3** means three dimensions. The **O** stands for orthogonal: the matrix ke
 :::
 
 ::: context procrustes A name from a Greek myth
-In Greek legend Procrustes was a bandit who made every traveller fit his bed exactly: he stretched the short ones and cut down the tall ones. Psychologists and statisticians borrowed the name in the early 1960s for the problem of forcing one set of points to match another as closely as possible — except that here the only thing allowed is a rigid turn, with no stretching. Peter Schönemann published the standard solution for the orthogonal version in 1966. You will meet a version of his answer, with Wahba's no-mirrors fix, in the next lesson's SVD method.
+In Greek legend Procrustes was a bandit who made every traveler fit his bed exactly: he stretched the short ones and cut down the tall ones. Psychologists and statisticians borrowed the name in the early 1960s for the problem of forcing one set of points to match another as closely as possible — except that here the only thing allowed is a rigid turn, with no stretching. Peter Schönemann published the standard solution for the orthogonal version in 1966. You will meet a version of his answer, with Wahba's no-mirrors fix, in the next lesson's SVD method.
 :::
 
 ::: context trace The sum down the diagonal

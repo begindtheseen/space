@@ -331,7 +331,7 @@ Which constructor does each line call, if `Buffer` has both copy and move constr
 :::
 
 ::: answer
-(a) Copy constructor: `a` is an lvalue, so only `const Buffer&` accepts it. (b) Neither: since C++17, a temporary of the same type initialises `c` directly, so only the ordinary `Buffer(std::size_t)` constructor runs. (c) Move constructor: `std::move(a)` casts `a` to `Buffer&&`, which prefers the move constructor. Afterwards `a` is empty. (d) Copy constructor: `std::move(e)` gives `const Buffer&&`, which cannot bind to `Buffer&&`, so the copy constructor takes it. `e` is unchanged.
+(a) Copy constructor: `a` is an lvalue, so only `const Buffer&` accepts it. (b) Neither: since C++17, a temporary of the same type initializes `c` directly, so only the ordinary `Buffer(std::size_t)` constructor runs. (c) Move constructor: `std::move(a)` casts `a` to `Buffer&&`, which prefers the move constructor. Afterwards `a` is empty. (d) Copy constructor: `std::move(e)` gives `const Buffer&&`, which cannot bind to `Buffer&&`, so the copy constructor takes it. `e` is unchanged.
 :::
 
 ::: check

@@ -6,7 +6,7 @@ covers:
   - Differential GNSS, RTK, and precise point positioning
 ---
 
-You and a friend step on the same bathroom scale, one after the other. The scale reads $2\,\mathrm{kg}$ too heavy. Neither reading is right. But subtract one from the other and the difference between your weights is exactly right, because the same $2\,\mathrm{kg}$ error sat in both and cancelled.
+You and a friend step on the same bathroom scale, one after the other. The scale reads $2\,\mathrm{kg}$ too heavy. Neither reading is right. But subtract one from the other and the difference between your weights is exactly right, because the same $2\,\mathrm{kg}$ error sat in both and canceled.
 
 That is the whole idea of this lesson. Two GNSS receivers near each other see nearly the same errors: the same satellite clock error, the same orbit error, nearly the same atmosphere. Subtract their measurements and those shared errors cancel. The previous lesson promised that this subtraction also removes the clocks that stood in the way of finding the carrier's whole-number ambiguities. Here is how.
 
@@ -260,7 +260,7 @@ The satellite clock error is one number, the same in both receivers' equations, 
 :::
 
 ::: check
-DGNSS and RTK both rely on the atmosphere cancelling over a short baseline. Why does RTK need much shorter baselines?
+DGNSS and RTK both rely on the atmosphere canceling over a short baseline. Why does RTK need much shorter baselines?
 :::
 
 ::: answer

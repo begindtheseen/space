@@ -123,7 +123,7 @@ Each knob has one job.
 
 - $\alpha$ sets **how far out** the points sit. Small $\alpha$ keeps them close to the mean, which helps when the model can only be trusted near the estimate. Typical values run from $10^{-3}$ to $1$.
 - $\kappa$ is a second, smaller stretch. It is usually $0$, or $3 - n$. With $\alpha = 1$, the choice $\kappa = 3 - n$ puts the points $\sqrt 3$ standard deviations out, which makes them match one more property of the bell curve along each axis (its fourth moment).
-- $\beta$ carries **prior knowledge of the shape** of the distribution. It only touches the centre point's covariance weight. For a Gaussian, $\beta = 2$ is the best choice: it builds the bell curve's known [[fourth moment|kurtosis]] into the covariance.
+- $\beta$ carries **prior knowledge of the shape** of the distribution. It only touches the center point's covariance weight. For a Gaussian, $\beta = 2$ is the best choice: it builds the bell curve's known [[fourth moment|kurtosis]] into the covariance.
 
 ::: key UKF tuning parameters
 $\alpha$ sets the spread (typically $10^{-3}\le\alpha\le1$), $\kappa$ is usually $0$ or $3-n$, and $\beta=2$ is optimal for a Gaussian prior. $\lambda=\alpha^2(n+\kappa)-n$. The three enter only through the weights and the spread factor $\sqrt{n+\lambda}$ — never as derivatives of $\mathbf f$ or $\mathbf h$. Careless values give negative weights and an indefinite covariance — use the square-root UKF.
@@ -135,10 +135,10 @@ $$
 n + \lambda = \alpha^2(n + \kappa) = 10^{-6} \times 4 = 4 \times 10^{-6}.
 $$
 
-Each of the eight outer points gets weight $W_i^{(m)} = 1/(2 \times 4 \times 10^{-6}) = 125{,}000$. The centre gets $W_0^{(m)} = \lambda/(n+\lambda) = 1 - 10^6 = -999{,}999$. Check the total: $8 \times 125{,}000 - 999{,}999 = 1$. The weights still add to one, but only by huge numbers cancelling. Nothing here is a mistake. Those extreme weights are exactly what keeps the mean accurate while the points crowd the centre. But the computer is now finding a small answer as the difference of numbers a million times bigger, and any small slip in the inputs gets multiplied by a million. That is called **[[cancellation|cancellation]]**.
+Each of the eight outer points gets weight $W_i^{(m)} = 1/(2 \times 4 \times 10^{-6}) = 125{,}000$. The center gets $W_0^{(m)} = \lambda/(n+\lambda) = 1 - 10^6 = -999{,}999$. Check the total: $8 \times 125{,}000 - 999{,}999 = 1$. The weights still add to one, but only by huge numbers canceling. Nothing here is a mistake. Those extreme weights are exactly what keeps the mean accurate while the points crowd the center. But the computer is now finding a small answer as the difference of numbers a million times bigger, and any small slip in the inputs gets multiplied by a million. That is called **[[cancellation|cancellation]]**.
 
 ::: warning A negative weight is not a bug, but it removes a safety net
-When every weight is positive, a weighted sum of outer products can never have a negative variance in any direction: it is a sum of squares. The moment the centre weight $W_0^{(c)}$ is negative, that guarantee is gone. The formula can then return a "covariance" that claims negative uncertainty in some direction — and nothing in the arithmetic will warn you.
+When every weight is positive, a weighted sum of outer products can never have a negative variance in any direction: it is a sum of squares. The moment the center weight $W_0^{(c)}$ is negative, that guarantee is gone. The formula can then return a "covariance" that claims negative uncertainty in some direction — and nothing in the arithmetic will warn you.
 :::
 
 ## From transform to filter
@@ -167,13 +167,13 @@ These are the Kalman filter's own equations. For a linear sensor, $\mathbf P_{xz
 
 ## When the covariance goes bad
 
-Negative weights can break the covariance even with perfect arithmetic. Take $n = 4$ with $\alpha = 1$, $\kappa = 3 - n = -1$ and $\beta = 0$. Then $\lambda = 1 \times (4 - 1) - 4 = -1$ and $n + \lambda = 3$. The centre weights are both $-\tfrac13$, and the eight outer weights are $\tfrac16$ each. Let $\mathbf x$ have mean zero and $\mathbf P = \mathbf I$ (the identity matrix, so each of the four numbers has variance one), and let $g(\mathbf x) = x_1^2 + x_2^2 + x_3^2 + x_4^2$. The centre point gives $0$. Each outer point sits at distance $\sqrt 3$ along one axis, so it gives $3$. The mean is $8 \times \tfrac16 \times 3 = 4$, which is exactly right. The variance is
+Negative weights can break the covariance even with perfect arithmetic. Take $n = 4$ with $\alpha = 1$, $\kappa = 3 - n = -1$ and $\beta = 0$. Then $\lambda = 1 \times (4 - 1) - 4 = -1$ and $n + \lambda = 3$. The center weights are both $-\tfrac13$, and the eight outer weights are $\tfrac16$ each. Let $\mathbf x$ have mean zero and $\mathbf P = \mathbf I$ (the identity matrix, so each of the four numbers has variance one), and let $g(\mathbf x) = x_1^2 + x_2^2 + x_3^2 + x_4^2$. The center point gives $0$. Each outer point sits at distance $\sqrt 3$ along one axis, so it gives $3$. The mean is $8 \times \tfrac16 \times 3 = 4$, which is exactly right. The variance is
 
 $$
 -\tfrac13(0 - 4)^2 + 8 \times \tfrac16 (3 - 4)^2 = -\tfrac{16}{3} + \tfrac{4}{3} = -4.
 $$
 
-A negative variance. No real quantity has one. (The true value is $8$.) The trouble is that $\kappa = 3 - n$ makes $\lambda$ negative as soon as $n > 3$, and with $\beta = 0$ nothing lifts the centre's covariance weight back above zero.
+A negative variance. No real quantity has one. (The true value is $8$.) The trouble is that $\kappa = 3 - n$ makes $\lambda$ negative as soon as $n > 3$, and with $\beta = 0$ nothing lifts the center's covariance weight back above zero.
 
 ::: example A real UKF run that breaks
 Run this module's bearings-only tracking problem (the one from the EKF-diverges lesson) with a UKF at the exercise settings, $\alpha = 10^{-3}$, $\beta = 2$, $\kappa = 0$. Over a thousand runs with different random noise, two break. Take run number $733$, update $31$.
@@ -242,7 +242,7 @@ A variance is a square — a standard deviation times itself — so it can never
 It updates $\mathbf S$ directly, never forming $\mathbf P$:
 
 - the positively weighted points (and the noise) go into $\mathbf S$ through a **QR factorization**, a stable way to turn a stack of weighted deviations into a triangular square root;
-- the centre point, when its weight is negative, is handled by a **Cholesky downdate**, a routine that removes one outer product from $\mathbf S\mathbf S^{\mathsf T}$;
+- the center point, when its weight is negative, is handled by a **Cholesky downdate**, a routine that removes one outer product from $\mathbf S\mathbf S^{\mathsf T}$;
 - the measurement update removes $\mathbf K\mathbf P_{zz}\mathbf K^{\mathsf T}$ by more downdates.
 
 A downdate cannot quietly return a negative variance. If the removal would make the result invalid, it stops and reports failure. So the square-root form turns a silent disaster into a loud one, and on ordinary problems it also keeps roughly twice as many correct digits, because $\mathbf S$ is far better conditioned than $\mathbf P$. These are the same [[square-root forms|bridge-sqrt]] the Kalman filter module used; the trigger here is different, but the remedy is the same idea.
@@ -278,7 +278,7 @@ Why does $\alpha=10^{-3}$ give weights near $\pm10^6$ for a four-state system? I
 :::
 
 ::: answer
-The outer weights are $W_i^{(m)}=1/(2(n+\lambda))$, and $n+\lambda=\alpha^2(n+\kappa)$. With $n=4$, $\kappa=0$, $\alpha=10^{-3}$: $n+\lambda=4\times10^{-6}$, so $W_i^{(m)}=1/(8\times10^{-6})=125{,}000$. The centre weight is $W_0^{(m)}=\lambda/(n+\lambda)=1-10^6=-999{,}999$, so that all nine still add to exactly $1$.
+The outer weights are $W_i^{(m)}=1/(2(n+\lambda))$, and $n+\lambda=\alpha^2(n+\kappa)$. With $n=4$, $\kappa=0$, $\alpha=10^{-3}$: $n+\lambda=4\times10^{-6}$, so $W_i^{(m)}=1/(8\times10^{-6})=125{,}000$. The center weight is $W_0^{(m)}=\lambda/(n+\lambda)=1-10^6=-999{,}999$, so that all nine still add to exactly $1$.
 
 It is not an error. The transform needs those weights to keep its accuracy while the points sit very close to the mean. But it means the answer is a small difference of huge numbers, so any slip in the inputs is magnified about a million times.
 :::
@@ -290,7 +290,7 @@ Explain why the ordinary UKF's covariance formula can produce a negative eigenva
 ::: answer
 The Joseph form, $(\mathbf I-\mathbf K\mathbf H)\mathbf P^-(\mathbf I-\mathbf K\mathbf H)^{\mathsf T}+\mathbf K\mathbf R\mathbf K^{\mathsf T}$, is a sum of pieces that are each positive semi-definite by their shape. It cannot give a negative variance, whatever the numbers.
 
-The UKF's $\sum_i W_i^{(c)}(\mathbf y_i-\hat{\mathbf y})(\mathbf y_i-\hat{\mathbf y})^{\mathsf T}$ is a weighted sum of outer products in which the centre weight can be negative. Then nothing in the shape of the formula protects it. The four-state example with $\kappa=3-n$ gives a variance of $-4$ with perfect arithmetic. With $\alpha=10^{-3}$ the weights near $\pm10^6$ also magnify any small inconsistency in the deviations (in the bearing example, a $2\pi$ wrap) into a large negative eigenvalue.
+The UKF's $\sum_i W_i^{(c)}(\mathbf y_i-\hat{\mathbf y})(\mathbf y_i-\hat{\mathbf y})^{\mathsf T}$ is a weighted sum of outer products in which the center weight can be negative. Then nothing in the shape of the formula protects it. The four-state example with $\kappa=3-n$ gives a variance of $-4$ with perfect arithmetic. With $\alpha=10^{-3}$ the weights near $\pm10^6$ also magnify any small inconsistency in the deviations (in the bearing example, a $2\pi$ wrap) into a large negative eigenvalue.
 :::
 
 ::: check
@@ -300,7 +300,7 @@ A colleague suggests fixing negative eigenvalues by clipping each negative eigen
 ::: answer
 It keeps the filter running: the next Cholesky factorization succeeds, which is a real, practical benefit.
 
-It does not explain or cure the cause, and it silently throws information away. An eigenvalue of $-8742$ is not "about zero". It is a sign that the pooled covariance went badly wrong in that direction. Replacing it with a small positive number is a guess about the true uncertainty there — and a small variance is an *overconfident* guess, the very failure that ruins filters. The square-root form never builds the invalid matrix and reports the failure instead, and fixing the cause (sensible $\alpha$, non-negative centre weight, careful angle handling) stops it from happening at all.
+It does not explain or cure the cause, and it silently throws information away. An eigenvalue of $-8742$ is not "about zero". It is a sign that the pooled covariance went badly wrong in that direction. Replacing it with a small positive number is a guess about the true uncertainty there — and a small variance is an *overconfident* guess, the very failure that ruins filters. The square-root form never builds the invalid matrix and reports the failure instead, and fixing the cause (sensible $\alpha$, non-negative center weight, careful angle handling) stops it from happening at all.
 :::
 
 ## Summary
@@ -382,11 +382,11 @@ To say how far one $2 \times 2$ covariance is from another, subtract them and ta
 :::
 
 ::: context kurtosis What beta remembers about the bell
-The mean is the first moment of a distribution and the variance is the second. The **fourth moment** measures how heavy the tails are: for a Gaussian, the average of $(x-\mu)^4$ is exactly $3\sigma^4$. That fixed ratio of $3$ is the bell curve's **kurtosis**. The covariance formula involves squares of squares, so it quietly depends on the fourth moment. With $\beta = 2$ the centre weight adds just the right amount to match a Gaussian's fourth moment in the leading correction term. For a distribution with heavier tails, a larger $\beta$ can do better.
+The mean is the first moment of a distribution and the variance is the second. The **fourth moment** measures how heavy the tails are: for a Gaussian, the average of $(x-\mu)^4$ is exactly $3\sigma^4$. That fixed ratio of $3$ is the bell curve's **kurtosis**. The covariance formula involves squares of squares, so it quietly depends on the fourth moment. With $\beta = 2$ the center weight adds just the right amount to match a Gaussian's fourth moment in the leading correction term. For a distribution with heavier tails, a larger $\beta$ can do better.
 :::
 
 ::: context cancellation Finding a small number as a big difference
-Weigh a ship with its captain aboard, then without, and subtract: you will not learn the captain's weight, because each ship weighing is uncertain by far more than a person weighs. Computers have the same problem. A double-precision number keeps about $16$ significant digits. If an answer near $1$ is the difference of two numbers near $10^6$, about six of those digits are spent on the cancellation — and any error in the inputs, from rounding or from a modelling shortcut such as an angle wrap, is magnified by the same factor.
+Weigh a ship with its captain aboard, then without, and subtract: you will not learn the captain's weight, because each ship weighing is uncertain by far more than a person weighs. Computers have the same problem. A double-precision number keeps about $16$ significant digits. If an answer near $1$ is the difference of two numbers near $10^6$, about six of those digits are spent on the cancellation — and any error in the inputs, from rounding or from a modeling shortcut such as an angle wrap, is magnified by the same factor.
 :::
 
 ::: context eigen-ellipse What a negative eigenvalue looks like

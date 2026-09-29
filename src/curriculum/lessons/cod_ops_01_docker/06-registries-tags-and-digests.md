@@ -15,7 +15,7 @@ This lesson is about where images are kept (registries), how to name them so tha
 
 ## Registries: where images live
 
-A **registry** is a server that stores images and hands them out. `docker pull` downloads from one; `docker push` uploads to one. You have been using the biggest public one, **Docker Hub**, every time you pulled `python:3.12-slim`. Others you will meet: GitHub's registry at `ghcr.io`, the registries run by cloud providers such as Amazon's ECR, the one built into GitLab, and private registries a company runs on its own network, which is common in aerospace and defence, where build machines may have no internet access at all.
+A **registry** is a server that stores images and hands them out. `docker pull` downloads from one; `docker push` uploads to one. You have been using the biggest public one, **Docker Hub**, every time you pulled `python:3.12-slim`. Others you will meet: GitHub's registry at `ghcr.io`, the registries run by cloud providers such as Amazon's ECR, the one built into GitLab, and private registries a company runs on its own network, which is common in aerospace and defense, where build machines may have no internet access at all.
 
 A full [[image reference|reference-parts]] names the registry, the repository and the tag:
 
@@ -158,7 +158,7 @@ docker image inspect python:3.12-slim --format '{{json .RepoDigests}}'
 A digest pin does not mean never updating. It means updating on purpose: someone changes the digest in a reviewed commit, the tests run, and the change is in git history with a reason. [[Bots can open those commits for you|update-bots]] when a new image appears.
 
 ::: warning A digest only helps if the image still exists
-A registry is not an archive. Many registries can be set to delete images that no tag points at any more, under a retention rule, and a public image can be withdrawn. For results that must be rerun in five years, also keep your own copy: push the exact image to a registry your organisation controls, and for the most important runs save it to a file with `docker save image@sha256:… -o image.tar` and store that with the results.
+A registry is not an archive. Many registries can be set to delete images that no tag points at any more, under a retention rule, and a public image can be withdrawn. For results that must be rerun in five years, also keep your own copy: push the exact image to a registry your organization controls, and for the most important runs save it to a file with `docker save image@sha256:… -o image.tar` and store that with the results.
 :::
 
 ## Lockfiles: pinning what is inside
@@ -279,7 +279,7 @@ The example used all three ingredients, and each is needed:
 Missing any one, the others cannot save you. And even with all three, some things can still move the last bits: compiler flags such as `-ffast-math` that let the compiler reorder arithmetic, parallel sums whose order depends on the number of threads, and running the same image on a different kind of processor. Record the thread count and the machine type with the results too.
 
 ::: key How a container makes a 2026 simulation reproducible in 2031
-It pins the OS, compiler, libraries, interpreter and package versions as one addressable artefact. Combined with a seeded RNG and pinned input data, rerunning the digest reproduces the numbers, which is what a configuration-management or anomaly-investigation requirement demands.
+It pins the OS, compiler, libraries, interpreter and package versions as one addressable artifact. Combined with a seeded RNG and pinned input data, rerunning the digest reproduces the numbers, which is what a configuration-management or anomaly-investigation requirement demands.
 :::
 
 That key is also the answer you give an auditor. **[[Configuration management|config-management]]** asks: for this result, exactly which software produced it, and can you produce that software again? With digests, the answer is one line in the run's record, for example `image = registry.example/gnc/landing-mc@sha256:d71b…, seed = 2026, inputs = wind-model v4.2 (git 3f9c2ab)`, and a copy of that image in storage you control.
@@ -323,7 +323,7 @@ Your team's image `landing-mc:1.0.0` has to be rerun for an investigation in 203
 :::
 
 ::: answer
-The image digest, written into the results record; a copy of the image itself in a registry the organisation controls, and for critical runs a `docker save` file stored with the results; the Dockerfile and lockfile in git at a tagged commit, so the environment can be explained and inspected; the seeds; the exact versions of all input data; and the run settings that can affect bit-exactness, such as the thread count and machine type. With those, rerunning the digest with the same seeds and inputs reproduces the numbers.
+The image digest, written into the results record; a copy of the image itself in a registry the organization controls, and for critical runs a `docker save` file stored with the results; the Dockerfile and lockfile in git at a tagged commit, so the environment can be explained and inspected; the seeds; the exact versions of all input data; and the run settings that can affect bit-exactness, such as the thread count and machine type. With those, rerunning the digest with the same seeds and inputs reproduces the numbers.
 :::
 
 ## Summary
@@ -392,7 +392,7 @@ After the second push, the old image is still reachable by its digest; only the 
 :::
 
 ::: context semver Numbers that carry a promise
-Semantic versioning writes a version as MAJOR.MINOR.PATCH, like 1.4.2. Bump PATCH for a bug fix that changes nothing else, MINOR for a new feature that keeps old uses working, and MAJOR for a change that can break people who depended on the old behaviour. For a simulation image, a sensible team rule is that any change that can move numerical results is at least a MINOR bump, and is written in the release notes.
+Semantic versioning writes a version as MAJOR.MINOR.PATCH, like 1.4.2. Bump PATCH for a bug fix that changes nothing else, MINOR for a new feature that keeps old uses working, and MAJOR for a change that can break people who depended on the old behavior. For a simulation image, a sensible team rule is that any change that can move numerical results is at least a MINOR bump, and is written in the release notes.
 :::
 
 ::: context index-manifest One name, several computers

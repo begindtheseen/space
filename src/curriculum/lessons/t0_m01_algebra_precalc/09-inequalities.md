@@ -96,7 +96,7 @@ $$
 |x - a| < \delta \quad\Leftrightarrow\quad a - \delta < x < a + \delta .
 $$
 
-Read it as "$x$ is within $\delta$ of $a$" ($\delta$ is the Greek letter "delta", the allowed distance). The solution is an interval centred on $a$. The opposite statement,
+Read it as "$x$ is within $\delta$ of $a$" ($\delta$ is the Greek letter "delta", the allowed distance). The solution is an interval centered on $a$. The opposite statement,
 
 $$
 |x - a| > \delta \quad\Leftrightarrow\quad x < a - \delta \;\text{ or }\; x > a + \delta ,
@@ -104,7 +104,7 @@ $$
 
 means "$x$ is *more* than $\delta$ away from $a$": everything *outside* that interval. That is two separate pieces joined by "or", never a chain. The $\leq$ and $\geq$ versions include the end points.
 
-Every [[engineering tolerance|tolerances]] is one of these. "$300 \pm 5\,\mathrm{psi}$" (the symbol $\pm$ is read "plus or minus") means $|p - 300| \leq 5$, that is $295 \leq p \leq 305$. A rule that a rocket must touch down within $10\,\mathrm{m}$ of the pad centre in each direction is $|x| \leq 10$ and $|y| \leq 10$. A guidance loop that declares itself "done when $|\text{error}| < 0.01\,\mathrm{m/s}$" is testing exactly this.
+Every [[engineering tolerance|tolerances]] is one of these. "$300 \pm 5\,\mathrm{psi}$" (the symbol $\pm$ is read "plus or minus") means $|p - 300| \leq 5$, that is $295 \leq p \leq 305$. A rule that a rocket must touch down within $10\,\mathrm{m}$ of the pad center in each direction is $|x| \leq 10$ and $|y| \leq 10$. A guidance loop that declares itself "done when $|\text{error}| < 0.01\,\mathrm{m/s}$" is testing exactly this.
 
 Solve $|2x - 3| \leq 7$:
 
@@ -133,7 +133,7 @@ $$
 
 **Step 2.** Add $32$ to all three parts: $37.4 \leq F \leq 46.4$.
 
-The operator's limits are $[37.4, 46.4]\,^\circ\mathrm{F}$. Written as a tolerance, the centre is halfway, $\frac{37.4 + 46.4}{2} = 41.9$, and the half-width is $46.4 - 41.9 = 4.5$, so $|F - 41.9| \leq 4.5$.
+The operator's limits are $[37.4, 46.4]\,^\circ\mathrm{F}$. Written as a tolerance, the center is halfway, $\frac{37.4 + 46.4}{2} = 41.9$, and the half-width is $46.4 - 41.9 = 4.5$, so $|F - 41.9| \leq 4.5$.
 
 **Check** by converting an end point back: $\tfrac{5}{9}(46.4 - 32) = \tfrac{5}{9} \times 14.4 = 8.0\,^\circ\mathrm{C}$. That is the top of the window, as it should be.
 :::
@@ -168,7 +168,7 @@ A fraction works the same way. For $\dfrac{x - 1}{x + 2} \geq 0$, the top is zer
 The solution is $(-\infty, -2) \cup [1, \infty)$. The zero at $x = 1$ is included because of the "or equal to" in $\geq$. The undefined point $x = -2$ is never included — the fraction has no value there at all. Notice you never multiplied through by $x + 2$, whose sign you did not know.
 
 ::: example When is the thrown object above 110 m?
-From the equations lesson: an object thrown upward from a tower has height $h(t) = 100 + 20t - 4.903t^2$ metres, $t$ seconds after the throw. When is it above $110\,\mathrm{m}$?
+From the equations lesson: an object thrown upward from a tower has height $h(t) = 100 + 20t - 4.903t^2$ meters, $t$ seconds after the throw. When is it above $110\,\mathrm{m}$?
 
 **Step 1: everything on one side.** $100 + 20t - 4.903t^2 - 110 > 0$, which tidies to $-4.903t^2 + 20t - 10 > 0$.
 
@@ -234,7 +234,7 @@ $$
 
 **The inequality step.** The first lesson showed $MR > 1$, because $m_0$ is $m_f$ plus a positive amount of propellant. So $MR - 1$ is positive. Multiplying the true statement $m_L' - m_L > 0$ by a positive number keeps its direction, so $m_p' - m_p > 0$. More payload means more propellant. And the ratio of the increases, $\frac{m_p' - m_p}{m_L' - m_L} = MR - 1$, is a constant. That one step — "multiplying by the positive number $MR - 1$ keeps the inequality" — is the one-line justification the exercise asks for.
 
-**With numbers.** Take $MR = 12.08$ and $m_d = 22\,\mathrm{t}$. A payload of $15\,\mathrm{t}$ needs $11.08 \times (22 + 15) = 11.08 \times 37 = 410\,\mathrm{t}$ of propellant. A payload of $20\,\mathrm{t}$ needs $11.08 \times 42 = 465\,\mathrm{t}$. Five extra tonnes of payload cost $11.08 \times 5 = 55.4$ tonnes of extra propellant — eleven times as much, which is $MR - 1$.
+**With numbers.** Take $MR = 12.08$ and $m_d = 22\,\mathrm{t}$. A payload of $15\,\mathrm{t}$ needs $11.08 \times (22 + 15) = 11.08 \times 37 = 410\,\mathrm{t}$ of propellant. A payload of $20\,\mathrm{t}$ needs $11.08 \times 42 = 465\,\mathrm{t}$. Five extra metric tons of payload cost $11.08 \times 5 = 55.4$ metric tons of extra propellant — eleven times as much, which is $MR - 1$.
 :::
 
 ::: key Solving inequalities
@@ -331,7 +331,7 @@ Dynamic pressure is $q = \tfrac{1}{2}\rho v^2$: half the air density times the s
 :::
 
 ::: context shall-statements The word "shall"
-Engineering requirements are written in a strict style: one sentence each, built around the word **shall**. "The vehicle shall have a lift-off thrust-to-weight ratio of at least 1.2." "Peak acceleration shall not exceed 5 g." Every requirement has to be checkable, so in practice nearly every one hides an inequality with a number in it. A big programme has thousands of them, and before flight each must be shown true by test, analysis, inspection or demonstration.
+Engineering requirements are written in a strict style: one sentence each, built around the word **shall**. "The vehicle shall have a lift-off thrust-to-weight ratio of at least 1.2." "Peak acceleration shall not exceed 5 g." Every requirement has to be checkable, so in practice nearly every one hides an inequality with a number in it. A big program has thousands of them, and before flight each must be shown true by test, analysis, inspection or demonstration.
 :::
 
 ::: context less-than-origin Where < and > came from
@@ -429,7 +429,7 @@ In any triangle, one side is always shorter than the other two put together: goi
 :::
 
 ::: context ssto The rocket nobody has built
-No rocket has ever reached orbit from Earth on chemical fuel without dropping some part of itself on the way. Engineers have tried to get close. In the 1990s NASA and Lockheed Martin built parts of the X-33, a test craft for a single-stage vehicle called VentureStar. Its lightweight composite fuel tank failed in testing, and the programme was cancelled in 2001. This inequality shows why the margins are so thin: everything that is not propellant — structure, engines, heat protection and payload — has to fit inside a few percent of the lift-off mass.
+No rocket has ever reached orbit from Earth on chemical fuel without dropping some part of itself on the way. Engineers have tried to get close. In the 1990s NASA and Lockheed Martin built parts of the X-33, a test craft for a single-stage vehicle called VentureStar. Its lightweight composite fuel tank failed in testing, and the program was canceled in 2001. This inequality shows why the margins are so thin: everything that is not propellant — structure, engines, heat protection and payload — has to fit inside a few percent of the lift-off mass.
 :::
 
 ::: context hoverslam The hoverslam

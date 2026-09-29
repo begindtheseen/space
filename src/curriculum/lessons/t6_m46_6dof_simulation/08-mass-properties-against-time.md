@@ -3,7 +3,7 @@ id: l08-mass-properties-against-time
 title: Mass properties against time
 minutes: 20
 covers:
-  - "Mass properties against time: propellant depletion, centre of mass migration, inertia tensor change"
+  - "Mass properties against time: propellant depletion, center of mass migration, inertia tensor change"
 ---
 
 Balance a full can of soda on its side across one finger. The balance point is in the middle. Now drink half and try again: the liquid lies along the low side, and the balance point has moved toward it. Drink it all and the balance point is back in the middle, where the empty can's own balance point always was. The can never changed shape. Only the liquid inside it did.
@@ -30,7 +30,7 @@ $$
 
 Here $m_0$ is the mass at ignition and $|\dot m|$ is the size of the flow rate, without its sign. A **throttling** engine, one whose thrust can be turned up and down, makes $\dot m(t)$ change with the commanded thrust. The simulation then works it out from the same formula at every step.
 
-Take $F = 800\,\mathrm{kN}$ and $I_{sp} = 320\,\mathrm{s}$. Then $I_{sp}\,g_0 = 320 \times 9.80665 = 3138.1\,\mathrm{m/s}$, and $|\dot m| = 800\,000 / 3138.1 = 254.93\,\mathrm{kg/s}$. That is about a quarter of a tonne every second. Mass is the simplest of the three quantities, and it drives the other two.
+Take $F = 800\,\mathrm{kN}$ and $I_{sp} = 320\,\mathrm{s}$. Then $I_{sp}\,g_0 = 320 \times 9.80665 = 3138.1\,\mathrm{m/s}$, and $|\dot m| = 800\,000 / 3138.1 = 254.93\,\mathrm{kg/s}$. That is about a quarter of a metric ton every second. Mass is the simplest of the three quantities, and it drives the other two.
 
 ## Where the balance point goes
 
@@ -181,7 +181,7 @@ Step 3: the usual term is $|I\dot\omega| = 105{,}450 \times 0.001 = 105.5\,\math
 
 Step 4: compare: $63.5 / 105.5 = 0.60$. The mass-change term is $60\%$ of the size of the angular-acceleration term. That is nowhere near negligible for this vehicle at this point in its burn.
 
-A spacecraft thruster burning grams per second next to a multi-tonne dry mass might truly earn the word "negligible". A booster shedding hundreds of kilograms per second does not get to assume it. The only way to know which case you are in is to compute both terms, as here, rather than guess from the label "slowly varying".
+A spacecraft thruster burning grams per second next to a multi-metric ton dry mass might truly earn the word "negligible". A booster shedding hundreds of kilograms per second does not get to assume it. The only way to know which case you are in is to compute both terms, as here, rather than guess from the label "slowly varying".
 :::
 
 ::: note The exhaust carries spin away too

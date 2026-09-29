@@ -362,7 +362,7 @@ A motor's windings are coils of wire. A coil resists any *change* in the current
 :::
 
 ::: context stability-region Where each method is stable
-Plot $z = h\lambda$ on a flat plane: real part across, imaginary part up. Explicit Euler's $R = 1 + z$ has size at most 1 only inside the disk of radius 1 centred at $-1$ (blue, left). Backward Euler's $R = 1/(1 - z)$ has size at most 1 everywhere *outside* the disk of radius 1 centred at $+1$ (blue, right). That covers the whole left half, where every decaying mode lives — so no step is too big.
+Plot $z = h\lambda$ on a flat plane: real part across, imaginary part up. Explicit Euler's $R = 1 + z$ has size at most 1 only inside the disk of radius 1 centered at $-1$ (blue, left). Backward Euler's $R = 1/(1 - z)$ has size at most 1 everywhere *outside* the disk of radius 1 centered at $+1$ (blue, right). That covers the whole left half, where every decaying mode lives — so no step is too big.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">

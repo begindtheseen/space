@@ -309,7 +309,7 @@ By default matplotlib simplifies a long line as it draws it: it drops points tha
 :::
 
 ::: context aliasing Seeing a wave that is not there
-When a signal is sampled less often than it changes, the samples can trace out a completely different, slower signal. Below, a wave with nine cycles (thin grey) is sampled in ten equal steps, at the red dots. The dots fall exactly on a wave with a single cycle, drawn in blue, which is all anyone looking at the samples would see. The same effect makes a spinning wheel look like it turns backwards on film. Sampling theory says a signal must be sampled more than twice as fast as its fastest wiggle to avoid it.
+When a signal is sampled less often than it changes, the samples can trace out a completely different, slower signal. Below, a wave with nine cycles (thin gray) is sampled in ten equal steps, at the red dots. The dots fall exactly on a wave with a single cycle, drawn in blue, which is all anyone looking at the samples would see. The same effect makes a spinning wheel look like it turns backwards on film. Sampling theory says a signal must be sampled more than twice as fast as its fastest wiggle to avoid it.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 140" font-family="Inter, Arial, sans-serif">

@@ -241,7 +241,7 @@ The quaternion attitude proof gave the region $\tfrac{1}{2}\boldsymbol{\omega}^\
 :::
 
 ::: answer
-Because $\dot{V} = -\boldsymbol{\omega}^\mathsf{T}\mathbf{P}\boldsymbol{\omega}$ exactly, with no nonlinear leftover at all. The gyroscopic term dropped out, and the spring term cancelled by construction. So there is no surface where $\dot{V}$ turns positive. The only limit on $c$ is that the sublevel set must leave out the other equilibrium at $q_0 = -1$, which fixes $c^* = 4K$ at once.
+Because $\dot{V} = -\boldsymbol{\omega}^\mathsf{T}\mathbf{P}\boldsymbol{\omega}$ exactly, with no nonlinear leftover at all. The gyroscopic term dropped out, and the spring term canceled by construction. So there is no surface where $\dot{V}$ turns positive. The only limit on $c$ is that the sublevel set must leave out the other equilibrium at $q_0 = -1$, which fixes $c^* = 4K$ at once.
 
 The sweeping in this lesson exists because a quadratic $V$ built from a Jacobian leaves a real leftover $\mathbf{g}(\mathbf{z})$ behind. A candidate built from the physics, instead of from the linearization, often avoids the problem entirely. That is the strongest practical argument for the energy-plus-potential recipe.
 :::

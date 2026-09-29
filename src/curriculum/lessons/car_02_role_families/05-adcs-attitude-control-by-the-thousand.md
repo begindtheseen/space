@@ -273,7 +273,7 @@ A steady twist makes the wheel's stored momentum climb in a straight line. Each 
 </svg>
 ```
 
-The grey line reaches the limit at $t_{\text{sat}} = H_{\max}/\tau_d$. The blue line's climbs have the same slope — the disturbance does not stop — but the dumps keep it in range.
+The gray line reaches the limit at $t_{\text{sat}} = H_{\max}/\tau_d$. The blue line's climbs have the same slope — the disturbance does not stop — but the dumps keep it in range.
 :::
 
 ::: context earth-field Earth is a weak magnet

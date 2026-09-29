@@ -40,7 +40,7 @@ def coast_py(v0, m, dt):
 coast = njit(coast_py)      # the same function, compiled by Numba
 ```
 
-You cannot vectorise this loop over time. Step 500 needs the height from step 499. That dependence is exactly the kind of loop Numba was built for.
+You cannot vectorize this loop over time. Step 500 needs the height from step 499. That dependence is exactly the kind of loop Numba was built for.
 
 ## Your first njit
 

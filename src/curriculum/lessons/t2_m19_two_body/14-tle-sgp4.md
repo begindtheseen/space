@@ -10,7 +10,7 @@ Think of a bus timetable. It does not tell you where the bus is right now; it te
 
 A **two-line element set**, or **TLE**, is the timetable of a satellite. Most of the tens of thousands of objects tracked in Earth orbit have their orbits published in this one format: two lines of fixed-column text, $138$ characters in all. It comes from the days of **[[punched cards|punched-cards]]**, and it shows — decimal points are left out, and exponents are written without the letter E. It is also the only freely available orbit data for most satellites. So every pass predictor, collision check and ground-track plot starts by reading one.
 
-Here is the trap. A TLE does *not* hold the classical elements of this module. It holds **mean elements**, in the special sense of one particular perturbation theory, and they only mean something when fed to that theory's own propagator, **SGP4**. Treat them as ordinary elements, turn them into a state vector with the conversions lesson's routines, and you start a few kilometres off at the epoch — and drift from there.
+Here is the trap. A TLE does *not* hold the classical elements of this module. It holds **mean elements**, in the special sense of one particular perturbation theory, and they only mean something when fed to that theory's own propagator, **SGP4**. Treat them as ordinary elements, turn them into a state vector with the conversions lesson's routines, and you start a few kilometers off at the epoch — and drift from there.
 
 This lesson reads the format field by field, decodes a set into physical numbers, explains what "mean" means here and why it matters, and then builds the pipeline that turns a TLE into a ground track — the module's final objective.
 
@@ -30,7 +30,7 @@ Each line is exactly $69$ characters. Every field lives in fixed **columns**, co
 | Columns | Content | In the example |
 | --- | --- | --- |
 | 1 | Line number | 1 |
-| 3–7 | Satellite **[[catalogue number|catalog-number]]** | 25544 |
+| 3–7 | Satellite **[[catalog number|catalog-number]]** | 25544 |
 | 8 | Classification (U unclassified) | U |
 | 10–17 | International designator: launch year, launch number of that year, piece | 98067A – 1998, 67th launch, piece A |
 | 19–32 | Epoch: two-digit year, then day of year with fraction | 26265.50000000 |
@@ -46,7 +46,7 @@ Each line is exactly $69$ characters. Every field lives in fixed **columns**, co
 | Columns | Content | In the example |
 | --- | --- | --- |
 | 1 | Line number | 2 |
-| 3–7 | Catalogue number | 25544 |
+| 3–7 | Catalog number | 25544 |
 | 9–16 | Inclination, degrees | 51.6400 |
 | 18–25 | Right ascension of the ascending node, degrees | 123.4567 |
 | 27–33 | Eccentricity, implied leading decimal point | 0006000 = 0.0006000 |
@@ -70,7 +70,7 @@ Line 2 is the one that holds the orbit. Its six numbers are the six elements you
 
 The last character of each line is a **[[checksum|checksum]]**, a one-digit guard against typing and transmission errors. The rule: add up every digit in columns 1–68, count each minus sign as $1$, ignore everything else (letters, spaces, dots, plus signs), and keep only the last digit of the total — the remainder after dividing by $10$.
 
-For line 1 above the digits add up to $139$, so the checksum is $9$. For line 2 they add up to $160$, so it is $0$. Check it on every set you read. Damaged TLEs turn up in downloaded catalogues often enough that the two lines of code are worth it.
+For line 1 above the digits add up to $139$, so the checksum is $9$. For line 2 they add up to $160$, so it is $0$. Check it on every set you read. Damaged TLEs turn up in downloaded catalogs often enough that the two lines of code are worth it.
 
 ::: example Decoding the example set
 **Epoch.** Year $26 \to 2026$. Day $265.5$. January through August hold $31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 = 243$ days in a non-leap year, so day $265$ is day $265 - 243 = 22$ of September: September 22. The $0.5$ is half a day: 12:00:00 UTC. The Julian date is $2\,461\,306.0$.
@@ -97,7 +97,7 @@ $$
 \dot{a} = -\frac{2}{3}\,\frac{a}{n}\,\dot{n} = -\frac{2}{3} \times \frac{6797.8}{15.49} \times 2.469 \times 10^{-4} = -0.072\,\mathrm{km/day} .
 $$
 
-The station sinks about $72\,\mathrm{m}$ per day. That matches the tens-of-metres-per-day decay that makes the ISS need regular reboosts. The minus sign makes sense too: mean motion going *up* means the orbit is getting *smaller*.
+The station sinks about $72\,\mathrm{m}$ per day. That matches the tens-of-meters-per-day decay that makes the ISS need regular reboosts. The minus sign makes sense too: mean motion going *up* means the orbit is getting *smaller*.
 
 **The $B^{*}$ term.** $B^{*} = 2.2345 \times 10^{-4}$ per Earth radius is the **[[drag coefficient SGP4 uses|bstar]]** to reproduce that decay. It is a fitted number belonging to the theory, not a physical ballistic coefficient, and it is re-fitted with every new element set.
 
@@ -168,7 +168,7 @@ $$
 n_0'' = \frac{15.49}{1.00011111} = 15.4883\,\mathrm{rev/day}, \qquad a_0'' = \frac{6797.54}{0.99988889} = 6798.29\,\mathrm{km}.
 $$
 
-**What it means.** The Brouwer semi-major axis is $0.50\,\mathrm{km}$ larger than the two-body reading of the mean motion. Half a kilometre is not much. But it is a built-in offset before any propagation has happened, and the short-period terms SGP4 then adds shift the position by several more kilometres around each orbit. That is the size of error you make by treating the printed elements as osculating.
+**What it means.** The Brouwer semi-major axis is $0.50\,\mathrm{km}$ larger than the two-body reading of the mean motion. Half a kilometer is not much. But it is a built-in offset before any propagation has happened, and the short-period terms SGP4 then adds shift the position by several more kilometers around each orbit. That is the size of error you make by treating the printed elements as osculating.
 :::
 
 ## SGP4 and SDP4
@@ -179,20 +179,20 @@ $$
 - air drag, through $B^{*}$ and a simple power-law model of air density;
 - for objects with periods of $225\,\mathrm{min}$ or longer, a deep-space extension, **SDP4**, which adds the pulls of the Moon and Sun and the **[[resonance|resonance]]** terms that matter for 12-hour and 24-hour orbits.
 
-It is fast — microseconds per position. For low orbits it is accurate to about a kilometre at the epoch, and the error grows by one to a few kilometres per day. That is why the catalogue refreshes TLEs of active satellites about daily.
+It is fast — microseconds per position. For low orbits it is accurate to about a kilometer at the epoch, and the error grows by one to a few kilometers per day. That is why the catalog refreshes TLEs of active satellites about daily.
 
 Its output is a position and velocity in the **[[TEME|teme]]** frame — true equator, mean equinox of date. TEME is an inertial frame, but it differs from J2000 by the slow wobble of Earth's axis since 2000, about a third of a degree by 2026. For a ground track that difference is invisible. For a collision check it is not, and TEME must be rotated into the frame of the other object.
 
-Do not write your own SGP4. The theory is defined by a reference implementation — Vallado's, published in several languages and wrapped for Python as the `sgp4` package. "SGP4-compatible" means agreeing with it to the metre, quirks and WGS-72 constants included. The mean elements were fitted by an orbit-determination process that used exactly that code. Any other propagator, however better its physics, is inconsistent with the data.
+Do not write your own SGP4. The theory is defined by a reference implementation — Vallado's, published in several languages and wrapped for Python as the `sgp4` package. "SGP4-compatible" means agreeing with it to the meter, quirks and WGS-72 constants included. The mean elements were fitted by an orbit-determination process that used exactly that code. Any other propagator, however better its physics, is inconsistent with the data.
 
 ::: key TLEs and SGP4
-A TLE holds two lines of *mean* elements in the Brouwer–Lyddane sense used by SGP4, plus the drag term $B^{*}$. They must be propagated with SGP4/SDP4. Feeding them to a **[[Cowell integrator|cowell]]** mixes theories and produces kilometre-level errors immediately.
+A TLE holds two lines of *mean* elements in the Brouwer–Lyddane sense used by SGP4, plus the drag term $B^{*}$. They must be propagated with SGP4/SDP4. Feeding them to a **[[Cowell integrator|cowell]]** mixes theories and produces kilometer-level errors immediately.
 :::
 
 ::: warning Kilometres wrong at the epoch
-The most common misuse of a TLE is to convert its six numbers with the two-body element-to-state routine, then integrate the result numerically with a $J_2$ or high-fidelity force model. The mean elements leave out the short-period $J_2$ wobbles, so the state you build is kilometres from where the satellite is *at the epoch itself*, before you have propagated at all. The integrator then faithfully propagates the wrong orbit.
+The most common misuse of a TLE is to convert its six numbers with the two-body element-to-state routine, then integrate the result numerically with a $J_2$ or high-fidelity force model. The mean elements leave out the short-period $J_2$ wobbles, so the state you build is kilometers from where the satellite is *at the epoch itself*, before you have propagated at all. The integrator then faithfully propagates the wrong orbit.
 
-And $B^{*}$ is a fit parameter of SGP4's density model, not a $C_D A/m$ you can put into a drag force. If you need a state vector for a high-fidelity integrator, run SGP4 to the epoch and take its output. Accept SGP4's kilometre-level accuracy as your starting uncertainty.
+And $B^{*}$ is a fit parameter of SGP4's density model, not a $C_D A/m$ you can put into a drag force. If you need a state vector for a high-fidelity integrator, run SGP4 to the epoch and take its output. Accept SGP4's kilometer-level accuracy as your starting uncertainty.
 :::
 
 ## Reproducing a ground track from a TLE
@@ -201,8 +201,8 @@ Every piece of this pipeline has already been built in this module:
 
 1. Read the two lines and check both checksums.
 2. Turn the epoch into a Julian date.
-3. At each time step, call SGP4 to get $\mathbf{r}$ in TEME, in kilometres.
-4. Compute the Greenwich sidereal time at that instant. TEME uses the true equator of date, so a rotation about $z$ by the sidereal time brings it into Earth-fixed coordinates to well within a kilometre. (The remaining correction, for the wander of the pole, is far below a kilometre and irrelevant for a plot.)
+3. At each time step, call SGP4 to get $\mathbf{r}$ in TEME, in kilometers.
+4. Compute the Greenwich sidereal time at that instant. TEME uses the true equator of date, so a rotation about $z$ by the sidereal time brings it into Earth-fixed coordinates to well within a kilometer. (The remaining correction, for the wander of the pole, is far below a kilometer and irrelevant for a plot.)
 5. Form longitude and latitude with the sub-point formulas of the previous lesson.
 
 ```python
@@ -249,7 +249,7 @@ Plot `lons` against `lats` on a world map, breaking the line where longitude jum
 - each one $23.6^\circ$ west of the one before;
 - the first pass starting at the ascending node near longitude $-58^\circ$.
 
-The two-body sub-point of the epoch elements, worked out as in the last lesson, is $57.9^\circ\,\mathrm{W}$, $0.04^\circ\,\mathrm{S}$. SGP4's first point is about ten kilometres away from it, because of the short-period terms the mean elements leave out.
+The two-body sub-point of the epoch elements, worked out as in the last lesson, is $57.9^\circ\,\mathrm{W}$, $0.04^\circ\,\mathrm{S}$. SGP4's first point is about ten kilometers away from it, because of the short-period terms the mean elements leave out.
 
 ### Reading the bugs from the picture
 
@@ -284,7 +284,7 @@ The eccentricity `0006000` is $0.0006$, not $6000$. The drag term `22345-3` is $
 :::
 
 ::: warning A TLE ages
-The elements describe the orbit at the epoch, and SGP4's drag model guesses forward from there. For the ISS — whose altitude is actively maintained, and whose drag changes with solar activity — a set more than a few days old can be tens of kilometres off along the track. A reboost since the epoch makes it useless. Always check the epoch against the time you are propagating to, and use the newest set available.
+The elements describe the orbit at the epoch, and SGP4's drag model guesses forward from there. For the ISS — whose altitude is actively maintained, and whose drag changes with solar activity — a set more than a few days old can be tens of kilometers off along the track. A reboost since the epoch makes it useless. Always check the epoch against the time you are propagating to, and use the newest set available.
 :::
 
 ## Check yourself
@@ -310,7 +310,7 @@ A TLE gives a mean motion of $2.00560000\,\mathrm{rev/day}$. What kind of orbit 
 
 **Size.** Convert $n$ to radians per second and use $a = (\mu/n^2)^{1/3}$: $a = 26\,560\,\mathrm{km}$. This is a GPS-type MEO orbit.
 
-**Propagator.** The period is well above $225\,\mathrm{min}$, so the deep-space version, SDP4, applies. It includes the pulls of the Moon and Sun and the 12-hour resonance terms. Plain near-Earth SGP4 would be wrong by many kilometres.
+**Propagator.** The period is well above $225\,\mathrm{min}$, so the deep-space version, SDP4, applies. It includes the pulls of the Moon and Sun and the 12-hour resonance terms. Plain near-Earth SGP4 would be wrong by many kilometers.
 :::
 
 ::: check
@@ -318,7 +318,7 @@ In two sentences, explain why mean elements from a TLE should not be converted t
 :::
 
 ::: answer
-The mean elements have the periodic wobbles averaged out, so turning them into a state with two-body formulas gives a position kilometres from the satellite's true one even at the epoch, before any propagation. A numerical integrator then carries that wrong starting state forward with a different force model from the one the elements were fitted to, so the two theories are mixed and their errors add up instead of cancelling.
+The mean elements have the periodic wobbles averaged out, so turning them into a state with two-body formulas gives a position kilometers from the satellite's true one even at the epoch, before any propagation. A numerical integrator then carries that wrong starting state forward with a different force model from the one the elements were fitted to, so the two theories are mixed and their errors add up instead of canceling.
 :::
 
 ::: check
@@ -356,7 +356,7 @@ The difference is $360 \times 86\,400/86\,164.09 - 360 = 0.9856^\circ$ per day, 
 | Accuracy | About $1\,\mathrm{km}$ at epoch, growing $1$–$3\,\mathrm{km/day}$ in LEO |
 | Ground track from a TLE | Parse, SGP4 to TEME, GMST rotation, $\lambda = \operatorname{atan2}(y, x) - \theta_g$, $\phi = \arcsin(z/r)$ |
 
-This closes the module. You can now derive two-body motion from Newton's law, read an orbit's shape from its constants of motion, convert between state vectors and elements without singularities, solve Kepler's equation for any eccentricity, propagate on every conic and check it numerically, and turn a published element set into a track on a map. The manoeuvres module builds directly on vis-viva and the orbit equation to change one orbit into another.
+This closes the module. You can now derive two-body motion from Newton's law, read an orbit's shape from its constants of motion, convert between state vectors and elements without singularities, solve Kepler's equation for any eccentricity, propagate on every conic and check it numerically, and turn a published element set into a track on a map. The maneuvers module builds directly on vis-viva and the orbit equation to change one orbit into another.
 
 ::: context punched-cards Where the fixed columns come from
 Early computers read data from stiff paper cards with holes punched in them, one character per column — usually $80$ columns to a card. A program found each number by its column position, so every field had a fixed place and no room was wasted on decimal points or the letter E.
@@ -390,7 +390,7 @@ Here is where line 2's fields sit across its $69$ columns:
 :::
 
 ::: context catalog-number Satellite number 25544
-Every tracked object gets a number when it is first catalogued, in order. Number $1$ is the rocket body that carried Sputnik 1 in 1957, and Sputnik 1 itself is number $2$. The ISS's first module, Zarya, launched in 1998 and became $25544$; the whole station still carries that number.
+Every tracked object gets a number when it is first cataloged, in order. Number $1$ is the rocket body that carried Sputnik 1 in 1957, and Sputnik 1 itself is number $2$. The ISS's first module, Zarya, launched in 1998 and became $25544$; the whole station still carries that number.
 
 The numbers are assigned by the US military's space-tracking network, which publishes the TLEs on its Space-Track website. CelesTrak, run for decades by T. S. Kelso, repackages them for everyone else.
 :::
@@ -398,7 +398,7 @@ The numbers are assigned by the US military's space-tracking network, which publ
 ::: context checksum Why adding digits catches mistakes
 Change any single digit in a line and the digit sum changes by somewhere between $1$ and $9$. Its last digit then changes too, so the checksum no longer matches. That catches every single-digit error.
 
-It is not perfect. Swap two neighbouring digits — `45` for `54` — and the sum stays the same, so the error slips through. It is a cheap first guard, not proof that the data are right.
+It is not perfect. Swap two neighboring digits — `45` for `54` — and the sum stays the same, so the error slips through. It is a cheap first guard, not proof that the data are right.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
@@ -439,7 +439,7 @@ In practice the orbit-fitting process adjusts $B^{*}$ until SGP4's predicted dec
 </svg>
 ```
 
-The wobbles here are hugely exaggerated. Around a real low orbit they are kilometres on a path about $43\,000\,\mathrm{km}$ long.
+The wobbles here are hugely exaggerated. Around a real low orbit they are kilometers on a path about $43\,000\,\mathrm{km}$ long.
 :::
 
 ::: context brouwer-kozai Two theories from 1959

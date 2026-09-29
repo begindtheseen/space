@@ -10,7 +10,7 @@ Think about keeping a car in the middle of its lane. Two things bother you. Drif
 
 Why not keep using the tool from the state-space module? **[[Pole placement|pole-placement]]** asks you to name the closed-loop poles — the numbers that set how fast and how smoothly the system settles. On one axis with two states that is fine: pick a speed and a damping and you are done. On a launch vehicle with six states and three gimbal commands, it breaks down. There are more gains than numbers you have any feel for, and nothing in the method tells you whether the answer is affordable in actuator effort.
 
-LQR swaps "name the poles" for "name what you care about, and how much". The poles come out the other end, as a result of the trade you declared. Because the trade is stated in engineering units — degrees of pointing error, newton-metres of wheel torque — you can defend it in a design review and change it when a requirement moves.
+LQR swaps "name the poles" for "name what you care about, and how much". The poles come out the other end, as a result of the trade you declared. Because the trade is stated in engineering units — degrees of pointing error, newton-meters of wheel torque — you can defend it in a design review and change it when a requirement moves.
 
 This lesson does none of the optimizing. It builds the thing being optimized: the **[[cost functional|functional]]**, the matrices $\mathbf{Q}$, $\mathbf{R}$ and $\mathbf{N}$, what each one prices, what rules they must obey, and what a sentence like "the cost of this trajectory is 57" means with units attached. Everything after this lesson is machinery for making that number as small as possible.
 
@@ -361,7 +361,7 @@ Aleksandr Lyapunov was a Russian mathematician whose 1892 doctoral thesis, on th
 :::
 
 ::: context reaction-wheel How a reaction wheel turns a spacecraft
-A reaction wheel is a heavy flywheel driven by an electric motor. Spin the wheel faster one way and, because angular momentum is conserved, the spacecraft turns the other way. The motor torque on the wheel is the control $u$; the equal and opposite torque on the spacecraft is what points the telescope or antenna. Wheels deliver small torques — typically from about a hundredth of a newton-metre up to around one newton-metre. The $8\,\mathrm{N\,m}$ budget in this lesson is a round, generous teaching number; spacecraft that need torques that large use control moment gyroscopes, a heavier cousin of the wheel. Either way the limit is real, and the controller has to respect it.
+A reaction wheel is a heavy flywheel driven by an electric motor. Spin the wheel faster one way and, because angular momentum is conserved, the spacecraft turns the other way. The motor torque on the wheel is the control $u$; the equal and opposite torque on the spacecraft is what points the telescope or antenna. Wheels deliver small torques — typically from about a hundredth of a newton-meter up to around one newton-meter. The $8\,\mathrm{N\,m}$ budget in this lesson is a round, generous teaching number; spacecraft that need torques that large use control moment gyroscopes, a heavier cousin of the wheel. Either way the limit is real, and the controller has to respect it.
 :::
 
 ::: context saturation When the actuator hits its stop

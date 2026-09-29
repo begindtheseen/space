@@ -92,7 +92,7 @@ $$
 where $a_f$ is the thrust acceleration at cutoff. In the example, $a_f = 934{,}000/62{,}553 = 14.93\ \mathrm{m/s^2}$, so each extra $10\ \mathrm{m/s}$ adds $0.67\ \mathrm{s}$. The curve bends *over* as $\Delta v$ grows, because the lighter rocket gains speed faster. Time-to-go does not get twitchier as the tanks empty.
 
 ::: note Why the slope is one over the final acceleration
-The derivative of $-e^{-\Delta v/v_e}$ is $+\frac{1}{v_e}e^{-\Delta v/v_e}$, so the slope is $\frac{\tau}{v_e}e^{-\Delta v/v_e}$. Use $\tau = m/\dot m$ and $m\,e^{-\Delta v/v_e} = m_f$: the slope is $\frac{m_f}{\dot m\, v_e} = \frac{m_f}{T} = \frac{1}{a_f}$. Without algebra: the last bit of velocity is added at the end of the burn, where the acceleration is $a_f$, and there each metre per second takes $1/a_f$ seconds.
+The derivative of $-e^{-\Delta v/v_e}$ is $+\frac{1}{v_e}e^{-\Delta v/v_e}$, so the slope is $\frac{\tau}{v_e}e^{-\Delta v/v_e}$. Use $\tau = m/\dot m$ and $m\,e^{-\Delta v/v_e} = m_f$: the slope is $\frac{m_f}{\dot m\, v_e} = \frac{m_f}{T} = \frac{1}{a_f}$. Without algebra: the last bit of velocity is added at the end of the burn, where the acceleration is $a_f$, and there each meter per second takes $1/a_f$ seconds.
 :::
 
 ::: warning The Δv in the formula is not only the velocity gap
@@ -150,7 +150,7 @@ Take the first cycle's solution, $(A, B, t_{go}) = (6.4114,\ -0.020979,\ 354.08\
 
 **What really happens.** Integrate the true equations — gravity that weakens with height and always points at Earth's center — under that same steering. The rocket ends $194.8\ \mathrm{km}$ too high, $546\ \mathrm{m/s}$ short of the circular speed, and still climbing at $1841\ \mathrm{m/s}$. That is nowhere near an orbit.
 
-**Why so far off?** Over $354\ \mathrm{s}$ the rocket travels thousands of kilometres downrange. The Earth curves away beneath it, so "straight ahead" in the fixed axes slowly turns into "upward", and gravity weakens with height. The flat model knows about neither. It was not wrong about itself; it was wrong about how long its assumptions stay true. PEG never asks it to be right for 354 seconds — only for the next five.
+**Why so far off?** Over $354\ \mathrm{s}$ the rocket travels thousands of kilometers downrange. The Earth curves away beneath it, so "straight ahead" in the fixed axes slowly turns into "upward", and gravity weakens with height. The flat model knows about neither. It was not wrong about itself; it was wrong about how long its assumptions stay true. PEG never asks it to be right for 354 seconds — only for the next five.
 :::
 
 ::: key How PEG converges
@@ -174,7 +174,7 @@ Change the stage-1 burnout state by $\pm 5\%$ in speed (about $\pm 180\ \mathrm{
 | $+5\%$ speed, $-10$ km | 85 | $1.04$ m | $-3.66$ m/s | $5.77$ m/s | 5.8% |
 | $-5\%$ speed, $+10$ km | 87 | $-0.51$ m | $+5.66$ m/s | $1.56$ m/s | 4.2% |
 
-**Accuracy.** Every case reaches the orbit within about a metre and a half of radius and within about $14\ \mathrm{m/s}$ of speed. The dispersions in were about $180\ \mathrm{m/s}$ and $10{,}000\ \mathrm{m}$. The errors out are one to four orders of magnitude smaller.
+**Accuracy.** Every case reaches the orbit within about a meter and a half of radius and within about $14\ \mathrm{m/s}$ of speed. The dispersions in were about $180\ \mathrm{m/s}$ and $10{,}000\ \mathrm{m}$. The errors out are one to four orders of magnitude smaller.
 
 **Reserve.** The reserve is where the dispersions show. Starting slower and lower costs the most: only 3.0% is left. Starting faster and higher saves propellant: 7.1% is left.
 :::
@@ -228,11 +228,11 @@ In the open-loop test, the flat model predicted it would hit the target to bette
 :::
 
 ::: answer
-The flat model is self-consistent: given flat ground and gravity fixed at its starting value, its own equations really do reach the target. The $194.8\ \mathrm{km}$ error appears only when the *same steering* meets the *true* dynamics, where gravity weakens with height and turns to keep pointing at Earth's center, and the Earth curves away over thousands of kilometres. The model is an exact solver of the wrong problem over that long an arc — not wrong about its mathematics, only wrong to be trusted for 354 seconds.
+The flat model is self-consistent: given flat ground and gravity fixed at its starting value, its own equations really do reach the target. The $194.8\ \mathrm{km}$ error appears only when the *same steering* meets the *true* dynamics, where gravity weakens with height and turns to keep pointing at Earth's center, and the Earth curves away over thousands of kilometers. The model is an exact solver of the wrong problem over that long an arc — not wrong about its mathematics, only wrong to be trusted for 354 seconds.
 :::
 
 ::: check
-In the dispersed-handoff table, the insertion errors stay within a few metres and about $14\ \mathrm{m/s}$, but the reserve ranges from 3.0% to 7.1%. Why do dispersions show up much more in the reserve than in the insertion accuracy?
+In the dispersed-handoff table, the insertion errors stay within a few meters and about $14\ \mathrm{m/s}$, but the reserve ranges from 3.0% to 7.1%. Why do dispersions show up much more in the reserve than in the insertion accuracy?
 :::
 
 ::: answer
@@ -292,7 +292,7 @@ A **dispersion** is how far a real flight ends up from the planned one, because 
 :::
 
 ::: context tau-meaning The time to burn the whole rocket
-$\tau$ is not a real event — no rocket burns its own structure. It is a yardstick: the time the engine would take to swallow the entire current mass at today's flow rate. Time-to-go can approach it but never reach it, because reaching it would need infinite $\Delta v$. The curve below is $t_{go}$ against $\Delta v$ for this module's stage 2 ($\tau = 410.7\ \mathrm{s}$, $v_e = 3413\ \mathrm{m/s}$). It bends over: each extra metre per second costs fewer seconds than the last.
+$\tau$ is not a real event — no rocket burns its own structure. It is a yardstick: the time the engine would take to swallow the entire current mass at today's flow rate. Time-to-go can approach it but never reach it, because reaching it would need infinite $\Delta v$. The curve below is $t_{go}$ against $\Delta v$ for this module's stage 2 ($\tau = 410.7\ \mathrm{s}$, $v_e = 3413\ \mathrm{m/s}$). It bends over: each extra meter per second costs fewer seconds than the last.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">

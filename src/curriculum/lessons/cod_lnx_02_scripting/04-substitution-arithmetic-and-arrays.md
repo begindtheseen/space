@@ -748,7 +748,7 @@ A pipe connects two running programs, so both sides must run at the same time. B
 :::
 
 ::: context macos-bash The old bash on a Mac
-Apple still ships bash 3.2, a version first released in 2006, as `/bin/bash`. Later versions of bash are released under the GPL version 3 licence, which Apple does not ship, and since macOS Catalina (2019) the default login shell has been zsh instead. So `declare -A`, `mapfile` and `${var,,}` fail on a stock Mac. If your ground tools must run on laptops as well as Linux servers, install a newer bash there (with Homebrew, for example) and point the shebang at `/usr/bin/env bash`.
+Apple still ships bash 3.2, a version first released in 2006, as `/bin/bash`. Later versions of bash are released under the GPL version 3 license, which Apple does not ship, and since macOS Catalina (2019) the default login shell has been zsh instead. So `declare -A`, `mapfile` and `${var,,}` fail on a stock Mac. If your ground tools must run on laptops as well as Linux servers, install a newer bash there (with Homebrew, for example) and point the shebang at `/usr/bin/env bash`.
 :::
 
 ::: context hash-order Why the keys come out shuffled

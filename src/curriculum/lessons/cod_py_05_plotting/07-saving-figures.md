@@ -225,7 +225,7 @@ The last step is to look at what you actually saved, the way the reader will. Th
 
 1. **Open the file and zoom to 400%.** Look for fuzzy lines (you saved PNG at low dpi) and tiny text (the figure was made too big and will be scaled down).
 2. **Place it at its real size.** Drop it into the actual report template or slide, and look at it at 100%.
-3. **Look at it in grey.** Many reports still get printed in black and white, and some readers do not see all colors. The colour lesson covers choosing colors; here is how to preview the result from a saved PNG.
+3. **Look at it in gray.** Many reports still get printed in black and white, and some readers do not see all colors. The color lesson covers choosing colors; here is how to preview the result from a saved PNG.
 
 ```python
 import matplotlib
@@ -248,7 +248,7 @@ for name, c in [("C0 blue", "#1f77b4"), ("C3 red", "#d62728")]:
 # C3 red 91
 ```
 
-`convert("L")` turns the image into **[[greyscale|luminance]]**: one brightness number per pixel, from $0$ (black) to $255$ (white). The printout shows why the preview matters. Matplotlib's default blue and red, which look nothing alike in color, come out as greys of $100$ and $91$ — almost the same. In a black-and-white printout, "commanded" and "actual" become two identical lines. The fix is a solid line for one and a dashed line for the other, so the difference survives without color.
+`convert("L")` turns the image into **[[greyscale|luminance]]**: one brightness number per pixel, from $0$ (black) to $255$ (white). The printout shows why the preview matters. Matplotlib's default blue and red, which look nothing alike in color, come out as grays of $100$ and $91$ — almost the same. In a black-and-white printout, "commanded" and "actual" become two identical lines. The fix is a solid line for one and a dashed line for the other, so the difference survives without color.
 
 ::: warning Every figure through one function
 Scripts that save figures in ten different places end up with ten different sizes, dpis and font settings. Write one small `save_figure(fig, stem)` function that sets the dpi, writes both a PDF and a PNG, and is the only place `savefig` is called. When the review board asks for bigger fonts, you change one line.
@@ -306,7 +306,7 @@ Two traces are drawn in two colors that look very different on screen. How can y
 :::
 
 ::: answer
-Convert the PNG to greyscale, for example with `Image.open("f.png").convert("L")` from Pillow, and look at it, or compare the grey level of each line color. Matplotlib's default blue and red come out at about $100$ and $91$ out of $255$, nearly identical. If the greys are close, give the traces different line styles (solid and dashed) or markers so the difference does not depend on color.
+Convert the PNG to greyscale, for example with `Image.open("f.png").convert("L")` from Pillow, and look at it, or compare the gray level of each line color. Matplotlib's default blue and red come out at about $100$ and $91$ out of $255$, nearly identical. If the grays are close, give the traces different line styles (solid and dashed) or markers so the difference does not depend on color.
 :::
 
 ## Summary
@@ -408,8 +408,8 @@ The dot cloud costs the same whether it holds a thousand dots or a million, beca
 Both names come from Adobe's PostScript language of the 1980s and 1990s. A Type 3 font is built from ordinary drawing commands, one little drawing per letter, which is flexible but loses the hints that help fonts render cleanly and confuses tools that try to read the text back. Type 42 is a wrapper that carries a real TrueType font inside PostScript or PDF. Its number is widely told to be a nod to *The Hitchhiker's Guide to the Galaxy*, where 42 is the answer to everything.
 :::
 
-::: context luminance How color becomes grey
-A color pixel stores red, green and blue brightness, each from $0$ to $255$. To make one grey value, Pillow's `convert("L")` weights them the way the eye does, since we are far more sensitive to green than to blue:
+::: context luminance How color becomes gray
+A color pixel stores red, green and blue brightness, each from $0$ to $255$. To make one gray value, Pillow's `convert("L")` weights them the way the eye does, since we are far more sensitive to green than to blue:
 
 $$
 L = 0.299R + 0.587G + 0.114B.

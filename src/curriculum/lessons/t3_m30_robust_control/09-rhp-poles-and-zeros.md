@@ -196,7 +196,7 @@ $$y_{us} \ \ge\ \frac{1 - 0.05}{e^{3} - 1} = \frac{0.95}{19.09} = 0.0498,$$
 
 about five percent of undershoot — acceptable.
 
-**Tighten the settling time to $0.2\,\mathrm{s}$.** Now $z\tau = 1.2$ and $e^{1.2} - 1 = 2.320$, so the bound is $0.95/2.320 = 0.409$. The attitude must first swing forty-one percent of the commanded amount *the wrong way*. For a vehicle fifty metres above the pad that is not a control problem; it is a way to lose the vehicle. The right response is to renegotiate the settling requirement.
+**Tighten the settling time to $0.2\,\mathrm{s}$.** Now $z\tau = 1.2$ and $e^{1.2} - 1 = 2.320$, so the bound is $0.95/2.320 = 0.409$. The attitude must first swing forty-one percent of the commanded amount *the wrong way*. For a vehicle fifty meters above the pad that is not a control problem; it is a way to lose the vehicle. The right response is to renegotiate the settling requirement.
 
 **A lower zero**, $z = 2.5\,\mathrm{rad/s}$: settling within five percent in $1\,\mathrm{s}$ needs at least $0.95/(e^{2.5}-1) = 0.95/11.18 = 0.085$, eight and a half percent. Relaxing to $2\,\mathrm{s}$ drops it to $0.006$.
 

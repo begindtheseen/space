@@ -270,7 +270,7 @@ Before a C compiler reads a source file, a first pass called the preprocessor ed
 :::
 
 ::: context variant-source A railway switch set before departure
-A Variant Source is like the points on a railway line, set before the train leaves the station and never moved during the trip. Tracks that lead only to the unused branch are not needed on this trip, which is why Simulink greys out the blocks feeding an inactive input.
+A Variant Source is like the points on a railway line, set before the train leaves the station and never moved during the trip. Tracks that lead only to the unused branch are not needed on this trip, which is why Simulink grays out the blocks feeding an inactive input.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">

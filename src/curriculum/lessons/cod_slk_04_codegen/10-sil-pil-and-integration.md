@@ -44,7 +44,7 @@ PIL needs one more thing that SIL does not: a way to reach the board. Simulink m
 Everything else is the same. One test suite, three answers: blocks, host code, target code.
 
 ::: key
-What is the difference between SIL and PIL, and what does each catch? SIL compiles the generated code for the host, catching code-generation and algorithm mismatches. PIL cross-compiles and runs on the actual target, catching target-specific integer width, endianness, floating-point behaviour and execution-time issues that the host cannot show.
+What is the difference between SIL and PIL, and what does each catch? SIL compiles the generated code for the host, catching code-generation and algorithm mismatches. PIL cross-compiles and runs on the actual target, catching target-specific integer width, endianness, floating-point behavior and execution-time issues that the host cannot show.
 :::
 
 PIL runs can also time each step on the real chip, the first honest estimate of its cost (lesson 9).

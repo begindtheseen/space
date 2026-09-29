@@ -19,7 +19,7 @@ After each update, the **innovation** $\boldsymbol{\nu}_k = \mathbf{z}_k - \math
 If the innovations do have a pattern — if a big positive one tends to be followed by another big positive one — then the past held information the filter failed to use. Something in the model is missing.
 
 ::: key Innovation whiteness
-For a correctly modelled, consistent filter, $\boldsymbol{\nu}_k \sim \mathcal{N}(\mathbf{0}, \mathbf{S}_k)$ and $\mathbb{E}[\boldsymbol{\nu}_j\boldsymbol{\nu}_k^{\mathsf{T}}] = \mathbf{0}$ for $j \neq k$: the innovation sequence is zero-mean and white. Any structure left in it — a nonzero mean, a nonzero autocorrelation at some lag — is information the model failed to extract, still sitting unused in the residuals.
+For a correctly modeled, consistent filter, $\boldsymbol{\nu}_k \sim \mathcal{N}(\mathbf{0}, \mathbf{S}_k)$ and $\mathbb{E}[\boldsymbol{\nu}_j\boldsymbol{\nu}_k^{\mathsf{T}}] = \mathbf{0}$ for $j \neq k$: the innovation sequence is zero-mean and white. Any structure left in it — a nonzero mean, a nonzero autocorrelation at some lag — is information the model failed to extract, still sitting unused in the residuals.
 :::
 
 Read $\mathcal{N}(\mathbf{0}, \mathbf{S}_k)$ as "normal with mean zero and covariance $\mathbf{S}_k$", and $\mathbb{E}[\cdot]$ as "the average over many repeats".
@@ -199,7 +199,7 @@ The under-tuned filter's autocorrelation stayed above $0.8$ out to lag $10$, a f
 :::
 
 ::: answer
-A slow fade means a persistent, smoothly changing effect is missing from the model — such as an unmodelled constant or slowly varying acceleration. Its influence on the altitude residual barely changes from one sample to the next, so nearby innovations stay strongly alike for many lags. A single huge innovation followed by autocorrelation dropping straight back into the white band is the outlier signature from the divergence lesson: one bad measurement, not an ongoing modelling gap. A fast, oscillating pattern would suggest a periodic unmodelled effect, such as a sensor error tied to a vibration mode. The *shape* of the autocorrelation, not just whether it leaves the band, tells you which divergence cause is present.
+A slow fade means a persistent, smoothly changing effect is missing from the model — such as an unmodelled constant or slowly varying acceleration. Its influence on the altitude residual barely changes from one sample to the next, so nearby innovations stay strongly alike for many lags. A single huge innovation followed by autocorrelation dropping straight back into the white band is the outlier signature from the divergence lesson: one bad measurement, not an ongoing modeling gap. A fast, oscillating pattern would suggest a periodic unmodelled effect, such as a sensor error tied to a vibration mode. The *shape* of the autocorrelation, not just whether it leaves the band, tells you which divergence cause is present.
 :::
 
 ::: check

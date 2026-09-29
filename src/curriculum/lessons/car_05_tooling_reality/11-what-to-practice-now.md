@@ -247,7 +247,7 @@ The phrase **characterization test** was made popular by Michael Feathers in his
 :::
 
 ::: context lag-filter A filter that cannot jump
-A **lag filter** behaves like a heavy door on a slow closer: push it, and it follows your push gradually. Real actuators — a nozzle swiveling, a fin turning — cannot move instantly, so simulations use filters like this to model them. The picture shows the example's commands (grey), the original filter (blue), which starts at the first command, and the fixed one started at zero (red). Watch the red line catch up; the gap shrinks by $0.7$ each step.
+A **lag filter** behaves like a heavy door on a slow closer: push it, and it follows your push gradually. Real actuators — a nozzle swiveling, a fin turning — cannot move instantly, so simulations use filters like this to model them. The picture shows the example's commands (gray), the original filter (blue), which starts at the first command, and the fixed one started at zero (red). Watch the red line catch up; the gap shrinks by $0.7$ each step.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" font-family="Inter, Arial, sans-serif">

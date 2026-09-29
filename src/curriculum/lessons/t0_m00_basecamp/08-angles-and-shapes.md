@@ -433,7 +433,7 @@ All three marked angles are $60^\circ$. Slide the lower crossing up along the re
 :::
 
 ::: context hexagons-in-space Hexagons in spacecraft
-The James Webb Space Telescope's main mirror is made of $18$ hexagonal segments fitted together into one mirror about $6.5$ metres across. Hexagons were chosen because they tile with no gaps and make a nearly round overall shape.
+The James Webb Space Telescope's main mirror is made of $18$ hexagonal segments fitted together into one mirror about $6.5$ meters across. Hexagons were chosen because they tile with no gaps and make a nearly round overall shape.
 
 Inside spacecraft walls, you will often find **honeycomb panels**: a layer of thin metal hexagon cells glued between two sheets. The honeycomb makes the panel very stiff for very little mass, which is exactly what a spacecraft needs.
 :::

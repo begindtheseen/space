@@ -118,7 +118,7 @@ The truth row comes from exact formulas (a large **[[Monte Carlo|monte-carlo]]**
 
 **A Cholesky factor every cycle.** The covariance must stay **positive definite** — positive spread in every direction — or the square root fails outright instead of degrading gently. An EKF with a slightly broken $\mathbf{P}$ limps along; a UKF stops. The **square-root UKF**, which carries the factor $\mathbf{S}$ forward instead of $\mathbf{P}$, exists for exactly this reason.
 
-**Extreme weights at small $\alpha$.** As $\alpha \to 0$, $\lambda \to -n$, so $n+\lambda \to 0$ and the weights blow up. The central mean weight becomes large and negative, the outer weights large and positive, and they sum to one only by cancelling. For example, with $n = 15$, $\kappa = 0$ and $\alpha = 0.1$: $\lambda = 0.01\times15 - 15 = -14.85$, so $n + \lambda = 0.15$, $W_0^{(m)} = -14.85/0.15 = -99$, and each of the $30$ outer weights is $1/0.3 = 3.33$. Check: $-99 + 30\times3.333 = -99 + 100 = 1$. Nothing here is a mistake — those weights keep the mean accurate as the points crowd together. But any covariance built from them subtracts big numbers to get a small one, which is more exposed to **[[round-off|round-off]]** than the same sum at a moderate $\alpha$.
+**Extreme weights at small $\alpha$.** As $\alpha \to 0$, $\lambda \to -n$, so $n+\lambda \to 0$ and the weights blow up. The central mean weight becomes large and negative, the outer weights large and positive, and they sum to one only by canceling. For example, with $n = 15$, $\kappa = 0$ and $\alpha = 0.1$: $\lambda = 0.01\times15 - 15 = -14.85$, so $n + \lambda = 0.15$, $W_0^{(m)} = -14.85/0.15 = -99$, and each of the $30$ outer weights is $1/0.3 = 3.33$. Check: $-99 + 30\times3.333 = -99 + 100 = 1$. Nothing here is a mistake — those weights keep the mean accurate as the points crowd together. But any covariance built from them subtracts big numbers to get a small one, which is more exposed to **[[round-off|round-off]]** than the same sum at a moderate $\alpha$.
 
 **The curvature has to be worth it.** For a mildly nonlinear problem, the two filters perform about the same, and the EKF is cheaper. Paying thirty times the propagation cost to move the third significant figure is not an engineering decision.
 
@@ -319,7 +319,7 @@ Each step, the EKF runs the dynamics model once (and works out the Jacobian). Th
 :::
 
 ::: context round-off Round-off, the computer's rounding
-A computer stores each number with a fixed number of digits — about 16 significant digits for a standard double. Subtracting two big, nearly equal numbers throws away the matching leading digits and leaves only the noisy tail. With weights like $-99$ and $3.33$, a covariance is built by adding and cancelling large terms, so the small answer carries more rounding noise than it would with gentle weights.
+A computer stores each number with a fixed number of digits — about 16 significant digits for a standard double. Subtracting two big, nearly equal numbers throws away the matching leading digits and leaves only the noisy tail. With weights like $-99$ and $3.33$, a covariance is built by adding and canceling large terms, so the small answer carries more rounding noise than it would with gentle weights.
 :::
 
 ::: context middle-options Cheaper fixes to try first

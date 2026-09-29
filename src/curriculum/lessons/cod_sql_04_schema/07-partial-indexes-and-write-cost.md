@@ -239,7 +239,7 @@ Ingest throughput fell by 40 percent after a colleague added a B-tree on `(chann
 :::
 
 ::: answer
-First, weigh it: the index costs something on every one of millions of inserts per hour, and serves one query a week. Then options: (1) serve the report from a precomputed summary table or materialised view instead of the raw table; (2) if the report scans wide time ranges, a BRIN index on `ts` costs almost nothing to maintain and still narrows the scan; (3) if the report only needs rare rows (say, flagged samples), a partial index with that condition is small and skipped by most inserts. Or accept a slow weekly report run at a quiet hour.
+First, weigh it: the index costs something on every one of millions of inserts per hour, and serves one query a week. Then options: (1) serve the report from a precomputed summary table or materialized view instead of the raw table; (2) if the report scans wide time ranges, a BRIN index on `ts` costs almost nothing to maintain and still narrows the scan; (3) if the report only needs rare rows (say, flagged samples), a partial index with that condition is small and skipped by most inserts. Or accept a slow weekly report run at a quiet hour.
 :::
 
 ::: check

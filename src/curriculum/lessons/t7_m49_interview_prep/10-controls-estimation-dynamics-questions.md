@@ -3,7 +3,7 @@ id: l10-controls-estimation-dynamics-questions
 title: "Controls, estimation and dynamics rounds: the questions that recur"
 minutes: 24
 covers:
-  - "Controls, estimation and dynamics rounds: the questions that recur, and the follow-ups that separate memorisation from understanding"
+  - "Controls, estimation and dynamics rounds: the questions that recur, and the follow-ups that separate memorization from understanding"
 ---
 
 Think of a driving test. The examiner asks, "What does a red light mean?" Everybody gets that right, so it tells the examiner nothing. The useful question comes next: "The light turns yellow as you reach the line, and there's a truck close behind you. What do you do?" Now you have to *understand* the rule, not recite it.
@@ -24,7 +24,7 @@ The classic aircraft example: a pilot pulls back to climb. To start the nose ris
 
 **The question:** "What does an RHP zero do to achievable bandwidth?"
 
-**The answer:** it sets a hard ceiling. An ordinary left-half-plane zero adds phase *lead*. An RHP zero adds phase *lag*, like a time delay, and cannot be cancelled without an unstable pole. So as you push crossover up toward the zero, the loop piles up lag faster than you can recover it. Phase margin shrinks to zero, then goes negative: the loop goes unstable.
+**The answer:** it sets a hard ceiling. An ordinary left-half-plane zero adds phase *lead*. An RHP zero adds phase *lag*, like a time delay, and cannot be canceled without an unstable pole. So as you push crossover up toward the zero, the loop piles up lag faster than you can recover it. Phase margin shrinks to zero, then goes negative: the loop goes unstable.
 
 The common rule of thumb keeps usable bandwidth below about **half the zero's frequency**. The exact factor depends on how much margin the design needs, so treat it as an order-of-magnitude guide, not a law. Saying that boundary out loud is part of a strong answer.
 
@@ -260,7 +260,7 @@ In one sentence a follow-up would accept: why does pushing bandwidth up toward a
 :::
 
 ::: answer
-An RHP zero adds phase lag, like a time delay, instead of the phase lead an ordinary left-half-plane zero gives, and it cannot be cancelled without an unstable pole — so as crossover approaches the zero, the loop piles up lag faster than any compensator can recover it, driving phase margin to zero and then past it, which is why the zero's location is a real ceiling on bandwidth rather than merely a tuning difficulty.
+An RHP zero adds phase lag, like a time delay, instead of the phase lead an ordinary left-half-plane zero gives, and it cannot be canceled without an unstable pole — so as crossover approaches the zero, the loop piles up lag faster than any compensator can recover it, driving phase margin to zero and then past it, which is why the zero's location is a real ceiling on bandwidth rather than merely a tuning difficulty.
 :::
 
 ::: check

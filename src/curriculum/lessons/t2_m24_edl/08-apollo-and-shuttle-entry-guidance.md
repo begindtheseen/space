@@ -23,7 +23,7 @@ The moment the atmosphere starts to push, that changes. The accelerometer reads 
 
 That is why both guidance laws in this lesson are built around **measured deceleration**, not position alone. The vehicle's position has to be worked out by adding up motion from a starting point, so it is only as good as that starting point and the force model. Its sensed deceleration is a direct, live measurement of exactly the force entry guidance most needs to know.
 
-::: key Entry guidance is drag-referenced because drag is measured, not modelled
+::: key Entry guidance is drag-referenced because drag is measured, not modeled
 An IMU reads zero under gravity alone; the moment the atmosphere begins to act, it reads the aerodynamic deceleration directly. Both Apollo-heritage and Shuttle-heritage guidance use this measured quantity as their primary real-time feedback, rather than relying only on a propagated position estimate that has no independent check until landing.
 :::
 

@@ -233,7 +233,7 @@ For real tolerances the triangle is a sliver, and $\theta \approx t/L$.
 :::
 
 ::: context thrust-misalignment How a tilt becomes a lever
-The intended thrust line (grey) passes through the center of mass. The tilted line (red) misses it by $\ell\sin\theta$, and that miss is the lever the thrust twists on. Angle exaggerated to $15^\circ$.
+The intended thrust line (gray) passes through the center of mass. The tilted line (red) misses it by $\ell\sin\theta$, and that miss is the lever the thrust twists on. Angle exaggerated to $15^\circ$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210" font-family="Inter, Arial, sans-serif">

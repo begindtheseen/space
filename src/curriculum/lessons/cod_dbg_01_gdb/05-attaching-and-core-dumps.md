@@ -317,7 +317,7 @@ The words `<optimized out>` are there because this build used `-O2`: the compile
 This is why a flight software team archives the unstripped binaries or debug files for every release it ships. A core that comes back from a vehicle months later is only readable against the exact build that produced it.
 
 ::: key
-To debug a process on a flight computer you cannot rebuild: attach with gdbserver over the network, or capture a core dump and analyse it offline against the same build artefacts (unstripped binary and symbol files, archived per release).
+To debug a process on a flight computer you cannot rebuild: attach with gdbserver over the network, or capture a core dump and analyze it offline against the same build artifacts (unstripped binary and symbol files, archived per release).
 :::
 
 ## Taking a core without a crash
