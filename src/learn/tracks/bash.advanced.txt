@@ -168,6 +168,189 @@ used $project
 dir launchpad-v2
 used $version
 
++++ practice | A crew badge
+--- task
+Set a variable called `crew` to `ada` and a variable called `role` to `pilot`. Then, using only the variables (never typing `ada` or `pilot` again):
+
+1. print the line `ada: pilot` with `echo`;
+2. write the same line into a file called `badge.txt` with `echo` and `>`.
+--- starter
+--- solution
+crew=ada
+role=pilot
+echo "$crew: $role"
+echo "$crew: $role" > badge.txt
+--- hint
+Set each one with `name=value`, with no spaces around the `=`.
+--- hint
+A colon cannot be part of a name, so `$crew:` stops at the `w`. Put the whole message in double quotes so both variables are filled in.
+--- check shell | Both variables are set
+var crew == ada
+var role == pilot
+--- check shell | The line was printed from the variables
+printed-line ada: pilot
+used $crew
+--- check shell | badge.txt holds the same line
+file badge.txt == ada: pilot
+used $role
+used >
+
++++ practice | Where the name ends
+--- task
+Set a variable called `name` to `probe`. Then, using `$name` every time you need the word `probe`:
+
+1. make a folder called `probes`;
+2. inside it, make an empty file called `probe_log.txt` with `touch`.
+
+The letters and the underscore that follow the name are the trap: without curly braces, the shell reads them as part of the variable's name.
+--- starter
+--- solution
+name=probe
+mkdir "${name}s"
+touch "${name}s/${name}_log.txt"
+--- hint
+`$names` looks up a variable called `names`, which is empty. Curly braces mark where the name stops: `${name}s`.
+--- hint
+An underscore can be part of a name too, so `$name_log` looks up `name_log`. Write `${name}_log.txt`.
+--- check shell | The folder probes exists
+dir probes
+used ${name}
+--- check shell | probe_log.txt is inside it
+file probes/probe_log.txt
+--- check shell | No stray file with a blank where the name should be
+missing probes/.txt
+missing probes/_log.txt
+count * == 1
+
++++ practice | A log line from variables
+--- task
+`events.log` already holds two lines. Set `level` to `WARN` and `part` to `pump`. Then, using only the variables for those two words:
+
+1. add the line `WARN pump pressure low` to the **end** of `events.log`, keeping the two lines already there;
+2. print how many lines of `events.log` contain `WARN`, as a single number, with `grep -c` and `$level` as the pattern.
+--- starter
+echo "INFO pump start" > events.log
+echo "WARN fan slow" >> events.log
+--- solution
+level=WARN
+part=pump
+echo "$level $part pressure low" >> events.log
+grep -c "$level" events.log
+--- hint
+`>>` adds to the end of a file; a single `>` would empty it first.
+--- hint
+`echo "$level $part pressure low" >> events.log` adds the line. Then give `grep -c` the variable as its pattern.
+--- check shell | The new line was added at the end, and the old lines kept
+file events.log ~= INFO pump start\nWARN fan slow\nWARN pump pressure low
+--- check shell | Two lines contain WARN
+printed-exactly 2
+used grep -c
+--- check shell | Built from the variables
+used $level
+used $part
+
++++ practice | One line filled in, one line kept as typed
+--- task
+Set a variable called `fuel` to `98`. Then write exactly these two lines into `readout.txt`, the first with `>` and the second with `>>`:
+
+```
+fuel=98
+the variable is $fuel
+```
+
+The first line must come from the variable (type `$fuel`, not `98`). In the second line, the dollar sign and the word `fuel` must reach the file exactly as shown.
+--- starter
+--- solution
+fuel=98
+echo "fuel=$fuel" > readout.txt
+echo 'the variable is $fuel' >> readout.txt
+--- hint
+Double quotes fill variables in; single quotes keep every character as typed.
+--- hint
+The first line wants the value, so double quotes. The second wants the dollar sign itself, so single quotes: `'the variable is $fuel'`.
+--- check shell | fuel is set
+var fuel == 98
+--- check shell | readout.txt holds the value, then the name as typed
+file readout.txt ~= fuel=98\nthe variable is $fuel
+--- check shell | The first line came from the variable
+used =$fuel
+used >>
+
++++ practice | The report with a blank in it
+--- task
+The variable `mission` is already set to `artemis` in this shell. A teammate typed two commands that went wrong:
+
+```
+echo "Report: $Mission"
+touch "$mission_notes.txt"
+```
+
+The first printed `Report:` with nothing after it. The second made a hidden file called `.txt` instead of `artemis_notes.txt`.
+
+1. Print the line `Report: artemis`, using the variable.
+2. Make the empty file `artemis_notes.txt`, using the variable.
+3. Delete the stray file `.txt`.
+--- starter
+mission=artemis
+touch "$mission_notes.txt"
+--- solution
+echo "Report: $mission"
+touch "${mission}_notes.txt"
+rm .txt
+--- hint
+Names are case-sensitive: `$Mission` and `$mission` are two different variables, and one of them was never set.
+--- hint
+In `$mission_notes`, the underscore and `notes` are read as part of the name. Braces fix it: `${mission}_notes.txt`.
+--- hint
+`ls -a` shows the hidden `.txt`. Delete it with `rm .txt`.
+--- check shell | The report names the mission
+printed-line Report: artemis
+used $mission
+--- check shell | artemis_notes.txt exists
+file artemis_notes.txt
+used ${mission}
+--- check shell | The stray .txt is gone
+missing .txt
+
++++ practice | A versioned build
+--- task
+Set `target` to `flight`, `major` to `3` and `minor` to `1`. Then, using only the variables:
+
+1. make a folder called `flight-v3.1`;
+2. inside it, make an empty file called `flight_3_1.bin`;
+3. write the line `built flight v3.1` into `flight-v3.1/NOTES.txt`.
+
+Then set `minor` to `2` and run the same three commands again, unchanged, so that `flight-v3.2` gets its own `flight_3_2.bin` and `NOTES.txt` holding `built flight v3.2`.
+--- starter
+--- solution
+target=flight
+major=3
+minor=1
+mkdir "$target-v$major.$minor"
+touch "$target-v$major.$minor/${target}_${major}_${minor}.bin"
+echo "built $target v$major.$minor" > "$target-v$major.$minor/NOTES.txt"
+minor=2
+mkdir "$target-v$major.$minor"
+touch "$target-v$major.$minor/${target}_${major}_${minor}.bin"
+echo "built $target v$major.$minor" > "$target-v$major.$minor/NOTES.txt"
+--- hint
+A dash and a dot can never be part of a name, so `"$target-v$major.$minor"` needs no braces.
+--- hint
+An underscore can be part of a name, so the file needs braces: `${target}_${major}_${minor}.bin`.
+--- hint
+After `minor=2`, press the Up arrow to bring each of the three commands back. Because they only use variables, they build the new version by themselves.
+--- check shell | Version 3.1 is complete
+file flight-v3.1/flight_3_1.bin
+file flight-v3.1/NOTES.txt == built flight v3.1
+--- check shell | Version 3.2 is complete
+file flight-v3.2/flight_3_2.bin
+file flight-v3.2/NOTES.txt == built flight v3.2
+var minor == 2
+--- check shell | Built from the variables
+used ${major}
+used $target
+count * == 2
+
 === term3-02 | Exporting variables to the programs you run
 --- teach
 Last lesson you stored text in variables and used it in your own commands. This lesson is about who else can see those variables: the programs you start from your shell.
@@ -336,6 +519,164 @@ env NAME == Ada
 printed-line Hello, Ada
 ran bash greet.sh
 
++++ practice | Tell the script where it is
+--- task
+`where.sh` is a ready-made script that prints `Station: ` followed by `$STATION`.
+
+1. Set `STATION` to `Kourou` **and** export it, in one command.
+2. Run the script with `bash where.sh`, so it prints `Station: Kourou`.
+--- starter
+echo 'echo "Station: $STATION"' > where.sh
+--- solution
+export STATION=Kourou
+bash where.sh
+--- hint
+`export` can set a variable and mark it to be passed on in the same command.
+--- hint
+`export STATION=Kourou`, with no spaces around the `=`, then `bash where.sh`.
+--- check shell | STATION is exported
+env STATION == Kourou
+used export STATION=
+--- check shell | The script saw it
+printed-line Station: Kourou
+--- check shell | You ran the script
+ran bash where.sh
+
++++ practice | Live for one run only
+--- task
+`mode.sh` prints `Mode: ` followed by `$MODE`. `MODE` is already exported as `test`.
+
+1. Run the script **once** with `MODE` set to `live` for that one run only, so it prints `Mode: live`.
+2. Run it again with plain `bash mode.sh`. It must print `Mode: test`, which shows your shell's `MODE` was never changed.
+--- starter
+echo 'echo "Mode: $MODE"' > mode.sh
+export MODE=test
+--- solution
+MODE=live bash mode.sh
+bash mode.sh
+--- hint
+A `NAME=value` written straight in front of a command applies to that command and nothing else.
+--- hint
+`MODE=live bash mode.sh`, then `bash mode.sh` on its own.
+--- check shell | The one run saw live
+printed-line Mode: live
+used MODE=live bash
+--- check shell | The normal run still sees test
+last-printed-exactly Mode: test
+--- check shell | Your shell's MODE is unchanged
+env MODE == test
+
++++ practice | Only the launch settings
+--- task
+Settings for the launch vehicle all have names that start with `LV_`. Three of them are exported already. `LV_CREW` is set to `4`, but it is a plain variable, and `OTHER` is exported too, but it is not a launch setting.
+
+1. Export `LV_CREW`.
+2. With one pipeline of `env`, `grep` and `sort`, save every exported variable whose name **starts with** `LV_` into `lv.txt`, sorted, one `NAME=value` line each.
+--- starter
+export LV_NAME=falcon
+export LV_PAD=39A
+export LV_STAGES=2
+LV_CREW=4
+export OTHER=LV_backup
+--- solution
+export LV_CREW
+env | grep "^LV_" | sort > lv.txt
+--- hint
+`env` lists the exported variables as `NAME=value`. A plain variable does not appear until it is exported.
+--- hint
+`OTHER=LV_backup` contains `LV_` in its value. Pin the pattern to the start of the line with `^`.
+--- hint
+`env | grep "^LV_" | sort > lv.txt`.
+--- check shell | lv.txt holds the four launch settings, sorted
+file lv.txt ~= LV_CREW=4\nLV_NAME=falcon\nLV_PAD=39A\nLV_STAGES=2
+--- check shell | LV_CREW is exported
+env LV_CREW == 4
+--- check shell | Built from env with a pinned pattern
+used env |
+used ^LV_
+
++++ practice | A value with spaces in it
+--- task
+`greet.sh` prints the value of `$GREETING`.
+
+1. Set `GREETING` to `good morning, crew` and export it, in one command, then run `bash greet.sh`. It must print the whole greeting.
+2. Run the script once more with `GREETING` set to `night shift` for that one run only.
+3. Finish by printing your own `GREETING` with `echo "$GREETING"`. It must still be `good morning, crew`.
+--- starter
+echo 'echo "$GREETING"' > greet.sh
+--- solution
+export GREETING="good morning, crew"
+bash greet.sh
+GREETING="night shift" bash greet.sh
+echo "$GREETING"
+--- hint
+Without quotes, the shell cuts `good morning, crew` at its spaces, so `GREETING` would only get `good`. Put the value in quotes.
+--- hint
+The one-run form works with quotes too: `GREETING="night shift" bash greet.sh`.
+--- check shell | GREETING is exported whole
+env GREETING == good morning, crew
+--- check shell | The script printed both greetings
+printed-line good morning, crew
+printed-line night shift
+ran bash greet.sh
+--- check shell | Your own GREETING was left alone
+last-printed-exactly good morning, crew
+
++++ practice | The export that exported the wrong name
+--- task
+`connect.sh` prints `Using server: ` followed by `$SERVER`. A teammate set `SERVER` to `backup2` and then typed:
+
+```
+export $SERVER
+bash connect.sh
+```
+
+The script printed `Using server:` with nothing after it. `SERVER` is still set to `backup2` in this shell. Export it properly, then run the script so that it prints `Using server: backup2`.
+--- starter
+echo 'echo "Using server: $SERVER"' > connect.sh
+SERVER=backup2
+export $SERVER
+--- solution
+export SERVER
+bash connect.sh
+--- hint
+The shell fills in `$SERVER` before `export` runs. What name did `export` really receive?
+--- hint
+`export` wants the name itself, with no dollar sign: `export SERVER`.
+--- check shell | SERVER is exported
+env SERVER == backup2
+used export SERVER
+--- check shell | The script sees the server
+printed-line Using server: backup2
+--- check shell | You ran the script
+ran bash connect.sh
+
++++ practice | Three runs of the launch script
+--- task
+`launch.sh` prints two lines: `vehicle: ` followed by `$VEHICLE`, and `log level: ` followed by `$LOG_LEVEL`.
+
+1. Export `VEHICLE` as `orion`, so every run sees it.
+2. Run the script with `LOG_LEVEL` set to `debug` for that one run only, and save what it prints into `debug-run.txt` with `>`.
+3. Finish with a plain `bash launch.sh`. Its second line must be `log level:` with nothing after it, which proves the debug setting did not stay behind.
+--- starter
+echo 'echo "vehicle: $VEHICLE"' > launch.sh
+echo 'echo "log level: $LOG_LEVEL"' >> launch.sh
+--- solution
+export VEHICLE=orion
+LOG_LEVEL=debug bash launch.sh > debug-run.txt
+bash launch.sh
+--- hint
+`export VEHICLE=orion` puts it in the environment of every script you start from now on.
+--- hint
+The one-run setting goes in front of the command, and the `>` goes after it: `LOG_LEVEL=debug bash launch.sh > debug-run.txt`.
+--- check shell | VEHICLE is exported
+env VEHICLE == orion
+--- check shell | debug-run.txt holds the debug run
+file debug-run.txt ~= vehicle: orion\nlog level: debug
+used LOG_LEVEL=debug bash
+--- check shell | The last run is back to normal
+last-printed-exactly vehicle: orion\nlog level:
+
 === term3-03 | Command substitution: $(…)
 --- teach
 So far a variable has held text you typed yourself. This lesson lets a variable, or any part of a command, hold the **output** of another command.
@@ -499,6 +840,194 @@ used $(
 --- check shell | summary.txt was written from the variable
 file summary.txt == There are 3 notes
 used $count
+
++++ practice | How many tables
+--- task
+The folder `data` holds four `.csv` files and two other files.
+
+1. Store the number of `.csv` files in `data` in a variable called `n`, using `$(…)` around a pipeline of `ls` and `wc -l`.
+2. Print the line `data holds 4 tables`, using `$n` rather than typing the 4.
+--- starter
+mkdir data
+touch data/crew.csv data/fuel.csv data/orbit.csv data/stages.csv data/readme.md data/logo.png
+--- solution
+n=$(ls data/*.csv | wc -l)
+echo "data holds $n tables"
+--- hint
+First find the pipeline on its own: `ls data/*.csv | wc -l` should print `4`.
+--- hint
+Wrap it in `$(…)` after `n=`, with no spaces around the `=`.
+--- check shell | n holds the number of tables
+var n == 4
+used $(
+--- check shell | The sentence came from the variable
+printed-line data holds 4 tables
+used $n
+--- check shell | Counted with ls and wc
+used wc -l
+
++++ practice | A folder named from a file
+--- task
+The first line of `version.txt` is the version number of the next release.
+
+1. Store that first line in a variable called `ver`, using `$(…)` around `head`.
+2. Make a folder called `release-` followed by the version, using `$ver`.
+3. Copy `notes.txt` into that folder, using `$ver` again.
+
+Type the version number yourself nowhere: it must come from the file.
+--- starter
+echo "3.2.0" > version.txt
+echo "released on the ninth" >> version.txt
+echo "fixed the radio timeout" > notes.txt
+--- solution
+ver=$(head -n 1 version.txt)
+mkdir "release-$ver"
+cp notes.txt "release-$ver/"
+--- hint
+`head -n 1 version.txt` prints only the first line. Put it inside `$(…)`.
+--- hint
+Then `mkdir "release-$ver"`, and `cp notes.txt "release-$ver/"`.
+--- check shell | ver holds the version
+var ver == 3.2.0
+used $(head
+--- check shell | The release folder exists
+dir release-3.2.0
+--- check shell | The notes are inside it
+file release-3.2.0/notes.txt == fixed the radio timeout
+used $ver
+
++++ practice | Errors out of total
+--- task
+`app.log` is a log file.
+
+1. Store the number of lines that contain `ERROR` in a variable called `errors`, using `$(…)` and `grep -c`.
+2. Store the total number of lines in a variable called `total`, using `$(…)` around a pipeline of `cat` and `wc -l`.
+3. Write the sentence `3 of 8 lines are errors` into `report.txt`, using both variables.
+--- starter
+echo "INFO boot" > app.log
+echo "ERROR disk" >> app.log
+echo "INFO retry" >> app.log
+echo "ERROR disk" >> app.log
+echo "INFO link up" >> app.log
+echo "WARN slow" >> app.log
+echo "ERROR network" >> app.log
+echo "INFO done" >> app.log
+--- solution
+errors=$(grep -c ERROR app.log)
+total=$(cat app.log | wc -l)
+echo "$errors of $total lines are errors" > report.txt
+--- hint
+`grep -c ERROR app.log` prints how many lines match. Store it with `errors=$(…)`.
+--- hint
+`cat app.log | wc -l` prints the number of lines with nothing else. Store that in `total`.
+--- check shell | Both counts are stored
+var errors == 3
+var total == 8
+--- check shell | report.txt was written from the variables
+file report.txt == 3 of 8 lines are errors
+used $errors
+used $total
+--- check shell | Counted with grep -c
+used grep -c
+
++++ practice | A title with a space in it
+--- task
+`title.txt` holds the name of the next folder you need: `crew roster`.
+
+1. Store the text of `title.txt` in a variable called `title`, using `$(cat title.txt)`.
+2. Make **one** folder whose name is exactly that text, using `$title`.
+3. Inside that folder, make an empty file called `list.txt`, using `$title` again for the folder's name.
+
+There must be no folder called `crew` and none called `roster`.
+--- starter
+echo "crew roster" > title.txt
+--- solution
+title=$(cat title.txt)
+mkdir "$title"
+touch "$title/list.txt"
+--- hint
+`title=$(cat title.txt)` stores `crew roster`, space and all.
+--- hint
+Unquoted, `$title` is split at the space, and `mkdir` makes two folders. Wrap it in double quotes every time you use it.
+--- check shell | title holds the whole name
+var title == crew roster
+used $(cat title.txt)
+--- check shell | One folder, named with the space, with list.txt inside
+count crew?roster/list.txt == 1
+--- check shell | No folder was made from half the name
+missing crew
+missing roster
+count * == 2
+
++++ practice | The count with a name stuck to it
+--- task
+`flight.log` has four lines. A teammate wanted `summary.txt` to hold the line `flight.log has 4 lines`, and typed:
+
+```
+echo "flight.log has $(wc -l flight.log) lines" > summary.txt
+```
+
+Now `summary.txt` holds `flight.log has 4 flight.log lines`. Write `summary.txt` again so that it holds exactly `flight.log has 4 lines`, still counting with `wc -l` inside `$(…)`.
+--- starter
+echo "T+000 engines on" > flight.log
+echo "T+010 tower cleared" >> flight.log
+echo "T+060 max q" >> flight.log
+echo "T+150 stage sep" >> flight.log
+echo "flight.log has $(wc -l flight.log) lines" > summary.txt
+--- solution
+echo "flight.log has $(cat flight.log | wc -l) lines" > summary.txt
+--- hint
+Run `wc -l flight.log` on its own and look at everything it prints. The command inside `$(…)` is filled in with all of it.
+--- hint
+Given a file name, `wc` prints the name after the count. Given the text through a pipe, it never learns the name, so it prints only the number.
+--- hint
+`$(cat flight.log | wc -l)`.
+--- check shell | summary.txt holds the clean sentence
+file summary.txt == flight.log has 4 lines
+--- check shell | Still counted inside $(…)
+used $(
+used wc -l
+--- check shell | The log was not changed
+file flight.log lines == 4
+
++++ practice | Stamp the archive
+--- task
+The folder `runs` holds five `.dat` files from test runs, and `mission.txt` holds the mission's name, `artemis-2`.
+
+1. Make a folder whose name is the mission's name followed by `-archive`, using `$(cat mission.txt)`, and copy every `.dat` file from `runs` into it.
+2. Write this line into `stamp.txt`, with every changing part filled in by `$(…)`:
+
+```
+artemis-2: 5 runs in project, by you
+```
+
+- `artemis-2` comes from `mission.txt`;
+- `5` is the number of `.dat` files in the new archive folder, counted with `ls` and `wc -l`;
+- `project` is the name of the folder you are in, from `basename` and `pwd`;
+- `you` is your user name, from `whoami`.
+--- starter
+mkdir runs
+touch runs/run1.dat runs/run2.dat runs/run3.dat runs/run4.dat runs/run5.dat
+echo "artemis-2" > mission.txt
+--- solution
+mkdir "$(cat mission.txt)-archive"
+cp runs/*.dat "$(cat mission.txt)-archive/"
+echo "$(cat mission.txt): $(ls "$(cat mission.txt)-archive" | wc -l) runs in $(basename "$(pwd)"), by $(whoami)" > stamp.txt
+--- hint
+Build it in pieces and try each on its own first: `$(cat mission.txt)`, then `ls artemis-2-archive | wc -l`, then `basename "$(pwd)"`, then `whoami`.
+--- hint
+Storing the pieces in variables first is fine, and easier to read: `m=$(cat mission.txt)`, then use `"$m-archive"`.
+--- hint
+One `$(…)` can sit inside another: `$(basename "$(pwd)")` runs `pwd` first, then `basename` on its answer.
+--- check shell | The archive holds all five runs
+count artemis-2-archive/*.dat == 5
+--- check shell | stamp.txt says it all
+file stamp.txt == artemis-2: 5 runs in project, by you
+--- check shell | Every changing part came from a command
+used $(cat mission.txt)
+used $(whoami)
+used pwd
+used basename
 
 === term3-04a | Exit status: did it work?
 --- teach
@@ -679,6 +1208,184 @@ ran grep -q ERROR deploy-wed.log
 printed-exactly 2
 used $?
 
++++ practice | Is the folder there?
+--- task
+This folder has a `logs` folder, but no `reports` folder.
+
+1. Run `ls logs`. Then print its exit status inside a sentence, as the line `logs: 0`, using `$?` in the `echo`.
+2. Run `ls reports`, then print the line `reports: 2` the same way.
+--- starter
+mkdir logs
+touch logs/boot.log
+--- solution
+ls logs
+echo "logs: $?"
+ls reports
+echo "reports: $?"
+--- hint
+`$?` works inside double quotes, like any variable: the shell fills in the number before `echo` runs.
+--- hint
+Each question takes two commands: the `ls` line, then `echo "logs: $?"` straight after it.
+--- check shell | ls logs worked: status 0
+ran ls logs
+printed-line logs: 0
+--- check shell | ls reports failed: status 2
+ran ls reports
+printed-line reports: 2
+--- check shell | Read with $?
+used $?
+
++++ practice | Keep the answers for later
+--- task
+`mon.log` contains the word `ERROR`; `tue.log` does not.
+
+1. Ask quietly whether `mon.log` contains `ERROR` with `grep -q`, and straight after it save the exit status in a variable called `mon`.
+2. Do the same for `tue.log`, saving its status in `tue`.
+3. Print the line `mon=0 tue=1`, using `$mon` and `$tue`.
+--- starter
+echo "ERROR: pump stalled" > mon.log
+echo "all nominal" > tue.log
+--- solution
+grep -q ERROR mon.log
+mon=$?
+grep -q ERROR tue.log
+tue=$?
+echo "mon=$mon tue=$tue"
+--- hint
+`$?` only holds the status of the very last command, so save it on the next line: `mon=$?`.
+--- hint
+After both are saved, `echo "mon=$mon tue=$tue"`.
+--- check shell | Both statuses are saved
+var mon == 0
+var tue == 1
+used =$?
+--- check shell | The line shows both
+printed-line mon=0 tue=1
+--- check shell | Asked quietly
+used grep -q
+
++++ practice | Does any line begin with FAIL?
+--- task
+`tests.log` mentions `FAIL` in the middle of a line, but no line **begins** with `FAIL`.
+
+1. Ask quietly whether any line begins with `FAIL`, using `grep -q` and `^`. Then print the line `begins with FAIL: 1`, with the number coming from `$?`.
+2. Ask quietly whether the log mentions `fail` anywhere, in any mix of capitals. Then print the line `mentions fail: 0`, with the number coming from `$?`.
+--- starter
+echo "test boot: ok" > tests.log
+echo "test radio: ok (no FAIL seen)" >> tests.log
+echo "test pump: ok" >> tests.log
+--- solution
+grep -q "^FAIL" tests.log
+echo "begins with FAIL: $?"
+grep -qi fail tests.log
+echo "mentions fail: $?"
+--- hint
+`^` pins the pattern to the start of the line. Put the pattern in double quotes.
+--- hint
+`-i` ignores capitals, and flags can share one dash: `-qi`.
+--- check shell | No line begins with FAIL: status 1
+printed-line begins with FAIL: 1
+used ^FAIL
+--- check shell | fail appears somewhere: status 0
+printed-line mentions fail: 0
+--- check shell | Both questions were asked quietly
+ran grep
+used -q
+used $?
+
++++ practice | The whiteboard gets wiped
+--- task
+There is no folder called `nowhere`, and there is no command called `launchnow`.
+
+1. Run `ls nowhere`, and save its exit status in a variable called `code` **straight away**.
+2. Print the line `saved: 2`, using `$code`.
+3. Type `launchnow`, then print its exit status. You should see `127`, the status for "no command by that name".
+--- starter
+--- solution
+ls nowhere
+code=$?
+echo "saved: $code"
+launchnow
+echo $?
+--- hint
+The save must be the very next command. Any command in between, even an `echo`, replaces `$?`.
+--- hint
+`code=$?` straight after `ls nowhere`, then `echo "saved: $code"`.
+--- check shell | code holds the failure
+var code == 2
+used code=$?
+--- check shell | The saved status was printed
+printed-line saved: 2
+--- check shell | A missing command: status 127
+ran launchnow
+printed-exactly 127
+
++++ practice | The status of the wrong command
+--- task
+`deploy.log` has no `ERROR` in it. A teammate wanted the exit status of the `grep`, and typed this one line:
+
+```
+grep -q ERROR deploy.log; echo "checking"; echo $?
+```
+
+It printed `checking` and then `0`, every time, whatever the log said. Fix the line, keeping it **one line** with `;` between the commands, so that the number it prints is the real exit status of `grep -q ERROR deploy.log`. It should be `1`.
+--- starter
+echo "build ok" > deploy.log
+echo "upload ok" >> deploy.log
+--- solution
+grep -q ERROR deploy.log; echo $?
+--- hint
+`$?` is about the command that ran just before it. In the teammate's line, what ran just before `echo $?`?
+--- hint
+The `echo "checking"` is in the way. Take it out, so `echo $?` comes straight after the `grep`.
+--- check shell | You asked grep the question
+ran grep -q ERROR deploy.log
+--- check shell | Its real answer is 1
+printed-exactly 1
+--- check shell | One line, with $? straight after the grep
+used deploy.log; echo $?
+
++++ practice | Which sensors reported in
+--- task
+Each sensor writes a log. A sensor that reported in wrote a line containing `OK`. There are four sensors, `s1` to `s4`, but `s3.log` is missing altogether.
+
+For each sensor, in order, ask quietly whether its log contains `OK` with `grep -q`, and save the status in a variable: `a` for `s1.log`, `b` for `s2.log`, `c` for `s3.log` and `d` for `s4.log`. Then write the four statuses, in order and separated by spaces, into `status.txt`. It must hold exactly:
+
+```
+0 1 2 0
+```
+--- starter
+echo "T+000 OK" > s1.log
+echo "T+000 FAULT" > s2.log
+echo "T+000 OK" > s4.log
+echo "T+010 OK" >> s4.log
+--- solution
+grep -q OK s1.log
+a=$?
+grep -q OK s2.log
+b=$?
+grep -q OK s3.log
+c=$?
+grep -q OK s4.log
+d=$?
+echo "$a $b $c $d" > status.txt
+--- hint
+`grep` answers `0` when it finds a match, `1` when it finds none, and `2` when it cannot read the file.
+--- hint
+Save each status on the line straight after its `grep`: `a=$?`, and so on.
+--- hint
+Finish with `echo "$a $b $c $d" > status.txt`.
+--- check shell | status.txt holds the four answers
+file status.txt == 0 1 2 0
+--- check shell | Each status was saved
+var a == 0
+var b == 1
+var c == 2
+var d == 0
+--- check shell | Asked quietly, and read with $?
+used grep -q
+used =$?
+
 === term3-04 | Either-or: && and ||
 --- teach
 Last lesson you saw that every command leaves an exit status, and that `grep -q` answers with `0` for "found it" and `1` for "not found". Now you will use that answer to choose which command runs next.
@@ -815,6 +1522,165 @@ printed-line deploy-tue: ok
 not-printed deploy-tue: failed
 --- check shell | One line each, driven by grep's exit status
 used grep -q
+used &&
+used ||
+
++++ practice | Only if it worked
+--- task
+Write two lines, one for each job:
+
+1. Make a folder called `build`, and **only if that worked**, print `build ready`. Use `&&`. Run the same line a second time: `mkdir` fails because the folder is already there, so `build ready` must not appear again.
+2. Move into a folder called `release`, or, **if that fails**, print `no release folder`. Use `||`. There is no `release` folder, so the message appears.
+--- starter
+--- solution
+mkdir build && echo "build ready"
+mkdir build && echo "build ready"
+cd release || echo "no release folder"
+--- hint
+`a && b` runs `b` only when `a` finished with status `0`. `a || b` runs `b` only when `a` failed.
+--- hint
+`mkdir build && echo "build ready"`, twice. Then `cd release || echo "no release folder"`.
+--- check shell | The first run made the folder and said so
+dir build
+printed-line build ready
+used &&
+--- check shell | The second run said nothing more
+ran mkdir build
+last-not-printed build ready
+--- check shell | The missing folder was reported
+printed-line no release folder
+used ||
+cwd .
+
++++ practice | The fallback copy
+--- task
+A program reads its settings from `config.txt`. The right settings for this computer should come from `config.local`, but it does not exist here; `config.default` does.
+
+Write **one line** that copies `config.local` to `config.txt`, **or**, if that copy fails, copies `config.default` to `config.txt` instead.
+--- starter
+echo "port=80" > config.default
+--- solution
+cp config.local config.txt || cp config.default config.txt
+--- hint
+The second copy should run only if the first one fails. Which of `&&` and `||` means that?
+--- hint
+`cp config.local config.txt || cp config.default config.txt`.
+--- check shell | config.txt holds the default settings
+file config.txt == port=80
+--- check shell | The local copy was tried first
+ran cp config.local config.txt
+--- check shell | The default was the fallback
+used || cp config.default
+
++++ practice | Clean up, or say there is nothing to clean
+--- task
+This folder holds some `.tmp` files. Write **one line** that:
+
+- checks whether there are any `.tmp` files with `ls *.tmp`, sending both its outputs to `/dev/null` so it shows nothing;
+- if there are, deletes them with `rm *.tmp` and then prints `cleaned`;
+- if there are none, prints `nothing to clean`.
+
+Run the same line twice: the first run prints `cleaned`, the second `nothing to clean`.
+--- starter
+touch a.tmp b.tmp notes.txt
+--- solution
+ls *.tmp &> /dev/null && rm *.tmp && echo "cleaned" || echo "nothing to clean"
+ls *.tmp &> /dev/null && rm *.tmp && echo "cleaned" || echo "nothing to clean"
+--- hint
+`&> /dev/null` throws away both standard output and standard error, so `ls` stays silent while it still sets its status.
+--- hint
+The shape is `question && rm … && echo "cleaned" || echo "nothing to clean"`.
+--- check shell | The first run cleaned up
+printed-line cleaned
+count *.tmp == 0
+file notes.txt
+--- check shell | The second run found nothing
+printed-line nothing to clean
+--- check shell | ls was silenced, and rm did the deleting
+used /dev/null
+ran rm
+
++++ practice | Copy into a folder that is not there yet
+--- task
+Write **one line** that copies `plan.txt` into the folder `backup/` and prints `saved` if the copy worked, or `copy failed` if it did not. Use `&&` and `||`.
+
+There is no `backup` folder yet, so the first run must print `copy failed`, and must not create anything called `backup`. Then make the folder with `mkdir backup`, and run the same line again: this time it prints `saved`.
+--- starter
+echo "burn at T+120" > plan.txt
+--- solution
+cp plan.txt backup/ && echo "saved" || echo "copy failed"
+mkdir backup
+cp plan.txt backup/ && echo "saved" || echo "copy failed"
+--- hint
+Without the slash, `cp plan.txt backup` does not fail at all: it quietly makes a **file** called `backup`, and then `mkdir backup` cannot work. The slash says "into the folder".
+--- hint
+`cp plan.txt backup/ && echo "saved" || echo "copy failed"`.
+--- check shell | The first run failed, and said so
+printed-line copy failed
+--- check shell | The second run saved the plan in the folder
+dir backup
+file backup/plan.txt == burn at T+120
+printed-line saved
+--- check shell | Decided with && and ||
+used &&
+used ||
+
++++ practice | One bar short
+--- task
+`report.pdf` is here; `summary.pdf` is not. A teammate wanted a warning only when a file is missing, and typed:
+
+```
+ls report.pdf | echo "report.pdf is missing"
+```
+
+It prints `report.pdf is missing`, even though `report.pdf` is right there. Fix the line so that the warning appears only when `ls` fails. Run the fixed line for `summary.pdf` first (it prints `summary.pdf is missing`), and then, **last**, for `report.pdf`, where no warning may appear.
+--- starter
+touch report.pdf
+--- solution
+ls summary.pdf || echo "summary.pdf is missing"
+ls report.pdf || echo "report.pdf is missing"
+--- hint
+One bar is a pipe: both commands always run. Which join runs the second command only when the first failed?
+--- hint
+Two bars: `ls summary.pdf || echo "summary.pdf is missing"`, then the same for `report.pdf`.
+--- check shell | The missing file is reported
+printed-line summary.pdf is missing
+--- check shell | The file that is there raises no warning
+ran ls report.pdf
+last-not-printed report.pdf is missing
+--- check shell | Joined with two bars
+used report.pdf ||
+
++++ practice | Go for launch
+--- task
+Each of `fuel.txt`, `weather.txt` and `range.txt` holds one word, either `GO` or `NO-GO`.
+
+Write **one line** that prints `LAUNCH` only if all three files hold exactly `GO`, and prints `HOLD` otherwise. Use `grep -q` three times, joined with `&&`, then `||`.
+
+Run it: `range.txt` says `NO-GO`, so it prints `HOLD`. Then write `GO` into `range.txt` with `echo` and `>`, and run the same line again: it prints `LAUNCH`.
+
+Careful: `NO-GO` contains `GO`, so a plain `grep -q GO` would say yes to it.
+--- starter
+echo "GO" > fuel.txt
+echo "GO" > weather.txt
+echo "NO-GO" > range.txt
+--- solution
+grep -q "^GO$" fuel.txt && grep -q "^GO$" weather.txt && grep -q "^GO$" range.txt && echo "LAUNCH" || echo "HOLD"
+echo "GO" > range.txt
+grep -q "^GO$" fuel.txt && grep -q "^GO$" weather.txt && grep -q "^GO$" range.txt && echo "LAUNCH" || echo "HOLD"
+--- hint
+A pattern that must be the whole line starts with `^` and ends with `$`: `"^GO$"`.
+--- hint
+The shell stops at the first question that fails, and jumps to the `||` part.
+--- hint
+`grep -q "^GO$" fuel.txt && grep -q "^GO$" weather.txt && grep -q "^GO$" range.txt && echo "LAUNCH" || echo "HOLD"`.
+--- check shell | The first poll held
+printed-line HOLD
+--- check shell | After the fix, launch
+file range.txt == GO
+printed-line LAUNCH
+--- check shell | The whole word was matched
+used ^GO$
 used &&
 used ||
 
@@ -1017,6 +1883,168 @@ used do
 used done
 ran cp
 
++++ practice | A folder for every weekday
+--- task
+With **one** `for` loop, make five folders, `mon`, `tue`, `wed`, `thu` and `fri`, and inside each one an empty file called `log.txt`.
+--- starter
+--- solution
+for day in mon tue wed thu fri; do mkdir "$day"; touch "$day/log.txt"; done
+--- hint
+The list is the five names. The body has two commands, joined by `;`.
+--- hint
+Inside the body, `"$day/log.txt"` is the file inside the folder that was just made.
+--- check shell | The five folders exist
+dir mon
+dir wed
+dir fri
+count * == 5
+--- check shell | Each has its log.txt
+count */log.txt == 5
+--- check shell | Done with one loop
+used for
+used done
+
++++ practice | Badges from a list
+--- task
+`crew.txt` holds three names, one per line. With **one** `for` loop whose list comes from `$(cat crew.txt)`, do two things for each name:
+
+1. print `badge for ` followed by the name, like `badge for ada`;
+2. make an empty file called the name followed by `.badge`, like `ada.badge`.
+--- starter
+echo "ada" > crew.txt
+echo "lin" >> crew.txt
+echo "sam" >> crew.txt
+--- solution
+for name in $(cat crew.txt); do echo "badge for $name"; touch "$name.badge"; done
+--- hint
+The list is `$(cat crew.txt)`: the shell runs `cat` first and cuts its output into words.
+--- hint
+The body is `echo "badge for $name"; touch "$name.badge"`.
+--- check shell | One line per name, in order
+printed-exactly badge for ada\nbadge for lin\nbadge for sam
+--- check shell | Three badge files
+count *.badge == 3
+file sam.badge
+--- check shell | The list came from the file
+used $(cat crew.txt)
+used for
+
++++ practice | Errors in every log
+--- task
+There are three `.log` files. With **one** `for` loop over `*.log`, print one line per log: its name, a space, and how many of its lines contain `ERROR`, like this:
+
+```
+a.log 2
+```
+
+Count with `grep -c` inside `$(…)`.
+--- starter
+echo "ERROR disk" > a.log
+echo "INFO ok" >> a.log
+echo "ERROR net" >> a.log
+echo "INFO ok" > b.log
+echo "INFO boot" > c.log
+echo "ERROR fan" >> c.log
+--- solution
+for f in *.log; do echo "$f $(grep -c ERROR "$f")"; done
+--- hint
+`grep -c ERROR "$f"` prints the count for one file. Put it inside `$(…)` in the `echo`.
+--- hint
+`for f in *.log; do echo "$f $(grep -c ERROR "$f")"; done`.
+--- check shell | A count for every log, zero included
+printed-exactly a.log 2\nb.log 0\nc.log 1
+--- check shell | Looped over the logs
+used *.log
+used for
+--- check shell | Counted with grep -c
+used grep -c
+
++++ practice | Pictures with spaces in their names
+--- task
+There are three `.png` pictures here, and two of them have spaces in their names. With **one** `for` loop over `*.png`, copy every picture into the folder `pics` and print `saved ` followed by its name, like `saved moon.png`.
+
+Every picture must arrive whole, spaces and all.
+--- starter
+mkdir pics
+echo "red dust" > "mars photo.png"
+touch moon.png "deep space 1.png"
+--- solution
+for f in *.png; do cp "$f" pics/; echo "saved $f"; done
+--- hint
+Unquoted, `$f` is cut at every space, so `cp` goes looking for files called `mars` and `photo.png`.
+--- hint
+Put double quotes around `"$f"` in the `cp`.
+--- check shell | All three pictures are in pics
+count pics/*.png == 3
+count pics/deep?space?1.png == 1
+--- check shell | The names with spaces arrived whole
+file pics/moon.png
+count pics/mars?photo.png == 1
+--- check shell | Each one was reported whole
+printed-line saved deep space 1.png
+printed-line saved mars photo.png
+
++++ practice | The loop that ran once
+--- task
+The folder holds three `.csv` files. A teammate wanted one line printed per file and typed:
+
+```
+for f in "*.csv"; do echo "row file: $f"; done
+```
+
+It ran once and printed `row file: *.csv`. Fix the loop so it prints one line per `.csv` file:
+
+```
+row file: crew.csv
+row file: fuel.csv
+row file: orbit.csv
+```
+--- starter
+touch crew.csv fuel.csv orbit.csv notes.txt
+--- solution
+for f in *.csv; do echo "row file: $f"; done
+--- hint
+Quotes switch wildcards off. With quotes around `*.csv`, the list is one word: the pattern itself.
+--- hint
+Take the quotes off the wildcard in the list. Keep them around `$f` in the body.
+--- check shell | One line per csv file
+printed-exactly row file: crew.csv\nrow file: fuel.csv\nrow file: orbit.csv
+--- check shell | The wildcard was left for the shell
+used in *.csv
+--- check shell | Done with a loop
+used for
+used done
+
++++ practice | Sort the telemetry by sensor
+--- task
+The telemetry files are named after a run and a sensor: `t1-temp.dat`, `t2-volt.dat`, and so on.
+
+1. With **one** `for` loop over the list `temp volt`, make a folder for each sensor and move that sensor's files into it: every `temp` file into `temp/`, every `volt` file into `volt/`.
+2. With a second `for` loop over the same list, print each sensor and how many files its folder holds, counted with `ls` and `wc -l`:
+
+```
+temp 2
+volt 3
+```
+--- starter
+touch t1-temp.dat t2-temp.dat t1-volt.dat t2-volt.dat t3-volt.dat
+--- solution
+for s in temp volt; do mkdir "$s"; mv *-"$s".dat "$s"/; done
+for s in temp volt; do echo "$s $(ls "$s" | wc -l)"; done
+--- hint
+Inside the body, a wildcard can be built around the variable: `*-"$s".dat` means "any name ending in a dash, the sensor, then `.dat`".
+--- hint
+The second loop's body is one `echo`, with `$(ls "$s" | wc -l)` inside it.
+--- check shell | Every file is in its sensor's folder
+count temp/*.dat == 2
+count volt/*.dat == 3
+count *.dat == 0
+--- check shell | The counts were printed
+printed-exactly temp 2\nvolt 3
+--- check shell | Done with loops
+used in temp volt
+used wc -l
+
 === term3-05 | Renaming many files: cutting the ends off names
 --- teach
 Last lesson, a `for` loop ran the same commands once for every file. Now you will make a loop **rename** files. To rename a file you need its new name, so this lesson shows how to build a new name out of the old one.
@@ -1147,6 +2175,160 @@ file readme.txt
 used for
 used do
 used done
+
++++ practice | Names without their ending
+--- task
+There are three `.csv` files here. With **one** `for` loop over `*.csv`, print each file's name **without** `.csv` on the end, one per line:
+
+```
+feb
+jan
+mar
+```
+
+Use `${f%.csv}`. Nothing is renamed.
+--- starter
+touch jan.csv feb.csv mar.csv notes.txt
+--- solution
+for f in *.csv; do echo "${f%.csv}"; done
+--- hint
+`%` cuts from the end. `${f%.csv}` is the name held in `f`, with `.csv` cut off.
+--- hint
+The body is a single `echo "${f%.csv}"`.
+--- check shell | Each name without its ending
+printed-exactly feb\njan\nmar
+--- check shell | Cut with %
+used ${f%.csv}
+used for
+--- check shell | Nothing was renamed
+count *.csv == 3
+
++++ practice | From version 1 to version 2
+--- task
+Two settings files start with `v1_`: `v1_engine.cfg` and `v1_radio.cfg`. Rename both so they start with `v2_` instead (`v1_engine.cfg` becomes `v2_engine.cfg`), with **one** `for` loop and `${f#v1_}`. Their contents must survive, and `notes.txt` stays as it is.
+--- starter
+echo "thrust=high" > v1_engine.cfg
+echo "band=S" > v1_radio.cfg
+touch notes.txt
+--- solution
+for f in v1_*; do mv "$f" "v2_${f#v1_}"; done
+--- hint
+`${f#v1_}` is the name without `v1_` at the start. Put `v2_` in front of it.
+--- hint
+The list is `v1_*`, and the body is `mv "$f" "v2_${f#v1_}"`.
+--- check shell | No v1_ files are left
+count v1_* == 0
+--- check shell | Both are v2_ now, contents and all
+file v2_engine.cfg == thrust=high
+file v2_radio.cfg == band=S
+file notes.txt
+--- check shell | Done with a loop and #
+used for
+used ${f#v1_}
+
++++ practice | Put your name on every log
+--- task
+Rename every `.log` file so that a dash and your user name come before `.log`: `boot.log` becomes `boot-you.log`. Use **one** `for` loop, `${f%.log}` and `$(whoami)`, so the same line would work for anyone. The contents must survive.
+--- starter
+echo "systems up" > boot.log
+echo "link ok" > radio.log
+echo "pressure ok" > pump.log
+--- solution
+for f in *.log; do mv "$f" "${f%.log}-$(whoami).log"; done
+--- hint
+Build the new name from three pieces: the old name without `.log`, then `-$(whoami)`, then `.log`.
+--- hint
+Try a dry run first: `for f in *.log; do echo mv "$f" "${f%.log}-$(whoami).log"; done`.
+--- check shell | Every log carries the name
+count *-you.log == 3
+file boot-you.log == systems up
+--- check shell | No old names are left
+missing boot.log
+missing radio.log
+missing pump.log
+--- check shell | The name came from whoami
+used $(whoami)
+used ${f%.log}
+
++++ practice | Double endings
+--- task
+Three archives end in `.tar.gz`; one of them has a space in its name. Rename each so it ends in `.tgz` instead: `site.tar.gz` becomes `site.tgz`. Use **one** `for` loop over `*.tar.gz` and `%`.
+
+`notes.gz` is not an archive of that kind: leave it alone. The contents must survive.
+--- starter
+echo "html" > site.tar.gz
+touch logs.tar.gz "old logs.tar.gz" notes.gz
+--- solution
+for f in *.tar.gz; do mv "$f" "${f%.tar.gz}.tgz"; done
+--- hint
+Cutting only `.gz` would leave `site.tar.tgz`. Cut the whole double ending.
+--- hint
+`"${f%.tar.gz}.tgz"`, and keep the quotes for the name with the space.
+--- check shell | Every archive is a .tgz now
+count *.tgz == 3
+file site.tgz == html
+count old?logs.tgz == 1
+--- check shell | No double endings are left
+count *.tar* == 0
+--- check shell | notes.gz was left alone
+file notes.gz
+
++++ practice | The wrong end
+--- task
+A teammate wanted to rename every `.jpeg` file to end in `.jpg`, and ran:
+
+```
+for f in *.jpeg; do mv "$f" "${f#.jpeg}.jpg"; done
+```
+
+Now the photos are called `beach.jpeg.jpg`, `sunset.jpeg.jpg` and `old boat.jpeg.jpg`. Rename every `.jpeg.jpg` file so that it ends in just `.jpg` (`beach.jpeg.jpg` becomes `beach.jpg`), with one `for` loop. The contents must survive.
+--- starter
+echo "pixels" > beach.jpeg
+touch sunset.jpeg "old boat.jpeg"
+for f in *.jpeg; do mv "$f" "${f#.jpeg}.jpg"; done
+--- solution
+for f in *.jpeg.jpg; do mv "$f" "${f%.jpeg.jpg}.jpg"; done
+--- hint
+`#` cuts from the start of the name, and no name starts with `.jpeg`, so nothing was cut. Which sign cuts from the end?
+--- hint
+Loop over `*.jpeg.jpg`, and cut `.jpeg.jpg` off the end before adding `.jpg` back.
+--- check shell | No doubled names are left
+count *.jpeg* == 0
+--- check shell | Three .jpg photos, contents and all
+count *.jpg == 3
+file beach.jpg == pixels
+count old?boat.jpg == 1
+--- check shell | Fixed with %
+used %
+used for
+
++++ practice | Tidy the camera names
+--- task
+The camera saves pictures with an `IMG_` prefix and the ending `.jpg`: `IMG_launch.jpg`, `IMG_orbit.jpg` and `IMG_landing site.jpg`. Rename every file that starts with `IMG_` so it has **no** prefix and ends in `.jpeg`: `IMG_orbit.jpg` becomes `orbit.jpeg`.
+
+1. First do a dry run: the same loop with `echo` in front of `mv`, so it only prints the commands.
+2. Then run it for real.
+
+Use **one** `for` loop over `IMG_*`. Inside the body, store the name without `IMG_` in a variable first, then cut `.jpg` off that. `README.jpg` does not start with `IMG_` and must be left alone.
+--- starter
+echo "stars" > IMG_orbit.jpg
+touch IMG_launch.jpg "IMG_landing site.jpg" README.jpg
+--- solution
+for f in IMG_*; do n="${f#IMG_}"; echo mv "$f" "${n%.jpg}.jpeg"; done
+for f in IMG_*; do n="${f#IMG_}"; mv "$f" "${n%.jpg}.jpeg"; done
+--- hint
+One expansion cuts one end. Do it in two steps: `n="${f#IMG_}"` cuts the start, then `"${n%.jpg}.jpeg"` cuts the end and adds the new ending.
+--- hint
+The body has two commands: set `n`, then `mv`. For the dry run, put `echo` in front of `mv` only.
+--- check shell | The dry run printed the plan first
+printed-line mv IMG_orbit.jpg orbit.jpeg
+--- check shell | Every IMG_ file was renamed
+count IMG_* == 0
+count *.jpeg == 3
+file orbit.jpeg == stars
+count landing?site.jpeg == 1
+--- check shell | README.jpg was left alone
+file README.jpg
 
 === term3-06a | Decisions: if
 --- teach
@@ -1282,6 +2464,181 @@ used if grep -q
 used then
 used else
 used fi
+
++++ practice | Was abort called?
+--- task
+Two radio transcripts, `mon.txt` and `tue.txt`. Someone may have called an abort, written as `abort` in any mix of capitals (`ABORT`, `Abort`, …).
+
+Write a one-line `if` for `mon.txt` that prints `mon.txt: ABORT CALLED` if it mentions abort in any capitals, and `mon.txt: continue` if it does not. Then write the same line for `tue.txt`.
+--- starter
+echo "T+030 all stations nominal" > mon.txt
+echo "T+045 Abort, abort, abort" >> mon.txt
+echo "T+030 all stations nominal" > tue.txt
+echo "T+045 aboard and strapped in" >> tue.txt
+--- solution
+if grep -qi "abort" mon.txt; then echo "mon.txt: ABORT CALLED"; else echo "mon.txt: continue"; fi
+if grep -qi "abort" tue.txt; then echo "tue.txt: ABORT CALLED"; else echo "tue.txt: continue"; fi
+--- hint
+The condition is a quiet `grep` that ignores capitals: `-q` and `-i` share one dash as `-qi`.
+--- hint
+`aboard` is not `abort`: check that `tue.txt` really comes out as `continue`.
+--- check shell | Monday's abort was spotted
+printed-line mon.txt: ABORT CALLED
+--- check shell | Tuesday carries on
+printed-line tue.txt: continue
+--- check shell | Decided with if
+used if grep
+used then
+used fi
+
++++ practice | Make the archive, or say it is there
+--- task
+Write a one-line `if` whose condition is `mkdir archive`:
+
+- if the folder was made, move every `.old` file into it, then print `archived`;
+- otherwise, print `archive already there`.
+
+Run the same line **twice**. The first run archives the two `.old` files; the second finds the folder already made.
+--- starter
+touch plan.old list.old plan.txt
+--- solution
+if mkdir archive; then mv *.old archive/; echo "archived"; else echo "archive already there"; fi
+if mkdir archive; then mv *.old archive/; echo "archived"; else echo "archive already there"; fi
+--- hint
+Any command can be the condition. `mkdir archive` succeeds the first time and fails the second, because the folder is there.
+--- hint
+A branch can hold two commands, joined by `;`: `then mv *.old archive/; echo "archived"; else …`.
+--- check shell | The first run archived the old files
+count archive/*.old == 2
+count *.old == 0
+printed-line archived
+--- check shell | The second run found the folder
+printed-line archive already there
+--- check shell | Decided with if mkdir
+used if mkdir archive
+used else
+file plan.txt
+
++++ practice | Sort the logs into good and bad
+--- task
+There are four `.log` files. Make two folders, `good` and `bad`. Then, with **one** `for` loop over `*.log` that has an `if` inside it, move every log that contains `ERROR` into `bad/`, and every other log into `good/`.
+--- starter
+echo "ERROR disk" > a.log
+echo "INFO ok" > b.log
+echo "INFO boot" > c.log
+echo "ERROR net" >> c.log
+echo "INFO done" > d.log
+--- solution
+mkdir good bad
+for f in *.log; do if grep -q ERROR "$f"; then mv "$f" bad/; else mv "$f" good/; fi; done
+--- hint
+The whole `if … fi` is the body of the loop, and it needs its own `;` after `fi`, before `done`.
+--- hint
+`for f in *.log; do if grep -q ERROR "$f"; then mv "$f" bad/; else mv "$f" good/; fi; done`.
+--- check shell | The logs with errors are in bad
+count bad/*.log == 2
+file bad/c.log
+--- check shell | The others are in good
+count good/*.log == 2
+file good/d.log
+--- check shell | Nothing is left loose
+count *.log == 0
+used if grep -q
+
++++ practice | The log that is not there
+--- task
+There are two logs, `app.log` and `radio.log`, and there should be a third, `gps.log`, but it is missing.
+
+Write **one** `for` loop over the three names `app.log radio.log gps.log`, with an `if` inside it, that prints one line per name:
+
+- `NAME: errors` if the file contains `ERROR`;
+- otherwise `NAME: clean` if the file is there;
+- otherwise `NAME: missing`.
+
+Careful: `grep` answers `2` for a missing file, and `2` is not `0`, so a plain `if`/`else` would call the missing log clean. Use `elif` with `ls "$f"` as the second question, and send both of `ls`'s outputs to `/dev/null` so it prints nothing.
+--- starter
+echo "ERROR disk" > app.log
+echo "INFO link up" > radio.log
+--- solution
+for f in app.log radio.log gps.log; do if grep -q ERROR "$f"; then echo "$f: errors"; elif ls "$f" &> /dev/null; then echo "$f: clean"; else echo "$f: missing"; fi; done
+--- hint
+Only a missing file makes `ls` fail. So `ls "$f" &> /dev/null` is a quiet way to ask "is it there?".
+--- hint
+The body is `if grep …; then …; elif ls "$f" &> /dev/null; then …; else …; fi`.
+--- check shell | app.log has errors
+printed-line app.log: errors
+--- check shell | radio.log is clean
+printed-line radio.log: clean
+--- check shell | gps.log is missing, not clean
+printed-line gps.log: missing
+used elif
+
++++ practice | The if that never ran
+--- task
+A teammate typed this line to check the test results:
+
+```
+if grep -q FAIL tests.log then echo "tests failed"; else echo "tests passed"; fi
+```
+
+Nothing ran at all; the shell printed a `syntax error` instead. Fix the line and run it for `tests.log`, which contains `FAIL`, so that it prints `tests failed`. Then run the same line for `tests2.log`, which does not, so that it prints `tests passed`.
+--- starter
+echo "boot: ok" > tests.log
+echo "radio: FAIL" >> tests.log
+echo "boot: ok" > tests2.log
+--- solution
+if grep -q FAIL tests.log; then echo "tests failed"; else echo "tests passed"; fi
+if grep -q FAIL tests2.log; then echo "tests failed"; else echo "tests passed"; fi
+--- hint
+Count the semicolons. Every piece before `then`, `else` and `fi` must be ended with one.
+--- hint
+Without the `;`, the word `then` is handed to `grep` as one more argument. Put a `;` straight after `tests.log`.
+--- check shell | tests.log failed
+printed-line tests failed
+--- check shell | tests2.log passed
+printed-line tests passed
+used grep -q FAIL tests2.log
+--- check shell | The condition is ended before then
+used tests.log; then
+
++++ practice | The go/no-go poll
+--- task
+The folder `poll` holds one file per station: `fuel.txt`, `range.txt` and `weather.txt`. Each holds one word, `GO` or `NO-GO`.
+
+Go into `poll` with `cd poll`. Then:
+
+1. With **one** `for` loop over `*.txt` with an `if` inside it, print each station's name without `.txt` and its answer, in small letters:
+
+```
+fuel: go
+range: go
+weather: no-go
+```
+
+2. With a one-line `if`, print `HOLD` if **any** station said `NO-GO`, and `LAUNCH` otherwise. One `grep -q` can search all the files at once.
+
+A plain `grep -q GO` would match `NO-GO` too, so match the whole line.
+--- starter
+mkdir poll
+echo "GO" > poll/fuel.txt
+echo "GO" > poll/range.txt
+echo "NO-GO" > poll/weather.txt
+--- solution
+cd poll
+for f in *.txt; do if grep -q "^GO$" "$f"; then echo "${f%.txt}: go"; else echo "${f%.txt}: no-go"; fi; done
+if grep -q "NO-GO" *.txt; then echo "HOLD"; else echo "LAUNCH"; fi
+--- hint
+`${f%.txt}` gives the station's name without its ending, as in the renaming lesson.
+--- hint
+`"^GO$"` matches a line that is exactly `GO`. For the second part, `grep -q "NO-GO" *.txt` succeeds if any one of the files contains it.
+--- check shell | One line per station
+printed-exactly fuel: go\nrange: go\nweather: no-go
+--- check shell | The poll holds
+printed-line HOLD
+--- check shell | Worked inside poll, with if
+cwd poll
+used if grep -q
+used %.txt}
 
 === term3-06 | Decisions: asking questions with [ … ]
 --- teach
@@ -1433,6 +2790,178 @@ file config.txt == mode=dev
 printed-line config found
 used if [ -f
 
++++ practice | Too hot?
+--- task
+Set a variable called `temp` to `31`. Write a one-line `if` with `[ … ]` that prints `too hot` when `temp` is **greater than** 30, and `ok` otherwise.
+
+Then set `temp` to `30` and run the same line again. 30 is not greater than 30, so this time it prints `ok`.
+--- starter
+--- solution
+temp=31
+if [ "$temp" -gt 30 ]; then echo "too hot"; else echo "ok"; fi
+temp=30
+if [ "$temp" -gt 30 ]; then echo "too hot"; else echo "ok"; fi
+--- hint
+Numbers are compared with two-letter operators: "greater than" is `-gt`.
+--- hint
+`if [ "$temp" -gt 30 ]; then echo "too hot"; else echo "ok"; fi`. Mind the spaces inside the brackets.
+--- check shell | 31 is too hot
+printed-line too hot
+--- check shell | 30 is ok
+printed-line ok
+var temp == 30
+--- check shell | Compared as numbers
+used -gt
+used if [
+
++++ practice | Defaults only where they are missing
+--- task
+Two settings files should exist: `settings.txt` and `limits.txt`. `settings.txt` is already there, with settings someone chose by hand; `limits.txt` is not.
+
+For each of the two files, write a one-line `if` that uses `[ ! -f … ]`: if the file is **not** there, it creates it holding the single line `default`. A file that is already there must not be touched.
+--- starter
+echo "volume=7" > settings.txt
+--- solution
+if [ ! -f settings.txt ]; then echo "default" > settings.txt; fi
+if [ ! -f limits.txt ]; then echo "default" > limits.txt; fi
+--- hint
+`!` turns the question around: `[ ! -f limits.txt ]` asks "is there **no** file called `limits.txt`?".
+--- hint
+No `else` is needed: when the file is there, nothing should happen.
+--- check shell | settings.txt kept its own settings
+file settings.txt == volume=7
+--- check shell | limits.txt was created with the default
+file limits.txt == default
+--- check shell | Asked with [ ! -f … ]
+used ! -f
+used if [
+
++++ practice | Long logs and short logs
+--- task
+With **one** `for` loop over `*.log`, print one line per log: its name, then `: long` if it has **more than 3** lines, or `: short` if it does not:
+
+```
+a.log: long
+b.log: short
+c.log: long
+```
+
+Count the lines with `$(…)` around a pipeline of `cat` and `wc -l`, and compare with `[ … ]`. A log with exactly 3 lines is short.
+--- starter
+for i in 1 2 3 4 5; do echo "line $i" >> a.log; done
+for i in 1 2 3; do echo "line $i" >> b.log; done
+for i in 1 2 3 4; do echo "line $i" >> c.log; done
+--- solution
+for f in *.log; do if [ "$(cat "$f" | wc -l)" -gt 3 ]; then echo "$f: long"; else echo "$f: short"; fi; done
+--- hint
+`$(cat "$f" | wc -l)` is the number of lines in one log. It can go straight inside the brackets.
+--- hint
+"More than 3" is `-gt 3`. With `-ge 3`, `b.log` would come out long.
+--- check shell | Each log is sorted by its length
+printed-exactly a.log: long\nb.log: short\nc.log: long
+--- check shell | Compared as numbers, inside a loop
+used -gt 3
+used for
+--- check shell | Counted with wc -l
+used wc -l
+
++++ practice | An empty name, and a name with a space
+--- task
+The variable `callsign` is empty. Write a one-line `if` that prints `name missing` when `$callsign` is empty, and `callsign: ` followed by its value otherwise.
+
+Run it now: it must print `name missing`. Then set `callsign` to `Eagle One` (two words, one value) and run the same line again: it must print `callsign: Eagle One`.
+
+Without double quotes around the variable, one of the two runs goes wrong.
+--- starter
+callsign=""
+--- solution
+if [ -z "$callsign" ]; then echo "name missing"; else echo "callsign: $callsign"; fi
+callsign="Eagle One"
+if [ -z "$callsign" ]; then echo "name missing"; else echo "callsign: $callsign"; fi
+--- hint
+`-z` asks "is this string empty?".
+--- hint
+Quote it: `[ -z "$callsign" ]`. Unquoted, an empty variable disappears altogether, and `Eagle One` becomes two separate words.
+--- check shell | The empty name was caught
+printed-line name missing
+--- check shell | The full callsign was printed
+printed-line callsign: Eagle One
+var callsign == Eagle One
+--- check shell | Quoted inside the brackets, so no run printed an error
+used "$callsign"
+not-printed operator expected
+
++++ practice | The comparison that made a file
+--- task
+`count` holds `7`. A teammate ran this line, which should print `too many` only when `count` is greater than 10:
+
+```
+if [ $count > 10 ]; then echo "too many"; else echo "fine"; fi
+```
+
+It printed `too many`, and a new empty file called `10` appeared. Fix the line and run it: with `count` at 7 it must print `fine`. Then delete the stray file `10`.
+--- starter
+count=7
+if [ $count > 10 ]; then echo "too many"; else echo "fine"; fi
+--- solution
+if [ "$count" -gt 10 ]; then echo "too many"; else echo "fine"; fi
+rm 10
+--- hint
+To the shell, `>` means "send the output into a file". It did that before `[` ever saw the line.
+--- hint
+Numbers are compared with `-gt`. Then `rm 10` removes the file the `>` made.
+--- check shell | 7 is fine
+printed-line fine
+--- check shell | Compared as numbers
+used -gt 10
+--- check shell | The stray file is gone
+missing 10
+
++++ practice | Pre-flight checks
+--- task
+Write **one** `if` line with `elif` that checks three things, in this order, and prints the first problem it finds:
+
+1. if there is no folder called `config`, print `no config`;
+2. otherwise, if `config/mode.txt` does not hold `flight`, print `wrong mode: ` followed by what it does hold;
+3. otherwise, if the folder `firmware` holds **fewer than 2** `.bin` files, print `firmware incomplete`;
+4. otherwise, print `ready`.
+
+Run it, fix what it reports, and run it again, until it prints `ready`:
+
+- make the folder `config`, with a `mode.txt` holding `test`, and run the line (it prints `wrong mode: test`);
+- write `flight` into `config/mode.txt`, and run the line (it prints `firmware incomplete`);
+- make an empty file `firmware/main.bin`, and run the line (it prints `ready`).
+--- starter
+mkdir firmware
+touch firmware/boot.bin
+--- solution
+if [ ! -d config ]; then echo "no config"; elif [ "$(cat config/mode.txt)" != "flight" ]; then echo "wrong mode: $(cat config/mode.txt)"; elif [ "$(ls firmware/*.bin | wc -l)" -lt 2 ]; then echo "firmware incomplete"; else echo "ready"; fi
+mkdir config
+echo "test" > config/mode.txt
+if [ ! -d config ]; then echo "no config"; elif [ "$(cat config/mode.txt)" != "flight" ]; then echo "wrong mode: $(cat config/mode.txt)"; elif [ "$(ls firmware/*.bin | wc -l)" -lt 2 ]; then echo "firmware incomplete"; else echo "ready"; fi
+echo "flight" > config/mode.txt
+if [ ! -d config ]; then echo "no config"; elif [ "$(cat config/mode.txt)" != "flight" ]; then echo "wrong mode: $(cat config/mode.txt)"; elif [ "$(ls firmware/*.bin | wc -l)" -lt 2 ]; then echo "firmware incomplete"; else echo "ready"; fi
+touch firmware/main.bin
+if [ ! -d config ]; then echo "no config"; elif [ "$(cat config/mode.txt)" != "flight" ]; then echo "wrong mode: $(cat config/mode.txt)"; elif [ "$(ls firmware/*.bin | wc -l)" -lt 2 ]; then echo "firmware incomplete"; else echo "ready"; fi
+--- hint
+Each question is its own `[ … ]`: `[ ! -d config ]`, then a string comparison with `!=`, then a number comparison with `-lt`.
+--- hint
+`"$(cat config/mode.txt)"` is what the file holds, and `"$(ls firmware/*.bin | wc -l)"` is how many `.bin` files there are. Both can go inside the brackets.
+--- hint
+Write the line once, then use the Up arrow to run it again after each fix.
+--- check shell | The first run found no config
+printed-line no config
+--- check shell | Then the wrong mode, then the missing firmware
+printed-line wrong mode: test
+printed-line firmware incomplete
+--- check shell | Finally ready
+printed-line ready
+file config/mode.txt == flight
+count firmware/*.bin == 2
+--- check shell | One line, asking with [ … ] and elif
+used elif [
+used -lt 2
+
 === term3-07a | Scripts: commands saved in a file
 --- teach
 Your loops and `if` lines are getting long. Typing one again every time you need it would be slow, and easy to get wrong. So save it in a file.
@@ -1579,6 +3108,176 @@ printed-line You gave 3 names
 printed-line Hello, Lin
 printed-line Hello, Sally Ride
 
++++ practice | A countdown script
+--- task
+Build a script called `countdown.sh` with this one line, using `echo '…' >`:
+
+```
+echo "T-minus $1 for $2"
+```
+
+Then run it with two arguments, `bash countdown.sh 10 Artemis-2`, so it prints `T-minus 10 for Artemis-2`.
+--- starter
+--- solution
+echo 'echo "T-minus $1 for $2"' > countdown.sh
+bash countdown.sh 10 Artemis-2
+--- hint
+Single quotes around the whole line keep `$1` and `$2` safe until the script runs.
+--- hint
+`cat countdown.sh` should show both dollar signs. Then `bash countdown.sh 10 Artemis-2`.
+--- check shell | The script uses its first two arguments
+file countdown.sh contains $1
+file countdown.sh contains $2
+--- check shell | It printed the countdown
+printed-line T-minus 10 for Artemis-2
+--- check shell | You ran it with bash
+ran bash countdown.sh 10 Artemis-2
+
++++ practice | One folder per argument
+--- task
+Build a script called `mkall.sh` with these two lines, adding them one at a time with `echo '…'` (`>` for the first, `>>` for the second):
+
+1. `for d in "$@"; do mkdir "$d"; done`
+2. `echo "made $# folders"`
+
+Then run it as `bash mkall.sh logs "flight data" maps`. It must make three folders, one of them with a space in its name, and print `made 3 folders`.
+--- starter
+--- solution
+echo 'for d in "$@"; do mkdir "$d"; done' > mkall.sh
+echo 'echo "made $# folders"' >> mkall.sh
+bash mkall.sh logs "flight data" maps
+--- hint
+`"$@"` is every argument, each kept whole, so `"flight data"` stays one name.
+--- hint
+Run it with the quotes around `"flight data"`, or it arrives as two arguments.
+--- check shell | Three folders, one with a space
+dir logs
+dir maps
+count flight?data == 1
+missing flight
+--- check shell | It counted them
+printed-line made 3 folders
+--- check shell | The script uses all its arguments
+file mkall.sh contains "$@"
+file mkall.sh contains $#
+
++++ practice | An error counter
+--- task
+Build a script called `errcount.sh` with this one line:
+
+```
+echo "$1: $(grep -c ERROR "$1") errors"
+```
+
+Then run it on `a.log`, and again on `b.log`. It should print `a.log: 2 errors`, then `b.log: 0 errors`.
+--- starter
+echo "ERROR disk" > a.log
+echo "INFO ok" >> a.log
+echo "ERROR net" >> a.log
+echo "INFO ok" > b.log
+--- solution
+echo 'echo "$1: $(grep -c ERROR "$1") errors"' > errcount.sh
+bash errcount.sh a.log
+bash errcount.sh b.log
+--- hint
+The outer single quotes keep everything inside, the `$(…)` included, for the script to run later.
+--- hint
+`echo 'echo "$1: $(grep -c ERROR "$1") errors"' > errcount.sh`, then run it once per log.
+--- check shell | a.log has two errors
+printed-line a.log: 2 errors
+--- check shell | b.log has none
+printed-line b.log: 0 errors
+--- check shell | The count happens when the script runs
+file errcount.sh contains $(grep -c ERROR "$1")
+
++++ practice | A name with a space in it
+--- task
+Build a script called `tag.sh` with one line that makes an empty file named after its first argument, with `.tag` on the end. Then run it as `bash tag.sh "launch day"`: it must make one file, `launch day.tag`. Run it once more as `bash tag.sh engine-2`, which makes `engine-2.tag`.
+
+Two things can go wrong: the `$1` can vanish while you write the file, and the name can be cut in two when the script runs. Check what went in with `cat tag.sh`.
+--- starter
+--- solution
+echo 'touch "$1.tag"' > tag.sh
+bash tag.sh "launch day"
+bash tag.sh engine-2
+--- hint
+Build the line with single quotes, so `$1` goes into the file untouched.
+--- hint
+Inside the script, put `"$1.tag"` in double quotes, so `launch day` stays one name.
+--- check shell | One file, named with the space, and one for engine-2
+count launch?day.tag == 1
+file engine-2.tag
+--- check shell | Not two files from half the name
+missing launch
+missing day.tag
+--- check shell | The script holds $1, quoted
+file tag.sh contains "$1.tag"
+
++++ practice | The script that forgot its argument
+--- task
+A teammate built `mk.sh` like this:
+
+```
+echo "mkdir -p $1" > mk.sh
+echo "echo made $1" >> mk.sh
+```
+
+Now `bash mk.sh reports` prints an error and `made`, and makes no folder. Look at the script with `cat mk.sh`, build it again so it works (same two commands inside), and run `bash mk.sh flight-logs`. It must make the folder `flight-logs` and print `made flight-logs`.
+--- starter
+echo "mkdir -p $1" > mk.sh
+echo "echo made $1" >> mk.sh
+--- solution
+echo 'mkdir -p "$1"' > mk.sh
+echo 'echo "made $1"' >> mk.sh
+bash mk.sh flight-logs
+--- hint
+`cat mk.sh` shows `mkdir -p` with nothing after it. Double quotes filled `$1` in while the file was being written, and it was empty then.
+--- hint
+Build each line with single quotes: `echo 'mkdir -p "$1"' > mk.sh`, then `echo 'echo "made $1"' >> mk.sh`.
+--- check shell | The folder was made
+dir flight-logs
+--- check shell | The script said so
+printed-line made flight-logs
+--- check shell | The script keeps its $1
+file mk.sh contains $1
+
++++ practice | Line counts for any number of logs
+--- task
+Build a script called `report.sh` with two lines. Given any number of log files as arguments, it must:
+
+1. print one line per file, the file's name, a colon, and its number of lines, like `boot.log: 3 lines`, counting with `$(…)` around `cat` and `wc -l`;
+2. then print `checked ` followed by how many files it was given, like `checked 3 files`.
+
+Run it as `bash report.sh boot.log "night shift.log" radio.log`. It must print:
+
+```
+boot.log: 3 lines
+night shift.log: 2 lines
+radio.log: 4 lines
+checked 3 files
+```
+--- starter
+for i in 1 2 3; do echo "boot $i" >> boot.log; done
+for i in 1 2; do echo "night $i" >> "night shift.log"; done
+for i in 1 2 3 4; do echo "radio $i" >> radio.log; done
+--- solution
+echo 'for f in "$@"; do echo "$f: $(cat "$f" | wc -l) lines"; done' > report.sh
+echo 'echo "checked $# files"' >> report.sh
+bash report.sh boot.log "night shift.log" radio.log
+--- hint
+Line 1 is a loop over `"$@"`, with an `echo` inside it. Line 2 uses `$#`.
+--- hint
+Inside the loop, `"$f"` must be quoted in the `cat`, or `night shift.log` is cut in two.
+--- hint
+Line 1: `for f in "$@"; do echo "$f: $(cat "$f" | wc -l) lines"; done`. Line 2: `echo "checked $# files"`.
+--- check shell | One line per log, then the total
+printed-exactly boot.log: 3 lines\nnight shift.log: 2 lines\nradio.log: 4 lines\nchecked 3 files
+--- check shell | The script loops over its arguments
+file report.sh contains "$@"
+file report.sh contains $#
+--- check shell | You ran it on the three logs
+ran bash report.sh
+
 === term3-07 | Scripts you run by name: #!, chmod +x and ./
 --- teach
 Last lesson you wrote scripts and ran them with `bash greet.sh`. Real programs like `ls` or `git` you run by their name alone. This lesson makes your script work like that, in three steps.
@@ -1692,6 +3391,183 @@ printed-line backed up notes.txt
 file backup.sh exec
 file todo.txt.bak == launch
 ran ./backup.sh todo.txt
+
++++ practice | A stamp you run by name
+--- task
+Create `stamp.sh`, a script of exactly two lines: the shebang line `#!/bin/bash`, then `echo "stamped by $(whoami)"`. Make it executable, and run it as `./stamp.sh`, so it prints `stamped by you`.
+--- starter
+--- solution
+echo '#!/bin/bash' > stamp.sh
+echo 'echo "stamped by $(whoami)"' >> stamp.sh
+chmod +x stamp.sh
+./stamp.sh
+--- hint
+The shebang goes in with `>`, so it is the first line; the second line goes in with `>>`. Single quotes keep the `$(whoami)` for later.
+--- hint
+`chmod +x stamp.sh`, then `./stamp.sh`.
+--- check shell | The script is exactly the shebang and the echo
+file stamp.sh ~= #!/bin/bash\necho "stamped by $(whoami)"
+--- check shell | It is executable
+file stamp.sh exec
+--- check shell | Run by name, it stamped
+ran ./stamp.sh
+printed-line stamped by you
+
++++ practice | Permission denied
+--- task
+`deploy.sh` is a finished script with a shebang: it prints `deploying to ` followed by its first argument. Try to run it as `./deploy.sh staging-eu`: the shell refuses. Fix that, then run `./deploy.sh staging-eu` again, so it prints `deploying to staging-eu`.
+--- starter
+echo '#!/bin/bash' > deploy.sh
+echo 'echo "deploying to $1"' >> deploy.sh
+--- solution
+./deploy.sh staging-eu
+chmod +x deploy.sh
+./deploy.sh staging-eu
+--- hint
+`Permission denied` means the file is not allowed to run as a program yet.
+--- hint
+`chmod +x deploy.sh` adds the execute permission.
+--- check shell | deploy.sh is executable
+file deploy.sh exec
+--- check shell | It ran by name
+printed-line deploying to staging-eu
+--- check shell | Run with ./
+ran ./deploy.sh staging-eu
+
++++ practice | A TODO finder
+--- task
+Create an executable script called `todo.sh` that starts with the shebang line and then searches the folder named in its first argument, and every folder inside it, for lines containing `TODO`, showing the line numbers. Use `grep` with its flags for a whole-folder search and for line numbers.
+
+Run it as `./todo.sh flight-sw`. It must print:
+
+```
+flight-sw/main.js:2:// TODO check fuel
+flight-sw/ui/menu.js:1:// TODO draw logo
+```
+--- starter
+mkdir -p flight-sw/ui
+echo "start()" > flight-sw/main.js
+echo "// TODO check fuel" >> flight-sw/main.js
+echo "// TODO draw logo" > flight-sw/ui/menu.js
+echo "done()" > flight-sw/ui/end.js
+--- solution
+echo '#!/bin/bash' > todo.sh
+echo 'grep -rn TODO "$1"' >> todo.sh
+chmod +x todo.sh
+./todo.sh flight-sw
+--- hint
+`grep -rn TODO flight-sw` does the job for one folder. In the script, `"$1"` takes the place of `flight-sw`.
+--- hint
+Shebang with `>`, the `grep` line with `>>`, then `chmod +x todo.sh` and `./todo.sh flight-sw`.
+--- check shell | Both TODO lines, with where they are
+printed-exactly flight-sw/main.js:2:// TODO check fuel\nflight-sw/ui/menu.js:1:// TODO draw logo
+--- check shell | The script takes the folder as an argument
+file todo.sh contains #!/bin/bash
+file todo.sh contains $1
+file todo.sh exec
+--- check shell | Run by name
+ran ./todo.sh flight-sw
+
++++ practice | The shebang that came last
+--- task
+`ping.sh` already holds one line, `echo "pong"`, but no shebang. Give it the shebang line `#!/bin/bash` as its **first** line, so that it holds exactly:
+
+```
+#!/bin/bash
+echo "pong"
+```
+
+Then make it executable and run it as `./ping.sh`.
+
+`echo '#!/bin/bash' >> ping.sh` would put the shebang at the end, where it is only a comment. Build the file again from the top instead.
+--- starter
+echo 'echo "pong"' > ping.sh
+--- solution
+echo '#!/bin/bash' > ping.sh
+echo 'echo "pong"' >> ping.sh
+chmod +x ping.sh
+./ping.sh
+--- hint
+`>` empties a file and writes from the top. Start again with the shebang, using `>`.
+--- hint
+Then add the `echo "pong"` line back with `>>`, and check the order with `cat ping.sh`.
+--- check shell | The shebang is the first line
+file ping.sh ~= #!/bin/bash\necho "pong"
+--- check shell | It is executable
+file ping.sh exec
+--- check shell | It runs by name
+ran ./ping.sh
+printed-line pong
+
++++ practice | The backup that split the name
+--- task
+`backup.sh` is executable, but it breaks on names with spaces. It holds:
+
+```
+#!/bin/bash
+cp $1 $1.bak
+```
+
+`./backup.sh "flight plan.txt"` fails with errors about files called `flight` and `plan.txt`. Write the script again so that names with spaces work (same two lines, fixed), check that it is still executable, and run `./backup.sh "flight plan.txt"`. It must make `flight plan.txt.bak`. Then back up `crew-list.txt` the same way.
+--- starter
+echo "burn at T+120" > "flight plan.txt"
+echo "ada lin sam" > crew-list.txt
+echo '#!/bin/bash' > backup.sh
+echo 'cp $1 $1.bak' >> backup.sh
+chmod +x backup.sh
+--- solution
+echo '#!/bin/bash' > backup.sh
+echo 'cp "$1" "$1.bak"' >> backup.sh
+./backup.sh "flight plan.txt"
+./backup.sh crew-list.txt
+--- hint
+Unquoted, `$1` is cut at the space inside the script, so `cp` is given four words.
+--- hint
+Put double quotes around both: `cp "$1" "$1.bak"`. Writing the file again with `>` keeps its execute permission, so `ls -l backup.sh` still shows an `x`.
+--- check shell | Both backups exist, one with a space in its name
+count flight?plan.txt.bak == 1
+file crew-list.txt.bak == ada lin sam
+--- check shell | The script quotes its argument
+file backup.sh contains "$1"
+file backup.sh exec
+--- check shell | Run by name
+ran ./backup.sh
+
++++ practice | A log maker for the team
+--- task
+Create an executable script called `newlog.sh`, starting with the shebang line, that:
+
+1. makes the folder `logs`, and does not complain if it is already there;
+2. makes an empty file inside it, named after its first argument with `.log` on the end;
+3. prints `created logs/` followed by that file's name, like `created logs/engine-2.log`.
+
+Run it as `./newlog.sh engine-2`, then as `./newlog.sh "fuel pump"`. The second run must make `logs/fuel pump.log`, one file, space and all, and print `created logs/fuel pump.log`.
+--- starter
+--- solution
+echo '#!/bin/bash' > newlog.sh
+echo 'mkdir -p logs' >> newlog.sh
+echo 'touch "logs/$1.log"' >> newlog.sh
+echo 'echo "created logs/$1.log"' >> newlog.sh
+chmod +x newlog.sh
+./newlog.sh engine-2
+./newlog.sh "fuel pump"
+--- hint
+`mkdir -p` makes a folder and says nothing if it already exists, so the second run does not fail.
+--- hint
+Quote the path inside the script: `touch "logs/$1.log"`.
+--- hint
+Four lines: the shebang, `mkdir -p logs`, `touch "logs/$1.log"`, and `echo "created logs/$1.log"`. Then `chmod +x newlog.sh`.
+--- check shell | Both logs were made, one with a space
+file logs/engine-2.log
+count logs/fuel?pump.log == 1
+count logs/* == 2
+--- check shell | Each run said what it made
+printed-line created logs/engine-2.log
+printed-line created logs/fuel pump.log
+--- check shell | A proper executable script
+file newlog.sh contains #!/bin/bash
+file newlog.sh exec
+ran ./newlog.sh
 
 === term3-08 | Find and replace: sed
 --- teach
@@ -1858,6 +3734,163 @@ file settings.conf ~= host=db.internal\nurl=http://db.internal:5432/db.internal\
 --- check shell | Edited in place with sed
 used sed -i
 used /g
+
++++ practice | Preview the release notes
+--- task
+`release.txt` talks about a `beta` build, twice on one line. Print the whole file with **every** `beta` replaced by `stable`, using `sed`. Only print it: `release.txt` itself must not change.
+--- starter
+echo "version 2.0 beta" > release.txt
+echo "the beta build replaces the old beta build" >> release.txt
+echo "tested on the bench" >> release.txt
+--- solution
+sed 's/beta/stable/g' release.txt
+--- hint
+`s/old/new/` changes the first match on each line. Add `g` after the last slash to change every match.
+--- hint
+Leave out `-i`, so `sed` prints the result and the file stays as it is.
+--- check shell | The preview shows every beta as stable
+printed-exactly version 2.0 stable\nthe stable build replaces the old stable build\ntested on the bench
+--- check shell | The file itself did not change
+file release.txt contains the beta build replaces the old beta build
+--- check shell | Substituted with sed, every match
+ran sed
+used /g
+
++++ practice | What the names would become
+--- task
+The folder `notes` holds three `.txt` files. Print the list of their names as they **would** look with `.md` in place of `.txt`, one per line, by piping `ls notes` into `sed`. No file is renamed.
+
+`a.txt.bak` is not a `.txt` file: its name must come out unchanged, so change `txt` only where it is at the very end of a name.
+--- starter
+mkdir notes
+touch notes/a.txt notes/b.txt notes/c.txt notes/a.txt.bak
+--- solution
+ls notes | sed 's/\.txt$/.md/'
+--- hint
+Given no file name, `sed` works on the text arriving through the pipe.
+--- hint
+`$` pins the pattern to the end of the line, and `\.` is a real dot.
+--- check shell | The names as they would be
+printed-exactly a.md\na.txt.bak\nb.md\nc.md
+--- check shell | Nothing was renamed
+count notes/*.txt == 3
+file notes/a.txt.bak
+--- check shell | Piped into sed, pinned to the end
+used | sed
+used $/
+
++++ practice | Switch debug off everywhere
+--- task
+Every `.conf` file here has the line `DEBUG=1`. With **one** `for` loop over `*.conf` and `sed -i`, change it to `DEBUG=0` in every one of them, in the files themselves. One file has a space in its name. `notes.txt` also says `DEBUG=1`, and must be left alone.
+
+Then print `old site.conf` with `cat` to check it.
+--- starter
+echo "DEBUG=1" > app.conf
+echo "port=80" >> app.conf
+echo "DEBUG=1" > db.conf
+echo "name=main" > "old site.conf"
+echo "DEBUG=1" >> "old site.conf"
+echo "remember: DEBUG=1 on the bench" > notes.txt
+--- solution
+for f in *.conf; do sed -i 's/DEBUG=1/DEBUG=0/' "$f"; done
+cat "old site.conf"
+--- hint
+The loop runs one `sed -i` per file, with `"$f"` as the file name.
+--- hint
+Quote `"$f"`, or `old site.conf` is cut into two names.
+--- check shell | app.conf and db.conf are switched off
+file app.conf ~= DEBUG=0\nport=80
+file db.conf == DEBUG=0
+--- check shell | So is the file with a space, and notes.txt is untouched
+printed-exactly name=main\nDEBUG=0
+file notes.txt == remember: DEBUG=1 on the bench
+--- check shell | Changed in place, in a loop
+used sed -i
+used for
+
++++ practice | Paths with slashes in them
+--- task
+The website moved from `/var/www/old` to `/srv/site`. In `site.conf`, change **every** `/var/www/old` to `/srv/site`, in the file itself. One line has it twice.
+
+The paths are full of slashes, so pick another separator for the `s` command.
+--- starter
+echo "root=/var/www/old" > site.conf
+echo "logs=/var/www/old/logs:/var/www/old/archive" >> site.conf
+echo "port=8080" >> site.conf
+--- solution
+sed -i 's|/var/www/old|/srv/site|g' site.conf
+--- hint
+`sed` uses whatever character comes straight after the `s` as the separator, so `s|…|…|` works.
+--- hint
+The second line has two matches, so it needs `g`. Try it without `-i` first, then add `-i`.
+--- check shell | Every old path is the new one
+file site.conf ~= root=/srv/site\nlogs=/srv/site/logs:/srv/site/archive\nport=8080
+--- check shell | Changed in place
+used sed -i
+--- check shell | Another separator, every match
+used s|
+used |g
+
++++ practice | It looked right, but nothing changed
+--- task
+Every link in `links.txt` should use `https:` instead of `http:`, in the file itself. A teammate ran:
+
+```
+sed 's/http:/https:/' links.txt
+```
+
+The output looked almost right, but `cat links.txt` shows the file never changed, and in the output the second link on the mirror line was still `http:`. Fix the command so that `links.txt` itself ends up with `https:` everywhere.
+--- starter
+echo "home http://orbit.example" > links.txt
+echo "mirror http://a.example http://b.example" >> links.txt
+echo "docs http://docs.example" >> links.txt
+--- solution
+sed -i 's/http:/https:/g' links.txt
+--- hint
+Two things are missing: the flag that changes the file itself, and the letter that changes every match on a line.
+--- hint
+`-i` for in place, and `g` at the end: `sed -i 's/http:/https:/g' links.txt`.
+--- check shell | Every link is https
+file links.txt ~= home https://orbit.example\nmirror https://a.example https://b.example\ndocs https://docs.example
+--- check shell | In place
+used sed -i
+--- check shell | Every match
+used /g
+
++++ practice | Clean the telemetry
+--- task
+`telemetry.csv` has comment lines that **begin** with `#`, blank lines, and readings like `T1,20.5`: a sensor, a comma, a value.
+
+1. With `sed -i`, delete every comment line. A reading line can have a `#` further along, and it must stay.
+2. With `sed -i`, delete every blank line: a line with nothing between its start and its end.
+3. With `sed -i`, change every comma into a space.
+4. Finally, with `sed -n` and `p`, print only the lines for sensor `T1`: lines that **begin** with `T1` followed by a space.
+--- starter
+echo "# telemetry, one reading per line" > telemetry.csv
+echo "T1,20.5" >> telemetry.csv
+echo "" >> telemetry.csv
+echo "T2,19.0" >> telemetry.csv
+echo "# T1 was recalibrated here" >> telemetry.csv
+echo "T1,21.0" >> telemetry.csv
+echo "T10,5.5 # new sensor" >> telemetry.csv
+echo "" >> telemetry.csv
+--- solution
+sed -i '/^#/d' telemetry.csv
+sed -i '/^$/d' telemetry.csv
+sed -i 's/,/ /g' telemetry.csv
+sed -n '/^T1 /p' telemetry.csv
+--- hint
+`/^#/d` deletes the lines that start with `#`. A blank line starts and ends at once: `^$`.
+--- hint
+Every comma, so `s/,/ /g`. For the last step, `T10` also starts with `T1`, so put the space in the pattern: `/^T1 /p`.
+--- check shell | Only the readings are left, with spaces
+file telemetry.csv ~= T1 20.5\nT2 19.0\nT1 21.0\nT10 5.5 # new sensor
+--- check shell | Only T1's readings were printed
+printed-exactly T1 20.5\nT1 21.0
+--- check shell | Deleted and printed with sed
+used /d
+used sed -n
+used /p
 
 === term3-09 | Lists into arguments: xargs
 --- teach
@@ -2082,6 +4115,169 @@ dir assets/img
 dir logs
 used xargs mkdir
 
++++ practice | Delete what the list says
+--- task
+`obsolete.txt` names three old files, one per line. Delete exactly those three with **one** pipeline: `cat obsolete.txt` piped into `xargs rm`. `keep.txt` is not on the list and must stay.
+--- starter
+touch old-map.png draft1.txt draft2.txt keep.txt
+echo "old-map.png" > obsolete.txt
+echo "draft1.txt" >> obsolete.txt
+echo "draft2.txt" >> obsolete.txt
+--- solution
+cat obsolete.txt | xargs rm
+--- hint
+`rm` never reads its standard input. `xargs` turns the names arriving through the pipe into arguments for it.
+--- hint
+`cat obsolete.txt | xargs rm`.
+--- check shell | The three listed files are gone
+missing old-map.png
+missing draft1.txt
+missing draft2.txt
+--- check shell | Everything else stayed
+file keep.txt
+file obsolete.txt
+--- check shell | Deleted through xargs
+used xargs rm
+
++++ practice | Copy the chosen ones
+--- task
+`wanted.txt` names three files, one per line. Copy each of them into the folder `pick`, with **one** pipeline: `cat wanted.txt` piped into `xargs` with `-I {}`, so each name goes in the middle of the `cp` command, before the folder.
+--- starter
+mkdir pick
+echo "burn at T+120" > plan.txt
+touch crew.txt map.png notes.txt
+echo "plan.txt" > wanted.txt
+echo "crew.txt" >> wanted.txt
+echo "map.png" >> wanted.txt
+--- solution
+cat wanted.txt | xargs -I {} cp {} pick/
+--- hint
+`cp` needs the file first and the folder last. `-I {}` puts each item wherever `{}` is written.
+--- hint
+`xargs -I {} cp {} pick/`.
+--- check shell | The three chosen files are in pick
+count pick/* == 3
+file pick/plan.txt == burn at T+120
+file pick/map.png
+--- check shell | Nothing else was copied
+missing pick/notes.txt
+--- check shell | Placed with -I
+used xargs -I
+
++++ practice | Replace the old call, only where it is marked
+--- task
+Some files under `src` are marked with the word `DEPRECATED`. In **those files only**, change every `oldApi` to `newApi`, in the files themselves.
+
+Use one pipeline: `grep` to list the names of the marked files (at any depth), piped into `xargs sed -i`. `src/extra.js` uses `oldApi` too, but it is not marked, so it must stay as it is.
+--- starter
+mkdir -p src/net
+echo "// DEPRECATED: move off oldApi" > src/main.js
+echo "x = oldApi(1) + oldApi(2)" >> src/main.js
+echo "// DEPRECATED" > src/net/client.js
+echo "y = oldApi(url)" >> src/net/client.js
+echo "z = oldApi(0)" > src/extra.js
+--- solution
+grep -rl DEPRECATED src | xargs sed -i 's/oldApi/newApi/g'
+--- hint
+`grep -rl DEPRECATED src` prints the name of each marked file, once. Look at that list before going on.
+--- hint
+Then add `| xargs sed -i 's/oldApi/newApi/g'`. The `g` catches the line that calls it twice.
+--- check shell | main.js now calls newApi everywhere
+file src/main.js ~= // DEPRECATED: move off newApi\nx = newApi(1) + newApi(2)
+--- check shell | So does client.js
+file src/net/client.js ~= // DEPRECATED\ny = newApi(url)
+--- check shell | The unmarked file was left alone
+file src/extra.js == z = oldApi(0)
+used xargs sed -i
+
++++ practice | Backups with spaces in their names
+--- task
+The folder `work` has `.bak` files at several depths, and two of them have spaces in their names. Move every one of them into the folder `trash`, with **one** `find` command that searches `work`. Everything else in `work` must stay where it is.
+
+`find … | xargs mv …` would cut the names with spaces in two, so let `find` run `mv` itself on each file.
+--- starter
+mkdir -p work/docs/old trash
+touch work/a.bak "work/flight plan.bak" work/docs/b.bak "work/docs/old/crew list.bak" work/docs/readme.txt work/notes.txt
+--- solution
+find work -name "*.bak" -exec mv {} trash/ \;
+--- hint
+`-exec` runs a command for each file `find` finds, with the whole name, spaces and all, where `{}` is written. `{}` can sit anywhere in the command, here before the folder.
+--- hint
+The command ends with `\;`, a backslash and a semicolon. The backslash keeps the shell's hands off the `;`.
+--- check shell | Every .bak file is in trash, names whole
+count trash/*.bak == 4
+count trash/flight?plan.bak == 1
+count trash/crew?list.bak == 1
+--- check shell | None are left in work, and the rest stayed
+count work/*.bak == 0
+missing work/docs/b.bak
+file work/docs/readme.txt
+file work/notes.txt
+--- check shell | find ran mv itself
+used -exec mv
+
++++ practice | The folder in the wrong place
+--- task
+A teammate wanted to copy every `.log` file under `logs`, at any depth, into the folder `archive`, and typed:
+
+```
+find logs -name "*.log" | xargs cp archive/
+```
+
+It failed with an error about a target that is not a directory, and nothing was copied. Copy every `.log` file under `logs` into `archive` with a corrected pipeline that still starts with the same `find` and pipes into `xargs`.
+--- starter
+mkdir -p logs/day1 logs/day2 archive
+echo "boot ok" > logs/day1/boot.log
+touch logs/day1/radio.log logs/day2/pump.log logs/day2/notes.txt
+--- solution
+find logs -name "*.log" | xargs -I {} cp {} archive/
+--- hint
+`xargs` puts the items at the **end** of the command, so the teammate's line ran `cp archive/ logs/day1/boot.log …`. What did `cp` think the target was?
+--- hint
+`-I {}` lets you place each item before the folder: `cp {} archive/`.
+--- check shell | Every log was copied into archive
+count archive/*.log == 3
+file archive/boot.log == boot ok
+--- check shell | The originals stayed, and notes.txt was not copied
+file logs/day2/pump.log
+missing archive/notes.txt
+--- check shell | Still find piped into xargs
+used find logs -name
+used | xargs -I
+
++++ practice | Gather the failed runs
+--- task
+Under `runs` are test logs at several depths. A run failed if its log contains `FAIL`.
+
+1. Make a folder called `failed`.
+2. With one pipeline, copy every log under `runs` that contains `FAIL` into `failed`: `grep` to list the file names, piped into `xargs` with `-I {}` and `cp`.
+3. Print how many logs are now in `failed`, as a single number, with `ls` and `wc -l`.
+--- starter
+mkdir -p runs/day1 runs/day2/night
+echo "boot ok" > runs/day1/t1.log
+echo "radio FAIL" > runs/day1/t2.log
+echo "pump ok" > runs/day2/t3.log
+echo "fan FAIL" > runs/day2/t4.log
+echo "valve FAIL" > runs/day2/night/t5.log
+echo "all ok" > runs/day2/night/t6.log
+--- solution
+mkdir failed
+grep -rl FAIL runs | xargs -I {} cp {} failed/
+ls failed | wc -l
+--- hint
+`grep -rl FAIL runs` lists every file under `runs` with at least one `FAIL` line.
+--- hint
+Pipe that into `xargs -I {} cp {} failed/`. Then `ls failed | wc -l`.
+--- check shell | The three failed logs were gathered
+count failed/*.log == 3
+file failed/t4.log == fan FAIL
+missing failed/t1.log
+--- check shell | Counted: three
+printed-exactly 3
+--- check shell | Gathered through xargs
+used xargs
+used grep -rl
+
 === term3-10 | Debugging a script
 --- teach
 Last lesson ended with a warning about spaces in file names. Back in the variables lesson, you were warned that a misspelled variable makes no noise. This lesson hands you a script with both of those bugs in it, and a method for finding them.
@@ -2257,6 +4453,225 @@ file archive.sh excludes $dets
 file archive.sh contains "$f"
 status 0
 
++++ practice | The build folder with no number
+--- task
+`build.sh` should make a folder called `build-4` and print `built 4`. Instead it makes a folder called `build-` and prints `built 4`.
+
+1. Trace it with `bash -x build.sh`, and find the line where the value goes missing.
+2. Write `build.sh` again with the bug fixed: the same three lines, built with `echo '…'` (`>` for the first, `>>` for the others).
+3. Run `bash build.sh`, then delete the wrong folder `build-` that the broken runs made.
+--- starter
+echo 'version=4' > build.sh
+echo 'mkdir -p "build-$verison"' >> build.sh
+echo 'echo "built $version"' >> build.sh
+--- solution
+bash -x build.sh
+echo 'version=4' > build.sh
+echo 'mkdir -p "build-$version"' >> build.sh
+echo 'echo "built $version"' >> build.sh
+bash build.sh
+rm -r build-
+--- hint
+In the trace, look at the `+ mkdir` line. What came after `build-`?
+--- hint
+Line 1 sets `version`, but line 2 spells it differently. `cat build.sh` shows the script as it really is.
+--- hint
+Fix line 2 to `mkdir -p "build-$version"`, run the script, then remove the empty folder with `rm -r build-`.
+--- check shell | You traced the script
+ran bash -x build.sh
+printed-line + mkdir -p build-
+--- check shell | build-4 exists, and build- is gone
+dir build-4
+missing build-
+--- check shell | The typo is fixed
+file build.sh excludes verison
+file build.sh contains $version
+
++++ practice | Make the typo loud
+--- task
+`hello.sh` prints `Hello, ` and then nothing, because of a misspelled variable. Make the script catch its own typo:
+
+1. Write `hello.sh` again with `set -u` as a new **first** line, followed by its two lines unchanged, still with the typo. Run it with `bash hello.sh`: now it stops with an `unbound variable` error that names the misspelled variable.
+2. Write it once more with the typo fixed, keeping `set -u` at the top, and run it so it prints `Hello, Lin`.
+--- starter
+echo 'crew=Lin' > hello.sh
+echo 'echo "Hello, $crwe"' >> hello.sh
+--- solution
+echo 'set -u' > hello.sh
+echo 'crew=Lin' >> hello.sh
+echo 'echo "Hello, $crwe"' >> hello.sh
+bash hello.sh
+echo 'set -u' > hello.sh
+echo 'crew=Lin' >> hello.sh
+echo 'echo "Hello, $crew"' >> hello.sh
+bash hello.sh
+--- hint
+`set -u` must come before the line it guards, so it goes in with `>`, and the other lines follow with `>>`.
+--- hint
+The error message names the variable that was never set: `crwe`. The one that was set is `crew`.
+--- check shell | set -u caught the typo
+printed crwe: unbound variable
+--- check shell | The fixed script greets Lin
+printed-line Hello, Lin
+--- check shell | set -u is still the first line
+file hello.sh ~= set -u\ncrew=Lin\necho "Hello, $crew"
+
++++ practice | The report with two bugs
+--- task
+`report.sh` takes a log file as its first argument and should print a line like:
+
+```
+night shift.log: 2 of 5 lines
+```
+
+Run on `night shift.log`, it prints errors, and a line with blanks in it. It has **two** bugs.
+
+1. Trace it with `bash -x report.sh "night shift.log"`.
+2. Write it again with both bugs fixed: the same three lines, built with `echo '…'`.
+3. Run `bash report.sh "night shift.log"` so it prints `night shift.log: 2 of 5 lines`.
+--- starter
+for i in 1 2 3; do echo "INFO $i" >> "night shift.log"; done
+echo "ERROR fan" >> "night shift.log"
+echo "ERROR pump" >> "night shift.log"
+echo 'total=$(cat $1 | wc -l)' > report.sh
+echo 'errors=$(grep -c ERROR "$1")' >> report.sh
+echo 'echo "$1: $errors of $totl lines"' >> report.sh
+--- solution
+bash -x report.sh "night shift.log"
+echo 'total=$(cat "$1" | wc -l)' > report.sh
+echo 'errors=$(grep -c ERROR "$1")' >> report.sh
+echo 'echo "$1: $errors of $total lines"' >> report.sh
+bash report.sh "night shift.log"
+--- hint
+In the trace, find the `cat` line: how many words did `cat` get? And on the last line, which variable is empty?
+--- hint
+One `$1` has no quotes around it, so the name is cut in two. And the last line uses a name that was never set.
+--- hint
+Line 1 becomes `total=$(cat "$1" | wc -l)`, and line 3 uses `$total`.
+--- check shell | You traced it
+ran bash -x report.sh
+--- check shell | The report is right
+printed-line night shift.log: 2 of 5 lines
+--- check shell | Both bugs are fixed
+file report.sh excludes $totl
+file report.sh contains cat "$1"
+
++++ practice | Names with spaces, and the mess they left
+--- task
+`done.sh` marks a job as finished by making an empty file named after its first argument with `.done` on the end. It works for `engine`, but a teammate ran it as `bash done.sh "flight plan"`, and it made two files, `flight` and `plan.done`, instead of one.
+
+1. Trace `bash -x done.sh "flight plan"` and look at the `touch` line.
+2. Write `done.sh` again so that names with spaces work.
+3. Delete the two stray files, `flight` and `plan.done`.
+4. Run `bash done.sh "flight plan"`, then `bash done.sh engine`.
+--- starter
+echo 'touch $1.done' > done.sh
+bash done.sh "flight plan"
+--- solution
+bash -x done.sh "flight plan"
+echo 'touch "$1.done"' > done.sh
+rm flight plan.done
+bash done.sh "flight plan"
+bash done.sh engine
+--- hint
+In the trace, `+ touch flight plan.done` has no quotes: `touch` was given two words.
+--- hint
+Inside the script, `"$1.done"` keeps the name whole. `rm flight plan.done` removes the two stray files.
+--- check shell | One file for the job with a space
+count flight?plan.done == 1
+file engine.done
+--- check shell | The stray files are gone
+missing flight
+missing plan.done
+--- check shell | The script quotes its argument
+file done.sh contains "$1.done"
+ran bash -x done.sh
+
++++ practice | Fix the cause, not the knock-on
+--- task
+`collect.sh` should gather every `.csv` file into a folder called `collected` and then list it. Running it prints three errors. It holds:
+
+```
+out_dir=collected
+mkdir -p $outdir
+cp *.csv $out_dir/
+ls $out_dir
+```
+
+1. Run `bash collect.sh` and read the errors from the top.
+2. Fix the line that causes the **first** error, by writing `collect.sh` again (all four lines, built with `echo '…'`). Do not make the folder by hand: the script must make it itself.
+3. Run `bash collect.sh` again. It must list the three `.csv` files, with no errors.
+--- starter
+touch crew.csv fuel.csv orbit.csv notes.txt
+echo 'out_dir=collected' > collect.sh
+echo 'mkdir -p $outdir' >> collect.sh
+echo 'cp *.csv $out_dir/' >> collect.sh
+echo 'ls $out_dir' >> collect.sh
+--- solution
+bash collect.sh
+echo 'out_dir=collected' > collect.sh
+echo 'mkdir -p "$out_dir"' >> collect.sh
+echo 'cp *.csv "$out_dir/"' >> collect.sh
+echo 'ls "$out_dir"' >> collect.sh
+bash collect.sh
+--- hint
+The first error is `mkdir: missing operand`. The `cp` and `ls` errors come after it, because the folder was never made.
+--- hint
+Line 1 sets `out_dir`, with an underscore. Line 2 uses a name without it.
+--- hint
+Line 2 becomes `mkdir -p "$out_dir"`. Quoting the other two is a good habit too.
+--- check shell | The csv files were collected
+count collected/*.csv == 3
+missing collected/notes.txt
+--- check shell | The last run listed them, with no errors
+last-printed-exactly crew.csv fuel.csv orbit.csv
+--- check shell | The script makes the folder itself
+file collect.sh excludes $outdir
+ran bash collect.sh
+
++++ practice | Two bugs in the log check
+--- task
+`check.sh` counts the `.log` files and should print `too many logs: 4` when there are more than 3, or `logs ok: ` and the count otherwise. It holds:
+
+```
+set -u
+limit=3
+count=$(ls *.log | wc -l)
+if [ $count -gt $limt ] then echo "too many logs: $count"; else echo "logs ok: $count"; fi
+```
+
+It has two bugs on its last line. Find them by running it and reading the errors (fix one, run again, and read what comes next). Write the script again with both fixed, all four lines, and run it: with four logs it prints `too many logs: 4`. Then delete `old.log` and run it again: it prints `logs ok: 3`.
+--- starter
+touch boot.log radio.log pump.log old.log
+echo 'set -u' > check.sh
+echo 'limit=3' >> check.sh
+echo 'count=$(ls *.log | wc -l)' >> check.sh
+echo 'if [ $count -gt $limt ] then echo "too many logs: $count"; else echo "logs ok: $count"; fi' >> check.sh
+--- solution
+bash check.sh
+echo 'set -u' > check.sh
+echo 'limit=3' >> check.sh
+echo 'count=$(ls *.log | wc -l)' >> check.sh
+echo 'if [ "$count" -gt "$limit" ]; then echo "too many logs: $count"; else echo "logs ok: $count"; fi' >> check.sh
+bash check.sh
+rm old.log
+bash check.sh
+--- hint
+A `syntax error near unexpected token` means the shell could not even read the line. Count the semicolons around `then`.
+--- hint
+`set -u` names the variable that was never set. Compare it with the one set on line 2.
+--- hint
+The last line becomes `if [ "$count" -gt "$limit" ]; then …`.
+--- check shell | Four logs are too many
+printed-line too many logs: 4
+--- check shell | Three logs are ok
+printed-line logs ok: 3
+missing old.log
+--- check shell | Both bugs are fixed, and set -u stayed
+file check.sh excludes $limt
+file check.sh contains ]; then
+file check.sh contains set -u
+
 === term3-11 | Problem solving: tidying a downloads folder
 --- teach
 Last lesson was a method for fixing a script. This lesson is a method for writing one. The problem is a real one: a downloads folder with thirty files of every kind, all mixed up. The goal is one folder per kind of file. You will work it out in five steps before you type the loop.
@@ -2317,7 +4732,7 @@ jpg
 ~/project/downloads $ mv "$f" "$ext/"
 ```
 
-`${f##*.}` is read "f with everything up to the last dot cut off". It is a cousin of `${f#IMG_}` from the renaming lesson, where `#` cut text off the start. Here the thing to cut is the pattern `*.`, which means "any characters, then a dot" (the `*` is the file-name wildcard again, not the regular expression one). One `#` cuts the **shortest** match, up to the first dot. Two, `##`, cut the **longest**, up to the [[last dot|shortest-longest]]:
+`${f##*.}` is read "f with everything up to the last dot cut off". It is a cousin of `${f#draft_}` from the renaming lesson, where `#` cut text off the start. Here the thing to cut is the pattern `*.`, which means "any characters, then a dot" (the `*` is the file-name wildcard again, not the regular expression one). One `#` cuts the **shortest** match, up to the first dot. Two, `##`, cut the **longest**, up to the [[last dot|shortest-longest]]:
 
 ```
 ~/project/downloads $ f=site.tar.gz
@@ -2446,6 +4861,195 @@ file downloads/README
 --- check shell | Done with a loop
 used for
 used mkdir -p
+
++++ practice | Survey the inbox
+--- task
+The folder `inbox` holds files of several kinds. Survey it: with **one** pipeline that starts with `ls inbox`, print how many files there are of each extension, **most first**, like this first line:
+
+```
+4 png
+```
+
+Cut each name down to its extension with `sed`, then count.
+--- starter
+mkdir inbox
+touch inbox/a.png inbox/b.png inbox/c.png inbox/d.png inbox/e.csv inbox/f.csv inbox/g.csv inbox/h.md
+--- solution
+ls inbox | sed 's/.*\.//' | sort | uniq -c | sort -rn
+--- hint
+`sed 's/.*\.//'` cuts everything up to the last real dot, leaving the extension.
+--- hint
+Then the counting pipeline from the intermediate course: `sort | uniq -c`, and `sort -rn` to put the biggest count first.
+--- check shell | A count for each extension, most first
+printed-exactly 4 png\n3 csv\n1 md
+--- check shell | Cut with sed, counted with uniq -c
+used sed
+used uniq -c
+--- check shell | Nothing was moved
+count inbox/* == 8
+
++++ practice | Sort by the start of the name
+--- task
+The files in `parts` are named after the part of the ship, then a dash, then more: `pump-01.log`, `fan-notes.txt`, and so on. Go into `parts` with `cd parts`. Then, with **one** `for` loop over `*-*`, move every file into a folder named after the part of its name **before the first dash**: `pump-01.log` goes to `pump/`, `fan-notes.txt` to `fan/`. Make each folder with `mkdir -p`. `README` has no dash, and must stay where it is.
+--- starter
+mkdir parts
+touch parts/pump-01.log parts/pump-02.log parts/fan-notes.txt parts/fan-01.log parts/valve-test-1.log parts/README
+--- solution
+cd parts
+for f in *-*; do part="${f%%-*}"; mkdir -p "$part"; mv "$f" "$part/"; done
+--- hint
+To keep the start, cut from the end. One `%` cuts the shortest match from the end, and `%%` the longest. Which one leaves `valve` from `valve-test-1.log`?
+--- hint
+`${f%%-*}` cuts everything from the first dash to the end.
+--- hint
+The body has three commands: set `part`, `mkdir -p "$part"`, then `mv "$f" "$part/"`.
+--- check shell | Every file is in its part's folder
+count parts/pump/* == 2
+count parts/fan/* == 2
+file parts/valve/valve-test-1.log
+--- check shell | README stayed, and nothing else is loose
+file parts/README
+count parts/*-* == 0
+missing parts/valve-test
+--- check shell | Done with one loop and %%
+cwd parts
+used %%-*
+used mkdir -p
+
++++ practice | Tidy, then tally
+--- task
+Go into `inbox` with `cd inbox`. Then:
+
+1. With **one** `for` loop, move every file that has an extension into a folder named after that extension, using `${f##*.}` and `mkdir -p`.
+2. With a second `for` loop over the list `csv md png`, write one line per folder into `tally.txt`, in that order: the folder's name, a space, and how many files it holds, counted with `ls` and `wc -l`:
+
+```
+csv 2
+md 1
+png 3
+```
+
+Send the whole loop's output into `tally.txt` with one `>` after `done`. Nothing is loose in `inbox` afterwards except `tally.txt`.
+--- starter
+mkdir inbox
+touch inbox/a.png inbox/b.png inbox/c.png inbox/d.csv inbox/e.csv inbox/f.md
+--- solution
+cd inbox
+for f in *.*; do ext="${f##*.}"; mkdir -p "$ext"; mv "$f" "$ext/"; done
+for d in csv md png; do echo "$d $(ls "$d" | wc -l)"; done > tally.txt
+--- hint
+Do the tidy first, then the tally: if `tally.txt` existed before the tidy, the loop over `*.*` would move it into `txt/`.
+--- hint
+A `>` after `done` catches everything the loop prints: `for d in csv md png; do …; done > tally.txt`.
+--- check shell | The files are tidied
+count inbox/png/*.png == 3
+count inbox/csv/*.csv == 2
+file inbox/md/f.md
+--- check shell | tally.txt counts each folder
+file inbox/tally.txt ~= csv 2\nmd 1\npng 3
+--- check shell | Only tally.txt is loose
+count inbox/*.* == 1
+cwd inbox
+
++++ practice | A folder with a dot in its name
+--- task
+Go into `downloads` with `cd downloads`. With **one** `for` loop over `*.*`, move every **file** that has an extension into a folder named after its extension, using `${f##*.}` and `mkdir -p`.
+
+Two traps:
+
+- `site.old` is a **folder**, not a file, but `*.*` matches it too. It must stay where it is, untouched: use `[ -f "$f" ]` inside the loop so only files are moved.
+- `notes final.txt` has a space in its name.
+
+`backup.tar.gz` goes to `gz/`, and `README` stays where it is.
+--- starter
+mkdir -p downloads/site.old
+touch downloads/site.old/index.html downloads/photo.jpg "downloads/notes final.txt" downloads/todo.txt downloads/backup.tar.gz downloads/README
+--- solution
+cd downloads
+for f in *.*; do if [ -f "$f" ]; then ext="${f##*.}"; mkdir -p "$ext"; mv "$f" "$ext/"; fi; done
+--- hint
+Put the three tidy commands inside `if [ -f "$f" ]; then …; fi`, so a folder's name is simply skipped.
+--- hint
+`${f##*.}` cuts up to the **last** dot, so `backup.tar.gz` gives `gz`.
+--- check shell | Every file went to its folder
+count downloads/txt/*.txt == 2
+file downloads/gz/backup.tar.gz
+file downloads/jpg/photo.jpg
+--- check shell | The folder site.old was left alone
+dir downloads/site.old
+file downloads/site.old/index.html
+missing downloads/old
+--- check shell | README stayed, and a file test was used
+file downloads/README
+used [ -f
+cwd downloads
+
++++ practice | Two bugs in the tidy loop
+--- task
+A teammate wrote this loop to tidy `downloads` by extension, but has not run it yet:
+
+```
+for f in *; do ext="${f#*.}"; mkdir -p "$ext"; mv "$f" "$ext/"; done
+```
+
+A dry run shows two bugs: `README` would be moved into a folder called `README`, and `site.tar.gz` would go into a folder called `tar.gz` instead of `gz`.
+
+Go into `downloads` with `cd downloads`. Do a dry run of your **fixed** loop first (the same loop with `echo` in front of `mv`), then run it for real.
+--- starter
+mkdir downloads
+touch downloads/site.tar.gz downloads/photo.jpg downloads/plan.txt downloads/README
+--- solution
+cd downloads
+for f in *.*; do ext="${f##*.}"; mkdir -p "$ext"; echo mv "$f" "$ext/"; done
+for f in *.*; do ext="${f##*.}"; mkdir -p "$ext"; mv "$f" "$ext/"; done
+--- hint
+Which list leaves out names without a dot? And how many `#` signs cut up to the **last** dot?
+--- hint
+Loop over `*.*`, and use `${f##*.}`.
+--- check shell | The dry run showed the right plan
+printed-line mv site.tar.gz gz/
+--- check shell | Every file is where it belongs
+file downloads/gz/site.tar.gz
+file downloads/jpg/photo.jpg
+file downloads/txt/plan.txt
+missing downloads/tar.gz
+--- check shell | README stayed loose
+file downloads/README
+missing downloads/README/README
+
++++ practice | Photos by month
+--- task
+The camera names its photos like `IMG_2026-03-14_001.jpg`: `IMG_`, the date as year-month-day, an underscore and a number. Go into `camera` with `cd camera`.
+
+1. With **one** `for` loop over `IMG_*.jpg`, move every photo into a folder named after its **year and month**: `IMG_2026-03-14_001.jpg` goes to `2026-03/`. Inside the body, first store the name without `IMG_` in a variable, then cut the rest off that. `notes.txt` is not a photo and must stay where it is.
+2. With a second `for` loop over the list `2026-03 2026-04`, print each month and how many photos its folder holds, counted with `ls` and `wc -l`:
+
+```
+2026-03 2
+2026-04 3
+```
+--- starter
+mkdir camera
+touch camera/IMG_2026-03-14_001.jpg camera/IMG_2026-03-30_002.jpg camera/IMG_2026-04-01_003.jpg camera/IMG_2026-04-01_004.jpg camera/IMG_2026-04-22_005.jpg camera/notes.txt
+--- solution
+cd camera
+for f in IMG_*.jpg; do d="${f#IMG_}"; month="${d%-*}"; mkdir -p "$month"; mv "$f" "$month/"; done
+for m in 2026-03 2026-04; do echo "$m $(ls "$m" | wc -l)"; done
+--- hint
+After `d="${f#IMG_}"`, `d` holds `2026-03-14_001.jpg`. Cut from the end, up to the **last** dash.
+--- hint
+One `%` cuts the shortest match from the end: `${d%-*}` cuts `-14_001.jpg` and leaves `2026-03`.
+--- hint
+The body: `d="${f#IMG_}"; month="${d%-*}"; mkdir -p "$month"; mv "$f" "$month/"`.
+--- check shell | Every photo is in its month
+count camera/2026-03/*.jpg == 2
+count camera/2026-04/*.jpg == 3
+count camera/IMG_* == 0
+--- check shell | The tally is right
+printed-exactly 2026-03 2\n2026-04 3
+--- check shell | notes.txt stayed
+file camera/notes.txt
+cwd camera
 
 === term3-12a | Stopping a script: exit and standard error
 --- teach
@@ -2601,6 +5205,201 @@ not-printed liftoff
 --- check shell | The message went to standard error, and 2> caught it
 file held.txt == countdown held
 used 2>
+
++++ practice | The result in the file, the warning on the screen
+--- task
+Build a script called `measure.sh` with two lines, added one at a time with `echo '…'`:
+
+1. `echo "temperature: 21"`, the result;
+2. `echo "sensor is old"`, a warning, sent to standard error.
+
+Then run it as `bash measure.sh > result.txt`. The file must hold only the result, and the warning must still appear on the screen.
+--- starter
+--- solution
+echo 'echo "temperature: 21"' > measure.sh
+echo 'echo "sensor is old" >&2' >> measure.sh
+bash measure.sh > result.txt
+--- hint
+`>&2` at the end of a command sends its output to standard error. Keep it inside the single quotes, so it goes into the script.
+--- hint
+`>` catches only standard output, so the warning is left on the screen.
+--- check shell | result.txt holds only the result
+file result.txt == temperature: 21
+--- check shell | The warning reached the screen
+printed-line sensor is old
+--- check shell | The script sends the warning to standard error
+file measure.sh contains >&2
+used > result.txt
+
++++ practice | A script that answers with grep's status
+--- task
+Build a script called `oncrew.sh` with one line: a quiet `grep` that asks whether `crew.txt` contains the script's first argument. It has no `exit` of its own, so its status is `grep`'s.
+
+Run it as `bash oncrew.sh Ada` and print its exit status with `echo $?` (it should be `0`). Then run it as `bash oncrew.sh Yuri` and print its status (it should be `1`).
+--- starter
+echo "Ada" > crew.txt
+echo "Lin" >> crew.txt
+--- solution
+echo 'grep -q "$1" crew.txt' > oncrew.sh
+bash oncrew.sh Ada
+echo $?
+bash oncrew.sh Yuri
+echo $?
+--- hint
+A script finishes with the status of the last command it ran, here the `grep -q`.
+--- hint
+The line is `grep -q "$1" crew.txt`, written into the file with single quotes.
+--- check shell | Ada is on the crew: status 0
+ran bash oncrew.sh Ada
+printed-exactly 0
+--- check shell | Yuri is not: status 1
+ran bash oncrew.sh Yuri
+printed-exactly 1
+--- check shell | The script asks grep quietly
+file oncrew.sh contains grep -q
+
++++ practice | Stop on errors
+--- task
+Build a script called `logcheck.sh` with two lines:
+
+1. an `if` that checks quietly whether the file named in the first argument contains `ERROR`; if it does, it prints `errors in ` followed by the file's name **to standard error**, and exits with status `1`;
+2. `echo "$1 clean"`.
+
+Run it on `good.log` and print its status (`good.log clean`, then `0`). Then run it on `bad.log` and print its status (`errors in bad.log`, then `1`). The second run must never print `bad.log clean`.
+--- starter
+echo "INFO all fine" > good.log
+echo "ERROR pump stalled" > bad.log
+--- solution
+echo 'if grep -q ERROR "$1"; then echo "errors in $1" >&2; exit 1; fi' > logcheck.sh
+echo 'echo "$1 clean"' >> logcheck.sh
+bash logcheck.sh good.log
+echo $?
+bash logcheck.sh bad.log
+echo $?
+--- hint
+The `then` branch has two commands: the message with `>&2`, then `exit 1`.
+--- hint
+Line 1: `if grep -q ERROR "$1"; then echo "errors in $1" >&2; exit 1; fi`.
+--- check shell | good.log is clean, status 0
+printed-line good.log clean
+printed-exactly 0
+--- check shell | bad.log stops with status 1
+printed-line errors in bad.log
+printed-exactly 1
+not-printed bad.log clean
+--- check shell | The message goes to standard error
+file logcheck.sh contains >&2
+file logcheck.sh contains exit 1
+
++++ practice | Keep the warning out of the count
+--- task
+Build a script called `list.sh` with four lines, added one at a time with `echo '…'`:
+
+1. `echo "alpha"`
+2. `echo "bravo"`
+3. `echo "charlie"`
+4. a warning, `echo "list may be old"`, sent to standard error.
+
+Then run `bash list.sh | wc -l`. It must print `3`: the warning must not be counted.
+
+Mind the `&`: without it, the fourth line would write the warning into a file called `2`.
+--- starter
+--- solution
+echo 'echo "alpha"' > list.sh
+echo 'echo "bravo"' >> list.sh
+echo 'echo "charlie"' >> list.sh
+echo 'echo "list may be old" >&2' >> list.sh
+bash list.sh | wc -l
+--- hint
+A pipe carries only standard output. A line sent with `>&2` goes straight to the screen instead.
+--- hint
+Line 4 is `echo 'echo "list may be old" >&2' >> list.sh`.
+--- check shell | Only the three data lines were counted
+printed-line 3
+printed-line list may be old
+used | wc -l
+--- check shell | The warning went to standard error
+file list.sh contains >&2
+--- check shell | No stray file called 2
+missing 2
+
++++ practice | The message that never appeared
+--- task
+`config.sh` should print `config missing` on standard error and exit with status `1`. A teammate wrote it like this:
+
+```
+echo "config missing" >2
+exit 1
+```
+
+When it ran, no message appeared, and a file called `2` turned up.
+
+1. Write `config.sh` again, fixed, with the same two lines.
+2. Delete the stray file `2`.
+3. Run it as `bash config.sh 2> err.txt`, and print its status with `echo $?`. `err.txt` must hold `config missing`, and the status must be `1`.
+--- starter
+echo 'echo "config missing" >2' > config.sh
+echo 'exit 1' >> config.sh
+bash config.sh
+--- solution
+echo 'echo "config missing" >&2' > config.sh
+echo 'exit 1' >> config.sh
+rm 2
+bash config.sh 2> err.txt
+echo $?
+--- hint
+`>2` means "into a file called 2". The `&` is what says "stream number two".
+--- hint
+Line 1 becomes `echo "config missing" >&2`. Then `rm 2`.
+--- check shell | The message went to standard error, and 2> caught it
+file err.txt == config missing
+--- check shell | The status is 1
+printed-exactly 1
+--- check shell | The stray file is gone, and the script is fixed
+missing 2
+file config.sh contains >&2
+
++++ practice | The go/no-go script
+--- task
+Build a script called `preflight.sh`. It checks three stations in order, `fuel.txt`, `nav.txt` and `comms.txt`, each of which should hold exactly the line `GO`:
+
+- for each station that says `GO`, it prints `fuel go` (or `nav go`, `comms go`) on standard output;
+- at the first station that does not, it prints `fuel no-go` (or `nav no-go`, `comms no-go`) on **standard error**, and stops with status `3` for fuel, `4` for nav, `5` for comms;
+- if all three say `GO`, it finishes by printing `all go`.
+
+Write it as four lines: one `if` line per station, then the last `echo`.
+
+1. Run it as `bash preflight.sh > poll.txt`, then print its status. `nav.txt` says `NO-GO`, so the status is `4`, `nav no-go` appears on the screen, and `poll.txt` holds only `fuel go`.
+2. Write `GO` into `nav.txt`, and run `bash preflight.sh` again: it prints `fuel go`, `nav go`, `comms go` and `all go`.
+--- starter
+echo "GO" > fuel.txt
+echo "NO-GO" > nav.txt
+echo "GO" > comms.txt
+--- solution
+echo 'if grep -q "^GO$" fuel.txt; then echo "fuel go"; else echo "fuel no-go" >&2; exit 3; fi' > preflight.sh
+echo 'if grep -q "^GO$" nav.txt; then echo "nav go"; else echo "nav no-go" >&2; exit 4; fi' >> preflight.sh
+echo 'if grep -q "^GO$" comms.txt; then echo "comms go"; else echo "comms no-go" >&2; exit 5; fi' >> preflight.sh
+echo 'echo "all go"' >> preflight.sh
+bash preflight.sh > poll.txt
+echo $?
+echo "GO" > nav.txt
+bash preflight.sh
+--- hint
+`NO-GO` contains `GO`, so match the whole line: `grep -q "^GO$" fuel.txt`.
+--- hint
+Each station's line has the shape `if …; then echo "… go"; else echo "… no-go" >&2; exit N; fi`.
+--- hint
+The first run's standard output goes into `poll.txt`, so only `fuel go` lands there; `nav no-go` goes to standard error, which stays on the screen.
+--- check shell | The first run stopped at nav, with status 4
+file poll.txt == fuel go
+printed-line nav no-go
+printed-exactly 4
+--- check shell | After the fix, all go
+file nav.txt == GO
+last-printed-exactly fuel go\nnav go\ncomms go\nall go
+--- check shell | Stops with its own statuses, messages on standard error
+file preflight.sh contains exit 4
+file preflight.sh contains >&2
 
 === term3-12 | Build a tool: a script that checks its input
 --- teach
@@ -2787,3 +5586,732 @@ printed-exactly 1
 printed-exactly 3
 file errors.sh contains exit 2
 file errors.sh contains >&2
+
++++ practice | The first line, or how to use it
+--- task
+Write a script called `first.sh`, built line by line with `echo '…'`, which takes a file name as its first argument:
+
+- with **no argument**, it prints `usage: first.sh FILE` to standard error, and exits with status `2`;
+- otherwise it prints the **first line** of the file, with `head`.
+
+Test both paths: run `bash first.sh` and print its status with `echo $?`, then run `bash first.sh plan.txt`.
+--- starter
+echo "burn at T+120" > plan.txt
+echo "coast to apogee" >> plan.txt
+--- solution
+echo 'if [ $# -eq 0 ]; then echo "usage: first.sh FILE" >&2; exit 2; fi' > first.sh
+echo 'head -n 1 "$1"' >> first.sh
+bash first.sh
+echo $?
+bash first.sh plan.txt
+--- hint
+The guard asks `[ $# -eq 0 ]`: were no arguments given? Its branch prints the usage line with `>&2`, then `exit 2`.
+--- hint
+The work is `head -n 1 "$1"`.
+--- check shell | With no argument: usage, and status 2
+printed-line usage: first.sh FILE
+printed-exactly 2
+--- check shell | With a file: its first line
+printed-exactly burn at T+120
+--- check shell | The guard really stops the script
+file first.sh contains exit 2
+file first.sh contains >&2
+
++++ practice | A folder, not a file
+--- task
+Write a script called `howmany.sh`, built line by line with `echo '…'`, which takes the name of a folder as its first argument:
+
+- if there is **no folder** by that name, it prints `not a folder: ` followed by the name, such as `not a folder: notes.txt`, to standard error, and exits with status `1`;
+- otherwise it prints how many things the folder holds, as a single number, with `ls` and `wc -l`.
+
+Test both paths: run it on `notes.txt` (a file, not a folder) and print its status, then run it on `photos`.
+--- starter
+mkdir photos
+touch photos/a.jpg photos/b.jpg photos/c.jpg notes.txt
+--- solution
+echo 'if [ ! -d "$1" ]; then echo "not a folder: $1" >&2; exit 1; fi' > howmany.sh
+echo 'ls "$1" | wc -l' >> howmany.sh
+bash howmany.sh notes.txt
+echo $?
+bash howmany.sh photos
+--- hint
+`-d` asks "is there a folder with this name?", and `!` turns the question around.
+--- hint
+Line 1: `if [ ! -d "$1" ]; then echo "not a folder: $1" >&2; exit 1; fi`. Line 2: `ls "$1" | wc -l`.
+--- check shell | A file is refused, with status 1
+printed-line not a folder: notes.txt
+printed-exactly 1
+--- check shell | The folder's contents were counted
+printed-exactly 3
+--- check shell | The guard asks about a folder
+file howmany.sh contains -d
+file howmany.sh contains exit 1
+
++++ practice | Line counts, skipping what is missing
+--- task
+Write a script called `sizes.sh`, built line by line with `echo '…'`, which takes any number of file names:
+
+- with **no arguments**, it prints `usage: sizes.sh FILE...` to standard error, and exits with status `2`;
+- otherwise, for each file in turn: if it does not exist, it prints `skip: ` and the name to standard error and goes on to the next; if it does, it prints the name, a colon and its number of lines, like `a.txt: 3 lines`, counting with `wc -l <`.
+
+Run it with no arguments and print its status. Then run `bash sizes.sh a.txt missing.txt b.txt`.
+--- starter
+for i in 1 2 3; do echo "a $i" >> a.txt; done
+for i in 1 2; do echo "b $i" >> b.txt; done
+--- solution
+echo 'if [ $# -eq 0 ]; then echo "usage: sizes.sh FILE..." >&2; exit 2; fi' > sizes.sh
+echo 'for f in "$@"; do if [ -f "$f" ]; then echo "$f: $(wc -l < "$f") lines"; else echo "skip: $f" >&2; fi; done' >> sizes.sh
+bash sizes.sh
+echo $?
+bash sizes.sh a.txt missing.txt b.txt
+--- hint
+The second line is a `for` loop over `"$@"` with an `if` inside it. In this tool a missing file is skipped, not a reason to stop, so its branch has no `exit`.
+--- hint
+`$(wc -l < "$f")` is the bare number of lines, with no file name after it.
+--- check shell | No arguments: usage, and status 2
+printed-line usage: sizes.sh FILE...
+printed-exactly 2
+--- check shell | Every file reported, the missing one skipped
+printed-exactly a.txt: 3 lines\nskip: missing.txt\nb.txt: 2 lines
+--- check shell | Counted from standard input
+file sizes.sh contains wc -l <
+
++++ practice | Exactly two arguments
+--- task
+Write a script called `copyto.sh`, built line by line with `echo '…'`, which copies a file into a folder: `copyto.sh FILE FOLDER`.
+
+- unless it is given **exactly two** arguments, it prints `usage: copyto.sh FILE FOLDER` to standard error, and exits with status `2`;
+- if the file does not exist, it prints `no such file: ` and the name to standard error, and exits with `1`;
+- if the folder does not exist, it prints `no such folder: ` and the name to standard error, and exits with `1`;
+- otherwise it copies the file into the folder.
+
+Test it with these four runs:
+
+1. `bash copyto.sh notes.txt backup extra` (three arguments: refused, nothing copied);
+2. `bash copyto.sh notes.txt nowhere`;
+3. `bash copyto.sh "flight plan.txt" backup`;
+4. `bash copyto.sh ghost.txt backup`.
+--- starter
+mkdir backup
+echo "go" > notes.txt
+echo "burn at T+120" > "flight plan.txt"
+--- solution
+echo 'if [ $# -ne 2 ]; then echo "usage: copyto.sh FILE FOLDER" >&2; exit 2; fi' > copyto.sh
+echo 'if [ ! -f "$1" ]; then echo "no such file: $1" >&2; exit 1; fi' >> copyto.sh
+echo 'if [ ! -d "$2" ]; then echo "no such folder: $2" >&2; exit 1; fi' >> copyto.sh
+echo 'cp "$1" "$2/"' >> copyto.sh
+bash copyto.sh notes.txt backup extra
+bash copyto.sh notes.txt nowhere
+bash copyto.sh "flight plan.txt" backup
+bash copyto.sh ghost.txt backup
+--- hint
+"Exactly two" is `[ $# -ne 2 ]` for the refusal: the number of arguments is not equal to 2. Checking only for zero would let three arguments through.
+--- hint
+Quote `"$1"` and `"$2"` everywhere, so `flight plan.txt` stays one name.
+--- check shell | Three arguments were refused, and nothing was copied
+printed-line usage: copyto.sh FILE FOLDER
+missing backup/notes.txt
+--- check shell | A missing folder and a missing file were reported
+printed-line no such folder: nowhere
+printed-line no such file: ghost.txt
+--- check shell | The file with a space was copied
+count backup/flight?plan.txt == 1
+count backup/* == 1
+
++++ practice | The guard that let it through
+--- task
+`top.sh` should print the first three lines of a file. A teammate wrote it like this:
+
+```
+if [ $# -eq 0 ]; then echo "usage: top.sh FILE" >&2; fi
+head -n 3 "$1"
+```
+
+Run with no argument, it prints the usage line, then an error from `head`, and finishes with status `1`. Write `top.sh` again, fixed, so that with no argument it prints **only** the usage line and exits with status `2`. Test it: run `bash top.sh` and print its status, then run `bash top.sh log.txt`.
+--- starter
+for i in 1 2 3 4 5; do echo "line $i" >> log.txt; done
+echo 'if [ $# -eq 0 ]; then echo "usage: top.sh FILE" >&2; fi' > top.sh
+echo 'head -n 3 "$1"' >> top.sh
+--- solution
+echo 'if [ $# -eq 0 ]; then echo "usage: top.sh FILE" >&2; exit 2; fi' > top.sh
+echo 'head -n 3 "$1"' >> top.sh
+bash top.sh
+echo $?
+bash top.sh log.txt
+--- hint
+Printing the usage message does not stop a script. What command does?
+--- hint
+Add `exit 2` to the guard's branch: `…>&2; exit 2; fi`.
+--- check shell | With no argument: only the usage line
+printed-exactly usage: top.sh FILE
+--- check shell | …and status 2
+printed-exactly 2
+file top.sh contains exit 2
+--- check shell | With a file: its first three lines
+printed-exactly line 1\nline 2\nline 3
+
++++ practice | A pattern counter with every path tested
+--- task
+Write a script called `grepcount.sh`, built line by line with `echo '…'`, used as `grepcount.sh PATTERN FILE`:
+
+- unless it is given exactly two arguments, it prints `usage: grepcount.sh PATTERN FILE` to standard error, and exits with status `2`;
+- if the file does not exist, it prints `no such file: ` and the name to standard error, and exits with status `1`;
+- otherwise it prints how many lines of the file contain the pattern, in a sentence like `3 lines match ERROR`.
+
+Then test every path, printing the status with `echo $?` after each of the first two:
+
+1. `bash grepcount.sh ERROR` (one argument);
+2. `bash grepcount.sh ERROR nope.log`;
+3. `bash grepcount.sh ERROR app.log`;
+4. `bash grepcount.sh PANIC app.log`, which must print `0 lines match PANIC`.
+--- starter
+echo "INFO start" > app.log
+echo "ERROR disk" >> app.log
+echo "ERROR disk" >> app.log
+echo "INFO retry" >> app.log
+echo "ERROR network" >> app.log
+--- solution
+echo 'if [ $# -ne 2 ]; then echo "usage: grepcount.sh PATTERN FILE" >&2; exit 2; fi' > grepcount.sh
+echo 'if [ ! -f "$2" ]; then echo "no such file: $2" >&2; exit 1; fi' >> grepcount.sh
+echo 'echo "$(grep -c "$1" "$2") lines match $1"' >> grepcount.sh
+bash grepcount.sh ERROR
+echo $?
+bash grepcount.sh ERROR nope.log
+echo $?
+bash grepcount.sh ERROR app.log
+bash grepcount.sh PANIC app.log
+--- hint
+Here the file is the **second** argument, so the file check uses `"$2"`.
+--- hint
+`grep -c` prints `0` when nothing matches, so the sentence still comes out right. Put it inside `$(…)` in an `echo`.
+--- hint
+Line 3: `echo "$(grep -c "$1" "$2") lines match $1"`.
+--- check shell | Wrong use: usage, and status 2
+printed-line usage: grepcount.sh PATTERN FILE
+printed-exactly 2
+--- check shell | A missing file: a clear error, and status 1
+printed-line no such file: nope.log
+printed-exactly 1
+--- check shell | The counts, zero included
+printed-exactly 3 lines match ERROR
+printed-exactly 0 lines match PANIC
+
+=== term3-gate | The command line, advanced: mastery gate
+--- teach
+This gate covers the whole course: variables and quoting, exporting to the programs you run, `$(…)`, exit statuses with `&&`, `||` and `if`, questions with `[ … ]`, `for` loops and cutting names with `%` and `#`, scripts with arguments, `#!`, `chmod +x` and `./`, `sed`, `xargs` and `find -exec`, debugging with `bash -x` and `set -u`, and tools that guard their input with `exit` and `>&2`. Most problems mix several of these. There are 10 problems and 12 questions in 112 minutes. You pass with 7 problems and 10 questions right, and there are no hints. To get ready, redo the practice problems of the lessons that felt hard without opening their hints, check every script you write with `cat`, and test every path through it.
+--- gate
+pass 7
+questions 10
+minutes 112
+
++++ problem | Deploy with the right settings
+--- task
+`VERSION` holds the version number of the release, and `deploy.sh` prints `deploying ` followed by `$APP_VERSION`, ` to ` and `$TARGET`.
+
+1. Set `APP_VERSION` to the contents of `VERSION` and export it, without typing the version number yourself.
+2. Run `bash deploy.sh` with `TARGET` set to `staging` for that one run only. It prints `deploying 4.2.1 to staging`.
+3. Export `TARGET` as `prod`, and run `bash deploy.sh` again. It prints `deploying 4.2.1 to prod`.
+4. Write the line `last deploy: 4.2.1 to prod by you` into `deploy.log`, with every changing part filled in from a variable or `$(whoami)`.
+--- starter
+echo "4.2.1" > VERSION
+echo 'echo "deploying $APP_VERSION to $TARGET"' > deploy.sh
+--- solution
+export APP_VERSION=$(cat VERSION)
+TARGET=staging bash deploy.sh
+export TARGET=prod
+bash deploy.sh
+echo "last deploy: $APP_VERSION to $TARGET by $(whoami)" > deploy.log
+--- check shell | The version came from the file, exported
+env APP_VERSION == 4.2.1
+used $(cat VERSION)
+--- check shell | The staging run, for one run only
+printed-line deploying 4.2.1 to staging
+used TARGET=staging bash
+--- check shell | The production run
+printed-line deploying 4.2.1 to prod
+env TARGET == prod
+--- check shell | deploy.log was written from the variables
+file deploy.log == last deploy: 4.2.1 to prod by you
+used $(whoami)
+
++++ problem | Rename, but never overwrite
+--- task
+The camera saved its pictures with the ending `.JPG`. Rename every `.JPG` file so it ends in `.jpg` instead (`moon.JPG` becomes `moon.jpg`), with **one** `for` loop.
+
+But `mars.jpg` already exists, and it is a different picture from `mars.JPG`. A file must never be renamed onto a name that is already taken: when the new name exists, leave the `.JPG` file as it is and print `skip ` followed by its name, like `skip mars.JPG`. One picture has a space in its name.
+--- starter
+echo "red one" > mars.JPG
+echo "red two" > mars.jpg
+echo "grey" > moon.JPG
+touch "deep sky.JPG"
+--- solution
+for f in *.JPG; do new="${f%.JPG}.jpg"; if [ -e "$new" ]; then echo "skip $f"; else mv "$f" "$new"; fi; done
+--- check shell | The free names were taken
+file moon.jpg == grey
+count deep?sky.jpg == 1
+--- check shell | mars.jpg was not overwritten, and mars.JPG was skipped
+file mars.jpg == red two
+file mars.JPG == red one
+printed-line skip mars.JPG
+--- check shell | Only the skipped file still ends in .JPG
+count *.JPG == 1
+count *.jpg == 3
+
++++ problem | Point the configs at the new server
+--- task
+The database moved from `db.old.lan` to `db.new.lan`. The settings files end in `.conf` and live at any depth under `etc`; one of them has a space in its name, and some lines mention the old server twice.
+
+1. In every `.conf` file under `etc`, change **every** `db.old.lan` to `db.new.lan`, in the files themselves, with one `find` command. `etc/notes.txt` also mentions the old server, and must not be changed.
+2. Print how many lines under `etc` still mention `db.old.lan`, as a single number, with one pipeline.
+--- starter
+mkdir -p etc/app etc/web
+echo "host=db.old.lan" > etc/app/db.conf
+echo "replica=db.old.lan:5433,db.old.lan:5434" >> etc/app/db.conf
+echo "upstream=db.old.lan" > "etc/web/main site.conf"
+echo "port=443" > etc/web/tls.conf
+echo "we moved off db.old.lan in May" > etc/notes.txt
+--- solution
+find etc -name "*.conf" -exec sed -i 's/db.old.lan/db.new.lan/g' {} \;
+grep -r db.old.lan etc | wc -l
+--- check shell | db.conf points at the new server everywhere
+file etc/app/db.conf ~= host=db.new.lan\nreplica=db.new.lan:5433,db.new.lan:5434
+--- check shell | The file with a space was changed too, and the others kept
+file etc/web/tls.conf == port=443
+file etc/notes.txt == we moved off db.old.lan in May
+count etc/web/*.conf == 2
+--- check shell | Only the note still mentions the old server
+printed-exactly 1
+used -exec sed -i
+
++++ problem | A backup tool you run by name
+--- task
+Create an executable script called `save.sh`, starting with the shebang line `#!/bin/bash`, used as `save.sh FILE`:
+
+- with **no argument**, it prints `usage: save.sh FILE` to standard error, and exits with status `2`;
+- if the file does not exist, it prints `no such file: ` and the name to standard error, and exits with status `1`;
+- otherwise it makes the folder `backups` if it is not there yet, copies the file into it with `.bak` added to its name, and prints `saved backups/` and the new name, like `saved backups/crew.txt.bak`.
+
+Then test it, always running it as `./save.sh`:
+
+1. with no argument, then print its status;
+2. with `ghost.txt`, then print its status;
+3. with `"flight plan.txt"`;
+4. as one line that runs `./save.sh crew.txt` and, only if it worked, prints `crew saved`.
+--- starter
+echo "burn at T+120" > "flight plan.txt"
+echo "ada lin sam" > crew.txt
+--- solution
+echo '#!/bin/bash' > save.sh
+echo 'if [ $# -eq 0 ]; then echo "usage: save.sh FILE" >&2; exit 2; fi' >> save.sh
+echo 'if [ ! -f "$1" ]; then echo "no such file: $1" >&2; exit 1; fi' >> save.sh
+echo 'mkdir -p backups' >> save.sh
+echo 'cp "$1" "backups/$1.bak"' >> save.sh
+echo 'echo "saved backups/$1.bak"' >> save.sh
+chmod +x save.sh
+./save.sh
+echo $?
+./save.sh ghost.txt
+echo $?
+./save.sh "flight plan.txt"
+./save.sh crew.txt && echo "crew saved"
+--- check shell | A proper executable script
+file save.sh contains #!/bin/bash
+file save.sh exec
+ran ./save.sh
+--- check shell | Wrong use and a missing file, each with its status
+printed-line usage: save.sh FILE
+printed-exactly 2
+printed-line no such file: ghost.txt
+printed-exactly 1
+--- check shell | Both backups were made, one with a space in its name
+count backups/flight?plan.txt.bak == 1
+file backups/crew.txt.bak == ada lin sam
+printed-line saved backups/flight plan.txt.bak
+--- check shell | A caller used its status
+printed-line crew saved
+used ./save.sh crew.txt &&
+
++++ problem | Debug the nightly job
+--- task
+`nightly.sh` should copy every `.csv` report from `reports` into `archive`, and then print `archived 3 of 3 reports`. It holds:
+
+```
+set -u
+src=reports
+dest=archive
+mkdir -p "$dest"
+for f in "$src"/*.csv; do cp $f "$dest/"; done
+echo "archived $(ls "$dest" | wc -l) of $(ls "$scr"/*.csv | wc -l) reports"
+```
+
+Running it prints errors, and one report never reaches `archive`. It has **two** bugs. Find them, write `nightly.sh` again with both fixed (all six lines, built with `echo '…'`), and run it with `bash nightly.sh` so it prints `archived 3 of 3 reports`.
+--- starter
+mkdir reports
+echo "q1" > reports/q1.csv
+echo "q2" > reports/q2.csv
+echo "q3" > "reports/q3 final.csv"
+echo 'set -u' > nightly.sh
+echo 'src=reports' >> nightly.sh
+echo 'dest=archive' >> nightly.sh
+echo 'mkdir -p "$dest"' >> nightly.sh
+echo 'for f in "$src"/*.csv; do cp $f "$dest/"; done' >> nightly.sh
+echo 'echo "archived $(ls "$dest" | wc -l) of $(ls "$scr"/*.csv | wc -l) reports"' >> nightly.sh
+--- solution
+bash -x nightly.sh
+echo 'set -u' > nightly.sh
+echo 'src=reports' >> nightly.sh
+echo 'dest=archive' >> nightly.sh
+echo 'mkdir -p "$dest"' >> nightly.sh
+echo 'for f in "$src"/*.csv; do cp "$f" "$dest/"; done' >> nightly.sh
+echo 'echo "archived $(ls "$dest" | wc -l) of $(ls "$src"/*.csv | wc -l) reports"' >> nightly.sh
+bash nightly.sh
+--- check shell | Every report is archived
+count archive/*.csv == 3
+count archive/q3?final.csv == 1
+--- check shell | The job reports it
+printed-line archived 3 of 3 reports
+--- check shell | Both bugs fixed, set -u kept
+file nightly.sh excludes $scr
+file nightly.sh contains cp "$f"
+file nightly.sh contains set -u
+
++++ problem | Clear the caches
+--- task
+Under `build` are cache **files** ending in `.cache`, at several depths; one has a space in its name. There is also a **folder** called `img.cache`, which holds `logo.png`: it is not a cache file, and it and its contents must stay.
+
+1. Delete every cache file under `build`, with one `find` command that deletes each file itself.
+2. Print how many files are left under `build`, as a single number, with one pipeline that starts with `find`.
+--- starter
+mkdir -p build/js build/img.cache build/css/old
+touch build/a.cache "build/js/app bundle.cache" build/css/old/b.cache build/js/app.js build/css/site.css build/img.cache/logo.png
+--- solution
+find build -type f -name "*.cache" -exec rm {} \;
+find build -type f | wc -l
+--- check shell | Every cache file is gone
+missing build/a.cache
+missing build/css/old/b.cache
+count build/js/* == 1
+--- check shell | The folder img.cache and everything else stayed
+dir build/img.cache
+file build/img.cache/logo.png
+file build/js/app.js
+file build/css/site.css
+--- check shell | Three files are left
+printed-exactly 3
+used -exec rm
+
++++ problem | Archive the big logs
+--- task
+Make a folder called `big`. Then, with **one** `for` loop over `*.log`, move every log with **more than 5** lines into `big`. A log with exactly 5 lines is not big. One log has a space in its name.
+
+Finally, save the names of the logs now in `big` into `big.txt`, one per line, in alphabetical order.
+--- starter
+for i in 1 2 3 4 5 6; do echo "a $i" >> a.log; done
+for i in 1 2; do echo "b $i" >> b.log; done
+for i in 1 2 3 4 5 6 7 8; do echo "c $i" >> "c d.log"; done
+for i in 1 2 3 4 5; do echo "e $i" >> e.log; done
+--- solution
+mkdir big
+for f in *.log; do if [ "$(cat "$f" | wc -l)" -gt 5 ]; then mv "$f" big/; fi; done
+ls big > big.txt
+--- check shell | The two big logs were moved
+count big/*.log == 2
+file big/a.log
+count big/c?d.log == 1
+--- check shell | The others stayed, the 5-line one included
+file b.log
+file e.log
+--- check shell | big.txt lists them in order
+file big.txt ~= a.log\nc d.log
+
++++ problem | Validate every config
+--- task
+A config file is valid only if its **first line** is exactly `#CONFIG v2`.
+
+1. Write a script called `valid.sh` that takes a file name as its first argument, prints nothing at all, and finishes with exit status `0` if that file is valid and `1` if it is not.
+2. With **one** `for` loop over `*.cfg` that uses `bash valid.sh` as the condition of an `if`, print one line per file, `NAME ok` or `NAME bad`:
+
+```
+a.cfg ok
+b.cfg bad
+c d.cfg ok
+e.cfg bad
+```
+--- starter
+echo "#CONFIG v2" > a.cfg
+echo "mode=flight" >> a.cfg
+echo "#CONFIG v1" > b.cfg
+echo "#CONFIG v2" > "c d.cfg"
+echo "# notes first" > e.cfg
+echo "#CONFIG v2" >> e.cfg
+--- solution
+echo 'head -n 1 "$1" | grep -q "^#CONFIG v2$"' > valid.sh
+for f in *.cfg; do if bash valid.sh "$f"; then echo "$f ok"; else echo "$f bad"; fi; done
+--- check shell | Every config judged by its first line
+printed-exactly a.cfg ok\nb.cfg bad\nc d.cfg ok\ne.cfg bad
+--- check shell | valid.sh answers with its status
+file valid.sh contains $1
+used if bash valid.sh
+--- check shell | The configs were not changed
+file e.cfg lines == 2
+file a.cfg lines == 2
+
++++ problem | Move the most common kind
+--- task
+Go into `inbox` with `cd inbox`.
+
+1. Store the **most common extension** in the folder in a variable called `top`, with one pipeline inside `$(…)`: survey the extensions, count them, keep the top line, and cut it down to the extension alone.
+2. Make a folder named after `$top`, and move every file with that extension into it.
+3. Print the line `moved 5 csv files`, where `5` is counted from the new folder with `ls` and `wc -l`, and `csv` comes from `$top`.
+--- starter
+mkdir inbox
+touch inbox/a.csv inbox/b.csv inbox/c.csv inbox/d.csv inbox/e.csv inbox/f.png inbox/g.png inbox/h.png inbox/i.txt inbox/j.txt
+--- solution
+cd inbox
+top=$(ls | sed 's/.*\.//' | sort | uniq -c | sort -rn | head -n 1 | sed 's/.* //')
+mkdir "$top"
+mv *."$top" "$top/"
+echo "moved $(ls "$top" | wc -l) $top files"
+--- check shell | top holds the most common extension
+var top == csv
+used top=$(
+--- check shell | Every csv file was moved
+count inbox/csv/*.csv == 5
+count inbox/*.csv == 0
+count inbox/*.png == 3
+--- check shell | The count was printed from the folder
+printed-line moved 5 csv files
+cwd inbox
+
++++ problem | The mission report tool
+--- task
+Create an executable script called `report.sh`, starting with the shebang line, used as `report.sh LOG...`:
+
+- with **no arguments**, it prints `usage: report.sh LOG...` to standard error, and exits with status `2`;
+- for each log in turn: if it exists, it prints its name and how many of its lines contain `ERROR`, like `a.log: 2 errors`; if it does not, it prints `missing: ` and the name to standard error, and goes on to the next;
+- then it prints `checked ` and how many logs it was given, like `checked 2 logs`;
+- it finishes with status `1` if any log was missing, and `0` if none was.
+
+Test it, running it as `./report.sh` and printing its status with `echo $?` after each run:
+
+1. with no arguments;
+2. with `a.log "b c.log"`;
+3. with `a.log gone.log`.
+--- starter
+echo "ERROR disk" > a.log
+echo "INFO ok" >> a.log
+echo "ERROR net" >> a.log
+echo "INFO ok" > "b c.log"
+--- solution
+echo '#!/bin/bash' > report.sh
+echo 'if [ $# -eq 0 ]; then echo "usage: report.sh LOG..." >&2; exit 2; fi' >> report.sh
+echo 'status=0' >> report.sh
+echo 'for f in "$@"; do if [ -f "$f" ]; then echo "$f: $(grep -c ERROR "$f") errors"; else echo "missing: $f" >&2; status=1; fi; done' >> report.sh
+echo 'echo "checked $# logs"' >> report.sh
+echo 'exit $status' >> report.sh
+chmod +x report.sh
+./report.sh
+echo $?
+./report.sh a.log "b c.log"
+echo $?
+./report.sh a.log gone.log
+echo $?
+--- check shell | No arguments: usage, and status 2
+printed-line usage: report.sh LOG...
+printed-exactly 2
+--- check shell | Two real logs: a report for each, and status 0
+printed-exactly a.log: 2 errors\nb c.log: 0 errors\nchecked 2 logs
+printed-exactly 0
+--- check shell | A missing log is reported, and the status is 1
+printed-exactly a.log: 2 errors\nmissing: gone.log\nchecked 2 logs
+printed-exactly 1
+--- check shell | A proper executable script
+file report.sh contains #!/bin/bash
+file report.sh exec
+ran ./report.sh
+
++++ question | Quotes and braces
+--- ask
+What does the last line print?
+
+```
+planet=mars
+echo '$planet' "${planet}s" "$planets"
+```
+--- answer
+$planet marss
+--- why
+Single quotes keep `$planet` exactly as typed. `${planet}s` is the value of `planet` followed by an `s`: `marss`. `$planets` looks up a different variable, `planets`, which was never set, so it is empty and adds nothing you can see.
+
++++ question | Cutting both ends
+--- ask
+What does the last line print?
+
+```
+f=backup.tar.gz
+echo "${f%.*} ${f##*.} ${f%%.*}"
+```
+--- answer
+backup.tar gz backup
+--- why
+`%` cuts the shortest match of `.*` from the end, only `.gz`, leaving `backup.tar`. `##` cuts the longest match of `*.` from the start, everything up to the last dot, leaving `gz`. `%%` cuts the longest match from the end, everything from the first dot, leaving `backup`.
+
++++ question | Why the script saw nothing
+--- ask
+You type `CITY=Oslo` and then `bash show.sh`, where `show.sh` holds `echo "$CITY"`. It prints an empty line. Why?
+--- choice
+`bash` clears every variable when it starts, so a script can only use variables it sets itself.
+--- choice correct
+The script runs in a child process, which gets a copy of only the exported variables, and `CITY` was never exported.
+--- choice
+Variables have to be written in small letters to reach a script.
+--- choice
+The script needed `$1` instead of `$CITY`.
+--- why
+A plain variable lives only in your shell. A child process starts with a copy of the environment: the variables marked with `export`. `export CITY`, or `CITY=Oslo bash show.sh` for one run, would let the script see it.
+
++++ question | A missing log
+--- ask
+There is no file called `gone.log`. What does this line do?
+
+```
+grep -q ERROR gone.log && echo "errors" || echo "clean"
+```
+--- choice
+It prints `errors`, because `grep` could not rule them out.
+--- choice
+It prints nothing, because `-q` hides everything.
+--- choice correct
+It prints `grep`'s error message about the missing file, then `clean`.
+--- choice
+It stops with an error, and neither `echo` runs.
+--- why
+`grep` cannot open the file, so it prints an error on standard error (`-q` does not hide that) and finishes with status `2`. Any status other than `0` counts as failure, so `&&` skips `errors` and `||` runs `echo "clean"`. The log is reported clean when it does not even exist, which is why a missing file needs its own check.
+
++++ question | The script that lost its argument
+--- ask
+These lines should build and run a script that greets whoever is named in its first argument. Which line is wrong?
+
+```
+1  echo '#!/bin/bash' > hi.sh
+2  echo "echo Hello, $1" >> hi.sh
+3  chmod +x hi.sh
+4  ./hi.sh Ada
+```
+--- choice
+Line 1: the shebang must be added with `>>`.
+--- choice correct
+Line 2: double quotes let your shell fill in `$1` while writing the file, and it is empty then, so the script holds `echo Hello,`.
+--- choice
+Line 3: `chmod +x` must come before the file is written.
+--- choice
+Line 4: a script in this folder must be run as `hi.sh Ada`.
+--- why
+A script line meets the shell twice: once when you write it and once when the script runs. Double quotes expand `$1` at the first moment, when it is empty. Single quotes, `echo 'echo "Hello, $1"' >> hi.sh`, keep it for the second.
+
++++ question | The status of a script
+--- ask
+`check.sh` holds two lines: `ls missing`, then `echo done`. There is no file called `missing`. What does the last line print?
+
+```
+bash check.sh
+echo $?
+```
+--- answer
+0
+--- why
+A script finishes with the status of the last command it ran. `ls missing` failed, but `echo done` worked, so the script reports `0`. That is why a careful script stops with its own `exit 1` as soon as something goes wrong.
+
++++ question | The empty name
+--- ask
+`name` is set but empty. Why does `[ $name = ada ]` print `unary operator expected`?
+--- choice
+`=` cannot compare strings; it needs `-eq`.
+--- choice correct
+Unquoted, the empty variable disappears, so `[` is left with `= ada ]`, which is not a question it can read.
+--- choice
+Variables are not allowed inside `[ … ]`.
+--- choice
+`ada` has to be in quotes, or `[` reads it as a command.
+--- why
+The shell fills in `$name` and splits the result into words before `[` runs. An empty, unquoted value turns into no word at all. With quotes, `[ "$name" = ada ]` stays a comparison between an empty string and `ada`, and is simply false.
+
++++ question | What the loop costs
+--- ask
+A folder holds n log files, each with about m lines. How does the running time of this loop grow?
+
+```
+for f in *.log; do grep -c ERROR "$f"; done
+```
+--- choice
+O(n): the loop runs once per file.
+--- choice
+O(m): `grep` reads one file at a time.
+--- choice correct
+O(n × m): the loop runs n times, and each `grep -c` reads all m lines of its file.
+--- choice
+O(n²): every file is compared with every other file.
+--- why
+The loop body runs once per file, and `grep -c` has to read every line of that file to count the matches: it cannot stop early the way `grep -q` can. n runs of about m lines each is about n × m lines read in all.
+
++++ question | sed without -i
+--- ask
+`crew.txt` holds `pilot: guest`. You run `sed 's/guest/ada/' crew.txt`, and it prints `pilot: ada`. What does `crew.txt` hold now?
+--- choice
+`pilot: ada`
+--- choice correct
+`pilot: guest`
+--- choice
+Nothing: `sed` empties the file it reads.
+--- choice
+Both lines, `pilot: guest` and then `pilot: ada`.
+--- why
+Without `-i`, `sed` only prints the changed text; the file is never touched. That is useful for checking a change safely. Add `-i` when the output is what you want, and the file itself is rewritten.
+
++++ question | xargs and a space
+--- ask
+The folder holds `a.tmp` and `my notes.tmp`. What happens when you run `ls *.tmp | xargs rm`?
+--- choice
+Both files are deleted.
+--- choice correct
+`a.tmp` is deleted, and `rm` complains that `my` and `notes.tmp` do not exist.
+--- choice
+Nothing is deleted, because `rm` does not read a pipe.
+--- choice
+Only `my notes.tmp` is deleted.
+--- why
+`xargs` cuts its input at every space, not only at the ends of lines, so `my notes.tmp` arrives as two arguments. `find . -name "*.tmp" -exec rm {} \;` hands each name over whole, spaces and all.
+
++++ question | A missing ampersand
+--- ask
+A script has the line `echo "disk full" >2`. What does that line do?
+--- choice
+It prints `disk full` on standard error.
+--- choice correct
+It writes `disk full` into a file called `2`, and nothing appears on the screen.
+--- choice
+It prints `disk full` and stops the script with status 2.
+--- choice
+It prints an error, because `>2` is not allowed.
+--- why
+After `>`, the shell expects a file name, so `2` is simply a name. `>&2` needs the `&` to mean "stream number two", standard error.
+
++++ question | Reading a trace
+--- ask
+`bash -x archive.sh` shows this line of its trace:
+
+```
++ mv meeting notes.txt archive/
+```
+
+What does it tell you?
+--- choice
+`mv` got two arguments, and the move worked.
+--- choice correct
+`mv` got three arguments, because the file name `meeting notes.txt` was split at its space: the variable holding it was not in double quotes.
+--- choice
+The folder `archive` does not exist yet.
+--- choice
+The script has a typo in a variable name.
+--- why
+A trace shows each command after the variables are filled in, and writes a word with a space in it inside single quotes. A correctly quoted `"$f"` would show `+ mv 'meeting notes.txt' archive/`. With no quotes in the trace, `mv` saw `meeting`, `notes.txt` and `archive/`.
