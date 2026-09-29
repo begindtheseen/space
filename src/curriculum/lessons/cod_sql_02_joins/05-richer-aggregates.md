@@ -17,7 +17,7 @@ You will use the same two tables as the rest of the module: `satellite` (four sp
 
 Picture a teacher taking attendance and writing every name present on one line of the board, with commas between them. That is what **STRING_AGG** does. It is an aggregate, so it takes all the rows in a group and gives back one value — but the value is a piece of text that strings the group's values together. Read it aloud as "string ag", short for "string aggregate". (A **string** is programmers' word for a piece of text.)
 
-It takes two arguments: the value to collect, and the **separator** — the text to put between neighbours.
+It takes two arguments: the value to collect, and the **separator** — the text to put between neighbors.
 
 ```sql
 SELECT plane,
@@ -64,7 +64,7 @@ ORDER BY s.name;
 
 Walk through Aurora. The join gives three rows for it. `ORDER BY r.ts` puts them in time order: midnight on 1 March (20), 06:00 on 1 March (24), 01:00 on 2 March (30). STRING_AGG writes the three values with `' -> '` between each pair. There are two gaps between three items, so two arrows.
 
-Sanity check: the number of values in each history matches `n`. Cirrus has one value and no arrow, because a one-item list has no neighbours to separate. Dorado is missing because the inner join drops a satellite with no readings — which is what you want here.
+Sanity check: the number of values in each history matches `n`. Cirrus has one value and no arrow, because a one-item list has no neighbors to separate. Dorado is missing because the inner join drops a satellite with no readings — which is what you want here.
 :::
 
 ::: warning Lists are for people to read, not for further computing
@@ -127,7 +127,7 @@ Line up seven students by height, shortest to tallest. The one standing fourth �
 
 Why would you want the median when you already have `AVG`? Because the average listens to every value equally, including a wild one. A median only cares about order, so a single wild value can move it by at most one place in the line.
 
-A **percentile** generalises the median. The **[[90th percentile|p-numbers]]** is the value that 90 percent of the group sits at or below. The median is the 50th percentile. Engineers usually write percentiles as fractions from 0 to 1, so the median is 0.5 and the 90th percentile is 0.9.
+A **percentile** generalizes the median. The **[[90th percentile|p-numbers]]** is the value that 90 percent of the group sits at or below. The median is the 50th percentile. Engineers usually write percentiles as fractions from 0 to 1, so the median is 0.5 and the 90th percentile is 0.9.
 
 PostgreSQL computes one with **PERCENTILE_CONT**, where CONT is short for "continuous". The way you write it is new:
 
@@ -151,7 +151,7 @@ Read `PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY value)` aloud as "the 0.5 perc
 
 There are six temperatures. Sorted, they are 11, 18, 20, 22, 24, 30. There is no single middle one: 20 and 22 share the middle. So which is the median?
 
-PERCENTILE_CONT treats the sorted values as points on a line and **[[interpolates|interpolation-picture]]** — it reads off a value partway between two neighbours. Here is the rule. Number the sorted values from position 0 to position $n - 1$, where $n$ is how many there are. The percentile $p$ sits at position
+PERCENTILE_CONT treats the sorted values as points on a line and **[[interpolates|interpolation-picture]]** — it reads off a value partway between two neighbors. Here is the rule. Number the sorted values from position 0 to position $n - 1$, where $n$ is how many there are. The percentile $p$ sits at position
 
 $$
 \text{position} = p \times (n - 1).
@@ -166,7 +166,7 @@ PostgreSQL has a sister function, **PERCENTILE_DISC** ("discrete"), that never b
 To get several percentiles in one go, pass an **array** of fractions and you get an array back: `PERCENTILE_CONT(ARRAY[0.1, 0.5, 0.9]) WITHIN GROUP (ORDER BY value)` returns `{14.5,21,27}`.
 
 ::: key PERCENTILE_CONT
-`PERCENTILE_CONT(p) WITHIN GROUP (ORDER BY col)` returns the value below which a fraction `p` of the group lies, interpolating between neighbours at position $p \times (n - 1)$ of the sorted values (counting from 0). `PERCENTILE_CONT(0.5)` is the median. `PERCENTILE_DISC(p)` returns an actual member of the group instead.
+`PERCENTILE_CONT(p) WITHIN GROUP (ORDER BY col)` returns the value below which a fraction `p` of the group lies, interpolating between neighbors at position $p \times (n - 1)$ of the sorted values (counting from 0). `PERCENTILE_CONT(0.5)` is the median. `PERCENTILE_DISC(p)` returns an actual member of the group instead.
 :::
 
 ::: example One glitch, two summaries
@@ -360,7 +360,7 @@ It returns 6, 1 and `SAT-001`: only Aurora's 30 °C reading is above 25. FILTER 
 Every aggregate so far has worked at one level of grouping at a time. Next lesson asks for several levels in one result — each satellite, each plane's subtotal, and a fleet grand total — with GROUPING SETS, ROLLUP and CUBE.
 
 ::: context json-lists JSON, the text format for lists
-**JSON** (say "JAY-son") stands for JavaScript Object Notation. It is a plain-text way of writing lists and labelled values that almost every programming language can read: a list goes in square brackets, `[20.0,24.0,30.0]`, and labelled values in curly braces, `{"sat_id": "SAT-001", "temp": 20.0}`.
+**JSON** (say "JAY-son") stands for JavaScript Object Notation. It is a plain-text way of writing lists and labeled values that almost every programming language can read: a list goes in square brackets, `[20.0,24.0,30.0]`, and labeled values in curly braces, `{"sat_id": "SAT-001", "temp": 20.0}`.
 
 It is the everyday format for web services and for many ground-software configuration files, which is why SQLite chose it as its stand-in for arrays. SQLite has functions such as `json_extract` to reach back inside, but at that point the list is text being parsed again.
 :::

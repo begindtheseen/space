@@ -282,7 +282,7 @@ Root-sum-square is the Pythagorean theorem. Two independent spreads behave like 
 </svg>
 ```
 
-The two short sides are $4$ and $3$; the slanted side is $\sqrt{16 + 9} = 5$, not $7$. The grey bar is $7$ units long at the same scale. Walking along the slant is always shorter than walking both legs.
+The two short sides are $4$ and $3$; the slanted side is $\sqrt{16 + 9} = 5$, not $7$. The gray bar is $7$ units long at the same scale. Walking along the slant is always shorter than walking both legs.
 :::
 
 ::: context standard-gravity Why g₀ appears in the thrust formula

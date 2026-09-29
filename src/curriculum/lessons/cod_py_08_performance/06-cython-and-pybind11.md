@@ -6,7 +6,7 @@ covers:
   - 'Cython and pybind11; calling a C++ simulation core from a Python harness'
 ---
 
-Think about a TV remote. The remote is simple and friendly: big buttons, easy to change the channel, easy to hand to someone else. It does almost no work itself. The hard work — decoding the signal, drawing sixty pictures a second — happens in specialised electronics inside the TV. You would never want to decode video with the remote, and you would never want to change channels by opening the TV and soldering.
+Think about a TV remote. The remote is simple and friendly: big buttons, easy to change the channel, easy to hand to someone else. It does almost no work itself. The hard work — decoding the signal, drawing sixty pictures a second — happens in specialized electronics inside the TV. You would never want to decode video with the remote, and you would never want to change channels by opening the TV and soldering.
 
 Big simulation codes are built the same way. The heavy numerics — the equations of motion, the guidance law, the navigation filter — live in fast compiled code, often C++. Python is the remote: it sets up 500 dispersion cases, calls the core for each one, collects the results, draws the plots and writes the report. This lesson shows two tools that connect the remote to the box. **Cython** lets you write Python with C types added and compiles it. **pybind11** lets you take C++ code that already exists and call it from Python.
 
@@ -190,7 +190,7 @@ g++ -O3 -Wall -shared -std=c++17 -fPIC $(python3 -m pybind11 --includes) \
     gnc_core.cpp -o gnc_core$(python3 -m pybind11 --extension-suffix)
 ```
 
-Piece by piece: `-O3` turns on full optimisation; `-shared -fPIC` builds a **[[shared library|shared-library]]** that Python can load; `-std=c++17` picks the C++ standard; `python3 -m pybind11 --includes` prints where the pybind11 and Python headers are; and `--extension-suffix` prints the file ending this Python expects, here `.cpython-311-x86_64-linux-gnu.so`. The build took about seven seconds; pybind11's templates make compiles slow, which is one reason to keep the binding file small.
+Piece by piece: `-O3` turns on full optimization; `-shared -fPIC` builds a **[[shared library|shared-library]]** that Python can load; `-std=c++17` picks the C++ standard; `python3 -m pybind11 --includes` prints where the pybind11 and Python headers are; and `--extension-suffix` prints the file ending this Python expects, here `.cpython-311-x86_64-linux-gnu.so`. The build took about seven seconds; pybind11's templates make compiles slow, which is one reason to keep the binding file small.
 
 Now it is a Python module:
 
@@ -209,12 +209,12 @@ The `Vehicle` behaves like a Python object: you build it with keyword arguments 
 Why did the heavier vehicle fly longer? Drag slows it by a force divided by mass, so more mass means less deceleration from the same drag: $15.897\,\mathrm{s}$ against $14.846\,\mathrm{s}$. The physics checks out.
 
 ::: key
-Why pybind11 is the realistic pattern for a heavy GNC core: the numerics live in tested, optimised C++ that can also be flown or reused, and Python drives the dispersion harness, the plotting and the reporting. You get compiled speed where it matters and scripting speed where it matters.
+Why pybind11 is the realistic pattern for a heavy GNC core: the numerics live in tested, optimized C++ that can also be flown or reused, and Python drives the dispersion harness, the plotting and the reporting. You get compiled speed where it matters and scripting speed where it matters.
 :::
 
 ## Calling the core from a Python harness
 
-Here is the harness side: draw 500 dispersed cases, run each through the C++ core, summarise, plot.
+Here is the harness side: draw 500 dispersed cases, run each through the C++ core, summarize, plot.
 
 ```python
 import time
@@ -310,7 +310,7 @@ You now have four ways to speed up a hot loop. They fit different situations.
 
 | Situation | Reach for |
 |---|---|
-| The work can be written as whole-array operations | NumPy vectorisation |
+| The work can be written as whole-array operations | NumPy vectorization |
 | A numeric Python loop you wrote, NumPy arrays in and out | Numba `@njit` |
 | A Python module you want compiled ahead of time, or that mixes Python objects and fast loops | Cython with types |
 | The core already exists in C or C++, or must also run outside Python | pybind11 |
@@ -322,7 +322,7 @@ Some differences worth knowing:
 - **Reuse outside Python.** Only the pybind11 route leaves you with a core that a C++ flight program, a test rig or another language can use without Python.
 - **Speed.** For a tight numeric loop they end up close together, as the `coast` timings showed. The choice is about the code's home and its life cycle, not about the last ten percent.
 
-And whichever you choose, it comes late in the order of attack. Profile first, fix the algorithm, remove repeated work, vectorise; compile what is left; then run cases in parallel. A compiled version of a bad algorithm is a faster way to waste time.
+And whichever you choose, it comes late in the order of attack. Profile first, fix the algorithm, remove repeated work, vectorize; compile what is left; then run cases in parallel. A compiled version of a bad algorithm is a faster way to waste time.
 
 ## Check yourself
 
@@ -413,7 +413,7 @@ A NumPy array is a header (shape, strides, type) plus one block of raw doubles. 
 :::
 
 ::: context header-only No library to install
-Most C++ libraries come as headers plus a compiled library file you must build and link. A header-only library puts all its code in the headers, as templates the compiler fills in for your types. That makes pybind11 easy to use — install it with pip and add one include path — at the price of slower compiles. It was started by Wenzel Jakob in 2015, modelled on the older Boost.Python but without depending on the rest of Boost. SciPy uses it for some of its C++ code.
+Most C++ libraries come as headers plus a compiled library file you must build and link. A header-only library puts all its code in the headers, as templates the compiler fills in for your types. That makes pybind11 easy to use — install it with pip and add one include path — at the price of slower compiles. It was started by Wenzel Jakob in 2015, modeled on the older Boost.Python but without depending on the rest of Boost. SciPy uses it for some of its C++ code.
 :::
 
 ::: context shared-library One file, loaded when needed

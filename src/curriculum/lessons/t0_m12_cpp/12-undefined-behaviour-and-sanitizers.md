@@ -1,9 +1,9 @@
 ---
 id: l12-undefined-behaviour-and-sanitizers
-title: Undefined behaviour, and the sanitizers that catch it
+title: Undefined behavior, and the sanitizers that catch it
 minutes: 24
 covers:
-  - undefined behaviour
+  - undefined behavior
   - profiling and sanitizers: perf, valgrind, ASan/UBSan
 ---
 
@@ -11,24 +11,24 @@ Imagine a board game whose rulebook says, for a few moves: "If a player does thi
 
 Python has no moves like that. Index past the end of a list and you get an `IndexError`. Add two integers and they grow as big as they need. Read a name before assigning it and you get a `NameError`. Every mistake is a defined event with a defined message.
 
-C++ is different in kind. The C++ standard — the official rulebook for the language — lists a long catalog of situations for which it **[[imposes no requirements|no-requirements]]**: a signed integer overflowing, an array indexed out of bounds, an uninitialized variable read, a freed object used. This is **undefined behaviour**, or UB. The program may crash, print the wrong number, or print the right number in every test and the wrong one in flight. And the compiler is allowed to assume none of it ever happens.
+C++ is different in kind. The C++ standard — the official rulebook for the language — lists a long catalog of situations for which it **[[imposes no requirements|no-requirements]]**: a signed integer overflowing, an array indexed out of bounds, an uninitialized variable read, a freed object used. This is **undefined behavior**, or UB. The program may crash, print the wrong number, or print the right number in every test and the wrong one in flight. And the compiler is allowed to assume none of it ever happens.
 
 That last point makes UB the most dangerous class of bug in flight software. Tests exercise one build, with one compiler, one set of flags and one set of inputs. UB is exactly the kind of defect whose effects change between builds and inputs. So a passing test suite proves less than it seems to. This lesson explains what UB is, why the language has it, and how the compiler uses it. Then it introduces the two tools that make it visible: **UndefinedBehaviorSanitizer** and **AddressSanitizer**, which add checks to a build that turn "may do anything" into a report with a file and a line number.
 
-The next lesson covers the profilers, valgrind and the static analysers. Together with the sanitizers, they run on every change — and the flight build itself contains none of them.
+The next lesson covers the profilers, valgrind and the static analyzers. Together with the sanitizers, they run on every change — and the flight build itself contains none of them.
 
 ## What "undefined" means
 
 The standard has three levels of "not fully pinned down".
 
-- **Implementation-defined** behaviour is a choice the compiler makes, writes down and sticks to. Examples: the size of `int`, or whether a `char` is signed.
-- **Unspecified** behaviour is one of several allowed outcomes, with no need to say which. Example: the order in which a function call's arguments are evaluated.
-- **Undefined** behaviour is the absence of any rule at all. Once a program does an operation with UB, the standard says nothing about anything the program does — in principle including output it printed *before* the operation, because the compiler may have reordered the code.
+- **Implementation-defined** behavior is a choice the compiler makes, writes down and sticks to. Examples: the size of `int`, or whether a `char` is signed.
+- **Unspecified** behavior is one of several allowed outcomes, with no need to say which. Example: the order in which a function call's arguments are evaluated.
+- **Undefined** behavior is the absence of any rule at all. Once a program does an operation with UB, the standard says nothing about anything the program does — in principle including output it printed *before* the operation, because the compiler may have reordered the code.
 
 The first two are bounded. You know the menu of possible results. UB has no menu.
 
 ::: key
-Four sources of undefined behaviour in C++: signed integer overflow; out-of-bounds array access; use of an uninitialised value; use-after-free or dangling reference. The compiler may assume undefined behaviour never happens, which is how a null check gets optimised away.
+Four sources of undefined behavior in C++: signed integer overflow; out-of-bounds array access; use of an uninitialised value; use-after-free or dangling reference. The compiler may assume undefined behavior never happens, which is how a null check gets optimized away.
 :::
 
 GNC code meets other members of the family too:
@@ -248,7 +248,7 @@ Environment variables tune the run: `ASAN_OPTIONS=halt_on_error=1:detect_leaks=1
 
 Two more sanitizers complete the set. **ThreadSanitizer**, `-fsanitize=thread`, finds data races. It cannot share a build with ASan, because each needs its own shadow-memory layout, so it gets a separate build. **MemorySanitizer** finds reads of uninitialized memory. It works only with Clang and needs a specially built standard library, so in practice that job falls to the compiler's `-Wuninitialized` warning and to valgrind's memcheck, in the next lesson.
 
-Why not fly with the sanitizers on, since they catch so much? Because they double the memory, add a run-time library that allocates and takes locks, change timing unpredictably, and need operating-system features a flight computer may not have. Every one of those breaks lesson 9's rules. The flight build is protected differently: by having run the *same tests* under sanitizer builds, by the static analysers of the next lesson, by `-Wall -Wextra -Werror`, and by code that avoids the places UB lives.
+Why not fly with the sanitizers on, since they catch so much? Because they double the memory, add a run-time library that allocates and takes locks, change timing unpredictably, and need operating-system features a flight computer may not have. Every one of those breaks lesson 9's rules. The flight build is protected differently: by having run the *same tests* under sanitizer builds, by the static analyzers of the next lesson, by `-Wall -Wextra -Werror`, and by code that avoids the places UB lives.
 
 ::: warning
 A sanitizer reports only the UB that the tests actually *run*. A path no test takes is never examined. A bounds error that depends on a sensor value nobody simulated is still there. Sanitizer runs are necessary, not sufficient; how much of the code the tests cover is what gives them reach.
@@ -315,7 +315,7 @@ The fix is not to grow the starting capacity so the test happens to avoid reallo
 ::: answer
 The extra read fetched the eight bytes after `window` on the stack. In that build they happened to hold zero, so the sum was unchanged and the mean was exact.
 
-The behaviour is undefined, so nothing guarantees the zero. Different local variables, a different compiler or optimization level, or a different caller could put any value there, and the mean would gain a random error. A crash would have been found in the first test. A silently correct answer lets the bug survive until a change in an unrelated part of the program — possibly in flight — exposes it. AddressSanitizer turns the silent read into a `stack-buffer-overflow` report at the exact line.
+The behavior is undefined, so nothing guarantees the zero. Different local variables, a different compiler or optimization level, or a different caller could put any value there, and the mean would gain a random error. A crash would have been found in the first test. A silently correct answer lets the bug survive until a change in an unrelated part of the program — possibly in flight — exposes it. AddressSanitizer turns the silent read into a `stack-buffer-overflow` report at the exact line.
 :::
 
 ::: check
@@ -335,7 +335,7 @@ ThreadSanitizer and AddressSanitizer each need their own shadow-memory layout an
 
 | Item | Meaning |
 | --- | --- |
-| undefined behaviour | the standard imposes no requirements; the compiler assumes it never happens |
+| undefined behavior | the standard imposes no requirements; the compiler assumes it never happens |
 | implementation-defined / unspecified | a documented choice / one of several allowed outcomes; both bounded, UB is not |
 | four common sources | signed overflow; out-of-bounds access; uninitialized read; use-after-free or dangling reference |
 | also undefined | oversized shifts, integer division by zero, null dereference, misaligned access, data races, strict-aliasing violations, out-of-range `double`-to-`int` |
@@ -347,14 +347,14 @@ ThreadSanitizer and AddressSanitizer each need their own shadow-memory layout an
 | `-fsanitize=thread` | ThreadSanitizer for data races; a separate build from ASan |
 | not in flight | sanitizers double memory and change timing; the flight build relies on the CI runs, static analysis and `-Werror` |
 
-The next lesson covers the rest of the toolbox: measuring where time goes with `perf` and valgrind, proving the allocation-free claim with valgrind's heap tools, and the static analysers — clang-tidy and cppcheck — that read the code without running it.
+The next lesson covers the rest of the toolbox: measuring where time goes with `perf` and valgrind, proving the allocation-free claim with valgrind's heap tools, and the static analyzers — clang-tidy and cppcheck — that read the code without running it.
 
 ::: context no-requirements Demons out of your nose
 In 1992, on an online forum about the C standard, a programmer explained "undefined" by saying that when a program does something undefined, it would be perfectly legal for the compiler to make demons fly out of your nose. The phrase stuck. C and C++ programmers still say "nasal demons" for UB. The joke makes a serious point: the standard does not merely fail to say *which* bad thing happens — it places no limit on what happens at all.
 :::
 
 ::: context data-race Two hands on one whiteboard
-Picture two people updating the same number on a whiteboard. Each reads it, adds one in their head, and writes the result. If both read "5" at the same moment, both write "6", and one update is lost. In a program the threads are the people, and a **data race** is two of them touching the same memory at once, with at least one writing and nothing — a lock or an atomic operation — making them take turns. In C++ it is more than a lost update: it is undefined behaviour, because the compiler assumed nobody else was writing.
+Picture two people updating the same number on a whiteboard. Each reads it, adds one in their head, and writes the result. If both read "5" at the same moment, both write "6", and one update is lost. In a program the threads are the people, and a **data race** is two of them touching the same memory at once, with at least one writing and nothing — a lock or an atomic operation — making them take turns. In C++ it is more than a lost update: it is undefined behavior, because the compiler assumed nobody else was writing.
 :::
 
 ::: context strict-aliasing One piece of memory, two types
@@ -362,11 +362,11 @@ Picture two people updating the same number on a whiteboard. Each reads it, adds
 :::
 
 ::: context ieee-754 The rulebook for decimals
-IEEE 754 is the standard, first published in 1985, that almost every processor follows for floating-point numbers. It fixes how a `double` is stored — a sign bit, 11 exponent bits and 52 fraction bits — and exactly what every operation returns, including the awkward cases. Dividing a positive number by zero gives $+\infty$; $0/0$ gives NaN, "not a number". These special values then flow through later math, so one bad division can turn an entire state vector into NaN — defined behaviour, but still a bug to catch.
+IEEE 754 is the standard, first published in 1985, that almost every processor follows for floating-point numbers. It fixes how a `double` is stored — a sign bit, 11 exponent bits and 52 fraction bits — and exactly what every operation returns, including the awkward cases. Dividing a positive number by zero gives $+\infty$; $0/0$ gives NaN, "not a number". These special values then flow through later math, so one bad division can turn an entire state vector into NaN — defined behavior, but still a bug to catch.
 :::
 
 ::: context ariane-bridge A conversion that ended a first flight
-The dangers of turning a big floating-point number into a small integer are not hypothetical. On 4 June 1996, the first Ariane 5 rocket broke up about 40 seconds after launch. Its inertial reference software, reused from Ariane 4, converted a horizontal-velocity value from a 64-bit float to a 16-bit signed integer. Ariane 5 flew faster sideways than Ariane 4 ever had, the value no longer fit, and the conversion failed. The code was in Ada, which raised an error rather than silently producing garbage — but the unhandled error shut down both inertial reference units. In C++ the same conversion would have been undefined behaviour.
+The dangers of turning a big floating-point number into a small integer are not hypothetical. On 4 June 1996, the first Ariane 5 rocket broke up about 40 seconds after launch. Its inertial reference software, reused from Ariane 4, converted a horizontal-velocity value from a 64-bit float to a 16-bit signed integer. Ariane 5 flew faster sideways than Ariane 4 ever had, the value no longer fit, and the conversion failed. The code was in Ada, which raised an error rather than silently producing garbage — but the unhandled error shut down both inertial reference units. In C++ the same conversion would have been undefined behavior.
 :::
 
 ::: context wraparound The odometer and the integer circle

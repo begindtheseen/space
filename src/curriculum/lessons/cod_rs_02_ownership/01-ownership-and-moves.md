@@ -168,7 +168,7 @@ fn main() {
 
 Step by step. The bytes are `0x10`, `0x20`, `0x30` in hexadecimal, which are $16$, $32$ and $48$ in decimal. Their sum is $16 + 32 + 48 = 96$. The remainder after dividing by $256$ is $96$, because $96$ is already less than $256$. So the function pushes $96$ and returns the packet.
 
-Ownership went on a round trip. `main` moved the packet into the function, the function owned it while it pushed, and the return moved it back into a new `packet` binding (shadowing the old one). At no point were there two owners. And no byte of heap data was copied: only the 24-byte header travelled.
+Ownership went on a round trip. `main` moved the packet into the function, the function owned it while it pushed, and the return moved it back into a new `packet` binding (shadowing the old one). At no point were there two owners. And no byte of heap data was copied: only the 24-byte header traveled.
 
 Sanity check: the output has four bytes where the input had three, and the new last byte equals the sum of the first three. That is what a checksum of this kind should look like.
 :::

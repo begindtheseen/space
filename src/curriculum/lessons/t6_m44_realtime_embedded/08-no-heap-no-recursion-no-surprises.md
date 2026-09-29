@@ -3,7 +3,7 @@ id: l08-no-heap-no-recursion
 title: No heap, no recursion, and the limits of predictable hardware
 minutes: 25
 covers:
-  - "No dynamic allocation after initialisation: static pools, fixed-capacity containers, and placement construction"
+  - "No dynamic allocation after initialization: static pools, fixed-capacity containers, and placement construction"
   - Bounded loops, no recursion, and the rest of the Power of Ten rules
   - Cache and branch-predictor effects on determinism; why the fastest code is not always the most predictable
 ---
@@ -27,7 +27,7 @@ The allocator causes two separate problems for flight code.
 **It can fail in the middle of the mission.** A fragmented heap can refuse a request even when the total free memory is more than enough — the bus and the parking lot. That can first happen after days of normal running, in a pattern no ground test reproduced. And the code that handles "allocation failed" is, by its nature, the least-run code in the system — the wrong property for code that only runs when something has already gone wrong.
 
 ::: key Why no dynamic allocation after init
-Unbounded and history-dependent execution time, plus the possibility of failing mid-mission once the heap fragments — in a code path that is by construction the least tested. Allocate at initialisation, then fixed-capacity containers and static pools.
+Unbounded and history-dependent execution time, plus the possibility of failing mid-mission once the heap fragments — in a code path that is by construction the least tested. Allocate at initialization, then fixed-capacity containers and static pools.
 :::
 
 The fix is not "be careful with malloc". It is to take the allocator out of flight operation entirely. Every allocation happens once, during **initialization** — the startup phase before the vehicle depends on the software. A shortage there shows up on the ground as a fail-to-launch condition, not in flight. After that, three tools do everything dynamic allocation used to do:
@@ -165,7 +165,7 @@ An iterative walk — a plain loop — uses a fixed few tens of bytes of local v
 10. **All warnings on, zero warnings, plus static analysis** on every build. This turns the other nine from a style guide into something a machine checks every time — the job `-Werror` did in the prerequisite C++ module, widened to the whole rule set.
 
 ::: key The Power of Ten rules, in spirit
-Simple control flow, no recursion; a statically provable bound on every loop; no allocation after initialisation; short functions; assertion density; smallest possible scope for data; check every return value; restricted preprocessor; restricted pointer use; compile with all warnings on, zero warnings, plus static analysers.
+Simple control flow, no recursion; a statically provable bound on every loop; no allocation after initialization; short functions; assertion density; smallest possible scope for data; check every return value; restricted preprocessor; restricted pointer use (one level of dereferencing, no function pointers); compile with all warnings on, zero warnings, plus static analyzers.
 :::
 
 ::: key What every rule is for
@@ -363,7 +363,7 @@ At a clock of $2\,\mathrm{GHz}$ (two billion cycles a second), $200$ cycles is $
 :::
 
 ::: context speculation-and-spectre Guessing ahead has other costs too
-Working ahead down a guessed path is called **speculative execution**. In 2018, researchers showed that the traces it leaves in the cache can leak secrets between programs — the attacks named Spectre and Meltdown. The fixes slowed some programs noticeably.
+Working ahead down a guessed path is called **speculative execution**. In 2018, researchers showed that the traces it leaves in the cache can leak secrets between programs — the attacks named Specter and Meltdown. The fixes slowed some programs noticeably.
 
 For a real-time engineer, the lesson is the same one as this section: the processor's cleverness is invisible in the source code, it depends on history, and it can change your timing when a software or firmware update changes how the processor guesses.
 :::

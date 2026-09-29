@@ -289,12 +289,12 @@ jobs:
 
 The runner is still the Ubuntu machine, but every step runs inside `python:3.12-slim`. Point `container:` at your own simulator image, and CI tests in the same environment you ship.
 
-Some jobs cannot run on a machine GitHub owns: a MATLAB licence behind a company firewall, a hardware-in-the-loop rig in a lab. For those, you connect your own computer as a **self-hosted runner**. Lesson 4 covers when and how.
+Some jobs cannot run on a machine GitHub owns: a MATLAB license behind a company firewall, a hardware-in-the-loop rig in a lab. For those, you connect your own computer as a **self-hosted runner**. Lesson 4 covers when and how.
 
 A job that hangs — a simulation stuck in an endless loop — would keep a runner busy for a long time. The default limit is 360 minutes. Set your own with `timeout-minutes: 20` on the job, a little above its normal time, so a hang fails fast.
 
 ::: key Runners
-A GitHub-hosted runner is a fresh virtual machine per job (`ubuntu-24.04`, `windows-latest`, `macos-latest`), discarded when the job ends. `container:` runs the job's steps inside a Docker image. A self-hosted runner is your own machine, for licences and hardware the hosted ones cannot reach.
+A GitHub-hosted runner is a fresh virtual machine per job (`ubuntu-24.04`, `windows-latest`, `macos-latest`), discarded when the job ends. `container:` runs the job's steps inside a Docker image. A self-hosted runner is your own machine, for licenses and hardware the hosted ones cannot reach.
 :::
 
 ## Expressions, contexts and the automatic token

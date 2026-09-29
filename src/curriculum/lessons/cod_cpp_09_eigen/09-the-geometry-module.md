@@ -61,7 +61,7 @@ In Eigen, `q * v` rotates the vector $\mathbf{v}$, and `q1 * q2` applies `q2` fi
 :::
 
 ::: example One rotation, three forms, and why order matters
-```cpp
+```cpp fragment
 #include <Eigen/Geometry>
 #include <cmath>
 #include <cstdio>
@@ -118,7 +118,7 @@ Now the order, by hand. **Pitch first:** 90 degrees about $y$ tips the $x$ axis 
 ::: example The exercise quaternion, and a round trip
 The four numbers $(w, x, y, z) = (0.5, 0.5, 0.5, 0.5)$ are a unit quaternion: $4 \times 0.5^2 = 1$. Which rotation is it? From $w = \cos(\theta/2) = 0.5$, the half-angle is 60 degrees, so $\theta = 120$ degrees. The vector part is $\sin 60^\circ \approx 0.866$ times the axis, so the axis is $(0.5, 0.5, 0.5)/0.866 \approx (0.577, 0.577, 0.577)$, the diagonal of the cube.
 
-```cpp
+```cpp fragment
 #include <Eigen/Geometry>
 #include <cmath>
 #include <cstdio>
@@ -171,7 +171,7 @@ The cure is one call. `q.normalize()` divides all four numbers by the length, in
 ::: example Ten seconds of spinning, with and without normalize()
 A body spins at 1 rad/s about $z$, and the software propagates its attitude at 100 Hz for 10 s with the update $q \leftarrow q \otimes (1, \tfrac{1}{2}\boldsymbol{\omega}\,\Delta t)$. Read $\otimes$ as "quaternion times" and $\Delta t$ as "delta t", the time step.
 
-```cpp
+```cpp fragment
 #include <Eigen/Geometry>
 #include <cmath>
 #include <cstdio>
@@ -258,7 +258,7 @@ $$
 ::: example Where is the target the camera sees?
 A camera is bolted to a vehicle 0.5 m forward and 0.2 m up from the body origin, turned so that its boresight (its own $+z$ axis) points along the body's $+x$. The vehicle sits at $(100, 200, 0)$ m in the world, yawed 90 degrees. The camera sees a target 10 m straight down its boresight.
 
-```cpp
+```cpp fragment
 #include <Eigen/Geometry>
 #include <cmath>
 #include <cstdio>
@@ -329,7 +329,7 @@ It is used wherever software needs attitudes *between* known ones: a smooth atti
 The name comes from the geometry. Unit quaternions live on the surface of a sphere in four dimensions. Slerp walks along the **[[great circle|great-circle]]** between two points at constant speed. The cheap alternative, **nlerp**, blends the four numbers in a straight line and then normalizes. It follows the same path but not at a constant rate.
 
 ::: example Slerp against nlerp for a 160-degree slew
-```cpp
+```cpp fragment
 #include <Eigen/Geometry>
 #include <cmath>
 #include <cstdio>

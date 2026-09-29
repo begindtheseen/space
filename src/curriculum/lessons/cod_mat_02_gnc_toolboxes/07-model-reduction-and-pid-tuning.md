@@ -38,7 +38,7 @@ Lm = minreal(L)
 MATLAB multiplied the polynomials and did not notice the shared factor. You can see it by hand: $5s + 15 = 5(s+3)$ and $s^3 + 13s^2 + 30s = s(s+3)(s+10)$. The command `minreal` (read it "min real", short for **minimal realization**, the smallest model with the same input-output behavior) finds pole-zero pairs that match within a tolerance and removes them. For a state-space model it removes the states that the input cannot move or the output cannot see, and prints how many it removed. An optional second input sets the tolerance: `minreal(sys, tol)`.
 
 ::: key
-`minreal(sys)` removes pole-zero pairs that cancel and states that are uncontrollable or unobservable. The input-output behavior does not change; only the bookkeeping shrinks. `minreal(sys, tol)` sets how close a pole and zero must be to count as cancelling.
+`minreal(sys)` removes pole-zero pairs that cancel and states that are uncontrollable or unobservable. The input-output behavior does not change; only the bookkeeping shrinks. `minreal(sys, tol)` sets how close a pole and zero must be to count as canceling.
 :::
 
 ::: warning Never let minreal hide an unstable pole
@@ -208,7 +208,7 @@ The closed-loop step overshoots by about $8.2\%$, rises from 10 to 90 percent in
 
 MATLAB wraps these ideas in two interactive apps. Both are ways of turning dials and watching plots update. Neither does anything you could not script, and flight teams usually end by writing the chosen design into a script, so it can be reviewed and rerun.
 
-The **PID Tuner** opens with `pidTuner(G, 'PID')`. It shows the closed-loop step response of an automatically tuned controller. Two sliders let you trade response time against robustness (in time-domain view they are labelled for response time and transient behavior). A panel lists the gains and the performance numbers: rise time, settling time, overshoot, gain and phase margin. When you like the result you export the controller to the workspace.
+The **PID Tuner** opens with `pidTuner(G, 'PID')`. It shows the closed-loop step response of an automatically tuned controller. Two sliders let you trade response time against robustness (in time-domain view they are labeled for response time and transient behavior). A panel lists the gains and the performance numbers: rise time, settling time, overshoot, gain and phase margin. When you like the result you export the controller to the workspace.
 
 The **Control System Designer** opens with `controlSystemDesigner(G)`. It is the older and broader tool; it used to be called the **[[SISO Design Tool|siso-name]]**, and `sisotool` still opens it. Its standard setup is a feedback loop with a compensator $C$ in the forward path, plus a prefilter and a sensor block you can use or leave at $1$. It shows linked editors: the root locus from lesson 03 and the open-loop Bode plot from lesson 04. You drag the compensator's poles and zeros, or its gain, right on those plots, and every other plot updates. You can shade forbidden regions, such as "settling time must be under 2 seconds" on the root locus, so you see at once whether a design meets its requirements. It is the natural place for designs that are not PID-shaped, such as the notch filter and lead network you will meet in this module's first exercise.
 
@@ -262,7 +262,7 @@ Fix the crossover yourself: `C = pidtune(G, 'PI', 4)`. Then check it: `margin(C*
 
 | Tool or idea | What it does | Remember |
 |---|---|---|
-| `minreal(sys, tol)` | removes cancelling pole-zero pairs and dead states | never cancel an unstable pole |
+| `minreal(sys, tol)` | removes canceling pole-zero pairs and dead states | never cancel an unstable pole |
 | `hsvd(sys)` | Hankel singular values, largest first | look for a big drop |
 | `balred(sys, r)` | keeps the $r$ most important balanced states | error $\le 2 \sum$ discarded $\sigma$ |
 | `modred(sys, elim)` | removes the states you name, physical coordinates kept | default `'MatchDC'` keeps DC gain |

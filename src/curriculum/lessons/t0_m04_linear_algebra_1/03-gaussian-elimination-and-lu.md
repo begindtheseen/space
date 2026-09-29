@@ -1,14 +1,14 @@
 ---
 id: l03-gaussian-elimination-and-lu
-title: Gaussian elimination and LU factorisation
+title: Gaussian elimination and LU factorization
 minutes: 20
 covers:
-  - Gaussian elimination and LU factorisation
+  - Gaussian elimination and LU factorization
 ---
 
 Almost every number-crunching routine in a GNC stack ends up asking the same question. Given a square matrix $\mathbf{A}$ and a vector $\mathbf{b}$, which vector $\mathbf{x}$ makes $\mathbf{A}\mathbf{x} = \mathbf{b}$ true? A Kalman filter asks it at every update, when it works out how much to trust a new measurement. A least-squares fit asks it when it finds the best line through noisy data. A trim routine asks it when it balances the forces and the twisting effects, called moments, on an aircraft. The previous lesson gave the paper answer, $\mathbf{x} = \mathbf{A}^{-1}\mathbf{b}$, and warned you not to compute it that way. This lesson gives the real answer.
 
-The real answer is **[[Gaussian elimination|nine-chapters]]**: subtract multiples of one equation from the others until the system is shaped like a staircase, then solve the staircase from the bottom step up. Written with matrices, those subtractions split $\mathbf{A}$ into a lower-triangular matrix $\mathbf{L}$ times an upper-triangular matrix $\mathbf{U}$. That **LU factorisation** is what `numpy.linalg.solve` and every serious linear-algebra library actually computes. Knowing what is inside the box tells you what it costs, when it fails, and why it insists on swapping rows even when nothing seems to need swapping.
+The real answer is **[[Gaussian elimination|nine-chapters]]**: subtract multiples of one equation from the others until the system is shaped like a staircase, then solve the staircase from the bottom step up. Written with matrices, those subtractions split $\mathbf{A}$ into a lower-triangular matrix $\mathbf{L}$ times an upper-triangular matrix $\mathbf{U}$. That **LU factorization** is what `numpy.linalg.solve` and every serious linear-algebra library actually computes. Knowing what is inside the box tells you what it costs, when it fails, and why it insists on swapping rows even when nothing seems to need swapping.
 
 That row swapping is called **partial pivoting**. It is the part most often skipped in a first course, and most often the reason a home-made solver produces garbage. This lesson shows it with a worked example in which skipping it wipes out every correct digit of the answer.
 
@@ -87,7 +87,7 @@ $$
 **Check** in the original second equation: $4(1) - 1(-2) + 4(3) = 4 + 2 + 12 = 18$. Correct.
 :::
 
-## Elimination is a factorisation
+## Elimination is a factorization
 
 Look at what the elimination did to the matrix alone, ignoring the right-hand side. It turned $\mathbf{A}$ into the upper-triangular
 
@@ -131,13 +131,13 @@ $$
 -1\,(2, 1, 1) + 3\,(0, -3, 2) + 1\,(0, 0, 4) = (-2 + 0 + 0,\ -1 - 9 + 0,\ -1 + 6 + 4) = (-2, -10, 9),
 $$
 
-the third row of $\mathbf{A}$. The factorisation is exact:
+the third row of $\mathbf{A}$. The factorization is exact:
 
 $$
 \begin{pmatrix} 2 & 1 & 1 \\ 4 & -1 & 4 \\ -2 & -10 & 9 \end{pmatrix} = \begin{pmatrix} 1 & 0 & 0 \\ 2 & 1 & 0 \\ -1 & 3 & 1 \end{pmatrix}\begin{pmatrix} 2 & 1 & 1 \\ 0 & -3 & 2 \\ 0 & 0 & 4 \end{pmatrix}.
 $$
 
-This is the **LU factorisation**. Elimination on the matrix, with the multipliers written down, *is* the factorisation. No extra work is needed.
+This is the **LU factorization**. Elimination on the matrix, with the multipliers written down, *is* the factorization. No extra work is needed.
 
 ### Solving with the factors
 
@@ -172,12 +172,12 @@ So $\mathbf{y} = (3, -2, -4)^T$.
 
 So $\mathbf{x} = (2, 0, -1)^T$.
 
-**Check** in the third original equation: $-2(2) - 10(0) + 9(-1) = -4 - 9 = -13$. Correct. The factorisation did not have to be repeated. The new solve took fifteen arithmetic operations — six for the forward pass and nine for the back pass.
+**Check** in the third original equation: $-2(2) - 10(0) + 9(-1) = -4 - 9 = -13$. Correct. The factorization did not have to be repeated. The new solve took fifteen arithmetic operations — six for the forward pass and nine for the back pass.
 :::
 
 The pivots carry one more piece of information. The determinant lesson will show that the determinant of a product is the product of the determinants, and that the determinant of a triangular matrix is the product of its diagonal. Since $\mathbf{L}$ has ones on its diagonal, $\det\mathbf{L} = 1$, and so the determinant of $\mathbf{A}$ is the product of the pivots: here $2 \times (-3) \times 4 = -24$. Elimination hands you the determinant for free. That is how software computes determinants.
 
-::: key LU factorisation
+::: key LU factorization
 Gaussian elimination without row swaps writes $\mathbf{A} = \mathbf{L}\mathbf{U}$, with $\mathbf{U}$ upper triangular (its diagonal holds the pivots) and $\mathbf{L}$ unit lower triangular holding the multipliers $m_{ij} = A_{ij}/A_{jj}$ (the entry to clear divided by the pivot, both as they stand at that step). Solve $\mathbf{A}\mathbf{x} = \mathbf{b}$ by $\mathbf{L}\mathbf{y} = \mathbf{b}$ then $\mathbf{U}\mathbf{x} = \mathbf{y}$. Factoring costs about $\tfrac{2}{3}n^3$ operations; each solve about $2n^2$.
 :::
 
@@ -242,7 +242,7 @@ In double precision, the arithmetic laptops and many flight computers use, the s
 Dividing by a tiny pivot amplifies round-off into the multipliers and the rows they modify. Partial pivoting swaps in the largest-magnitude entry of the column, which bounds every multiplier by $1$ and keeps elimination numerically stable. A zero pivot is handled by the same swap.
 :::
 
-### The factorisation with pivoting
+### The factorization with pivoting
 
 Row swaps are linear maps too. Swapping rows is multiplying on the left by a **permutation matrix** $\mathbf{P}$ — an identity with its rows put in a different order. So elimination with partial pivoting produces
 
@@ -250,7 +250,7 @@ $$
 \mathbf{P}\mathbf{A} = \mathbf{L}\mathbf{U},
 $$
 
-the LU factorisation of a row-shuffled copy of $\mathbf{A}$. To solve $\mathbf{A}\mathbf{x} = \mathbf{b}$, shuffle the right-hand side the same way, then carry on as before: $\mathbf{L}\mathbf{y} = \mathbf{P}\mathbf{b}$, then $\mathbf{U}\mathbf{x} = \mathbf{y}$.
+the LU factorization of a row-shuffled copy of $\mathbf{A}$. To solve $\mathbf{A}\mathbf{x} = \mathbf{b}$, shuffle the right-hand side the same way, then carry on as before: $\mathbf{L}\mathbf{y} = \mathbf{P}\mathbf{b}$, then $\mathbf{U}\mathbf{x} = \mathbf{y}$.
 
 In code, $\mathbf{P}$ is never stored as a full matrix. A list of integers recording the row order does the same job in $n$ entries instead of $n^2$. This is what `numpy.linalg.solve` does, through the **[[LAPACK|lapack]]** routine `gesv`, which factors with `getrf` and then solves. Because the library pivots, the [[factors it returns|library-factors]] can differ from the ones you get by hand without swaps.
 
@@ -345,7 +345,7 @@ The matrix is singular to working precision. Its columns (and its rows) are line
 | --- | --- |
 | $x_i = \big(y_i - \sum_{j>i} U_{ij} x_j\big)/U_{ii}$ | Back substitution for an upper-triangular system; about $n^2$ operations |
 | $m_{ij} = A_{ij}/A_{jj}$ | Multiplier: subtract $m_{ij}$ times pivot row $j$ from row $i$ |
-| $\mathbf{A} = \mathbf{L}\mathbf{U}$ | Elimination as a factorisation: $\mathbf{L}$ unit lower triangular (multipliers), $\mathbf{U}$ upper triangular (pivots) |
+| $\mathbf{A} = \mathbf{L}\mathbf{U}$ | Elimination as a factorization: $\mathbf{L}$ unit lower triangular (multipliers), $\mathbf{U}$ upper triangular (pivots) |
 | $\mathbf{L}\mathbf{y} = \mathbf{b}$, then $\mathbf{U}\mathbf{x} = \mathbf{y}$ | Two triangular solves replace one general solve |
 | $\tfrac{2}{3}n^3$ and $2n^2$ | Cost to factor, and cost of each later solve |
 | $\mathbf{P}\mathbf{A} = \mathbf{L}\mathbf{U}$ | LU with partial pivoting; $\mathbf{P}$ records the row swaps |
@@ -392,7 +392,7 @@ In an upper-triangular system, the shaded entries can be anything and everything
 ::: context flops Counting the work
 A **floating-point operation**, or flop, is one arithmetic step — an add, a subtract, a multiply or a divide — on numbers stored the way computers store decimals. Counting flops is how engineers compare methods before writing any code: it tells you how the time grows as the problem grows.
 
-The count matters most through its power of $n$. Double the size of a system and a triangular solve ($n^2$) takes four times as long, but a factorisation ($n^3$) takes eight times as long.
+The count matters most through its power of $n$. Double the size of a system and a triangular solve ($n^2$) takes four times as long, but a factorization ($n^3$) takes eight times as long.
 :::
 
 ::: context pivot-word The point everything turns on
@@ -402,7 +402,7 @@ A pivot, in everyday English, is the fixed point something turns around — the 
 ::: context kalman-reuse Why a filter factors once
 When a Kalman filter takes in a measurement, it needs its **gain** — a matrix saying how far to move each state component toward what the sensor reported. Computing the gain means solving a system with the **innovation covariance**, the expected spread of the measurement surprises, as the matrix, and one right-hand side for every state component.
 
-The matrix is the same for all of those right-hand sides. So the filter factors it once and runs the cheap triangular solves for each column. In practice this matrix is symmetric, and filters use a close cousin of LU, the Cholesky factorisation, which you meet in Linear Algebra II.
+The matrix is the same for all of those right-hand sides. So the filter factors it once and runs the cheap triangular solves for each column. In practice this matrix is symmetric, and filters use a close cousin of LU, the Cholesky factorization, which you meet in Linear Algebra II.
 :::
 
 ::: context significant-figures How computers round
@@ -436,7 +436,7 @@ Each equation is a line in the plane, and the solution is where they cross. The 
 ::: context lapack The library under everything
 **LAPACK**, the Linear Algebra PACKage, is a collection of carefully tested routines for solving systems, factoring matrices and finding eigenvalues. It was first released in 1992, written in Fortran, and it sits underneath NumPy, SciPy, MATLAB and much of the world's scientific software.
 
-Its routine names are compact codes. In `dgesv`, the `d` means double precision, `ge` means a general matrix, and `sv` means solve. `getrf` means "triangular factorisation of a general matrix" — LU with partial pivoting.
+Its routine names are compact codes. In `dgesv`, the `d` means double precision, `ge` means a general matrix, and `sv` means solve. `getrf` means "triangular factorization of a general matrix" — LU with partial pivoting.
 :::
 
 ::: context library-factors Why the library's L and U look different

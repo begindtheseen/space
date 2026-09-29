@@ -53,7 +53,7 @@ Feedforward is worth having: it gives fast, well-damped tracking with no extra d
 Now the helper. Add a new state $\boldsymbol{\xi}$ (the Greek letter "xi", said "ksee" or "zai") whose rate of change is the tracking error:
 
 ::: key Integral action in state feedback
-Augment the state with the integral of the tracking error, $\dot{\boldsymbol{\xi}} = \mathbf{r} - \mathbf{y}$, and design $\mathbf{K}$ on the augmented plant. This gives zero steady-state error to step disturbances, the state-space analogue of the I term.
+Augment the state with the integral of the tracking error, $\dot{\boldsymbol{\xi}} = \mathbf{r} - \mathbf{y}$, and design $\mathbf{K}$ on the augmented plant. This gives zero steady-state error to step disturbances, the state-space analog of the I term.
 :::
 
 So $\boldsymbol{\xi}$ is the running total of "how far short, for how long". Written out, with $\mathbf{y} = \mathbf{C}\mathbf{x}$, the bigger — **augmented** — plant is
@@ -97,7 +97,7 @@ The angle gain went from $2.4$ to $4.8$ — doubled. The rate gain went from $24
 
 $$u_{ss} = -K_I\xi_{ss} = -(-0.24)(-4.167\times10^{-4}) = -10^{-4}\,\mathrm{N\,m},$$
 
-precisely cancelling the disturbance. The integrator has *measured* the unknown torque and is holding it off. $\xi$ is a **[[disturbance estimator nobody designed|hidden-estimator]]**.
+precisely canceling the disturbance. The integrator has *measured* the unknown torque and is holding it off. $\xi$ is a **[[disturbance estimator nobody designed|hidden-estimator]]**.
 
 **Step 4: look at the transient.** Apply the disturbance as a sudden step with the vehicle at rest. The angle wanders out to a peak of $3.57''$ at $t = 15.7\,\mathrm{s}$, and is back inside $0.86''$ — a tenth of the regulator's offset — by about $t = 36.3\,\mathrm{s}$. The regulator, in contrast, sits at $8.59''$ forever.
 
@@ -106,7 +106,7 @@ For a step reference of $1^\circ$, the servo settles to $1.000000^\circ$ with no
 
 ## The two prices
 
-**Price 1: an extra pole, and gains that grow.** Each tracked output adds a state and a pole. Putting the new pole at the same radius as the others doubled $k_1$ in the example. Pushing it faster raises the gains further. A good default: put the integrator pole at or a little inside the dominant pair — fast enough that the disturbance is cancelled within a few settling times, slow enough that it does not demand gain.
+**Price 1: an extra pole, and gains that grow.** Each tracked output adds a state and a pole. Putting the new pole at the same radius as the others doubled $k_1$ in the example. Pushing it faster raises the gains further. A good default: put the integrator pole at or a little inside the dominant pair — fast enough that the disturbance is canceled within a few settling times, slow enough that it does not demand gain.
 
 **Price 2: conditional stability.** Integral action adds a pole at the origin to the loop transfer function. That changes the shape of the Nyquist plot in a basic way.
 
@@ -228,7 +228,7 @@ The design response: check the low-gain end of the margin explicitly. If it is u
 :::
 
 ::: check
-For the spacecraft servo, $\xi_{ss} = -4.167\times10^{-4}$ and $K_I = -0.24$. Confirm that the integrator is cancelling the disturbance, and give the units of $\xi$ and $K_I$.
+For the spacecraft servo, $\xi_{ss} = -4.167\times10^{-4}$ and $K_I = -0.24$. Confirm that the integrator is canceling the disturbance, and give the units of $\xi$ and $K_I$.
 :::
 
 ::: answer
@@ -301,7 +301,7 @@ At rest, the only thing holding the spacecraft still is $-K_I\xi$, and it must e
 :::
 
 ::: context conditional-stability Stable only in the middle
-The real part of the rightmost closed-loop pole — the slowest mode — plotted against how much the whole gain is scaled. Below the dashed zero line is stable. The regulator (grey) stays stable at every gain. The servo (blue) crosses into instability when the gain drops below $1/6$ of nominal.
+The real part of the rightmost closed-loop pole — the slowest mode — plotted against how much the whole gain is scaled. Below the dashed zero line is stable. The regulator (gray) stays stable at every gain. The servo (blue) crosses into instability when the gain drops below $1/6$ of nominal.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 205" font-family="Inter, Arial, sans-serif">

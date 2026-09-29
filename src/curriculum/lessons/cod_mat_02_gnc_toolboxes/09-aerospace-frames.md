@@ -189,7 +189,7 @@ Each row is one NED axis written in ECEF components. Check the last row at the N
 The reference point is the key word. The matrix depends on $\varphi$ and $\lambda$. Move somewhere else and "down" points in a different direction through the Earth. So NED is a **[[local frame|local-frame]]**: it belongs to one spot.
 
 ::: key
-NED's axes are defined relative to the local vertical and the local meridian, so they rotate as you move over the Earth. A trajectory spanning hundreds of kilometres cannot use a single NED frame; integrate in ECI or ECEF and convert for reporting.
+NED's axes are defined relative to the local vertical and the local meridian, so they rotate as you move over the Earth. A trajectory spanning hundreds of kilometers cannot use a single NED frame; integrate in ECI or ECEF and convert for reporting.
 :::
 
 How far is "hundreds of kilometers"? Over a distance $d$ on a sphere of radius about $6371\,\mathrm{km}$, the ground drops away from a flat tangent plane by roughly $\frac{d^2}{2R}$, and the local vertical tilts by $\frac{d}{R}$ radians. At $10\,\mathrm{km}$ the drop is about $7.8\,\mathrm{m}$. At $100\,\mathrm{km}$ it is about $785\,\mathrm{m}$ with a tilt of $0.9^\circ$. At $300\,\mathrm{km}$ it is about $7.1\,\mathrm{km}$ with a tilt of $2.7^\circ$. A flat-Earth NED frame is fine for a landing approach and useless for an ascent downrange.

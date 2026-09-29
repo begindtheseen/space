@@ -1,17 +1,17 @@
 ---
 id: l12-drawings-pmi-and-special-modelling
-title: Drawings from models, PMI, sheet metal and the outer mould line
+title: Drawings from models, PMI, sheet metal and the outer mold line
 minutes: 24
 covers:
   - 'Drawings from models; PMI and model-based definition'
-  - 'Sheet metal, weldments and surfacing (awareness); outer mould line'
+  - 'Sheet metal, weldments and surfacing (awareness); outer mold line'
 ---
 
 Think of a shadow puppet. Your hand is real; the shadow on the wall is a flat picture of it. Move your hand and the shadow moves with it, instantly, because the shadow is not a separate drawing — it is made from the hand, every moment.
 
 A drawing made in 3D CAD works the same way. You do not draw the part again on the sheet. You point the software at the solid model, and it casts the flat views for you: front, top, side, a cut-away. Change the model and the views change with it. That link is the first idea of this lesson. The second is the step past the sheet entirely, where the annotated model itself is the official description of the part.
 
-Then we look at three special ways of modelling that you will meet around flight hardware: bent **sheet metal**, welded frames called **weldments**, and smooth free-form **surfaces**. We finish with the one surface that aerodynamics, heating and your guidance software all care about most: the **outer mould line**, the outside skin of the vehicle.
+Then we look at three special ways of modeling that you will meet around flight hardware: bent **sheet metal**, welded frames called **weldments**, and smooth free-form **surfaces**. We finish with the one surface that aerodynamics, heating and your guidance software all care about most: the **outer mold line**, the outside skin of the vehicle.
 
 ## Drawings made from the model
 
@@ -87,7 +87,7 @@ $$
 BA = \theta \,(R + K T).
 $$
 
-Read it aloud as "bend allowance equals theta times, R plus K T". With $\theta$ in radians and $R$, $T$ in millimetres, $BA$ comes out in millimetres. $K$ has no units.
+Read it aloud as "bend allowance equals theta times, R plus K T". With $\theta$ in radians and $R$, $T$ in millimeters, $BA$ comes out in millimeters. $K$ has no units.
 
 The flat blank is then the flat lengths of every flange plus one bend allowance for every bend.
 
@@ -128,7 +128,7 @@ A thin cover flange is bent through $\theta = 120^\circ$ from $T = 1.5\,\mathrm{
 :::
 
 ::: warning Degrees in a radian formula
-Put $120$ into the formula instead of $2.0944$ and you get $BA = 120 \times 3.6 = 432\,\mathrm{mm}$ for a bend in a part a few centimetres long. The formula needs radians. Convert first, every time, and check the answer against the inside and outside arcs.
+Put $120$ into the formula instead of $2.0944$ and you get $BA = 120 \times 3.6 = 432\,\mathrm{mm}$ for a bend in a part a few centimeters long. The formula needs radians. Convert first, every time, and check the answer against the inside and outside arcs.
 :::
 
 In a real sheet metal tool you set $T$, $R$ and $K$ (or the shop's **bend table**) once per part, and every flat pattern uses them. Your job is to know what they mean, so you can spot a wrong default.
@@ -139,11 +139,11 @@ Picture building a climbing frame from pipe: decide the shape, pick a pipe for e
 
 A **weldment** in CAD is built the same way. You draw a **skeleton**: lines in 3D showing where each member runs. Then you pick a **structural profile** — square tube, angle, I-beam, round tube — and the software sweeps that profile along each line. It trims the members where they meet and writes a **cut list** — every member, its profile and its cut length — for the shop. Weld symbols from the drawings module go on the drawing.
 
-At a launch company weldments live mostly on the ground: test-stand frames, handling fixtures, transport cradles, work platforms. They are modelled in 3D so their mass, loads and fit can be checked.
+At a launch company weldments live mostly on the ground: test-stand frames, handling fixtures, transport cradles, work platforms. They are modeled in 3D so their mass, loads and fit can be checked.
 
 ## Surfacing: shapes without thickness
 
-Most parts are **solids**: closed volumes with an inside and an outside. Some shapes are hard to build from sketches and extrudes: a nose cone that blends into a fairing, a duct that curves in two directions at once. For those, designers use **surfacing** — modelling with **surfaces**, which are infinitely thin skins, like soap film on a wire frame.
+Most parts are **solids**: closed volumes with an inside and an outside. Some shapes are hard to build from sketches and extrudes: a nose cone that blends into a fairing, a duct that curves in two directions at once. For those, designers use **surfacing** — modeling with **surfaces**, which are infinitely thin skins, like soap film on a wire frame.
 
 You build curves, span surfaces between them, trim them and stitch them together. When the skins close up with no gaps, the software **knits** them into a solid, or you **thicken** a skin into a wall. At an awareness level, you need three ideas:
 
@@ -151,9 +151,9 @@ You build curves, span surfaces between them, trim them and stitch them together
 - How smoothly two surfaces meet is graded by **[[continuity|continuity]]**: G0 (they touch), G1 (they share a slope, like the tangent join from sketching), G2 (they share curvature too, so light reflects without a visible crease). Aerodynamic skins usually want at least G1, often G2.
 - Surfacing is a specialist skill. On a large program a few people own the aero surfaces, and everyone else builds parts that attach to them.
 
-## The outer mould line
+## The outer mold line
 
-The **outer mould line** — the OML, in American documents usually spelled *outer mold line* — is the outside surface of the vehicle: the skin the air touches. On a rocket it is the barrel of each stage, the interstage, the fairing and the nose, plus everything that sticks out of them, such as cable raceways and fins. The matching inside surface of the structure is the **inner mould line** (IML). The word comes from shipbuilding, where full-size templates of a hull's shape were called moulds.
+The **outer mold line** — the OML, in American documents usually spelled *outer mold line* — is the outside surface of the vehicle: the skin the air touches. On a rocket it is the barrel of each stage, the interstage, the fairing and the nose, plus everything that sticks out of them, such as cable raceways and fins. The matching inside surface of the structure is the **inner mold line** (IML). The word comes from shipbuilding, where full-size templates of a hull's shape were called molds.
 
 Why does it get its own name? Because for the airflow, *only* the OML exists. Nothing inside it can change the pressure on the vehicle or the heat going into it.
 
@@ -163,8 +163,8 @@ Why does it get its own name? Because for the airflow, *only* the OML exists. No
 
 So the OML is one of the most tightly controlled shapes on a program: changing it means redoing the aerodynamics, the heating and the aero database.
 
-::: key Outer mould line
-The OML is the outermost surface of the vehicle, the one the airflow sees, including the thermal protection and any protuberances. Aerodynamic forces, heating and the aero database are all computed on it; the structure lives inside it, bounded by the inner mould line.
+::: key Outer mold line
+The OML is the outermost surface of the vehicle, the one the airflow sees, including the thermal protection and any protuberances. Aerodynamic forces, heating and the aero database are all computed on it; the structure lives inside it, bounded by the inner mold line.
 :::
 
 ::: example What 5 mm of insulation does to the reference area
@@ -218,7 +218,7 @@ During bending the inside of the bend is squeezed and the outside stretched, and
 :::
 
 ::: check
-A test-stand frame, a nose fairing and a cable bracket need to be modelled. Which of sheet metal, weldment and surfacing fits each best?
+A test-stand frame, a nose fairing and a cable bracket need to be modeled. Which of sheet metal, weldment and surfacing fits each best?
 :::
 
 ::: answer
@@ -226,7 +226,7 @@ The test-stand frame is a weldment: members swept along a skeleton, with a cut l
 :::
 
 ::: check
-Name three groups of engineers who work from the outer mould line and say what each uses it for.
+Name three groups of engineers who work from the outer mold line and say what each uses it for.
 :::
 
 ::: answer
@@ -244,7 +244,7 @@ Aerodynamicists compute forces and moments on it, in CFD and with wind tunnel mo
 | Bend allowance | Flat length used by one bend | $BA = \theta(R + KT)$, $\theta$ in radians |
 | Weldment | Profiles swept along a skeleton | Produces a cut list; test stands and fixtures |
 | Surfacing | Zero-thickness skins | Continuity G0, G1, G2; knit or thicken into solids |
-| Outer mould line | The surface the airflow sees | Aero, heating and the aero database live on it |
+| Outer mold line | The surface the airflow sees | Aero, heating and the aero database live on it |
 
 Next lesson: what happens when a model leaves its home program — the neutral formats STEP, IGES, Parasolid and JT, what each one keeps and loses — and which companies use which CAD system.
 

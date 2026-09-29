@@ -97,7 +97,7 @@ double orbit_period(double r_m) {
 
 And `apps/orbit_report.cpp` uses both:
 
-```cpp
+```cpp fragment
 #include <cstdio>
 
 #include "gnc/orbit.hpp"
@@ -455,7 +455,7 @@ When the linker meets an archive, it does something clever: it pulls in only the
 </svg>
 ```
 
-(The grey members are made-up examples; only the member defining a needed symbol is copied.) `ranlib` writes the index that makes this search fast.
+(The gray members are made-up examples; only the member defining a needed symbol is copied.) `ranlib` writes the index that makes this search fast.
 :::
 
 ::: context gnu-extensions Why gnu++20 and not c++20

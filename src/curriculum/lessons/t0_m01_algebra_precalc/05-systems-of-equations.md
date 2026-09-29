@@ -70,9 +70,9 @@ $$
 m_{ox} + m_{fuel} = 400\,\mathrm{t}, \qquad m_{ox} = 2.3\, m_{fuel} .
 $$
 
-($m_{ox}$ is read "m sub ox", the oxidizer mass. $1\,\mathrm{t}$ is a tonne, $1000\,\mathrm{kg}$.) Substitute the second into the first: $2.3\,m_{fuel} + m_{fuel} = 400$. That is $3.3\,m_{fuel} = 400$, so $m_{fuel} = 400 / 3.3 = 121.2\,\mathrm{t}$ and $m_{ox} = 2.3 \times 121.2 = 278.8\,\mathrm{t}$. These are the same numbers the "fractions of the whole" method gave in the first lesson — now with no fractions to reason about.
+($m_{ox}$ is read "m sub ox", the oxidizer mass. $1\,\mathrm{t}$ is a metric ton, $1000\,\mathrm{kg}$.) Substitute the second into the first: $2.3\,m_{fuel} + m_{fuel} = 400$. That is $3.3\,m_{fuel} = 400$, so $m_{fuel} = 400 / 3.3 = 121.2\,\mathrm{t}$ and $m_{ox} = 2.3 \times 121.2 = 278.8\,\mathrm{t}$. These are the same numbers the "fractions of the whole" method gave in the first lesson — now with no fractions to reason about.
 
-[[A chase|rendezvous]] is another one. A chaser drives along a road so that its position is $x = 2 + 1.5t$, and a target's position is $x = 10 + 0.5t$ ($x$ in kilometres, $t$ in hours). They meet when they are at the same place at the same time — when the two $x$'s are equal:
+[[A chase|rendezvous]] is another one. A chaser drives along a road so that its position is $x = 2 + 1.5t$, and a target's position is $x = 10 + 0.5t$ ($x$ in kilometers, $t$ in hours). They meet when they are at the same place at the same time — when the two $x$'s are equal:
 
 $$
 2 + 1.5t = 10 + 0.5t .
@@ -86,7 +86,7 @@ Sometimes neither equation has an unknown standing alone. Then there is a second
 
 Picture two shopping receipts. The first says: 2 burgers and 1 order of fries cost \$13. The second says: 1 burger and 1 order of fries cost \$8. Lay one receipt on top of the other and take the difference. The first bought exactly one extra burger and paid \$5 more. So a burger costs \$5 — and from the second receipt, the fries cost \$8 − \$5 = \$3. Subtracting the receipts made the fries disappear.
 
-That is **[[elimination|elimination-history]]**: combine the equations so that one unknown cancels out. Often you first have to **scale** an equation — multiply the whole thing by a number — so that the cancelling works. Take
+That is **[[elimination|elimination-history]]**: combine the equations so that one unknown cancels out. Often you first have to **scale** an equation — multiply the whole thing by a number — so that the canceling works. Take
 
 $$
 3x + 2y = 16, \qquad 5x - 4y = 12 .
@@ -210,13 +210,13 @@ What if one of the equations is not a line — a circle, a parabola, a product o
 The picture changes a little. A line can cross a circle twice, touch it once, or miss it entirely. So a nonlinear system can have two solutions, one, or none. The **discriminant** — the $b^2 - 4ac$ under the square root in the quadratic formula — tells you which. If it comes out negative, the square root does not exist, and the curves do not meet.
 
 ::: example Where a line of sight meets the ground
-Picture a slice through the middle of the Earth. In that slice, the surface is a circle of radius $R = 6371\,\mathrm{km}$ centred at $(0, 0)$. A point $(x, y)$ is on the circle when its distance from the centre is $R$. By [[Pythagoras' theorem|pythagoras]], that distance squared is $x^2 + y^2$, so the circle is the equation
+Picture a slice through the middle of the Earth. In that slice, the surface is a circle of radius $R = 6371\,\mathrm{km}$ centered at $(0, 0)$. A point $(x, y)$ is on the circle when its distance from the center is $R$. By [[Pythagoras' theorem|pythagoras]], that distance squared is $x^2 + y^2$, so the circle is the equation
 
 $$
 x^2 + y^2 = R^2 .
 $$
 
-Work in kilometres. A satellite sits at $(0,\, 6771)$, which is $6771 - 6371 = 400\,\mathrm{km}$ above the surface. Its camera looks along the line $y = 6771 - 3x$: three kilometres down for every kilometre sideways. Where does the camera's centre line (its **[[boresight|boresight]]**) hit the ground?
+Work in kilometers. A satellite sits at $(0,\, 6771)$, which is $6771 - 6371 = 400\,\mathrm{km}$ above the surface. Its camera looks along the line $y = 6771 - 3x$: three kilometers down for every kilometer sideways. Where does the camera's center line (its **[[boresight|boresight]]**) hit the ground?
 
 **Substitute** the line into the circle — wherever the circle says $y$, write $6771 - 3x$:
 
@@ -255,7 +255,7 @@ Had the line been tilted so shallow that it missed the Earth, the discriminant w
 
 ## Nearly parallel lines
 
-Between "one solution" and "no solution" there is a grey zone that matters more in real life than either.
+Between "one solution" and "no solution" there is a gray zone that matters more in real life than either.
 
 Picture two roads that [[cross at a very shallow angle|shallow-angle]], almost side by side. Shift one road over by a hair and the crossing point slides a long way along them. When $D$ is small but not zero, the two lines of a system cross at such a shallow angle, and a tiny change in either equation moves the answer a long way.
 
@@ -272,7 +272,7 @@ A large family of practical systems has the same shape: *the parts add up to a t
 ::: example Blending two batches of kerosene
 You need $1000\,\mathrm{L}$ of [[kerosene|kerosene]] with density $815\,\mathrm{kg/m^3}$. You have one batch at $800\,\mathrm{kg/m^3}$ and another at $820\,\mathrm{kg/m^3}$. How much of each?
 
-Call the volumes $V_1$ and $V_2$, in litres. Clue one — the parts add up to the total:
+Call the volumes $V_1$ and $V_2$, in liters. Clue one — the parts add up to the total:
 
 $$
 V_1 + V_2 = 1000 .
@@ -294,7 +294,7 @@ Substitution: isolate an unknown in one equation and substitute into the rest. E
 :::
 
 ::: note What the matrices will do
-Later you will write the $2 \times 2$ system as $\mathbf{A}\mathbf{x} = \mathbf{b}$, with the coefficients packed into a grid called a **matrix**, $\mathbf{A} = \begin{pmatrix} a_1 & b_1 \\ a_2 & b_2 \end{pmatrix}$. The determinant above is $\det \mathbf{A}$. The elimination steps are called row operations. The formulas for $x$ and $y$ are called Cramer's rule. Nothing in the linear algebra modules replaces the reasoning here. It organises it, so that ten thousand unknowns are no harder in principle than two.
+Later you will write the $2 \times 2$ system as $\mathbf{A}\mathbf{x} = \mathbf{b}$, with the coefficients packed into a grid called a **matrix**, $\mathbf{A} = \begin{pmatrix} a_1 & b_1 \\ a_2 & b_2 \end{pmatrix}$. The determinant above is $\det \mathbf{A}$. The elimination steps are called row operations. The formulas for $x$ and $y$ are called Cramer's rule. Nothing in the linear algebra modules replaces the reasoning here. It organizes it, so that ten thousand unknowns are no harder in principle than two.
 :::
 
 ## Check yourself
@@ -412,7 +412,7 @@ Substitution and elimination are ways of finding that crossing without drawing �
 ::: context rendezvous Chasing a space station
 Every trip to the space station ends in a chase like this one. The visiting spacecraft starts in a slightly lower orbit, which goes around faster, so it gains on the station lap by lap. Then it raises its orbit to meet it. Working out *when* and *where* the two positions match is a system of equations.
 
-The first crewed rendezvous was in December 1965, when Gemini 6A flew to within about $30$ centimetres of Gemini 7.
+The first crewed rendezvous was in December 1965, when Gemini 6A flew to within about $30$ centimeters of Gemini 7.
 :::
 
 ::: context elimination-history Two thousand years of elimination
@@ -446,7 +446,7 @@ Every straight-line distance a navigation computer works out, in two dimensions 
 ::: context boresight Looking down the barrel
 The word comes from guns. To line up a rifle's sight, you look straight down the inside of the barrel — its *bore* — and adjust the sight until it points where the bore points.
 
-Engineers kept the word for the direction any instrument looks: a camera, a radar dish, a telescope, a star tracker. Knowing each boresight's direction to a tiny fraction of a degree is a big part of a GNC engineer's job, because a small pointing error becomes kilometres on the ground.
+Engineers kept the word for the direction any instrument looks: a camera, a radar dish, a telescope, a star tracker. Knowing each boresight's direction to a tiny fraction of a degree is a big part of a GNC engineer's job, because a small pointing error becomes kilometers on the ground.
 :::
 
 ::: context line-enters-leaves Drawn to scale

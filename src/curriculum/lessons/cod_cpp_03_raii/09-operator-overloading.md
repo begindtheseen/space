@@ -57,7 +57,7 @@ Read the trick slowly. The parameter `a` is taken by value, so it is already a c
 
 Why is `operator+` a free function (a hidden `friend`, from lesson 08) and not a member? Because of **symmetry**. Scaling a vector by a number should work both ways round: `v * 2.0` and `2.0 * v`. Try it with a member:
 
-```cpp
+```cpp error
 struct V { double x; V operator*(double s) const { return {x * s}; } };
 int main() { V v{1.0}; V a = v * 2.0; V b = 2.0 * v; (void)a; (void)b; }
 ```
@@ -143,7 +143,7 @@ $$
 
 This is the **[[frame-rotation|frame-rotation]]** form: it re-expresses a vector in a set of axes turned by $\theta$ about $z$. The test:
 
-```cpp
+```cpp fragment
 int main() {
     const double pi = 3.141592653589793;
     const Matrix3 R = Matrix3::rot_z(pi / 2);             // 90 degrees about z
@@ -233,7 +233,7 @@ A defaulted `<=>` picks the weakest category among its members, so a struct with
 ::: example Sorting telemetry by time tag
 Packets arrive out of order and must be sorted by their time tag. With the `TimeTag` above:
 
-```cpp
+```cpp fragment
 int main() {
     std::vector<TimeTag> packets = {
         {1000, 30000}, {999, 65000}, {1000, 12}, {1000, 30000}};

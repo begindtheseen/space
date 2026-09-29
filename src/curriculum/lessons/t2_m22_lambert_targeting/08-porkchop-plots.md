@@ -165,7 +165,7 @@ The worked example found $C_3 = 4892.7\,\mathrm{km^2/s^2}$ exactly at the Hohman
 :::
 
 ::: answer
-No. The $4892.7$ is a numerical artefact of evaluating the solver exactly on the $180°$ singularity, where it divides by a number that is zero up to rounding. It is not a property of the transfer. The true cost of the minimum-energy transfer is the smooth, stable value a hair away, $8.671\,\mathrm{km^2/s^2}$, which matches the Hohmann formula.
+No. The $4892.7$ is a numerical artifact of evaluating the solver exactly on the $180°$ singularity, where it divides by a number that is zero up to rounding. It is not a property of the transfer. The true cost of the minimum-energy transfer is the smooth, stable value a hair away, $8.671\,\mathrm{km^2/s^2}$, which matches the Hohmann formula.
 
 This is the difference the $180°$ lesson drew between a problem that is singular (undefined at the point) and one that is ill-conditioned (defined, but sensitive). Landing exactly on the singular point, not merely close to it, is what produced the blown-up number. (In the flat model there is no physical penalty at $180°$; in the real, tilted solar system there is, as the second example showed.)
 :::
@@ -203,7 +203,7 @@ They are separated by the $180°$ ridge: the line of date pairs where the transf
 | The $180°$ ridge | Separates the lobes; numerical trouble in a flat model, a real plane-change cost wall in the tilted solar system |
 | Coarse grids | For orientation only; refine near the minimum and treat points near the ridge with care |
 
-The next lesson turns from choosing a launch date to protecting the trajectory once it is flying: trajectory correction manoeuvres, and the linear covariance analysis that predicts how big a correction the mission must be ready to make. Its example flies the $270$-day transfer from this grid.
+The next lesson turns from choosing a launch date to protecting the trajectory once it is flying: trajectory correction maneuvers, and the linear covariance analysis that predicts how big a correction the mission must be ready to make. Its example flies the $270$-day transfer from this grid.
 
 ::: context porkchop-name Why a pork chop?
 Draw the contour lines for a Mars window and the closed loops of equal $C_3$ come out lopsided and rounded, fat at one end with a notch where the $180°$ ridge cuts in — rather like the outline of a pork chop on a plate. Mission designers have used the nickname for decades, and it is now the standard name, even in formal reports.

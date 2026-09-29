@@ -248,7 +248,7 @@ initials([])
 --- teach
 Last lesson you built lists, sets and dicts with one `for` and an optional `if` filter. This lesson adds two more things a comprehension can hold: a second `for`, and a choice between two values.
 
-Think of the seats in a small theatre. There are rows A and B, and each row has seats 1, 2 and 3. To list every seat, you go along row A first (A1, A2, A3), then along row B (B1, B2, B3). That is a loop inside a loop.
+Think of the seats in a small theater. There are rows A and B, and each row has seats 1, 2 and 3. To list every seat, you go along row A first (A1, A2, A3), then along row B (B1, B2, B3). That is a loop inside a loop.
 
 ### The long way: a loop inside a loop
 
@@ -726,7 +726,7 @@ print(f"{'ab':>5}|")    #    ab|
 print(f"{'ab':^6}|")    #   ab  |
 ```
 
-The `|` is only there so you can see where the spaces end. `'ab'` is two letters, so width 5 leaves three spaces: after it, before it, or split around it. Read `<` as "push left", `>` as "push right" and `^` as "centre". Numbers are right-aligned unless you say otherwise:
+The `|` is only there so you can see where the spaces end. `'ab'` is two letters, so width 5 leaves three spaces: after it, before it, or split around it. Read `<` as "push left", `>` as "push right" and `^` as "center". Numbers are right-aligned unless you say otherwise:
 
 ```python
 print(f"{42:5d}|")      #    42|
@@ -1616,7 +1616,7 @@ A function's signature is its name plus its list of parameters: everything in th
 When Python reaches a `def` line, it builds the function, and at that moment it works out each default value and stores it with the function. Every later call that leaves the argument out reuses that same stored value. A number or a string can never be changed, so reusing it is safe. A list can be changed in place, as you saw with `append`. The next lesson is a bug hunt that shows exactly what goes wrong.
 :::
 --- task
-Practise both new ideas. In the starter:
+Practice both new ideas. In the starter:
 
 1. Make `port` and `timeout` in `connect` **keyword-only**, by putting a bare `*` after `host`: `def connect(host, *, port=443, timeout=5.0):`. Leave the body as it is.
 2. Fix `connect_with(host, settings)`. `settings` is a dict like `{"port": 22, "timeout": 1.5}`. It must return `connect(host, **settings)`, spreading the dict out as keyword arguments. So `connect_with("example.org", {"port": 22, "timeout": 1.5})` returns `"example.org:22 (timeout 1.5s)"`.
@@ -2073,7 +2073,7 @@ A docstring is a string that sits on the first line inside a class or a function
 :::
 
 ::: context inherit-word A family tree of errors
-"Inherit" means to receive something from a parent, like eye colour or a grandmother's clock. Python's own exceptions already form a family tree. `ZeroDivisionError` is a child of `ArithmeticError`, which is a child of `Exception`. `KeyError` is a child of `LookupError`. So `except ArithmeticError:` would catch a division by zero too. Your own classes join the same tree:
+"Inherit" means to receive something from a parent, like eye color or a grandmother's clock. Python's own exceptions already form a family tree. `ZeroDivisionError` is a child of `ArithmeticError`, which is a child of `Exception`. `KeyError` is a child of `LookupError`. So `except ArithmeticError:` would catch a division by zero too. Your own classes join the same tree:
 
 ```svg
 <svg viewBox="0 0 360 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
@@ -2188,7 +2188,7 @@ Think of a message passed down a line of people. The boss asks a manager, the ma
 
 Here is a small program that works out the total cost of an order. Each order line is a string like `"tea, 3, 2.50"`: a name, a quantity (how many), and a price. The line numbers on the left are there so you can match them to the traceback; they are not part of the code.
 
-```python
+```python fragment
  1  ORDERS = ["tea, 3, 2.50", "biscuits, 2, 1.25", "jam, 1, 7.50"]
  2
  3
@@ -2263,13 +2263,13 @@ Keep reading upwards and you walk back along the chain of calls, out to the star
 
 This is the most important idea in the lesson. Look at line 10 again:
 
-```python
+```python fragment
 return item["qty"] * item["price"]
 ```
 
 Multiplying a quantity by a price is **correct code**. The line is fine. It crashed because it was *given* a bad value: `item["qty"]` is the string `" 3"` (with a space in front, left over from `"tea, 3, 2.50"`), not the number `3`.
 
-So the real question is not "what is wrong with line 10?" but **"who made that value?"** Walk back along the path the data travelled. The `item` dict came from `parse_line`. Look at line 6: it converts the price with `float(price)`, but it puts `qty` in the dict as it is, still a string. That is the bug.
+So the real question is not "what is wrong with line 10?" but **"who made that value?"** Walk back along the path the data traveled. The `item` dict came from `parse_line`. Look at line 6: it converts the price with `float(price)`, but it puts `qty` in the dict as it is, still a string. That is the bug.
 
 ### Checking your theory with `repr`
 
@@ -2330,7 +2330,7 @@ In Python, every `.py` file is a module. Code written at the left margin of the 
 :::
 
 ::: context genexpr A comprehension without the brackets
-`line_total(parse_line(line)) for line in lines`, written straight inside `sum(...)` with no square brackets, is a generator expression. It works like a list comprehension, but it hands `sum` one value at a time instead of building a whole list first. Behind the scenes, Python runs it as a small hidden function, which is why it gets its own frame, labelled `<genexpr>`, in the traceback. The advanced course shows how it works inside.
+`line_total(parse_line(line)) for line in lines`, written straight inside `sum(...)` with no square brackets, is a generator expression. It works like a list comprehension, but it hands `sum` one value at a time instead of building a whole list first. Behind the scenes, Python runs it as a small hidden function, which is why it gets its own frame, labeled `<genexpr>`, in the traceback. The advanced course shows how it works inside.
 :::
 
 ::: context repr-vs-print Two ways to show a value
@@ -2463,7 +2463,7 @@ print(isinstance(5, int))               # True
 
 Now `__eq__`:
 
-```python
+```python fragment
     def __eq__(self, other):
         if not isinstance(other, Point):
             return NotImplemented
@@ -2806,9 +2806,9 @@ runs = [(k, len(list(g))) for k, g in groupby("aaabcc")]
 print(runs)    # [('a', 3), ('b', 1), ('c', 2)]
 ```
 
-Read the comprehension as "for each key `k` and group `g` that `groupby` hands out, make the tuple (`k`, how many are in `g`)". The `for k, g in` part unpacks each pair, the same way `for i, name in enumerate(names)` did in the tuples lesson. A bunch of equal neighbours like this is called a **[[run|run-length]]**.
+Read the comprehension as "for each key `k` and group `g` that `groupby` hands out, make the tuple (`k`, how many are in `g`)". The `for k, g in` part unpacks each pair, the same way `for i, name in enumerate(names)` did in the tuples lesson. A bunch of equal neighbors like this is called a **[[run|run-length]]**.
 
-**Watch out:** `groupby` only groups *neighbours*. In `"abab"` no two equal letters touch, so you get four runs of one: `('a', 1), ('b', 1), ('a', 1), ('b', 1)`. If you want every equal item together, sort first: `groupby(sorted("abab"))` gives `('a', 2), ('b', 2)`.
+**Watch out:** `groupby` only groups *neighbors*. In `"abab"` no two equal letters touch, so you get four runs of one: `('a', 1), ('b', 1), ('a', 1), ('b', 1)`. If you want every equal item together, sort first: `groupby(sorted("abab"))` gives `('a', 2), ('b', 2)`.
 
 ### collections: namedtuple
 
@@ -3018,7 +3018,7 @@ Last lesson you opened three drawers of the standard library. This lesson opens 
 
 Picture a pile of sticky notes from a long day. Some are blank, some are crossed-out scribbles, and the rest say something useful. You go through them one at a time, throw away the blank ones and the scribbles first, and only then read the real ones. A text-reading program works the same way, one line at a time.
 
-Programs usually read text from a file on the disk. You can practise without any file at all: a string held in the program's **[[memory|in-memory]]** that has several lines in it behaves the same way.
+Programs usually read text from a file on the disk. You can practice without any file at all: a string held in the program's **[[memory|in-memory]]** that has several lines in it behaves the same way.
 
 ### The newline character
 
@@ -3414,15 +3414,15 @@ Last lesson you made a slow program fast without changing a single answer it gav
 
 Code that works is not finished. Code gets *read* far more often than it gets written: by your team, by the person fixing it next year, and by you in a month. A 40-line function that reads the data, does the sums, makes decisions and lays out the result all in one place is hard to read, hard to test and hard to change.
 
-Picture a school bag with everything thrown into one big pocket: pens, lunch, homework, a charger. Nothing is lost, but finding anything is slow. So you sort it into labelled pouches. The bag holds exactly the same things afterwards. It is only easier to use.
+Picture a school bag with everything thrown into one big pocket: pens, lunch, homework, a charger. Nothing is lost, but finding anything is slow. So you sort it into labeled pouches. The bag holds exactly the same things afterwards. It is only easier to use.
 
 ### Refactoring
 
-Tidying code like that is called **[[refactoring|refactoring-word]]**: changing the *shape* of code without changing what it *does*. What it does, every output for every input, is its **behaviour**. A refactor changes the shape and never the behaviour.
+Tidying code like that is called **[[refactoring|refactoring-word]]**: changing the *shape* of code without changing what it *does*. What it does, every output for every input, is its **behavior**. A refactor changes the shape and never the behavior.
 
 Here is the method, one step at a time.
 
-1. **[[Pin the behaviour down first|pin-behaviour]].** Before you move anything, have checks, or a few saved outputs, that prove the program still does exactly what it did.
+1. **[[Pin the behavior down first|pin-behaviour]].** Before you move anything, have checks, or a few saved outputs, that prove the program still does exactly what it did.
 2. **Find the separate jobs.** Read the function and name each thing it does in a few words: "read one line", "average the scores", "choose a letter", "lay out a row". Each phrase is a function waiting to be pulled out.
 3. **Extract one job at a time.** To **extract** means to move a piece of code out into a function of its own, and call that function where the code used to be. Run the checks after each move.
 4. **[[Name things for what they mean|good-names]]**, not how they work: `letter(avg)` rather than `check_thresholds(x)`.
@@ -3511,7 +3511,7 @@ print(split_pair("   "))           # None
 
 When every job has its own function, the top function only calls them in order, and it reads like a summary. Keeping each function [[short enough to see at once|story-length]] is a rule real flight software follows. The details, like the format spec `{avg:6.1f}` (width 6, one decimal place, from the f-string lesson), live inside the small function that lays out a row, and nowhere else.
 
-**Watch out:** the real mistake is "improving" the behaviour during a refactor. You spot something you would like to change, change it while you move code around, and now an output is different and you cannot tell whether the refactor broke it or the improvement did. Keep them apart: write the idea down and change it separately, afterwards. Small details count as behaviour too. If the old code picked the top student with `if avg > best_avg`, a tie keeps the *first* student. Writing `>=` in the new code would keep the *last* one, and that is a different program.
+**Watch out:** the real mistake is "improving" the behavior during a refactor. You spot something you would like to change, change it while you move code around, and now an output is different and you cannot tell whether the refactor broke it or the improvement did. Keep them apart: write the idea down and change it separately, afterwards. Small details count as behavior too. If the old code picked the top student with `if avg > best_avg`, a tie keeps the *first* student. Writing `>=` in the new code would keep the *last* one, and that is a different program.
 
 ::: context refactoring-word Where the word comes from
 The word comes from maths, where factoring means rewriting an expression into a different but equal form, like rewriting 6x + 9 as 3(2x + 3). Both sides are equal; one is easier to work with. Refactoring code is the same idea. The word was made popular by Martin Fowler's 1999 book "Refactoring", which lists dozens of named moves, and "Extract Function" is the one you use most.

@@ -284,7 +284,7 @@ Sanity check: $6.77\times10^{-4}$ is less than $9.20\times10^{-4}$, as it must b
 Everything here assumed both orbits and their covariances were right. The next lesson asks what happens to that assumption the moment one of the objects maneuvers — on purpose or not — partway through the tracking arc that was supposed to describe it.
 
 ::: context tca Finding the moment of closest approach
-Screening software first propagates thousands of catalogued objects forward about a week and flags every pair that comes inside a safety box around a protected satellite. For each flagged pair it then searches for the instant when the distance between them stops shrinking and starts growing: there, the relative position is perpendicular to the relative velocity, so their dot product is zero. That instant is the **TCA**, and the distance at that instant is the predicted **miss distance**.
+Screening software first propagates thousands of cataloged objects forward about a week and flags every pair that comes inside a safety box around a protected satellite. For each flagged pair it then searches for the instant when the distance between them stops shrinking and starts growing: there, the relative position is perpendicular to the relative velocity, so their dot product is zero. That instant is the **TCA**, and the distance at that instant is the predicted **miss distance**.
 :::
 
 ::: context conjunction-plane The window the thread passes through

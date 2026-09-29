@@ -259,7 +259,7 @@ The same pull shows up everywhere: finishing a bad book, repairing a car that ha
 :::
 
 ::: context sunk-bars The example, drawn to scale
-Both options share the same grey block: the 1.5 years already spent. Only the colored parts differ.
+Both options share the same gray block: the 1.5 years already spent. Only the colored parts differ.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
@@ -280,7 +280,7 @@ Both options share the same grey block: the 1.5 years already spent. Only the co
 </svg>
 ```
 
-Each year is 70 units wide. Covering the grey block with your hand changes nothing about which bar is shorter — which is the whole argument in one picture.
+Each year is 70 units wide. Covering the gray block with your hand changes nothing about which bar is shorter — which is the whole argument in one picture.
 :::
 
 ::: context pre-commitment Tying yourself to the mast

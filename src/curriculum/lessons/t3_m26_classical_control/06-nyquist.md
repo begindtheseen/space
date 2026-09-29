@@ -151,7 +151,7 @@ An unstable plant has a gain margin **from below** as well as from above. The us
 :::
 
 ::: note When the criterion does not apply
-The criterion assumes the curve does not pass exactly through $-1$, that $L$ is proper (no more zeros than poles), and that no unstable pole has been cancelled by a zero. That last one catches people. If a controller cancels an unstable plant pole with a zero, $L$ looks innocent, $P$ seems to be zero, and the criterion says "stable" for a loop with a hidden growing mode. **[[Never cancel a right-half-plane pole|rhp-cancel]].** The cancellation is exact only in the model.
+The criterion assumes the curve does not pass exactly through $-1$, that $L$ is proper (no more zeros than poles), and that no unstable pole has been canceled by a zero. That last one catches people. If a controller cancels an unstable plant pole with a zero, $L$ looks innocent, $P$ seems to be zero, and the criterion says "stable" for a loop with a hidden growing mode. **[[Never cancel a right-half-plane pole|rhp-cancel]].** The cancellation is exact only in the model.
 :::
 
 ## Reading distance instead of counting turns
@@ -203,7 +203,7 @@ The minimum gain has risen to $\mu_\alpha/\mu_\delta = 0.60/1.317 = 0.456$. So t
 :::
 
 ::: check
-An engineer analysing a loop with an integrator plots $L(j\omega)$ for $\omega$ from 0.01 to 1000 rad/s, sees no encirclement of $-1$, and declares the loop stable. What has been left out, and when does it matter?
+An engineer analyzing a loop with an integrator plots $L(j\omega)$ for $\omega$ from 0.01 to 1000 rad/s, sees no encirclement of $-1$, and declares the loop stable. What has been left out, and when does it matter?
 :::
 
 ::: answer

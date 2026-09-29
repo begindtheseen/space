@@ -299,7 +299,7 @@ A test suite is the same. A green run tells you nothing unless you know the test
 ::: example Flipping a sign in the rocket equation
 Break `delta_v` by swapping the fraction inside the logarithm, a classic slip:
 
-```python
+```python fragment
 return isp * G0 * math.log(mf / m0)   # bug: should be m0 / mf
 ```
 

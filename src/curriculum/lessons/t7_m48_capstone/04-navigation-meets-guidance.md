@@ -83,7 +83,7 @@ The position error is $1.5$ sigma (it contributes $1.5^2 = 2.25$) and the veloci
 In flight there is no truth to compare against, so NEES cannot be computed. The flight version uses the **[[innovation|innovation]]** instead — the difference between what a sensor actually reported and what the filter predicted it would report. The **NIS**, the **normalized innovation squared**, divides that difference by its predicted spread $\mathbf S$ in exactly the same way. It needs no truth, so it runs on the real vehicle, and it too should sit inside its chi-squared band.
 
 ::: key Filter consistency checks
-NEES (normalised estimation error squared) against truth in simulation, and NIS (normalised innovation squared) in flight, since it needs no truth. Both should sit inside their chi-squared bounds. An overconfident filter corrupts gating, FDIR thresholds and guidance margins alike.
+NEES (normalized estimation error squared) against truth in simulation, and NIS (normalized innovation squared) in flight, since it needs no truth. Both should sit inside their chi-squared bounds. An overconfident filter corrupts gating, FDIR thresholds and guidance margins alike.
 :::
 
 Why does an **[[overconfident|overconfident]]** filter — one whose covariance is too small — do so much harm? Follow the covariance to its readers:

@@ -83,7 +83,7 @@ Remove the deceleration. The truth is now a genuine constant-velocity motion, st
 **Sense check.** The smallest $q$ is the *worst* for accuracy here — worse even than $q = 50$, a hundredfold overestimate. That makes sense. The model is right, but it includes real process noise, and a $q$ of $0.005$ denies that the booster ever wanders. It then lags behind every real wander.
 :::
 
-Notice what that last point means. A common instinct says "when in doubt, trust the model — make $\mathbf{Q}$ small." But even a structurally perfect model has real process noise of its own, and an undersized $\mathbf{Q}$ throws away genuine motion along with any modelling error. There is no direction in which "smaller $\mathbf{Q}$ is always safer" holds. There is only the true value, unknown in general, and two kinds of wrong on either side of it.
+Notice what that last point means. A common instinct says "when in doubt, trust the model — make $\mathbf{Q}$ small." But even a structurally perfect model has real process noise of its own, and an undersized $\mathbf{Q}$ throws away genuine motion along with any modeling error. There is no direction in which "smaller $\mathbf{Q}$ is always safer" holds. There is only the true value, unknown in general, and two kinds of wrong on either side of it.
 
 ## Tuning Q from data: make the surprises fit
 
@@ -253,11 +253,11 @@ Big aerospace projects pass through formal **design reviews** — a preliminary 
 :::
 
 ::: context unmodelled-accel Why a real booster has accelerations the model ignores
-A constant-velocity model says the booster keeps its speed between steps. A real descending booster does not: air drag grows as the air gets thicker lower down, engines throttle up for a landing burn, and grid fins steer. A filter can carry acceleration as another state, or it can leave it out and rely on $\mathbf{Q}$ to cover it. Leaving it out is simpler — and it is exactly what makes $\mathbf{Q}$ matter so much. Three metres per second squared, the size used in the lesson, is less than a third of $g_0 = 9.80665\,\mathrm{m/s^2}$: a small push.
+A constant-velocity model says the booster keeps its speed between steps. A real descending booster does not: air drag grows as the air gets thicker lower down, engines throttle up for a landing burn, and grid fins steer. A filter can carry acceleration as another state, or it can leave it out and rely on $\mathbf{Q}$ to cover it. Leaving it out is simpler — and it is exactly what makes $\mathbf{Q}$ matter so much. Three meters per second squared, the size used in the lesson, is less than a third of $g_0 = 9.80665\,\mathrm{m/s^2}$: a small push.
 :::
 
 ::: context rms Root mean square
-**RMS**, short for root mean square, is a way to boil a list of errors down to one typical size. Do what the name says, backwards: **square** each error (so minus signs stop cancelling plus signs), take the **mean** of the squares, then take the square **root** to get back to metres. For errors of $3$, $-4$ and $0$: the squares are $9$, $16$, $0$; the mean is $25/3 \approx 8.33$; the root is about $2.89$. RMS error is the number to compare with a filter's reported $\sigma$: for an honest filter they match.
+**RMS**, short for root mean square, is a way to boil a list of errors down to one typical size. Do what the name says, backwards: **square** each error (so minus signs stop canceling plus signs), take the **mean** of the squares, then take the square **root** to get back to meters. For errors of $3$, $-4$ and $0$: the squares are $9$, $16$, $0$; the mean is $25/3 \approx 8.33$; the root is about $2.89$. RMS error is the number to compare with a filter's reported $\sigma$: for an honest filter they match.
 :::
 
 ::: context jitter Lagging versus jumpy
@@ -305,7 +305,7 @@ Draw the bell curve the filter *predicts* for its surprises — its width set by
 </svg>
 ```
 
-The narrow red curve is tall in the middle but nearly zero where some dots fall — those dots are "shocking" and cost a lot. The flat grey curve never gets tall anywhere — the modesty cost. The blue curve, with the right width, scores best.
+The narrow red curve is tall in the middle but nearly zero where some dots fall — those dots are "shocking" and cost a lot. The flat gray curve never gets tall anywhere — the modesty cost. The blue curve, with the right width, scores best.
 :::
 
 ::: context dumping-ground When Q hides a missing state

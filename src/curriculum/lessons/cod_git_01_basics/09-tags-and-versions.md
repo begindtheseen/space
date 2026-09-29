@@ -198,7 +198,7 @@ MAJOR.MINOR.PATCH. Bump PATCH for backward-compatible bug fixes, MINOR for backw
 ::: example Numbering a year of orbit-sim
 Start at `v0.2.0`. Suppose the team declares the API stable and releases `v1.0.0`. What does each later release become?
 
-1. A fix: `circular_speed` returned the wrong value for radii given in kilometres by mistake in one test helper; the public functions are unchanged. **Patch** → `1.0.1`.
+1. A fix: `circular_speed` returned the wrong value for radii given in kilometers by mistake in one test helper; the public functions are unchanged. **Patch** → `1.0.1`.
 2. A new function `orbital_period(r)` is added. Nothing old changes. **Minor** → `1.1.0` (PATCH resets to 0).
 3. Another new function, `j2_accel(r, lat)`. **Minor** → `1.2.0`.
 4. A bug in `escape_speed` for $r \le 0$ is fixed by raising `ValueError` (as `accel` already does). Valid inputs give the same results. **Patch** → `1.2.1`.

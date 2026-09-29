@@ -165,7 +165,7 @@ Step by step:
 Sanity check: a second run gave 0.66 ms and 629 ms. Doubling $n$ would double the ordinary time but quadruple the hostile one, because the hostile work grows like $n^2/2$. That is the signature of $O(n)$ per insert.
 :::
 
-Real attackers have done exactly this. When a program builds a hash table from input someone else controls — packet fields, uploaded file names, web form parameters — an attacker who knows the hash function can send keys that all collide, and a small message can keep a processor busy for seconds. This is **[[hash flooding|hash-flooding]]**. The defences:
+Real attackers have done exactly this. When a program builds a hash table from input someone else controls — packet fields, uploaded file names, web form parameters — an attacker who knows the hash function can send keys that all collide, and a small message can keep a processor busy for seconds. This is **[[hash flooding|hash-flooding]]**. The defenses:
 
 - a **keyed** hash, mixed with a secret random value chosen at start-up, so outsiders cannot predict collisions;
 - never letting outside input choose keys for a table on a time-critical path;
@@ -345,7 +345,7 @@ The other runs: map 36 and 37 ns hot, 938 and 953 ns cold; hash table 3 ns hot b
 1. **Hot, the hash table wins by more than ten times.** With an identity hash, a lookup is one remainder, one bucket load and one node load, all in the fastest cache, with no branch that depends on the key's value in a hard-to-guess way. Separate lookups do not depend on each other, so the processor overlaps several at once, and each costs about 3 ns of throughput.
 2. **Cold, the sorted array wins** — about two to three times faster than the hash table and three to four times faster than the map. Once nothing is in cache, what counts is how many separate trips to memory a lookup makes, and whether each one's address is known in advance. The hash table must load the bucket array, then the node the bucket points to, which was allocated somewhere in the heap; each is a miss. The map misses on every level of the tree, around eight of them. The array's 2048 bytes are one contiguous block, its last steps fall in lines already fetched, and there is no pointer to follow at all.
 
-Sanity check: the cold hash lookup, about 600 ns, is a little under the map's 860 and a little over twice the array's 270 — two dependent misses, against about eight for the map and a few neighbouring lines for the array. Timings vary between machines and runs; repeat them before you quote them.
+Sanity check: the cold hash lookup, about 600 ns, is a little under the map's 860 and a little over twice the array's 270 — two dependent misses, against about eight for the map and a few neighboring lines for the array. Timings vary between machines and runs; repeat them before you quote them.
 :::
 
 So which is faster depends on how the program uses the table, and a flight control loop is the cold case: one or a few lookups per cycle, between everything else the cycle does. The hot row is what a naive benchmark measures.
@@ -385,7 +385,7 @@ Why does calling `reserve(128)` on an `unordered_map` not make it safe to insert
 :::
 
 ::: answer
-`reserve` sizes the bucket array, so 128 inserts cause no rehash. But every insert still allocates a node for the new element, as the footprint program showed: 129 allocations with `reserve`, one for the buckets and one per node. The loop would still call the allocator 128 times, which is exactly what the no-allocation-after-initialisation rule forbids. Build the table at start-up, or use a fixed array.
+`reserve` sizes the bucket array, so 128 inserts cause no rehash. But every insert still allocates a node for the new element, as the footprint program showed: 129 allocations with `reserve`, one for the buckets and one per node. The loop would still call the allocator 128 times, which is exactly what the no-allocation-after-initialization rule forbids. Build the table at start-up, or use a fixed array.
 :::
 
 ::: check
@@ -393,7 +393,7 @@ A ground tool counts how often each packet source address appears, using `unorde
 :::
 
 ::: answer
-$O(1)$ is the *average* for keys that spread well, not a guarantee. The keys here come from outsiders, and with libstdc++'s identity hash for integers, anyone who can pick addresses that are all equal modulo the bucket count can put them in one bucket, making each operation walk a chain as long as the table: $O(n)$ per insert and $O(n^2)$ to process $n$ packets. That is hash flooding. Defences are a keyed hash with a secret seed, or a container with a guaranteed worst case, such as `std::map`.
+$O(1)$ is the *average* for keys that spread well, not a guarantee. The keys here come from outsiders, and with libstdc++'s identity hash for integers, anyone who can pick addresses that are all equal modulo the bucket count can put them in one bucket, making each operation walk a chain as long as the table: $O(n)$ per insert and $O(n^2)$ to process $n$ packets. That is hash flooding. Defenses are a keyed hash with a secret seed, or a container with a guaranteed worst case, such as `std::map`.
 :::
 
 ::: check
@@ -519,11 +519,11 @@ Real keys often come in patterns: ids that are all multiples of 8, addresses ali
 :::
 
 ::: context open-addressing Hash tables without nodes
-Many fast hash tables outside the standard library store elements directly in one big array and, on a collision, try the next slot, a scheme called **open addressing**. That is contiguous and cache-friendly. The standard's `unordered_map` cannot do this, because it promises that references to elements survive a rehash, and in an open-addressed table a rehash moves every element. That one promise, made when the containers were standardised in C++11, commits every standard library to nodes.
+Many fast hash tables outside the standard library store elements directly in one big array and, on a collision, try the next slot, a scheme called **open addressing**. That is contiguous and cache-friendly. The standard's `unordered_map` cannot do this, because it promises that references to elements survive a rehash, and in an open-addressed table a rehash moves every element. That one promise, made when the containers were standardized in C++11, commits every standard library to nodes.
 :::
 
 ::: context hash-flooding An attack on the average case
-Hash flooding reached the headlines in December 2011, when Alexander Klink and Julian Wälde showed at the Chaos Communication Congress that a single web request full of colliding form-field names could tie up a server running PHP, Java, Python or several other languages for a long time. The languages responded with randomised or keyed hashing. Python, since version 3.4, hashes strings with SipHash, a keyed function designed by Jean-Philippe Aumasson and Daniel J. Bernstein for exactly this use.
+Hash flooding reached the headlines in December 2011, when Alexander Klink and Julian Wälde showed at the Chaos Communication Congress that a single web request full of colliding form-field names could tie up a server running PHP, Java, Python or several other languages for a long time. The languages responded with randomized or keyed hashing. Python, since version 3.4, hashes strings with SipHash, a keyed function designed by Jean-Philippe Aumasson and Daniel J. Bernstein for exactly this use.
 :::
 
 ::: context wcet A number the whole schedule depends on
@@ -531,5 +531,5 @@ Hash flooding reached the headlines in December 2011, when Alexander Klink and J
 :::
 
 ::: context benchmark-hygiene Making your own measurement honest
-Four habits keep a benchmark truthful. Use every result, as the `sink` variable does, or the optimiser may delete the lookups entirely. Time with `std::chrono::steady_clock`, a clock that never jumps. Run the whole program several times and report the spread, not one lucky number. And say which case you measured: a tight loop over the same keys, or one lookup among other work. Build with the same flags you ship, `-O2` here, because an unoptimised build measures the compiler, not the container.
+Four habits keep a benchmark truthful. Use every result, as the `sink` variable does, or the optimizer may delete the lookups entirely. Time with `std::chrono::steady_clock`, a clock that never jumps. Run the whole program several times and report the spread, not one lucky number. And say which case you measured: a tight loop over the same keys, or one lookup among other work. Build with the same flags you ship, `-O2` here, because an unoptimised build measures the compiler, not the container.
 :::

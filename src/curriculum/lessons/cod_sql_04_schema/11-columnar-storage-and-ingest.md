@@ -100,7 +100,7 @@ value    17,913,251 bytes  3.455 per row
 
 ## How a Parquet file is laid out
 
-**Parquet** is an open file format for columnar data, used by nearly every analytics tool: Spark, DuckDB, ClickHouse, pandas and **[[many more|parquet-origin]]**. A Parquet file is not one long run per column. It is organised in [[three nested levels|parquet-layout]], plus a footer.
+**Parquet** is an open file format for columnar data, used by nearly every analytics tool: Spark, DuckDB, ClickHouse, pandas and **[[many more|parquet-origin]]**. A Parquet file is not one long run per column. It is organized in [[three nested levels|parquet-layout]], plus a footer.
 
 - A **row group** is a horizontal slice of the table: a block of consecutive rows. Our file has 11: ten of 500,000 rows and a last one of 184,000 ($10 \times 500\,000 + 184\,000 = 5\,184\,000$).
 - Inside each row group, every column has one **column chunk**: that column's values for those rows, stored together and compressed.
@@ -161,7 +161,7 @@ print(day.num_rows, "rows on 2 March")
 The skipping only worked because the file was written **in time order**, so each row group covers a narrow slice of time. Sort the same rows by satellite, then channel, then time, and write them again: now every row group spans all ninety days, and the same time filter must read all 11 of 11 row groups. On the other hand, the filter `sat_id == 3` then keeps only 2 of 11, while on the time-sorted file it keeps all 11. The sort order you write decides which questions the file answers quickly — the same lesson as BRIN and correlation, one level up.
 
 ::: warning A Parquet file is not a database
-A Parquet file is written once and then only read. There is no `UPDATE`; to change a row you rewrite the file. There are no indexes beyond the statistics, no constraints, no transactions across files. Many small files are slow too: each has its own footer to fetch, and tiny row groups have useless statistics. Write files big enough to matter — row groups of tens to hundreds of megabytes are common — and compact small ones. Table formats such as **Delta Lake** and **Apache Iceberg** add a transaction log on top of Parquet files to bring back some database behaviour.
+A Parquet file is written once and then only read. There is no `UPDATE`; to change a row you rewrite the file. There are no indexes beyond the statistics, no constraints, no transactions across files. Many small files are slow too: each has its own footer to fetch, and tiny row groups have useless statistics. Write files big enough to matter — row groups of tens to hundreds of megabytes are common — and compact small ones. Table formats such as **Delta Lake** and **Apache Iceberg** add a transaction log on top of Parquet files to bring back some database behavior.
 :::
 
 ## Where the archive lives
@@ -197,7 +197,7 @@ Load 20,000 rows into a copy of the telemetry table with one B-tree index, four 
 
 **Step 3: batch the statements.** Fewer, bigger statements cut the per-statement parsing and round trips, and `COPY` — PostgreSQL's bulk-load command — streams rows with almost no per-row overhead: $4.109 / 0.068 \approx 60$ times faster than the first line.
 
-**Sanity check against the fleet.** The fleet produces 60,000 samples a second per channel. One writer committing every row would manage about 4,900 a second — 12 times too slow. One `COPY` stream managed about 294,000 a second, so batching is not an optimisation here; it is the only way the data fits.
+**Sanity check against the fleet.** The fleet produces 60,000 samples a second per channel. One writer committing every row would manage about 4,900 a second — 12 times too slow. One `COPY` stream managed about 294,000 a second, so batching is not an optimization here; it is the only way the data fits.
 :::
 
 Real pipelines land in between, with **micro-batches**: collect rows for a short, fixed window — say one second, or 10,000 rows, whichever comes first — then write them in one transaction with `COPY` or a multi-row insert. Latency is bounded by the window, and throughput is close to a bulk load. Most "streaming" telemetry systems are micro-batching underneath.

@@ -25,7 +25,7 @@ So the same centroid noise that hides a tiny tilt hides a roll about $1/\sin\rho
 About-boresight (roll) error is roughly $1/\tan(\mathrm{FOV}/2)$ times worse than cross-boresight, typically $5$ to $10\times$. Fly two heads with different boresights to fix it.
 :::
 
-For a $15^\circ$ field, $1/\tan 7.5^\circ = 7.60$. That is the best case, when every star sits at the rim. Stars nearer the centre help roll even less, so real fields do a bit worse.
+For a $15^\circ$ field, $1/\tan 7.5^\circ = 7.60$. That is the best case, when every star sits at the rim. Stars nearer the center help roll even less, so real fields do a bit worse.
 
 ## The information matrix, for one instrument
 
@@ -234,7 +234,7 @@ While the Sun, a sunlit Earth limb or the Moon sits inside a tracker's keep-out 
 
 ## Bright objects in the picture
 
-Something bright inside the field does worse than add one extra spot. It fills its pixels to the brim — **saturation** — and the spare charge spills into neighbours, called **[[blooming|blooming]]**. That can wreck the centroids of nearby stars and sometimes wipe out a whole row or column. Last lesson showed that one *extra* false spot does no harm: the pyramid ignores it and the residual gate drops it. A bright object's real damage is different. It *removes* real stars.
+Something bright inside the field does worse than add one extra spot. It fills its pixels to the brim — **saturation** — and the spare charge spills into neighbors, called **[[blooming|blooming]]**. That can wreck the centroids of nearby stars and sometimes wipe out a whole row or column. Last lesson showed that one *extra* false spot does no harm: the pyramid ignores it and the residual gate drops it. A bright object's real damage is different. It *removes* real stars.
 
 ::: example How many stars can a bright object take out?
 This block reuses last lesson's identification code (`identify`, `solve`, `random_rotation`, `tol` and the rest), so run it after that code. Only the observation changes: to mimic blooming, keep a random subset of the stars in the field and lose the rest.

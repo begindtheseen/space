@@ -301,7 +301,7 @@ Both curves start at $x = 0.5$ and are drawn for $1.5\,\mathrm{s}$ on the same s
 :::
 
 ::: context class-k-picture Three class K functions
-All three start at zero and only ever go up, so all are class $\mathcal{K}$. The line $r$ (grey) and the cube root $r^{1/3}$ (blue) keep growing forever, so they are class $\mathcal{K}_\infty$. The curve $\tanh r$ (red) flattens toward the dashed line at height $1$ and never passes it, so it is class $\mathcal{K}$ only. Notice how steeply $r^{1/3}$ rises near zero: a tiny input already gives a noticeable output, which is the cube-law gain's weakness.
+All three start at zero and only ever go up, so all are class $\mathcal{K}$. The line $r$ (gray) and the cube root $r^{1/3}$ (blue) keep growing forever, so they are class $\mathcal{K}_\infty$. The curve $\tanh r$ (red) flattens toward the dashed line at height $1$ and never passes it, so it is class $\mathcal{K}$ only. Notice how steeply $r^{1/3}$ rises near zero: a tiny input already gives a noticeable output, which is the cube-law gain's weakness.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">

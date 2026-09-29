@@ -6,15 +6,15 @@ covers:
   - 'Features: extrude, revolve, sweep, loft, fillet, shell, rib, draft, hole wizard, patterns, configurations'
 ---
 
-Think about a lump of modelling clay and a kitchen drawer full of tools. Press the clay through a star-shaped nozzle and you get a long star-shaped rod. Spin a lump on a potter's wheel and shape one side, and you get a round vase. Scoop out the middle and it becomes a bowl. Smooth the sharp edges with your thumb. Poke a row of holes with a pencil. Every one of those moves takes the part you have and changes it in one clear way.
+Think about a lump of modeling clay and a kitchen drawer full of tools. Press the clay through a star-shaped nozzle and you get a long star-shaped rod. Spin a lump on a potter's wheel and shape one side, and you get a round vase. Scoop out the middle and it becomes a bowl. Smooth the sharp edges with your thumb. Poke a row of holes with a pencil. Every one of those moves takes the part you have and changes it in one clear way.
 
-A 3D CAD part is made the same way, one move at a time. Each move is a **feature** — one modelling operation, like "extrude this sketch 6 mm" or "round these edges with a 2 mm radius", that adds material, removes it, or reshapes it. Last lesson you learned to make a fully defined sketch. This lesson turns sketches into solids.
+A 3D CAD part is made the same way, one move at a time. Each move is a **feature** — one modeling operation, like "extrude this sketch 6 mm" or "round these edges with a 2 mm radius", that adds material, removes it, or reshapes it. Last lesson you learned to make a fully defined sketch. This lesson turns sketches into solids.
 
 There are only about a dozen features you will use every day. For each one you will see what it makes and where it shows up on real spacecraft hardware. At the end you will use the model to answer the question a GNC engineer actually asks the mechanical team: how much does it weigh?
 
 ## Adding and removing material
 
-Almost every feature comes in two flavours. A **boss** (or "add") feature adds material to the part. A **cut** feature takes material away. Onshape asks the same thing with a choice of New, Add, Remove or Intersect at the top of each feature.
+Almost every feature comes in two flavors. A **boss** (or "add") feature adds material to the part. A **cut** feature takes material away. Onshape asks the same thing with a choice of New, Add, Remove or Intersect at the top of each feature.
 
 Under the hood, the program builds the new shape as its own solid and then combines it with the part you already have. Adding is joining the two solids; cutting is subtracting one from the other. These combinations are called **[[Boolean operations|boolean]]** — joining, subtracting and keeping only the overlap.
 
@@ -165,7 +165,7 @@ $$
 :::
 
 ::: warning The material is part of the model
-A CAD mass is only as good as the material you assigned. Many programs quietly use a default density, or none, until you set one. A steel bolt modelled in "default" material, or a part left as generic plastic, gives a wrong mass that looks just as precise as a right one. Always check the material before you trust a number.
+A CAD mass is only as good as the material you assigned. Many programs quietly use a default density, or none, until you set one. A steel bolt modeled in "default" material, or a part left as generic plastic, gives a wrong mass that looks just as precise as a right one. Always check the material before you trust a number.
 :::
 
 These single-part numbers are the start of **[[mass properties|mass-properties-bridge]]**: mass, center of mass and how the mass is spread out. A GNC engineer needs all three for the whole vehicle.
@@ -272,7 +272,7 @@ Only the top half is sketched; the revolve supplies the rest.
 :::
 
 ::: context helix A curve that climbs as it turns
-A helix is the shape of a spring or a screw thread: a curve that goes around a cylinder while rising at a steady rate. Its **pitch** is how far it climbs in one full turn. CAD programs make a helix from a circle, a pitch and a number of turns, and a sweep then runs a small circle along it to make a coil spring. Modelled threads are usually skipped on real parts — they make models slow — and the thread is shown by a note instead.
+A helix is the shape of a spring or a screw thread: a curve that goes around a cylinder while rising at a steady rate. Its **pitch** is how far it climbs in one full turn. CAD programs make a helix from a circle, a pitch and a number of turns, and a sweep then runs a small circle along it to make a coil spring. Modeled threads are usually skipped on real parts — they make models slow — and the thread is shown by a note instead.
 :::
 
 ::: context stress-concentration Why sharp inside corners crack

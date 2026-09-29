@@ -116,8 +116,8 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
   const custom = render?.(lang, code)
   if (custom) return <>{custom}</>
   return (
-    <pre className="md__pre" data-lang={lang || undefined}>
-      {lang ? <span className="md__lang">{lang}</span> : null}
+    <pre className="md__pre" data-lang={lang.split(/\s+/)[0] || undefined}>
+      {lang ? <span className="md__lang">{lang.split(/\s+/)[0]}</span> : null}
       <code>{code}</code>
     </pre>
   )

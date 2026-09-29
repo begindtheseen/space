@@ -232,7 +232,7 @@ The numerical **Jacobians** (tables of slopes) that a Kalman filter or an optimi
 :::
 
 ::: note Why the best step is 2√ε
-Call the total error $E(h) = \dfrac{h}{2} + \dfrac{2\varepsilon}{h}$. The first part rises with $h$ and the second falls, so the smallest total sits where they balance. Set the slope of $E$ to zero: $\dfrac{1}{2} - \dfrac{2\varepsilon}{h^2} = 0$, so $h^2 = 4\varepsilon$ and $h = 2\sqrt{\varepsilon}$. Put it back in: $E = \sqrt{\varepsilon} + \sqrt{\varepsilon} = 2\sqrt{\varepsilon} \approx 3 \times 10^{-8}$. The true minimum in the table is a little smaller, because the rounding errors partly cancelled at $h = 10^{-8}$.
+Call the total error $E(h) = \dfrac{h}{2} + \dfrac{2\varepsilon}{h}$. The first part rises with $h$ and the second falls, so the smallest total sits where they balance. Set the slope of $E$ to zero: $\dfrac{1}{2} - \dfrac{2\varepsilon}{h^2} = 0$, so $h^2 = 4\varepsilon$ and $h = 2\sqrt{\varepsilon}$. Put it back in: $E = \sqrt{\varepsilon} + \sqrt{\varepsilon} = 2\sqrt{\varepsilon} \approx 3 \times 10^{-8}$. The true minimum in the table is a little smaller, because the rounding errors partly canceled at $h = 10^{-8}$.
 :::
 
 ## Where this bites in GNC
@@ -304,7 +304,7 @@ A colleague computes the mean of $10^7$ float64 accelerometer samples of about $
 ::: answer
 `np.mean`. The running sum grows to about $10^8$, where the ulp is $1.5 \times 10^{-8}$. Each of $10^7$ additions can round by half that. If the roundings lean one way, the total error can reach $10^7 \times 7.5 \times 10^{-9} \approx 10^{-1}$ on a sum of $10^8$ — a relative error of $10^{-9}$, exactly the ninth digit.
 
-NumPy's pairwise summation adds numbers of similar size in a tree, so the error grows like $\log_2 n \approx 23$ roundings rather than $10^7$. `math.fsum` would be exact to the last bit. Either way, a ninth-digit disagreement in a mean is a summing artefact, not a property of the data.
+NumPy's pairwise summation adds numbers of similar size in a tree, so the error grows like $\log_2 n \approx 23$ roundings rather than $10^7$. `math.fsum` would be exact to the last bit. Either way, a ninth-digit disagreement in a mean is a summing artifact, not a property of the data.
 :::
 
 ## Summary

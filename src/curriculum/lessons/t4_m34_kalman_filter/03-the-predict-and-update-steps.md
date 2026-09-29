@@ -51,7 +51,7 @@ $$
 \mathbf{e}_k^- = \mathbf{x}_k - \hat{\mathbf{x}}_k^- = \mathbf{F}_{k-1}\mathbf{e}_{k-1}^+ + \mathbf{w}_{k-1}.
 $$
 
-(The input cancelled, because truth and prediction both used the same $\mathbf{u}$.) Now take the covariance of this sum. The sandwich rule gives $\mathbf{F}\mathbf{P}^+_{k-1}\mathbf{F}^{\mathsf{T}}$ for the first piece and $\mathbf{Q}$ for the second. There could be a cross term, $\mathbb{E}[\mathbf{e}_{k-1}^+\mathbf{w}_{k-1}^{\mathsf{T}}]$, but it is zero. The old error $\mathbf{e}_{k-1}^+$ is built only from things up to step $k-1$, and $\mathbf{w}_{k-1}$ is independent of all of them. That is the whiteness assumption of the first lesson, doing its job.
+(The input canceled, because truth and prediction both used the same $\mathbf{u}$.) Now take the covariance of this sum. The sandwich rule gives $\mathbf{F}\mathbf{P}^+_{k-1}\mathbf{F}^{\mathsf{T}}$ for the first piece and $\mathbf{Q}$ for the second. There could be a cross term, $\mathbb{E}[\mathbf{e}_{k-1}^+\mathbf{w}_{k-1}^{\mathsf{T}}]$, but it is zero. The old error $\mathbf{e}_{k-1}^+$ is built only from things up to step $k-1$, and $\mathbf{w}_{k-1}$ is independent of all of them. That is the whiteness assumption of the first lesson, doing its job.
 
 ::: key Kalman filter PREDICT step
 $$
@@ -203,7 +203,7 @@ Step 1: $P_1^- = 25 + 0.2 = 25.2$, $K_1 = 25.2/26.2 = 0.962$, $P_1^+ = 0.038\tim
 
 (The $K$ and $P^+$ columns match only because $r = 1$: then $P^+ = P^- r/(P^- + r) = K$.)
 
-Every predict step adds exactly $q = 0.2$. Every update multiplies by $(1 - K)$. The two pull in opposite directions, and the $P^+$ values ($0.962, 0.537, 0.424, 0.384, 0.369, 0.363$) are **[[levelling off|fixed-point]]** rather than falling forever. Past $k \approx 5$, what the predict step adds is nearly matched by what the update removes.
+Every predict step adds exactly $q = 0.2$. Every update multiplies by $(1 - K)$. The two pull in opposite directions, and the $P^+$ values ($0.962, 0.537, 0.424, 0.384, 0.369, 0.363$) are **[[leveling off|fixed-point]]** rather than falling forever. Past $k \approx 5$, what the predict step adds is nearly matched by what the update removes.
 
 **Sanity check.** The variance never goes below zero and never above the $25.2$ it started from, and each prediction is exactly $0.2$ above the previous posterior. Nothing here has *proven* there is a fixed point yet; the steady-state lesson does that.
 :::
@@ -283,7 +283,7 @@ Checking: $P_1^- = 27$, $K_1 = 27/28 = 0.964$, $P_1^+ = 0.964$. Then $P_2^- = 2.
 | Update only removes | $\mathbf{P}_k^- - \mathbf{P}_k^+ = \mathbf{K}_k\mathbf{S}_k\mathbf{K}_k^{\mathsf{T}} \succeq \mathbf{0}$ |
 | Fixed memory | The update needs only $\hat{\mathbf{x}}_k^-, \mathbf{P}_k^-, \mathbf{z}_k$, however long the filter has run |
 
-Both examples showed the gain and the covariance levelling off to fixed values. The next lesson looks straight at what $\mathbf{K}_k$ *is*: a ratio of how much the filter trusts its prediction against how much it trusts the reading.
+Both examples showed the gain and the covariance leveling off to fixed values. The next lesson looks straight at what $\mathbf{K}_k$ *is*: a ratio of how much the filter trusts its prediction against how much it trusts the reading.
 
 ::: context latin-labels Before the fact and after it
 *A priori* and *a posteriori* are Latin for "from what comes before" and "from what comes after". Philosophers used them for knowledge you have before experience and knowledge you gain from it. Estimation borrowed them for "before this reading" and "after this reading". Engineers often shorten them to "prior" and "posterior", or say "minus" and "plus" after the superscripts.

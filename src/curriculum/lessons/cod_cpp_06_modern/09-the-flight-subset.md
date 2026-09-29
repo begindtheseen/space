@@ -29,7 +29,7 @@ Here is how the features you have met sort out.
 Almost everything in the "kept" column costs nothing when the program runs: the compiler does the work. That is why a modern flight codebase can be full of templates and `constexpr` while forbidding things C++98 already had.
 
 ::: key The flight subset
-Flight teams typically allow the C++11/14/17 core: RAII, references, `const`, `constexpr`, templates for static dispatch, fixed-size containers, no exceptions, no RTTI, no allocation after initialisation, no recursion, and a restricted standard-library whitelist. Modern does not mean unrestricted.
+Flight teams typically allow the C++11/14/17 core: RAII, references, `const`, `constexpr`, templates for static dispatch, fixed-size containers, no exceptions, no RTTI, no allocation after initialization, no recursion, and a restricted standard-library whitelist. Modern does not mean unrestricted.
 :::
 
 Why C++11/14/17 and not C++20 or 23? Flight projects [[fix one compiler version|qualified-compiler]] for years, and the coding standards they follow were written for C++14 and C++17. A C++20 feature can be approved, but someone has to argue for it.
@@ -82,7 +82,7 @@ Both add runtime machinery with data-dependent cost and code size: unwinding tab
 
 The general-purpose heap is a shared store with shelves of every size. Asking it for memory means a search, and the search takes longer as the shelves fill with gaps — the problem called **[[fragmentation|fragmentation]]**. The time of one `new` has no small, fixed upper bound. And a `new` can fail: after hours of running, there may be enough free bytes in total but no single gap large enough.
 
-So the rule, in nearly every flight standard, is: **allocate only during initialisation**. Build every buffer, pool and object while the system starts. After that, the heap is closed.
+So the rule, in nearly every flight standard, is: **allocate only during initialization**. Build every buffer, pool and object while the system starts. After that, the heap is closed.
 
 A rule nobody checks is a wish. The cheapest check uses a fact from the memory module: the global `operator new` is **[[replaceable|replaceable-new]]**. If your program defines its own `operator new(std::size_t)`, the linker uses yours instead of the library's, for every `new` in the program and every allocation inside the standard containers. So you can write one that works normally during start-up, and stops the program the moment anything allocates after a flag is set.
 
@@ -162,7 +162,7 @@ The `setvbuf` line matters: `abort()` does not flush output, so without it the e
 The code looked harmless, passed five cycles, and allocated on the sixth. The threshold is not even in your code; it belongs to the library.
 
 ::: key Why std::string is usually banned in a hard real-time path
-It allocates once the content exceeds its small-string buffer, and the threshold is implementation-defined. Fixed-capacity character buffers or `string_view` over static storage give the same capability with bounded behaviour.
+It allocates once the content exceeds its small-string buffer, and the threshold is implementation-defined. Fixed-capacity character buffers or `string_view` over static storage give the same capability with bounded behavior.
 :::
 
 ::: warning The trap only sees what goes through operator new
@@ -180,7 +180,7 @@ There are three standard answers, and the real-time module later builds all thre
 ::: example The same loop, packed for flight
 Here is the same program with the heap left out. The history is a `std::array` with a count. The status is a tiny fixed-capacity text class. The trap is still installed.
 
-```cpp
+```cpp fragment
 #include <array>
 #include <cstddef>
 #include <cstdio>
@@ -248,7 +248,7 @@ The program then exits normally, with status 0.
 
 Step by step: nothing allocated, even at start-up. In tick 6, 15 + 3 = 18 characters would exceed the capacity of 16, so `append` refused, left the text alone, and returned `false`. The loop counted one dropped message and carried on. The object is 24 bytes: 16 for the characters and 8 for the length.
 
-Sanity check: the behaviour when full is now a *decision you wrote* — refuse and count — instead of a heap request nobody saw. The 16-character limit is in the type, where a reviewer can read it.
+Sanity check: the behavior when full is now a *decision you wrote* — refuse and count — instead of a heap request nobody saw. The 16-character limit is in the type, where a reviewer can read it.
 :::
 
 The standard-library arena looks like this. Its **upstream** — where it goes when the buffer runs out — is `null_memory_resource()`, which refuses every request, so the heap is never touched:
@@ -293,11 +293,11 @@ Even "the algorithms" needs care. With the same trap around three sorts of a `st
 
 These rules are not one team's taste. Several published standards encode them.
 
-- **JSF AV C++** (2005) was written by Lockheed Martin for the F-35's flight software. It forbids exceptions, forbids heap allocation after initialisation, and forbids recursion. It targets C++ as it was in 2005.
+- **JSF AV C++** (2005) was written by Lockheed Martin for the F-35's flight software. It forbids exceptions, forbids heap allocation after initialization, and forbids recursion. It targets C++ as it was in 2005.
 - **MISRA C++:2008**, from the MISRA consortium that began in the British car industry, covers C++03. It bans dynamic heap allocation. It does *not* ban exceptions; it has rules on how to use them.
 - **AUTOSAR C++14** (2017), from a partnership of carmakers and suppliers, extended the rules to C++14. It too allows exceptions, with rules.
 - **MISRA C++:2023** merged the two for C++17 and replaces MISRA C++:2008.
-- The **[[JPL Power of Ten|power-of-ten]]** rules are ten short rules for safety-critical code. Rule 3 says: no dynamic memory allocation after initialisation.
+- The **[[JPL Power of Ten|power-of-ten]]** rules are ten short rules for safety-critical code. Rule 3 says: no dynamic memory allocation after initialization.
 
 So the standards disagree about exceptions. The car-industry rules allow them with restrictions; flight projects, which care most about worst-case timing, usually turn them off. The subset is a project decision; the standards are its starting point.
 
@@ -308,7 +308,7 @@ A subset statement has three lists — permitted, restricted, forbidden — with
 :::
 
 ::: warning Do not ban what is free
-The weak answer to "what would you forbid?" is "nothing" or "everything modern". The strong answer forbids what is unbounded or cannot be analysed — allocation after start-up, exceptions, RTTI, coroutines — and keeps what improves correctness at no run-time cost.
+The weak answer to "what would you forbid?" is "nothing" or "everything modern". The strong answer forbids what is unbounded or cannot be analyzed — allocation after start-up, exceptions, RTTI, coroutines — and keeps what improves correctness at no run-time cost.
 :::
 
 ## Check yourself
@@ -456,7 +456,7 @@ A pool is a fixed number of equal-sized slots, reserved when the program starts,
 :::
 
 ::: context power-of-ten Ten rules small enough to check
-Gerard Holzmann of NASA's Jet Propulsion Laboratory published the Power of Ten rules in 2006. There are only ten, so that a person can remember them and a tool can check them: simple control flow with no recursion, a fixed upper bound on every loop, no dynamic allocation after initialisation, short functions, and more. They were written for C but are applied to C++ flight code too. The real-time module walks through all ten.
+Gerard Holzmann of NASA's Jet Propulsion Laboratory published the Power of Ten rules in 2006. There are only ten, so that a person can remember them and a tool can check them: simple control flow with no recursion, a fixed upper bound on every loop, no dynamic allocation after initialization, short functions, and more. They were written for C but are applied to C++ flight code too. The real-time module walks through all ten.
 :::
 
 ::: context f-prime A flight framework you can read

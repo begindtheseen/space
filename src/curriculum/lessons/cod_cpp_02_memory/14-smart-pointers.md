@@ -302,7 +302,7 @@ There are three separate reasons. An interview answer needs two of them.
 **3. There is an extra allocation unless you use `make_shared`** — measured above as 2 allocations and 40 bytes against 1 and 32. And lesson 07 already banned allocation inside the loop.
 
 ::: key Why shared_ptr is a poor default in a 1 kHz control loop
-Its reference count is atomic, so every copy is a synchronised read-modify-write; and destruction happens at an unpredictable point in whichever thread drops the last reference, which makes timing non-deterministic. It also costs a second allocation unless you use `make_shared`.
+Its reference count is atomic, so every copy is a synchronized read-modify-write; and destruction happens at an unpredictable point in whichever thread drops the last reference, which makes timing non-deterministic. It also costs a second allocation unless you use `make_shared`.
 :::
 
 The fix is to decide ownership before the loop starts. The owning subsystem holds the object by value or in a `unique_ptr` member, and everything else receives a `const T&` or `T*` for one call. Lifetime then follows the start-up order, which a reviewer can read, not a run-time reference graph, which nobody can.

@@ -169,10 +169,10 @@ $$
 
 The miss distance is $\sqrt{0.237^2 + 0.304^2} \approx 0.385\,\mathrm{m}$ — about $38.5\,\mathrm{cm}$. The arrival velocity is $(0.5349,\ 0.1655,\ 0)\,\mathrm{m/s}$, very close to the CW prediction $(0.5348,\ 0.1660,\ 0)\,\mathrm{m/s}$.
 
-**Is that reasonable?** Yes. The arithmetic is fine. This is the validity gap from the CW-validity lesson showing up in a real plan. The vehicles are never more than about a kilometre apart, the trip is about a third of an orbit, and the validity lesson predicted errors of a few tenths of a metre for exactly that. The miss is $0.04\%$ of the distance flown.
+**Is that reasonable?** Yes. The arithmetic is fine. This is the validity gap from the CW-validity lesson showing up in a real plan. The vehicles are never more than about a kilometer apart, the trip is about a third of an orbit, and the validity lesson predicted errors of a few tenths of a meter for exactly that. The miss is $0.04\%$ of the distance flown.
 :::
 
-A $38.5\,\mathrm{cm}$ miss after a kilometre-long trip is small. A sensor and a tiny trim burn fix it easily. But it is not zero, and it grows fast for longer or larger transfers. So no real rendezvous flies a CW-planned burn pair **[[open-loop|open-loop]]** over any serious distance. The first burn gets the chaser close, using exactly the algebra above. Then **[[mid-course corrections|mid-course]]** re-plan from fresh measurements. For the last few hundred metres, guidance switches to closed-loop laws that watch the sensors continuously — the glideslope of the next lesson. Two-impulse CW targeting is the coarse solve. It is not, by itself, the whole guidance system.
+A $38.5\,\mathrm{cm}$ miss after a kilometer-long trip is small. A sensor and a tiny trim burn fix it easily. But it is not zero, and it grows fast for longer or larger transfers. So no real rendezvous flies a CW-planned burn pair **[[open-loop|open-loop]]** over any serious distance. The first burn gets the chaser close, using exactly the algebra above. Then **[[mid-course corrections|mid-course]]** re-plan from fresh measurements. For the last few hundred meters, guidance switches to closed-loop laws that watch the sensors continuously — the glideslope of the next lesson. Two-impulse CW targeting is the coarse solve. It is not, by itself, the whole guidance system.
 
 ## Check yourself
 
@@ -217,7 +217,7 @@ The $1\,\mathrm{km}$, $1800\,\mathrm{s}$ transfer misses by $0.385\,\mathrm{m}$ 
 ::: answer
 The CW-validity lesson showed that CW's position error grows roughly with the *square* of the separation, for the same fraction of an orbit. Ten times the separation gives about $10^2 = 100$ times the error: roughly $100 \times 0.385 \approx 38.5\,\mathrm{m}$. (A nonlinear propagation of that transfer gives $38.5\,\mathrm{m}$, right on the prediction.)
 
-Tens of metres is not a rounding issue near a space station. A transfer that long must include a mid-course correction burn, re-planned from new measurements, instead of trusting one open-loop CW solution all the way in.
+Tens of meters is not a rounding issue near a space station. A transfer that long must include a mid-course correction burn, re-planned from new measurements, instead of trusting one open-loop CW solution all the way in.
 :::
 
 ## Summary
@@ -233,7 +233,7 @@ Tens of metres is not a rounding issue near a space station. A transfer that lon
 | Shorter $T$ | Larger total $\Delta v$ — the same time-fuel trade as Lambert targeting |
 | 1 km, 1800 s worked transfer | $\Delta\mathbf{v}_1 = (-0.535,\ 0.166,\ 0)\,\mathrm{m/s}$; nonlinear truth misses by $0.385\,\mathrm{m}$ |
 
-Two-impulse targeting moves a chaser from one relative state to another at a chosen time. It does not yet say how to fly the last few hundred metres safely, or along which line. The next lesson starts on that with the glideslope: a rule that sets the closing speed from the range that is left, and keeps correcting as it goes.
+Two-impulse targeting moves a chaser from one relative state to another at a chosen time. It does not yet say how to fly the last few hundred meters safely, or along which line. The next lesson starts on that with the glideslope: a rule that sets the closing speed from the range that is left, and keeps correcting as it goes.
 
 ::: context targeting-word Aiming, in orbit
 In spaceflight, **targeting** means solving for the burn that makes a vehicle arrive at a chosen place at a chosen time. It is the orbital version of aiming. An artillery crew picks the angle and charge that land a shell on a spot. A basketball player picks the speed and angle that put the ball through the hoop. In both cases the start is fixed and the end is chosen, and the job is to find the one launch velocity that connects them. Here, the "launch" is the chaser's first burn.
@@ -252,7 +252,7 @@ In flight software, nobody writes out the inverse. The code calls a linear solve
 :::
 
 ::: context hohmann-bridge The same two burns, seen from a different chair
-A Hohmann transfer moves a spacecraft between two circular orbits with two burns: one to leave the first orbit on an oval path, one to settle into the second. Two-impulse CW targeting has the same shape — a burn to start the trip and a burn to end it. The difference is where you stand. Hohmann is worked out from Earth's center, using whole orbits. CW targeting is worked out from the target, using small relative motions. For two vehicles a few kilometres apart, the relative picture is far easier to use, and it is what rendezvous engineers work in.
+A Hohmann transfer moves a spacecraft between two circular orbits with two burns: one to leave the first orbit on an oval path, one to settle into the second. Two-impulse CW targeting has the same shape — a burn to start the trip and a burn to end it. The difference is where you stand. Hohmann is worked out from Earth's center, using whole orbits. CW targeting is worked out from the target, using small relative motions. For two vehicles a few kilometers apart, the relative picture is far easier to use, and it is what rendezvous engineers work in.
 :::
 
 ::: context singular-meaning A matrix that cannot be undone

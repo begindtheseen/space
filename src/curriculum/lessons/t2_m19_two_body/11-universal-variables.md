@@ -6,7 +6,7 @@ covers:
   - universal variables and the Stumpff functions
 ---
 
-Imagine owning three different rulers: one for things shorter than a metre, one for things longer, and a special one for things exactly a metre long. Every time you measure, you first have to guess which ruler to grab. And for anything *close* to a metre, both of the ordinary rulers get wobbly right at their ends. You would much rather have one ruler that works for everything.
+Imagine owning three different rulers: one for things shorter than a meter, one for things longer, and a special one for things exactly a meter long. Every time you measure, you first have to guess which ruler to grab. And for anything *close* to a meter, both of the ordinary rulers get wobbly right at their ends. You would much rather have one ruler that works for everything.
 
 That is where the last few lessons left you. You solved the time problem three times: with the eccentric anomaly $E$ for the ellipse, the hyperbolic anomaly $H$ for the hyperbola, and $\tan(\nu/2)$ for the parabola. A propagator built that way has three code paths, a branch on the eccentricity, and a **seam** at $e = 1$ where the formulas on both sides lose precision. A spacecraft on a barely-bound **[[lunar free-return|free-return]]** trajectory, a comet with $e = 0.9999$, or a trajectory optimizer that sweeps smoothly from elliptic to hyperbolic candidates lands on that seam constantly.
 
@@ -24,7 +24,7 @@ $$
 \frac{d\chi}{dt} = \frac{\sqrt{\mu}}{r}, \qquad \chi(t_0) = 0 .
 $$
 
-Read it as: $\chi$ ticks fast when the spacecraft is close (small $r$) and slowly when it is far (large $r$). That is the exact opposite of how the spacecraft's *angle* behaves in time, and it evens the motion out. Changing the clock like this is called the **Sundman transformation**. Because $\sqrt{\mu}$ has units $\mathrm{km^{3/2}/s}$ and $r$ is in km, $\chi$ comes out in **[[square-root kilometres|sqrt-km]]**, $\sqrt{\mathrm{km}}$.
+Read it as: $\chi$ ticks fast when the spacecraft is close (small $r$) and slowly when it is far (large $r$). That is the exact opposite of how the spacecraft's *angle* behaves in time, and it evens the motion out. Changing the clock like this is called the **Sundman transformation**. Because $\sqrt{\mu}$ has units $\mathrm{km^{3/2}/s}$ and $r$ is in km, $\chi$ comes out in **[[square-root kilometers|sqrt-km]]**, $\sqrt{\mathrm{km}}$.
 
 ### It is the anomalies you already know
 
@@ -405,7 +405,7 @@ print(universal_anomaly(r0, v0, 3600.0))   # (334.6132..., 0.000147254...)
 ```
 
 ::: warning Units of χ and σ
-$\chi$ and $\sigma_0$ carry units of $\sqrt{\mathrm{km}}$ (or $\sqrt{\mathrm{m}}$), and $\sqrt{\mu}$ has units $\mathrm{km^{3/2}/s}$. Every term of $F$ is then in $\mathrm{km^{3/2}}$. If you mix metres and kilometres anywhere, the mismatch is a factor of $10^{1.5} \approx 31.6$ — an unfamiliar enough number that nobody recognizes it as a unit error.
+$\chi$ and $\sigma_0$ carry units of $\sqrt{\mathrm{km}}$ (or $\sqrt{\mathrm{m}}$), and $\sqrt{\mu}$ has units $\mathrm{km^{3/2}/s}$. Every term of $F$ is then in $\mathrm{km^{3/2}}$. If you mix meters and kilometers anywhere, the mismatch is a factor of $10^{1.5} \approx 31.6$ — an unfamiliar enough number that nobody recognizes it as a unit error.
 :::
 
 ::: warning z tells you the conic; do not tell it
@@ -495,7 +495,7 @@ A **free-return** trajectory loops around the Moon and falls back to Earth with 
 Seen from Earth, the outbound leg reaches out about $384\,000\,\mathrm{km}$ from a perigee under $7000\,\mathrm{km}$, so it is an extremely stretched ellipse with $e$ around $0.97$ — close to the seam where the elliptic formulas start losing digits.
 :::
 
-::: context sqrt-km Why a variable measured in root-kilometres
+::: context sqrt-km Why a variable measured in root-kilometers
 A unit like $\sqrt{\mathrm{km}}$ looks strange, but it falls out of the definition. $\sqrt{\mu}$ is in $\mathrm{km^{3/2}/s}$; divide by $r$ in $\mathrm{km}$ and multiply by time in $\mathrm{s}$, and you are left with $\mathrm{km^{1/2}}$.
 
 It also matches the forms you know: $\chi = \sqrt{a}\,\Delta E$ is a square root of a length times an angle, and angles have no units. What matters is that $z = \alpha\chi^2$ has no units — $\mathrm{km^{-1}} \times \mathrm{km}$ — because only a pure number can go inside a cosine.
@@ -585,7 +585,7 @@ Here all three start at $r_0 = 6678\,\mathrm{km}$ at periapsis ($\sigma_0 = 0$):
 ::: context newton-safe Why Newton behaves itself here
 Newton's method follows the tangent line of $F$ down to zero, then repeats. It gets into trouble when the slope $F'$ is near zero, because then a tiny $F$ produces a gigantic step.
 
-Here the slope is the radius, which can never be smaller than the periapsis radius — thousands of kilometres. So no step can blow up, and since $F$ only rises, there is exactly one root to find. A poor starting guess costs a few extra iterations (seven for the hyperbola example) but never sends the method off to the wrong answer.
+Here the slope is the radius, which can never be smaller than the periapsis radius — thousands of kilometers. So no step can blow up, and since $F$ only rises, there is exactly one root to find. A poor starting guess costs a few extra iterations (seven for the hyperbola example) but never sends the method off to the wrong answer.
 :::
 
 ::: context gradient-optimizer How an optimizer feels its way downhill

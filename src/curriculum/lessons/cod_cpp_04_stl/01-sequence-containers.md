@@ -123,7 +123,7 @@ That includes an **[[iterator|iterator-intro]]** — an object that marks a posi
 
 The exact rule for `push_back`:
 
-- If the new size is **greater than the old capacity**, the vector reallocates, and every iterator, pointer and reference into it is **invalidated** — it no longer refers to a valid element, and using it is undefined behaviour.
+- If the new size is **greater than the old capacity**, the vector reallocates, and every iterator, pointer and reference into it is **invalidated** — it no longer refers to a valid element, and using it is undefined behavior.
 - Otherwise, the element goes into spare capacity, nothing moves, and pointers and references to existing elements stay valid. Only `end()` changes.
 
 So whether a pointer survives a `push_back` depends on the capacity at that moment. A test that runs with spare capacity passes; the build that fills the buffer one sample later writes into freed memory.
@@ -291,12 +291,12 @@ Contiguous storage (array, vector) is the default because the cache rewards it. 
 
 A **control task** at 1 kHz has one millisecond per cycle to read sensors, estimate the state and write commands. What matters is the *worst* cycle: miss the deadline once and the actuator commands are late.
 
-Most flight software follows the rule **[[no heap allocation after initialisation|no-alloc-rule]]**. As the memory module showed, an allocation's time depends on the heap's whole history, it may take a lock, it can fail, and mixed sizes fragment the heap over a long mission. So ask of each container: does it allocate while the loop runs?
+Most flight software follows the rule **[[no heap allocation after initialization|no-alloc-rule]]**. As the memory module showed, an allocation's time depends on the heap's whole history, it may take a lock, it can fail, and mixed sizes fragment the heap over a long mission. So ask of each container: does it allocate while the loop runs?
 
 - **`std::array`** never allocates. The default for anything with a size known at build time: a state vector, a 12-element set of thruster commands, a table of gains.
 - **A fixed-capacity ring buffer** — an array plus a head index and a count, wrapping around at the end — never allocates. The right shape for "the last N samples" or a queue between two tasks.
 - **A view** over a buffer allocated at start-up never allocates either. Lesson 04's `std::span` is exactly that: a pointer and a length, owning nothing.
-- **`std::vector`** only if `reserve`d at initialisation and provably never grown past that in the loop — a fragile promise that one `push_back` in a rare branch breaks.
+- **`std::vector`** only if `reserve`d at initialization and provably never grown past that in the loop — a fragile promise that one `push_back` in a rare branch breaks.
 - **`std::deque` and `std::list`**, filled during the loop, allocate as they grow; the list on every insertion. So does next lesson's `std::map`, a tree of nodes. Any container that allocates per insertion, filled inside the loop, makes the worst case unbounded.
 
 Here is a small ring buffer. Its storage is a `std::array` member, so it follows the rule of zero and never allocates:
@@ -395,7 +395,7 @@ A vector holds 5 elements with capacity 8. You take `double* p = &v[2];`, then c
 :::
 
 ::: answer
-The first three pushes take the size to 6, 7 and 8, never past the capacity of 8, so nothing moves and `p` stays valid. The fourth would make the size 9, so the vector reallocates (to 16 in libstdc++), moves all eight elements and frees the old buffer. From then on `p` points into freed memory, and using it is undefined behaviour. The index `2` would still find the element.
+The first three pushes take the size to 6, 7 and 8, never past the capacity of 8, so nothing moves and `p` stays valid. The fourth would make the size 9, so the vector reallocates (to 16 in libstdc++), moves all eight elements and frees the old buffer. From then on `p` points into freed memory, and using it is undefined behavior. The index `2` would still find the element.
 :::
 
 ::: check
@@ -403,7 +403,7 @@ Your colleague calls `v.reserve(500)` and then writes `v[10] = 3.0;`. What is wr
 :::
 
 ::: answer
-`reserve` changes the capacity, not the size. The vector still has size 0 — room for 500 elements, none existing — so `v[10]` is out of range: undefined behaviour. For 500 elements to assign to, call `v.resize(500)` or construct `std::vector<double> v(500);`. To fill it in order, keep `reserve` and use `push_back`.
+`reserve` changes the capacity, not the size. The vector still has size 0 — room for 500 elements, none existing — so `v[10]` is out of range: undefined behavior. For 500 elements to assign to, call `v.resize(500)` or construct `std::vector<double> v(500);`. To fill it in order, keep `reserve` and use `push_back`.
 :::
 
 ::: check
@@ -435,7 +435,7 @@ A vector's `push_back` can reallocate and invalidate it. A deque keeps reference
 | `std::deque<T>` | blocks plus an index of blocks | constant-time push at both ends; references survive pushes at the ends |
 | `std::list<T>` | one node per element, two links each | addresses never move; 24 bytes and one allocation per `double` |
 | cache locality | memory arrives in 64-byte lines | scattered list walk about 200× slower than vector |
-| 1 kHz rule | no allocation after initialisation | array, ring buffer, view over a preallocated buffer |
+| 1 kHz rule | no allocation after initialization | array, ring buffer, view over a preallocated buffer |
 | fixed id table | sorted `std::array` + `std::lower_bound` | 2048 bytes for 128 entries; $\log_2 128 = 7$ comparisons, 8 at most in libstdc++ |
 
 Next lesson opens the other family of containers — `std::map` and `std::set`, which keep their keys sorted in a tree of nodes — and measures them against the sorted array from this lesson.
@@ -449,7 +449,7 @@ Last module's move-semantics lesson showed this with a counting class. While rel
 :::
 
 ::: context iterator-intro A bookmark for a container
-An iterator is a generalised bookmark. For a vector it behaves like a pointer: `*it` reads the element (say "star it"), `++it` moves to the next one, and two iterators can be compared. For a list, `++it` follows the node's `next` pointer instead, but the code that uses it looks the same. That shared shape is what lets one algorithm, like `std::lower_bound`, work on many containers. Lesson 06 sorts iterators into categories by what they can do, and gives each container's full list of operations that invalidate them.
+An iterator is a generalized bookmark. For a vector it behaves like a pointer: `*it` reads the element (say "star it"), `++it` moves to the next one, and two iterators can be compared. For a list, `++it` follows the node's `next` pointer instead, but the code that uses it looks the same. That shared shape is what lets one algorithm, like `std::lower_bound`, work on many containers. Lesson 06 sorts iterators into categories by what they can do, and gives each container's full list of operations that invalidate them.
 :::
 
 ::: context deque-blocks What a deque looks like inside

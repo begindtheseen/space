@@ -123,7 +123,7 @@ $$
 \delta = \arcsin\frac{5.17\times 10^5}{7.6\times 10^6\times 20} = 3.40\times 10^{-3}\,\mathrm{rad} = 0.195^\circ .
 $$
 
-A fifth of a degree of engine tilt pitches 420 tonnes of rocket at the required rate. The lever is long and the thrust is enormous.
+A fifth of a degree of engine tilt pitches 420 metric tons of rocket at the required rate. The lever is long and the thrust is enormous.
 
 **Now add a roll.** Suppose the vehicle also rolls at $\omega_1 = 0.05\,\mathrm{rad/s}$ ($2.9^\circ/\mathrm{s}$) while pitching at $\omega_2 = 2^\circ/\mathrm{s} = 0.0349\,\mathrm{rad/s}$. The third Euler equation reads $I_3\dot{\omega}_3 = (I_1 - I_2)\omega_1\omega_2 + M_3$. Its coupling term is
 

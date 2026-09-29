@@ -3,7 +3,7 @@ id: l05-a-gnc-pipeline
 title: A pipeline for GNC code
 minutes: 28
 covers:
-  - 'A GNC pipeline: lint, static analysis, unit tests, coverage gate, Debug+ASan and Release builds, regression sims with tolerances, benchmark thresholds, docs, artefacts'
+  - 'A GNC pipeline: lint, static analysis, unit tests, coverage gate, Debug+ASan and Release builds, regression sims with tolerances, benchmark thresholds, docs, artifacts'
 ---
 
 Think of the inspection line a new car goes through at the factory. One station checks the paint, another the brakes, another sniffs the exhaust. Each is quick and checks one thing, and the cheap checks come first, so a car with a dented door never wastes time on the road test. No single station proves the car is good. Together they make it very hard for a bad one to slip through.
@@ -126,7 +126,7 @@ Exit code 2, so the job fails, and the report lists the lines that never ran: 18
 
 **Suite C: calls everything, checks nothing.** This test calls every function and throws the answers away:
 
-```cpp
+```cpp fragment
 #include <cstdio>
 #include <vector>
 
@@ -259,8 +259,8 @@ $ g++ -O2 -march=haswell fma.cpp -o fma && ./fma
 With `-march=haswell` the compiler may use the processor's **[[fused multiply-add|fused-multiply-add]]** instruction, and at `-O2` it does: it computes `a * b + c` in one step, rounding once. At `-O0` it rounds `a * b` to exactly 1.0 first, and $1 - 1$ is exactly 0. Neither answer is wrong. They differ in the last bits, and a simulation that runs millions of such steps inherits the difference. Adding `-ffp-contract=off` to the `-O2` build forbids the fusing, and it prints 0 again.
 :::
 
-::: key Why run both a Debug-plus-ASan job and an optimised Release job?
-Sanitizers need instrumented, unoptimised builds to report precise faults, but optimisation itself changes behaviour: it exposes undefined behaviour, different floating-point contraction and different timing. Each job catches bugs the other hides.
+::: key Why run both a Debug-plus-ASan job and an optimized Release job?
+Sanitizers need instrumented, unoptimised builds to report precise faults, but optimization itself changes behavior: it exposes undefined behavior, different floating-point contraction and different timing. Each job catches bugs the other hides.
 :::
 
 ## Station 5: regression sims with tolerances

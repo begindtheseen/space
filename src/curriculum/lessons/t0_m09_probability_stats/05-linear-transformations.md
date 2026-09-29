@@ -28,7 +28,7 @@ $$
 \mathbf{y} - \boldsymbol{\mu}_y = \mathbf{A}\mathbf{x} + \mathbf{b} - \mathbf{A}\boldsymbol{\mu}_x - \mathbf{b} = \mathbf{A}(\mathbf{x} - \boldsymbol{\mu}_x).
 $$
 
-The shift $\mathbf{b}$ has cancelled. That is why sliding a quantity never changes its uncertainty — the $+32$ of the Fahrenheit scale. Now put that deviation into the definition of covariance:
+The shift $\mathbf{b}$ has canceled. That is why sliding a quantity never changes its uncertainty — the $+32$ of the Fahrenheit scale. Now put that deviation into the definition of covariance:
 
 $$
 \mathbf{P}_y = \mathbb{E}\big[(\mathbf{y} - \boldsymbol{\mu}_y)(\mathbf{y} - \boldsymbol{\mu}_y)^{\mathsf{T}}\big]
@@ -56,7 +56,7 @@ because $\mathbf{P}_x$ is positive semi-definite for every vector, including $\m
 A computer is less tidy. Round-off can leave $\mathbf{A}\mathbf{P}\mathbf{A}^{\mathsf{T}}$ very slightly lopsided after many steps. So flight filters **[[symmetrise|square-root-filters]]** the result with $\tfrac{1}{2}(\mathbf{M} + \mathbf{M}^{\mathsf{T}})$, or carry a square-root factor of $\mathbf{P}$ instead of $\mathbf{P}$ itself.
 
 ::: note Units ride along
-If $\mathbf{x}$ holds a position in metres and a velocity in metres per second, and $\mathbf{A}$ contains a time step $\Delta t$ in seconds, the units of $\mathbf{A}\mathbf{P}\mathbf{A}^{\mathsf{T}}$ come out consistent by themselves. That gives a useful check on any $\mathbf{A}$ you derive by hand: every entry of $\mathbf{A}\mathbf{P}\mathbf{A}^{\mathsf{T}}$ must have the units it should.
+If $\mathbf{x}$ holds a position in meters and a velocity in meters per second, and $\mathbf{A}$ contains a time step $\Delta t$ in seconds, the units of $\mathbf{A}\mathbf{P}\mathbf{A}^{\mathsf{T}}$ come out consistent by themselves. That gives a useful check on any $\mathbf{A}$ you derive by hand: every entry of $\mathbf{A}\mathbf{P}\mathbf{A}^{\mathsf{T}}$ must have the units it should.
 :::
 
 ## How motion creates correlation
@@ -238,7 +238,7 @@ $$
 \mathbf{K} = \left(\frac{136}{161},\ \frac{0.6}{161}\right)^{\mathsf{T}} = (0.845,\ 0.00373)^{\mathsf{T}}.
 $$
 
-The second part of the gain is not zero. A position measurement corrects the velocity, by $3.73\,\mathrm{mm/s}$ per metre of surprise, only because the coast made the two errors correlated. After the update, $\sigma_p = 4.60\,\mathrm{m}$ — better than both the $11.7\,\mathrm{m}$ prediction and the $5\,\mathrm{m}$ fix — and $\sigma_v = 0.0881\,\mathrm{m/s}$. The velocity was never measured, yet its sigma fell from $0.1$ to $0.088\,\mathrm{m/s}$.
+The second part of the gain is not zero. A position measurement corrects the velocity, by $3.73\,\mathrm{mm/s}$ per meter of surprise, only because the coast made the two errors correlated. After the update, $\sigma_p = 4.60\,\mathrm{m}$ — better than both the $11.7\,\mathrm{m}$ prediction and the $5\,\mathrm{m}$ fix — and $\sigma_v = 0.0881\,\mathrm{m/s}$. The velocity was never measured, yet its sigma fell from $0.1$ to $0.088\,\mathrm{m/s}$.
 
 ## Curved maps and the Jacobian
 
@@ -254,7 +254,7 @@ $$
 \boldsymbol{\mu}_y \approx \mathbf{g}(\boldsymbol{\mu}_x), \qquad \mathbf{P}_y \approx \mathbf{J}\mathbf{P}_x\mathbf{J}^{\mathsf{T}}.
 $$
 
-This is **linearised covariance propagation**, and it is the whole covariance side of the extended Kalman filter (EKF):
+This is **linearized covariance propagation**, and it is the whole covariance side of the extended Kalman filter (EKF):
 
 $$
 \mathbf{P}_{k+1} = \mathbf{F}_k\mathbf{P}_k\mathbf{F}_k^{\mathsf{T}} + \mathbf{Q}_k.
@@ -274,7 +274,7 @@ $$
 = \begin{bmatrix} 0.866 & -500 \\ 0.500 & 866 \end{bmatrix}.
 $$
 
-The second column has units of metres per radian.
+The second column has units of meters per radian.
 
 **The sandwich.** With $\mathbf{P}_{r\theta} = \operatorname{diag}(25\,\mathrm{m^2},\ 3.046 \times 10^{-4}\,\mathrm{rad^2})$,
 
@@ -284,7 +284,7 @@ $$
 
 **Read it.** $\sigma_x = 9.74\,\mathrm{m}$, $\sigma_y = 15.3\,\mathrm{m}$ and $\rho = -0.811$. The correlation is strongly negative because a bearing error slides the point sideways, along a line that runs up-left to down-right. The eigenvalues are $304.6$ and $25.0\,\mathrm{m^2}$, so the principal sigmas are $17.45\,\mathrm{m}$ and $5.00\,\mathrm{m}$, and the long axis points at $-60^\circ$ — **[[square to the line of sight|range-bearing-picture]]**.
 
-**Sanity check.** Those two numbers are no accident. $17.45\,\mathrm{m} = r\sigma_\theta = 1000 \times 0.01745$ is the sideways (cross-range) uncertainty, and $5\,\mathrm{m} = \sigma_r$ is the range uncertainty. The Jacobian has turned the range–bearing error ellipse into $x$–$y$ axes without changing its size, because at fixed $r$ the map is very nearly a rotation plus a stretch of the bearing axis by $r$. The linearisation is excellent here: $1^\circ$ is tiny next to the angles over which $\cos$ and $\sin$ bend.
+**Sanity check.** Those two numbers are no accident. $17.45\,\mathrm{m} = r\sigma_\theta = 1000 \times 0.01745$ is the sideways (cross-range) uncertainty, and $5\,\mathrm{m} = \sigma_r$ is the range uncertainty. The Jacobian has turned the range–bearing error ellipse into $x$–$y$ axes without changing its size, because at fixed $r$ the map is very nearly a rotation plus a stretch of the bearing axis by $r$. The linearization is excellent here: $1^\circ$ is tiny next to the angles over which $\cos$ and $\sin$ bend.
 :::
 
 ## Blending two estimates
@@ -306,7 +306,7 @@ For $\sigma_1 = 3\,\mathrm{m}$ and $\sigma_2 = 4\,\mathrm{m}$: $w = 16/(9 + 16) 
 Had the two estimates been correlated, the off-diagonal term would enter the variance and the best weight would shift, as the correlated accelerometers in the expectation lesson showed.
 
 ::: warning Keep every correlation in the filling
-The sandwich needs the covariance of the *inputs* to include every correlation among them. If you set the off-diagonal terms to zero because they were inconvenient, the output covariance is wrong in both directions: too large where the errors would have cancelled, too small where they would have added up. The most common case is blending two estimates that share an upstream error source and treating them as independent. The blended covariance then claims a precision that does not exist.
+The sandwich needs the covariance of the *inputs* to include every correlation among them. If you set the off-diagonal terms to zero because they were inconvenient, the output covariance is wrong in both directions: too large where the errors would have canceled, too small where they would have added up. The most common case is blending two estimates that share an upstream error source and treating them as independent. The blended covariance then claims a precision that does not exist.
 :::
 
 ## Check yourself
@@ -364,17 +364,17 @@ The output would be singular only if $\mathbf{A}$ had more rows than its rank, o
 :::
 
 ::: check
-A measurement $z = h(x)$ with $h(x) = x^2$ is taken of a state $x \sim \mathcal{N}(10, 1)$ (units left out). Give the linearised mean and variance of $z$, then compute the exact mean and variance and comment.
+A measurement $z = h(x)$ with $h(x) = x^2$ is taken of a state $x \sim \mathcal{N}(10, 1)$ (units left out). Give the linearized mean and variance of $z$, then compute the exact mean and variance and comment.
 :::
 
 ::: answer
-**Linearised.** The slope is $h'(x) = 2x = 20$ at the mean. So $\mu_z \approx 10^2 = 100$ and $\sigma_z^2 \approx 20^2 \times 1 = 400$, $\sigma_z = 20$.
+**Linearized.** The slope is $h'(x) = 2x = 20$ at the mean. So $\mu_z \approx 10^2 = 100$ and $\sigma_z^2 \approx 20^2 \times 1 = 400$, $\sigma_z = 20$.
 
-**Exact mean.** $\mathbb{E}[x^2] = \mu^2 + \sigma^2 = 100 + 1 = 101$. The linearisation misses the $\sigma^2$ that comes from curvature: a $1\%$ bias here.
+**Exact mean.** $\mathbb{E}[x^2] = \mu^2 + \sigma^2 = 100 + 1 = 101$. The linearization misses the $\sigma^2$ that comes from curvature: a $1\%$ bias here.
 
-**Exact variance.** $\operatorname{Var}(x^2) = \mathbb{E}[x^4] - 101^2$. For a Gaussian, $\mathbb{E}[x^4] = \mu^4 + 6\mu^2\sigma^2 + 3\sigma^4 = 10\,000 + 600 + 3 = 10\,603$. So $\operatorname{Var}(x^2) = 10\,603 - 10\,201 = 402$, and the linearised $400$ is within $0.5\%$.
+**Exact variance.** $\operatorname{Var}(x^2) = \mathbb{E}[x^4] - 101^2$. For a Gaussian, $\mathbb{E}[x^4] = \mu^4 + 6\mu^2\sigma^2 + 3\sigma^4 = 10\,000 + 600 + 3 = 10\,603$. So $\operatorname{Var}(x^2) = 10\,603 - 10\,201 = 402$, and the linearized $400$ is within $0.5\%$.
 
-The linearisation is good because $\sigma = 1$ is small next to the scale $\mu = 10$ over which $x^2$ bends. At $\mu = 2$ with the same $\sigma$ it would be poor.
+The linearization is good because $\sigma = 1$ is small next to the scale $\mu = 10$ over which $x^2$ bends. At $\mu = 2$ with the same $\sigma$ it would be poor.
 :::
 
 ## Summary
@@ -392,7 +392,7 @@ The linearisation is good because $\sigma = 1$ is small next to the scale $\mu =
 | $\mathbf{z} = \mathbf{L}^{-1}(\mathbf{x} - \boldsymbol{\mu})$, $\lVert\mathbf{z}\rVert^2 = d^2$ | Whitening; squared length is the Mahalanobis distance |
 | $\mathbf{S} = \mathbf{H}\mathbf{P}\mathbf{H}^{\mathsf{T}} + \mathbf{R}$, $\operatorname{Cov}(\mathbf{x}, \mathbf{z}) = \mathbf{P}\mathbf{H}^{\mathsf{T}}$ | Predicted-measurement covariance and cross-covariance |
 | $\mathbf{K} = \mathbf{P}\mathbf{H}^{\mathsf{T}}\mathbf{S}^{-1}$ | Kalman gain: a ratio of covariances |
-| $\mathbf{P}_y \approx \mathbf{J}\mathbf{P}_x\mathbf{J}^{\mathsf{T}}$, $\mathbf{P}_{k+1} = \mathbf{F}\mathbf{P}_k\mathbf{F}^{\mathsf{T}} + \mathbf{Q}$ | Linearised propagation; the EKF covariance step |
+| $\mathbf{P}_y \approx \mathbf{J}\mathbf{P}_x\mathbf{J}^{\mathsf{T}}$, $\mathbf{P}_{k+1} = \mathbf{F}\mathbf{P}_k\mathbf{F}^{\mathsf{T}} + \mathbf{Q}$ | Linearized propagation; the EKF covariance step |
 | $1/\operatorname{Var}(\hat{x}) = 1/\sigma_1^2 + 1/\sigma_2^2$ | Blending independent estimates: information adds |
 
 Next lesson: what happens when many random pieces are added together. Their variances add, and their sum drifts toward a Gaussian whatever the pieces looked like — the central limit theorem, and the reason the Gaussian assumption is so often fair.
@@ -432,7 +432,7 @@ André-Louis Cholesky was a French army officer who worked on mapping and survey
 :::
 
 ::: context whitening-word Why "whitening"?
-White light is a mix of every colour in equal amounts. Engineers call noise **white** when it is spread evenly across every frequency, with no pattern linking one moment to the next. Whitening borrows the word: it removes the correlations, so what is left looks like independent, equal-sized noise in every direction. You will meet white noise properly two lessons from now.
+White light is a mix of every color in equal amounts. Engineers call noise **white** when it is spread evenly across every frequency, with no pattern linking one moment to the next. Whitening borrows the word: it removes the correlations, so what is left looks like independent, equal-sized noise in every direction. You will meet white noise properly two lessons from now.
 :::
 
 ::: context kalman-gain How much to trust a measurement
@@ -444,7 +444,7 @@ Named after the German mathematician Carl Gustav Jacob Jacobi, who studied these
 :::
 
 ::: context range-bearing-picture The ellipse lies across the line of sight
-A radar at the bottom left sees a target $1000\,\mathrm{m}$ away at $30^\circ$. The $3\sigma$ ellipse is drawn at its own scale, $1$ pixel per metre: $52\,\mathrm{m}$ across the line of sight (from the $1^\circ$ bearing error) and $15\,\mathrm{m}$ along it (from the $5\,\mathrm{m}$ range error). The range line is shortened to fit.
+A radar at the bottom left sees a target $1000\,\mathrm{m}$ away at $30^\circ$. The $3\sigma$ ellipse is drawn at its own scale, $1$ pixel per meter: $52\,\mathrm{m}$ across the line of sight (from the $1^\circ$ bearing error) and $15\,\mathrm{m}$ along it (from the $5\,\mathrm{m}$ range error). The range line is shortened to fit.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">
@@ -464,7 +464,7 @@ A radar at the bottom left sees a target $1000\,\mathrm{m}$ away at $30^\circ$. 
 :::
 
 ::: context information-adds Two blurry guesses make a sharp one
-The two estimates from the example, drawn as bells: one centred at $-2\,\mathrm{m}$ with $\sigma = 3\,\mathrm{m}$, one at $+3\,\mathrm{m}$ with $\sigma = 4\,\mathrm{m}$. The blended estimate sits at $0.64 \times (-2) + 0.36 \times 3 = -0.2\,\mathrm{m}$, nearer the sharper guess, and its bell (sigma $2.4\,\mathrm{m}$) is narrower and taller than either.
+The two estimates from the example, drawn as bells: one centered at $-2\,\mathrm{m}$ with $\sigma = 3\,\mathrm{m}$, one at $+3\,\mathrm{m}$ with $\sigma = 4\,\mathrm{m}$. The blended estimate sits at $0.64 \times (-2) + 0.36 \times 3 = -0.2\,\mathrm{m}$, nearer the sharper guess, and its bell (sigma $2.4\,\mathrm{m}$) is narrower and taller than either.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">

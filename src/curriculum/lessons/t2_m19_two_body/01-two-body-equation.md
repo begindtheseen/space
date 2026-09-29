@@ -65,7 +65,7 @@ $$
 \ddot{\mathbf{R}}_2 = -\,\frac{G m_1}{r^3}\,\mathbf{r}.
 $$
 
-Something neat happened. Each body's own mass cancelled. A body's acceleration depends only on the *other* body's mass. That is why a feather and a hammer fall together on the Moon.
+Something neat happened. Each body's own mass canceled. A body's acceleration depends only on the *other* body's mass. That is why a feather and a hammer fall together on the Moon.
 
 **Step 2: subtract the first equation from the second.** On the left, $\ddot{\mathbf{R}}_2 - \ddot{\mathbf{R}}_1$ is the second derivative of $\mathbf{R}_2 - \mathbf{R}_1$, which is $\ddot{\mathbf{r}}$ — the acceleration of the separation arrow. On the right, the two terms have the same $\mathbf{r}/r^3$, so their coefficients combine:
 

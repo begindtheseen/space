@@ -245,7 +245,7 @@ ORDER BY s.name;
 It returns the same four rows. Each step has a name that says what it holds — "burns per satellite", "temperature samples per satellite" — and each can be run and checked on its own.
 
 ::: example Fixing the downlink report
-Apply the same idea to the downlink example. The many side is `reading`, so summarise it to one row per satellite-day first. Then the join to `daily_downlink` is one-to-one on `(sat_id, day)`:
+Apply the same idea to the downlink example. The many side is `reading`, so summarize it to one row per satellite-day first. Then the join to `daily_downlink` is one-to-one on `(sat_id, day)`:
 
 ```sql
 WITH temp_per_day AS (
@@ -570,7 +570,7 @@ A derived table is any query in parentheses in FROM. Its output columns become t
 :::
 
 ::: context cte-bridge Why named steps help here
-A CTE is the same idea as a derived table, moved to the top and given a name. For fan-out that matters, because the fix is "summarise each table on its own, then join", and a CTE writes that as a list of named steps. You can run each step alone and check its row count is one per key before trusting the join. Lesson 09 covers CTEs in full, including chaining one step into the next.
+A CTE is the same idea as a derived table, moved to the top and given a name. For fan-out that matters, because the fix is "summarize each table on its own, then join", and a CTE writes that as a list of named steps. You can run each step alone and check its row count is one per key before trusting the join. Lesson 09 covers CTEs in full, including chaining one step into the next.
 :::
 
 ::: context mean-of-means Averaging averages

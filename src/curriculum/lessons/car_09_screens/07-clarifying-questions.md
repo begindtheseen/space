@@ -275,7 +275,7 @@ A **gimbal** is a pivot that lets something tilt. A **gimballed engine** is moun
 :::
 
 ::: context slosh Propellant that won't sit still
-A rocket's tanks hold tonnes of liquid. When the vehicle turns or speeds up, the liquid sloshes to one side and back, like water in a bathtub when you sit down quickly. That moving mass pushes back on the vehicle at its own rhythm, so the controller sees a disturbance that it partly caused itself. Tanks often carry **baffles** — rings or plates inside — to calm the slosh, and GNC engineers model what is left.
+A rocket's tanks hold metric tons of liquid. When the vehicle turns or speeds up, the liquid sloshes to one side and back, like water in a bathtub when you sit down quickly. That moving mass pushes back on the vehicle at its own rhythm, so the controller sees a disturbance that it partly caused itself. Tanks often carry **baffles** — rings or plates inside — to calm the slosh, and GNC engineers model what is left.
 :::
 
 ::: context branch-test Picture the fork in the road

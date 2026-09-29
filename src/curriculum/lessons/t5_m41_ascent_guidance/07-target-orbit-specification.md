@@ -333,7 +333,7 @@ The argument of latitude $u$ is the angle, measured in the orbit plane from the 
 :::
 
 ::: context transversality-bridge The same freedom, seen twice
-In lesson 3 the downrange distance at cutoff was left free, so its costate — its "price tag" — had to be zero at the end, and since it never changes, zero throughout. That zero made one primer component constant, which made the tangent law exact. On a round Earth, "downrange" becomes the angle travelled around the orbit plane: the argument of latitude. PEG and UPFG leave it free for exactly the same reason.
+In lesson 3 the downrange distance at cutoff was left free, so its costate — its "price tag" — had to be zero at the end, and since it never changes, zero throughout. That zero made one primer component constant, which made the tangent law exact. On a round Earth, "downrange" becomes the angle traveled around the orbit plane: the argument of latitude. PEG and UPFG leave it free for exactly the same reason.
 :::
 
 ::: context launch-window Why rockets launch at a set minute

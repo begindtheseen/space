@@ -34,7 +34,7 @@ The cost is only half the story. The inverse also rounds every one of its $n^2$ 
 ::: example Inverse against solve on a hard matrix
 The **[[Hilbert matrix|hilbert]]** has entries $H_{ij} = 1/(i + j + 1)$, counting from zero. It is symmetric, positive definite, and famously badly conditioned. Build the right side from a known answer of all ones, then see who recovers it.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <cstdio>
 
@@ -191,7 +191,7 @@ Here is the complete 6-state, 3-measurement update: position and velocity in thr
 - Eigen's own dynamic matrices do not use `new`: they call `malloc` directly, so the counter never sees them. For those, the program defines `EIGEN_RUNTIME_NO_MALLOC` before including Eigen and switches allocation off around the call with `Eigen::internal::set_is_malloc_allowed(false)`. If Eigen tries to allocate in that window, an assertion stops the program. Lesson 11 covers this switch in depth.
 
 ::: example A 6-state Kalman update with a zero-allocation check
-```cpp
+```cpp fragment
 #define EIGEN_RUNTIME_NO_MALLOC   // lets a test forbid Eigen heap use
 #include <Eigen/Dense>
 #include <cstdio>

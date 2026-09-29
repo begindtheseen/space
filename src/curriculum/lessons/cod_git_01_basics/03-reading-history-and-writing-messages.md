@@ -109,7 +109,7 @@ git log --oneline --graph --all
 
 Read the **[[text-art graph|ascii-graph]]** like this. Each `*` is a commit. A `|` is a line of history running down the page toward older commits. The `|/` means the right-hand line joins the left-hand one: commit `921a084` has the same parent as `b108153`, namely `1fbe379`. That fork is exactly the "two commits share one parent" shape from lesson 01. The decorations say `main` points at `b108153` and `drag` at `921a084`.
 
-::: key The three log flags worth memorising
+::: key The three log flags worth memorizing
 `git log --oneline --graph --all`: one line per commit, the parent links drawn in the margin, starting from every branch and tag rather than only HEAD. It is the fastest way to see the shape of a repository.
 :::
 
@@ -373,7 +373,7 @@ Blame gives you the commit, author and date, and `git show 5e7c2aa` gives the di
 | `git show <commit>` | that commit's message and diff (computed from its parent) |
 | `git show <commit>:<path>` | the file as it was in that commit |
 | `git blame -L a,b file` | per line: last commit, author, date |
-| Subject line | imperative, about 50 characters or fewer, capitalised, no full stop |
+| Subject line | imperative, about 50 characters or fewer, capitalized, no full stop |
 | Body | after one blank line; why the change was needed and what alternative was rejected |
 
 You can now read any history and leave one worth reading. Next lesson opens up the thing that made `drag` appear beside `main` in the graph: branches, which turn out to be nothing more than the 41-byte pointer files from lesson 01.

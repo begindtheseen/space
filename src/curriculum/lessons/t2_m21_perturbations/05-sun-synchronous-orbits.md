@@ -202,7 +202,7 @@ As the orbit gets higher, the prefactor $nJ_2(R_E/a)^2$ shrinks, so $\cos i$ mus
 The next lesson makes the mean-versus-osculating idea precise. It measures how big the within-orbit wobble is, and explains why a secular rate must be measured from a trend line, never from a single state vector.
 
 ::: context fixed-plane A plane that stays put, and one that turns
-Look down on Earth's path around the Sun from above. An orbit plane fixed in space (grey) keeps pointing the same way. In January it is side-on to the Sun: a dawn–dusk orbit. Three months later the same plane points straight at the Sun: a noon–midnight orbit. A sun-synchronous plane (blue) turns a quarter circle in those three months, so it stays side-on.
+Look down on Earth's path around the Sun from above. An orbit plane fixed in space (gray) keeps pointing the same way. In January it is side-on to the Sun: a dawn–dusk orbit. Three months later the same plane points straight at the Sun: a noon–midnight orbit. A sun-synchronous plane (blue) turns a quarter circle in those three months, so it stays side-on.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" font-family="Inter, Arial, sans-serif">

@@ -115,7 +115,7 @@ The words `public:` and `private:` are **access specifiers**. Each one applies t
 
 Here is what happens when outside code reaches for a private member:
 
-```cpp
+```cpp fragment
 int main() {
     RateLimiter rl{0.1};
     rl.max_step_ = 100.0;
@@ -174,7 +174,7 @@ x = 0, same = 1
 
 An **`enum class`** — also called a **scoped enumeration** — fixes both defects. Its enumerators live inside the type, so you must write the type's name, two colons, then the enumerator: `Mode::Coast`, read "Mode, scope, Coast" or "Mode colon-colon Coast". The `::` is the **scope resolution operator**; it means "the name on the right, found inside the name on the left". And there is no quiet conversion in either direction:
 
-```cpp
+```cpp error
 enum class Mode { Idle, Ascent };
 int main() {
     int m = Mode::Ascent;      // no implicit conversion

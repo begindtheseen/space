@@ -58,7 +58,7 @@ followed by normalizing $w_k^{(i)}$ so the weights sum to one. Both $\mathbf f$ 
 The symbol $\propto$ reads "is proportional to": the left side equals the right side times some constant that is the same for every particle. Normalizing fixes that constant.
 
 ::: key Bootstrap particle filter loop
-Propagate each particle through the dynamics with sampled noise, weight by the measurement likelihood, normalise, and resample when the effective sample size drops below a threshold (often $N/2$).
+Propagate each particle through the dynamics with sampled noise, weight by the measurement likelihood, normalize, and resample when the effective sample size drops below a threshold (often $N/2$).
 :::
 
 Notice what is *not* in the recipe: no covariance matrix to push forward, and no Jacobian. Every particle goes through the real, curved $\mathbf f$, and every weight uses the real sensor model, whatever shape its noise has.
@@ -174,7 +174,7 @@ $N_{\text{eff}}=N$ exactly when every weight is equal ($1/N$); $N_{\text{eff}}=1
 :::
 
 ::: key Effective sample size, in one line
-$N_\text{eff}$ = 1 / sum of the squared normalised weights. It falls to $1$ when one particle holds all the weight (degeneracy). Resample on $N_\text{eff}$, not every step, and add roughening to avoid impoverishment.
+$N_\text{eff}$ = 1 / sum of the squared normalized weights. It falls to $1$ when one particle holds all the weight (degeneracy). Resample on $N_\text{eff}$, not every step, and add roughening to avoid impoverishment.
 :::
 
 Check the ends: all weights $1/N$ gives a sum of squares $N\cdot(1/N)^2 = 1/N$, so $N_\text{eff} = N$; one weight of $1$ gives $N_\text{eff}=1$.

@@ -42,7 +42,7 @@ ax.legend()
 print(len(ax.lines))                              # 2
 ```
 
-Two lines that must be told apart differ in line style as well as color. That habit keeps a figure readable when it is printed in grey or seen by someone who cannot separate the colors, which a later lesson on color takes further.
+Two lines that must be told apart differ in line style as well as color. That habit keeps a figure readable when it is printed in gray or seen by someone who cannot separate the colors, which a later lesson on color takes further.
 
 ## Scatter: points with no order
 
@@ -224,7 +224,7 @@ So which band goes in the review? The requirement is written at three sigma, so 
 :::
 
 ::: key
-Three sigma assumes near-Gaussian behaviour and is what most requirements are written in. Percentiles make no distributional assumption and are what you report when the dispersion is skewed or bounded, for example by a saturation. Show both when the difference is large; it is itself a finding.
+Three sigma assumes near-Gaussian behavior and is what most requirements are written in. Percentiles make no distributional assumption and are what you report when the dispersion is skewed or bounded, for example by a saturation. Show both when the difference is large; it is itself a finding.
 :::
 
 ### Drawing the ensemble
@@ -250,7 +250,7 @@ ax.legend(loc="upper left")
 print(round(float(t[hi3 > 6.0][0]), 1), round(float(t[hi3 > 6.0][-1]), 1))   # 52.6 67.4
 ```
 
-The shaded band shows the spread. A few thin grey runs show what a single flight looks like — the band alone cannot tell you whether runs wiggle or glide. Every run that hit the stop is drawn in its own color, because those are the cases the reviewer will ask about. The dotted line is the limit, so nobody has to remember it. The last `fill_between`, with `where=hi3 > 6.0`, tints only the stretch where the three-sigma top runs past the stop: from $52.6$ to $67.4\,\mathrm{s}$.
+The shaded band shows the spread. A few thin gray runs show what a single flight looks like — the band alone cannot tell you whether runs wiggle or glide. Every run that hit the stop is drawn in its own color, because those are the cases the reviewer will ask about. The dotted line is the limit, so nobody has to remember it. The last `fill_between`, with `where=hi3 > 6.0`, tints only the stretch where the three-sigma top runs past the stop: from $52.6$ to $67.4\,\mathrm{s}$.
 
 Compare that with the other choice — all $500$ runs drawn as solid lines. The middle of the bundle turns into one solid blob, every run looks equally important, and the $24$ that matter are buried.
 

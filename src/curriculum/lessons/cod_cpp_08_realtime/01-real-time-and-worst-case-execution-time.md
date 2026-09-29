@@ -345,7 +345,7 @@ The hertz is named after Heinrich Hertz, the German physicist who first produced
 :::
 
 ::: context overrun What a frame overrun looks like
-Each frame starts on the timer's tick. If the tasks finish early, the processor waits (the grey slack). If they run past the next tick, the next frame starts late, and its tasks are squeezed.
+Each frame starts on the timer's tick. If the tasks finish early, the processor waits (the gray slack). If they run past the next tick, the next frame starts late, and its tasks are squeezed.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">

@@ -321,7 +321,7 @@ Code computes $\log\mathbf{R}$ with the formula in this lesson and returns NaN (
 This closes the module. You now have five representations, every conversion between them, the conventions that make each one unambiguous, and the structure that explains why the list is what it is. Everything that follows — attitude kinematics and rotational dynamics, attitude determination, estimation and pointing control — is built on these objects, and every one of them will expect you to state your convention and defend it.
 
 ::: context manifold Curved space, flat tangent
-Here the circle stands in for the curved group and the straight line touching it for the flat algebra. Lay off an arrow of length $55$ along the tangent (grey). The exponential wraps it onto the curve as an arc of the same length (blue): on a circle of radius $70$ that is $55/70 = 0.786$ radians, or $45^\circ$. Short arrows barely bend; long ones bend a lot. That is the whole story of this lesson in one picture.
+Here the circle stands in for the curved group and the straight line touching it for the flat algebra. Lay off an arrow of length $55$ along the tangent (gray). The exponential wraps it onto the curve as an arc of the same length (blue): on a circle of radius $70$ that is $55/70 = 0.786$ radians, or $45^\circ$. Short arrows barely bend; long ones bend a lot. That is the whole story of this lesson in one picture.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">

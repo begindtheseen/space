@@ -1,9 +1,9 @@
 ---
 id: l05-maxima-minima-optimisation
-title: Maxima, minima and optimising a scalar function
+title: Maxima, minima and optimizing a scalar function
 minutes: 26
 covers:
-  - maxima, minima and optimisation of a scalar function
+  - maxima, minima and optimization of a scalar function
 ---
 
 A lot of guidance, navigation and control is a hunt for the best value of something.
@@ -15,7 +15,7 @@ A lot of guidance, navigation and control is a hunt for the best value of someth
 
 Each is a number chosen to make some function as large, or as small, as it can be. The navigation filter you will build later hunts too: every time a measurement arrives, it picks the estimate that makes a weighted sum of squared errors smallest.
 
-Derivatives turn this hunt from blind searching into algebra. Think of hiking to the top of a hill. At the very top you are not going up any more, and you are not yet going down. The ground is level under your feet. So at a smooth peak the slope must be zero. Made precise, that one observation turns "find the maximum" into "solve $f'(x) = 0$ and check the candidates". This lesson shows when that works, how to tell a peak from a valley, and why the ends of an interval need their own check. It also proves the **mean value theorem**, which the next two lessons use to measure the error of a linearisation.
+Derivatives turn this hunt from blind searching into algebra. Think of hiking to the top of a hill. At the very top you are not going up any more, and you are not yet going down. The ground is level under your feet. So at a smooth peak the slope must be zero. Made precise, that one observation turns "find the maximum" into "solve $f'(x) = 0$ and check the candidates". This lesson shows when that works, how to tell a peak from a valley, and why the ends of an interval need their own check. It also proves the **mean value theorem**, which the next two lessons use to measure the error of a linearization.
 
 ## Highest and lowest points
 
@@ -398,9 +398,9 @@ For $e = 0.3$: $\nu = \arccos(-0.3) = 107.5^\circ$ and $\gamma_{\max} = \arcsin 
 | Closed-interval recipe | Evaluate $f$ at every critical point and endpoint; compare |
 | Max-Q (exponential air, constant $a$) | $t^* = \sqrt{2H/a}$, at altitude $h^* = H$ |
 | Minimum drag | Parasite drag equals induced drag |
-| Least-squares slope | $S(a) = \sum(y_i - ax_i)^2$ minimised at $a^* = \sum x_i y_i / \sum x_i^2$ |
+| Least-squares slope | $S(a) = \sum(y_i - ax_i)^2$ minimized at $a^* = \sum x_i y_i / \sum x_i^2$ |
 
-The mean value theorem proved here is the tool the next lesson uses to say exactly how far the tangent line $f(x_0) + f'(x_0)(x - x_0)$ can drift from $f(x)$. That drift is the linearisation error that every filter and controller lives with.
+The mean value theorem proved here is the tool the next lesson uses to say exactly how far the tangent line $f(x_0) + f'(x_0)(x - x_0)$ can drift from $f(x)$. That drift is the linearization error that every filter and controller lives with.
 
 ::: context extremum-word Words from Latin
 **Maximum** is Latin for "greatest" and **minimum** for "least". **Extremum** comes from *extremus*, "outermost" — the furthest a function goes in either direction. The plurals keep the Latin endings: maxima, minima, extrema. Engineers use "optimum" (Latin for "best") for whichever one the problem wants, and **optimization** for the hunt.

@@ -41,7 +41,7 @@ that is, the new input minus the last output, divided by the time since the last
 A gimbal motor has exactly this limit. Its position cannot change faster than its motor and gearing allow, typically tens of degrees per second for an engine gimbal. A step command of 5° does not arrive at once: it arrives as a ramp.
 
 ::: key
-Saturation and Rate Limiter: why model them early? Actuators always saturate in position and rate, and nearly every surprising closed-loop behaviour in a real vehicle involves one of them, including integrator windup and limit cycles. A linear-only model hides the problem you will be asked about.
+Saturation and Rate Limiter: why model them early? Actuators always saturate in position and rate, and nearly every surprising closed-loop behavior in a real vehicle involves one of them, including integrator windup and limit cycles. A linear-only model hides the problem you will be asked about.
 :::
 
 ::: example An engine gimbal: does the order of the two blocks matter?

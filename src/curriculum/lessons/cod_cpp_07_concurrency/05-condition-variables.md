@@ -214,7 +214,7 @@ With a predicate, both return a `bool`: `true` if `pred()` became true, `false` 
 
 When a thread waits several times in a loop for one overall deadline, compute the deadline *once* and use `wait_until`. Calling `wait_for(5ms)` in a loop restarts the 5 ms each time around, so a stream of spurious wakeups could stretch the wait without limit.
 
-Use `std::chrono::steady_clock` for deadlines. It is a **[[monotonic clock|steady-clock]]**: it never jumps backwards and is not corrected by time synchronisation. `system_clock`, the wall-clock time, can be stepped by seconds when the computer syncs its clock, which could make a 5 ms wait end instantly or last far too long.
+Use `std::chrono::steady_clock` for deadlines. It is a **[[monotonic clock|steady-clock]]**: it never jumps backwards and is not corrected by time synchronization. `system_clock`, the wall-clock time, can be stepped by seconds when the computer syncs its clock, which could make a 5 ms wait end instantly or last far too long.
 
 ```cpp
 const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(5);

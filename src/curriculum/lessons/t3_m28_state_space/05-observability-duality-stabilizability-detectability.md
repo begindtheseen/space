@@ -300,7 +300,7 @@ Point a camera at the Sun and roll it about that line. The Sun stays in the cent
 :::
 
 ::: context hidden-modes Where hidden states hide
-In a transfer function, a hidden mode shows up as a pole cancelled by an equal zero. The formula for $\mathbf{G}(s)$ looks lower order than the vehicle really is. Classical control warns never to cancel an unstable pole with a zero, and this is why: the cancelled mode is still inside the hardware, still growing, but no longer visible in the input-output description. A state-space model with a controllability or observability test run on it cannot hide that mode from you.
+In a transfer function, a hidden mode shows up as a pole canceled by an equal zero. The formula for $\mathbf{G}(s)$ looks lower order than the vehicle really is. Classical control warns never to cancel an unstable pole with a zero, and this is why: the canceled mode is still inside the hardware, still growing, but no longer visible in the input-output description. A state-space model with a controllability or observability test run on it cannot hide that mode from you.
 :::
 
 ::: context cross-matrix The cross product as a matrix

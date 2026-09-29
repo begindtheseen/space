@@ -359,7 +359,7 @@ The feedback loop only has to correct the small difference between this path and
 :::
 
 ::: context triangle-lag Smaller and later
-Here a sine command (grey) asks for $2.5$ times the actuator's top rate, so $\lambda = 0.4$. The actuator (blue) moves at its top rate in straight lines, turning around only when it catches the command. Its peaks are lower and later than the command's.
+Here a sine command (gray) asks for $2.5$ times the actuator's top rate, so $\lambda = 0.4$. The actuator (blue) moves at its top rate in straight lines, turning around only when it catches the command. Its peaks are lower and later than the command's.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">

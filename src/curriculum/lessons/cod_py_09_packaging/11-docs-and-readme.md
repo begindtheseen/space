@@ -278,7 +278,7 @@ What it computes, how to install it, one command that reproduces a headline resu
 
 Here is one for `gnc-toolkit`:
 
-````markdown
+```markdown
 # gnc-toolkit
 
 Circular-orbit and Hohmann-transfer helpers for mission analysis.
@@ -287,15 +287,13 @@ transfer burns (delta-v) in SI units.
 
 ## Quickstart (about 2 minutes)
 
-Needs Python 3.10 or newer.
+Needs Python 3.10 or newer. Run:
 
-```bash
-git clone https://git.example.com/gnc/gnc-toolkit.git
-cd gnc-toolkit
-python3 -m venv .venv
-.venv/bin/pip install ".[plot]"
-.venv/bin/python examples/leo_to_geo.py
-```
+    git clone https://git.example.com/gnc/gnc-toolkit.git
+    cd gnc-toolkit
+    python3 -m venv .venv
+    .venv/bin/pip install ".[plot]"
+    .venv/bin/python examples/leo_to_geo.py
 
 Expected output, plus a plot saved as `leo_to_geo.png`:
 
@@ -316,7 +314,7 @@ sizing, not for operations.
 ## Tests and docs
 
 `pip install ".[dev]"`, then `pytest`. Docs: `sphinx-build docs docs/_build/html`.
-````
+```
 
 Notice what is *not* there: no feature wish list and no badge wall at the top. Every line serves the stranger with the timer running.
 

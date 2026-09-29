@@ -284,7 +284,7 @@ kubectl rollout undo deployment/telemetry-decoder
 When a result looks wrong and the data went through a cluster, `describe` and `logs` are where you start: they tell you which image a pod was really running and whether it restarted halfway through a pass.
 
 ::: key Where Kubernetes enters an aerospace data story
-Starlink telemetry infrastructure is reported to run on Docker and Kubernetes alongside **[[Kafka, HBase and HDFS|kafka-hbase-hdfs]]**, so pods, deployments and services are literacy an engineer touching that pipeline needs, not a specialisation.
+Starlink telemetry infrastructure is reported to run on Docker and Kubernetes alongside **[[Kafka, HBase and HDFS|kafka-hbase-hdfs]]**, so pods, deployments and services are literacy an engineer touching that pipeline needs, not a specialization.
 :::
 
 You will not be asked to design a cluster. You may be asked why a replay of last night's telemetry has a gap, and the answer may be "a decoder pod was rescheduled". Knowing the words lets you ask the right question.

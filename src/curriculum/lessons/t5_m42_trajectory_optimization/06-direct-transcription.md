@@ -20,7 +20,7 @@ Both roads end with numbers in a computer. They differ in *when* you chop time i
 - **Direct** (from here on): first chop the *problem itself* into a finite list of numbers, and *then* hand that list to a general-purpose optimizer. **Discretize, then optimize.** ("Discretize" means turn something smooth into separate pieces — discrete ones.)
 
 ::: key Direct vs indirect methods in one line
-Indirect: derive the optimality conditions, then discretise (optimise-then-discretise). Direct: discretise the problem, then optimise the resulting NLP (discretise-then-optimise). The two branches transcribe different objects.
+Indirect: derive the optimality conditions, then discretize (optimise-then-discretise). Direct: discretize the problem, then optimize the resulting NLP (discretise-then-optimise). The two branches transcribe different objects.
 :::
 
 An **NLP**, or **[[nonlinear program|nlp-word]]**, is a finite optimization problem: choose a list of numbers to make one number (the cost) as small as possible, while some equations and inequalities hold. The optimization module built the tools for exactly this, including interior-point solvers.

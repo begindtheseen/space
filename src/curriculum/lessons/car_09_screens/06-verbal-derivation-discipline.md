@@ -308,7 +308,7 @@ William Rowan Hamilton, an Irish mathematician, discovered quaternions in 1843. 
 :::
 
 ::: context dof-count Counting numbers and rules
-Each way of describing an orientation uses some numbers and some rules tying them together. Numbers minus rules gives the real freedoms — and every method must come out at three. In the picture, each block is one number; grey blocks are used up by a rule, blue blocks are free.
+Each way of describing an orientation uses some numbers and some rules tying them together. Numbers minus rules gives the real freedoms — and every method must come out at three. In the picture, each block is one number; gray blocks are used up by a rule, blue blocks are free.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 140" font-family="Inter, Arial, sans-serif">

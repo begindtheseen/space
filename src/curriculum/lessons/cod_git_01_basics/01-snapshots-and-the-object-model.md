@@ -34,7 +34,7 @@ Git keeps the photo album. Each saved state is a complete **snapshot** of every 
 When you ask "what changed between these two versions?", Git compares the two snapshots on the spot. That comparison is a **diff** — the same unified diff you met with `diff -u` in the shell module.
 
 ::: key Git stores snapshots, not diffs
-Does Git store diffs? No. Each commit references a complete tree snapshot; identical file contents are shared by hash. Diffs are computed on demand, and **[[packfiles|packfiles]]** later apply delta compression as a storage optimisation only.
+Does Git store diffs? No. Each commit references a complete tree snapshot; identical file contents are shared by hash. Diffs are computed on demand, and **[[packfiles|packfiles]]** later apply delta compression as a storage optimization only.
 :::
 
 ## Every object is named by its fingerprint

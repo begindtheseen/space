@@ -430,7 +430,7 @@ The Rust compiler works in stages. It parses your text, resolves names, checks t
 ```
 :::
 
-::: context error-index A catalogue of every error
+::: context error-index A catalog of every error
 Every error the Rust compiler can emit has a code and an entry in the Rust error codes index, published with the documentation at doc.rust-lang.org. Each entry has a short explanation, code that triggers the error, and code that does not. `rustc --explain` prints the same text in your terminal. Because the codes do not change between compiler versions, searching the web for "E0502" finds answers written years apart that still apply, even when the wording of the message has improved since.
 :::
 

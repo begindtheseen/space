@@ -60,7 +60,7 @@ Two facts about its shape are worth saying out loud as you write it, because the
 - The dependence is **[[logarithmic|log-curve]]**, so buying more $\Delta v$ by adding propellant gives sharply shrinking returns — the hiker's problem. Buying it by raising $c$ pays off in direct proportion. That imbalance is the whole argument for staging and for high-$I_{sp}$ upper stages.
 
 ::: example A stage, and why dry mass hurts so much
-**Assumptions.** A stage with ignition mass $m_0 = 500\,\mathrm{t}$ and cutoff mass $m_f = 125\,\mathrm{t}$ (a tonne, t, is $1000\,\mathrm{kg}$). Its average effective exhaust velocity matches $I_{sp} = 300\,\mathrm{s}$.
+**Assumptions.** A stage with ignition mass $m_0 = 500\,\mathrm{t}$ and cutoff mass $m_f = 125\,\mathrm{t}$ (a metric ton, t, is $1000\,\mathrm{kg}$). Its average effective exhaust velocity matches $I_{sp} = 300\,\mathrm{s}$.
 
 **Exhaust velocity.** $c = I_{sp}g_0 = 300 \times 9.80665 \approx 2942\,\mathrm{m/s}$.
 
@@ -70,7 +70,7 @@ Two facts about its shape are worth saying out loud as you write it, because the
 
 **Now make the structure heavier.** Suppose the structure comes in ten percent heavy, so $m_f = 137.5\,\mathrm{t}$ instead of $125\,\mathrm{t}$, with everything else unchanged. The mass ratio drops to $500/137.5 \approx 3.636$, and $\ln 3.636 \approx 1.2910$. The ideal $\Delta v$ becomes $2942 \times 1.2910 \approx 3798\,\mathrm{m/s}$.
 
-**The cost.** $4078.5 - 3798 \approx 280\,\mathrm{m/s}$ lost for $12.5$ tonnes of extra structure. A ten percent mass error has cost about seven percent of the $\Delta v$ ($280/4078.5 \approx 0.069$). Near the end of a climb to orbit, that is the difference between getting there and not.
+**The cost.** $4078.5 - 3798 \approx 280\,\mathrm{m/s}$ lost for $12.5$ metric tons of extra structure. A ten percent mass error has cost about seven percent of the $\Delta v$ ($280/4078.5 \approx 0.069$). Near the end of a climb to orbit, that is the difference between getting there and not.
 
 **Sanity check.** Units: meters per second times a logarithm, which has no units, gives meters per second. Size: a first stage delivering about $4\,\mathrm{km/s}$ of the roughly $9.4\,\mathrm{km/s}$ a climb to low Earth orbit needs is the right share for a two-stage vehicle.
 :::
@@ -87,7 +87,7 @@ Notice first what kind of list this is. Every item is about forces and exhaust a
 
 **No gravity.** By far the biggest, and the subject of the next section. Roughly 1.0 to 1.5 km/s for a climb to low Earth orbit, most of it spent during the first stage.
 
-**No drag.** The vehicle pushes through the atmosphere for its first ninety seconds or so. The drag loss scales with $C_D S/m$ — the drag coefficient $C_D$ (a number for how streamlined the shape is) times the frontal area $S$, divided by the mass. So it depends strongly on vehicle size. For a large launcher it is small, of order 20 to 50 m/s. For a small launcher with similar frontal area per tonne it can be 100 to 150 m/s.
+**No drag.** The vehicle pushes through the atmosphere for its first ninety seconds or so. The drag loss scales with $C_D S/m$ — the drag coefficient $C_D$ (a number for how streamlined the shape is) times the frontal area $S$, divided by the mass. So it depends strongly on vehicle size. For a large launcher it is small, of order 20 to 50 m/s. For a small launcher with similar frontal area per metric ton it can be 100 to 150 m/s.
 
 **Thrust along the velocity — no steering loss.** The derivation is one-dimensional. A real vehicle points a little away from its direction of travel in order to steer, by an angle $\alpha$ (the **[[angle of attack|angle-of-attack]]**). Only the part of the thrust along the velocity, $T\cos\alpha$, adds speed. The loss is $\int (1 - \cos\alpha)\,T/m\,dt$ over the flight — typically tens of m/s, up to around 100 m/s.
 
@@ -286,7 +286,7 @@ The angle of attack is the angle between where the rocket's nose points and the 
 :::
 
 ::: context flight-path-angle Measured from the horizon
-The flight path angle $\gamma$ is measured between the velocity and the local horizontal. Straight up is $90^\circ$; level flight is $0$. Gravity (grey) splits into a part along the path, $g\sin\gamma$ (red), which slows the vehicle, and a part across it, $g\cos\gamma$, which bends the path downward.
+The flight path angle $\gamma$ is measured between the velocity and the local horizontal. Straight up is $90^\circ$; level flight is $0$. Gravity (gray) splits into a part along the path, $g\sin\gamma$ (red), which slows the vehicle, and a part across it, $g\cos\gamma$, which bends the path downward.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
@@ -319,7 +319,7 @@ A circular orbit a few hundred kilometers up needs a speed of about 7.7 km/s. Th
 :::
 
 ::: context staging Throwing away the empty tanks
-Staging means stacking rockets and dropping each one when its propellant runs out. Once a tank is empty it is dead weight, and carrying it higher costs speed. Real attempts to avoid staging have struggled: the 1960s Atlas rocket was "stage and a half", dropping two of its engines partway up but keeping its tanks, and later single-stage designs such as the X-33 were cancelled before flying. The bars show how little room a single stage leaves for anything that is not propellant.
+Staging means stacking rockets and dropping each one when its propellant runs out. Once a tank is empty it is dead weight, and carrying it higher costs speed. Real attempts to avoid staging have struggled: the 1960s Atlas rocket was "stage and a half", dropping two of its engines partway up but keeping its tanks, and later single-stage designs such as the X-33 were canceled before flying. The bars show how little room a single stage leaves for anything that is not propellant.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">

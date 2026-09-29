@@ -288,7 +288,7 @@ From the ground, Earth hides the whole lower half of your sky. From geostationar
 :::
 
 ::: context walker A tidy way to fill the sky
-A **Walker constellation** spreads satellites evenly: several orbit planes turned equal amounts around Earth's axis, the same number of satellites in each, and each plane's satellites shifted a little along their orbit so they do not line up with the neighbours. The real GPS constellation is not a perfect Walker pattern — it has six planes with uneven spacing and more than four satellites in some — but the model is close enough to count visibility and DOP honestly. The name honours John Walker, a British engineer who worked out these patterns in the 1970s.
+A **Walker constellation** spreads satellites evenly: several orbit planes turned equal amounts around Earth's axis, the same number of satellites in each, and each plane's satellites shifted a little along their orbit so they do not line up with the neighbors. The real GPS constellation is not a perfect Walker pattern — it has six planes with uneven spacing and more than four satellites in some — but the model is close enough to count visibility and DOP honestly. The name honors John Walker, a British engineer who worked out these patterns in the 1970s.
 :::
 
 ::: context side-lobes Why every antenna leaks

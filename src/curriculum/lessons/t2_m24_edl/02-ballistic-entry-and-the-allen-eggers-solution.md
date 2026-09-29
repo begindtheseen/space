@@ -81,7 +81,7 @@ $$
 \frac{dv}{dh} = \frac{\dot v}{\dot h} = \frac{-\rho v^2/(2\beta)}{v \sin\gamma_E} = -\frac{\rho(h)\,v}{2\beta \sin\gamma_E}.
 $$
 
-One factor of $v$ cancelled between top and bottom, and $\gamma$ has been frozen at $\gamma_E$.
+One factor of $v$ canceled between top and bottom, and $\gamma$ has been frozen at $\gamma_E$.
 
 **Step 2: tidy the signs.** $\gamma_E$ is negative for a descending entry, so $\sin\gamma_E$ is negative. Write $s \equiv |\sin\gamma_E|$, a positive number, so $\sin\gamma_E = -s$. The two minus signs cancel:
 
@@ -192,7 +192,7 @@ $$
 
 ### What is missing is the point
 
-Look at what is, and is not, in this formula. It has the entry speed, the entry angle, the atmosphere's scale height, and Euler's number $e$. It has **nothing about the vehicle at all**. $\beta$ cancelled exactly: the $1/\beta$ in front met the $\beta$ inside $\rho^*$. A dense tungsten ball and a hollow aluminum shell, entering at the same speed and angle, pull exactly the same peak deceleration.
+Look at what is, and is not, in this formula. It has the entry speed, the entry angle, the atmosphere's scale height, and Euler's number $e$. It has **nothing about the vehicle at all**. $\beta$ canceled exactly: the $1/\beta$ in front met the $\beta$ inside $\rho^*$. A dense tungsten ball and a hollow aluminum shell, entering at the same speed and angle, pull exactly the same peak deceleration.
 
 Why? The shell slows down in thin air, high up. The heavy ball has to **[[punch deeper|why-beta-cancels]]**, into thicker air, before drag grabs it as hard. The two effects balance perfectly.
 

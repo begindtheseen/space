@@ -75,7 +75,7 @@ For $q = [w, x, y, z]$, scalar-first: $\mathbf{C} = (w^2 - \mathbf{v}^\top\mathb
 
 This is the dangerous direction. The reason, in one line: it needs a square root of something that can shrink to zero, and then it divides by that square root.
 
-Think of measuring the thickness of a single hair with a school ruler. The ruler's marks are a millimetre apart, so a reading of "zero point something" is mostly guesswork. If you then *divide* by that guess, the answer is garbage. The fix is to measure something big instead — a whole stack of paper — and work out the small thing from it.
+Think of measuring the thickness of a single hair with a school ruler. The ruler's marks are a millimeter apart, so a reading of "zero point something" is mostly guesswork. If you then *divide* by that guess, the answer is garbage. The fix is to measure something big instead — a whole stack of paper — and work out the small thing from it.
 
 ### Four ways to get one component
 
@@ -292,7 +292,7 @@ Quaternion to Euler angles and back is lossless only away from $\theta = \pm 90^
 :::
 
 ::: warning Normalise the input, canonicalise the output
-Two habits close most of the remaining gaps. On the way in, normalise any quaternion that has been integrated, sent over a link or interpolated: the matrix formula assumes $\lVert q\rVert = 1$, and if it is not, you silently get a scaled matrix that is not a rotation. On the way out of a DCM-to-quaternion conversion, force $w\ge 0$, so the same input always gives the same answer and a round-trip test means something. Neither costs anything measurable.
+Two habits close most of the remaining gaps. On the way in, normalize any quaternion that has been integrated, sent over a link or interpolated: the matrix formula assumes $\lVert q\rVert = 1$, and if it is not, you silently get a scaled matrix that is not a rotation. On the way out of a DCM-to-quaternion conversion, force $w\ge 0$, so the same input always gives the same answer and a round-trip test means something. Neither costs anything measurable.
 :::
 
 ## Check yourself

@@ -104,7 +104,7 @@ $$
 
 **Check by differentiating.** $M'(h) = \rho_0 H \cdot e^{-h/H}/H = \rho_0 e^{-h/H} = \rho(h)$. The rate at which the column gains mass is the density at the top, as the fundamental theorem says it must be.
 
-**Numbers.** The total column is $\rho_0 H = 1.225 \times 7500 = 9188\,\mathrm{kg/m^2}$ — about nine tonnes of air over every square meter. Below $10\,\mathrm{km}$: $M = 9188\,(1 - e^{-1.333}) = 6766\,\mathrm{kg/m^2}$. So about three-quarters of the air lies below $10\,\mathrm{km}$, and $99.9\%$ below $50\,\mathrm{km}$. [[The shaded curve|atmosphere-picture]] shows the first ten kilometers.
+**Numbers.** The total column is $\rho_0 H = 1.225 \times 7500 = 9188\,\mathrm{kg/m^2}$ — about nine metric tons of air over every square meter. Below $10\,\mathrm{km}$: $M = 9188\,(1 - e^{-1.333}) = 6766\,\mathrm{kg/m^2}$. So about three-quarters of the air lies below $10\,\mathrm{km}$, and $99.9\%$ below $50\,\mathrm{km}$. [[The shaded curve|atmosphere-picture]] shows the first ten kilometers.
 
 **Sanity check against pressure.** The weight of the column is what presses on the ground: $9188 \times 9.80665 = 90.1\,\mathrm{kPa}$. The real sea-level pressure is $101.3\,\mathrm{kPa}$, so the model is about $11\%$ light. A scale height of $8.43\,\mathrm{km}$ would reproduce sea-level pressure exactly. But $7.5\,\mathrm{km}$ fits the density better higher up, where the ascent loads and reentry heating happen. No single exponential fits the whole atmosphere. Which one you choose depends on which integral you care about.
 :::

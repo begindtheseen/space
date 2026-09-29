@@ -353,7 +353,7 @@ Worst-case execution time is found two ways. One is measurement: run the code on
 :::
 
 ::: context rk4-stability-region The growth factor, drawn
-The curves show the size of the growth factor per step against $h/\tau$ for a decaying mode. Below the dashed line at $1$ the method is stable. Euler (grey) touches $1$ at $h/\tau = 2$ and climbs past it. RK4 (blue) hugs the exact decay (orange) for small steps, dips to about $0.27$ near $h/\tau = 1.6$, and climbs back through $1$ at $2.785$. The exact answer never leaves the stable zone.
+The curves show the size of the growth factor per step against $h/\tau$ for a decaying mode. Below the dashed line at $1$ the method is stable. Euler (gray) touches $1$ at $h/\tau = 2$ and climbs past it. RK4 (blue) hugs the exact decay (orange) for small steps, dips to about $0.27$ near $h/\tau = 1.6$, and climbs back through $1$ at $2.785$. The exact answer never leaves the stable zone.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">

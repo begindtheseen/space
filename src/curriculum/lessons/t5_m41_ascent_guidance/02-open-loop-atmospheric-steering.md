@@ -16,7 +16,7 @@ That is on purpose. This lesson shows why — not "closed-loop guidance is hard 
 
 The **pitch program** is a stored list of attitude commands — which way to point the nose — as a function of time since liftoff (or, on some vehicles, of measured speed). **[[Attitude|attitude]]** here just means the rocket's orientation. The list is computed once, before flight, and flown without change, whatever the rocket's actual path turns out to be.
 
-It has no error signal. If the rocket is a little off the path the program was built for, the program does not know and does not care. At second 90 it commands the same attitude whether the rocket is exactly on plan or a kilometre off to one side.
+It has no error signal. If the rocket is a little off the path the program was built for, the program does not know and does not care. At second 90 it commands the same attitude whether the rocket is exactly on plan or a kilometer off to one side.
 
 Outside the atmosphere that would be a weakness. Inside it, it is the point. Most of the program's shape comes from the gravity turn: a fixed kick, then zero angle of attack. In practice the flight computer stores the attitude history of a reference trajectory that engineers optimized on the ground beforehand (this module returns to that offline optimization later). The rocket flies that stored history.
 

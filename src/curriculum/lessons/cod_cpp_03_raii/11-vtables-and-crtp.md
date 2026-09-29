@@ -265,12 +265,12 @@ Now read the pattern.
 
 The generated code shows why. The CRTP loop compiled to one load, one multiply and one store per element, with no call at all. The virtual loop has to save registers, load the vptr, jump out, run a separate function, and come back, every element.
 
-Then build the same program with `-O3`, which turns on more aggressive **[[vectorisation|vectorisation]]**. On the same machine, CRTP and the `final` loop both dropped to about 0.19 ns per call — the compiler now multiplies two samples with one instruction. The virtual loop stayed at about 1.75 ns. The gap grew from about 5 times to about 9 times. The virtual call did not get slower; the inlined code got faster, because inlining let further optimisation in.
+Then build the same program with `-O3`, which turns on more aggressive **[[vectorization|vectorisation]]**. On the same machine, CRTP and the `final` loop both dropped to about 0.19 ns per call — the compiler now multiplies two samples with one instruction. The virtual loop stayed at about 1.75 ns. The gap grew from about 5 times to about 9 times. The virtual call did not get slower; the inlined code got faster, because inlining let further optimization in.
 :::
 
 Notice the third line. The `final` loop still calls a function declared `virtual`, and it ran exactly as fast as CRTP. Because `GainF` is `final`, the compiler knows a `const GainF&` refers to exactly a `GainF`. It replaces the virtual call with a direct call and inlines it. This is **[[devirtualisation|devirtualisation]]**: turning a virtual call into a direct one when the compiler can prove the target.
 
-That is the honest caveat on every virtual-versus-CRTP benchmark. Compilers devirtualise whenever they can prove the type: a `final` class, a local object whose type is visible, or a whole program compiled together with link-time optimisation. If a benchmark accidentally lets the compiler see the type, the gap vanishes, and it looks as if virtual calls are free. That is why this benchmark picks the filter from `argc` and stops the loops from being inlined into `main`.
+That is the honest caveat on every virtual-versus-CRTP benchmark. Compilers devirtualise whenever they can prove the type: a `final` class, a local object whose type is visible, or a whole program compiled together with link-time optimization. If a benchmark accidentally lets the compiler see the type, the gap vanishes, and it looks as if virtual calls are free. That is why this benchmark picks the filter from `argc` and stops the loops from being inlined into `main`.
 
 ::: warning
 Measure before you rewrite. A virtual call in code that runs 50 times a second costs nanoseconds out of a 20 ms budget, and replacing it gains nothing you could ever see. The cost matters in an inner loop over thousands of elements per cycle, such as filtering every sample of a sensor stream or updating every cell of a grid. Profile first; then change the loop that the profile points at.
@@ -424,7 +424,7 @@ A colleague proposes `class Tank : public std::vector<double>` so that a propell
 :::
 
 ::: answer
-A tank is not a vector of doubles, so this fails the is-a test. Inheriting would put every `std::vector` function — `clear()`, `resize()`, `erase()` — on the tank's public face, so any code could wipe a tank's history without going through the tank's own rules. `std::vector` also has no virtual destructor, so deleting a `Tank` through a `std::vector<double>*` would be undefined behaviour. Use composition: give `Tank` a private `std::vector<double> samples_;` member and write the few public functions the tank really needs, such as `record(double kg)` and `mass_kg()`. The tank then controls its own rules.
+A tank is not a vector of doubles, so this fails the is-a test. Inheriting would put every `std::vector` function — `clear()`, `resize()`, `erase()` — on the tank's public face, so any code could wipe a tank's history without going through the tank's own rules. `std::vector` also has no virtual destructor, so deleting a `Tank` through a `std::vector<double>*` would be undefined behavior. Use composition: give `Tank` a private `std::vector<double> samples_;` member and write the few public functions the tank really needs, such as `record(double kg)` and `mass_kg()`. The tank then controls its own rules.
 :::
 
 ::: check
@@ -432,7 +432,7 @@ Why can the CRTP base safely use `static_cast<const Derived&>(*this)`, when the 
 :::
 
 ::: answer
-`static_cast` down a class hierarchy does no run-time check. It trusts you that the object really is of the target type. In CRTP that is guaranteed by the pattern: `SensorBase<Thermistor>` exists only as the base of `Thermistor`, so any `SensorBase<Thermistor>` object is the base part of a `Thermistor`, and its constructor is `protected` so no one can make one on its own. A general `Filter&` might refer to a `Gain`, an `Offset` or anything else derived later. A `static_cast` to `Gain&` on an `Offset` would read the `Offset`'s bytes as if they were a `Gain`'s, which is undefined behaviour. The cast is only as safe as the guarantee behind it.
+`static_cast` down a class hierarchy does no run-time check. It trusts you that the object really is of the target type. In CRTP that is guaranteed by the pattern: `SensorBase<Thermistor>` exists only as the base of `Thermistor`, so any `SensorBase<Thermistor>` object is the base part of a `Thermistor`, and its constructor is `protected` so no one can make one on its own. A general `Filter&` might refer to a `Gain`, an `Offset` or anything else derived later. A `static_cast` to `Gain&` on an `Offset` would read the `Offset`'s bytes as if they were a `Gain`'s, which is undefined behavior. The cast is only as safe as the guarantee behind it.
 :::
 
 ## Summary
@@ -564,7 +564,7 @@ A virtual call inside the loop makes this impossible, because the compiler canno
 :::
 
 ::: context devirtualisation How compilers remove virtual calls
-g++ tries this with the options `-fdevirtualize` and `-fdevirtualize-speculatively`, both on at `-O2`. The first replaces a virtual call when the type is proven: a `final` class or function, or an object whose construction the compiler can see. The second guesses the likely type, emits "if the vptr is this class's, run its code inlined; otherwise do the real virtual call", and so keeps correctness while often gaining speed. Link-time optimisation, `-flto`, lets it see the whole program and prove more.
+g++ tries this with the options `-fdevirtualize` and `-fdevirtualize-speculatively`, both on at `-O2`. The first replaces a virtual call when the type is proven: a `final` class or function, or an object whose construction the compiler can see. The second guesses the likely type, emits "if the vptr is this class's, run its code inlined; otherwise do the real virtual call", and so keeps correctness while often gaining speed. Link-time optimization, `-flto`, lets it see the whole program and prove more.
 :::
 
 ::: context design-patterns Where the slogan comes from

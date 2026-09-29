@@ -488,7 +488,7 @@ An ellipse is a squashed circle. Its longest width, straight through the middle,
 ::: context kepler-equation Two clocks for one orbit
 Johannes Kepler found that a planet sweeps out equal areas of its orbit in equal times. The mean anomaly $M$ is a pretend angle that ticks forward at a steady rate — where the body would be if it moved at an even pace. The eccentric anomaly $E$ is a real geometric angle that pins down where the body actually is.
 
-Kepler's equation $M = E - e\sin E$ converts between them. Going from $E$ to $M$ is easy. Going from $M$ to $E$ — which is what you need to find a satellite at a given time — has no neat formula. You solve it by repeated guessing, and the linearisation lesson shows the fast way, Newton's method, which uses the very derivative found here.
+Kepler's equation $M = E - e\sin E$ converts between them. Going from $E$ to $M$ is easy. Going from $M$ to $E$ — which is what you need to find a satellite at a given time — has no neat formula. You solve it by repeated guessing, and the linearization lesson shows the fast way, Newton's method, which uses the very derivative found here.
 :::
 
 ::: context arcsin-steep Why arcsine goes vertical

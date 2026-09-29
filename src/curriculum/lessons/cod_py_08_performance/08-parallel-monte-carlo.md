@@ -4,7 +4,7 @@ title: Running a Monte Carlo on every core
 minutes: 22
 covers:
   - 'multiprocessing, concurrent.futures and joblib for embarrassingly parallel Monte Carlo'
-  - 'Serialisation cost and why passing large arrays between processes can dominate'
+  - 'Serialization cost and why passing large arrays between processes can dominate'
 ---
 
 Imagine a teacher with 400 math tests to grade and three friends willing to help. The job splits perfectly. Each test is graded on its own, and no grader needs to know what another grader wrote. Hand each friend a stack, and four people finish in about a quarter of the time.
@@ -226,7 +226,7 @@ The new run time is $2430 / 7.36 \approx 330\,\mathrm{s}$, about $5.5$ minutes. 
 
 Now the photocopier. Processes do not share memory. So when you ask a worker to run `f(x)`, Python has to get `x` into the worker's memory. It does that in three steps, for **every task**:
 
-1. **[[Pickle|pickle]]** the argument — turn the object into a flat string of bytes. This is called **serialisation**.
+1. **[[Pickle|pickle]]** the argument — turn the object into a flat string of bytes. This is called **serialization**.
 2. Push the bytes through a **pipe**, a one-way channel between processes provided by the operating system.
 3. **Unpickle** them in the worker — rebuild the object from the bytes.
 
@@ -300,7 +300,7 @@ The `initializer` argument names a function that each worker runs once when it s
 joblib did well without being asked, because it has a built-in trick: any NumPy argument larger than $1\,\mathrm{MB}$ is written once to a temporary file, and the workers open it as a **memory map** instead of receiving a copy. The next lesson is all about memory maps.
 
 ::: key
-Why can passing big arrays to worker processes dominate the runtime? Each argument is pickled, copied through a pipe and unpickled per task. If the per-case work is small relative to the data, you pay serialisation for nothing; batch the work, use shared memory, or have workers load data themselves.
+Why can passing big arrays to worker processes dominate the runtime? Each argument is pickled, copied through a pipe and unpickled per task. If the per-case work is small relative to the data, you pay serialization for nothing; batch the work, use shared memory, or have workers load data themselves.
 :::
 
 ::: example How much data did the slow version move?
@@ -430,7 +430,7 @@ The default sends one task per trip through the pipe, and each trip has a fixed 
 | joblib | `Parallel(n_jobs=4)(delayed(f)(x) for x in items)` | loky workers, auto memory map above $1\,\mathrm{MB}$ |
 | speedup, efficiency | how much faster, fraction of ideal | $S = T_1 / T_N$, $E = S / N$ |
 | Amdahl's law | serial part caps the speedup | $S(N) = 1 / \left((1-p) + p/N\right)$, at most $1/(1-p)$ |
-| serialisation | pickle, pipe, unpickle, per task | $80\,\mathrm{MB}$ per case turned $0.62\,\mathrm{s}$ into $22.2\,\mathrm{s}$ |
+| serialization | pickle, pipe, unpickle, per task | $80\,\mathrm{MB}$ per case turned $0.62\,\mathrm{s}$ into $22.2\,\mathrm{s}$ |
 | fixes | send less, send once, share | seeds and paths, `initializer`, memmap, `shared_memory` |
 | `chunksize` | tasks per trip | batch many tiny tasks |
 

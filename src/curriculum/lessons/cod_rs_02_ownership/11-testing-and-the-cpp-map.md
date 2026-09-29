@@ -318,7 +318,7 @@ Unit tests check examples from the inside; integration tests check the public AP
 Every tool so far checks the *answer*. Undefined behavior can give the right answer by luck: because of what the allocator left in freed memory, or what the optimizer did. **miri** is an interpreter for Rust's **[[MIR|mir]]**, the compiler's simplified internal form of your program. It runs the program step by step and tracks, for every byte of memory, whether it is allocated and initialized, and which pointers may touch it.
 
 ::: key What is miri for?
-An interpreter that detects undefined behaviour in unsafe code: out-of-bounds, misaligned access, invalid aliasing under Stacked Borrows, uninitialised reads. It is the Rust equivalent of running everything under a very strict sanitizer.
+An interpreter that detects undefined behavior in unsafe code: out-of-bounds, misaligned access, invalid aliasing under Stacked Borrows, uninitialised reads. It is the Rust equivalent of running everything under a very strict sanitizer.
 :::
 
 ::: example A test that passes, and should not

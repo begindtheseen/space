@@ -34,7 +34,7 @@ $$
 J = \lim_{T\to\infty}\ \mathbb{E}\left[\frac{1}{T}\int_0^T\big(\mathbf{x}^\top\mathbf{Q}\mathbf{x} + \mathbf{u}^\top\mathbf{R}\mathbf{u}\big)dt\right].
 $$
 
-This is the long-run average cost per second. We minimise it over every control law that uses only the measurement history — everything $\mathbf{y}(\tau)$ for times $\tau \le t$. That restriction is what makes the problem hard in principle. The control is no longer a function of a state. It is a function of a whole stream of past data.
+This is the long-run average cost per second. We minimize it over every control law that uses only the measurement history — everything $\mathbf{y}(\tau)$ for times $\tau \le t$. That restriction is what makes the problem hard in principle. The control is no longer a function of a state. It is a function of a whole stream of past data.
 
 ## The estimator is the regulator in a mirror
 
@@ -93,7 +93,7 @@ $$
 \mathbb{E}\big[\mathbf{x}^\top\mathbf{Q}\mathbf{x}\big] = \mathbb{E}\big[\hat{\mathbf{x}}^\top\mathbf{Q}\hat{\mathbf{x}}\big] + \mathbb{E}\big[\mathbf{e}^\top\mathbf{Q}\mathbf{e}\big].
 $$
 
-The second term does not depend on $\mathbf{u}$ at all. The filter's accuracy is unaffected by what the controller does, because the filter is told which control was applied. So the controller is left minimising a quadratic cost in $\hat{\mathbf{x}}$. The estimate moves like the plant, driven by the innovation. That is the deterministic LQR problem again, and its answer is $-\mathbf{K}\hat{\mathbf{x}}$.
+The second term does not depend on $\mathbf{u}$ at all. The filter's accuracy is unaffected by what the controller does, because the filter is told which control was applied. So the controller is left minimizing a quadratic cost in $\hat{\mathbf{x}}$. The estimate moves like the plant, driven by the innovation. That is the deterministic LQR problem again, and its answer is $-\mathbf{K}\hat{\mathbf{x}}$.
 :::
 
 ## The closed loop
@@ -207,7 +207,7 @@ State the separation theorem precisely, and say which of its two claims fails wh
 :::
 
 ::: answer
-The theorem: for a linear plant with additive white Gaussian process and measurement noise and a quadratic cost, the control law that minimises the expected cost over all measurement-feedback laws is $\mathbf{u} = -\mathbf{K}\hat{\mathbf{x}}$. Here $\mathbf{K}$ is the deterministic LQR gain for $(\mathbf{A},\mathbf{B},\mathbf{Q},\mathbf{R})$ and $\hat{\mathbf{x}}$ is the Kalman estimate for $(\mathbf{A},\mathbf{C},\mathbf{G}\mathbf{W}\mathbf{G}^\top,\mathbf{V})$. And the closed-loop eigenvalues are those of $\mathbf{A}-\mathbf{B}\mathbf{K}$ together with those of $\mathbf{A}-\mathbf{L}\mathbf{C}$.
+The theorem: for a linear plant with additive white Gaussian process and measurement noise and a quadratic cost, the control law that minimizes the expected cost over all measurement-feedback laws is $\mathbf{u} = -\mathbf{K}\hat{\mathbf{x}}$. Here $\mathbf{K}$ is the deterministic LQR gain for $(\mathbf{A},\mathbf{B},\mathbf{Q},\mathbf{R})$ and $\hat{\mathbf{x}}$ is the Kalman estimate for $(\mathbf{A},\mathbf{C},\mathbf{G}\mathbf{W}\mathbf{G}^\top,\mathbf{V})$. And the closed-loop eigenvalues are those of $\mathbf{A}-\mathbf{B}\mathbf{K}$ together with those of $\mathbf{A}-\mathbf{L}\mathbf{C}$.
 
 Without Gaussian noise, the second claim survives. It is pure linear algebra on the block-triangular matrix and needs no assumption about the noise's distribution. A weaker version of the first also survives: among *linear* controllers, the Kalman filter is still the minimum-variance estimator and the combination is still optimal. What is lost is optimality over *all* controllers. For non-Gaussian noise the best estimate (the conditional mean) is generally a nonlinear function of the measurements, and a nonlinear estimator can do better.
 :::
@@ -217,7 +217,7 @@ Why does the filter's error covariance not depend on the control law?
 :::
 
 ::: answer
-Because the filter is told the control. Its equation $\dot{\hat{\mathbf{x}}} = \mathbf{A}\hat{\mathbf{x}} + \mathbf{B}\mathbf{u} + \mathbf{L}(\mathbf{y}-\mathbf{C}\hat{\mathbf{x}})$ uses the same $\mathbf{u}$ that was applied. Subtracting it from the true dynamics gives $\dot{\mathbf{e}} = (\mathbf{A}-\mathbf{L}\mathbf{C})\mathbf{e} + \mathbf{G}\mathbf{w} - \mathbf{L}\mathbf{v}$, in which $\mathbf{u}$ has cancelled completely. The error is driven only by the two noises. So $\boldsymbol{\Sigma}$ depends on $\mathbf{A}$, $\mathbf{C}$, $\mathbf{G}$, $\mathbf{W}$ and $\mathbf{V}$, and on nothing the controller does.
+Because the filter is told the control. Its equation $\dot{\hat{\mathbf{x}}} = \mathbf{A}\hat{\mathbf{x}} + \mathbf{B}\mathbf{u} + \mathbf{L}(\mathbf{y}-\mathbf{C}\hat{\mathbf{x}})$ uses the same $\mathbf{u}$ that was applied. Subtracting it from the true dynamics gives $\dot{\mathbf{e}} = (\mathbf{A}-\mathbf{L}\mathbf{C})\mathbf{e} + \mathbf{G}\mathbf{w} - \mathbf{L}\mathbf{v}$, in which $\mathbf{u}$ has canceled completely. The error is driven only by the two noises. So $\boldsymbol{\Sigma}$ depends on $\mathbf{A}$, $\mathbf{C}$, $\mathbf{G}$, $\mathbf{W}$ and $\mathbf{V}$, and on nothing the controller does.
 
 This is exactly the fact that makes separation work. It fails the moment the applied control differs from the commanded one. Actuator saturation is the common case, which is why a saturating LQG loop is not covered by the theorem.
 :::

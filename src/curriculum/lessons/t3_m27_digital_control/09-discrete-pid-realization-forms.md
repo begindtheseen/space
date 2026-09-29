@@ -349,7 +349,7 @@ It also does nothing about the structural objections, which usually decide the m
 The next lesson takes the direct form seriously for the job it suits: second-order filter sections, how to chain them, and which of the standard structures to write down when the arithmetic is finite.
 
 ::: context derivative-kick The kick you avoid
-The setpoint (grey) jumps at one instant; the measurement (blue) follows smoothly. Below, the derivative of the *error* (red) contains a spike at the jump — in discrete time, one enormous sample of size $\Delta r/T$ — while the derivative of the *measurement* (blue) is a smooth hump.
+The setpoint (gray) jumps at one instant; the measurement (blue) follows smoothly. Below, the derivative of the *error* (red) contains a spike at the jump — in discrete time, one enormous sample of size $\Delta r/T$ — while the derivative of the *measurement* (blue) is a smooth hump.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
@@ -426,7 +426,7 @@ Their point was that as $T \to 0$, a delta-domain model turns smoothly into the 
 :::
 
 ::: context two-bits-chart Where the direct form runs out of bits
-For the $18\,\mathrm{rad/s}$ notch: the red curve is $1 + a_1 + a_2$ against sample rate, on logarithmic scales. The solid grey line is one $\mathrm{Q}15$ step, $3.05\times10^{-5}$; the dashed line is $30$ steps, the warning's "move to delta form" threshold. The curve falls a factor of $100$ for each factor of $10$ in rate — two bits per doubling.
+For the $18\,\mathrm{rad/s}$ notch: the red curve is $1 + a_1 + a_2$ against sample rate, on logarithmic scales. The solid gray line is one $\mathrm{Q}15$ step, $3.05\times10^{-5}$; the dashed line is $30$ steps, the warning's "move to delta form" threshold. The curve falls a factor of $100$ for each factor of $10$ in rate — two bits per doubling.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 205" font-family="Inter, Arial, sans-serif">

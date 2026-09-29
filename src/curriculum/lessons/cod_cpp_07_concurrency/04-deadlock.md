@@ -84,7 +84,7 @@ The `std::atomic<int>` counter is a preview of lesson 6. For now, read `finished
 
 ### Reading the fingerprints
 
-In the field you get a hung process and a debugger. The skill is to recognise a deadlock from a set of thread **[[backtraces|backtrace-word]]** — the list of function calls each thread is in the middle of.
+In the field you get a hung process and a debugger. The skill is to recognize a deadlock from a set of thread **[[backtraces|backtrace-word]]** — the list of function calls each thread is in the middle of.
 
 Rebuild the same program with `-O1 -g` (so the debugger can see names and line numbers), run it under `gdb`, and when the watchdog aborts, ask for every thread's state. Trimmed to the lines that matter, this is the real output:
 
@@ -417,7 +417,7 @@ Thread 1 locks A, then tries B. Thread 2 locks B, then tries A. On failure, each
 :::
 
 ::: answer
-Livelock. If they run in step, both take their first lock, both fail on the other's, both release, both retry, forever: busy CPUs, no progress. There is no deadlock, since nobody sleeps while holding, but nothing gets done. Fix it with a short, randomised or thread-specific back-off before retrying, or replace the whole loop with `std::scoped_lock lock(A, B);`.
+Livelock. If they run in step, both take their first lock, both fail on the other's, both release, both retry, forever: busy CPUs, no progress. There is no deadlock, since nobody sleeps while holding, but nothing gets done. Fix it with a short, randomized or thread-specific back-off before retrying, or replace the whole loop with `std::scoped_lock lock(A, B);`.
 :::
 
 ## Summary

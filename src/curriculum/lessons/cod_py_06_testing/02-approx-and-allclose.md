@@ -334,7 +334,7 @@ E        DESIRED: array([6778137.,       0.,       0.])
 
 **Step 3: state tolerances with units.** Position and velocity have different units, so check them separately:
 
-```python
+```python fragment
     assert_allclose(pos1, pos0, rtol=1e-12, atol=1e-6)   # m
     assert_allclose(vel1, vel0, rtol=1e-12, atol=1e-9)   # m/s
 ```
@@ -345,7 +345,7 @@ This version passes. A micrometer of position and a nanometer per second of velo
 :::
 
 ::: key
-Use assert_allclose rather than assert_array_equal for floats. assert_array_equal requires bit-for-bit equality, which differs across BLAS builds, vectorisation and compilers. assert_allclose takes rtol and atol and prints the worst mismatch and its index when it fails.
+Use assert_allclose rather than assert_array_equal for floats. assert_array_equal requires bit-for-bit equality, which differs across BLAS builds, vectorization and compilers. assert_allclose takes rtol and atol and prints the worst mismatch and its index when it fails.
 :::
 
 ### assert_array_equal

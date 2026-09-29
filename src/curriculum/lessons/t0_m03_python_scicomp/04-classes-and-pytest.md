@@ -554,7 +554,7 @@ In the sandwich $q \otimes (0, \mathbf{v}) \otimes q^*$, the quaternion $q$ acts
 :::
 
 ::: context hamilton A formula carved into a bridge
-Quaternions were invented by the Irish mathematician William Rowan Hamilton in 1843. He had spent years trying to extend complex numbers to three dimensions and failing. Walking along the Royal Canal in Dublin, he realised he needed *four* numbers and three square roots of $-1$, called $i$, $j$ and $k$. He carved the rule $i^2 = j^2 = k^2 = ijk = -1$ into the stone of Brougham Bridge; a plaque marks the spot today. The Hamilton product in this lesson is that rule, written out for whole quaternions.
+Quaternions were invented by the Irish mathematician William Rowan Hamilton in 1843. He had spent years trying to extend complex numbers to three dimensions and failing. Walking along the Royal Canal in Dublin, he realized he needed *four* numbers and three square roots of $-1$, called $i$, $j$ and $k$. He carved the rule $i^2 = j^2 = k^2 = ijk = -1$ into the stone of Brougham Bridge; a plaque marks the spot today. The Hamilton product in this lesson is that rule, written out for whole quaternions.
 :::
 
 ::: context double-cover Two quaternions for every turn
@@ -588,7 +588,7 @@ An attitude estimator updates the quaternion many times a second from gyroscope 
 :::
 
 ::: context red-green-refactor The red–green–refactor loop
-TDD is a short loop you go around many times an hour, not a single plan. Each lap adds one small, tested behavior. The "refactor" step — reorganising code without changing what it does — is only safe because the tests from earlier laps will go red if you break something.
+TDD is a short loop you go around many times an hour, not a single plan. Each lap adds one small, tested behavior. The "refactor" step — reorganizing code without changing what it does — is only safe because the tests from earlier laps will go red if you break something.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">

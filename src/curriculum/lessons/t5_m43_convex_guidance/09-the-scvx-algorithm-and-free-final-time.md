@@ -100,7 +100,7 @@ With $\rho$ properly sourced, every piece is in place. One pass of SCvx:
 5. **Stop** when the virtual control is numerically zero at every node *and* the accepted step $\|\mathbf{x}-\bar{\mathbf{x}}\|$ is below a small tolerance. Otherwise go back to step 1 — with the new reference if the step was accepted, or with the same reference and a smaller $\Delta$ if it was rejected. The loop is [[not promised to arrive|scvx-guarantee]] in any fixed number of passes, so flight code also caps the count.
 
 ::: key The SCvx iteration
-Linearise the dynamics and non-convex constraints about the reference; solve the convex subproblem with a trust region and penalised virtual control; compute rho = actual/predicted reduction; accept or reject and resize; repeat until the virtual control and the step are both negligible.
+Linearize the dynamics and non-convex constraints about the reference; solve the convex subproblem with a trust region and penalized virtual control; compute rho = actual/predicted reduction; accept or reject and resize; repeat until the virtual control and the step are both negligible.
 :::
 
 Two details make this work in practice. The first reference is often crude — a **[[straight-line initial guess|straight-line-guess]]** from the start state to the landing state, with the vehicle upright and hovering thrust throughout. It breaks the dynamics badly, which is fine: the virtual control absorbs the mismatch and the penalty squeezes it out over the passes. And on a rejected step nothing is relinearized; the model around the old reference is still valid, so only the subproblem is re-solved with a smaller radius.
@@ -122,11 +122,11 @@ $$
 In words: in the stretched clock the state changes $s$ times faster per unit of $\tau$, because each unit of $\tau$ holds $s$ seconds of real flight.
 
 ::: key Free final time by time dilation
-Normalise time to $\tau \in [0,1]$ and introduce the dilation factor $s = t_f$ as a decision variable, so
+Normalize time to $\tau \in [0,1]$ and introduce the dilation factor $s = t_f$ as a decision variable, so
 $$
 \frac{d\mathbf{x}}{d\tau} = s\,f(\mathbf{x},\mathbf{u}).
 $$
-The nonlinearity in $s$ is then absorbed by the same successive linearisation as everything else.
+The nonlinearity in $s$ is then absorbed by the same successive linearization as everything else.
 :::
 
 Why not do this in the 3-DoF convex problem? Because it does not remove the difficulty. The flight-time lesson's point stands: the discretized matrices depend on $t_f$, and normalizing time only moves $t_f$ into the dynamics as a multiplier. The product $s\,f(\mathbf{x},\mathbf{u})$ is still one unknown times a function of others — not convex. For a one-shot convex solve that would break the certificate, so there the right tool was a search over $t_f$ outside a certified inner SOCP. SCvx's inner solves protect no such global guarantee, and it linearizes curved things anyway. So it can fold $s$ straight in.
@@ -202,7 +202,7 @@ In the dilation expansion, the coefficient of $(s-\bar s)$ is $f(\bar{\mathbf{x}
 :::
 
 ::: answer
-$f(\bar{\mathbf{x}},\bar{\mathbf{u}})\approx\mathbf{0}$ means the reference is nearly standing still at that moment: velocity near zero ($\dot{\mathbf{r}} = \mathbf{v}\approx\mathbf{0}$) and thrust nearly cancelling gravity ($\dot{\mathbf{v}} = \mathbf{u}+\mathbf{g}\approx\mathbf{0}$) — an instant of hover. At that node the linearized subproblem sees almost no effect of stretching time, so changing $s$ barely changes the predicted trajectory there. Whatever influence $s$ has must come through the nodes where the vehicle is actively moving. The dilation column's usefulness varies node to node, tied to how dynamically busy the reference is.
+$f(\bar{\mathbf{x}},\bar{\mathbf{u}})\approx\mathbf{0}$ means the reference is nearly standing still at that moment: velocity near zero ($\dot{\mathbf{r}} = \mathbf{v}\approx\mathbf{0}$) and thrust nearly canceling gravity ($\dot{\mathbf{v}} = \mathbf{u}+\mathbf{g}\approx\mathbf{0}$) — an instant of hover. At that node the linearized subproblem sees almost no effect of stretching time, so changing $s$ barely changes the predicted trajectory there. Whatever influence $s$ has must come through the nodes where the vehicle is actively moving. The dilation column's usefulness varies node to node, tied to how dynamically busy the reference is.
 :::
 
 ::: check

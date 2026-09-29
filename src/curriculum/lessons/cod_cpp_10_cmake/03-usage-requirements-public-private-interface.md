@@ -315,7 +315,7 @@ target_compile_options(gnc PUBLIC -Wall -Wextra -Werror)   # meant to be PRIVATE
 
 `-Werror` turns every warning into an error. Another team adds a small tool that links `gnc`:
 
-```cpp
+```cpp fragment
 #include <gnc/guidance.hpp>
 #include <cstdio>
 
@@ -508,7 +508,7 @@ Flight software uses definitions to pick hardware variants and to switch debug f
 ::: context compile-commands The file that records every command
 `compile_commands.json` is a list with one entry per source file: the folder, the file and the exact compiler command. CMake writes it into the build folder when `CMAKE_EXPORT_COMPILE_COMMANDS` is on, for the Makefile and Ninja generators.
 
-It is not only for debugging flags. Editor tools such as clangd, and checkers such as clang-tidy, read it so they analyse each file with the same include folders and macros the real build uses. Many teams turn it on in every build.
+It is not only for debugging flags. Editor tools such as clangd, and checkers such as clang-tidy, read it so they analyze each file with the same include folders and macros the real build uses. Many teams turn it on in every build.
 :::
 
 ::: context gnu-extensions Why gnu++20 and not c++20

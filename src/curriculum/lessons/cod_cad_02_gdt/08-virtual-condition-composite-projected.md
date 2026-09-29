@@ -234,7 +234,7 @@ At MMC the worst-case boundary — the virtual condition — is the same for eve
 Next lesson turns from holes to surfaces: profile of a line and of a surface, the control that shapes curved aerostructures, and runout, which checks a shaft by spinning it.
 
 ::: context vc-picture The space every hole position shares
-The grey circles are the same hole at MMC, drifted to the edges of its zone (drift exaggerated). The blue circle is what every one of them leaves clear: the virtual condition.
+The gray circles are the same hole at MMC, drifted to the edges of its zone (drift exaggerated). The blue circle is what every one of them leaves clear: the virtual condition.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
@@ -290,7 +290,7 @@ The four holes from the example, with the zones and misses drawn hugely enlarged
 </svg>
 ```
 
-Grey lines join the true positions: the basic spacing both tiers keep.
+Gray lines join the true positions: the basic spacing both tiers keep.
 :::
 
 ::: context two-single-segment Composite versus two stacked frames

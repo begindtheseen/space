@@ -189,7 +189,7 @@ Why is down-weighting the wrong remedy for a station with a small, consistent ra
 :::
 
 ::: answer
-Weighting only controls how much a measurement's *random* scatter influences the fit relative to other measurements. It does nothing to remove a *systematic* offset: the biased data still pulls the fit in the same direction, just less hard. A smaller weight means less influence, not a corrected bias. A consistent bias needs to be solved for, considered or otherwise modelled directly — the tools of the batch and consider-covariance lessons — because weighting addresses precision, not accuracy.
+Weighting only controls how much a measurement's *random* scatter influences the fit relative to other measurements. It does nothing to remove a *systematic* offset: the biased data still pulls the fit in the same direction, just less hard. A smaller weight means less influence, not a corrected bias. A consistent bias needs to be solved for, considered or otherwise modeled directly — the tools of the batch and consider-covariance lessons — because weighting addresses precision, not accuracy.
 :::
 
 ::: check

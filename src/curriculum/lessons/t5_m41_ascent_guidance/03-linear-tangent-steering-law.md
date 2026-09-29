@@ -6,7 +6,7 @@ covers:
   - "Optimal exoatmospheric steering: the linear tangent law from Pontryagin and the calculus of variations"
 ---
 
-Drive into the mountains and you will see yellow signs that say "8% grade". That number is the road's steepness: it climbs 8 metres for every 100 metres it goes forward. Mathematicians call rise-over-run the **[[tangent|tangent-grade]]** of the angle, written $\tan$. A flat road has tangent $0$. A road at $45^\circ$ has tangent $1$.
+Drive into the mountains and you will see yellow signs that say "8% grade". That number is the road's steepness: it climbs 8 meters for every 100 meters it goes forward. Mathematicians call rise-over-run the **[[tangent|tangent-grade]]** of the angle, written $\tan$. A flat road has tangent $0$. A road at $45^\circ$ has tangent $1$.
 
 Now picture a road whose grade drops by the same amount every minute you drive: 60%, then 55%, then 50%, then 45%, all the way down. That odd road is the answer to this lesson's question. Above the atmosphere, the best way to point a rocket's thrust is to let the *tangent* of its pitch angle change by the same amount every second. That is the **linear tangent steering law**:
 
@@ -113,7 +113,7 @@ $$
 In words: **the primer vector's components are [[affine|affine-line]] in time** — straight lines, each with its own starting value, and slopes set by the constant position costates. In compact vector form, $\dot{\boldsymbol\lambda}_v = -\boldsymbol\lambda_r$ and $\dot{\boldsymbol\lambda}_r = 0$, where $\boldsymbol\lambda_r = (\lambda_x, \lambda_z)$ is the position costate.
 
 ::: note Why the price of velocity falls in a straight line
-Use the price-tag picture. Nudge $v_x$ up by a tiny amount $\delta$ at time $t$. Nothing else changes, because nothing depends on position. But for the rest of the burn you travel $\delta$ metres farther every second, so at the end $x$ is larger by $\delta\,(t_f - t)$. Its effect on the cost is its price at the end, plus $\lambda_x$ times that extra distance:
+Use the price-tag picture. Nudge $v_x$ up by a tiny amount $\delta$ at time $t$. Nothing else changes, because nothing depends on position. But for the rest of the burn you travel $\delta$ meters farther every second, so at the end $x$ is larger by $\delta\,(t_f - t)$. Its effect on the cost is its price at the end, plus $\lambda_x$ times that extra distance:
 
 $$
 \lambda_{v_x}(t) = \lambda_{v_x}(t_f) + \lambda_x\,(t_f - t) .
@@ -324,7 +324,7 @@ Here rise is 80 and run is 240, so $\tan\beta = 1/3$ and $\beta \approx 18.4^\ci
 :::
 
 ::: context costate-price Costates as price tags
-Economists use "shadow prices" in exactly this sense: how much better or worse the final result gets per extra unit of some resource you hold right now. A costate is the shadow price of a state. If nudging your altitude up by a metre now would cut the propellant you need by 0.01 kg, altitude's price tag is about $-0.01$ kg per metre. The costate equations say how these prices change as time runs on, and the optimal control at each instant is the one that is best when judged at these prices.
+Economists use "shadow prices" in exactly this sense: how much better or worse the final result gets per extra unit of some resource you hold right now. A costate is the shadow price of a state. If nudging your altitude up by a meter now would cut the propellant you need by 0.01 kg, altitude's price tag is about $-0.01$ kg per meter. The costate equations say how these prices change as time runs on, and the optimal control at each instant is the one that is best when judged at these prices.
 :::
 
 ::: context hamiltonian-name Where the name comes from

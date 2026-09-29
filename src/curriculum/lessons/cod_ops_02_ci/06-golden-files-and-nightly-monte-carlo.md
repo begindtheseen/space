@@ -92,7 +92,7 @@ The tempting test is to check that every number is exactly the same. It fails fo
 Each difference is around $10^{-16}$ of the value, one rounding step for a double. None changes the physics. An exact comparison turns each into a red build, and a team that sees red builds for no reason soon stops looking.
 
 ::: key Why can a simulation regression test not use exact equality?
-Floating-point results differ across compilers, libm versions, vectorisation and thread counts. Compare with an explicit relative and absolute tolerance chosen from the physics, and record the tolerance as part of the test contract.
+Floating-point results differ across compilers, libm versions, vectorization and thread counts. Compare with an explicit relative and absolute tolerance chosen from the physics, and record the tolerance as part of the test contract.
 :::
 
 ::: warning Two "fixes" that make it worse

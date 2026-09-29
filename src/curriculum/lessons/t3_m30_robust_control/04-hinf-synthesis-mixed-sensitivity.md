@@ -58,7 +58,7 @@ $$\mathbf{S} = (\mathbf{I} + \mathbf{L})^{-1}, \qquad \mathbf{K}\mathbf{S}, \qqu
 Multiply each one by its own weight and stack them in a column. That column is the whole specification:
 
 ::: key The mixed-sensitivity H-infinity problem
-Minimise, over all stabilising $\mathbf{K}$, the H-infinity norm of the stacked $[\mathbf{W}_1\mathbf{S};\ \mathbf{W}_2\mathbf{K}\mathbf{S};\ \mathbf{W}_3\mathbf{T}]$:
+Minimize, over all stabilizing $\mathbf{K}$, the H-infinity norm of the stacked $[\mathbf{W}_1\mathbf{S};\ \mathbf{W}_2\mathbf{K}\mathbf{S};\ \mathbf{W}_3\mathbf{T}]$:
 
 $$\gamma = \left\lVert\begin{pmatrix}\mathbf{W}_1\mathbf{S} \\ \mathbf{W}_2\mathbf{K}\mathbf{S} \\ \mathbf{W}_3\mathbf{T}\end{pmatrix}\right\rVert_\infty .$$
 
@@ -115,7 +115,7 @@ $$\dot{x} = \mathbf{A}x + \mathbf{B}_1 w + \mathbf{B}_2 u, \qquad z = \mathbf{C}
 
 The subscript 1 goes with $w$ and $z$; the subscript 2 goes with $u$ and $v$. The DGKF theorem rests on four standing assumptions. Each is a real requirement, not bookkeeping:
 
-1. $(\mathbf{A}, \mathbf{B}_2)$ is stabilisable and $(\mathbf{C}_2, \mathbf{A})$ detectable. Otherwise no stabilizing controller exists at all.
+1. $(\mathbf{A}, \mathbf{B}_2)$ is stabilizable and $(\mathbf{C}_2, \mathbf{A})$ detectable. Otherwise no stabilizing controller exists at all.
 2. $\mathbf{D}_{12}$ has full column rank and $\mathbf{D}_{21}$ full row rank. In words: every control input is penalized in $z$, and every measurement carries noise. This is what $\mathbf{W}_2$ and the noise channel are for.
 3. $\begin{pmatrix}\mathbf{A} - j\omega\mathbf{I} & \mathbf{B}_2 \\ \mathbf{C}_1 & \mathbf{D}_{12}\end{pmatrix}$ has full column rank for every $\omega$: no zeros on the imaginary axis in the control channel.
 4. The mirror-image condition on $\begin{pmatrix}\mathbf{A} - j\omega\mathbf{I} & \mathbf{B}_1 \\ \mathbf{C}_2 & \mathbf{D}_{21}\end{pmatrix}$: no imaginary-axis zeros in the measurement channel.
@@ -123,10 +123,10 @@ The subscript 1 goes with $w$ and $z$; the subscript 2 goes with $u$ and $v$. Th
 With the customary tidy-ups $\mathbf{D}_{11} = \mathbf{0}$, $\mathbf{D}_{22} = \mathbf{0}$, $\mathbf{D}_{12}^\mathsf{T}[\mathbf{C}_1\ \ \mathbf{D}_{12}] = [\mathbf{0}\ \ \mathbf{I}]$ and $[\mathbf{B}_1;\ \mathbf{D}_{21}]\mathbf{D}_{21}^\mathsf{T} = [\mathbf{0};\ \mathbf{I}]$, the answer is a yes-or-no test for any chosen $\gamma$:
 
 ::: key The DGKF conditions
-A stabilising $\mathbf{K}$ achieving $\lVert\mathcal{F}_l(\mathbf{P},\mathbf{K})\rVert_\infty < \gamma$ exists if and only if all three hold:
+A stabilizing $\mathbf{K}$ achieving $\lVert\mathcal{F}_l(\mathbf{P},\mathbf{K})\rVert_\infty < \gamma$ exists if and only if all three hold:
 
-1. the [[Riccati equation|riccati-name]] $\mathbf{A}^\mathsf{T}\mathbf{X} + \mathbf{X}\mathbf{A} + \mathbf{C}_1^\mathsf{T}\mathbf{C}_1 + \mathbf{X}(\gamma^{-2}\mathbf{B}_1\mathbf{B}_1^\mathsf{T} - \mathbf{B}_2\mathbf{B}_2^\mathsf{T})\mathbf{X} = \mathbf{0}$ has a stabilising solution $\mathbf{X}_\infty \ge 0$;
-2. the dual equation $\mathbf{A}\mathbf{Y} + \mathbf{Y}\mathbf{A}^\mathsf{T} + \mathbf{B}_1\mathbf{B}_1^\mathsf{T} + \mathbf{Y}(\gamma^{-2}\mathbf{C}_1^\mathsf{T}\mathbf{C}_1 - \mathbf{C}_2^\mathsf{T}\mathbf{C}_2)\mathbf{Y} = \mathbf{0}$ has a stabilising solution $\mathbf{Y}_\infty \ge 0$;
+1. the [[Riccati equation|riccati-name]] $\mathbf{A}^\mathsf{T}\mathbf{X} + \mathbf{X}\mathbf{A} + \mathbf{C}_1^\mathsf{T}\mathbf{C}_1 + \mathbf{X}(\gamma^{-2}\mathbf{B}_1\mathbf{B}_1^\mathsf{T} - \mathbf{B}_2\mathbf{B}_2^\mathsf{T})\mathbf{X} = \mathbf{0}$ has a stabilizing solution $\mathbf{X}_\infty \ge 0$;
+2. the dual equation $\mathbf{A}\mathbf{Y} + \mathbf{Y}\mathbf{A}^\mathsf{T} + \mathbf{B}_1\mathbf{B}_1^\mathsf{T} + \mathbf{Y}(\gamma^{-2}\mathbf{C}_1^\mathsf{T}\mathbf{C}_1 - \mathbf{C}_2^\mathsf{T}\mathbf{C}_2)\mathbf{Y} = \mathbf{0}$ has a stabilizing solution $\mathbf{Y}_\infty \ge 0$;
 3. the coupling condition $\rho(\mathbf{X}_\infty\mathbf{Y}_\infty) < \gamma^2$, where $\rho$ is the spectral radius (the largest eigenvalue magnitude).
 :::
 
@@ -150,7 +150,7 @@ The conditions answer "yes" or "no" for one fixed $\gamma$. To find the smallest
 The resulting controller has the order of the generalized plant: the plant order plus the order of all the weights. A sixth-order flexible model with three first-order weights gives a ninth-order controller. So a [[model-order-reduction step|order-reduction]] before flight software is routine.
 
 ::: warning Mixed sensitivity cancels stable plant dynamics
-The S/KS/T problem drives $\lvert S\rvert$ small at the plant's stable poles, and the algebra does it by putting controller zeros right on top of them. For a well-damped pole that is harmless. For a lightly damped [[bending mode|bending-mode]] it is a disaster. The nominal loop looks clean. But the true mode sits at a slightly different frequency, so the cancellation is not exact, and a huge internal signal builds up that the stack never shows you. The standard defences: include the mode in the uncertainty description so the cancellation is penalized; use a weight that keeps $\lvert S\rvert$ from going small in that band; or use a loop-shaping formulation with coprime-factor uncertainty, which does not cancel.
+The S/KS/T problem drives $\lvert S\rvert$ small at the plant's stable poles, and the algebra does it by putting controller zeros right on top of them. For a well-damped pole that is harmless. For a lightly damped [[bending mode|bending-mode]] it is a disaster. The nominal loop looks clean. But the true mode sits at a slightly different frequency, so the cancellation is not exact, and a huge internal signal builds up that the stack never shows you. The standard defenses: include the mode in the uncertainty description so the cancellation is penalized; use a weight that keeps $\lvert S\rvert$ from going small in that band; or use a loop-shaping formulation with coprime-factor uncertainty, which does not cancel.
 :::
 
 ::: example Reading gamma on a spacecraft axis
@@ -276,7 +276,7 @@ Tightening the allowed sensitivity peak from $2$ to $1.5$ has cut the achievable
 | Specification reading | $\gamma \le 1$ gives $\bar\sigma(\mathbf{S}) \le 1/\lvert W_1\rvert$, $\bar\sigma(\mathbf{K}\mathbf{S}) \le 1/\lvert W_2\rvert$, $\bar\sigma(\mathbf{T}) \le 1/\lvert W_3\rvert$ |
 | Reading $\gamma$ | $\gamma \le 1$: all met; $\gamma = 2$: a factor of two short somewhere — find the channel that peaks |
 | Performance weight | $W_1 = (s/M + \omega_B)/(s + \omega_BA)$: $\lvert S\rvert \le A$ at DC, $\le M$ at high frequency, crossing at $\omega_B/\sqrt{1 - 1/M^2}$ |
-| DGKF assumptions | stabilisable and detectable; $\mathbf{D}_{12}$, $\mathbf{D}_{21}$ full rank; no imaginary-axis zeros in either channel |
+| DGKF assumptions | stabilizable and detectable; $\mathbf{D}_{12}$, $\mathbf{D}_{21}$ full rank; no imaginary-axis zeros in either channel |
 | DGKF conditions | $\mathbf{X}_\infty \ge 0$, $\mathbf{Y}_\infty \ge 0$ from two Riccati equations, plus $\rho(\mathbf{X}_\infty\mathbf{Y}_\infty) < \gamma^2$ |
 | Central controller | observer plus state feedback, $\mathbf{F}_\infty = -\mathbf{B}_2^\mathsf{T}\mathbf{X}_\infty$, $\mathbf{L}_\infty = -\mathbf{Y}_\infty\mathbf{C}_2^\mathsf{T}$, injection $-\mathbf{Z}_\infty\mathbf{L}_\infty$; becomes LQG as $\gamma\to\infty$ |
 | Gamma iteration | bisect on $\gamma$; controller order = plant order + weight order |

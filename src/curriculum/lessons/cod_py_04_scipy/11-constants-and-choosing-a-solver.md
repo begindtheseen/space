@@ -463,7 +463,7 @@ Near a root, $f(x)$ crosses zero at an angle, so a small step in $x$ makes a cle
 </svg>
 ```
 
-The grey band is the "too small to measure" zone. The red bar, where $f^2$ hides inside it, is much wider than the blue one.
+The gray band is the "too small to measure" zone. The red bar, where $f^2$ hides inside it, is much wider than the blue one.
 :::
 
 ::: context next-module-plots Where these results go next

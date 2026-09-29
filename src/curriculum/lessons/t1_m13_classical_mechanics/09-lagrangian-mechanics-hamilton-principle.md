@@ -7,19 +7,19 @@ covers:
   - Hamilton principle
 ---
 
-Lesson 8 ended with Lagrange's equations, $\frac{d}{dt}(\partial T/\partial\dot{q}_j) - \partial T/\partial q_j = Q_j$: one equation per degree of freedom, no constraint forces, everything built from the kinetic energy $T$ and the generalised forces $Q_j$. This lesson finishes the job.
+Lesson 8 ended with Lagrange's equations, $\frac{d}{dt}(\partial T/\partial\dot{q}_j) - \partial T/\partial q_j = Q_j$: one equation per degree of freedom, no constraint forces, everything built from the kinetic energy $T$ and the generalized forces $Q_j$. This lesson finishes the job.
 
 First, it folds the conservative forces into one function, the **Lagrangian** $L = T - V$. That turns Lagrange's equations into the **Euler-Lagrange equation** — the form every dynamics book and this module's flashcards use. Deriving the motion of a gimballed, sloshing, flexing vehicle then becomes a matter of differentiating. Second, it shows the same equation from a completely different starting point: **Hamilton's principle**. Think of all the routes a system *could* take between two positions, like all the routes on a map between home and school. The real one is special: it makes a certain total along the route "stationary".
 
 Why does a GNC engineer need a second derivation? Three reasons.
 
-- **Any coordinates work.** Hamilton's principle makes the equations take the same form in any generalised coordinates, which Newton's do not. That is what makes the method right for multibody dynamics.
+- **Any coordinates work.** Hamilton's principle makes the equations take the same form in any generalized coordinates, which Newton's do not. That is what makes the method right for multibody dynamics.
 - **Conservation laws come free.** A coordinate missing from $L$ has a conserved momentum. That is where an orbit's angular momentum and a system's energy come from, with no extra work.
 - **It leads to optimal control.** The maths that finds the fuel-best path for a landing burn is Hamilton's principle with a cost in place of the Lagrangian.
 
 ## The Lagrangian and the Euler-Lagrange equation
 
-Split lesson 8's generalised force into two parts. One comes from a potential energy $V(q, t)$ written in the generalised coordinates. The rest is non-conservative:
+Split lesson 8's generalized force into two parts. One comes from a potential energy $V(q, t)$ written in the generalized coordinates. The rest is non-conservative:
 
 $$
 Q_j^{\mathrm{total}} = -\frac{\partial V}{\partial q_j} + Q_j .
@@ -48,14 +48,14 @@ When every applied force is conservative, the right side is zero.
 Notice the sign: $L$ is kinetic *minus* potential, not the total energy. Check it on the simplest case. A particle on a line with potential $V(x)$ has $L = \tfrac{1}{2} m\dot{x}^2 - V(x)$. So $\partial L/\partial\dot{x} = m\dot{x}$ and $\partial L/\partial x = -V'(x)$ (the prime means $dV/dx$). The Euler-Lagrange equation reads $m\ddot{x} + V'(x) = 0$ — Newton's second law with force $F = -dV/dx$. With a plus sign in $L$, the force would come out backward.
 
 ::: key Euler-Lagrange equation
-The Euler-Lagrange equation: $\frac{d}{dt}\left(\frac{\partial L}{\partial\dot{q}_i}\right) - \frac{\partial L}{\partial q_i} = Q_i$, with $L = T - V$ and $Q_i$ the generalised non-conservative force. One equation per generalised coordinate; constraint forces never appear.
+The Euler-Lagrange equation: $\frac{d}{dt}\left(\frac{\partial L}{\partial\dot{q}_i}\right) - \frac{\partial L}{\partial q_i} = Q_i$, with $L = T - V$ and $Q_i$ the generalized non-conservative force. One equation per generalized coordinate; constraint forces never appear.
 :::
 
 ### The recipe
 
 Deriving equations of motion is now a fixed procedure, like following a recipe card.
 
-1. Count the degrees of freedom. Choose generalised coordinates $q_j$ that obey the constraints by construction (lesson 8).
+1. Count the degrees of freedom. Choose generalized coordinates $q_j$ that obey the constraints by construction (lesson 8).
 2. Write every mass's position in terms of the $q$'s and $t$. Differentiate to get velocities, and form $T$.
 3. Write the potential energy $V$ of every conservative force in the $q$'s: gravity, springs, gravitational $-\mu m/r$.
 4. Form $L = T - V$.
@@ -69,7 +69,7 @@ Take lesson 8's stage: a body of mass $M$ moving along its thrust axis $x$, with
 
 **The Lagrangian.** From lesson 8, $T = \tfrac{1}{2}(M + m)\dot{x}^2 + m\ell\sin\theta\,\dot{x}\dot{\theta} + \tfrac{1}{2} m\ell^2\dot{\theta}^2$. There are no conservative forces, so $V = 0$ and $L = T$.
 
-**Generalised forces.** Thrust is non-conservative. It acts on the body at a point that moves only with $x$. So $Q_x = F_T$ and $Q_\theta = 0$.
+**Generalized forces.** Thrust is non-conservative. It acts on the body at a point that moves only with $x$. So $Q_x = F_T$ and $Q_\theta = 0$.
 
 **The $x$ equation.** $\partial L/\partial\dot{x} = (M + m)\dot{x} + m\ell\sin\theta\,\dot{\theta}$ and $\partial L/\partial x = 0$. Differentiating the first in time (product rule on $\sin\theta\,\dot{\theta}$):
 
@@ -90,9 +90,9 @@ $$
 **What the slosh does to the body.** The $x$ equation gives $\ddot{x} = [F_T - m\ell(\sin\theta\,\ddot{\theta} + \cos\theta\,\dot{\theta}^2)]/(M + m)$: the steady $a_0$ plus a wobble. Take a swing of amplitude $\theta_0 = 5° = 0.0873\,\mathrm{rad}$, $\theta = \theta_0\cos\omega t$. Both terms in the bracket are proportional to $\theta_0^2$. Together they make an axial force of size $m\ell\omega^2\theta_0^2 = 20{,}000 \times 1.5 \times 9.07 \times 0.0873^2 \approx 2.1\,\mathrm{kN}$, wobbling at *twice* the slosh frequency. Divided by $420{,}000\,\mathrm{kg}$, that is $0.0049\,\mathrm{m/s^2}$, about $0.04\%$ of $a_0$ — tiny. The bigger effect is sideways: the bob pulls on its pivot across the axis with about $m\ell\omega^2\theta_0 \approx 23.7\,\mathrm{kN}$ at the slosh frequency itself. This model lets the body move only along its axis, so that pull does not show here. A model that lets the body slide sideways and pitch picks it up, and it is exactly the kind of signal that shows up in the IMU and that the attitude controller must not chase. Two lines of differentiation produced both equations; the pendulum tension never appeared.
 :::
 
-## Generalised momenta and conservation laws
+## Generalized momenta and conservation laws
 
-The quantity $p_j = \partial L/\partial\dot{q}_j$ is the **generalised momentum** that goes with $q_j$. For an ordinary position coordinate it is the ordinary momentum $m\dot{x}$. For an angle it is an angular momentum. In these terms the Euler-Lagrange equation reads
+The quantity $p_j = \partial L/\partial\dot{q}_j$ is the **generalized momentum** that goes with $q_j$. For an ordinary position coordinate it is the ordinary momentum $m\dot{x}$. For an angle it is an angular momentum. In these terms the Euler-Lagrange equation reads
 
 $$
 \dot{p}_j = \frac{\partial L}{\partial q_j} + Q_j .
@@ -108,10 +108,10 @@ $$
 h = \sum_j \dot{q}_j\,\frac{\partial L}{\partial\dot{q}_j} - L .
 $$
 
-If $L$ has no explicit time in it and there are no non-conservative forces, $h$ is constant. If also $T$ is purely quadratic in the generalised velocities (scleronomic constraints), $h$ works out to $T + V$: conservation of mechanical energy, lesson 4's result, now read off from the form of $L$. With $Q_j \neq 0$, $h$ changes at the rate $\sum_j Q_j\dot{q}_j$ — the power of the non-conservative forces.
+If $L$ has no explicit time in it and there are no non-conservative forces, $h$ is constant. If also $T$ is purely quadratic in the generalized velocities (scleronomic constraints), $h$ works out to $T + V$: conservation of mechanical energy, lesson 4's result, now read off from the form of $L$. With $Q_j \neq 0$, $h$ changes at the rate $\sum_j Q_j\dot{q}_j$ — the power of the non-conservative forces.
 
 ::: example A satellite's orbit from a Lagrangian
-A satellite of mass $m$ moves in a plane under Earth's gravity. Use polar coordinates $(r, \theta)$ — distance from Earth's centre and angle around it. Derive the equations of motion and the conserved quantities.
+A satellite of mass $m$ moves in a plane under Earth's gravity. Use polar coordinates $(r, \theta)$ — distance from Earth's center and angle around it. Derive the equations of motion and the conserved quantities.
 
 **Kinetic energy.** Position is $\mathbf{r} = r(\cos\theta, \sin\theta)$. The velocity has a part $\dot{r}$ outward and a part $r\dot{\theta}$ sideways, at right angles. So $T = \tfrac{1}{2} m(\dot{r}^2 + r^2\dot{\theta}^2)$.
 
@@ -121,13 +121,13 @@ $$
 L = \tfrac{1}{2} m\left(\dot{r}^2 + r^2\dot{\theta}^2\right) + \frac{\mu m}{r} .
 $$
 
-**The angle.** $\theta$ does not appear in $L$. Gravity pulls toward the centre, so the problem looks the same from every direction. So $\theta$ is cyclic and its momentum is conserved:
+**The angle.** $\theta$ does not appear in $L$. Gravity pulls toward the center, so the problem looks the same from every direction. So $\theta$ is cyclic and its momentum is conserved:
 
 $$
 p_\theta = \frac{\partial L}{\partial\dot{\theta}} = m r^2\dot{\theta} = \text{const}.
 $$
 
-That is the particle's angular momentum about Earth's centre, $m r v_\perp$ — obtained without computing a single torque.
+That is the particle's angular momentum about Earth's center, $m r v_\perp$ — obtained without computing a single torque.
 
 **The radius.** $\partial L/\partial\dot{r} = m\dot{r}$ and $\partial L/\partial r = m r\dot{\theta}^2 - \mu m/r^2$. So
 
@@ -154,7 +154,7 @@ The square brackets in $S[q]$ are a reminder that $S$ depends on the *whole path
 
 **Hamilton's principle** says: the path the system actually follows makes $S$ **[[stationary|stationary-picture]]**. That means a small change to the path, with both ends kept fixed, changes $S$ only by a second-order amount. In symbols, $\delta S = 0$.
 
-To see what this implies, let $q(t)$ be the true path. Build a neighbouring path $q(t) + \epsilon\,\eta(t)$. Here $\eta(t)$ ("eta") is any smooth wiggle with $\eta(t_1) = \eta(t_2) = 0$, so the ends stay put, and $\epsilon$ ("epsilon") is a small number setting how big the wiggle is. Now the action is a function of $\epsilon$, and stationary means $dS/d\epsilon = 0$ at $\epsilon = 0$.
+To see what this implies, let $q(t)$ be the true path. Build a neighboring path $q(t) + \epsilon\,\eta(t)$. Here $\eta(t)$ ("eta") is any smooth wiggle with $\eta(t_1) = \eta(t_2) = 0$, so the ends stay put, and $\epsilon$ ("epsilon") is a small number setting how big the wiggle is. Now the action is a function of $\epsilon$, and stationary means $dS/d\epsilon = 0$ at $\epsilon = 0$.
 
 ::: note Why stationary action gives the Euler-Lagrange equation
 Use one coordinate for clarity; several work the same way, term by term. Differentiate under the integral with the chain rule — changing $\epsilon$ changes $q$ by $\eta$ and $\dot{q}$ by $\dot{\eta}$:
@@ -190,7 +190,7 @@ Hamilton's principle: among all paths $q(t)$ between fixed configurations at fix
 
 Three remarks on what the principle does and does not say.
 
-- **Stationary, not minimum.** For short enough time spans the true path does minimise the action. Over longer ones it can be a **saddle** — lowest in some directions of wiggle, highest in others. "Least action" is an old misnomer.
+- **Stationary, not minimum.** For short enough time spans the true path does minimize the action. Over longer ones it can be a **saddle** — lowest in some directions of wiggle, highest in others. "Least action" is an old misnomer.
 - **Whole path versus instant.** The principle talks about a whole path, given both ends. Newton's law talks about each instant, given the start position and velocity. That the two agree is remarkable; the derivation above is the proof.
 - **Why $T - V$.** A path that rushes piles up kinetic energy. One that loiters where the potential is high piles up potential energy. The real path balances the two, to first order.
 
@@ -231,12 +231,12 @@ Use **Newton-Euler** — force and moment balances on each body — when:
 
 Attitude dynamics of a rigid spacecraft, in the next module, is Newton-Euler territory: one body, outside torques, and Euler's equations follow directly.
 
-Use **Lagrange** when holonomic constraints dominate — multibody chains, gimballed engines and antennas, hinged or flexible appendages, slosh pendulums, robot arms. Generalised coordinates remove the constraint forces you never wanted. The equations come out in a form that works in any coordinates, has a tidy structure ($\mathbf{M}(\mathbf{q})\ddot{\mathbf{q}} + \ldots$), and is easy to check for energy conservation. Use it too when you want conservation laws for free, or when you are heading toward optimal control.
+Use **Lagrange** when holonomic constraints dominate — multibody chains, gimballed engines and antennas, hinged or flexible appendages, slosh pendulums, robot arms. Generalized coordinates remove the constraint forces you never wanted. The equations come out in a form that works in any coordinates, has a tidy structure ($\mathbf{M}(\mathbf{q})\ddot{\mathbf{q}} + \ldots$), and is easy to check for energy conservation. Use it too when you want conservation laws for free, or when you are heading toward optimal control.
 
 The quickest test: count the constraint forces you would have to introduce and then eliminate. Zero or one? Newton-Euler is quicker. A handful or more? Lagrange is quicker *and* far less likely to hide a sign error. The slosh example — two lines of differentiation against a page of free-body diagrams with an unknown tension in each — is the typical ratio.
 
 ::: key When Lagrange wins
-A Lagrangian formulation is decisively better than Newton-Euler when holonomic constraints dominate — multibody chains, gimbals, flexible appendages, slosh pendulums — because generalised coordinates eliminate the constraint forces you never wanted to compute. Newton-Euler is the natural choice for a single rigid body under external forces and torques, or when the constraint forces themselves are needed.
+A Lagrangian formulation is decisively better than Newton-Euler when holonomic constraints dominate — multibody chains, gimbals, flexible appendages, slosh pendulums — because generalized coordinates eliminate the constraint forces you never wanted to compute. Newton-Euler is the natural choice for a single rigid body under external forces and torques, or when the constraint forces themselves are needed.
 :::
 
 ::: warning Four Lagrangian slips
@@ -252,7 +252,7 @@ A Lagrangian formulation is decisively better than Newton-Euler when holonomic c
 ## Check yourself
 
 ::: check
-Two masses, $m_1 = 3.0\,\mathrm{kg}$ and $m_2 = 2.0\,\mathrm{kg}$, hang from a light string over a frictionless, massless pulley. Using one generalised coordinate $x$ (how far $m_1$ has moved down), write $L$ and find the acceleration. What did you not have to compute?
+Two masses, $m_1 = 3.0\,\mathrm{kg}$ and $m_2 = 2.0\,\mathrm{kg}$, hang from a light string over a frictionless, massless pulley. Using one generalized coordinate $x$ (how far $m_1$ has moved down), write $L$ and find the acceleration. What did you not have to compute?
 :::
 
 ::: answer
@@ -286,7 +286,7 @@ Add a damper to the slosh pendulum of the worked example, exerting a torque $-c\
 :::
 
 ::: answer
-The damper is non-conservative, so it enters as a generalised force. In a rotation $\delta\theta$ it does virtual work $-c\dot{\theta}\,\delta\theta$, so $Q_\theta = -c\dot{\theta}$.
+The damper is non-conservative, so it enters as a generalized force. In a rotation $\delta\theta$ it does virtual work $-c\dot{\theta}\,\delta\theta$, so $Q_\theta = -c\dot{\theta}$.
 
 The $\theta$ equation (the earlier form multiplied back by $m\ell$) becomes $m\ell^2\ddot{\theta} + m\ell\sin\theta\,\ddot{x} = -c\dot{\theta}$.
 
@@ -298,7 +298,7 @@ In deriving the Euler-Lagrange equation from Hamilton's principle, why must the 
 :::
 
 ::: answer
-Integrating by parts leaves a boundary term, $[(\partial L/\partial\dot{q})\,\eta]_{t_1}^{t_2}$. Only if $\eta$ is zero at both ends does it drop out, leaving an integral that multiplies $\eta$ alone. Otherwise the condition would also involve the generalised momentum at the ends, and it would not reduce to an equation holding at each instant. Fixing the ends is what makes the comparison "same start, same finish, different route".
+Integrating by parts leaves a boundary term, $[(\partial L/\partial\dot{q})\,\eta]_{t_1}^{t_2}$. Only if $\eta$ is zero at both ends does it drop out, leaving an integral that multiplies $\eta$ alone. Otherwise the condition would also involve the generalized momentum at the ends, and it would not reduce to an equation holding at each instant. Fixing the ends is what makes the comparison "same start, same finish, different route".
 
 For the second part: if the bracket were nonzero at some instant, then (since it is continuous) it would keep one sign over a small interval around it. Choose $\eta$ as a bump of that sign inside that interval and zero elsewhere. The integral would be strictly nonzero, contradicting $\delta S = 0$. So the bracket is zero everywhere. This is called the fundamental lemma of the calculus of variations.
 :::
@@ -310,18 +310,18 @@ For each system, choose Newton-Euler or Lagrange and say why in a sentence or tw
 ::: answer
 (a) **Newton-Euler.** One rigid body with outside torques, and no constraint forces to eliminate. Euler's equations follow directly.
 
-(b) **Lagrange for the motion**, with the leg angles as generalised coordinates. Otherwise eight hinges' worth of constraint forces must be introduced and eliminated. The dampers enter as $Q_j$. But the strut loads are needed to size the legs, so after solving, recover them from Newton's law on individual links.
+(b) **Lagrange for the motion**, with the leg angles as generalized coordinates. Otherwise eight hinges' worth of constraint forces must be introduced and eliminated. The dampers enter as $Q_j$. But the strut loads are needed to size the legs, so after solving, recover them from Newton's law on individual links.
 
-(c) **Lagrange.** In a planar model: body coordinates (3) plus one gimbal angle plus three pendulum angles make six degrees of freedom. The four joints — the gimbal and three pendulum pivots — carry five constraint-force components that generalised coordinates absorb. Thrust enters as $Q_j$ through its virtual work, as in lesson 8.
+(c) **Lagrange.** In a planar model: body coordinates (3) plus one gimbal angle plus three pendulum angles make six degrees of freedom. The four joints — the gimbal and three pendulum pivots — carry five constraint-force components that generalized coordinates absorb. Thrust enters as $Q_j$ through its virtual work, as in lesson 8.
 :::
 
 ## Summary
 
 | Symbol or fact | Meaning |
 | --- | --- |
-| $L = T - V$ | the Lagrangian, kinetic minus potential energy, in generalised coordinates |
-| $\frac{d}{dt}\left(\frac{\partial L}{\partial\dot{q}_i}\right) - \frac{\partial L}{\partial q_i} = Q_i$ | the Euler-Lagrange equation; $Q_i$ the generalised non-conservative force; right side zero for conservative systems |
-| $p_j = \partial L/\partial\dot{q}_j$ | generalised momentum; conserved when $q_j$ is cyclic (absent from $L$) and $Q_j = 0$ |
+| $L = T - V$ | the Lagrangian, kinetic minus potential energy, in generalized coordinates |
+| $\frac{d}{dt}\left(\frac{\partial L}{\partial\dot{q}_i}\right) - \frac{\partial L}{\partial q_i} = Q_i$ | the Euler-Lagrange equation; $Q_i$ the generalized non-conservative force; right side zero for conservative systems |
+| $p_j = \partial L/\partial\dot{q}_j$ | generalized momentum; conserved when $q_j$ is cyclic (absent from $L$) and $Q_j = 0$ |
 | $h = \sum_j \dot{q}_j\,\partial L/\partial\dot{q}_j - L$ | energy function; equals $T + V$ for scleronomic systems; conserved when $\partial L/\partial t = 0$ and $Q_j = 0$, else $\dot{h} = \sum_j Q_j\dot{q}_j$ |
 | $S = \int_{t_1}^{t_2} L\,dt$, $\delta S = 0$ | the action and Hamilton's principle: the true path makes $S$ stationary with the ends fixed |
 | $q + \epsilon\eta$, $\eta(t_1) = \eta(t_2) = 0$, integrate by parts | the variational derivation of the Euler-Lagrange equation |
@@ -330,14 +330,14 @@ For each system, choose Newton-Euler or Lagrange and say why in a sentence or tw
 | slosh on a stage: $\ell\ddot{\theta} + \ddot{x}\sin\theta = 0$ | a pendulum in the effective gravity of the body's acceleration; $\omega = \sqrt{a_0/\ell}$ |
 | Newton-Euler vs Lagrange | single rigid body, or constraint forces needed: Newton-Euler; holonomic constraints dominate (chains, gimbals, appendages, slosh): Lagrange |
 
-This closes the module. You can now write the equation of motion of a variable-mass vehicle from a momentum balance on a fixed system, account for every metre per second between ideal and realised $\Delta v$, check a simulation against the momentum, angular momentum and energy it must conserve, and choose — with reasons — between force balances and a Lagrangian for the next system you are handed. The rigid-body module takes the Newton-Euler branch for attitude; the flexible-modes and slosh material later in the course takes the Lagrangian one.
+This closes the module. You can now write the equation of motion of a variable-mass vehicle from a momentum balance on a fixed system, account for every meter per second between ideal and realized $\Delta v$, check a simulation against the momentum, angular momentum and energy it must conserve, and choose — with reasons — between force balances and a Lagrangian for the next system you are handed. The rigid-body module takes the Newton-Euler branch for attitude; the flexible-modes and slosh material later in the course takes the Lagrangian one.
 
 ::: context lagrange-name Who Lagrange was
-Joseph-Louis Lagrange, born in Turin in 1736, worked in Berlin and Paris. His *Analytical Mechanics* (1788) rebuilt all of mechanics from energy functions and calculus, without a single diagram. Leonhard Euler had earlier worked out the calculus of variations that the equation's other name honours. He also studied the balance points of the three-body problem that now carry his name; the JWST telescope orbits near one of them.
+Joseph-Louis Lagrange, born in Turin in 1736, worked in Berlin and Paris. His *Analytical Mechanics* (1788) rebuilt all of mechanics from energy functions and calculus, without a single diagram. Leonhard Euler had earlier worked out the calculus of variations that the equation's other name honors. He also studied the balance points of the three-body problem that now carry his name; the JWST telescope orbits near one of them.
 :::
 
 ::: context cyclic-coordinate A coordinate the physics cannot see
-If you rotate a whole orbit around Earth's centre, nothing about the physics changes: the pull of gravity only cares about distance, not direction. So the Lagrangian cannot contain $\theta$ — only $\dot{\theta}$. Whatever $\theta$ is doing, its momentum is left alone.
+If you rotate a whole orbit around Earth's center, nothing about the physics changes: the pull of gravity only cares about distance, not direction. So the Lagrangian cannot contain $\theta$ — only $\dot{\theta}$. Whatever $\theta$ is doing, its momentum is left alone.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">

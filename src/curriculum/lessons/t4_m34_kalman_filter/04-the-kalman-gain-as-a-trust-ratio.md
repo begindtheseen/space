@@ -6,7 +6,7 @@ covers:
   - The Kalman gain as a trust ratio between prediction and measurement
 ---
 
-You are walking across a dark field toward a friend. You cannot see much, so you count your steps: forty steps at about a metre each, so you must be about forty metres out. That is a **prediction** — a guess built from what you know about how you move. Then your friend shouts "you're at forty-five!" That is a **measurement**. Now you hold two answers. Which do you believe?
+You are walking across a dark field toward a friend. You cannot see much, so you count your steps: forty steps at about a meter each, so you must be about forty meters out. That is a **prediction** — a guess built from what you know about how you move. Then your friend shouts "you're at forty-five!" That is a **measurement**. Now you hold two answers. Which do you believe?
 
 Almost nobody picks one and throws the other away. If your friend is standing right next to a marker post, you mostly believe the shout. If your friend is far away and guessing too, you mostly believe your own step count. You end up somewhere in between, and *where* in between depends on how much you trust each one. That "how far do I move toward the new information" number has a name in a Kalman filter. It is the **Kalman gain**, written $\mathbf{K}$: the fraction of the way the filter moves its estimate from the prediction toward the measurement.
 
@@ -199,7 +199,7 @@ $$
 \mathbf{K} = \frac{1}{1.01}\begin{pmatrix}1.0\\ 1.5\end{pmatrix} = \begin{pmatrix}0.9901\\ 1.4851\end{pmatrix}.
 $$
 
-The velocity gain is $1.485$. A one-metre surprise in position moves the velocity estimate by $1.485\,\mathrm{m/s}$ — more than the surprise itself.
+The velocity gain is $1.485$. A one-meter surprise in position moves the velocity estimate by $1.485\,\mathrm{m/s}$ — more than the surprise itself.
 
 **Step 4: is anything broken?** Compute $\mathbf{P}^+ = (\mathbf{I}-\mathbf{K}\mathbf{H})\mathbf{P}^-$:
 
@@ -300,11 +300,11 @@ Both ingredients of the matrix gain, $\mathbf{P}^-$ and $\mathbf{S}$, come from 
 :::
 
 ::: context variance Variance and standard deviation
-If you measure the same thing many times, the readings scatter. The **standard deviation** $\sigma$ is the typical size of that scatter, in the same units as the reading — metres, say. The **variance** is $\sigma^2$, in metres squared. Filters carry variances because they add up neatly: independent errors add their variances, not their standard deviations. To get back to something you can picture, take the square root: $P = 25\,\mathrm{m^2}$ means "good to about $5\,\mathrm{m}$".
+If you measure the same thing many times, the readings scatter. The **standard deviation** $\sigma$ is the typical size of that scatter, in the same units as the reading — meters, say. The **variance** is $\sigma^2$, in meters squared. Filters carry variances because they add up neatly: independent errors add their variances, not their standard deviations. To get back to something you can picture, take the square root: $P = 25\,\mathrm{m^2}$ means "good to about $5\,\mathrm{m}$".
 :::
 
-::: context dgps How GPS gets down to centimetres
-Plain GPS is good to a few metres, because the signals are bent a little by the upper atmosphere and the satellites' clocks and orbits are not perfectly known. **Differential GPS** puts a second receiver at a surveyed spot nearby. It sees nearly the same errors, so it can broadcast corrections. The best versions track the radio wave's phase, not only its timing code, and reach about a centimetre. Test ranges use such systems as a "truth" source when judging other navigation sensors.
+::: context dgps How GPS gets down to centimeters
+Plain GPS is good to a few meters, because the signals are bent a little by the upper atmosphere and the satellites' clocks and orbits are not perfectly known. **Differential GPS** puts a second receiver at a surveyed spot nearby. It sees nearly the same errors, so it can broadcast corrections. The best versions track the radio wave's phase, not only its timing code, and reach about a centimeter. Test ranges use such systems as a "truth" source when judging other navigation sensors.
 :::
 
 ::: context baro Reading height from air pressure

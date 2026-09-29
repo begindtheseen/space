@@ -8,7 +8,7 @@ covers:
 
 A price tag that says \$3.47 means three dollars and forty-seven cents: more than three dollars, less than four. The dot in the middle, the **[[decimal point|decimal-word]]**, separates the whole dollars from the part of a dollar. You already know how to read it.
 
-Rocket numbers are full of decimal points. Gravity at Earth's surface speeds a falling object up by $9.80665\,\mathrm{m/s^2}$ — "nine point eight zero six six five metres per second, every second". About $0.917$ of a loaded rocket stage's mass is propellant. The number $\pi$ (say "pie"), which you need for every round tank and nozzle, starts $3.1416$. A calculator will happily give you twelve digits after the point, and part of your job is deciding how many to keep.
+Rocket numbers are full of decimal points. Gravity at Earth's surface speeds a falling object up by $9.80665\,\mathrm{m/s^2}$ — "nine point eight zero six six five meters per second, every second". About $0.917$ of a loaded rocket stage's mass is propellant. The number $\pi$ (say "pie"), which you need for every round tank and nozzle, starts $3.1416$. A calculator will happily give you twelve digits after the point, and part of your job is deciding how many to keep.
 
 This lesson extends place value to the right of the ones, then covers comparing decimals, multiplying and dividing by 10, 100 and 1,000, the four operations, and rounding. None of it is hard, but each step has one classic slip, and those slips turn up years later inside real engineering calculations. We will name every one.
 
@@ -77,16 +77,16 @@ The digits move one place per zero: left (bigger) when multiplying, right (small
 To multiply 15 by 10 you can stick a zero on the end: 150. Try that with $0.5$ and you get $0.50$ — which is still five tenths, not five. For decimals, move the digits. $0.5 \times 10 = 5$.
 :::
 
-This is the skill behind every metric conversion. A tonne is 1,000 kilograms, so a mass in kilograms divided by 1,000 is the mass in tonnes.
+This is the skill behind every metric conversion. A metric ton is 1,000 kilograms, so a mass in kilograms divided by 1,000 is the mass in metric tons.
 
-::: example From kilograms to tonnes and back
-**The problem.** A rocket's lift-off mass is 549,054 kg and its propellant load is 411 tonnes. Write the first in tonnes and the second in kilograms.
+::: example From kilograms to metric tons and back
+**The problem.** A rocket's lift-off mass is 549,054 kg and its propellant load is 411 metric tons. Write the first in metric tons and the second in kilograms.
 
-**Kilograms to tonnes.** Divide by 1,000: three zeros, so the digits move three places right. The invisible point after the 4 in 549,054 ends up after the 9: $549.054$ tonnes.
+**Kilograms to metric tons.** Divide by 1,000: three zeros, so the digits move three places right. The invisible point after the 4 in 549,054 ends up after the 9: $549.054$ metric tons.
 
-**Tonnes to kilograms.** Multiply by 1,000: the digits of 411 move three places left, and three zeros fill the gap: $411{,}000$ kg.
+**Metric tons to kilograms.** Multiply by 1,000: the digits of 411 move three places left, and three zeros fill the gap: $411{,}000$ kg.
 
-**Does that make sense?** A tonne is big, so the same mass should be a *smaller* number of tonnes than of kilograms. 549 is smaller than 549,054, as it should be.
+**Does that make sense?** A metric ton is big, so the same mass should be a *smaller* number of metric tons than of kilograms. 549 is smaller than 549,054, as it should be.
 :::
 
 ## Adding and subtracting decimals
@@ -103,7 +103,7 @@ Lining up the points matters because you may only add digits that count the same
   448.25
 ```
 
-That is a rocket stage with a dry mass (the empty rocket) of 22.5 tonnes, carrying 410.75 tonnes of propellant and a 15-tonne payload (the satellite on top): 448.25 tonnes in all. Engineers write tonnes as t, so that is 448.25 t. The 15 needed its invisible point and two zeros so that its digits sat in the right columns.
+That is a rocket stage with a dry mass (the empty rocket) of 22.5 metric tons, carrying 410.75 metric tons of propellant and a 15-metric ton payload (the satellite on top): 448.25 metric tons in all. Engineers write metric tons as t, so that is 448.25 t. The 15 needed its invisible point and two zeros so that its digits sat in the right columns.
 
 Subtracting works the same way. How far is the rough value 9.8 from the real standard gravity? Pad 9.8 to 9.80000 and subtract:
 
@@ -136,7 +136,7 @@ $0.04$ is $4 \div 100$ and $0.3$ is $3 \div 10$. Multiplying them gives $4 \time
 Multiplying by a number less than 1 always makes something *smaller*. Half of anything is less than the thing. So if you multiply by $0.3$ and your answer went up, something is wrong. That is a free check on every multiplication.
 
 ::: example Splitting a propellant load
-**The problem.** A stage carries 400 t of propellant. The liquid oxygen is $0.697$ of that, and the kerosene is $0.303$. How many tonnes of each?
+**The problem.** A stage carries 400 t of propellant. The liquid oxygen is $0.697$ of that, and the kerosene is $0.303$. How many metric tons of each?
 
 **Oxygen.** Ignore the point: $697 \times 400 = 278{,}800$. The two numbers had $3 + 0 = 3$ decimal places, so move three places in from the right: $278.800$, which is $278.8$ t.
 
@@ -208,7 +208,7 @@ The same rule applies across a whole calculation. Keep extra digits while you wo
 
 ::: note Where this comes back
 - [Scientific notation and significant figures](#/module/t0_m01_algebra_precalc?lesson=l11-scientific-notation-and-significant-figures) moves the decimal point to write numbers like $0.000\,457$ as $4.57 \times 10^{-4}$, and turns "how many decimal places?" into "how many digits can you trust?".
-- [Units, conversions and dimensional analysis](#/module/t0_m01_algebra_precalc?lesson=l10-units-and-dimensional-analysis) converts kilonewtons to newtons and tonnes to kilograms — multiplying and dividing by 1,000, digit shifts every time.
+- [Units, conversions and dimensional analysis](#/module/t0_m01_algebra_precalc?lesson=l10-units-and-dimensional-analysis) converts kilonewtons to newtons and metric tons to kilograms — multiplying and dividing by 1,000, digit shifts every time.
 - [Angles, radians and the unit circle](#/module/t0_m02_trigonometry?lesson=l01-angles-radians-unit-circle) works with $\pi \approx 3.1416$ and $1\ \mathrm{rad} \approx 57.2958^\circ$, rounded to the places each job needs.
 - [Floating point](#/module/t0_m03_python_scicomp?lesson=l06-floating-point) shows how a computer stores decimals, why it rounds every result, and why $0.1 + 0.2$ does not come out as exactly $0.3$.
 :::
@@ -262,7 +262,7 @@ Round $9.80665$ to one decimal place, three decimal places and four decimal plac
 :::
 
 ::: check
-A small tank holds $4.5$ litres of fuel. A pump moves it in doses of $0.09$ litres. How many doses empty the tank?
+A small tank holds $4.5$ liters of fuel. A pump moves it in doses of $0.09$ liters. How many doses empty the tank?
 :::
 
 ::: answer
@@ -323,7 +323,7 @@ How fast things fall is a little different from place to place on Earth — slig
 :::
 
 ::: context trailing-zeros Why an engineer writes 1.00
-To a mathematician, $1$, $1.0$ and $1.00$ are the same number. To an engineer reading a measurement, they say different things. "$1.00$ m" claims the length was measured to the nearest hundredth of a metre, a centimetre. "$1$ m" claims only the nearest metre. Writing more zeros than you measured is claiming care you did not take. The algebra module has a whole lesson on this, called significant figures.
+To a mathematician, $1$, $1.0$ and $1.00$ are the same number. To an engineer reading a measurement, they say different things. "$1.00$ m" claims the length was measured to the nearest hundredth of a meter, a centimeter. "$1$ m" claims only the nearest meter. Writing more zeros than you measured is claiming care you did not take. The algebra module has a whole lesson on this, called significant figures.
 :::
 
 ::: context grid-picture A tenth of a tenth

@@ -83,9 +83,9 @@ Two-body motion, even with $J_2$, has no random pushes in it, so a filter that t
 Here is the filter at work on the kind of scenario the batch lesson used: a $420\,\mathrm{km}$ orbit ($a = 6798.137\,\mathrm{km}$, $e = 0.001$, $i = 51.6^\circ$), one ground station at $40^\circ$ N, and twelve hours of tracking. Three passes are used, starting $6.22$, $7.86$ and $11.11$ hours after the epoch, giving $99$ looks. Each look has a range (noise $5\,\mathrm m$) and a range-rate (noise $1\,\mathrm{mm/s}$). The filter takes them one scalar at a time: the range, then the range-rate, then on to the next look.
 
 ::: example Watching the recursion
-The filter starts at the epoch with an error of $105\,\mathrm m$ in position and $58\,\mathrm{mm/s}$ in velocity — about what a short preliminary fit might give, not the raw kilometre-level output of Gibbs or Gauss. Its starting covariance says $100\,\mathrm m$ and $0.1\,\mathrm{m/s}$ per axis. It then coasts $6.2$ hours to the first look.
+The filter starts at the epoch with an error of $105\,\mathrm m$ in position and $58\,\mathrm{mm/s}$ in velocity — about what a short preliminary fit might give, not the raw kilometer-level output of Gibbs or Gauss. Its starting covariance says $100\,\mathrm m$ and $0.1\,\mathrm{m/s}$ per axis. It then coasts $6.2$ hours to the first look.
 
-In the table, "error" is the true distance between the filter's position and the real one. "Sigma" is the filter's own claim about that size (the square root of the sum of the three position variances). Both are in metres.
+In the table, "error" is the true distance between the filter's position and the real one. "Sigma" is the filter's own claim about that size (the square root of the sum of the three position variances). Both are in meters.
 
 | look | time (h) | error before update | sigma before update | error after update | sigma after update |
 | --- | --- | --- | --- | --- | --- |
@@ -99,9 +99,9 @@ In the table, "error" is the true distance between the filter's position and the
 
 During the long first coast, a $105\,\mathrm m$ start has grown to an $1807\,\mathrm m$ miss, and the filter knows it: its sigma has swelled to about $10\,\mathrm{km}$, which is honest (bigger than the real error, not smaller). The very first look cuts the error by a factor of about twenty. By the end of pass 1 the error is under $2\,\mathrm m$.
 
-Each gap makes both columns jump up a little — the **[[blind coast|blind-coast]]** between passes — and each new pass pulls them down again. By the last look, error and sigma are both under a metre and match each other closely. Over the run, the error fell by more than three orders of magnitude.
+Each gap makes both columns jump up a little — the **[[blind coast|blind-coast]]** between passes — and each new pass pulls them down again. By the last look, error and sigma are both under a meter and match each other closely. Over the run, the error fell by more than three orders of magnitude.
 
-**Against batch.** Map the final EKF state back to the epoch with the same dynamics, and compare with a batch fit of the same $99$ looks. They differ by only $2.3\,\mathrm{cm}$ in position and $0.046\,\mathrm{mm/s}$ in velocity. Both are about $0.9\,\mathrm m$ from the truth — that last metre is measurement noise, which no estimator can remove. So the two agree with *each other* about forty times more closely than either agrees with the truth.
+**Against batch.** Map the final EKF state back to the epoch with the same dynamics, and compare with a batch fit of the same $99$ looks. They differ by only $2.3\,\mathrm{cm}$ in position and $0.046\,\mathrm{mm/s}$ in velocity. Both are about $0.9\,\mathrm m$ from the truth — that last meter is measurement noise, which no estimator can remove. So the two agree with *each other* about forty times more closely than either agrees with the truth.
 
 Even the reported uncertainties match. At the epoch, the EKF's position sigmas are $(0.635,\ 0.423,\ 0.412)\,\mathrm m$ and the batch's are $(0.635,\ 0.423,\ 0.412)\,\mathrm m$, equal to three figures.
 :::
@@ -119,12 +119,12 @@ $$
 \mathbf P_0^{-1} = \mathbf P_{\text{start}}^{-1} + \sum_i (\mathbf H_i\boldsymbol\Phi_i)^\mathsf T\mathbf R_i^{-1}(\mathbf H_i\boldsymbol\Phi_i) = \mathbf P_{\text{start}}^{-1} + \boldsymbol\Lambda .
 $$
 
-That is the batch normal matrix $\boldsymbol\Lambda$, plus the filter's starting knowledge. Here the starting covariance ($100\,\mathrm m$) was loose next to what the data gave (under a metre), so its share is tiny, and the two answers coincide. The small leftover gap comes from the EKF linearizing about slightly different points than the final batch iteration did.
+That is the batch normal matrix $\boldsymbol\Lambda$, plus the filter's starting knowledge. Here the starting covariance ($100\,\mathrm m$) was loose next to what the data gave (under a meter), so its share is tiny, and the two answers coincide. The small leftover gap comes from the EKF linearizing about slightly different points than the final batch iteration did.
 :::
 
 ## When the first guess is too rough
 
-Batch can start from a guess kilometres off, because it goes over the *entire* arc again and again. A bad first straight-line approximation just produces a big correction. The next pass re-propagates from the better guess, re-linearizes along the new path, and tries again.
+Batch can start from a guess kilometers off, because it goes over the *entire* arc again and again. A bad first straight-line approximation just produces a big correction. The next pass re-propagates from the better guess, re-linearizes along the new path, and tries again.
 
 A sequential filter gets no second try. At each look it makes a correction using the straight-line approximation it has *right then*, and moves on. It never goes back.
 
@@ -135,7 +135,7 @@ Take the batch lesson's style of rough start: $3.9\,\mathrm{km}$ off in position
 
 **EKF.** After the $6.2$-hour coast, the guess is $48\,\mathrm{km}$ from the truth. The first update brings it to about $2.9\,\mathrm{km}$, but the second one throws it out to about $21\,\mathrm{km}$: the straight-line approximation it used was made about a point that was far off. It never recovers. After the last look it is still $1.83\,\mathrm{km}$ wrong while reporting a sigma of about $1.0\,\mathrm m$.
 
-The filter is not "honestly unsure"; it is **confidently wrong**, claiming metre-level accuracy for a state kilometres off. And making the starting covariance looser does not help: at $10\,\mathrm{km}$ and $10\,\mathrm{m/s}$ per axis, the same run ends about $410\,\mathrm{km}$ off. The starting error, not the random noise, is what breaks it.
+The filter is not "honestly unsure"; it is **confidently wrong**, claiming meter-level accuracy for a state kilometers off. And making the starting covariance looser does not help: at $10\,\mathrm{km}$ and $10\,\mathrm{m/s}$ per axis, the same run ends about $410\,\mathrm{km}$ off. The starting error, not the random noise, is what breaks it.
 :::
 
 This is not a flaw in the Kalman filter's mathematics. When the guess is far from the truth, the partials $\mathbf H$ and $\boldsymbol\Phi$ computed at the guess point in the wrong directions. The correction built from them lands somewhere else wrong. The next step linearizes about that wrong place, and the error feeds itself instead of shrinking.
@@ -143,7 +143,7 @@ This is not a flaw in the Kalman filter's mathematics. When the guess is far fro
 The cure used in real operations is the one the first example quietly assumed: start a sequential filter from a state good enough for straight lines to be trusted. That usually means a short batch fit of the first data, or the tail of a longer batch solution. Raw initial-orbit-determination output, with all its roughness, is batch's starting point, not the filter's. A partial remedy is the **iterated EKF**, which re-linearizes several times inside a single update until the correction settles (the nonlinear-filters module covers it). It fixes a stale straight-line approximation at one moment, but it still cannot go back over the whole arc the way batch does.
 
 ::: warning Numerical conditioning bites sequential filters too
-Processing many very precise measurements from one fixed geometry in quick succession can, over enough updates, shrink the covariance's smallest eigenvalue toward the edge of what **[[double-precision numbers|double-precision]]** can hold — the same kilometres-and-seconds sensitivity the batch lesson met in $\boldsymbol\Lambda$, now hitting $\mathbf P$ update after update instead of once. Joseph form (used above) is more forgiving than the short update $\mathbf P^+=(\mathbf I-\mathbf K\mathbf H)\mathbf P^-$, but it is not immune. That is exactly why the Kalman filter module built **[[square-root and UD forms|square-root-filters]]**: they carry a factor of $\mathbf P$ that cannot represent a negative eigenvalue at all, however small the true uncertainty in some direction becomes. A sequential orbit determination filter chewing through dense, high-precision tracking is the setting those forms exist for.
+Processing many very precise measurements from one fixed geometry in quick succession can, over enough updates, shrink the covariance's smallest eigenvalue toward the edge of what **[[double-precision numbers|double-precision]]** can hold — the same kilometers-and-seconds sensitivity the batch lesson met in $\boldsymbol\Lambda$, now hitting $\mathbf P$ update after update instead of once. Joseph form (used above) is more forgiving than the short update $\mathbf P^+=(\mathbf I-\mathbf K\mathbf H)\mathbf P^-$, but it is not immune. That is exactly why the Kalman filter module built **[[square-root and UD forms|square-root-filters]]**: they carry a factor of $\mathbf P$ that cannot represent a negative eigenvalue at all, however small the true uncertainty in some direction becomes. A sequential orbit determination filter chewing through dense, high-precision tracking is the setting those forms exist for.
 :::
 
 ## The unscented alternative
@@ -209,7 +209,7 @@ An engineer proposes replacing the EKF with a UKF, expecting it to converge even
 ::: answer
 Only partly, and it should not be assumed. The UKF avoids linearizing $\boldsymbol\Phi$ and $\mathbf H$ by flying sigma points through the true nonlinear functions, so it tends to degrade more gently than a single-linearization EKF when the starting spread is large. That is a genuine advantage here.
 
-But the sigma points still have to cross the same long, uncorrected coast before any measurement helps, and second-order accuracy cannot fix a starting spread that has become badly non-Gaussian by the time the data arrives. In fact, run on this very scenario, a plain UKF from the same start also ended several kilometres off (about $7\,\mathrm{km}$) while reporting a sigma near $1\,\mathrm m$. It is an improvement in some cases, not a guarantee; the robust cure is still a good starting state from a short batch fit.
+But the sigma points still have to cross the same long, uncorrected coast before any measurement helps, and second-order accuracy cannot fix a starting spread that has become badly non-Gaussian by the time the data arrives. In fact, run on this very scenario, a plain UKF from the same start also ended several kilometers off (about $7\,\mathrm{km}$) while reporting a sigma near $1\,\mathrm m$. It is an improvement in some cases, not a guarantee; the robust cure is still a good starting state from a short batch fit.
 :::
 
 ## Summary
@@ -271,7 +271,7 @@ Near the guess the blue line hugs the curve; out at the red dot the curve has tu
 :::
 
 ::: context blind-coast Why the error bars swell between passes
-A satellite in low orbit is only above a given station's horizon for a few minutes at a time. In between, the filter is flying blind, predicting with physics alone. A tiny velocity error of a few millimetres per second becomes a larger and larger position error as the minutes pass, so the error bars grow. The next pass then snaps them back down. Plotted over a day, the sigma looks like a saw blade that trends downward.
+A satellite in low orbit is only above a given station's horizon for a few minutes at a time. In between, the filter is flying blind, predicting with physics alone. A tiny velocity error of a few millimeters per second becomes a larger and larger position error as the minutes pass, so the error bars grow. The next pass then snaps them back down. Plotted over a day, the sigma looks like a saw blade that trends downward.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
@@ -293,7 +293,7 @@ Shaded strips are passes: sigma drops inside each one and creeps up in each gap.
 :::
 
 ::: context double-precision How many digits a computer keeps
-Most scientific software stores each number as a 64-bit "double", which holds about 16 significant digits. That sounds like plenty, but it is shared across a whole matrix. If one direction of the covariance is known to a millimetre and another to a thousand kilometres, that is a spread of $10^9$ before any squaring, and the small numbers can lose most of their digits when added to the big ones. Round-off then eats away exactly the tiny, precise directions you care about.
+Most scientific software stores each number as a 64-bit "double", which holds about 16 significant digits. That sounds like plenty, but it is shared across a whole matrix. If one direction of the covariance is known to a millimeter and another to a thousand kilometers, that is a spread of $10^9$ before any squaring, and the small numbers can lose most of their digits when added to the big ones. Round-off then eats away exactly the tiny, precise directions you care about.
 :::
 
 ::: context square-root-filters Carrying the square root instead

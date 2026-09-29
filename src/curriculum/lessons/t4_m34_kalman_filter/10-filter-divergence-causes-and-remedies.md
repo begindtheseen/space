@@ -73,8 +73,8 @@ Fly $50$ simulated descents, each $150$ steps ($15\,\mathrm{s}$) long, all with 
 
 | Filter | RMS altitude error | Reported $\sigma_p$ at the end | Acceleration estimate (truth $-3.00$) |
 | --- | --- | --- | --- |
-| Constant velocity, $q = 0.005$ (too small) | $24.6\,\mathrm{m}$ | $0.43\,\mathrm{m}$ | not modelled |
-| Constant velocity, $q = 0.5$ | $2.56\,\mathrm{m}$ | $0.75\,\mathrm{m}$ | not modelled |
+| Constant velocity, $q = 0.005$ (too small) | $24.6\,\mathrm{m}$ | $0.43\,\mathrm{m}$ | not modeled |
+| Constant velocity, $q = 0.5$ | $2.56\,\mathrm{m}$ | $0.75\,\mathrm{m}$ | not modeled |
 | Augmented, $q_a = 0.01$ | $0.82\,\mathrm{m}$ | $0.64\,\mathrm{m}$ | $-2.97\,\mathrm{m/s^2}$ |
 | Augmented, $q_a = 1$ | $0.79\,\mathrm{m}$ | $0.91\,\mathrm{m}$ | $-2.99\,\mathrm{m/s^2}$ |
 
@@ -123,10 +123,10 @@ It still falls well short of augmentation, and at $\lambda = 1.05$ the real erro
 :::
 
 ::: warning Bigger lambda is not free
-Every increase in $\lambda$ raises every gain, including the gains on states whose dynamics were modelled perfectly well. Push it far enough to fix the one badly modelled direction and you have over-inflated all the good ones, so the estimate starts chasing measurement noise — the "$\mathbf{Q}$ too large" failure of the process-noise lesson, reached by a different road.
+Every increase in $\lambda$ raises every gain, including the gains on states whose dynamics were modeled perfectly well. Push it far enough to fix the one badly modeled direction and you have over-inflated all the good ones, so the estimate starts chasing measurement noise — the "$\mathbf{Q}$ too large" failure of the process-noise lesson, reached by a different road.
 :::
 
-A related trick guards against the covariance collapsing: put a **floor on $\mathbf{P}$**, a smallest variance each state is never allowed to go below. Like fading memory, it keeps the gain from sinking to zero. Like fading memory, it hides a modelling problem rather than fixing it.
+A related trick guards against the covariance collapsing: put a **floor on $\mathbf{P}$**, a smallest variance each state is never allowed to go below. Like fading memory, it keeps the gain from sinking to zero. Like fading memory, it hides a modeling problem rather than fixing it.
 
 ## Remedy: symmetrize — needed, but not enough
 
@@ -187,7 +187,7 @@ Fading memory with $\lambda = 1.02$ helped a lot but left the filter well short 
 :::
 
 ::: answer
-Fading memory inflates the entire predicted covariance every cycle, not only the direction that needs it. A higher $\lambda$ keeps raising every gain, including gains on states whose dynamics were captured correctly, so ordinary measurement noise starts moving states that did not need correcting. That is the "$\mathbf{Q}$ too large chases noise" failure of the process-noise lesson, reached by another route. Pushing a global inflation far enough to fully fix one badly modelled direction necessarily over-inflates every well-modelled one too. Even at $\lambda = 1.05$ the example's real error was still more than three times the reported $\sigma_p$.
+Fading memory inflates the entire predicted covariance every cycle, not only the direction that needs it. A higher $\lambda$ keeps raising every gain, including gains on states whose dynamics were captured correctly, so ordinary measurement noise starts moving states that did not need correcting. That is the "$\mathbf{Q}$ too large chases noise" failure of the process-noise lesson, reached by another route. Pushing a global inflation far enough to fully fix one badly modeled direction necessarily over-inflates every well-modeled one too. Even at $\lambda = 1.05$ the example's real error was still more than three times the reported $\sigma_p$.
 :::
 
 ::: check
@@ -273,7 +273,7 @@ Velocity is how fast position changes. Acceleration is how fast velocity changes
 :::
 
 ::: context forgetting-factor How fast the past fades
-With $\lambda = 1.02$, a measurement's weight is multiplied by $1/1.02^2 \approx 0.961$ every step. After $17.5$ steps it counts half as much as a fresh one; after $50$ steps, about $14\%$. With $\lambda = 1$ (the ordinary filter, grey line) nothing is forgotten. The bars show how much a measurement of each age still counts at $\lambda = 1.02$.
+With $\lambda = 1.02$, a measurement's weight is multiplied by $1/1.02^2 \approx 0.961$ every step. After $17.5$ steps it counts half as much as a fresh one; after $50$ steps, about $14\%$. With $\lambda = 1$ (the ordinary filter, gray line) nothing is forgotten. The bars show how much a measurement of each age still counts at $\lambda = 1.02$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">

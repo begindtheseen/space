@@ -142,7 +142,7 @@ The two answers disagree. The **[[RMS|rms]]** (root-mean-square) difference is $
 
 The [[same shape|two-responses]], plainly related — but a measurably different closed loop. Not one line of the controller's arithmetic changed between the two runs. Only the times at which it was allowed to run did.
 
-**Sanity check.** Why doesn't Scenario B come out wildly worse, with $13.4$ times as many updates? Because B scales each update by the actual gap $\Delta t$, and the gaps add up (with the backward ones cancelling some forward ones) to roughly the right total time. The *amount* of integral action is about right. Its *timing* is scrambled — so the loop is close, but not the one you designed.
+**Sanity check.** Why doesn't Scenario B come out wildly worse, with $13.4$ times as many updates? Because B scales each update by the actual gap $\Delta t$, and the gaps add up (with the backward ones canceling some forward ones) to roughly the right total time. The *amount* of integral action is about right. Its *timing* is scrambled — so the loop is close, but not the one you designed.
 :::
 
 That last point is the whole lesson. A controller is a function of its state and a fixed interval since it last ran. Scramble the interval and you have simulated a different controller while believing you tested the real one.
@@ -250,7 +250,7 @@ A controller that pushes only in proportion to the error can get stuck a little 
 :::
 
 ::: context rk-stages Where the calls land in one step
-One Dormand–Prince step of size $h = 0.02768\,\mathrm{s}$, starting at $t = 0$. The numbers give the order of the calls. Call 2 is the first-step guess, reaching past calls 3 and 4 — so the time sequence runs backward between calls 2 and 3. The grey line is the end of a $100\,\mathrm{Hz}$ control period.
+One Dormand–Prince step of size $h = 0.02768\,\mathrm{s}$, starting at $t = 0$. The numbers give the order of the calls. Call 2 is the first-step guess, reaching past calls 3 and 4 — so the time sequence runs backward between calls 2 and 3. The gray line is the end of a $100\,\mathrm{Hz}$ control period.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">

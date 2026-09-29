@@ -45,7 +45,7 @@ A local object dies when it goes out of scope: when the program reaches the clos
 
 ### RAII: tie the resource to an object
 
-Put those two ideas together and you get C++'s answer to leaks, **[[RAII|raii-name]]**, short for *Resource Acquisition Is Initialisation*. It means: tie each resource to an object. The constructor takes the resource (it **acquires** it), and the destructor gives it back (it **releases** it). Now the cleanup cannot be forgotten, because it is no longer a line you have to remember on every path.
+Put those two ideas together and you get C++'s answer to leaks, **[[RAII|raii-name]]**, short for *Resource Acquisition Is Initialization*. It means: tie each resource to an object. The constructor takes the resource (it **acquires** it), and the destructor gives it back (it **releases** it). Now the cleanup cannot be forgotten, because it is no longer a line you have to remember on every path.
 
 Here is a lock. A **[[mutex|mutex-word]]** is a lock that lets only one part of a program use something at a time. Imagine a type `Mutex` with two member functions, `lock()` and `unlock()`:
 
@@ -61,7 +61,7 @@ private:
 
 Go through it one piece at a time:
 
-- The member `m_` is a reference, `Mutex&`. The `Lock` does not hold a mutex of its own; it refers to the caller's. A reference member must get its value in the member initialiser list, `: m_(m)`, because a reference can never be changed later to refer to something else.
+- The member `m_` is a reference, `Mutex&`. The `Lock` does not hold a mutex of its own; it refers to the caller's. A reference member must get its value in the member initializer list, `: m_(m)`, because a reference can never be changed later to refer to something else.
 - The constructor body locks. The destructor, `~Lock()`, unlocks.
 
 Now use it:
@@ -79,7 +79,7 @@ There is no `unlock` anywhere in `work`, yet every path unlocks. The object `gua
 
 When several objects live in one block, their destructors run in **reverse order** of construction: the last one made is the first one destroyed. So nested guards [[unwind like a stack|reverse-order]] of plates. With the `Say` type from above:
 
-```cpp
+```cpp fragment
 int main() {
     Say a("a");
     Say b("b");
@@ -213,7 +213,7 @@ private:
 --- hint
 Start with `FileHandle`. The constructor body is the place to acquire: `open_file(name_);`. The destructor, `~FileHandle()`, is the place to release: `close_file(name_);`.
 --- hint
-`ValueGuard` needs two private members: a reference `int& target_` to the caller's variable, and an `int saved_` holding its old value. Fill both in the initialiser list, `: target_(target), saved_(target)`, then set `target_ = temporary;` in the constructor body.
+`ValueGuard` needs two private members: a reference `int& target_` to the caller's variable, and an `int saved_` holding its old value. Fill both in the initializer list, `: target_(target), saved_(target)`, then set `target_ = temporary;` in the constructor body.
 --- hint
 The destructor is `~ValueGuard() { target_ = saved_; }`. Delete copying in both classes with `ClassName(const ClassName&) = delete;` and `ClassName& operator=(const ClassName&) = delete;`, writing the real class name each time.
 --- check test | A handle is open while it lives, closed after
@@ -270,7 +270,7 @@ Bad b = a;   // b.data_ == a.data_
              // delete the same block — a double free
 ```
 
-`Bad b = a;` copies the member `data_`, so both objects hold the same address. This is a **shallow copy**: the pointer was copied, the block it points at was not. Change a number through `b` and `a` sees it change too. Worse, at the closing `}` both destructors run `delete[]` on the same block. Giving memory back twice is a **[[double free|double-free]]**, and it is undefined behaviour.
+`Bad b = a;` copies the member `data_`, so both objects hold the same address. This is a **shallow copy**: the pointer was copied, the block it points at was not. Change a number through `b` and `a` sees it change too. Worse, at the closing `}` both destructors run `delete[]` on the same block. Giving memory back twice is a **[[double free|double-free]]**, and it is undefined behavior.
 
 What you want is a **deep copy**: the copy gets its own new block, with the same numbers copied into it. The picture in the [[deep copy|shallow-deep]] note shows the difference.
 
@@ -301,7 +301,7 @@ Bad(const Bad& other)                  // copy constructor: build a new object
 }
 ```
 
-`other` is the object being copied. The initialiser list gives the new object its own three `int`s, and the body copies `other`'s numbers into them.
+`other` is the object being copied. The initializer list gives the new object its own three `int`s, and the body copies `other`'s numbers into them.
 
 ### Copy assignment: overwrite an object that already exists
 
@@ -340,7 +340,7 @@ A **static data member** belongs to the class rather than to each object, like t
 In real code you would store a `std::vector<int>` and write none of this; the next lesson shows why. Writing it once by hand is how you understand what those types do for you.
 
 ::: context delete-brackets Two kinds of delete
-`new int` makes one `int`; `new int[3]` makes an array of them. Each has its own way back: `delete` for one object, `delete[]` for an array. Mixing them up, such as `delete` on memory from `new[]`, is undefined behaviour. The program may seem fine, or it may crash, or quietly damage the heap. The compiler cannot always spot the mix-up, because an `int*` looks the same either way. That is one more reason modern C++ keeps raw arrays inside types like `std::vector`, which always use the right one.
+`new int` makes one `int`; `new int[3]` makes an array of them. Each has its own way back: `delete` for one object, `delete[]` for an array. Mixing them up, such as `delete` on memory from `new[]`, is undefined behavior. The program may seem fine, or it may crash, or quietly damage the heap. The compiler cannot always spot the mix-up, because an `int*` looks the same either way. That is one more reason modern C++ keeps raw arrays inside types like `std::vector`, which always use the right one.
 :::
 
 ::: context double-free Why giving back twice is so bad
@@ -380,7 +380,7 @@ A shallow copy duplicates only the pointer, so both objects share one block. A d
 :::
 
 ::: context pointer-arithmetic Adding to a pointer
-Adding a number to a pointer moves it by that many *elements*, not bytes. An `int` usually takes 4 bytes, so `a + 3` is an address 12 bytes past `a`, which is exactly where a fourth `int` would start. That is also how `data[1]` works: it means `*(data + 1)`, "follow the pointer one element along". Pointing one past the end is allowed, as long as you never follow it with `*`; following it is undefined behaviour, the same as `*` on a vector's `end()`.
+Adding a number to a pointer moves it by that many *elements*, not bytes. An `int` usually takes 4 bytes, so `a + 3` is an address 12 bytes past `a`, which is exactly where a fourth `int` would start. That is also how `data[1]` works: it means `*(data + 1)`, "follow the pointer one element along". Pointing one past the end is allowed, as long as you never follow it with `*`; following it is undefined behavior, the same as `*` on a vector's `end()`.
 :::
 
 ::: context rule-of-three-name A rule of thumb with a long history
@@ -454,7 +454,7 @@ private:
     int* data_;
 };
 --- hint
-Start with the copy constructor. It is building a new buffer, so in its initialiser list it takes `other.size_` and makes its own array with `new int[other.size_]`. Then it copies the numbers across with `std::copy` and adds 1 to `copies`.
+Start with the copy constructor. It is building a new buffer, so in its initializer list it takes `other.size_` and makes its own array with `new int[other.size_]`. Then it copies the numbers across with `std::copy` and adds 1 to `copies`.
 --- hint
 The copy constructor's body is `std::copy(other.data_, other.data_ + size_, data_); ++copies;`. For `operator=`, check `this != &other` first. Inside that `if`: make `int* fresh = new int[other.size_];`, copy into it, `delete[] data_;`, then set `data_ = fresh;` and `size_ = other.size_;`, and add 1 to `copies`.
 --- hint
@@ -718,7 +718,7 @@ struct Album {
     Buffer art;
 };
 --- hint
-The move constructor takes `Buffer&& other`. In its initialiser list it takes `other.size_` and `other.data_` as they are, with no `new` and no copying of elements. Then its body empties the source and counts the move.
+The move constructor takes `Buffer&& other`. In its initializer list it takes `other.size_` and `other.data_` as they are, with no `new` and no copying of elements. Then its body empties the source and counts the move.
 --- hint
 The move constructor's body is `other.size_ = 0; other.data_ = nullptr; ++moves;`. Move assignment follows the explanation's version: inside `if (this != &other)`, `delete[] data_;` first, then steal both members, empty the source and add 1 to `moves`. It ends with `return *this;`.
 --- hint
@@ -1338,7 +1338,7 @@ q.back();          // 4
 
 To hand the items back as a `std::vector`, build one from the deque's range, as the maps and sets lesson did from a set: `std::vector<int>(q.begin(), q.end())` keeps their order, front first.
 
-**Watch out:** in a function that removes the top item, read the item **before** you remove it. `pop_back()` destroys the last element, so reading `back()` after it gives a different element, or, if that was the only one, undefined behaviour. And calling `back()` or `pop_back()` on an empty vector is undefined behaviour too, which is why `take_last` checks `empty()` first.
+**Watch out:** in a function that removes the top item, read the item **before** you remove it. `pop_back()` destroys the last element, so reading `back()` after it gives a different element, or, if that was the only one, undefined behavior. And calling `back()` or `pop_back()` on an empty vector is undefined behavior too, which is why `take_last` checks `empty()` first.
 
 ::: context ctad Deducing a class's type
 The feature is called **class template argument deduction**, CTAD for short, and it arrived in C++17. The compiler looks at the constructor's parameters, as it would for a function template. It can surprise you: `Box d("hi");` gives a `Box<const char*>`, holding a pointer, not a `Box<std::string>`, because a string literal passed by value arrives as a pointer. When the type matters, write it out: `Box<std::string> b("hi");`. Before C++17 you always had to, which is why helper functions like `std::make_pair` existed: functions could deduce, classes could not.
@@ -1631,7 +1631,7 @@ For a member function, `half + 1` means `half.operator+(1)`: the left side is th
 :::
 
 ::: context overflow Big enough, until it is not
-Cross-multiplying and adding make numbers grow. The largest `long long` is 9,223,372,036,854,775,807, about 9.2 × 10¹⁸, and a product of two parts near 10¹⁰ passes it. Signed overflow is undefined behaviour, as the overflow lesson in the intermediate course showed. Real software has failed this way: in 1996, Ariane 5 flight 501 broke up about 37 seconds after lift-off when a 64-bit floating-point value was converted to a 16-bit whole number too small to hold it. For the numbers in this lesson, `long long` is plenty.
+Cross-multiplying and adding make numbers grow. The largest `long long` is 9,223,372,036,854,775,807, about 9.2 × 10¹⁸, and a product of two parts near 10¹⁰ passes it. Signed overflow is undefined behavior, as the overflow lesson in the intermediate course showed. Real software has failed this way: in 1996, Ariane 5 flight 501 broke up about 37 seconds after lift-off when a 64-bit floating-point value was converted to a 16-bit whole number too small to hold it. For the numbers in this lesson, `long long` is plenty.
 :::
 
 ::: context cross-multiply Why the denominators must be positive
@@ -1833,7 +1833,7 @@ public:
 };
 ```
 
-Read `= 0` as "no body here: every derived class must supply one". A function like that is **pure virtual**. A class with one or more is **abstract**: you cannot make an object of it, so `Shape s;` does not compile. A base class made of pure virtual functions is an **interface**: it only states what every shape can do, and each derived class says how. This is how [[flight software is often organised|interfaces-in-flight]].
+Read `= 0` as "no body here: every derived class must supply one". A function like that is **pure virtual**. A class with one or more is **abstract**: you cannot make an object of it, so `Shape s;` does not compile. A base class made of pure virtual functions is an **interface**: it only states what every shape can do, and each derived class says how. This is how [[flight software is often organized|interfaces-in-flight]].
 
 ### Implementing the interface
 
@@ -1856,11 +1856,11 @@ A derived class that leaves any pure virtual function without a body is still ab
 
 The line `virtual ~Shape() = default;` in the interface is essential. `= default` means "the compiler writes the usual body", which here is empty. The `virtual` is what matters.
 
-You will hold shapes as `std::unique_ptr<Shape>`, and a `unique_ptr<Shape>` deletes its object through a `Shape*`. With a **virtual destructor** in the base, deleting a `Circle` through a `Shape*` runs `Circle`'s destructor too, then `Shape`'s. Without it, that delete is [[undefined behaviour|virtual-destructor]]. The rule: a class meant to be used through base pointers gets a virtual destructor.
+You will hold shapes as `std::unique_ptr<Shape>`, and a `unique_ptr<Shape>` deletes its object through a `Shape*`. With a **virtual destructor** in the base, deleting a `Circle` through a `Shape*` runs `Circle`'s destructor too, then `Shape`'s. Without it, that delete is [[undefined behavior|virtual-destructor]]. The rule: a class meant to be used through base pointers gets a virtual destructor.
 
 ### Deriving from a derived class
 
-A derived class can itself be a base. A square *is a* rectangle with equal sides, so `Square` can derive from `Rectangle`, reuse its constructor, and override only `name()`. A derived constructor passes arguments to its base's constructor in the initialiser list, where members usually go:
+A derived class can itself be a base. A square *is a* rectangle with equal sides, so `Square` can derive from `Rectangle`, reuse its constructor, and override only `name()`. A derived constructor passes arguments to its base's constructor in the initializer list, where members usually go:
 
 ```cpp
 class Square : public Rectangle {
@@ -1890,7 +1890,7 @@ for (const auto& s : shapes) total += s->area();   // Circle::area, then Rectang
 **Watch out:** if you forget `virtual` in the base class, everything still compiles, and every call through a `Shape` quietly runs the base version: the starter's `"shape"` and `0`. Your guard is `override`. Put it on every function in a derived class that is meant to replace a base one; if the base function is not virtual, or the two do not match exactly, the compiler stops you. The next lesson shows one more way a derived object can [[lose its real type|square-rectangle]].
 
 ::: context polymorphism-word Many shapes
-"Polymorphism" is Greek for "many shapes": *poly*, many, and *morphe*, shape. One call, `s->area()`, takes many shapes of behaviour depending on the object. C++ has two kinds. Templates give **compile-time** polymorphism: the compiler makes a separate function for each type, and each call is fixed before the program runs. Virtual functions give **runtime** polymorphism: one function call, and the choice is made each time it runs. Use the first when the types are known while compiling, and the second when a collection mixes kinds.
+"Polymorphism" is Greek for "many shapes": *poly*, many, and *morphe*, shape. One call, `s->area()`, takes many shapes of behavior depending on the object. C++ has two kinds. Templates give **compile-time** polymorphism: the compiler makes a separate function for each type, and each call is fixed before the program runs. Virtual functions give **runtime** polymorphism: one function call, and the choice is made each time it runs. Use the first when the types are known while compiling, and the second when a collection mixes kinds.
 :::
 
 ::: context is-a "Is a kind of"
@@ -1950,7 +1950,7 @@ NASA JPL's open-source flight software framework, F Prime, flew on the Ingenuity
 :::
 
 ::: context virtual-destructor Half a destruction
-Without a virtual destructor, deleting through a `Shape*` picks the destructor the way a non-virtual call does: from the type the compiler sees. So only `~Shape` would be considered, and whatever `Circle` owns, a buffer or a file, would never be released. The standard goes further and calls the whole delete undefined behaviour, so anything can happen. With `-Wall`, compilers warn in some of these cases, for example clang when a `unique_ptr` deletes such a class, but not all of them, so do not count on a warning. Write the virtual destructor.
+Without a virtual destructor, deleting through a `Shape*` picks the destructor the way a non-virtual call does: from the type the compiler sees. So only `~Shape` would be considered, and whatever `Circle` owns, a buffer or a file, would never be released. The standard goes further and calls the whole delete undefined behavior, so anything can happen. With `-Wall`, compilers warn in some of these cases, for example clang when a `unique_ptr` deletes such a class, but not all of them, so do not count on a warning. Write the virtual destructor.
 :::
 
 ::: context square-rectangle Where this comes back
@@ -2420,7 +2420,7 @@ std::function<int(int)> compose(std::function<int(int)> f, std::function<int(int
 
 The lambda captures `f` and `g` **by value**. They are parameters, so they end when `compose` returns, and the lambda needs its own copies to use later.
 
-**Watch out:** a handler that captures a local variable **by reference** must not outlive that variable. If a function subscribes `[&count](int) { ++count; }` and then returns, the bus is left holding a reference to a `count` that no longer exists. When that handler is called, the program has undefined behaviour, and nothing warns you. Capture by value, or make sure the handler is unsubscribed first.
+**Watch out:** a handler that captures a local variable **by reference** must not outlive that variable. If a function subscribes `[&count](int) { ++count; }` and then returns, the bus is left holding a reference to a `count` that no longer exists. When that handler is called, the program has undefined behavior, and nothing warns you. Capture by value, or make sure the handler is unsubscribed first.
 
 ::: context callbacks-everywhere You have used callbacks already
 The comparator you gave `std::sort` in the lambdas lesson was a callback: `sort` called your code every time it needed to compare two values. A button in an app works the same way: the app hands the button a function, and the button calls it on each click.
@@ -2472,7 +2472,7 @@ A `std::function` object has a fixed size, but the callables put into it do not:
 
 Each call also goes through a pointer to find the real function, so the compiler usually cannot paste the function's body in at the call site, a speed-up it makes all the time for templates.
 
-Flight software watches this closely. NASA JPL's "Power of 10" coding rules forbid dynamic memory allocation after initialisation, so a program that stores callbacks registers them while it starts up, not in the middle of a flight.
+Flight software watches this closely. NASA JPL's "Power of 10" coding rules forbid dynamic memory allocation after initialization, so a program that stores callbacks registers them while it starts up, not in the middle of a flight.
 :::
 
 ::: context software-bus A bus on a real spacecraft
@@ -2713,7 +2713,7 @@ std::visit(half, Value(3));             // an optional holding the double 1.5
 Without `-> std::optional<Value>`, one branch returns `std::nullopt` and the other a `Value`, and the compiler would stop, because a lambda cannot return two different types.
 
 ::: context union-history Where "union" comes from
-C, the language C++ grew out of, has a `union`: several members that share one piece of memory, big enough for the largest. It does not remember which member you stored last. Read the wrong one and you get undefined behaviour. The programmer has to keep track, usually with a separate number called a **tag**.
+C, the language C++ grew out of, has a `union`: several members that share one piece of memory, big enough for the largest. It does not remember which member you stored last. Read the wrong one and you get undefined behavior. The programmer has to keep track, usually with a separate number called a **tag**.
 
 A `std::variant` keeps the tag for you, which is why it is called a tagged union:
 
@@ -2916,7 +2916,7 @@ Modern `constexpr` functions can contain loops, `if`, local variables and even `
 
 - **I/O**, input and output: no `std::cout`, no reading files.
 - **`static` locals**, variables that keep their value between calls.
-- **[[Undefined behaviour|ub-rejected]]**. At run time, undefined behaviour can quietly give garbage. During compile-time evaluation, the compiler **rejects** it. That is a nice bonus: overflow inside a `static_assert` is a compile error instead of garbage.
+- **[[Undefined behavior|ub-rejected]]**. At run time, undefined behavior can quietly give garbage. During compile-time evaluation, the compiler **rejects** it. That is a nice bonus: overflow inside a `static_assert` is a compile error instead of garbage.
 
 ```cpp
 static_assert(square(100000) > 0);     // does not compile: 100000 * 100000
@@ -2987,9 +2987,9 @@ You already know both moments from the basics course: a compile error appears be
 :::
 
 ::: context ub-rejected The compiler catches what the program would not
-While compiling, the compiler follows every step of a `constexpr` call exactly, so it notices undefined behaviour, such as a signed number overflowing, that a running program would skip straight past.
+While compiling, the compiler follows every step of a `constexpr` call exactly, so it notices undefined behavior, such as a signed number overflowing, that a running program would skip straight past.
 
-This lesson's own `fib` gives a surprise. `fib(92)` is 7,540,113,804,746,346,429, which fits in a `long long`. But the loop always works one number ahead: to return `fib(92)` it also computes `fib(93)` in `next`, and that is too big. So `static_assert(fib(92) > 0)` does not compile, while at run time the same call would overflow silently, which is undefined behaviour. The largest this loop can safely give is `fib(91)`.
+This lesson's own `fib` gives a surprise. `fib(92)` is 7,540,113,804,746,346,429, which fits in a `long long`. But the loop always works one number ahead: to return `fib(92)` it also computes `fib(93)` in `next`, and that is too big. So `static_assert(fib(92) > 0)` does not compile, while at run time the same call would overflow silently, which is undefined behavior. The largest this loop can safely give is `fib(91)`.
 :::
 
 ::: context tables-in-rom Tables baked into the program
@@ -2997,7 +2997,7 @@ A `constexpr` table, such as a list of sine values or a checksum table, is finis
 :::
 
 ::: context checks-every-build Checks that cost nothing to run
-A `static_assert` runs on every build, on every computer that compiles the code, and costs nothing once the program is running. That makes it a favourite in embedded and flight software, where memory layouts must match exactly. A common use is checking that a message format has the size the other side expects, for example `static_assert(sizeof(Packet) == 16);`. If someone adds a field later, the build stops at once, instead of the spacecraft and the ground station quietly misreading each other's data.
+A `static_assert` runs on every build, on every computer that compiles the code, and costs nothing once the program is running. That makes it a favorite in embedded and flight software, where memory layouts must match exactly. A common use is checking that a message format has the size the other side expects, for example `static_assert(sizeof(Packet) == 16);`. If someone adds a field later, the build stops at once, instead of the spacecraft and the ground station quietly misreading each other's data.
 :::
 
 ::: context step-limits How much work the compiler will do
@@ -3171,7 +3171,7 @@ line 4: fuel out of range
 
 ### Four habits that make this style work
 
-**Return early, on the first error, with as much context as you have.** The moment something is wrong, `return` the error. Line numbers are gold: "line 3: unknown key: colour" tells a person exactly where to look.
+**Return early, on the first error, with as much context as you have.** The moment something is wrong, `return` the error. Line numbers are gold: "line 3: unknown key: color" tells a person exactly where to look.
 
 **Validate everything once, at the [[boundary|check-at-the-edge]].** Check the text completely where it enters the program. Then every other part of the program can trust a `Settings` it receives, without checking it again.
 
@@ -3450,7 +3450,7 @@ With three keys, `std::tie(a.dept, b.salary, a.name) < std::tie(b.dept, a.salary
 
 A comparator has to be a **[[strict weak ordering|strict-weak]]**. In practice that means: it behaves like `<`, never like `<=`. Asking "does `x` come before itself?" must give false: `comp(x, x)` must be false.
 
-**Watch out:** writing `<=`, say `a.salary <= b.salary`, is the classic mistake. Then two equal salaries each claim to come before the other. The C++ rules call that **undefined behaviour** for `std::sort`: you may get a wrong order, or the sort may read outside the vector and crash. It can look fine on small tests and fail on big ones. Always use `<`, and break ties with another key.
+**Watch out:** writing `<=`, say `a.salary <= b.salary`, is the classic mistake. Then two equal salaries each claim to come before the other. The C++ rules call that **undefined behavior** for `std::sort`: you may get a wrong order, or the sort may read outside the vector and crash. It can look fine on small tests and fail on big ones. Always use `<`, and break ties with another key.
 
 ### Keeping ties in their original order
 
@@ -3759,7 +3759,7 @@ A *greedy* method makes the choice that looks best right now and never goes back
 :::
 
 ::: context fail-then-work The shape that makes it work
-Draw every capacity on a line and mark each one fail or work. Because a bigger ship never needs more days, all the fails sit on the left and all the works on the right, with one boundary between them. Binary search finds that boundary by testing the middle and keeping the half where it must be. If the shape were mixed, testing one spot would tell you nothing about its neighbours, and the trick would fail. The same idea runs `git bisect` from the advanced Git course: the commits go "good, good, …, bad, bad", and it finds the first bad one by halving.
+Draw every capacity on a line and mark each one fail or work. Because a bigger ship never needs more days, all the fails sit on the left and all the works on the right, with one boundary between them. Binary search finds that boundary by testing the middle and keeping the half where it must be. If the shape were mixed, testing one spot would tell you nothing about its neighbors, and the trick would fail. The same idea runs `git bisect` from the advanced Git course: the commits go "good, good, …, bad, bad", and it finds the first bad one by halving.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
@@ -3977,7 +3977,7 @@ for (std::size_t i = 0; i < parts.size(); ++i) {
 
 Now three abilities are three small classes, and any combination is free: no new class for "flies and drives". [[Inheritance has not gone away|composition-rule]]. It is still used for what it is good at: a narrow **interface** (`Ability`) with interchangeable implementations. What went away is inheritance used to **share code** between concrete classes.
 
-A rule of thumb: inherit to be *used as* the base (that is **polymorphism**, one piece of code working with many types); compose to *reuse* behaviour. When you catch yourself naming a class after a combination of features, like `FlyingSwimmingRobot`, that is the signal to compose instead.
+A rule of thumb: inherit to be *used as* the base (that is **polymorphism**, one piece of code working with many types); compose to *reuse* behavior. When you catch yourself naming a class after a combination of features, like `FlyingSwimmingRobot`, that is the signal to compose instead.
 
 ### Two things in the starter
 
@@ -4025,7 +4025,7 @@ When you write `r.add(…)`, the compiler quietly passes the address of `r` into
 :::
 
 ::: context composition-rule An old piece of advice
-"Favor object composition over class inheritance" is one of the best-known lines in *Design Patterns* (1994), a book by Erich Gamma, Richard Helm, Ralph Johnson and John Vlissides. Flight software often follows the same idea. NASA JPL's F Prime framework, which ran on the Ingenuity helicopter on Mars, builds a program out of separate components connected through well-defined ports, rather than one deep family tree of classes. Game engines do the same: in Unity, a game object is given its behaviour by the components attached to it.
+"Favor object composition over class inheritance" is one of the best-known lines in *Design Patterns* (1994), a book by Erich Gamma, Richard Helm, Ralph Johnson and John Vlissides. Flight software often follows the same idea. NASA JPL's F Prime framework, which ran on the Ingenuity helicopter on Mars, builds a program out of separate components connected through well-defined ports, rather than one deep family tree of classes. Game engines do the same: in Unity, a game object is given its behavior by the components attached to it.
 :::
 
 ::: context protected-data Why protected data is avoided

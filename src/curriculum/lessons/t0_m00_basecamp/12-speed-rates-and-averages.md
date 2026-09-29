@@ -8,21 +8,21 @@ covers:
 
 A car's speedometer says $90\,\mathrm{km/h}$. A gas pump shows dollars per gallon. A recipe says roast the meat for $20$ minutes per kilogram. Every one of these is a **rate**: how much of one thing goes with each single unit of another. The little word that gives a rate away is **per**.
 
-Rockets run on rates. A satellite in low orbit moves at about $7.7$ kilometres *per second*. A first-stage engine gulps hundreds of kilograms of propellant *per second*. Gravity adds about $9.8$ metres per second to a falling object's speed, every second. And when a navigation computer gets five slightly different readings from a sensor, it has to decide on one number — usually by taking an **average**.
+Rockets run on rates. A satellite in low orbit moves at about $7.7$ kilometers *per second*. A first-stage engine gulps hundreds of kilograms of propellant *per second*. Gravity adds about $9.8$ meters per second to a falling object's speed, every second. And when a navigation computer gets five slightly different readings from a sensor, it has to decide on one number — usually by taking an **average**.
 
 This is the last lesson of Basecamp. It pulls together what came before — formulas, rearranging, units, circles — and uses them on the three questions a flight engineer asks about anything that changes: how fast, how much per second, and what is the typical value.
 
 ## Speed: distance per time
 
-A sprinter runs $100\,\mathrm{m}$ in $12.5\,\mathrm{s}$. How fast is that? Share the distance out over the seconds: $100 \div 12.5 = 8$. Each second, on average, the runner covers $8$ metres. We say the speed is $8$ **metres per second**, written $8\,\mathrm{m/s}$.
+A sprinter runs $100\,\mathrm{m}$ in $12.5\,\mathrm{s}$. How fast is that? Share the distance out over the seconds: $100 \div 12.5 = 8$. Each second, on average, the runner covers $8$ meters. We say the speed is $8$ **meters per second**, written $8\,\mathrm{m/s}$.
 
-**Speed** is the distance travelled divided by the time it took. With $d$ for distance, $t$ for time and $v$ for speed (from "velocity"):
+**Speed** is the distance traveled divided by the time it took. With $d$ for distance, $t$ for time and $v$ for speed (from "velocity"):
 
 $$
 v = \frac{d}{t}.
 $$
 
-The units divide the same way the numbers do. Metres divided by seconds gives metres per second. The slash in $\mathrm{m/s}$ is a fraction bar, and "per" [[means divide|per-means-divide]].
+The units divide the same way the numbers do. Meters divided by seconds gives meters per second. The slash in $\mathrm{m/s}$ is a fraction bar, and "per" [[means divide|per-means-divide]].
 
 ### Three ways to write one rule
 
@@ -47,14 +47,14 @@ The Space Station orbits about $400\,\mathrm{km}$ up, which puts it about $6771\
 
 **Divide.** $t = 42\,540 \div 7.67 \approx 5547\,\mathrm{s}$.
 
-**Check the units.** Kilometres divided by kilometres per second: the kilometres cancel and seconds are left, as a time should be.
+**Check the units.** Kilometers divided by kilometers per second: the kilometers cancel and seconds are left, as a time should be.
 
 **Convert to minutes.** $5547 \div 60 \approx 92.4\,\mathrm{min}$ — about an hour and a half, which matches the roughly $92$-minute orbit from the last lesson.
 :::
 
 ### Changing speed units
 
-Cars use kilometres per hour; engineers use metres per second. To switch, convert the top and the bottom separately. One kilometre per hour is $1000\,\mathrm{m}$ in $3600\,\mathrm{s}$:
+Cars use kilometers per hour; engineers use meters per second. To switch, convert the top and the bottom separately. One kilometer per hour is $1000\,\mathrm{m}$ in $3600\,\mathrm{s}$:
 
 $$
 1\,\mathrm{km/h} = \frac{1000\,\mathrm{m}}{3600\,\mathrm{s}} = \frac{1}{3.6}\,\mathrm{m/s}.
@@ -65,12 +65,12 @@ So divide by $3.6$ to go from km/h to m/s, and multiply by $3.6$ to go back. A c
 And orbit? $7.7\,\mathrm{km/s}$ is $7700\,\mathrm{m/s}$. An hour has $3600$ seconds, so in an hour the station covers $7.7 \times 3600 = 27\,720\,\mathrm{km}$. That is $27\,720\,\mathrm{km/h}$.
 
 ::: warning Match the units before you multiply
-$d = v \times t$ only works if the units agree. With $v$ in kilometres per *second*, $t$ must be in seconds. Put in minutes or hours and the answer is wrong by a factor of $60$ or $3600$. If a speed is in km/h and a time is in seconds, convert one of them first. Write the units next to every number, and check they cancel to the unit you expect.
+$d = v \times t$ only works if the units agree. With $v$ in kilometers per *second*, $t$ must be in seconds. Put in minutes or hours and the answer is wrong by a factor of $60$ or $3600$. If a speed is in km/h and a time is in seconds, convert one of them first. Write the units next to every number, and check they cancel to the unit you expect.
 :::
 
 ## Rates: "per" anything
 
-Speed is only one kind of rate. A **unit rate** is how much of something goes with *one* unit of something else: one second, one kilogram, one litre. You always find it the same way — divide the amount by how many units it was spread over.
+Speed is only one kind of rate. A **unit rate** is how much of something goes with *one* unit of something else: one second, one kilogram, one liter. You always find it the same way — divide the amount by how many units it was spread over.
 
 ### Rates of flow
 
@@ -82,7 +82,7 @@ $$
 \dot{m} = \frac{411\,000\,\mathrm{kg}}{162\,\mathrm{s}} \approx 2540\,\mathrm{kg/s}.
 $$
 
-Two and a half tonnes every second. Split among its nine engines, that is about $2540 \div 9 \approx 282\,\mathrm{kg/s}$ each.
+Two and a half metric tons every second. Split among its nine engines, that is about $2540 \div 9 \approx 282\,\mathrm{kg/s}$ each.
 
 The same three-way rule holds, with mass in place of distance: mass used $= \dot{m} \times t$, and **burn time** $t = m / \dot{m}$.
 
@@ -106,7 +106,7 @@ Rates are also how engineers compare costs and designs fairly. Suppose a launch 
 
 ### A rate of a rate
 
-Drop a stone. After one second it is falling at about $9.8\,\mathrm{m/s}$; after two, about $19.6\,\mathrm{m/s}$; after ten, about $98\,\mathrm{m/s}$ (if there were no air to slow it). Its speed grows by the same amount every second. That growth is a rate of change of speed, called **acceleration**. Its unit is metres per second, per second — written $\mathrm{m/s^2}$. The pull of Earth's gravity is [[standardized|standard-gravity]] as $9.80665\,\mathrm{m/s^2}$.
+Drop a stone. After one second it is falling at about $9.8\,\mathrm{m/s}$; after two, about $19.6\,\mathrm{m/s}$; after ten, about $98\,\mathrm{m/s}$ (if there were no air to slow it). Its speed grows by the same amount every second. That growth is a rate of change of speed, called **acceleration**. Its unit is meters per second, per second — written $\mathrm{m/s^2}$. The pull of Earth's gravity is [[standardized|standard-gravity]] as $9.80665\,\mathrm{m/s^2}$.
 
 A change in speed gets its own symbol, $\Delta v$, read "delta v". The Greek letter $\Delta$ means "change in", and it is always the final value minus the starting value. A stone that goes from $0$ to $98\,\mathrm{m/s}$ has $\Delta v = 98 - 0 = 98\,\mathrm{m/s}$. You will hear "delta v" constantly: it is how mission planners measure the size of every rocket burn.
 
@@ -183,7 +183,7 @@ Find the average speed in each $10\,\mathrm{s}$ stretch, and over the whole $40\
 :::
 
 ::: warning Always subtract before you divide
-A table gives *positions*, not distances travelled. The distance in a stretch is the later reading minus the earlier one. Dividing $1800$ by $20$ gives $90\,\mathrm{m/s}$ — that is the average from the start, not the speed between $10$ and $20\,\mathrm{s}$.
+A table gives *positions*, not distances traveled. The distance in a stretch is the later reading minus the earlier one. Dividing $1800$ by $20$ gives $90\,\mathrm{m/s}$ — that is the average from the start, not the speed between $10$ and $20\,\mathrm{s}$.
 :::
 
 ## When an average misleads
@@ -206,11 +206,11 @@ An average squeezes a whole list into one number. That is useful, but three thin
 ## Check yourself
 
 ::: check
-A train covers $5\,\mathrm{km}$ in $4$ minutes at a steady speed. What is its speed in metres per second, and in kilometres per hour?
+A train covers $5\,\mathrm{km}$ in $4$ minutes at a steady speed. What is its speed in meters per second, and in kilometers per hour?
 :::
 
 ::: answer
-Put everything in metres and seconds first: $5\,\mathrm{km} = 5000\,\mathrm{m}$ and $4\,\mathrm{min} = 240\,\mathrm{s}$.
+Put everything in meters and seconds first: $5\,\mathrm{km} = 5000\,\mathrm{m}$ and $4\,\mathrm{min} = 240\,\mathrm{s}$.
 
 $v = d/t = 5000 \div 240 \approx 20.8\,\mathrm{m/s}$.
 
@@ -224,7 +224,7 @@ Radio signals travel at about $300\,000\,\mathrm{km/s}$. The Moon is about $384\
 ::: answer
 We want time, so $t = d/v = 384\,000 \div 300\,000 = 1.28\,\mathrm{s}$.
 
-Units: kilometres over kilometres per second leaves seconds. That is why the Apollo astronauts' replies had a pause of more than two and a half seconds — the question takes $1.28\,\mathrm{s}$ to get there and the answer $1.28\,\mathrm{s}$ to come back.
+Units: kilometers over kilometers per second leaves seconds. That is why the Apollo astronauts' replies had a pause of more than two and a half seconds — the question takes $1.28\,\mathrm{s}$ to get there and the answer $1.28\,\mathrm{s}$ to come back.
 :::
 
 ::: check
@@ -281,7 +281,7 @@ With $130$: the sum becomes $49 - 13 + 130 = 166$, so the mean is $166 \div 7 \a
 That is the end of Basecamp. You now have the arithmetic, geometry and measuring the rest of the course takes for granted. Next comes Algebra & Precalculus, which starts with signed numbers, fractions and ratios — and the first real rocket idea, the mass ratio of a stage.
 
 ::: context per-means-divide The little word "per"
-"Per" comes from Latin, where it means "through" or "for each". Whenever you see it, you can swap in "divided by" or "for each one". So $8\,\mathrm{m/s}$ is "8 metres for each second", $\$4000$ per kilogram is "$\$4000$ for each kilogram", and "per cent" is "for each hundred". Reading a unit out loud this way often tells you which numbers to divide.
+"Per" comes from Latin, where it means "through" or "for each". Whenever you see it, you can swap in "divided by" or "for each one". So $8\,\mathrm{m/s}$ is "8 meters for each second", $\$4000$ per kilogram is "$\$4000$ for each kilogram", and "per cent" is "for each hundred". Reading a unit out loud this way often tells you which numbers to divide.
 :::
 
 ::: context formula-triangle The distance–speed–time triangle
@@ -319,7 +319,7 @@ Gravity is not exactly the same everywhere on Earth. It is about $9.78\,\mathrm{
 :::
 
 ::: context speed-time-graph Distance is the area under the graph
-Plot speed going up and time going across. A steady speed-up is a straight sloping line. The distance travelled is the area of the shaded triangle underneath: $\tfrac{1}{2} \times 160\,\mathrm{s} \times 2000\,\mathrm{m/s} = 160\,000\,\mathrm{m}$ — the same as average speed times time.
+Plot speed going up and time going across. A steady speed-up is a straight sloping line. The distance traveled is the area of the shaded triangle underneath: $\tfrac{1}{2} \times 160\,\mathrm{s} \times 2000\,\mathrm{m/s} = 160\,000\,\mathrm{m}$ — the same as average speed times time.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210" font-family="Inter, Arial, sans-serif">
@@ -345,7 +345,7 @@ The dashed line at the average speed cuts the triangle so that the corner above 
 :::
 
 ::: context lighter-faster Why rockets speed up faster and faster
-Push a full shopping cart and an empty one equally hard: the empty one speeds up more. A rocket's engines push with roughly the same force all the way up, but the rocket is losing more than two tonnes of propellant every second. So each second the same push is shoving less mass, and the rocket gains more speed than it did the second before. Near the end of a stage's burn it can be speeding up several times faster than at lift-off.
+Push a full shopping cart and an empty one equally hard: the empty one speeds up more. A rocket's engines push with roughly the same force all the way up, but the rocket is losing more than two metric tons of propellant every second. So each second the same push is shoving less mass, and the rocket gains more speed than it did the second before. Near the end of a stage's burn it can be speeding up several times faster than at lift-off.
 :::
 
 ::: context outlier Wild readings in flight software
@@ -371,6 +371,6 @@ Sensors fail in odd ways — a loose wire, a flipped bit, a burst of electrical 
 The five good readings (blue) sit near $22$. The mean (orange mark) is dragged far off by one bad value; the median stays with the crowd.
 :::
 
-::: context river-depth The river that is "one metre deep on average"
-There is an old warning: never try to wade across a river because it is one metre deep *on average*. It might be ankle-deep for most of the way and three metres deep in the middle. Engineers design for the worst case, not the average: a tank must hold the highest pressure it will ever see, and a burn plan must work with the shortest burn the engine might give. That is why the spread matters as much as the mean.
+::: context river-depth The river that is "one meter deep on average"
+There is an old warning: never try to wade across a river because it is one meter deep *on average*. It might be ankle-deep for most of the way and three meters deep in the middle. Engineers design for the worst case, not the average: a tank must hold the highest pressure it will ever see, and a burn plan must work with the shortest burn the engine might give. That is why the spread matters as much as the mean.
 :::

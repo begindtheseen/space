@@ -226,7 +226,7 @@ On a diagram, a pickoff point sits at the input of a block $G(s) = 10/(s + 2)$ a
 ::: answer
 The branch must be multiplied by $1/G = (s + 2)/10$ to undo the block, so a factor $(s + 2)/10$ appears in the feedback branch.
 
-The algebra is correct, but $(s + 2)/10$ is improper. It is a differentiator ($s/10$) plus a gain ($0.2$), and its gain grows without limit at high frequency. As a middle step in a reduction that ends with the factor cancelled, it is harmless. As something you keep, evaluate numerically, or hand to a simulation, it is wrong: it will amplify every bit of numerical or sensor noise in that branch. If the reduction cannot be finished without leaving the improper factor in place, stop pushing blocks and write the node equations.
+The algebra is correct, but $(s + 2)/10$ is improper. It is a differentiator ($s/10$) plus a gain ($0.2$), and its gain grows without limit at high frequency. As a middle step in a reduction that ends with the factor canceled, it is harmless. As something you keep, evaluate numerically, or hand to a simulation, it is wrong: it will amplify every bit of numerical or sensor noise in that branch. If the reduction cannot be finished without leaving the improper factor in place, stop pushing blocks and write the node equations.
 :::
 
 ::: check

@@ -20,13 +20,13 @@ The trouble is the square root. The distance from a receiver at $\mathbf{x}$ to 
 
 Here is the trick. Stand on a football field and the ground looks flat, even though the Earth is round. Any smooth curve looks like a straight line if you zoom in close enough. So near your current guess, pretend the range is a straight-line function of position. Solve that easy straight-line problem. Move to the answer, and zoom in again there. This is called **[[linearizing|linearize]]** — swapping a curve for its straight-line stand-in near one point.
 
-Write the modelled pseudorange to satellite $i$ — atmosphere and satellite clock already removed, as in the pseudorange lesson — as a function of the four unknowns:
+Write the modeled pseudorange to satellite $i$ — atmosphere and satellite clock already removed, as in the pseudorange lesson — as a function of the four unknowns:
 
 $$
 \hat\rho_i(\mathbf{x}, b) = \|\mathbf{s}_i - \mathbf{x}\| + \Delta\rho_{\text{Sagnac},i}(\mathbf{x}) + b .
 $$
 
-Read $\hat\rho_i$ as "rho hat i": the hat marks a value *predicted* from the model, not measured. It is the geometric range, plus a small correction for Earth's rotation (the next section derives it), plus the clock bias $b$ in metres. Now take the current guess $(\mathbf{x}_k, b_k)$ — the subscript $k$ counts the rounds — and ask how the prediction changes if you nudge position by $\delta\mathbf{x}$ and the clock by $\delta b$ (read "delta x", a small change). To first order, which is the straight-line approximation,
+Read $\hat\rho_i$ as "rho hat i": the hat marks a value *predicted* from the model, not measured. It is the geometric range, plus a small correction for Earth's rotation (the next section derives it), plus the clock bias $b$ in meters. Now take the current guess $(\mathbf{x}_k, b_k)$ — the subscript $k$ counts the rounds — and ask how the prediction changes if you nudge position by $\delta\mathbf{x}$ and the clock by $\delta b$ (read "delta x", a small change). To first order, which is the straight-line approximation,
 
 $$
 \hat\rho_i(\mathbf{x}_k + \delta\mathbf{x},\, b_k + \delta b) \approx \hat\rho_i(\mathbf{x}_k, b_k) + \left.\frac{\partial \hat\rho_i}{\partial \mathbf{x}}\right|_{\mathbf{x}_k}\!\!\cdot \delta\mathbf{x} + \delta b .
@@ -98,7 +98,7 @@ $$
 \Delta\rho_{\text{Sagnac},i} = \frac{\omega_e}{c}\,\big(x_{s,i}\,y_r - y_{s,i}\,x_r\big).
 $$
 
-That is the closed form the pseudorange lesson quoted. The $z$ coordinates never appear, because the spin is about the $z$ axis. For the four satellites used below it comes to $-10.0$, $-19.0$, $+20.3$ and $+14.8\,\mathrm{m}$ — inside the $\pm 30$ to $40\,\mathrm{m}$ bound the pseudorange lesson gave. Tens of metres is far too big to ignore.
+That is the closed form the pseudorange lesson quoted. The $z$ coordinates never appear, because the spin is about the $z$ axis. For the four satellites used below it comes to $-10.0$, $-19.0$, $+20.3$ and $+14.8\,\mathrm{m}$ — inside the $\pm 30$ to $40\,\mathrm{m}$ bound the pseudorange lesson gave. Tens of meters is far too big to ignore.
 
 Should the correction have its own entries in $\mathbf{G}$? It depends on position, so strictly yes. But its slopes are tiny. The factor $\omega_e/c$ is about $2.4\times10^{-13}$ per meter, and satellite coordinates are about $10^7\,\mathrm{m}$, so the slopes are around $10^{-6}$. The geometric slopes are about $1$. They are dropped from $\mathbf{G}$ with no measurable effect. The correction itself is recomputed from the new position every round.
 
@@ -120,7 +120,7 @@ In practice a QR decomposition gives the same answer more safely when $\mathbf{G
 
 That last step is what makes this different from an ordinary straight-line fit. In an ordinary fit, the matrix is fixed once by the problem and never changes. Here $\mathbf{G}$ is built from the arrows $\mathbf{e}_i$, and the arrows depend on where you think you are. Move the guess and the arrows swing, so $\mathbf{G}$ must be rebuilt every round. The outer loop — relinearize, solve, update — turns a one-shot linear solve into an iterative nonlinear one.
 
-The GNSS books call this "Newton iteration", which is a small looseness worth naming. Newton's method proper would also use the curve's *bend* (its second derivative). What runs here keeps only the slope, and is called **[[Gauss–Newton|gauss-newton]]**. The two behave the same here because the range curve bends so little. From $20{,}000\,\mathrm{km}$ away, a satellite's range looks flat over a correction of kilometres, let alone metres.
+The GNSS books call this "Newton iteration", which is a small looseness worth naming. Newton's method proper would also use the curve's *bend* (its second derivative). What runs here keeps only the slope, and is called **[[Gauss–Newton|gauss-newton]]**. The two behave the same here because the range curve bends so little. From $20{,}000\,\mathrm{km}$ away, a satellite's range looks flat over a correction of kilometers, let alone meters.
 
 ::: key
 Solve $\mathbf{G}\,\delta = \Delta\boldsymbol\rho$ — directly if $n=4$, by least squares if $n>4$ — add $\delta$ to the estimate, and rebuild $\mathbf{G}$ at the new estimate every iteration, because $\mathbf{e}_i$ moves with $\mathbf{x}$.
@@ -180,7 +180,7 @@ print("final residual (m):", rho - model(sats, x, b))
 # final residual (m): [ 0.0000000e+00 -3.7252903e-09  0.0000000e+00 -3.7252903e-09]
 ```
 
-Six rounds. Read the step sizes as a story: $7.68\times10^6\,\mathrm{m}$, then $1.26\times10^6$, then $4.19\times10^4$, then $47.3$, then $2.44\times10^{-4}$, then $3.8\times10^{-9}\,\mathrm{m}$. At first the guess is thousands of kilometres off, the straight line is a rough guide, and the step shrinks by only about six times. Once the fourth round lands within $47\,\mathrm{m}$ — a whisper against a $20{,}000\,\mathrm{km}$ range — the flat-ground picture is nearly exact. From then on each step's size is roughly the *square* of the last one, measured against the size of the problem. That is **[[quadratic convergence|quadratic-convergence]]**, the mark of Newton-type methods once they are close. From $47\,\mathrm{m}$ to $0.00024\,\mathrm{m}$ is a jump of about two hundred thousand times in one round.
+Six rounds. Read the step sizes as a story: $7.68\times10^6\,\mathrm{m}$, then $1.26\times10^6$, then $4.19\times10^4$, then $47.3$, then $2.44\times10^{-4}$, then $3.8\times10^{-9}\,\mathrm{m}$. At first the guess is thousands of kilometers off, the straight line is a rough guide, and the step shrinks by only about six times. Once the fourth round lands within $47\,\mathrm{m}$ — a whisper against a $20{,}000\,\mathrm{km}$ range — the flat-ground picture is nearly exact. From then on each step's size is roughly the *square* of the last one, measured against the size of the problem. That is **[[quadratic convergence|quadratic-convergence]]**, the mark of Newton-type methods once they are close. From $47\,\mathrm{m}$ to $0.00024\,\mathrm{m}$ is a jump of about two hundred thousand times in one round.
 
 The final position is $3.3$ nanometers from the truth, and the clock is $0.7$ nanometers off. All four residuals sit at about $10^{-9}\,\mathrm{m}$, which is as small as double-precision arithmetic can resolve at this size. Now remember the previous lesson's warning: four measurements, four unknowns, zero residual — *whether or not the fix is right*. Here it is right, because the data were noise-free by construction. The residual could not have told you that. It could not have told you if the fix were wrong, either.
 
@@ -261,7 +261,7 @@ This is the cleanest evidence that the minus sign in $-\mathbf{e}_i^{\mathsf T}$
 :::
 
 ::: warning
-The Jacobian row is $-\mathbf{e}_i^{\mathsf T}$, not $+\mathbf{e}_i^{\mathsf T}$. Moving the receiver toward a satellite, in the direction $+\mathbf{e}_i$, *shortens* that range, so the slope is negative. Get it wrong and the loop does not fail quietly — it blows up, as the example shows. If your solver explodes instead of converging, check this sign first. Then check the residual: it is $\Delta\boldsymbol\rho = \tilde{\boldsymbol\rho} - \hat{\boldsymbol\rho}$, observed minus modelled, not the other way round. Swapping that has the same effect.
+The Jacobian row is $-\mathbf{e}_i^{\mathsf T}$, not $+\mathbf{e}_i^{\mathsf T}$. Moving the receiver toward a satellite, in the direction $+\mathbf{e}_i$, *shortens* that range, so the slope is negative. Get it wrong and the loop does not fail quietly — it blows up, as the example shows. If your solver explodes instead of converging, check this sign first. Then check the residual: it is $\Delta\boldsymbol\rho = \tilde{\boldsymbol\rho} - \hat{\boldsymbol\rho}$, observed minus modeled, not the other way round. Swapping that has the same effect.
 :::
 
 ## Check yourself
@@ -318,7 +318,7 @@ The error in each step comes from what the straight-line stand-in misses: the cu
 
 | Idea | Statement |
 | --- | --- |
-| Modelled pseudorange | $\hat\rho_i(\mathbf{x},b) = \|\mathbf{s}_i-\mathbf{x}\| + \Delta\rho_{\text{Sagnac},i}(\mathbf{x}) + b$ |
+| Modeled pseudorange | $\hat\rho_i(\mathbf{x},b) = \|\mathbf{s}_i-\mathbf{x}\| + \Delta\rho_{\text{Sagnac},i}(\mathbf{x}) + b$ |
 | Jacobian row | $[-\mathbf{e}_i^{\mathsf T},\ 1]$, $\mathbf{e}_i=(\mathbf{s}_i-\mathbf{x})/\|\mathbf{s}_i-\mathbf{x}\|$; stack the rows to get $\mathbf{G}$, rebuilt every iteration |
 | Sagnac correction | $\Delta\rho_{\text{Sagnac},i} = (\omega_e/c)(x_{s,i}y_r - y_{s,i}x_r)$, from the receiver riding the Earth's spin during the signal's flight |
 | Gauss–Newton step | $\mathbf{G}\,\delta = \Delta\boldsymbol\rho$: direct if $n=4$, least squares if $n>4$; update, relinearize, repeat; quadratic convergence once close |

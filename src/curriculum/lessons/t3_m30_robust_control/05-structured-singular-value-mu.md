@@ -25,7 +25,7 @@ For a complex matrix $\mathbf{M}$ and a block structure $\boldsymbol{\Delta}$,
 
 $$\mu_{\boldsymbol{\Delta}}(\mathbf{M}) = \frac{1}{\min\{\bar{\sigma}(\boldsymbol{\Delta}) : \boldsymbol{\Delta}\in\boldsymbol{\Delta},\ \det(\mathbf{I} - \mathbf{M}\boldsymbol{\Delta}) = 0\}},$$
 
-and $\mu_{\boldsymbol{\Delta}}(\mathbf{M}) = 0$ if no allowed $\boldsymbol{\Delta}$ makes $\mathbf{I} - \mathbf{M}\boldsymbol{\Delta}$ singular. Robust stability of the $\mathbf{M}$–$\boldsymbol{\Delta}$ loop against the normalised set $\lVert\boldsymbol{\Delta}\rVert_\infty \le 1$ holds if and only if $\sup_\omega\mu_{\boldsymbol{\Delta}}(\mathbf{M}(j\omega)) < 1$ — the peak of $\mu$ over frequency is below one. Computing $\mu$ exactly is NP-hard; tools give upper and lower bounds.
+and $\mu_{\boldsymbol{\Delta}}(\mathbf{M}) = 0$ if no allowed $\boldsymbol{\Delta}$ makes $\mathbf{I} - \mathbf{M}\boldsymbol{\Delta}$ singular. Robust stability of the $\mathbf{M}$–$\boldsymbol{\Delta}$ loop against the normalized set $\lVert\boldsymbol{\Delta}\rVert_\infty \le 1$ holds if and only if $\sup_\omega\mu_{\boldsymbol{\Delta}}(\mathbf{M}(j\omega)) < 1$ — the peak of $\mu$ over frequency is below one. Computing $\mu$ exactly is NP-hard; tools give upper and lower bounds.
 :::
 
 Read it from the inside out.

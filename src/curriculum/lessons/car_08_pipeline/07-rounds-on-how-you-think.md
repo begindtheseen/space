@@ -102,7 +102,7 @@ $$
 m = \frac{101\,000\,\mathrm{N/m^2} \times 1\,\mathrm{m^2}}{9.8\,\mathrm{m/s^2}} \approx 10\,300\,\mathrm{kg}
 $$
 
-A newton is a $\mathrm{kg \cdot m/s^2}$, so dividing by $\mathrm{m/s^2}$ leaves kilograms, as a mass should. She says it aloud as "about ten tonnes per square meter — call it $10^4$ kilograms."
+A newton is a $\mathrm{kg \cdot m/s^2}$, so dividing by $\mathrm{m/s^2}$ leaves kilograms, as a mass should. She says it aloud as "about ten metric tons per square meter — call it $10^4$ kilograms."
 
 **Cross-check by a second route.** Now the step that earns the round. Near the ground, air has a density of roughly $1.2\,\mathrm{kg/m^3}$. The atmosphere thins out with height over a distance of roughly eight or nine kilometers — the **[[scale height|scale-height]]**. So a crude column is density times that height:
 
@@ -114,7 +114,7 @@ Two independent routes, landing about $1\%$ apart. That is far stronger than eit
 
 **State the uncertainty.** She is confident in the pressure figure and much less sure of the scale height. So she quotes the answer as $10^4\,\mathrm{kg}$ per square meter and does not defend the third significant figure.
 
-**Sanity check on the sanity check.** Ten tonnes over a square meter sounds huge. But it is the same thing as the familiar fact that air pressure is about $10\,\mathrm{N}$ on every square centimeter — roughly the weight of a one-kilogram bag of sugar on a fingernail-sized patch. We do not feel it because the air pushes equally from every side.
+**Sanity check on the sanity check.** Ten metric tons over a square meter sounds huge. But it is the same thing as the familiar fact that air pressure is about $10\,\mathrm{N}$ on every square centimeter — roughly the weight of a one-kilogram bag of sugar on a fingernail-sized patch. We do not feel it because the air pushes equally from every side.
 
 Three minutes: a stated method, a cross-check, and a claim with honest edges.
 :::

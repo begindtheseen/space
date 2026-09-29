@@ -4,7 +4,7 @@ title: "Path 1: the degree, taken parallel"
 minutes: 19
 covers:
   - "Path 1, degree-parallel: use the curriculum to be the strongest candidate in a graduating cohort, because the real differentiator is demonstrated shipped 6-DOF, estimation and guidance work that almost no new grad has"
-  - "accredited routes that fit alongside work: ABET-accredited part-time and online bachelor’s programmes, community college transfer, competency-based models"
+  - "accredited routes that fit alongside work: ABET-accredited part-time and online bachelor’s programs, community college transfer, competency-based models"
 ---
 
 Imagine a talent show where everyone who wants to perform needs a ticket. Getting a ticket does not win you anything — it only puts you on the stage, next to hundreds of others who also have tickets. What wins is what you do once you are up there.

@@ -3,7 +3,7 @@ id: l07-matlab-and-simulink-in-ci
 title: MATLAB and Simulink in CI
 minutes: 24
 covers:
-  - 'MATLAB and Simulink in CI: setup-matlab, headless Simulink Test, licence servers'
+  - 'MATLAB and Simulink in CI: setup-matlab, headless Simulink Test, license servers'
 ---
 
 Think of a school library that owns five copies of a popular book. Anyone may read it, but only five people at a time. When all five are checked out, the next person waits, or goes home without it. The library does not care who you are, only whether a copy is free.
@@ -25,7 +25,7 @@ If someone changes a filter time constant and the pointing error doubles, you wa
 - and publish every report as an artifact, including **traceability** reports, which show which requirement each test verifies.
 
 ::: key How Simulink fits into CI
-Run MATLAB headless on a runner that can reach a licence server, execute Simulink Test suites and coverage programmatically, run Model Advisor checks, and publish the coverage and traceability reports as artefacts.
+Run MATLAB headless on a runner that can reach a license server, execute Simulink Test suites and coverage programmatically, run Model Advisor checks, and publish the coverage and traceability reports as artifacts.
 :::
 
 ## The three MathWorks actions

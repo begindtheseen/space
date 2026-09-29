@@ -24,7 +24,7 @@ $$
 
 Read it aloud as "d equals v times t". The letters are chosen to help you remember them: $d$ for distance, $v$ for velocity (speed), $t$ for time. The dot $\cdot$ means multiply. Mathematicians are lazy about writing multiplication, so you will often see the dot left out altogether: $vt$ means $v \times t$, and $3x$ means $3 \times x$. When two letters, or a number and a letter, sit side by side with nothing between them, they are multiplied.
 
-Not every letter changes. Some stand for a number that is always the same, like $g$, the [[pull of Earth's gravity|g-value]] at the surface, which is about $9.81\,\mathrm{m/s^2}$ (read "metres per second squared"). A letter like that is called a **constant**. It is still a letter, but its value is fixed.
+Not every letter changes. Some stand for a number that is always the same, like $g$, the [[pull of Earth's gravity|g-value]] at the surface, which is about $9.81\,\mathrm{m/s^2}$ (read "meters per second squared"). A letter like that is called a **constant**. It is still a letter, but its value is fixed.
 
 Why write letters at all, instead of numbers? Because a formula with letters is a [[machine that works for any input|formula-machine]]. Write "$60 = 12 \times 5$" and you have described one trip. Write "$d = vt$" and you have described every trip there ever was.
 
@@ -70,7 +70,7 @@ Replace each letter with its value, then work it out in the right order. For $d 
 
 ### The units come along for the ride
 
-Notice what happened to the units. Metres per second, times seconds, left metres. The "per second" and the "seconds" cancelled, the same way $\frac{3}{5} \times 5$ leaves $3$. Units behave like letters: you can multiply them, divide them and cancel them.
+Notice what happened to the units. Meters per second, times seconds, left meters. The "per second" and the "seconds" canceled, the same way $\frac{3}{5} \times 5$ leaves $3$. Units behave like letters: you can multiply them, divide them and cancel them.
 
 This is not a side detail. It is one of the best mistake-catchers you will ever have. If you work out a distance and the units come out as seconds, something went wrong, even if you cannot yet see where. A famous spacecraft was [[lost because two teams used different units|mars-climate-orbiter]], so engineers take this seriously.
 
@@ -80,7 +80,7 @@ $$
 A = l \cdot w = 2.5\,\mathrm{m} \times 1.2\,\mathrm{m} = 3\,\mathrm{m^2}.
 $$
 
-Metres times metres is **[[square metres|square-metres]]**, written $\mathrm{m^2}$: the number of one-metre squares that would tile the panel.
+Meters times meters is **[[square meters|square-metres]]**, written $\mathrm{m^2}$: the number of one-meter squares that would tile the panel.
 
 ### Do things in the right order
 
@@ -106,9 +106,9 @@ $$
 W = m \cdot g = 70 \times 9.81 = 686.7\,\mathrm{N}.
 $$
 
-The unit is the **[[newton|newton]]** (N), the unit of force. Kilograms times metres per second squared *is* a newton — that is how the newton is defined.
+The unit is the **[[newton|newton]]** (N), the unit of force. Kilograms times meters per second squared *is* a newton — that is how the newton is defined.
 
-**Force to speed up.** Newton's second law says the force needed to speed up a mass $m$ at a rate $a$ is $F = m \cdot a$. Here $a$ is the **acceleration**, how many metres per second the speed grows every second, measured in $\mathrm{m/s^2}$. A small upper stage has mass $m = 25\,000\,\mathrm{kg}$ and needs to speed up at $a = 33.8\,\mathrm{m/s^2}$:
+**Force to speed up.** Newton's second law says the force needed to speed up a mass $m$ at a rate $a$ is $F = m \cdot a$. Here $a$ is the **acceleration**, how many meters per second the speed grows every second, measured in $\mathrm{m/s^2}$. A small upper stage has mass $m = 25\,000\,\mathrm{kg}$ and needs to speed up at $a = 33.8\,\mathrm{m/s^2}$:
 
 $$
 F = m \cdot a = 25\,000 \times 33.8 = 845\,000\,\mathrm{N}.
@@ -253,13 +253,13 @@ $W = m \cdot g = 80 \times 3.71 = 296.8\,\mathrm{N}$. On Earth it would be $80 \
 :::
 
 ::: check
-A water tank on a test stand starts with $1200$ litres and drains at $15$ litres per minute. Write a formula for the water $W$ left after $t$ minutes, and use it to find how much is left after $40$ minutes.
+A water tank on a test stand starts with $1200$ liters and drains at $15$ liters per minute. Write a formula for the water $W$ left after $t$ minutes, and use it to find how much is left after $40$ minutes.
 :::
 
 ::: answer
-Each minute takes away $15$ litres, so $t$ minutes take away $15t$. The formula is $W = 1200 - 15t$. Test: at $t = 0$ it gives $1200$ litres, the full tank.
+Each minute takes away $15$ liters, so $t$ minutes take away $15t$. The formula is $W = 1200 - 15t$. Test: at $t = 0$ it gives $1200$ liters, the full tank.
 
-After $40$ minutes: $W = 1200 - 15 \times 40 = 1200 - 600 = 600$ litres. Half the tank is gone after $40$ of the $80$ minutes it takes to empty, which makes sense.
+After $40$ minutes: $W = 1200 - 15 \times 40 = 1200 - 600 = 600$ liters. Half the tank is gone after $40$ of the $80$ minutes it takes to empty, which makes sense.
 :::
 
 ::: check
@@ -290,7 +290,7 @@ Test with $y = 1$. The original: $4(2 + 5) + 3 = 4 \times 7 + 3 = 31$. The simpl
 Next lesson turns formulas around. Substituting finds $d$ when you know $v$ and $t$; solving an equation finds $t$ when you know $d$ and $v$ — how long the burn must last, rather than how far it goes.
 
 ::: context g-value What g really is
-$g$ is how fast anything speeds up when it falls near Earth's surface, if the air does not slow it down. Every second of falling adds about $9.81$ metres per second to its speed.
+$g$ is how fast anything speeds up when it falls near Earth's surface, if the air does not slow it down. Every second of falling adds about $9.81$ meters per second to its speed.
 
 The real value changes a little from place to place — it is slightly stronger at the poles than at the equator, and weaker on a mountain top. So engineers agreed on one exact number to use in calculations, called **standard gravity**: $g_0 = 9.80665\,\mathrm{m/s^2}$. In Basecamp, $9.81$ is close enough.
 :::
@@ -330,8 +330,8 @@ In 1999 NASA's Mars Climate Orbiter reached Mars and was lost. One team's softwa
 Nobody's arithmetic was wrong. The units were never written down and checked, so the spacecraft's path drifted, and it passed far too close to Mars. Writing units next to every number is the cheapest protection there is.
 :::
 
-::: context square-metres Why metres times metres is square metres
-Picture a floor $4\,\mathrm{m}$ long and $3\,\mathrm{m}$ wide. Mark it off in squares one metre on each side. There are $4$ squares along and $3$ rows, so $4 \times 3 = 12$ squares in all. Each one is a "square metre", so the area is $12\,\mathrm{m^2}$.
+::: context square-metres Why meters times meters is square meters
+Picture a floor $4\,\mathrm{m}$ long and $3\,\mathrm{m}$ wide. Mark it off in squares one meter on each side. There are $4$ squares along and $3$ rows, so $4 \times 3 = 12$ squares in all. Each one is a "square meter", so the area is $12\,\mathrm{m^2}$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
@@ -346,7 +346,7 @@ Picture a floor $4\,\mathrm{m}$ long and $3\,\mathrm{m}$ wide. Mark it off in sq
 </svg>
 ```
 
-The small raised $2$ is the same "squared" as in $3^2$: the unit metre got multiplied by itself.
+The small raised $2$ is the same "squared" as in $3^2$: the unit meter got multiplied by itself.
 :::
 
 ::: context order-agreement Why there is an agreed order

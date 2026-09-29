@@ -83,7 +83,7 @@ std::transform(a.begin(), a.end(), b.begin(), sum.begin(),
 The output may be the input itself — `std::transform(v.begin(), v.end(), v.begin(), f)` changes `v` in place.
 
 ::: warning The output must already have room
-`transform` writes through `out`; it does not grow anything. Writing into an empty `std::vector` with `v.begin()` writes past the end: undefined behaviour. Either size the vector first (`std::vector<double> volts(counts.size());`) or pass `std::back_inserter(volts)`, an output iterator that calls `volts.push_back` for every value written. The second one allocates as it grows, so in a control loop prefer the first, with the size fixed ahead of time.
+`transform` writes through `out`; it does not grow anything. Writing into an empty `std::vector` with `v.begin()` writes past the end: undefined behavior. Either size the vector first (`std::vector<double> volts(counts.size());`) or pass `std::back_inserter(volts)`, an output iterator that calls `volts.push_back` for every value written. The second one allocates as it grows, so in a control loop prefer the first, with the size fixed ahead of time.
 :::
 
 ## accumulate and reduce: many values into one
@@ -119,7 +119,7 @@ With `0`, an `int`, every step computes `int + double`, and the result is stored
 
 `std::reduce(first, last, init)` (C++17, also in `<numeric>`) looks the same, but the standard lets it add the elements in **any order and any grouping**. It might compute $(x_0 + x_1) + (x_2 + x_3)$ instead of $((x_0 + x_1) + x_2) + x_3$. That freedom lets the library split the work into pieces — across the four lanes of a vector unit, or across processor cores, which is lesson 09's subject.
 
-For whole numbers, grouping never changes the answer. For floating-point numbers it does, because every addition [[rounds|floating-spacing]] to the nearest number a `double` can hold, and different groupings round at different moments. Here is the smallest case. Near $10^{16}$, neighbouring `double` values are 2 apart, so adding 1 lands exactly halfway and rounds back down:
+For whole numbers, grouping never changes the answer. For floating-point numbers it does, because every addition [[rounds|floating-spacing]] to the nearest number a `double` can hold, and different groupings round at different moments. Here is the smallest case. Near $10^{16}$, neighboring `double` values are 2 apart, so adding 1 lands exactly halfway and rounds back down:
 
 $$
 (10^{16} + 1) + 1 = 10^{16}, \qquad 10^{16} + (1 + 1) = 10^{16} + 2.
@@ -201,7 +201,7 @@ Each stops at the first element that settles the answer, as a careful loop with 
 double cmd = std::clamp(requested, -0.1, 0.1);   // radians: limit the gimbal to ±0.1 rad
 ```
 
-`std::clamp(-3.0, 0.0, 1.0)` gives `0`, `std::clamp(0.4, 0.0, 1.0)` gives `0.4`, and `std::clamp(7.0, 0.0, 1.0)` gives `1`. Two traps: if `lo` is greater than `hi` the behaviour is undefined, and `clamp` returns a *reference* to one of its arguments, so binding the result to a reference when an argument was a temporary, as in `const double& r = std::clamp(x, 0.0, 1.0);`, leaves `r` dangling. Store the result by value.
+`std::clamp(-3.0, 0.0, 1.0)` gives `0`, `std::clamp(0.4, 0.0, 1.0)` gives `0.4`, and `std::clamp(7.0, 0.0, 1.0)` gives `1`. Two traps: if `lo` is greater than `hi` the behavior is undefined, and `clamp` returns a *reference* to one of its arguments, so binding the result to a reference when an argument was a temporary, as in `const double& r = std::clamp(x, 0.0, 1.0);`, leaves `r` dangling. Store the result by value.
 
 ## Rearranging: rotate and unique
 
@@ -219,9 +219,9 @@ It returns where the old first element ended up. Rotating left by one is how you
 
 ### unique
 
-`std::unique(first, last)` removes **consecutive** duplicates. It keeps the first element of each run of equal neighbours, slides the keepers to the front, and returns an iterator to the new logical end. Two things surprise people:
+`std::unique(first, last)` removes **consecutive** duplicates. It keeps the first element of each run of equal neighbors, slides the keepers to the front, and returns an iterator to the new logical end. Two things surprise people:
 
-- It only sees *neighbours*. On `{7, 3, 7, 7, 1, 3, 3}` it keeps `7 3 7 1 3` — five values, with 7 and 3 each still there twice. Sort first, and the same values become `1 3 7`.
+- It only sees *neighbors*. On `{7, 3, 7, 7, 1, 3, 3}` it keeps `7 3 7 1 3` — five values, with 7 and 3 each still there twice. Sort first, and the same values become `1 3 7`.
 - Like every algorithm, it cannot shrink the container. The vector is still seven long; only the front part is meaningful. Lesson 09 shows the one-line fix, and why forgetting it is one of the most common C++ bugs.
 
 ## The numeric toolkit: iota, partial_sum, inner_product
@@ -395,11 +395,11 @@ algos high: 4, mean 2.878816 V, all in range: no
 identical: yes
 ```
 
-How each loop became one call, and why the behaviour is unchanged:
+How each loop became one call, and why the behavior is unchanged:
 
 1. **Convert and clamp** became `transform` with `clamp` inside the lambda. The two `if`s did exactly what `clamp` does. Count 4200 is above the top, so it clamps to 5.000; count −12 is below zero and clamps to 0.000.
 2. **Pick the high ones** became `copy_if` into a `back_inserter`, the same `push_back` the loop did. Four readings pass: 4.762, 5.000, 5.000 and 4.518.
-3. **Sum and divide** became `accumulate` from `0.0`. It is a left fold, in the same order as the loop, so the sum is the same bits. (With `reduce` the mean could differ in its last digit, and the `==` test could fail. That is exactly the "without changing behaviour" trap.)
+3. **Sum and divide** became `accumulate` from `0.0`. It is a left fold, in the same order as the loop, so the sum is the same bits. (With `reduce` the mean could differ in its last digit, and the `==` test could fail. That is exactly the "without changing behavior" trap.)
 4. **Check the range, stopping early** became `all_of`, which also stops at the first failure — here at 4200.
 
 Sanity check: the mean should be the eight clamped voltages over 8. Their sum is $0 + 1.2503 + 2.5006 + 4.7619 + 5 + 5 + 0 + 4.5177 = 23.0305$, and $23.0305 / 8 \approx 2.8788\,\mathrm{V}$. It matches.
@@ -517,7 +517,7 @@ Both use three additions for four numbers. The tree finishes in two levels inste
 :::
 
 ::: context floating-spacing Why 1 vanishes next to 10^16
-A `double` stores about 16 significant decimal digits. Near $1$ the gap between neighbouring doubles is about $2.2 \times 10^{-16}$. Near $10^{6}$ it is about $1.2 \times 10^{-10}$. Near $10^{16}$ it is exactly $2$. So $10^{16} + 1$ lands halfway between two doubles, and the rule "round halfway to the even one" sends it back to $10^{16}$. The gap grows with the size of the number, which is why adding many small values to one large running total loses the most.
+A `double` stores about 16 significant decimal digits. Near $1$ the gap between neighboring doubles is about $2.2 \times 10^{-16}$. Near $10^{6}$ it is about $1.2 \times 10^{-10}$. Near $10^{16}$ it is exactly $2$. So $10^{16} + 1$ lands halfway between two doubles, and the rule "round halfway to the even one" sends it back to $10^{16}$. The gap grows with the size of the number, which is why adding many small values to one large running total loses the most.
 :::
 
 ::: context ring-buffer Rotating without moving

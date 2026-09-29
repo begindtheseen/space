@@ -253,7 +253,7 @@ An improper integral is a limit of proper ones: $\displaystyle\int_a^\infty f\,d
 :::
 
 ::: warning Take the limit — do not plug in infinity
-A convergent improper integral is a limit, and you have to take it. Write the finite integral first, then let $b \to \infty$ or $\epsilon \to 0$. Plugging $\infty$ into an antiderivative as if it were a number fails whenever the antiderivative has no limit. For example, $\int_0^\infty \cos x\,dx$ diverges: $\sin b$ keeps swinging between $-1$ and $1$ forever, even though "$\sin\infty$" looks like it should be some number in that range. And when both ends are infinite, or the blow-up is inside the interval, check the two halves separately. Cancelling a left side against a right side is not convergence.
+A convergent improper integral is a limit, and you have to take it. Write the finite integral first, then let $b \to \infty$ or $\epsilon \to 0$. Plugging $\infty$ into an antiderivative as if it were a number fails whenever the antiderivative has no limit. For example, $\int_0^\infty \cos x\,dx$ diverges: $\sin b$ keeps swinging between $-1$ and $1$ forever, even though "$\sin\infty$" looks like it should be some number in that range. And when both ends are infinite, or the blow-up is inside the interval, check the two halves separately. Canceling a left side against a right side is not convergence.
 :::
 
 ::: warning Going to zero is not enough

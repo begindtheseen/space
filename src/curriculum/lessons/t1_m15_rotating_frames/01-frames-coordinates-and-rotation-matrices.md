@@ -24,7 +24,7 @@ $$
 \hat{\mathbf{e}}_1 \times \hat{\mathbf{e}}_2 = \hat{\mathbf{e}}_3 .
 $$
 
-A frame may move and turn. A **body-fixed frame** rides on the spacecraft and turns with it. An **Earth-centred, Earth-fixed frame** (ECEF) turns with the planet. An **inertial frame** does neither: it does not spin and does not speed up, so Newton's laws hold in it as written.
+A frame may move and turn. A **body-fixed frame** rides on the spacecraft and turns with it. An **Earth-centered, Earth-fixed frame** (ECEF) turns with the planet. An **inertial frame** does neither: it does not spin and does not speed up, so Newton's laws hold in it as written.
 
 ### A vector and its coordinates are different things
 
@@ -334,7 +334,7 @@ That gives a quick sense check. Two axes that coincide give $\cos 0^\circ = 1$. 
 :::
 
 ::: context passive-picture Turn the axes, and the arrow seems to turn back
-The red arrow stays put along the old axis $a_1$ (grey). The new axes (blue) are the old ones turned $30^\circ$ counterclockwise. Measured from the new axis $b_1$, the arrow is $30^\circ$ clockwise — so its new coordinates are $(\cos 30^\circ, -\sin 30^\circ) = (0.866, -0.500)$.
+The red arrow stays put along the old axis $a_1$ (gray). The new axes (blue) are the old ones turned $30^\circ$ counterclockwise. Measured from the new axis $b_1$, the arrow is $30^\circ$ clockwise — so its new coordinates are $(\cos 30^\circ, -\sin 30^\circ) = (0.866, -0.500)$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">

@@ -103,7 +103,7 @@ The fixes:
 
 - **Warm up before timing.** Call the function once on inputs of the real types, then measure.
 - **Use `cache=True`**, so later processes load the machine code instead of compiling it.
-- **Normalise types at the boundary.** Convert inputs once with `np.ascontiguousarray(x, dtype=np.float64)` and pass `float(k)`, so every call has the same signature.
+- **Normalize types at the boundary.** Convert inputs once with `np.ascontiguousarray(x, dtype=np.float64)` and pass `float(k)`, so every call has the same signature.
 - **Give an explicit signature** when you want to be strict. `@njit("float64(float64[:])")` compiles once, when the function is defined — this is **[[eager compilation|eager]]** — and rejects any other argument type with a `TypeError` instead of compiling again.
 
 ## Suspect two: object mode and unsupported types
@@ -112,7 +112,7 @@ The fixes:
 
 In **nopython mode**, Numba compiles everything to machine code with no Python objects. **Object mode** is the opposite: Numba keeps every value as a Python object and calls back into the interpreter for every operation. It does the same errands the interpreter does, plus some of its own.
 
-Why would anyone want that? In older versions of Numba, plain `@jit` tried nopython mode first, and if type inference failed it **fell back** to object mode, printing a warning that was easy to miss. The code ran, gave the right answer and was no faster, or slower. This was such a common trap that [[Numba 0.59|history]] made nopython the default for `@jit` as well. Today, object mode happens only when you ask for it with `@jit(forceobj=True)`, or inside a `with numba.objmode():` block. You will still meet the old behaviour in older code and older environments, which is why it is worth recognising.
+Why would anyone want that? In older versions of Numba, plain `@jit` tried nopython mode first, and if type inference failed it **fell back** to object mode, printing a warning that was easy to miss. The code ran, gave the right answer and was no faster, or slower. This was such a common trap that [[Numba 0.59|history]] made nopython the default for `@jit` as well. Today, object mode happens only when you ask for it with `@jit(forceobj=True)`, or inside a `with numba.objmode():` block. You will still meet the old behavior in older code and older environments, which is why it is worth recognizing.
 
 Here is object mode on a loop that calls SciPy's error function, `erf`, which Numba cannot compile:
 
@@ -289,7 +289,7 @@ Handing a `prange` loop to several threads costs a few microseconds. On this mac
 When `@njit` disappoints, work down this list in order. Each step takes a minute.
 
 1. **Time the second call, not the first.** If the second call is fast, the problem is compile time: warm up, add `cache=True`, or run more cases per process.
-2. **Look at `f.signatures`.** More than one or two entries means mixed input types are causing recompiles. Normalise dtypes at the boundary.
+2. **Look at `f.signatures`.** More than one or two entries means mixed input types are causing recompiles. Normalize dtypes at the boundary.
 3. **Look at `f.nopython_signatures`** and at the warnings. Empty, or a "falling back to object mode" warning, means the function is not really compiled.
 4. **Check the argument types.** Python lists, sets and mixed dtypes should become float64 NumPy arrays before the call.
 5. **Profile inside.** If the time is in one NumPy call (a sort, a solve, a matrix product), take `@njit` off and attack that call instead.
@@ -326,7 +326,7 @@ A profile shows $90\%$ of a post-processing function's time is in `np.linalg.sol
 :::
 
 ::: answer
-Expect little or nothing: inside `@njit`, `np.linalg.solve` calls the same compiled LAPACK routine (LAPACK is BLAS's sibling library for solving and factoring matrices), so the $90\%$ does not shrink, and the remaining $10\%$ can gain at most that much. Look at the algorithm instead: is the matrix the same at every time point? Then factor it once and reuse the factorisation, or solve all 400 right-hand sides in one call with a $500 \times 400$ right-hand-side matrix.
+Expect little or nothing: inside `@njit`, `np.linalg.solve` calls the same compiled LAPACK routine (LAPACK is BLAS's sibling library for solving and factoring matrices), so the $90\%$ does not shrink, and the remaining $10\%$ can gain at most that much. Look at the algorithm instead: is the matrix the same at every time point? Then factor it once and reuse the factorization, or solve all 400 right-hand sides in one call with a $500 \times 400$ right-hand-side matrix.
 :::
 
 ::: check

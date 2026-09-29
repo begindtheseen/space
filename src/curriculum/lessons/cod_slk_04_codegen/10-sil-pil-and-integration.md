@@ -44,7 +44,7 @@ PIL needs one more thing that SIL does not: a way to reach the board. Simulink m
 Everything else is the same. One test suite, three answers: blocks, host code, target code.
 
 ::: key
-What is the difference between SIL and PIL, and what does each catch? SIL compiles the generated code for the host, catching code-generation and algorithm mismatches. PIL cross-compiles and runs on the actual target, catching target-specific integer width, endianness, floating-point behaviour and execution-time issues that the host cannot show.
+What is the difference between SIL and PIL, and what does each catch? SIL compiles the generated code for the host, catching code-generation and algorithm mismatches. PIL cross-compiles and runs on the actual target, catching target-specific integer width, endianness, floating-point behavior and execution-time issues that the host cannot show.
 :::
 
 PIL runs can also time each step on the real chip, the first honest estimate of its cost (lesson 9).
@@ -186,7 +186,7 @@ This code has one global copy of its data, so there must be only one wrapper. De
 
 The scheduler is a loop on `std::chrono::steady_clock`, the clock that never jumps backward. It keeps a variable `next`, the time of the next tick, and after each step it sleeps until that absolute time. Then it adds one period to `next`. Because it adds to the *schedule*, not to "now", small wake-up delays never pile up. That is the difference between `sleep_until(next)` and `sleep_for(period)`, and the next example puts a number on it.
 
-```cpp
+```cpp fragment
 // main.cpp -- hand-written application around the generated controller
 #include "pid.h"
 #include <chrono>

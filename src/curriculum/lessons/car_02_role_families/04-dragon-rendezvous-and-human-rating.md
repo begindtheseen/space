@@ -227,7 +227,7 @@ Engineers often describe the approach from the station's point of view, in a fra
 :::
 
 ::: context contact-speed How slow is "centimeters per second"?
-A slow walk is about $1.4\ \mathrm{m/s}$. The final touch of a docking is roughly ten or more times slower than that — on the order of a few centimeters to about a tenth of a meter per second, depending on the vehicle and docking system. Even so, Dragon and the station each weigh many tonnes, so the latches and springs of the docking ring are built to soak up that last gentle bump.
+A slow walk is about $1.4\ \mathrm{m/s}$. The final touch of a docking is roughly ten or more times slower than that — on the order of a few centimeters to about a tenth of a meter per second, depending on the vehicle and docking system. Even so, Dragon and the station each weigh many metric tons, so the latches and springs of the docking ring are built to soak up that last gentle bump.
 :::
 
 ::: context human-rated What human rating asks for

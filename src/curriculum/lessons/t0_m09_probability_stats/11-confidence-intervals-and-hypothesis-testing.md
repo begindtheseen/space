@@ -347,7 +347,7 @@ With $N$ numbers you have $N$ independent pieces of information. Computing $\bar
 :::
 
 ::: context heavy-tails How much heavier the tails are
-The t distribution with $\nu = 2$ (blue) against the standard normal (grey). The t peak is lower and the tails are fatter. Beyond $\pm 3$, the normal holds only $0.27\%$ of its probability; the $\nu = 2$ t holds $9.5\%$ — about 35 times more. That is why the multiplier for $95\%$ jumps from $1.96$ to $4.30$ when you have only three samples.
+The t distribution with $\nu = 2$ (blue) against the standard normal (gray). The t peak is lower and the tails are fatter. Beyond $\pm 3$, the normal holds only $0.27\%$ of its probability; the $\nu = 2$ t holds $9.5\%$ — about 35 times more. That is why the multiplier for $95\%$ jumps from $1.96$ to $4.30$ when you have only three samples.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">
@@ -376,7 +376,7 @@ There is nothing magic about $0.05$. Ronald Fisher suggested one-in-twenty as a 
 :::
 
 ::: context error-types Two ways to be wrong
-The null distribution of the test statistic (grey, centered at $0$) and one alternative (blue, centered at $3$). The dashed lines are the thresholds $\pm 1.96$. Red: the Type I area, $\alpha = 0.05$ split across both tails of the null. Orange: the Type II area, $\beta \approx 0.15$ — the part of the alternative that lands inside the thresholds and is missed. Move the threshold right and red shrinks but orange grows; only more data pulls the two curves apart.
+The null distribution of the test statistic (gray, centered at $0$) and one alternative (blue, centered at $3$). The dashed lines are the thresholds $\pm 1.96$. Red: the Type I area, $\alpha = 0.05$ split across both tails of the null. Orange: the Type II area, $\beta \approx 0.15$ — the part of the alternative that lands inside the thresholds and is missed. Move the threshold right and red shrinks but orange grows; only more data pulls the two curves apart.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 185" font-family="Inter, Arial, sans-serif">

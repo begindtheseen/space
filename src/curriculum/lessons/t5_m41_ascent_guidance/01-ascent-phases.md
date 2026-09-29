@@ -84,7 +84,7 @@ And Case 2 says more: while the rocket is exactly vertical, the equations keep i
 
 ## The pitch kick
 
-The fix is a single, deliberate shove. At some trigger — commonly when the climb rate reaches a few tens of metres per second — the flight computer tips the commanded attitude a degree or two away from vertical for a moment, then goes back to flying zero angle of attack. That shove is the **pitch kick**.
+The fix is a single, deliberate shove. At some trigger — commonly when the climb rate reaches a few tens of meters per second — the flight computer tips the commanded attitude a degree or two away from vertical for a moment, then goes back to flying zero angle of attack. That shove is the **pitch kick**.
 
 It is not a correction toward a planned path. It is a disturbance made on purpose, once, because the equations proved none would arrive on its own.
 
@@ -290,7 +290,7 @@ An equilibrium is a state where nothing changes as long as nothing disturbs it. 
 :::
 
 ::: context dynamic-pressure Your hand out of a car window
-Hold your flat hand out of a car window. At walking pace you feel nothing. At highway speed the air shoves hard. That shove per square metre grows with the square of speed — twice as fast, four times the push — and with how thick the air is. Dynamic pressure $\bar q = \tfrac12\rho v^2$ measures exactly this. At 44.6 kPa, each square metre of the rocket's front meets roughly the weight of 4.5 tonnes of air push.
+Hold your flat hand out of a car window. At walking pace you feel nothing. At highway speed the air shoves hard. That shove per square meter grows with the square of speed — twice as fast, four times the push — and with how thick the air is. Dynamic pressure $\bar q = \tfrac12\rho v^2$ measures exactly this. At 44.6 kPa, each square meter of the rocket's front meets roughly the weight of 4.5 metric tons of air push.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210" font-family="Inter, Arial, sans-serif">

@@ -10,7 +10,7 @@ Think of a movie. It looks like smooth motion, but it is really 24 still picture
 
 Every controller in this module flies on a computer. It reads the sensors at a fixed rate. It computes for part of a cycle. It writes a command to a **[[digital-to-analog converter or a pulse-width modulator|dac-pwm]]**, and that command stays fixed until the next cycle. None of that is continuous. Once the sample period gets long enough, the continuous design stops describing what the vehicle actually does.
 
-**Discrete-time LQR** is the version of the theory that matches the hardware. It is not a numerical approximation of the continuous problem. It is the exact solution of a different, more honest problem: choose a *sequence* of held commands to minimise a *sum*. Its backward recursion falls out of dynamic programming in a few lines. Its steady state is the **discrete algebraic Riccati equation**, the **DARE**. And its gain formula has one extra term that catches people out badly enough that the module's flashcard warns about it.
+**Discrete-time LQR** is the version of the theory that matches the hardware. It is not a numerical approximation of the continuous problem. It is the exact solution of a different, more honest problem: choose a *sequence* of held commands to minimize a *sum*. Its backward recursion falls out of dynamic programming in a few lines. Its steady state is the **discrete algebraic Riccati equation**, the **DARE**. And its gain formula has one extra term that catches people out badly enough that the module's flashcard warns about it.
 
 The lesson ends with two things flight software engineers actually have to decide: how fast to run, and what to do about the one-cycle delay between reading a sensor and delivering the command.
 
@@ -113,7 +113,7 @@ Put numbers on it for the wheel axis at $20\,\mathrm{Hz}$. $\mathbf{R}_d = 0.078
 :::
 
 ::: example The wheel axis at seven sample rates
-The continuous design is $\mathbf{K}_c = (91.673,\ 150.089)$, with closed-loop poles $-0.6254 \pm 0.6106j\,\mathrm{s^{-1}}$, $\omega_n = 0.8740\,\mathrm{rad/s}$, gain crossover at $1.3695\,\mathrm{rad/s}$, and phase margin $65.96^\circ$. Discretise with a zero-order hold, use $\mathbf{Q}_d = \mathbf{Q}T$ and $\mathbf{R}_d = \mathbf{R}T$, and solve the DARE at each rate:
+The continuous design is $\mathbf{K}_c = (91.673,\ 150.089)$, with closed-loop poles $-0.6254 \pm 0.6106j\,\mathrm{s^{-1}}$, $\omega_n = 0.8740\,\mathrm{rad/s}$, gain crossover at $1.3695\,\mathrm{rad/s}$, and phase margin $65.96^\circ$. Discretize with a zero-order hold, use $\mathbf{Q}_d = \mathbf{Q}T$ and $\mathbf{R}_d = \mathbf{R}T$, and solve the DARE at each rate:
 
 | $T$ (s) | rate | $\mathbf{K}_d$ | discrete poles $z$ | $\log z/T$ $(\mathrm{s^{-1}})$ |
 | --- | --- | --- | --- | --- |
@@ -158,7 +158,7 @@ $$
 Here $\mathbf{v}_k$ is the command computed now and applied next cycle. Weight the *applied* control — the extra state $\mathbf{u}_{k-1}$ — with $\mathbf{R}_d$. Put a small weight $\varepsilon\mathbf{R}_d$ on $\mathbf{v}_k$ so the problem stays well posed ($\varepsilon$, "epsilon", is $10^{-3}$ below). Then solve the DARE on the enlarged plant.
 
 ::: example What a cycle of delay costs, designed for and ignored
-The wheel axis again, with three designs at each rate: no delay at all; a delay that is modelled in the design; and a delay that is really there but ignored (the no-delay gain, run with the delay).
+The wheel axis again, with three designs at each rate: no delay at all; a delay that is modeled in the design; and a delay that is really there but ignored (the no-delay gain, run with the delay).
 
 | $T$ | no delay, $\mathbf{K}_d$ | no-delay poles $(\mathrm{s^{-1}})$ | delay-aware $\mathbf{K}$ | delay-aware poles | ignored-delay poles |
 | --- | --- | --- | --- | --- | --- |
@@ -166,7 +166,7 @@ The wheel axis again, with three designs at each rate: no delay at all; a delay 
 | $0.1\,\mathrm{s}$ | $(86.12,\ 145.37)$ | $-0.6253\pm0.6107j$ | $(86.08,\ 153.94,\ 0.1247)$ | $-0.6251\pm0.6106j$ | $-0.6748\pm0.6571j$ |
 | $0.5\,\mathrm{s}$ | $(67.14,\ 128.05)$ | $-0.6228\pm0.6130j$ | $(67.11,\ 161.58,\ 0.6033)$ | $-0.6227\pm0.6129j$ | $-0.2902\pm1.2939j$ |
 
-**Designed for**, a known one-cycle delay costs almost nothing. The main poles move by less than $0.1\,\%$ at every rate. The optimiser sees the delay coming and puts the extra authority into the rate gain: at $2\,\mathrm{Hz}$, $k_2$ rises from $128.0$ to $161.6$ while $k_1$ stays put.
+**Designed for**, a known one-cycle delay costs almost nothing. The main poles move by less than $0.1\,\%$ at every rate. The optimizer sees the delay coming and puts the extra authority into the rate gain: at $2\,\mathrm{Hz}$, $k_2$ rises from $128.0$ to $161.6$ while $k_1$ stays put.
 
 **Ignored**, the delay costs the damping. At $2\,\mathrm{Hz}$ the poles move to $-0.290 \pm 1.294j$. The damping ratio is $0.290/\sqrt{0.290^2 + 1.294^2} = 0.22$ instead of $0.71$. The loop goes unstable outright for $T > 0.702\,\mathrm{s}$ — while the same DARE design without the delay stays stable at every sample period.
 
@@ -180,7 +180,7 @@ Derive the discrete LQR gain from Bellman's equation, and explain the $\mathbf{B
 :::
 
 ::: answer
-With $V_{k+1}(\mathbf{x}) = \mathbf{x}^\top\mathbf{P}_{k+1}\mathbf{x}$, the bracket to minimise is
+With $V_{k+1}(\mathbf{x}) = \mathbf{x}^\top\mathbf{P}_{k+1}\mathbf{x}$, the bracket to minimize is
 
 $$
 \mathbf{x}^\top\mathbf{Q}\mathbf{x} + \mathbf{u}^\top\mathbf{R}\mathbf{u} + (\mathbf{A}\mathbf{x}+\mathbf{B}\mathbf{u})^\top\mathbf{P}_{k+1}(\mathbf{A}\mathbf{x}+\mathbf{B}\mathbf{u}).
@@ -210,7 +210,7 @@ Why does the discrete gain fall as the sample period grows, when the plant and t
 ::: answer
 Because the command is held for longer, so the same gain does more. A command computed from the state at $t_k$ is right at $t_k$ and gets more and more wrong as the state moves away from where it was sampled. With a long hold, an aggressive command overshoots before anyone can revise it.
 
-The optimiser sees this directly through the $\mathbf{B}_d^\top\mathbf{P}\mathbf{B}_d$ term. It grows with $T$ because $\mathbf{B}_d$ grows with $T$, so the effective control weight rises and the gain falls. In the table, $k_1$ drops from $91.4$ at $200\,\mathrm{Hz}$ to $49.5$ at $1\,\mathrm{Hz}$.
+The optimizer sees this directly through the $\mathbf{B}_d^\top\mathbf{P}\mathbf{B}_d$ term. It grows with $T$ because $\mathbf{B}_d$ grows with $T$, so the effective control weight rises and the gain falls. In the table, $k_1$ drops from $91.4$ at $200\,\mathrm{Hz}$ to $49.5$ at $1\,\mathrm{Hz}$.
 
 What is striking is that the continuous-equivalent closed-loop poles barely move. The design gives up gain, not performance — which it can do only until the sample rate itself limits the achievable bandwidth.
 :::
@@ -243,7 +243,7 @@ Fix it, re-run the margin analysis, and expect the corrected loop to be slightly
 
 | Object | Statement |
 | --- | --- |
-| ZOH discretisation | $\mathbf{A}_d = e^{\mathbf{A}T}$, $\mathbf{B}_d = \big(\int_0^T e^{\mathbf{A}s}ds\big)\mathbf{B}$ |
+| ZOH discretization | $\mathbf{A}_d = e^{\mathbf{A}T}$, $\mathbf{B}_d = \big(\int_0^T e^{\mathbf{A}s}ds\big)\mathbf{B}$ |
 | Double integrator | $\mathbf{A}_d = \begin{bmatrix}1&T\\0&1\end{bmatrix}$, $\mathbf{B}_d = (T^2/2J,\ T/J)^\top$ |
 | Pole mapping | $z = e^{\mu T}$; stability is $\lvert z\rvert < 1$; $\mu = \log z / T$ |
 | Cost weights | $\mathbf{Q}_d \approx \mathbf{Q}T$, $\mathbf{R}_d \approx \mathbf{R}T$; the exact form adds a cross term $\mathbf{N}_d$ |
@@ -254,7 +254,7 @@ Fix it, re-run the margin analysis, and expect the corrected loop to be slightly
 | Sample rate | $\omega_c T/2$ of hold lag; $20$–$40$ samples per closed-loop period; plus Nyquist and aliasing |
 | Continuous gain sampled | Stable only for $T < 1.599\,\mathrm{s}$ on the worked plant, with margins gone well before |
 | Delay augmentation | Carry $\mathbf{u}_{k-1}$ as a state; $\mathbf{A}_a = \begin{bmatrix}\mathbf{A}_d & \mathbf{B}_d\\ \mathbf{0} & \mathbf{0}\end{bmatrix}$, $\mathbf{B}_a = \begin{bmatrix}\mathbf{0}\\ \mathbf{I}\end{bmatrix}$ |
-| Delay cost | Modelled: poles move under $0.1\,\%$. Ignored: $\zeta$ from $0.71$ to $0.22$ at $2\,\mathrm{Hz}$, unstable beyond $T = 0.702\,\mathrm{s}$ |
+| Delay cost | Modeled: poles move under $0.1\,\%$. Ignored: $\zeta$ from $0.71$ to $0.22$ at $2\,\mathrm{Hz}$, unstable beyond $T = 0.702\,\mathrm{s}$ |
 
 The next lesson steps back from the linear quadratic case and places it inside the general theory of optimal control, where finding the best control is no longer a matter of setting a derivative to zero.
 
@@ -320,7 +320,7 @@ In old Western movies, a stagecoach's wheels sometimes seem to turn slowly backw
 :::
 
 ::: context timing Why late on purpose beats early by chance
-It feels wasteful to hold a finished command until the next tick. But a command that goes out whenever the computation happens to finish arrives with a delay that varies from cycle to cycle, and a varying delay cannot be modelled. A fixed one-cycle delay can, as the next example shows.
+It feels wasteful to hold a finished command until the next tick. But a command that goes out whenever the computation happens to finish arrives with a delay that varies from cycle to cycle, and a varying delay cannot be modeled. A fixed one-cycle delay can, as the next example shows.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">

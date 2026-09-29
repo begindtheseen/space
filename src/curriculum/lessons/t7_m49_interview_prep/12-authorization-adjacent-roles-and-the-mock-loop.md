@@ -1,9 +1,9 @@
 ---
 id: l12-authorization-adjacent-roles-and-the-mock-loop
-title: Work authorisation, adjacent roles, and the full mock loop
+title: Work authorization, adjacent roles, and the full mock loop
 minutes: 17
 covers:
-  - Work authorisation and export-control eligibility documentation, handled early rather than at offer stage
+  - Work authorization and export-control eligibility documentation, handled early rather than at offer stage
   - Adjacent entry roles — simulation, GNC software, site reliability for GNC infrastructure — as realistic vectors into the field
 ---
 

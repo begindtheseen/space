@@ -126,7 +126,7 @@ export const CAREER: Module[] = [
       { id: 'car01c4', front: 'Deemed export', back: 'Releasing controlled technical data to a foreign person is treated as an export to that person’s country even if it happens inside the United States. This is why working on site does not solve the problem.' },
       { id: 'car01c5', front: 'Where is eligibility confirmed?', back: 'In the recruiter screen, the first call, typically 20 to 30 minutes. It is asked early precisely because everything downstream is wasted effort if the answer is no.' },
       { id: 'car01c6', front: 'Top Secret clearance roles', back: 'Some GNC-org roles, notably on the SRE and Starshield side, list the ability and willingness to obtain and maintain a Top Secret clearance. Clearance generally requires US citizenship and a detailed background investigation.' },
-      { id: 'car01c7', front: 'Drug and alcohol testing', back: 'Postings state pre-employment and random drug and alcohol testing. This is a condition of employment, independent of state law where the facility sits.' },
+      { id: 'car01c7', front: 'Drug and alcohol testing', back: 'Postings state pre-employment and random drug and alcohol testing. This is a condition of employment wherever the facility sits; state laws that limit testing usually exempt federal-contract and clearance roles like these.' },
       { id: 'car01c8', front: 'The stated hours expectation', back: 'Verbatim from postings: willing to work extended hours and weekends when needed to meet critical deadlines. Treat it as a real description of the job, not boilerplate.' },
       { id: 'car01c9', front: 'What if you are not a US person?', back: 'The technical curriculum still transfers completely. The target set changes: European, UK, Canadian, Australian and Japanese space companies, academic and research roles, and non-ITAR commercial work, with long-horizon immigration as a separate and slow track.' },
       { id: 'car01c10', front: 'ITAR versus employer preference', back: 'An employer preference can be argued with, outweighed by evidence or waived for an exceptional candidate. An export-control restriction cannot. Knowing which is which decides where to spend effort.' },
@@ -270,7 +270,7 @@ export const CAREER: Module[] = [
       'Describe what a week looks like inside at least four of them.',
       'Map a personal project to the family it actually evidences, and identify the families it does not.',
       'Replace a generic statement of interest with a specific one that names a program, a flight phase and a technical problem.',
-      'Recognise which families weight software engineering most heavily and which weight domain theory most heavily.',
+      'Recognize which families weight software engineering most heavily and which weight domain theory most heavily.',
     ],
     resources: [
       {
@@ -300,7 +300,7 @@ export const CAREER: Module[] = [
         author: 'Eric Berger',
         kind: 'book',
         free: false,
-        note: 'Programme-level context on Falcon reuse and the engineering culture that produced it.',
+        note: 'Program-level context on Falcon reuse and the engineering culture that produced it.',
       },
       {
         title: 'NASASpaceflight forum',
@@ -318,7 +318,7 @@ export const CAREER: Module[] = [
         kind: 'build',
         hours: 3,
         prompt:
-          'Build a table with one row per role family. Columns: program, flight phase or subsystem, the three technical skills the posting emphasises, the languages named, and one representative technical problem someone in that seat would solve this week. Populate it from live postings, not from memory. Success: you could explain any row to an engineer in that family without using the word interesting.',
+          'Build a table with one row per role family. Columns: program, flight phase or subsystem, the three technical skills the posting emphasizes, the languages named, and one representative technical problem someone in that seat would solve this week. Populate it from live postings, not from memory. Success: you could explain any row to an engineer in that family without using the word interesting.',
       },
       {
         id: 'car02x2',
@@ -384,7 +384,7 @@ export const CAREER: Module[] = [
       },
       {
         id: 'car02q3',
-        q: 'Which technical problem best characterises the Dragon GNC family?',
+        q: 'Which technical problem best characterizes the Dragon GNC family?',
         choices: [
           'Grid fin actuation during booster entry',
           'Rendezvous and docking with the ISS, including proximity operations and abort',
@@ -408,7 +408,7 @@ export const CAREER: Module[] = [
         ],
         answer: 1,
         explain:
-          'That is the posting language almost word for word. It is worth memorising because it tells you the scope is much wider than writing control laws — design, trajectory optimisation, simulation and live operations support are all inside the same org.',
+          'That is the posting language almost word for word. It is worth memorizing because it tells you the scope is much wider than writing control laws — design, trajectory optimization, simulation and live operations support are all inside the same org.',
         b: 0.2,
         bloom: 'recall',
       },
@@ -438,7 +438,7 @@ export const CAREER: Module[] = [
         ],
         answer: 1,
         explain:
-          'The project is genuinely relevant to the orbit determination and navigation families, but it evidences almost none of the powered-flight dynamics, atmospheric flight, actuator modelling and 6-DOF control that the Starship family works on. Matching evidence to family is the whole point of the mapping exercise.',
+          'The project is genuinely relevant to the orbit determination and navigation families, but it evidences almost none of the powered-flight dynamics, atmospheric flight, actuator modeling and 6-DOF control that the Starship family works on. Matching evidence to family is the whole point of the mapping exercise.',
         b: 0.3,
         bloom: 'analyze',
       },
@@ -521,7 +521,7 @@ export const CAREER: Module[] = [
         kind: 'site',
         url: 'https://www.levels.fyi/',
         free: true,
-        note: 'Useful for understanding levelling conventions across companies. Sample sizes for SpaceX GNC specifically are thin.',
+        note: 'Useful for understanding leveling conventions across companies. Sample sizes for SpaceX GNC specifically are thin.',
       },
       {
         title: 'Ask a Manager',
@@ -547,7 +547,7 @@ export const CAREER: Module[] = [
         kind: 'analysis',
         hours: 2,
         prompt:
-          'Build a matrix: rows are the basic qualifications for your target level, columns are met, partially met, not met, and the evidence you would cite. Be strict — partially met requires a specific artefact, not an intention. Then write one paragraph naming the single line that most reliably disqualifies you today and the shortest honest route to closing it.',
+          'Build a matrix: rows are the basic qualifications for your target level, columns are met, partially met, not met, and the evidence you would cite. Be strict — partially met requires a specific artifact, not an intention. Then write one paragraph naming the single line that most reliably disqualifies you today and the shortest honest route to closing it.',
       },
       {
         id: 'car03x3',
@@ -565,11 +565,11 @@ export const CAREER: Module[] = [
       { id: 'car03c4', front: 'GNC Engineer Level I to II — basic qualifications', back: 'Bachelor’s degree in physics or an engineering discipline, plus 2+ years of professional experience in control systems, orbital mechanics, classical dynamics, aerodynamics, sensors and actuators, modeling and simulation, and the software languages C++ and Python. The Dragon variant has been seen at 1+ years.' },
       { id: 'car03c5', front: 'GNC Engineer — preferred qualifications', back: 'Flexible body control, filtering, trajectory optimization, aerodynamics, rendezvous and proximity operations, atmospheric entry, propulsive landing, fault management, software development, and inertial, optical, ranging and GPS sensor systems; demonstrated project or professional experience in launch vehicle and/or spacecraft systems.' },
       { id: 'car03c6', front: 'Sr. GNC Engineer — basic qualifications', back: 'Bachelor’s in computer science, aerospace, physics or engineering plus 5+ years of professional experience in GNC or software engineering, OR 7+ years of professional experience in lieu of a degree, OR a postgraduate degree in a related field.' },
-      { id: 'car03c7', front: 'What does senior add beyond years?', back: 'Architecture and code reviews, writing production-quality code, leading mission-level design, and mentoring. The step is about ownership and judgement, not about knowing more equations.' },
+      { id: 'car03c7', front: 'What does senior add beyond years?', back: 'Architecture and code reviews, writing production-quality code, leading mission-level design, and mentoring. The step is about ownership and judgment, not about knowing more equations.' },
       { id: 'car03c8', front: 'Specialist and research-heavy roles', back: 'Navigation and State Estimation and Operations Automation postings require a Master’s or PhD in an engineering discipline, computer science or physics, plus experience developing, debugging and deploying software used in real-world applications.' },
       { id: 'car03c9', front: 'SRE, GNC — verbatim basic qualifications', back: 'Bachelor’s degree in computer science, information systems/IT, engineering, math, or scientific discipline and 2+ years of software development experience OR 4+ years of professional experience building software with site reliability or DevOps in lieu of a degree; 1+ years of experience with Linux operating systems; 1+ years of experience with Python and Python based development frameworks.' },
-      { id: 'car03c10', front: 'The two in-lieu-of-degree numbers worth memorising', back: 'Sr. GNC Engineer: 7+ years of professional experience in lieu of a degree. Site Reliability Engineer, GNC: 4+ years of professional experience building software with site reliability or DevOps in lieu of a degree. These are the only degree-optional doors stated in these GNC postings.' },
-      { id: 'car03c11', front: 'Capable of solving complex problems with little to no supervision', back: 'A preferred-qualification phrase that is tested behaviourally and in the past-project round. It asks whether you can scope an ambiguous problem, choose an approach, and defend the choice — not whether you can execute a specified task.' },
+      { id: 'car03c10', front: 'The two in-lieu-of-degree numbers worth memorizing', back: 'Sr. GNC Engineer: 7+ years of professional experience in lieu of a degree. Site Reliability Engineer, GNC: 4+ years of professional experience building software with site reliability or DevOps in lieu of a degree. These are the only degree-optional doors stated in these GNC postings.' },
+      { id: 'car03c11', front: 'Capable of solving complex problems with little to no supervision', back: 'A preferred-qualification phrase that is tested behaviorally and in the past-project round. It asks whether you can scope an ambiguous problem, choose an approach, and defend the choice — not whether you can execute a specified task.' },
       { id: 'car03c12', front: 'Why is level decided before the offer?', back: 'Because the band is attached to the level, not to the candidate. Negotiating the number inside a band moves you a little; being placed at the right level moves you a lot, and that placement is driven by the evidence presented during the loop.' },
     ],
     quiz: [
@@ -629,7 +629,7 @@ export const CAREER: Module[] = [
         ],
         answer: 1,
         explain:
-          'Preferred qualifications rank candidates rather than filter them, and they name the subjects the team works on — flexible body control, filtering, trajectory optimisation, entry, propulsive landing, fault management, sensor systems. Turning that list into questions you can answer is the most efficient possible study plan.',
+          'Preferred qualifications rank candidates rather than filter them, and they name the subjects the team works on — flexible body control, filtering, trajectory optimization, entry, propulsive landing, fault management, sensor systems. Turning that list into questions you can answer is the most efficient possible study plan.',
         b: 0.1,
         bloom: 'understand',
       },
@@ -639,7 +639,7 @@ export const CAREER: Module[] = [
         choices: ['MATLAB and Simulink', 'C++ and Python', 'Fortran and Ada', 'Rust and Go'],
         answer: 1,
         explain:
-          'The basic qualification names C++ and Python. MATLAB appears in some postings for high-fidelity simulation work but is secondary, which is why a curriculum aimed at these roles should not be MATLAB-first.',
+          'The basic qualification names C++ and Python. MATLAB appears in some postings for high-fidelity simulation work but is not a named basic qualification, which is why a curriculum aimed at these roles should not be MATLAB-first.',
         b: -0.4,
         bloom: 'recall',
       },
@@ -705,7 +705,7 @@ export const CAREER: Module[] = [
       'why the basic-qualification line is enforced at the recruiter stage rather than at interview',
       'what this platform can do and what it cannot: it builds capability, not a credential',
       'Path 1, degree-parallel: use the curriculum to be the strongest candidate in a graduating cohort, because the real differentiator is demonstrated shipped 6-DOF, estimation and guidance work that almost no new grad has',
-      'accredited routes that fit alongside work: ABET-accredited part-time and online bachelor’s programmes, community college transfer, competency-based models',
+      'accredited routes that fit alongside work: ABET-accredited part-time and online bachelor’s programs, community college transfer, competency-based models',
       'Path 2, side door then transfer: SRE GNC allows 4+ years of professional software or SRE experience in lieu of a degree and sits inside the GNC org; GNC Software Engineer and simulation and tools roles weight software skill heavily; internal transfer at SpaceX is common',
       'Path 3, NewSpace ladder: Varda, Stoke, Firefly, Astra, True Anomaly, Impulse, Relativity and Intuitive Machines hire GNC with looser credential gates, and 2 to 3 years there converts to 5+ years professional GNC experience or 7+ years in lieu of a degree at SpaceX senior level',
       'realistic timelines for each path, stated in years',
@@ -727,7 +727,7 @@ export const CAREER: Module[] = [
         kind: 'site',
         url: 'https://www.abet.org/',
         free: true,
-        note: 'Verify that any degree programme you are considering is accredited before you enrol or pay anything.',
+        note: 'Verify that any degree program you are considering is accredited before you enroll or pay anything.',
       },
       {
         title: 'SpaceX Careers',
@@ -775,7 +775,7 @@ export const CAREER: Module[] = [
         kind: 'analysis',
         hours: 2,
         prompt:
-          'Identify three accredited bachelor’s programmes in physics, computer science or an engineering discipline that can be completed part-time or online while working. For each, record total cost, credit transfer policy, typical completion time at 10 to 15 hours a week, and accreditation status. Rank them and write a short note on which you would enrol in and when.',
+          'Identify three accredited bachelor’s programs in physics, computer science or an engineering discipline that can be completed part-time or online while working. For each, record total cost, credit transfer policy, typical completion time at 10 to 15 hours a week, and accreditation status. Rank them and write a short note on which you would enroll in and when.',
       },
       {
         id: 'car04x3',
@@ -804,7 +804,7 @@ export const CAREER: Module[] = [
       { id: 'car04c7', front: 'Failure mode two', back: 'Believing that only the degree matters and that technical preparation can wait. The degree gets you past the filter; the demonstrated work is what wins against several hundred other people who also cleared it.' },
       { id: 'car04c8', front: 'What the SRE GNC role actually involves', back: 'Verbatim from the posting: monitoring and maintaining an HPC cluster consisting of tens of thousands of CPUs; large-scale Monte Carlo simulations; continuous integration systems for rocket and simulation software; GNC analysis infrastructure and vehicle configuration verification tools.' },
       { id: 'car04c9', front: 'SRE GNC preferred stack', back: 'Docker, Vagrant, Kubernetes; Ansible, Puppet, Terraform; build systems such as Make, Bazel, Pants, Buck, Gradle; package management; virtualization and hypervisors; databases and data modeling; TCP/IP; HPC or large-scale data analysis; GPU fleets; and willingness to obtain a Top Secret clearance.' },
-      { id: 'car04c10', front: 'Why does the side door work?', back: 'Because the role is inside the GNC organisation, working on the infrastructure that GNC analysis depends on. You build relationships, domain exposure and an internal track record, and internal transfer is a far lower bar than an external application.' },
+      { id: 'car04c10', front: 'Why does the side door work?', back: 'Because the role is inside the GNC organization, working on the infrastructure that GNC analysis depends on. You build relationships, domain exposure and an internal track record, and internal transfer is a far lower bar than an external application.' },
       { id: 'car04c11', front: 'Realistic timeline honesty', back: 'Degree-parallel is typically three to five years part-time. Side door is roughly two to four years of software experience before the application is credible. NewSpace ladder is two to three years at another company plus the time to get hired there. None of the three is fast, and saying otherwise would be dishonest.' },
     ],
     quiz: [
@@ -825,7 +825,7 @@ export const CAREER: Module[] = [
       },
       {
         id: 'car04q2',
-        q: 'Which role is the clearest degree-optional entry point into the SpaceX GNC organisation?',
+        q: 'Which role is the clearest degree-optional entry point into the SpaceX GNC organization?',
         choices: [
           'GNC Engineer Level I',
           'Site Reliability Engineer, GNC, which accepts 4+ years of professional experience building software with site reliability or DevOps in lieu of a degree',
@@ -845,7 +845,7 @@ export const CAREER: Module[] = [
           'Because the degree alone guarantees an offer',
           'Because it clears the basic-qualification filter while the curriculum supplies the demonstrated 6-DOF, estimation and guidance work that almost no new graduate has',
           'Because it is the fastest route',
-          'Because SpaceX only recruits from accredited programmes',
+          'Because SpaceX only recruits from accredited programs',
         ],
         answer: 1,
         explain:
@@ -1009,7 +1009,7 @@ export const CAREER: Module[] = [
         kind: 'build',
         hours: 6,
         prompt:
-          'Implement a fixed-step RK4 integrator in C++ for a rigid body with six degrees of freedom, quaternion attitude with renormalisation, and a simple thrust and gravity model. Add unit tests covering: energy conservation in a force-free case, an analytic torque-free rotation case, and quaternion norm drift over a long run. No dynamic allocation inside the step function. Success: the tests fail loudly if you introduce a sign error in the cross-product term.',
+          'Implement a fixed-step RK4 integrator in C++ for a rigid body with six degrees of freedom, quaternion attitude with renormalization, and a simple thrust and gravity model. Add unit tests covering: energy conservation in a force-free case, an analytic torque-free rotation case, and quaternion norm drift over a long run. No dynamic allocation inside the step function. Success: the tests fail loudly if you introduce a sign error in the cross-product term.',
       },
       {
         id: 'car05x2',
@@ -1038,7 +1038,7 @@ export const CAREER: Module[] = [
     ],
     cards: [
       { id: 'car05c1', front: 'What language is SpaceX GNC production software written in?', back: 'Primarily C++. Postings describe implementation, validation, unit testing, and deployment of production software primarily in C++, with Python for analysis, tooling and pipelines.' },
-      { id: 'car05c2', front: 'Do GNC engineers write the flight code?', back: 'Yes. The postings describe GNC engineers owning implementation, validation, unit testing and deployment themselves, rather than prototyping an algorithm and handing it to a separate software organisation.' },
+      { id: 'car05c2', front: 'Do GNC engineers write the flight code?', back: 'Yes. The postings describe GNC engineers owning implementation, validation, unit testing and deployment themselves, rather than prototyping an algorithm and handing it to a separate software organization.' },
       { id: 'car05c3', front: 'Where does MATLAB fit?', back: 'Secondary. Some postings mention developing and maintaining high fidelity simulations using C++, Python, and MATLAB, but C++ and Python are the named basic qualifications. A MATLAB-first preparation targets the wrong skill.' },
       { id: 'car05c4', front: 'What runs on the flight computers?', back: 'Embedded Linux, reported as a 3.2 series kernel with real-time patches, on Dragon, Falcon and Starship primary flight computers, with flight software in C++.' },
       { id: 'car05c5', front: 'Why avoid dynamic allocation in a control loop?', back: 'Allocation has unbounded worst-case execution time, can fail at runtime, and fragments the heap over a long mission. A control loop must complete within a fixed deadline every cycle, so anything without a bounded worst case is a defect.' },
@@ -1101,7 +1101,7 @@ export const CAREER: Module[] = [
         ],
         answer: 1,
         explain:
-          'The reported architecture is embedded Linux with real-time patching on a long-stabilised kernel, running C++ flight software with redundancy and voting across multiple computers. It is worth knowing because it shapes what embedded skills are actually relevant.',
+          'The reported architecture is embedded Linux with real-time patching on a long-stabilized kernel, running C++ flight software with redundancy and voting across multiple computers. It is worth knowing because it shapes what embedded skills are actually relevant.',
         b: 0.5,
         bloom: 'recall',
       },
@@ -1112,7 +1112,7 @@ export const CAREER: Module[] = [
           'MATLAB is not used anywhere at SpaceX',
           'Because the basic qualifications name C++ and Python, production software is primarily C++, and MATLAB appears only as a secondary simulation tool',
           'Because MATLAB cannot express control algorithms',
-          'Because MATLAB licences are export controlled',
+          'Because MATLAB licenses are export controlled',
         ],
         answer: 1,
         explain:
@@ -1131,7 +1131,7 @@ export const CAREER: Module[] = [
         ],
         answer: 1,
         explain:
-          'A simulation can be beautifully verified and still model the wrong physics, or match flight data by accident while containing an integration error. Both questions must be answered separately, and a portfolio project that answers neither is not evidence of engineering judgement.',
+          'A simulation can be beautifully verified and still model the wrong physics, or match flight data by accident while containing an integration error. Both questions must be answered separately, and a portfolio project that answers neither is not evidence of engineering judgment.',
         b: 0.7,
         bloom: 'understand',
       },
@@ -1155,7 +1155,7 @@ export const CAREER: Module[] = [
         q: 'A candidate submits a 6-DOF simulation with no unit tests, no analytic comparison and a single nominal run. What is the most likely reviewer reaction?',
         choices: [
           'Positive, because the animation looks realistic',
-          'Sceptical, because nothing in the submission demonstrates that the simulation is correct, and a plausible-looking trajectory is weak evidence',
+          'Skeptical, because nothing in the submission demonstrates that the simulation is correct, and a plausible-looking trajectory is weak evidence',
           'Neutral, since verification is not expected from candidates',
           'Positive, provided the code is written in C++',
         ],
@@ -1252,7 +1252,7 @@ export const CAREER: Module[] = [
         kind: 'build',
         hours: 4,
         prompt:
-          'For your strongest existing project, write a verification section containing at least three independent checks: an analytic closed-form case the code reproduces to stated tolerance, a conservation or invariant check, and a convergence study under step-size refinement. Include the actual numbers and the tolerance you accepted. Success: a sceptical reader finishes the section believing the code is correct rather than hoping it is.',
+          'For your strongest existing project, write a verification section containing at least three independent checks: an analytic closed-form case the code reproduces to stated tolerance, a conservation or invariant check, and a convergence study under step-size refinement. Include the actual numbers and the tolerance you accepted. Success: a skeptical reader finishes the section believing the code is correct rather than hoping it is.',
       },
       {
         id: 'car06x3',
@@ -1268,7 +1268,7 @@ export const CAREER: Module[] = [
         kind: 'build',
         hours: 4,
         prompt:
-          'For your estimator project, run a Monte Carlo of at least 100 truth-model realisations and compute the normalised estimation error squared (NEES) and the normalised innovation squared (NIS). Plot both against their chi-squared confidence bounds. Diagnose any inconsistency: an overconfident filter, a mistuned process noise, or an unmodelled bias. Success: you can say your filter is consistent and point at the evidence.',
+          'For your estimator project, run a Monte Carlo of at least 100 truth-model realizations and compute the normalized estimation error squared (NEES) and the normalized innovation squared (NIS). Plot both against their chi-squared confidence bounds. Diagnose any inconsistency: an overconfident filter, a mistuned process noise, or an unmodelled bias. Success: you can say your filter is consistent and point at the evidence.',
       },
       {
         id: 'car06x5',
@@ -1283,7 +1283,7 @@ export const CAREER: Module[] = [
       { id: 'car06c1', front: 'The portfolio principle', back: 'Few, deep, documented, defensible, reproducible. Three projects you can defend for an hour each beat thirty you can describe for two minutes each, because the interview format rewards depth under questioning.' },
       { id: 'car06c2', front: 'Why does a 6-DOF simulation carry so much weight?', back: 'Because it is what the GNC org actually does — high-fidelity vehicle simulation is in their own description of the role — and because almost no applicant has built one end to end with dispersions and verification.' },
       { id: 'car06c3', front: 'What makes a powered descent guidance project credible?', back: 'Not the animation. A stated problem formulation, a solver, a landing accuracy distribution over dispersed initial conditions, propellant margin, and an honest statement of which constraints were and were not enforced.' },
-      { id: 'car06c4', front: 'NEES and NIS', back: 'Normalised estimation error squared tests whether the filter’s reported covariance matches the actual error, using truth data in simulation. Normalised innovation squared tests the same thing using only measurements, so it also works on real data. Both are compared against chi-squared bounds.' },
+      { id: 'car06c4', front: 'NEES and NIS', back: 'Normalized estimation error squared tests whether the filter’s reported covariance matches the actual error, using truth data in simulation. Normalized innovation squared tests the same thing using only measurements, so it also works on real data. Both are compared against chi-squared bounds.' },
       { id: 'car06c5', front: 'Why does estimator consistency matter more than estimator accuracy?', back: 'An accurate filter that reports a covariance far smaller than its true error is dangerous, because everything downstream trusts that covariance. Demonstrating consistency shows you understand what a filter is actually claiming.' },
       { id: 'car06c6', front: 'The write-up structure', back: 'Problem, model, assumptions, verification, validation, results, limitations. The assumptions and limitations sections are the ones that distinguish an engineer from a hobbyist, and they are the first thing an experienced reviewer looks for.' },
       { id: 'car06c7', front: 'How do you show a simulation is correct?', back: 'Reproduce a closed-form analytic case to a stated tolerance; check a conserved quantity such as energy or angular momentum in a force-free case; show convergence as the step size shrinks; and cross-compare against published data or another implementation.' },
@@ -1291,7 +1291,7 @@ export const CAREER: Module[] = [
       { id: 'car06c9', front: 'Hardware-adjacent work', back: 'A real IMU, a thrust-vector-control testbed or a balancing robot demonstrates that you have met real sensor noise, bias, latency, saturation and mounting misalignment. Simulation-only candidates are routinely surprised by all five.' },
       { id: 'car06c10', front: 'Portfolio failure modes', back: 'A tutorial follow-along with the author’s design decisions rather than yours; a notebook with plots but no validation; many shallow repositories; and any project whose central decision you cannot defend when asked why not the other approach.' },
       { id: 'car06c11', front: 'Prior-employer intellectual property', back: 'Never publish or present controlled or proprietary work from a previous employer. Build portfolio projects on public data and open problems so that everything you show is yours to show — this also matters for the past-project presentation round.' },
-      { id: 'car06c12', front: 'How does the portfolio connect to the interview?', back: 'It supplies the five topics you submit for the past-project presentation and the concrete evidence behind every behavioural and technical answer. Building it is preparation for that round, not a separate activity.' },
+      { id: 'car06c12', front: 'How does the portfolio connect to the interview?', back: 'It supplies the five topics you submit for the past-project presentation and the concrete evidence behind every behavioral and technical answer. Building it is preparation for that round, not a separate activity.' },
     ],
     quiz: [
       {
@@ -1305,7 +1305,7 @@ export const CAREER: Module[] = [
         ],
         answer: 1,
         explain:
-          'The interview format is extended questioning on one project, so depth you can defend beats breadth you can describe. Tutorials evidence following instructions rather than engineering judgement, and animations without verification prove nothing about correctness.',
+          'The interview format is extended questioning on one project, so depth you can defend beats breadth you can describe. Tutorials evidence following instructions rather than engineering judgment, and animations without verification prove nothing about correctness.',
         b: -0.1,
         bloom: 'apply',
       },
@@ -1320,7 +1320,7 @@ export const CAREER: Module[] = [
         ],
         answer: 1,
         explain:
-          'NEES compares the actual error, normalised by the reported covariance, against a chi-squared distribution. A filter sitting above the bound is overconfident and a filter below it is conservative. NIS answers the same question using innovations only, which is what you use when truth is unavailable.',
+          'NEES compares the actual error, normalized by the reported covariance, against a chi-squared distribution. A filter sitting above the bound is overconfident and a filter below it is conservative. NIS answers the same question using innovations only, which is what you use when truth is unavailable.',
         b: 0.8,
         bloom: 'understand',
       },
@@ -1360,7 +1360,7 @@ export const CAREER: Module[] = [
         choices: [
           'A more visually attractive 3D rendering',
           'A Monte Carlo over dispersed initial conditions reporting the landing miss distance distribution and propellant margin, plus a statement of which constraints were enforced',
-          'Support for more colour schemes in the plots',
+          'Support for more color schemes in the plots',
           'Rewriting it in a different language',
         ],
         answer: 1,
@@ -1525,7 +1525,7 @@ export const CAREER: Module[] = [
     ],
     cards: [
       { id: 'car07c1', front: 'How long does a recruiter spend on first pass?', back: 'Well under a minute, checking the resume against the basic-qualification list. Every basic qualification therefore has to be visible and verifiable near the top, not buried in the last bullet of a third-page project.' },
-      { id: 'car07c2', front: 'Resume length for an early-career engineer', back: 'One page. A second page signals an inability to prioritise unless you are senior with a long publication or programme record. The constraint is a feature: it forces you to choose your strongest evidence.' },
+      { id: 'car07c2', front: 'Resume length for an early-career engineer', back: 'One page. A second page signals an inability to prioritize unless you are senior with a long publication or program record. The constraint is a feature: it forces you to choose your strongest evidence.' },
       { id: 'car07c3', front: 'Bullet structure', back: 'Action, method, measured result. Built a fixed-step 6-DOF simulation in C++ with an RK4 integrator, verified against analytic torque-free rotation to 1e-9, and ran 10,000-case dispersion campaigns — not responsible for simulation work.' },
       { id: 'car07c4', front: 'Why avoid tables, columns and graphics?', back: 'Applicant tracking systems parse plain document structure. Multi-column layouts commonly interleave text, tables lose their alignment, and images contribute nothing. A parsing failure can cause a rejection that you never learn about.' },
       { id: 'car07c5', front: 'Where do projects go for a candidate with no industry GNC experience?', back: 'Directly below the summary and above employment, with three anchor projects described in two or three bullets each including the verification result. This is the section that carries the application.' },
@@ -1541,14 +1541,14 @@ export const CAREER: Module[] = [
         id: 'car07q1',
         q: 'Which resume bullet is strongest for a GNC application?',
         choices: [
-          'Responsible for simulation and analysis tasks on a team project',
-          'Built a fixed-step 6-DOF vehicle simulation in C++, verified against the analytic torque-free case to 1e-9 and fourth-order convergence, then ran 10,000-case dispersion campaigns reporting landing miss distance percentiles',
+          'Responsible for guidance and navigation tasks on a senior design team',
+          'Implemented a Lambert solver in Python for a transfer-planning tool, validated it against 40 published test cases to 1e-8 relative error, and cut a 10,000-point porkchop grid from 12 s to 0.4 s by vectorizing it with NumPy',
           'Passionate about rockets and space exploration since childhood',
           'Familiar with a wide range of aerospace engineering concepts',
         ],
         answer: 1,
         explain:
-          'The strong bullet names the artefact, the language, the verification method with numbers, and the result. The others state a duty, a feeling and a vague breadth claim respectively, none of which an interviewer can evaluate or follow up on.',
+          'The strong bullet follows the action, method, measured result pattern: it names the artifact, the language, the verification method with numbers, and a measured result. The others state a duty, a feeling and a vague breadth claim respectively, none of which an interviewer can evaluate or follow up on.',
         b: -0.4,
         bloom: 'apply',
       },
@@ -1558,7 +1558,7 @@ export const CAREER: Module[] = [
         choices: [
           'Because recruiters find them unattractive',
           'Because applicant tracking systems commonly misparse multi-column text and cannot read graphics, so content can be scrambled or lost before any human sees it',
-          'Because colour printing is expensive',
+          'Because color printing is expensive',
           'Because two-column layouts are longer',
         ],
         answer: 1,
@@ -1578,7 +1578,7 @@ export const CAREER: Module[] = [
         ],
         answer: 1,
         explain:
-          'A referral addresses the problem of volume, not the problem of eligibility. It cannot override a stated basic qualification such as the degree or the export-control requirement, and it does not affect levelling or banding.',
+          'A referral addresses the problem of volume, not the problem of eligibility. It cannot override a stated basic qualification such as the degree or the export-control requirement, and it does not affect leveling or banding.',
         b: 0.1,
         bloom: 'understand',
       },
@@ -1589,7 +1589,7 @@ export const CAREER: Module[] = [
           'On a second page, after employment history',
           'Directly below the summary and above employment, because the anchor projects are the strongest available evidence of GNC capability',
           'In an appendix linked from a QR code',
-          'It should be omitted entirely in favour of coursework',
+          'It should be omitted entirely in favor of coursework',
         ],
         answer: 1,
         explain:
@@ -1676,7 +1676,7 @@ export const CAREER: Module[] = [
       'stage 3 — take-home exercise for some software and firmware roles',
       'stage 4 — full-day onsite: 5 to 7 back-to-back interviews, often 8+ hours, sometimes with a facility tour',
       'onsite composition: past-project presentation, 2 to 3 coding rounds, 1 to 2 systems and architecture rounds, 1+ domain-knowledge round, abstract problem solving, physics puzzles and Fermi estimation',
-      'stage 5 — behavioural and culture, using STAR',
+      'stage 5 — behavioral and culture, using STAR',
       'debrief and decision; how a hiring committee weighs mixed signals',
       'Glassdoor difficulty rating of 2.8 out of 5 for GNC Engineer, and what that really indicates',
       'logistics and stamina: sleep, food, water, breaks, and how to ask for one',
@@ -1743,7 +1743,7 @@ export const CAREER: Module[] = [
         kind: 'build',
         hours: 2,
         prompt:
-          'For each stage, write what you will prepare, how many hours it needs, and the artefact that proves you prepared — a 90-second narrative script, five presentation topics, a list of 40 solved C++ problems, a one-page domain cheat sheet. Total the hours and schedule them across the weeks you actually have.',
+          'For each stage, write what you will prepare, how many hours it needs, and the artifact that proves you prepared — a 90-second narrative script, five presentation topics, a list of 40 solved C++ problems, a one-page domain cheat sheet. Total the hours and schedule them across the weeks you actually have.',
       },
       {
         id: 'car08x3',
@@ -1751,7 +1751,7 @@ export const CAREER: Module[] = [
         kind: 'analysis',
         hours: 3,
         prompt:
-          'Block out eight hours and run a realistic simulation: a 45-minute technical presentation with questions, two 45-minute coding sessions, a systems discussion, a domain round and a behavioural round, with only short breaks. Record where your performance degraded and by what hour. Then write your logistics plan — sleep, food, water, caffeine timing, and how you will ask for a five-minute break.',
+          'Block out eight hours and run a realistic simulation: a 45-minute technical presentation with questions, two 45-minute coding sessions, a systems discussion, a domain round and a behavioral round, with only short breaks. Record where your performance degraded and by what hour. Then write your logistics plan — sleep, food, water, caffeine timing, and how you will ask for a five-minute break.',
       },
     ],
     cards: [
@@ -1789,7 +1789,7 @@ export const CAREER: Module[] = [
         choices: [
           'Company history and mission statement',
           'PD control, orbit determination and frequency-domain analysis, alongside resume depth',
-          'Only behavioural questions',
+          'Only behavioral questions',
           'Only C++ language trivia',
         ],
         answer: 1,
@@ -1805,7 +1805,7 @@ export const CAREER: Module[] = [
           'One 60-minute interview',
           'Five to seven back-to-back interviews, often over eight hours, comprising a past-project presentation, coding rounds, systems rounds, domain rounds and problem-solving',
           'A written examination only',
-          'A group assessment centre with other candidates',
+          'A group assessment center with other candidates',
         ],
         answer: 1,
         explain:
@@ -1839,7 +1839,7 @@ export const CAREER: Module[] = [
         ],
         answer: 1,
         explain:
-          'Programme, team and process questions are exactly what the recruiter is there to answer and they help you target preparation. Detailed compensation questions belong later unless raised first, and asking to have a stated basic qualification waived signals that you did not read the posting.',
+          'Program, team and process questions are exactly what the recruiter is there to answer and they help you target preparation. Detailed compensation questions belong later unless raised first, and asking to have a stated basic qualification waived signals that you did not read the posting.',
         b: -0.2,
         bloom: 'apply',
       },
@@ -1987,7 +1987,7 @@ export const CAREER: Module[] = [
         kind: 'build',
         hours: 1,
         prompt:
-          'Write three versions of your answer to what are your compensation expectations: one that redirects to the posted band, one that gives a researched range anchored at the top of the level you are targeting, and one for the case where you are pressed for a single number. Practise all three aloud. Success: none of them contains an apology or a number below the posted band.',
+          'Write three versions of your answer to what are your compensation expectations: one that redirects to the posted band, one that gives a researched range anchored at the top of the level you are targeting, and one for the case where you are pressed for a single number. Practice all three aloud. Success: none of them contains an apology or a number below the posted band.',
       },
     ],
     cards: [
@@ -1998,7 +1998,7 @@ export const CAREER: Module[] = [
       { id: 'car09c5', front: 'Reported phone-screen GNC topics', back: 'PD control, orbit determination and frequency-domain analysis. Expect the interviewer to go three questions deep on whichever one you answer best.' },
       { id: 'car09c6', front: 'Verbal derivation discipline', back: 'Name the variables aloud, state the frame and the assumptions, describe the structure of the equation before writing it, then give the result and sanity check it. Silence for thirty seconds while you think is fine if you say that is what you are doing.' },
       { id: 'car09c7', front: 'Clarifying questions', back: 'Ask them before answering: is this a rigid body or a point mass, are we in an atmosphere, what sensors are available, what is the control authority. Interviewers explicitly value this; it is the difference between answering the question and answering a question.' },
-      { id: 'car09c8', front: 'Recovering from a blank', back: 'Say what you do know, name the nearest thing you do know, and describe how you would work it out. I have not implemented a UKF, but I know why it exists — the EKF linearises and loses accuracy for strongly nonlinear measurements, and the UKF propagates sigma points instead. That is a strong answer, not a failure.' },
+      { id: 'car09c8', front: 'Recovering from a blank', back: 'Say what you do know, name the nearest thing you do know, and describe how you would work it out. I have not implemented a UKF, but I know why it exists — the EKF linearizes and loses accuracy for strongly nonlinear measurements, and the UKF propagates sigma points instead. That is a strong answer, not a failure.' },
       { id: 'car09c9', front: 'What never to do when you do not know', back: 'Bluff. Interviewers in this field are domain experts and detect it immediately, and it converts a small gap into a serious credibility problem that affects how they weigh everything else you said.' },
       { id: 'car09c10', front: 'Questions to ask the engineer', back: 'What did you ship in the last six months? What is the hardest technical problem on the team right now? How does flight readiness review work here? What makes someone unsuccessful in this seat? All four are specific and all four give you information you actually need.' },
     ],
@@ -2029,7 +2029,7 @@ export const CAREER: Module[] = [
         ],
         answer: 1,
         explain:
-          'Interviewers are domain experts and detect bluffing instantly; it damages credibility on everything else you said. Naming the boundary of your knowledge and demonstrating a method for crossing it shows exactly the judgement the role requires, and often earns partial or full credit.',
+          'Interviewers are domain experts and detect bluffing instantly; it damages credibility on everything else you said. Naming the boundary of your knowledge and demonstrating a method for crossing it shows exactly the judgment the role requires, and often earns partial or full credit.',
         b: -0.1,
         bloom: 'apply',
       },
@@ -2053,9 +2053,9 @@ export const CAREER: Module[] = [
         q: 'Why do clarifying questions improve a phone-screen answer?',
         choices: [
           'They consume time so fewer questions can be asked',
-          'They resolve genuine ambiguity in the problem, demonstrate engineering judgement, and ensure you answer the question that was actually meant',
+          'They resolve genuine ambiguity in the problem, demonstrate engineering judgment, and ensure you answer the question that was actually meant',
           'They signal that you did not understand the question',
-          'They are only appropriate for behavioural questions',
+          'They are only appropriate for behavioral questions',
         ],
         answer: 1,
         explain:
@@ -2080,16 +2080,16 @@ export const CAREER: Module[] = [
       },
       {
         id: 'car09q6',
-        q: 'An interviewer asks you to explain what phase margin means physically, on a call with no whiteboard. What structure produces the best answer?',
+        q: 'On a call with no whiteboard, an interviewer asks why an attitude control loop gets less robust when the flight computer runs it at a lower rate. What structure produces the best answer?',
         choices: [
-          'Recite the textbook definition verbatim and stop',
-          'State the assumption of a stable minimum-phase loop, define it as the additional phase lag at the gain crossover frequency that would drive the loop to marginal stability, explain why that matters given unmodelled lags, and sanity check with a typical design value',
-          'Describe the history of frequency-domain control',
+          'Recite the Nyquist sampling theorem verbatim and stop',
+          'State the assumption of a continuous design run through a zero-order hold at sample period T, explain that the hold acts like a delay of about T/2 that costs about omega_c times T/2 radians of phase margin at crossover, and sanity check with numbers: at 10 Hz and a 1 rad/s crossover that is about 3 degrees',
+          'Describe the history of digital flight control',
           'Say it is best shown with a plot and move on',
         ],
         answer: 1,
         explain:
-          'The answer states an assumption, gives the definition, explains the physical consequence, and closes with a sanity check — exactly the structure interviewers report rewarding. Deferring to a plot you cannot draw wastes the round, and a bare definition fails the why does it matter follow-up.',
+          'The answer states an assumption, gives the mechanism, explains the physical consequence, and closes with a sanity check — exactly the structure interviewers report rewarding, applied here to a question the lessons did not script. Deferring to a plot you cannot draw wastes the round, and a recited theorem fails the why does it matter follow-up.',
         b: 0.6,
         bloom: 'apply',
       },
@@ -2132,7 +2132,7 @@ export const CAREER: Module[] = [
     tier: 3,
     title: 'The Past-Project Presentation',
     summary:
-      'You submit about five project topics, SpaceX picks one, and you present for ten to twenty minutes to a panel of five to ten engineers followed by extensive questioning. It is the highest-leverage and least-practised round in the entire process.',
+      'You submit about five project topics, SpaceX picks one, and you present for ten to twenty minutes to a panel of five to ten engineers followed by extensive questioning. It is the highest-leverage and least-practiced round in the entire process.',
     prereqs: ['car_06_portfolio', 'car_09_screens'],
     hours: 18,
     topics: [
@@ -2193,7 +2193,7 @@ export const CAREER: Module[] = [
         kind: 'site',
         url: 'https://www.pmddtc.state.gov/',
         free: true,
-        note: 'Check before presenting anything from a previous defence or aerospace employer.',
+        note: 'Check before presenting anything from a previous defense or aerospace employer.',
       },
     ],
     exercises: [
@@ -2235,7 +2235,7 @@ export const CAREER: Module[] = [
         kind: 'build',
         hours: 1,
         prompt:
-          'For any team project among your five, write a precise contribution statement: what you personally designed, implemented, decided and verified, and what others did. Practise saying it aloud. Success: it is specific enough to be checked, generous enough to be fair, and you would be comfortable if a teammate were in the room.',
+          'For any team project among your five, write a precise contribution statement: what you personally designed, implemented, decided and verified, and what others did. Practice saying it aloud. Success: it is specific enough to be checked, generous enough to be fair, and you would be comfortable if a teammate were in the room.',
       },
     ],
     cards: [
@@ -2244,13 +2244,13 @@ export const CAREER: Module[] = [
       { id: 'car10c3', front: 'Why is topic selection strategically critical?', back: 'Because you do not choose which one you present. Every one of the five must be defensible at depth, so a topic you cannot survive thirty minutes on is a liability sitting in the submission, not a spare option.' },
       { id: 'car10c4', front: 'Assertion-evidence slide structure', back: 'The headline is a complete sentence asserting a claim. The body is a figure or small table that provides the evidence. No bullet dumps. Reading only the headlines in order should reconstruct the whole argument.' },
       { id: 'car10c5', front: 'Talk structure for 10 to 20 minutes', back: 'Problem; why it was hard; approach; the key decision and the alternatives you rejected; verification; result; what you would do differently. The rejected-alternatives section is the one panels remember.' },
-      { id: 'car10c6', front: 'Why does simplicity of design approach get evaluated?', back: 'Because complexity that is not required is a cost to build, test, review and fly. A candidate who chose the simpler approach and can explain why demonstrates more judgement than one who built something elaborate.' },
+      { id: 'car10c6', front: 'Why does simplicity of design approach get evaluated?', back: 'Because complexity that is not required is a cost to build, test, review and fly. A candidate who chose the simpler approach and can explain why demonstrates more judgment than one who built something elaborate.' },
       { id: 'car10c7', front: 'Answering why did you not do X', back: 'Never defensively. State that you considered X, give the specific reason you rejected it, and say what would have changed your mind. If you genuinely did not consider it, say so and then reason about it live.' },
       { id: 'car10c8', front: 'The contribution question', back: 'What was your actual contribution is asked on every team project. Answer with specifics — what you designed, implemented, decided and verified — and name what others did. Inflation is detected easily and ends the round.' },
-      { id: 'car10c9', front: 'Saying I do not know in a panel', back: 'Say it, then add how you would find out, and give a bound if one exists. I have not measured that, but it is bounded above by the sensor bandwidth, and I would characterise it with a step response. This reads as confidence, not weakness.' },
+      { id: 'car10c9', front: 'Saying I do not know in a panel', back: 'Say it, then add how you would find out, and give a bound if one exists. I have not measured that, but it is bounded above by the sensor bandwidth, and I would characterize it with a step response. This reads as confidence, not weakness.' },
       { id: 'car10c10', front: 'Backup slides', back: 'An appendix after the final slide containing the derivations, alternative results and detail that would clutter the main talk. Turning straight to a backup slide when asked is one of the strongest possible signals of preparation.' },
-      { id: 'car10c11', front: 'Panel dynamics', back: 'Answer to the person who asked, then return your attention to the whole room. Do not let one questioner monopolise the session, and do not ignore the quiet people — one of them is usually the most senior person present.' },
-      { id: 'car10c12', front: 'Rehearsal protocol', back: 'Record yourself, present to a hostile reviewer, time it strictly, and drill thirty anticipated questions. This round is the least practised by candidates and the most heavily weighted, which is exactly why rehearsal has such a large payoff.' },
+      { id: 'car10c11', front: 'Panel dynamics', back: 'Answer to the person who asked, then return your attention to the whole room. Do not let one questioner monopolize the session, and do not ignore the quiet people — one of them is usually the most senior person present.' },
+      { id: 'car10c12', front: 'Rehearsal protocol', back: 'Record yourself, present to a hostile reviewer, time it strictly, and drill thirty anticipated questions. This round is the least practiced by candidates and the most heavily weighted, which is exactly why rehearsal has such a large payoff.' },
       { id: 'car10c13', front: 'IP and export-control hygiene', back: 'Never present proprietary or controlled work from a previous employer. Choose topics you are free to describe in full to a room of outside engineers, which is one more reason to build portfolio projects on public data and open problems.' },
     ],
     quiz: [
@@ -2290,7 +2290,7 @@ export const CAREER: Module[] = [
         choices: [
           'Results',
           'Simulation Overview',
-          'Dispersed Monte Carlo shows 95th-percentile landing miss distance under 12 metres across 10,000 cases',
+          'Dispersed Monte Carlo shows 95th-percentile landing miss distance under 12 meters across 10,000 cases',
           'Methodology and Approach',
         ],
         answer: 2,
@@ -2310,7 +2310,7 @@ export const CAREER: Module[] = [
         ],
         answer: 1,
         explain:
-          'This question tests whether you made a decision or merely made a choice. Naming the alternative, the rejection criterion and the condition that would flip it demonstrates real engineering judgement. Insisting your approach was the only option signals you never evaluated one.',
+          'This question tests whether you made a decision or merely made a choice. Naming the alternative, the rejection criterion and the condition that would flip it demonstrates real engineering judgment. Insisting your approach was the only option signals you never evaluated one.',
         b: 0.4,
         bloom: 'apply',
       },
@@ -2407,7 +2407,7 @@ export const CAREER: Module[] = [
       'reading margins from a Bode plot and from a Nyquist plot; the Nyquist criterion',
       'why a large gain margin with a small phase margin is still a fragile design',
       'the Kalman filter in linear form: the predict and update equations and what each term does',
-      'the extended Kalman filter: Jacobians, where linearisation fails, and divergence modes',
+      'the extended Kalman filter: Jacobians, where linearization fails, and divergence modes',
       'the unscented Kalman filter: sigma points, why it exists and when it is worth the cost',
       'filter tuning and consistency: process noise, measurement noise, NEES and NIS',
       'attitude determination: Wahba’s problem stated formally',
@@ -2493,7 +2493,7 @@ export const CAREER: Module[] = [
         kind: 'build',
         hours: 4,
         prompt:
-          'Generate synthetic pairs of reference and body vectors with known attitude and added noise. Solve for attitude using TRIAD with two vectors, the SVD method, and Davenport’s q-method. Compare accuracy against truth as the number of vectors and the noise level vary. Success: you can explain from your own data why TRIAD is not optimal and what the q-method is actually optimising.',
+          'Generate synthetic pairs of reference and body vectors with known attitude and added noise. Solve for attitude using TRIAD with two vectors, the SVD method, and Davenport’s q-method. Compare accuracy against truth as the number of vectors and the noise level vary. Success: you can explain from your own data why TRIAD is not optimal and what the q-method is actually optimizing.',
       },
       {
         id: 'car11x4',
@@ -2509,7 +2509,7 @@ export const CAREER: Module[] = [
         kind: 'build',
         hours: 4,
         prompt:
-          'Fit an orbit to simulated range and range-rate observations using batch least squares, then with a sequential extended filter. Compare the converged solutions, the covariances and the behaviour when you add an initial state error and a measurement outlier. Write a short note on which you would use for post-pass reconstruction and which for real-time operations, and why.',
+          'Fit an orbit to simulated range and range-rate observations using batch least squares, then with a sequential extended filter. Compare the converged solutions, the covariances and the behavior when you add an initial state error and a measurement outlier. Write a short note on which you would use for post-pass reconstruction and which for real-time operations, and why.',
       },
     ],
     cards: [
@@ -2519,14 +2519,14 @@ export const CAREER: Module[] = [
       { id: 'car11c4', front: 'Why do you need both gain and phase margin?', back: 'They measure robustness to different errors — gain margin to an error in loop gain, phase margin to an error in phase or lag. A loop can have a comfortable gain margin and a dangerously small phase margin, and will then oscillate badly on any unmodelled delay.' },
       { id: 'car11c5', front: 'Linear Kalman filter — predict step', back: 'x_hat_minus = F x_hat + B u; P_minus = F P F_transpose + Q. Propagate the state through the dynamics and grow the covariance by the process noise.', formula: true },
       { id: 'car11c6', front: 'Linear Kalman filter — update step', back: 'K = P_minus H_transpose (H P_minus H_transpose + R)^-1; x_hat = x_hat_minus + K (z - H x_hat_minus); P = (I - K H) P_minus. The gain trades prior covariance against measurement covariance.', formula: true },
-      { id: 'car11c7', front: 'What does the EKF change, and how does it fail?', back: 'It linearises the nonlinear dynamics and measurement models about the current estimate using Jacobians F = df/dx and H = dh/dx. It diverges when nonlinearity is significant across the uncertainty, when the initial error is large, or when the covariance collapses and the filter stops listening to measurements.' },
-      { id: 'car11c8', front: 'Why does the UKF exist?', back: 'It propagates a deterministic set of 2n+1 sigma points through the true nonlinear functions instead of linearising, capturing the mean and covariance to higher order, and it needs no Jacobians. It costs more computation and is worth it when the nonlinearity is strong.' },
-      { id: 'car11c10', front: 'Wahba’s problem', back: 'Find the rotation matrix R that minimises J(R) = one half times the sum over i of a_i times the squared norm of (b_i - R r_i), given weighted vector observations b_i in the body frame and their references r_i in the inertial frame. It is the least-squares attitude determination problem.', formula: true },
+      { id: 'car11c7', front: 'What does the EKF change, and how does it fail?', back: 'It linearizes the nonlinear dynamics and measurement models about the current estimate using Jacobians F = df/dx and H = dh/dx. It diverges when nonlinearity is significant across the uncertainty, when the initial error is large, or when the covariance collapses and the filter stops listening to measurements.' },
+      { id: 'car11c8', front: 'Why does the UKF exist?', back: 'It propagates a deterministic set of 2n+1 sigma points through the true nonlinear functions instead of linearizing, capturing the mean and covariance to higher order, and it needs no Jacobians. It costs more computation and is worth it when the nonlinearity is strong.' },
+      { id: 'car11c10', front: 'Wahba’s problem', back: 'Find the rotation matrix R that minimizes J(R) = one half times the sum over i of a_i times the squared norm of (b_i - R r_i), given weighted vector observations b_i in the body frame and their references r_i in the inertial frame. It is the least-squares attitude determination problem.', formula: true },
       { id: 'car11c11', front: 'Solutions to Wahba’s problem', back: 'Davenport’s q-method finds the maximum eigenvector of a 4x4 K matrix; the SVD method decomposes the attitude profile matrix B; QUEST solves the q-method eigenvalue approximately and quickly. TRIAD is the deterministic two-vector construction and is not optimal because it discards information from the second vector.' },
       { id: 'car11c12', front: 'Why is the MEKF error state three-dimensional?', back: 'A quaternion has four parameters with a unit-norm constraint, so a four-dimensional additive error covariance is necessarily singular. The multiplicative formulation carries the estimate as a reference quaternion and the error as a small three-parameter rotation applied multiplicatively, giving a well-conditioned 3x3 attitude covariance, then resets the reference after each update.' },
       { id: 'car11c13', front: 'Integral windup, and the two standard remedies', back: 'While an actuator is saturated the integrator keeps accumulating error, so the integral term must unwind before the output leaves saturation — the symptom is large overshoot and a long, sluggish settle after a big setpoint change. Remedies: conditional integration, which clamps the integrator while saturated, and back-calculation, which feeds the commanded-minus-actual output difference back into the integrator.' },
       { id: 'car11c15', front: 'Why filter the derivative term?', back: 'An ideal derivative has gain proportional to frequency, so it amplifies sensor noise without bound and can saturate the actuator on noise alone. Practical implementations use a filtered derivative with a finite high-frequency gain.' },
-      { id: 'car11c16', front: 'Batch least squares versus sequential filtering in OD', back: 'Batch processes an entire arc at once, is robust to a poor initial guess and is the standard for post-pass reconstruction. A sequential filter processes measurements as they arrive and is what you run in real time, at the cost of sensitivity to initialisation and to outliers.' },
+      { id: 'car11c16', front: 'Batch least squares versus sequential filtering in OD', back: 'Batch processes an entire arc at once, is robust to a poor initial guess and is the standard for post-pass reconstruction. A sequential filter processes measurements as they arrive and is what you run in real time, at the cost of sensitivity to initialization and to outliers.' },
     ],
     quiz: [
       {
@@ -2535,7 +2535,7 @@ export const CAREER: Module[] = [
         choices: ['0.0785 s', '4.5 s', '0.45 s', '78.5 s'],
         answer: 0,
         explain:
-          '45 degrees is pi/4 = 0.785 radians. Delay margin is phase margin in radians divided by crossover frequency: 0.785/10 = 0.0785 seconds. Any additional transport delay beyond about 78 milliseconds destabilises this loop, which is the physically meaningful way to state the margin.',
+          '45 degrees is pi/4 = 0.785 radians. Delay margin is phase margin in radians divided by crossover frequency: 0.785/10 = 0.0785 seconds. Any additional transport delay beyond about 78 milliseconds destabilizes this loop, which is the physically meaningful way to state the margin.',
         b: 0.7,
         bloom: 'apply',
       },
@@ -2589,9 +2589,9 @@ export const CAREER: Module[] = [
         q: 'State Wahba’s problem.',
         choices: [
           'Find the orbit that best fits a set of range observations',
-          'Find the rotation matrix minimising the weighted sum of squared differences between body-frame vector observations and rotated reference-frame vectors',
+          'Find the rotation matrix minimizing the weighted sum of squared differences between body-frame vector observations and rotated reference-frame vectors',
           'Find the minimum-fuel transfer between two orbits',
-          'Find the control law minimising a quadratic cost',
+          'Find the control law minimizing a quadratic cost',
         ],
         answer: 1,
         explain:
@@ -2605,7 +2605,7 @@ export const CAREER: Module[] = [
         choices: ['Davenport’s q-method', 'The SVD method', 'QUEST', 'TRIAD'],
         answer: 3,
         explain:
-          'TRIAD is a deterministic construction from exactly two vectors that uses the first vector exactly and only part of the information in the second, so it does not minimise the Wahba cost. The q-method and the SVD method solve it exactly; QUEST solves the q-method eigenvalue problem approximately but accurately.',
+          'TRIAD is a deterministic construction from exactly two vectors that uses the first vector exactly and only part of the information in the second, so it does not minimize the Wahba cost. The q-method and the SVD method solve it exactly; QUEST solves the q-method eigenvalue problem approximately but accurately.',
         b: 0.9,
         bloom: 'understand',
       },
@@ -2616,7 +2616,7 @@ export const CAREER: Module[] = [
           'Derivative noise amplification',
           'Integrator windup during actuator saturation',
           'Insufficient gain margin',
-          'Sensor quantisation',
+          'Sensor quantization',
         ],
         answer: 1,
         explain:
@@ -2635,7 +2635,7 @@ export const CAREER: Module[] = [
         ],
         answer: 1,
         explain:
-          'The UKF propagates sigma points through the true nonlinear functions instead of linearising, which captures the transformed mean and covariance to higher order. For mildly nonlinear problems the EKF is cheaper and performs comparably, so the choice is a cost-accuracy trade, not an automatic upgrade.',
+          'The UKF propagates sigma points through the true nonlinear functions instead of linearizing, which captures the transformed mean and covariance to higher order. For mildly nonlinear problems the EKF is cheaper and performs comparably, so the choice is a cost-accuracy trade, not an automatic upgrade.',
         b: 0.7,
         bloom: 'understand',
       },
@@ -2665,7 +2665,7 @@ export const CAREER: Module[] = [
         ],
         answer: 1,
         explain:
-          'Batch processing iterates over the entire arc and is far more tolerant of a bad initial state, which is exactly the stated condition. Sequential filtering is the real-time choice and is more sensitive to initialisation and outliers. Lambert solves a two-point boundary value problem, not an estimation problem with noisy data.',
+          'Batch processing iterates over the entire arc and is far more tolerant of a bad initial state, which is exactly the stated condition. Sequential filtering is the real-time choice and is more sensitive to initialization and outliers. Lambert solves a two-point boundary value problem, not an estimation problem with noisy data.',
         b: 0.8,
         bloom: 'apply',
       },
@@ -2774,7 +2774,7 @@ export const CAREER: Module[] = [
         kind: 'analysis',
         hours: 3,
         prompt:
-          'Answer twenty Fermi questions aloud, each in under three minutes, with a written decomposition. Examples: how many bolts are on a Falcon 9 first stage; how much energy does it take to put a kilogram into low Earth orbit and how does that compare to a litre of petrol; how many Starlink satellites are overhead at any moment from a given latitude; how much does the atmosphere weigh. Each answer must end with a stated uncertainty range and one sanity check.',
+          'Answer twenty Fermi questions aloud, each in under three minutes, with a written decomposition. Examples: how many bolts are on a Falcon 9 first stage; how much energy does it take to put a kilogram into low Earth orbit and how does that compare to a liter of petrol; how many Starlink satellites are overhead at any moment from a given latitude; how much does the atmosphere weigh. Each answer must end with a stated uncertainty range and one sanity check.',
       },
       {
         id: 'car12x4',
@@ -2800,13 +2800,13 @@ export const CAREER: Module[] = [
       { id: 'car12c3', front: 'The full thrust equation', back: 'T = mdot_e * v_e + (p_e - p_a) A_e. The momentum flux term dominates; the pressure term is why sea-level and vacuum thrust differ and why nozzle expansion ratio is a design choice.', formula: true },
       { id: 'car12c4', front: 'Tsiolkovsky rocket equation', back: 'delta_v = v_e ln(m_0 / m_f) = I_sp g_0 ln(m_0 / m_f). It assumes constant exhaust velocity, no gravity, no drag and no external forces, so it is an upper bound on what a real stage delivers.', formula: true },
       { id: 'car12c5', front: 'Planar 3-DOF powered flight equations', back: 'm vdot = T cos(alpha) - D - m g sin(gamma); m v gammadot = T sin(alpha) + L - m g cos(gamma); xdot = v cos(gamma); hdot = v sin(gamma); mdot = -T/(I_sp g_0).', formula: true },
-      { id: 'car12c6', front: 'The gravity turn', back: 'The zero-angle-of-attack case, alpha = 0, so the flight path angle evolves as gammadot = -(g/v) cos(gamma). Gravity alone pitches the vehicle over, which minimises aerodynamic side loads and needs no control effort to hold an attitude against the airstream.', formula: true },
-      { id: 'car12c7', front: 'The 6-DOF rotational equation', back: 'I omegadot + omega x (I omega) = M. For a launch vehicle the dominant control moment is M = r_gimbal x T, the cross product of the gimbal offset from the centre of mass with the thrust vector.', formula: true },
+      { id: 'car12c6', front: 'The gravity turn', back: 'The zero-angle-of-attack case, alpha = 0, so the flight path angle evolves as gammadot = -(g/v) cos(gamma). Gravity alone pitches the vehicle over, which minimizes aerodynamic side loads and needs no control effort to hold an attitude against the airstream.', formula: true },
+      { id: 'car12c7', front: 'The 6-DOF rotational equation', back: 'I omegadot + omega x (I omega) = M. For a launch vehicle the dominant control moment is M = r_gimbal x T, the cross product of the gimbal offset from the center of mass with the thrust vector.', formula: true },
       { id: 'car12c8', front: 'Gravity losses and drag losses', back: 'The delta-v actually spent exceeds the orbital requirement because gravity acts during the burn and drag opposes motion in the atmosphere. Gravity loss is the integral of g sin(gamma) dt, which is why a vehicle pitches over early rather than flying straight up.' },
       { id: 'car12c9', front: 'Dimensional analysis as an error check', back: 'Check the units of every term before trusting a result. A term that should be an acceleration and is coming out as a velocity means an integration or a division was dropped, and catching it live is far better than being corrected.' },
       { id: 'car12c10', front: 'The Fermi method', back: 'Decompose into factors you can bound, bound each with an upper and a lower estimate, multiply the geometric middles, sanity check against something you know, and state the uncertainty. The decomposition is what is being graded, not the number.' },
       { id: 'car12c11', front: 'Coding round discipline', back: 'Restate the problem, ask clarifying questions, state the approach and its complexity before writing, write it, then test edge cases: empty, single element, duplicates, overflow, and the boundary of every loop. Silence while thinking is fine if you say that is what you are doing.' },
-      { id: 'car12c12', front: 'What the systems round probes', back: 'Real-time behaviour, embedded constraints, redundancy and voting, fault detection and isolation, sensor fusion architecture, and timing budgets. The question is usually not what is optimal but what you would actually fly and why.' },
+      { id: 'car12c12', front: 'What the systems round probes', back: 'Real-time behavior, embedded constraints, redundancy and voting, fault detection and isolation, sensor fusion architecture, and timing budgets. The question is usually not what is optimal but what you would actually fly and why.' },
     ],
     quiz: [
       {
@@ -2831,11 +2831,11 @@ export const CAREER: Module[] = [
           'Constant effective exhaust velocity',
           'No gravity acting during the burn',
           'No atmospheric drag',
-          'The vehicle has a fixed centre of mass',
+          'The vehicle has a fixed center of mass',
         ],
         answer: 3,
         explain:
-          'Tsiolkovsky is a one-dimensional momentum result and says nothing about the centre of mass, which matters for attitude dynamics rather than for the delta-v integral. It does assume constant exhaust velocity and no external forces, which is why real vehicles suffer gravity and drag losses relative to it.',
+          'Tsiolkovsky is a one-dimensional momentum result and says nothing about the center of mass, which matters for attitude dynamics rather than for the delta-v integral. It does assume constant exhaust velocity and no external forces, which is why real vehicles suffer gravity and drag losses relative to it.',
         b: 0.8,
         bloom: 'analyze',
       },
@@ -2850,7 +2850,7 @@ export const CAREER: Module[] = [
         ],
         answer: 1,
         explain:
-          'The gravity turn is defined by flying at zero angle of attack so the vehicle aligns with the relative wind and gravity does the pitching. This minimises aerodynamic side loads and structural bending moments, and it requires essentially no control effort to hold attitude against the airstream.',
+          'The gravity turn is defined by flying at zero angle of attack so the vehicle aligns with the relative wind and gravity does the pitching. This minimizes aerodynamic side loads and structural bending moments, and it requires essentially no control effort to hold attitude against the airstream.',
         b: 0.6,
         bloom: 'understand',
       },
@@ -2859,13 +2859,13 @@ export const CAREER: Module[] = [
         q: 'What produces the dominant control moment on a launch vehicle with thrust vector control?',
         choices: [
           'Aerodynamic control surfaces at all altitudes',
-          'The cross product of the gimbal offset from the centre of mass with the thrust vector, M = r x T',
+          'The cross product of the gimbal offset from the center of mass with the thrust vector, M = r x T',
           'Reaction wheels sized for the vehicle',
           'Differential drag between the fairing halves',
         ],
         answer: 1,
         explain:
-          'Gimballing the engine displaces the thrust line from the centre of mass, and the resulting moment arm produces the control torque. Aerodynamic surfaces such as grid fins matter during atmospheric flight but not in vacuum, and reaction wheels are far too small for launch vehicle authority.',
+          'Gimballing the engine displaces the thrust line from the center of mass, and the resulting moment arm produces the control torque. Aerodynamic surfaces such as grid fins matter during atmospheric flight but not in vacuum, and reaction wheels are far too small for launch vehicle authority.',
         b: 0.5,
         bloom: 'understand',
       },
@@ -2886,10 +2886,10 @@ export const CAREER: Module[] = [
       },
       {
         id: 'car12q6',
-        q: 'During a C++ coding round you realise your first approach is wrong ten minutes in. What is the best move?',
+        q: 'During a C++ coding round you realize your first approach is wrong ten minutes in. What is the best move?',
         choices: [
           'Continue silently and hope it works out',
-          'Say what you have realised, state why the approach fails, propose the corrected approach with its complexity, and restart from there',
+          'Say what you have realized, state why the approach fails, propose the corrected approach with its complexity, and restart from there',
           'Erase everything without comment and start over',
           'Ask the interviewer to give you a different problem',
         ],
@@ -2919,7 +2919,7 @@ export const CAREER: Module[] = [
         q: 'A systems round asks how you would architect navigation with three IMUs and two GNSS receivers. What is the most complete answer?',
         choices: [
           'Average all sensor outputs and use the result',
-          'Specify a voting or mid-value selection scheme, fault detection thresholds, explicit single-failure and double-failure behaviour, and the timing budget, then justify the redundancy you chose and name the failure mode each element covers',
+          'Specify a voting or mid-value selection scheme, fault detection thresholds, explicit single-failure and double-failure behavior, and the timing budget, then justify the redundancy you chose and name the failure mode each element covers',
           'Use the newest sensor and ignore the others',
           'Fuse everything in a single Kalman filter with no fault handling',
         ],
@@ -2933,7 +2933,7 @@ export const CAREER: Module[] = [
         id: 'car12q9',
         q: 'Reported accounts say candidates lose the first-principles round for a particular reason. What is it?',
         choices: [
-          'Not memorising enough formulas',
+          'Not memorizing enough formulas',
           'Rambling or stalling — failing to state assumptions quickly and work through the mathematics without drifting',
           'Writing too neatly',
           'Asking clarifying questions',
@@ -2952,9 +2952,9 @@ export const CAREER: Module[] = [
     id: 'car_13_behavioral_star',
     track: 'career',
     tier: 2,
-    title: 'Behavioural Rounds, STAR and Culture',
+    title: 'Behavioral Rounds, STAR and Culture',
     summary:
-      'The behavioural round asks for specific past behaviour, not philosophy, and the stories have to be true and quantified. This module builds a bank of STAR answers and covers the culture questions, including the extended-hours expectation the postings state outright.',
+      'The behavioral round asks for specific past behavior, not philosophy, and the stories have to be true and quantified. This module builds a bank of STAR answers and covers the culture questions, including the extended-hours expectation the postings state outright.',
     prereqs: ['car_08_pipeline'],
     hours: 9,
     topics: [
@@ -2975,7 +2975,7 @@ export const CAREER: Module[] = [
       'Write ten STAR stories at roughly 90 seconds each, with quantified results.',
       'Answer the extended-hours question truthfully in a way you would still stand behind six months into the job.',
       'Give a why SpaceX answer grounded in a specific program and technical problem.',
-      'Name a real failure with a real consequence and a real change in your behaviour afterwards.',
+      'Name a real failure with a real consequence and a real change in your behavior afterwards.',
       'Ask three questions that only someone who studied the role family could ask.',
     ],
     resources: [
@@ -3000,7 +3000,7 @@ export const CAREER: Module[] = [
         author: 'Ben R. Rich and Leo Janos',
         kind: 'book',
         free: false,
-        note: 'For understanding the engineering culture this kind of organisation aspires to, and its costs.',
+        note: 'For understanding the engineering culture this kind of organization aspires to, and its costs.',
       },
       {
         title: 'Reentry: SpaceX, Elon Musk, and the Reusable Rockets that Launched a Second Space Age',
@@ -3041,7 +3041,7 @@ export const CAREER: Module[] = [
         kind: 'build',
         hours: 2,
         prompt:
-          'Write a 60-second answer to why SpaceX that names a specific program, a specific technical problem you find interesting, and why your evidence points there. It must contain no sentence that could be copied unchanged onto an application to a different company. Success: a Falcon GNC engineer would recognise that you have actually thought about their work.',
+          'Write a 60-second answer to why SpaceX that names a specific program, a specific technical problem you find interesting, and why your evidence points there. It must contain no sentence that could be copied unchanged onto an application to a different company. Success: a Falcon GNC engineer would recognize that you have actually thought about their work.',
       },
       {
         id: 'car13x4',
@@ -3059,10 +3059,10 @@ export const CAREER: Module[] = [
       { id: 'car13c4', front: 'Quantifying the Result', back: 'A number makes the story checkable and memorable. Reduced the Monte Carlo campaign runtime from 14 hours to 40 minutes is a result; improved the simulation significantly is a claim the interviewer cannot evaluate.' },
       { id: 'car13c5', front: 'The extended-hours question', back: 'Postings state the expectation verbatim, so it is a real question about a real condition. Answer with a true example of when you did it and what it cost you. A performative yes you do not mean becomes a resignation in eight months.' },
       { id: 'car13c6', front: 'The why SpaceX answer', back: 'Name a program, name a technical problem, and connect it to evidence you have built. Reciting the mission statement is what everyone does, which makes it worth nothing as a signal.' },
-      { id: 'car13c7', front: 'Reported behavioural red flags', back: 'Blaming others for a failure; vague answers with no specifics; inflating your contribution on a team project; and being unable to name a genuine failure. All four are read as an unwillingness to be accountable.' },
+      { id: 'car13c7', front: 'Reported behavioral red flags', back: 'Blaming others for a failure; vague answers with no specifics; inflating your contribution on a team project; and being unable to name a genuine failure. All four are read as an unwillingness to be accountable.' },
       { id: 'car13c8', front: 'The failure story test', back: 'A usable failure story has a real consequence, a fault that was genuinely yours, and a specific change in how you work now. If the consequence is trivial or the fault belongs to circumstances, the story reads as evasion.' },
       { id: 'car13c9', front: 'What if you have no story for a theme?', back: 'Say so and offer the closest real experience rather than inventing one. Fabricated stories collapse under the standard three follow-up questions about specifics, and the collapse is far more damaging than the gap.' },
-      { id: 'car13c10', front: 'Honesty about a self-taught background', back: 'Present it as evidence of drive with concrete artefacts, not as an apology or a claim of equivalence. I taught myself estimation and built a validated MEKF; I am also completing an accredited degree because the basic qualification requires it is a confident, accurate answer.' },
+      { id: 'car13c10', front: 'Honesty about a self-taught background', back: 'Present it as evidence of drive with concrete artifacts, not as an apology or a claim of equivalence. I taught myself estimation and built a validated MEKF; I am also completing an accredited degree because the basic qualification requires it is a confident, accurate answer.' },
       { id: 'car13c11', front: 'Cultural fit is two-way', back: 'The pace and hours are genuine tradeoffs. Use the round to gather information for your own decision: what a normal week looks like, how often crunch happens, and what happened the last time a deadline slipped.' },
     ],
     quiz: [
@@ -3098,7 +3098,7 @@ export const CAREER: Module[] = [
       },
       {
         id: 'car13q3',
-        q: 'Which failure story is strongest in a behavioural round?',
+        q: 'Which failure story is strongest in a behavioral round?',
         choices: [
           'I once worked too hard and burned myself out',
           'I shipped a sign error in a coordinate transform that invalidated three weeks of Monte Carlo results; I had skipped the analytic verification case, and I now write the verification test before the model',
@@ -3162,12 +3162,12 @@ export const CAREER: Module[] = [
         choices: [
           'Apologetically, as a weakness to be excused',
           'As a claim that self-study is equivalent to an accredited degree',
-          'As evidence of drive, supported by concrete validated artefacts, alongside an honest statement of how the formal qualification requirement is being addressed',
+          'As evidence of drive, supported by concrete validated artifacts, alongside an honest statement of how the formal qualification requirement is being addressed',
           'By omitting it entirely from the conversation',
         ],
         answer: 2,
         explain:
-          'Confidence plus accuracy is the only position that survives scrutiny. Apologising invites doubt, claiming equivalence contradicts a stated basic qualification the interviewer can read, and omission leaves an obvious gap on the resume unexplained.',
+          'Confidence plus accuracy is the only position that survives scrutiny. Apologizing invites doubt, claiming equivalence contradicts a stated basic qualification the interviewer can read, and omission leaves an obvious gap on the resume unexplained.',
         b: 0.3,
         bloom: 'apply',
       },

@@ -11,7 +11,7 @@ Think of the times table printed on the back cover of an old school notebook. No
 
 A flight computer wants the same trade. Sine tables, checksum tables, filter coefficients, the size of every buffer: work that depends only on numbers known before launch should be done before launch. Better still, before the program even exists, by the compiler. Then it costs nothing at boot, nothing in a 1 kHz control cycle, and it cannot fail in flight.
 
-The first C++ module met the words for this: `constexpr`, which means "may be computed while compiling", and `consteval`, which means "must be". It also met the **static initialisation order fiasco** — two global objects in different files, one reading the other before it was set. This lesson makes all of that exact. It pins down what `constexpr` promises and what it does not, adds `constinit` to close the fiasco, builds a real table of sines and cosines inside the compiler, and then turns to `if constexpr`, which lets one template choose its behaviour by the type it is given.
+The first C++ module met the words for this: `constexpr`, which means "may be computed while compiling", and `consteval`, which means "must be". It also met the **static initialization order fiasco** — two global objects in different files, one reading the other before it was set. This lesson makes all of that exact. It pins down what `constexpr` promises and what it does not, adds `constinit` to close the fiasco, builds a real table of sines and cosines inside the compiler, and then turns to `if constexpr`, which lets one template choose its behavior by the type it is given.
 
 ## What `constexpr` on a function really promises
 
@@ -19,13 +19,13 @@ A `constexpr` function is written like any other. The keyword is a permission: t
 
 So when does the compiler actually run it? Whenever the language needs a value while compiling. These places are called **[[constant contexts|constant-context]]** — spots in the code where only a value known at compile time will do:
 
-- the initialiser of a `constexpr` variable;
+- the initializer of a `constexpr` variable;
 - a template argument, like the `3` in `Matrix<double, 3, 3>` from lesson 2;
 - the size of a built-in array or `std::array`;
 - the condition of a `static_assert`;
 - a `case` label in a `switch`.
 
-Anywhere else, the call is an ordinary run-time call, as far as the language is concerned. An optimiser may still fold it into a constant, and g++ at `-O2` often does. But that is a favour, not a guarantee, and it can change with the flags or the compiler version.
+Anywhere else, the call is an ordinary run-time call, as far as the language is concerned. An optimizer may still fold it into a constant, and g++ at `-O2` often does. But that is a favor, not a guarantee, and it can change with the flags or the compiler version.
 
 The standard library can tell you which world you are in. `std::is_constant_evaluated()` (from `<type_traits>`, C++20) returns `true` only while the compiler is evaluating the call in a constant context.
 
@@ -62,8 +62,8 @@ plain variable:     run time
 
 Walk through it.
 
-1. `a` is a `constexpr` variable, so its initialiser is a constant context. The compiler must evaluate `when()` itself, and inside that evaluation `std::is_constant_evaluated()` is `true`.
-2. `b` is a plain variable. The call has constant inputs (it has none at all), and the optimiser surely folded it. Yet the language says this is not a constant context, so the answer is "run time". The function reports the language's view, not the optimiser's.
+1. `a` is a `constexpr` variable, so its initializer is a constant context. The compiler must evaluate `when()` itself, and inside that evaluation `std::is_constant_evaluated()` is `true`.
+2. `b` is a plain variable. The call has constant inputs (it has none at all), and the optimizer surely folded it. Yet the language says this is not a constant context, so the answer is "run time". The function reports the language's view, not the optimizer's.
 3. `deg_to_rad` runs twice: once inside the compiler for `k`, once at run time for `r`, because `argc` does not exist until the program starts. One function, two modes.
 
 Sanity check: $90 \times \pi / 180 = \pi/2 \approx 1.570796$, and both lines agree.
@@ -79,11 +79,11 @@ Marking a function `constexpr` does not make a run-time call any faster. Called 
 
 ### The compiler as a checker
 
-There is a bonus hidden in constant evaluation. At run time, reading past the end of an array or overflowing a signed integer is **[[undefined behaviour|compile-time-ub]]** — the language makes no promise at all about what happens next. During constant evaluation, the compiler is required to notice it and refuse.
+There is a bonus hidden in constant evaluation. At run time, reading past the end of an array or overflowing a signed integer is **[[undefined behavior|compile-time-ub]]** — the language makes no promise at all about what happens next. During constant evaluation, the compiler is required to notice it and refuse.
 
 Here is a timing constant that overflows. One hour in microseconds is $3.6 \times 10^9$, and a 32-bit signed integer tops out at $2^{31} - 1 = 2\,147\,483\,647$:
 
-```cpp
+```cpp error
 #include <cstdint>
 constexpr std::int32_t ticks(std::int32_t seconds) { return seconds * 1'000'000; }  // microseconds
 constexpr std::int32_t kOneHour = ticks(3600);
@@ -120,17 +120,17 @@ Use `consteval` when a run-time call would be a mistake — a validator, or a ta
 
 Picture an office coffee machine. Either the night cleaner fills it before anyone arrives, or the first person in fills it. The second plan works until the day someone who only drinks, never fills, arrives first and gets an empty cup.
 
-That is the fiasco. Every global object lives through **[[two initialisation phases|static-init-phases]]**. In the first, **static initialisation**, memory is zeroed and every object whose initialiser is a constant gets its value, all before any code runs. In the second, **dynamic initialisation**, the rest are computed by code that runs before `main`, and between different source files the order is unspecified. A global that reads another file's global during that second phase may read the zero left from the first.
+That is the fiasco. Every global object lives through **[[two initialization phases|static-init-phases]]**. In the first, **static initialization**, memory is zeroed and every object whose initializer is a constant gets its value, all before any code runs. In the second, **dynamic initialization**, the rest are computed by code that runs before `main`, and between different source files the order is unspecified. A global that reads another file's global during that second phase may read the zero left from the first.
 
-C++20's `constinit` is the night cleaner's signature. Writing it on a variable says: *this object must be set during static initialisation, or the build fails.*
+C++20's `constinit` is the night cleaner's signature. Writing it on a variable says: *this object must be set during static initialization, or the build fails.*
 
 The rules:
 
 - It applies only to variables with static storage duration (globals, `static` members, `static` locals) or **[[thread storage duration|thread-local]]** (`thread_local`, one copy per thread).
-- Its initialiser must be a constant expression.
+- Its initializer must be a constant expression.
 - It does **not** make the variable `const`. The program may change it afterwards.
 
-That last rule is the point. `constexpr` gives you early initialisation, but also a constant you can never change. A frame counter, a mode flag or a mass estimate must change. Before C++20 such a variable could still be constant-initialised, but only by luck of its initialiser, and one careless edit later it would silently move to the dynamic phase.
+That last rule is the point. `constexpr` gives you early initialization, but also a constant you can never change. A frame counter, a mode flag or a mass estimate must change. Before C++20 such a variable could still be constant-initialized, but only by luck of its initializer, and one careless edit later it would silently move to the dynamic phase.
 
 ```cpp
 #include <cstdint>
@@ -160,7 +160,7 @@ mass        = 547854.0 kg
 retries     = 2
 ```
 
-Now the careless edit. Suppose someone changes the initialiser to call an ordinary function, `double read_dry_mass()`, which is not `constexpr`:
+Now the careless edit. Suppose someone changes the initializer to call an ordinary function, `double read_dry_mass()`, which is not `constexpr`:
 
 ```text
 ci.cpp:7:18: error: 'constinit' variable 'g_mass_kg' does not have a constant initializer
@@ -172,11 +172,11 @@ ci.cpp:7:43: error: call to non-'constexpr' function 'double read_dry_mass()'
 Without `constinit`, that edit compiles cleanly and moves `g_mass_kg` into the dynamic phase — exactly the two-link-orders, two-answers bug the first module demonstrated. With it, the build stops at the line that caused it.
 
 ::: key
-`const`: may not be modified through this name. `constexpr` variable: a compile-time constant, and `const`. `constinit`: initialised during static initialisation (the build fails otherwise), but *not* `const`. `consteval` function: every call evaluated at compile time.
+`const`: may not be modified through this name. `constexpr` variable: a compile-time constant, and `const`. `constinit`: initialized during static initialization (the build fails otherwise), but *not* `const`. `consteval` function: every call evaluated at compile time.
 :::
 
 ::: warning `constinit` guards one object, not its readers
-`constinit` guarantees *this* variable is ready before any code runs. It does nothing for a different global that is still dynamically initialised. Put `constinit` on the object that others read. And since it is not `const`, a `constinit` global is still shared, changeable state: across threads it needs the same care as any other global.
+`constinit` guarantees *this* variable is ready before any code runs. It does nothing for a different global that is still dynamically initialized. Put `constinit` on the object that others read. And since it is not `const`, a `constinit` global is still shared, changeable state: across threads it needs the same care as any other global.
 :::
 
 ## A rotation table built by the compiler
@@ -307,13 +307,13 @@ $$
 
 In code that is `kRot[deg].c * x - kRot[deg].s * y` and `kRot[deg].s * x + kRot[deg].c * y` — no transcendental call in the control loop at all.
 
-## `if constexpr`: one template, several behaviours
+## `if constexpr`: one template, several behaviors
 
 Picture a tax form with whole pages for farmers, for sailors and for pilots. Before it reaches you, the pages that do not apply are torn out. Nobody fills them in, and nobody checks them for mistakes.
 
 `if constexpr` (read "if const-expr") does that to a template. Its condition must be a constant expression, usually a type trait from lesson 5. When the template is instantiated for a particular type, the compiler evaluates the condition, keeps the branch that applies, and discards the other. A **discarded statement** inside a template is not instantiated for that type. It must still parse, but code in it that would be ill-formed for that type — calling `.count()` on a `double`, say — is never checked against that type, because for that type it does not exist.
 
-That lets one function select its behaviour by a property of its type, with no specialisation. Lesson 1 chose a telemetry wire format with a primary template and two specialisations, three separate definitions. Here is one function that packs any supported value into a signed 32-bit telemetry word.
+That lets one function select its behavior by a property of its type, with no specialization. Lesson 1 chose a telemetry wire format with a primary template and two specializations, three separate definitions. Here is one function that packs any supported value into a signed 32-bit telemetry word.
 
 ::: example One encoder for enums, floats, integers and durations
 ```cpp
@@ -381,7 +381,7 @@ A plain `if` is decided while the program runs, so the compiler must type-check 
 :::
 
 ::: key
-`if constexpr`: the untaken branch is not instantiated, so it may contain code that would be ill-formed for that type. It replaces [[tag dispatch|tag-dispatch]] and much specialisation with an ordinary, readable `if`.
+`if constexpr`: the untaken branch is not instantiated, so it may contain code that would be ill-formed for that type. It replaces [[tag dispatch|tag-dispatch]] and much specialization with an ordinary, readable `if`.
 :::
 
 A note on `static_assert(false)` in the last branch. Older rules made it fire even when discarded, so people wrote a condition that depends on `T`, such as `sizeof(T) == 0`. A recent fix to the standard, applied to earlier versions too, made the plain form legal in a discarded branch; g++ 13 and clang++ 18 both accept it with `-std=c++20`.
@@ -399,15 +399,15 @@ In `main`, a teammate writes `double k = deg_to_rad(15.0);`, where `deg_to_rad` 
 :::
 
 ::: answer
-No. `double k` is not a constant context, so the language treats the call as a run-time call; the optimiser folded it as a favour, and a different flag or compiler might not. Guarantee it by making the variable `constexpr double k = deg_to_rad(15.0);`, whose initialiser is a constant context, or by declaring the function `consteval`, so that every call must be evaluated while compiling (and a run-time argument becomes an error).
+No. `double k` is not a constant context, so the language treats the call as a run-time call; the optimizer folded it as a favor, and a different flag or compiler might not. Guarantee it by making the variable `constexpr double k = deg_to_rad(15.0);`, whose initializer is a constant context, or by declaring the function `consteval`, so that every call must be evaluated while compiling (and a run-time argument becomes an error).
 :::
 
 ::: check
-A flight program has a global `std::uint32_t g_boot_count = 0;` that start-up code increments, and other files read it during their own dynamic initialisation. Which of `constexpr`, `const` and `constinit` should you add, and why not the other two?
+A flight program has a global `std::uint32_t g_boot_count = 0;` that start-up code increments, and other files read it during their own dynamic initialization. Which of `constexpr`, `const` and `constinit` should you add, and why not the other two?
 :::
 
 ::: answer
-`constinit`. It demands that the variable be set during static initialisation, before any code runs, so every reader sees 0 rather than an unset value, and the build fails if a later edit makes the initialiser non-constant. `constexpr` would also force early initialisation but makes the variable `const`, so `++g_boot_count` would not compile. `const` alone forbids the increment too, and does not guarantee anything about when it is initialised.
+`constinit`. It demands that the variable be set during static initialization, before any code runs, so every reader sees 0 rather than an unset value, and the build fails if a later edit makes the initializer non-constant. `constexpr` would also force early initialization but makes the variable `const`, so `++g_boot_count` would not compile. `const` alone forbids the increment too, and does not guarantee anything about when it is initialized.
 :::
 
 ::: check
@@ -439,22 +439,22 @@ Only `encode(12.5ms)`. g++ says `could not convert 'v' from 'std::chrono::durati
 | Idea | Meaning | Rule or fact |
 |---|---|---|
 | `constexpr` function | may be evaluated while compiling | only guaranteed in a constant context; otherwise an ordinary call |
-| constant context | a place that needs a compile-time value | `constexpr` initialiser, template argument, array bound, `static_assert`, `case` |
+| constant context | a place that needs a compile-time value | `constexpr` initializer, template argument, array bound, `static_assert`, `case` |
 | `std::is_constant_evaluated()` | "am I running in the compiler?" | true only in a constant context |
-| undefined behaviour at compile time | overflow, out-of-bounds read | a compile error, not a silent wrap |
+| undefined behavior at compile time | overflow, out-of-bounds read | a compile error, not a silent wrap |
 | `consteval` | immediate function | every call evaluated while compiling; no run-time form |
-| `constinit` | static initialisation, guaranteed | build fails otherwise; the variable is not `const` |
+| `constinit` | static initialization, guaranteed | build fails otherwise; the variable is not `const` |
 | compile-time table | `constexpr auto kRot = make_rotation_table();` | Taylor series, 13 terms, worst error about $3 \times 10^{-16}$; checked by `static_assert` |
 | `if constexpr` | branch chosen while compiling | the discarded branch is not instantiated for that type |
 
 The next lesson goes back to CRTP from the RAII module and uses it to bolt features onto many types at once, meets C++23's "deducing this", and then builds classes out of interchangeable parts chosen by template parameters: policy-based design.
 
 ::: context constant-context Every place that needs a constant
-A **constant expression** is one the compiler can evaluate completely while compiling, using only constant inputs and `constexpr` functions, without touching anything that exists only at run time: no reads of ordinary variables, no input and output, no calls to ordinary functions. The standard calls evaluation in a place that *requires* such a value "manifestly constant-evaluated". Besides the five places in the lesson, the list includes the condition of `if constexpr`, the width of a bit-field, an `enum` enumerator's value, a `noexcept(...)` condition, and the initialiser of a `constinit` variable. In all of them a non-constant is a compile error, not a slower path.
+A **constant expression** is one the compiler can evaluate completely while compiling, using only constant inputs and `constexpr` functions, without touching anything that exists only at run time: no reads of ordinary variables, no input and output, no calls to ordinary functions. The standard calls evaluation in a place that *requires* such a value "manifestly constant-evaluated". Besides the five places in the lesson, the list includes the condition of `if constexpr`, the width of a bit-field, an `enum` enumerator's value, a `noexcept(...)` condition, and the initializer of a `constinit` variable. In all of them a non-constant is a compile error, not a slower path.
 :::
 
-::: context compile-time-ub Why the compiler must catch undefined behaviour
-At run time the standard makes no promise about undefined behaviour, so compilers are free to assume it never happens, and the effects can be strange. During constant evaluation the rule flips: the standard says an expression that would have undefined behaviour is not a constant expression. So the compiler must detect it, and it does, for signed overflow, out-of-range array reads, dereferencing null, and reading an object after its lifetime ended. That is why some teams write `static_assert` tests on `constexpr` code: those tests catch a class of bugs that a run-time unit test can pass by luck.
+::: context compile-time-ub Why the compiler must catch undefined behavior
+At run time the standard makes no promise about undefined behavior, so compilers are free to assume it never happens, and the effects can be strange. During constant evaluation the rule flips: the standard says an expression that would have undefined behavior is not a constant expression. So the compiler must detect it, and it does, for signed overflow, out-of-range array reads, dereferencing null, and reading an object after its lifetime ended. That is why some teams write `static_assert` tests on `constexpr` code: those tests catch a class of bugs that a run-time unit test can pass by luck.
 :::
 
 ::: context static-init-phases The two phases before main
@@ -485,7 +485,7 @@ A `constinit` object reads the same from the first instruction onward, whichever
 :::
 
 ::: context thread-local One copy per thread
-A `thread_local` variable exists once per thread: each thread gets its own copy, which lives as long as the thread does. It suits per-thread scratch data such as a retry counter or an error code. If such a variable needs dynamic initialisation, the generated code often has to ask "is this thread's copy set up yet?" before using it. A `constinit thread_local` variable is known to be set by constant values, so the compiler can drop that question.
+A `thread_local` variable exists once per thread: each thread gets its own copy, which lives as long as the thread does. It suits per-thread scratch data such as a retry counter or an error code. If such a variable needs dynamic initialization, the generated code often has to ask "is this thread's copy set up yet?" before using it. A `constinit thread_local` variable is known to be set by constant values, so the compiler can drop that question.
 :::
 
 ::: context taylor-series A polynomial that copies a curve
@@ -518,7 +518,7 @@ The blue point is $(\cos 30°, \sin 30°)$. Turned a quarter, it lands at $(-\si
 :::
 
 ::: context ulp How fine a double is
-A `double` stores about 16 significant decimal digits, so neighbouring values are not continuous. The gap between one `double` and the next is called an **ulp**, a "unit in the last place". Near 1 it is $2^{-52} \approx 2.2 \times 10^{-16}$. Near $6.28$, the size of a full turn in radians, it is four times larger, about $8.9 \times 10^{-16}$. An error of $3 \times 10^{-16}$ in a value near 1 is one or two ulps: as close as the format allows, give or take rounding.
+A `double` stores about 16 significant decimal digits, so neighboring values are not continuous. The gap between one `double` and the next is called an **ulp**, a "unit in the last place". Near 1 it is $2^{-52} \approx 2.2 \times 10^{-16}$. Near $6.28$, the size of a full turn in radians, it is four times larger, about $8.9 \times 10^{-16}$. An error of $3 \times 10^{-16}$ in a value near 1 is one or two ulps: as close as the format allows, give or take rounding.
 :::
 
 ::: context tag-dispatch What people wrote before if constexpr

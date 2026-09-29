@@ -228,7 +228,7 @@ The right report carries both numbers with their weights, plus the skewed-$\mu$ 
 The next lesson goes back to the multivariable machinery the last two tests rely on, and asks what a singular value of a transfer *matrix* actually means for a vehicle with three coupled axes.
 
 ::: context pointing-requirement What a pointing requirement looks like
-A space telescope has to hold its aim while a camera exposure runs. The Hubble Space Telescope's pointing-stability requirement is usually quoted as $0.007$ arcseconds (an arcsecond is $1/3600$ of a degree) — about the angle of a dime seen from $500$ kilometres away. Staying stable is only the start. The hard part is keeping the leftover wobble inside that tiny number despite reaction-wheel noise, structural flexing and a model that is never perfect; Hubble's first solar arrays shook the telescope every time it passed between sunlight and shadow. That is a robust *performance* problem.
+A space telescope has to hold its aim while a camera exposure runs. The Hubble Space Telescope's pointing-stability requirement is usually quoted as $0.007$ arcseconds (an arcsecond is $1/3600$ of a degree) — about the angle of a dime seen from $500$ kilometers away. Staying stable is only the start. The hard part is keeping the leftover wobble inside that tiny number despite reaction-wheel noise, structural flexing and a model that is never perfect; Hubble's first solar arrays shook the telescope every time it passed between sunlight and shadow. That is a robust *performance* problem.
 :::
 
 ::: context worst-case-disk The worst perturbation, as a picture

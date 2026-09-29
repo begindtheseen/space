@@ -3,7 +3,7 @@ id: l07-successive-convexification
 title: "Successive convexification: the idea and its price"
 minutes: 22
 covers:
-  - "Successive convexification (SCvx): linearise about a reference, solve, update, repeat"
+  - "Successive convexification (SCvx): linearize about a reference, solve, update, repeat"
 ---
 
 Picture driving a winding mountain road at night. Your headlights reach about fifty meters. You cannot see the whole road, so you do something clever without thinking about it: you treat the lit stretch in front of you as if it were straight, steer for it, drive a little way, and look again. Every few seconds you make a fresh straight-line guess from wherever you now are. On a gentle road this works beautifully. On a hairpin bend, if you trust the straight-line guess too far, you drive off the edge.
@@ -143,9 +143,9 @@ The lesson for guidance is sharp. A reference close to the true best trajectory 
 Since none of this bends into an exact convex form, SCvx does not try to convert the problem once and for all. It approximates, solves, and repeats — the headlight trick, written as an algorithm.
 
 ::: key The SCvx loop
-1. **Linearise** every non-convex term (dynamics, unit-norm constraint) about the current reference trajectory $(\bar{\mathbf{x}}(t),\bar{\mathbf{u}}(t))$, producing locally affine dynamics $\dot{\mathbf{x}} \approx \mathbf{A}(t)\mathbf{x}+\mathbf{B}(t)\mathbf{u}+\mathbf{c}(t)$.
-2. **Discretise** the linearised, time-varying system exactly over each zero-order-hold step (the same augmented-matrix-exponential construction used for any linear time-invariant system, applied fresh at each step since $\mathbf{A}(t),\mathbf{B}(t)$ now vary node to node).
-3. **Solve** the resulting convex SOCP — every constraint this module already knows how to write, plus the linearised dynamics in place of the true ones.
+1. **Linearize** every non-convex term (dynamics, unit-norm constraint) about the current reference trajectory $(\bar{\mathbf{x}}(t),\bar{\mathbf{u}}(t))$, producing locally affine dynamics $\dot{\mathbf{x}} \approx \mathbf{A}(t)\mathbf{x}+\mathbf{B}(t)\mathbf{u}+\mathbf{c}(t)$.
+2. **Discretize** the linearized, time-varying system exactly over each zero-order-hold step (the same augmented-matrix-exponential construction used for any linear time-invariant system, applied fresh at each step since $\mathbf{A}(t),\mathbf{B}(t)$ now vary node to node).
+3. **Solve** the resulting convex SOCP — every constraint this module already knows how to write, plus the linearized dynamics in place of the true ones.
 4. **Update** the reference to the new solution (subject to the safeguards the next lesson builds) and **repeat** until the reference stops changing.
 :::
 
@@ -224,7 +224,7 @@ Step 3, the SOCP solve, is certified: it reaches the global optimum of the linea
 | Confirmed curvature | Averaging two attitudes' thrust vectors differs from the thrust at the averaged attitude by $0.0505\,\mathrm{m/s^2}$ |
 | Linearization | $\mathbf{u}(\mathbf{q}) \approx \mathbf{u}(\bar{\mathbf{q}}) + \mathbf{J}(\mathbf{q}-\bar{\mathbf{q}})$: exact at the reference, drifting away from it |
 | Error scaling | Roughly quadratic in distance from the reference: $4\times$ error for $2\times$ tilt, $2.23\times$ for $1.5\times$ tilt |
-| The SCvx loop | Linearise about a reference $\to$ discretise exactly $\to$ solve the convex subproblem $\to$ update the reference $\to$ repeat |
+| The SCvx loop | Linearize about a reference $\to$ discretize exactly $\to$ solve the convex subproblem $\to$ update the reference $\to$ repeat |
 | What step 3 keeps | A genuine, certified SOCP solve of the *linearized* subproblem — global optimum, bounded iterations, for that subproblem only |
 | What the loop gives up | Global optimality, a bound on the number of passes, and guaranteed feasibility for the true problem (settling at a stationary point is proven only with lessons 8–9's safeguards) |
 | The core warning | A subproblem's duality gap certifies the subproblem, never the trajectory, without the loop-level evidence the next two lessons build |

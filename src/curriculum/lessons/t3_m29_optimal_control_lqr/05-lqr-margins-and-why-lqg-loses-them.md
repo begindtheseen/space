@@ -350,7 +350,7 @@ Plot $L(j\omega)$ in the complex plane as $\omega$ runs over all frequencies. Th
 :::
 
 ::: context forbidden-disk Why the crossings are at 120 degrees
-The red disk is the region the LQR Nyquist plot can never enter. The grey dashed circle is where $|L| = 1$, so every gain crossover lies on it. The two circles cross where they form an equilateral triangle with the two centers.
+The red disk is the region the LQR Nyquist plot can never enter. The gray dashed circle is where $|L| = 1$, so every gain crossover lies on it. The two circles cross where they form an equilateral triangle with the two centers.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" font-family="Inter, Arial, sans-serif">

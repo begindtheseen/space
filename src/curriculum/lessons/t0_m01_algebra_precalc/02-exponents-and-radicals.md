@@ -10,7 +10,7 @@ Fold a sheet of paper in half and it is two layers thick. Fold it again: four la
 
 This lesson is about both. You will need them straight away, because the most important facts about flying in space are sentences about exponents:
 
-- Gravity gets weaker as you move away from Earth — four times weaker every time you double your distance from Earth's centre.
+- Gravity gets weaker as you move away from Earth — four times weaker every time you double your distance from Earth's center.
 - A satellite in a higher orbit moves more slowly, following a square root.
 - An orbit twice as big takes almost three times as long to go around.
 - A rocket made one and a half times bigger in every direction weighs more than three times as much.
@@ -47,7 +47,7 @@ $$
 \frac{a^m}{a^n} = a^{m-n}.
 $$
 
-With numbers: $\frac{2^5}{2^2} = \frac{32}{4} = 8 = 2^3$. Two of the five twos cancelled.
+With numbers: $\frac{2^5}{2^2} = \frac{32}{4} = 8 = 2^3$. Two of the five twos canceled.
 
 **Power of a power.** $(a^m)^n$ means $n$ groups, each holding $m$ copies. That is $m \times n$ copies:
 
@@ -87,7 +87,7 @@ $$
 ::: note Why it has to be true
 The staircase is a pattern. Here is the argument that it must hold for every base. Use the quotient rule with the same number of copies on top and bottom, $m = n$. The left side is something divided by itself, which is $1$. The right side is $a^{n-n} = a^0$. So $a^0 = 1$ — the only value that keeps the quotient rule working.
 
-Now take $m$ smaller than $n$, say $\frac{a^2}{a^5}$. Cancelling two copies leaves three on the bottom: $\frac{1}{a^3}$. The rule says the same thing is $a^{2-5} = a^{-3}$. So $a^{-3}$ must equal $\frac{1}{a^3}$. (Why not $a = 0$? Because you cannot divide by $0^n = 0$.)
+Now take $m$ smaller than $n$, say $\frac{a^2}{a^5}$. Canceling two copies leaves three on the bottom: $\frac{1}{a^3}$. The rule says the same thing is $a^{2-5} = a^{-3}$. So $a^{-3}$ must equal $\frac{1}{a^3}$. (Why not $a = 0$? Because you cannot divide by $0^n = 0$.)
 :::
 
 A negative exponent never makes a number negative. It makes it *small*. $10^{-3}$ is $\frac{1}{1000} = 0.001$, and $2^{-10} = \frac{1}{1024} \approx 0.000977$.
@@ -98,7 +98,7 @@ This matters on day one of orbital mechanics. The law of gravity (coming later i
 
 We count in tens, so powers of ten are the exponents you will handle most. $10^3 = 1000$, $10^6$ is a million, and $10^{-6}$ is a millionth. The laws work on them directly: $10^{-3} \times 10^{5} = 10^{-3+5} = 10^{2} = 100$.
 
-You already know some of these by their nicknames. A kilometre is a thousand metres; a millimetre is a thousandth of a metre. The SI **[[prefixes|prefix-names]]** are names for powers of ten in steps of three:
+You already know some of these by their nicknames. A kilometer is a thousand meters; a millimeter is a thousandth of a meter. The SI **[[prefixes|prefix-names]]** are names for powers of ten in steps of three:
 
 | Prefix | Power | Meaning |
 | --- | --- | --- |
@@ -111,13 +111,13 @@ You already know some of these by their nicknames. A kilometre is a thousand met
 
 A meganewton (MN) is $10^6$ newtons, which is a thousand kilonewtons (kN).
 
-Squaring a number squares its power of ten, by the power-of-a-product rule. Earth's radius in metres is $6.371 \times 10^{6}\,\mathrm{m}$, so
+Squaring a number squares its power of ten, by the power-of-a-product rule. Earth's radius in meters is $6.371 \times 10^{6}\,\mathrm{m}$, so
 
 $$
 (6.371 \times 10^{6}\,\mathrm{m})^2 = 6.371^2 \times (10^{6})^2\,\mathrm{m^2} \approx 40.59 \times 10^{12}\,\mathrm{m^2}.
 $$
 
-(The power of a power, $(10^6)^2 = 10^{12}$, doubled the exponent. The unit got squared too: metres times metres is square metres.)
+(The power of a power, $(10^6)^2 = 10^{12}$, doubled the exponent. The unit got squared too: meters times meters is square meters.)
 
 ::: warning Negative exponents are not negative numbers
 $10^{-3}$ is positive: it is $0.001$. People who read $r^{-2}$ as "minus $r$ squared" end up with negative gravity, which would push you off the planet. A power can be negative, but only because the *base* is negative: $(-2)^{-3} = \frac{1}{(-2)^3} = -\frac{1}{8}$, negative because $-2$ multiplied by itself an odd number of times is negative. The sign of a power comes from the base. The sign of the exponent only says whether the number grows (positive exponent) or shrinks (negative exponent).
@@ -125,9 +125,9 @@ $10^{-3}$ is positive: it is $0.001$. People who read $r^{-2}$ as "minus $r$ squ
 
 ## Roots and fractional exponents
 
-Picture a square garden with an area of $9$ square metres. How long is each side? You need a number that, multiplied by itself, gives $9$. That number is $3$, and it is called the **square root** of $9$, written $\sqrt{9} = 3$.
+Picture a square garden with an area of $9$ square meters. How long is each side? You need a number that, multiplied by itself, gives $9$. That number is $3$, and it is called the **square root** of $9$, written $\sqrt{9} = 3$.
 
-Now picture a cube-shaped box that holds $8$ litres. Its side is $2$ units long, because $2 \cdot 2 \cdot 2 = 8$. That $2$ is the **cube root** of $8$, written $\sqrt[3]{8} = 2$.
+Now picture a cube-shaped box that holds $8$ liters. Its side is $2$ units long, because $2 \cdot 2 \cdot 2 = 8$. That $2$ is the **cube root** of $8$, written $\sqrt[3]{8} = 2$.
 
 In general, the **$n$th root** of $a$, written $\sqrt[n]{a}$ and read "the n-th root of a", is the number whose $n$th power is $a$. The square root is the case $n = 2$, and we leave out the little $2$. The number under the root sign is called the **[[radicand|radix]]**, and an expression with a root sign in it is called a **radical**.
 
@@ -176,7 +176,7 @@ $$
 \sqrt{50} + \sqrt{18} = 5\sqrt{2} + 3\sqrt{2} = 8\sqrt{2}.
 $$
 
-To **[[rationalise|rationalise-why]]** a denominator — get the root out of the bottom of a fraction — multiply top and bottom by that root (which is multiplying by $1$, so nothing changes):
+To **[[rationalize|rationalise-why]]** a denominator — get the root out of the bottom of a fraction — multiply top and bottom by that root (which is multiplying by $1$, so nothing changes):
 
 $$
 \frac{1}{\sqrt{2}} = \frac{1 \cdot \sqrt{2}}{\sqrt{2}\,\sqrt{2}} = \frac{\sqrt{2}}{2}.
@@ -198,7 +198,7 @@ $$
 \sqrt{5.887 \times 10^7\,\mathrm{m^2/s^2}} = \sqrt{5.887} \times \sqrt{10^7}\,\mathrm{m/s} \approx 2.43 \times 3160\,\mathrm{m/s} \approx 7670\,\mathrm{m/s}.
 $$
 
-The square root of square metres per second squared is metres per second. Splitting the number from its power of ten, and the unit from both, keeps a calculation like this honest without a calculator. You will lean on exactly this habit in the estimation lesson at the end of the module.
+The square root of square meters per second squared is meters per second. Splitting the number from its power of ten, and the unit from both, keeps a calculation like this honest without a calculator. You will lean on exactly this habit in the estimation lesson at the end of the module.
 
 ::: warning Roots do not split over adding
 $\sqrt{a + b}$ is **not** $\sqrt{a} + \sqrt{b}$. Test it with numbers: $\sqrt{9 + 16} = \sqrt{25} = 5$, but $\sqrt{9} + \sqrt{16} = 3 + 4 = 7$. The same goes for squares: $(a + b)^2$ is not $a^2 + b^2$. The missing piece, $2ab$, is the whole subject of the next lesson's special products. Roots and powers split over multiplying and dividing only.
@@ -238,17 +238,17 @@ $$
 
 Think of a can of spray paint. Hold it close to a wall and it paints a small, thick patch. Step back to [[twice the distance|spreading-out]]: the spray spreads out, so the patch is twice as wide *and* twice as tall. That is $2 \times 2 = 4$ times the area, and the same paint spread over four times the area is only a quarter as thick. Step back to three times the distance and the paint is $3 \times 3 = 9$ times thinner.
 
-Gravity weakens with distance in exactly the same way. Newton's law of gravitation says that the acceleration gravity gives you, at distance $r$ from the centre of a planet, is
+Gravity weakens with distance in exactly the same way. Newton's law of gravitation says that the acceleration gravity gives you, at distance $r$ from the center of a planet, is
 
 $$
 g(r) = \frac{\mu}{r^2}.
 $$
 
-Here $g$ is the **gravitational acceleration** — how fast a dropped object speeds up, in metres per second every second ($\mathrm{m/s^2}$). The symbol $\mu$ (the Greek letter "mu" — the same letter as the prefix micro, but with a completely different job here) is the **gravitational parameter**: the universal gravitational constant multiplied by the planet's mass. A heavier planet has a bigger $\mu$ and pulls harder. For Earth, $\mu = 3.986 \times 10^{14}\,\mathrm{m^3/s^2}$.
+Here $g$ is the **gravitational acceleration** — how fast a dropped object speeds up, in meters per second every second ($\mathrm{m/s^2}$). The symbol $\mu$ (the Greek letter "mu" — the same letter as the prefix micro, but with a completely different job here) is the **gravitational parameter**: the universal gravitational constant multiplied by the planet's mass. A heavier planet has a bigger $\mu$ and pulls harder. For Earth, $\mu = 3.986 \times 10^{14}\,\mathrm{m^3/s^2}$.
 
 Check the units: $\mathrm{m^3/s^2}$ divided by $\mathrm{m^2}$ leaves $\mathrm{m/s^2}$, an acceleration, as it should.
 
-Notice that $r$ is measured from Earth's **centre**, not from the ground. A satellite at **altitude** $h$ (height above the ground) has $r = R + h$, where $R$ is Earth's radius.
+Notice that $r$ is measured from Earth's **center**, not from the ground. A satellite at **altitude** $h$ (height above the ground) has $r = R + h$, where $R$ is Earth's radius.
 
 The exponent $-2$ carries a scaling rule. Double the distance and the acceleration drops by a factor of $2^2 = 4$. At ten Earth radii it is a hundredth of its value at the surface.
 
@@ -263,7 +263,7 @@ $$
 
 That is a touch more than the familiar $9.81$, because this simple formula ignores Earth's spin and its slightly squashed shape.
 
-**At a space station**, altitude $h = 420\,\mathrm{km}$. First add to get the distance from the centre: $r = 6371 + 420 = 6791\,\mathrm{km} = 6.791 \times 10^6\,\mathrm{m}$. Then square and divide:
+**At a space station**, altitude $h = 420\,\mathrm{km}$. First add to get the distance from the center: $r = 6371 + 420 = 6791\,\mathrm{km} = 6.791 \times 10^6\,\mathrm{m}$. Then square and divide:
 
 $$
 g = \frac{3.986 \times 10^{14}}{(6.791 \times 10^6)^2} = \frac{3.986 \times 10^{14}}{4.612 \times 10^{13}} \approx 8.64\,\mathrm{m/s^2}.
@@ -282,7 +282,7 @@ The direct calculation, $\mu / (4.2157 \times 10^7)^2$, gives the same $0.224\,\
 
 ## Square roots in orbital speed
 
-Swing a ball on a string in a circle. To keep it curving, the string has to keep pulling it toward the centre. Anything moving at speed $v$ around a circle of radius $r$ needs an inward acceleration of $\frac{v^2}{r}$. (You will derive that formula in a later module; for now take it as given.)
+Swing a ball on a string in a circle. To keep it curving, the string has to keep pulling it toward the center. Anything moving at speed $v$ around a circle of radius $r$ needs an inward acceleration of $\frac{v^2}{r}$. (You will derive that formula in a later module; for now take it as given.)
 
 A satellite in a **circular orbit** has no string. Gravity does the pulling. The orbit works when gravity supplies exactly the inward acceleration needed:
 
@@ -301,7 +301,7 @@ The exponent $-\frac{1}{2}$ tells the story. It is negative, so higher orbits ar
 The **[[escape speed|escape-speed]]**, the speed needed to leave Earth for good, is $\sqrt{2\mu/r}$. By the power-of-a-product rule, $\sqrt{2\mu/r} = \sqrt{2}\,\sqrt{\mu/r} = \sqrt{2}\, v$. So escape speed is $\sqrt{2} \approx 1.414$ times the circular speed at the same radius.
 
 ::: example Circular speed at 400 km
-*Step 1: distance from the centre.* $r = 6371 + 400 = 6771\,\mathrm{km} = 6.771 \times 10^6\,\mathrm{m}$.
+*Step 1: distance from the center.* $r = 6371 + 400 = 6771\,\mathrm{km} = 6.771 \times 10^6\,\mathrm{m}$.
 
 *Step 2: divide.*
 
@@ -315,7 +315,7 @@ $$
 v = \sqrt{5.887 \times 10^7\,\mathrm{m^2/s^2}} \approx 7673\,\mathrm{m/s}.
 $$
 
-That is the $7.7\,\mathrm{km/s}$ you will hear quoted for **low Earth orbit** (LEO) — about $28\,000$ kilometres per hour, fast enough to cross the United States in about ten minutes.
+That is the $7.7\,\mathrm{km/s}$ you will hear quoted for **low Earth orbit** (LEO) — about $28\,000$ kilometers per hour, fast enough to cross the United States in about ten minutes.
 
 *Escape speed* from the same radius is $\sqrt{2} \times 7673 \approx 10\,850\,\mathrm{m/s}$.
 
@@ -331,7 +331,7 @@ That is the pattern for [[any shape|square-cube]]. If every length of an object 
 - its **areas** grow by $k^2$;
 - its **volumes** — and so its masses, if it is made of the same stuff — grow by $k^3$.
 
-So a rocket stage scaled up by $k = 1.5$ in every direction has $1.5^2 = 2.25$ times the skin area and $1.5^3 = 3.375$ times the propellant mass. Here is why that matters. The force of the pressurised propellant on the tank walls grows with area, but the amount of propellant grows with volume. The propellant grows faster than the structure needed to hold it, which is one reason bigger rockets are more efficient.
+So a rocket stage scaled up by $k = 1.5$ in every direction has $1.5^2 = 2.25$ times the skin area and $1.5^3 = 3.375$ times the propellant mass. Here is why that matters. The force of the pressurized propellant on the tank walls grows with area, but the amount of propellant grows with volume. The propellant grows faster than the structure needed to hold it, which is one reason bigger rockets are more efficient.
 
 The same thinking works on orbits. The **period** $T$ of an orbit is the time for one lap: the distance around, $2\pi r$, divided by the speed. Using the speed from the last section,
 
@@ -348,7 +348,7 @@ $a^m a^n = a^{m+n}$, $\dfrac{a^m}{a^n} = a^{m-n}$, $(a^m)^n = a^{mn}$, $(ab)^n =
 :::
 
 ::: key Gravity and circular speed
-$g(r) = \mu / r^2$ and $v = \sqrt{\mu / r}$ with $r$ measured from the centre of the body; for Earth $\mu = 3.986 \times 10^{14}\,\mathrm{m^3/s^2}$ and $R = 6371\,\mathrm{km}$. Low Earth orbit speed is about $7.7\,\mathrm{km/s}$.
+$g(r) = \mu / r^2$ and $v = \sqrt{\mu / r}$ with $r$ measured from the center of the body; for Earth $\mu = 3.986 \times 10^{14}\,\mathrm{m^3/s^2}$ and $R = 6371\,\mathrm{km}$. Low Earth orbit speed is about $7.7\,\mathrm{km/s}$.
 :::
 
 ## Check yourself
@@ -473,7 +473,7 @@ The names are pictures. Three squared is the number of tiles in a square three t
 </svg>
 ```
 
-That is also why areas come in square metres ($\mathrm{m^2}$) and volumes in cubic metres ($\mathrm{m^3}$): the exponent on the unit counts how many lengths were multiplied together.
+That is also why areas come in square meters ($\mathrm{m^2}$) and volumes in cubic meters ($\mathrm{m^3}$): the exponent on the unit counts how many lengths were multiplied together.
 :::
 
 ::: context tower-top-down Why towers are read top-down
@@ -483,7 +483,7 @@ Calculators and programming languages follow the same rule. In Python, `2**3**2`
 :::
 
 ::: context prefix-names Giants, dwarfs and thousands
-The prefixes are old Greek and Latin words. **Kilo** comes from the Greek for "thousand", and **milli** from the Latin for "thousand" (a thousandth part). **Mega** means "great", **giga** "giant", **micro** "small" and **nano** "dwarf". So a nanometre is, word for word, a "dwarf metre".
+The prefixes are old Greek and Latin words. **Kilo** comes from the Greek for "thousand", and **milli** from the Latin for "thousand" (a thousandth part). **Mega** means "great", **giga** "giant", **micro** "small" and **nano** "dwarf". So a nanometer is, word for word, a "dwarf meter".
 
 You will meet meganewtons straight away in rocketry. A single Merlin engine on a Falcon 9 first stage pushes with about $845\,\mathrm{kN}$ at sea level, and all nine together make about $7.6\,\mathrm{MN}$.
 :::
@@ -495,9 +495,9 @@ The root sign $\sqrt{\ }$ is usually said to have grown out of a quickly written
 :::
 
 ::: context rationalise-why Why people bothered
-Before calculators, division was done by hand, digit by digit. Work out $\frac{1}{\sqrt{2}}$ directly and you must divide $1$ by $1.41421\ldots$ — a long division by a messy number. Rationalise first and it becomes $\frac{\sqrt{2}}{2}$: just halve $1.41421$ to get $0.70711$. Same number, far less work.
+Before calculators, division was done by hand, digit by digit. Work out $\frac{1}{\sqrt{2}}$ directly and you must divide $1$ by $1.41421\ldots$ — a long division by a messy number. Rationalize first and it becomes $\frac{\sqrt{2}}{2}$: just halve $1.41421$ to get $0.70711$. Same number, far less work.
 
-The name comes from **rational number**: a number that can be written as a fraction of two whole numbers. $\sqrt{2}$ cannot be, so rationalising means leaving only a rational number on the bottom.
+The name comes from **rational number**: a number that can be written as a fraction of two whole numbers. $\sqrt{2}$ cannot be, so rationalizing means leaving only a rational number on the bottom.
 :::
 
 ::: context spreading-out Same spray, bigger patch
@@ -531,7 +531,7 @@ Every drop from the nozzle travels in a straight line, so the patch grows in bot
 </svg>
 ```
 
-Light, sound and radio spread the same way. That is why a space probe's signal is so faint by the time it reaches home: the Voyager probes, more than $20$ billion kilometres out, are heard with dish antennas $70$ metres across.
+Light, sound and radio spread the same way. That is why a space probe's signal is so faint by the time it reaches home: the Voyager probes, more than $20$ billion kilometers out, are heard with dish antennas $70$ meters across.
 :::
 
 ::: context falling-together Always falling, always missing
@@ -557,8 +557,8 @@ Isaac Newton imagined a cannon on a very tall mountain. Fire the ball slowly and
 The space station does this at about $7.7\,\mathrm{km/s}$, going once around every $93$ minutes — about fifteen and a half times a day. Everything inside falls at the same rate, so nothing presses on anything. That is what floating is.
 :::
 
-::: context escape-speed Eleven kilometres per second
-From Earth's surface, ignoring the air, escape speed is $\sqrt{2\mu/R} \approx 11.2\,\mathrm{km/s}$ — about $40\,000$ kilometres per hour. No rocket leaves the ground that fast; the air would burn it up. Instead, a probe bound for Mars first climbs to orbit at about $7.7\,\mathrm{km/s}$, then fires again, above the air, to go faster than the local escape speed.
+::: context escape-speed Eleven kilometers per second
+From Earth's surface, ignoring the air, escape speed is $\sqrt{2\mu/R} \approx 11.2\,\mathrm{km/s}$ — about $40\,000$ kilometers per hour. No rocket leaves the ground that fast; the air would burn it up. Instead, a probe bound for Mars first climbs to orbit at about $7.7\,\mathrm{km/s}$, then fires again, above the air, to go faster than the local escape speed.
 
 Escape speed does not depend on the probe's mass: a pebble and a spacecraft need the same speed. Nor does it depend on direction, as long as the path does not run into the planet.
 :::

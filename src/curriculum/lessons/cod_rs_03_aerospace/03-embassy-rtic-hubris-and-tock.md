@@ -170,7 +170,7 @@ RTIC. It is a static-priority, interrupt-driven framework whose resource access 
 :::
 
 ::: example Proving the 1 kHz loop meets its deadline
-Take the RTIC program above on an STM32F411 running at 100 MHz. Measure (on the bench, with a timer or a logic analyser) the worst-case execution time of each task:
+Take the RTIC program above on an STM32F411 running at 100 MHz. Measure (on the bench, with a timer or a logic analyzer) the worst-case execution time of each task:
 
 - `control_loop`: period $T_1 = 1\,\mathrm{ms}$, worst case $C_1 = 0.30\,\mathrm{ms}$;
 - a 50 Hz telemetry task: period $T_2 = 20\,\mathrm{ms}$, worst case $C_2 = 4\,\mathrm{ms}$;

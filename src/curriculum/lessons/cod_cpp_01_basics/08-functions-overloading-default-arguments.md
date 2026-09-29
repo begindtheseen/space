@@ -25,7 +25,7 @@ double norm(const Vec3& v) {                      // definition
 
 Four parts, left to right: the **return type** (`double`, the kind of value handed back), the name, the **parameter list** in brackets (what the function takes), and the **body** in braces (what it does). The first line is a **declaration** — it announces that the function exists. The second is the **definition** — it also supplies the body. A function that hands nothing back is declared `void`.
 
-Unlike Python, the return type is part of the contract. The compiler checks every `return` against it. A non-`void` function that reaches its closing brace without a `return` is **undefined behaviour** — lesson 05's name for "the language makes no promise at all". `-Wall` catches it:
+Unlike Python, the return type is part of the contract. The compiler checks every `return` against it. A non-`void` function that reaches its closing brace without a `return` is **undefined behavior** — lesson 05's name for "the language makes no promise at all". `-Wall` catches it:
 
 ```cpp
 int sign(int x) {
@@ -113,7 +113,7 @@ Think of it as a **[[ladder of conversions|ranking-ladder]]**. The fewer rungs a
 
 A call is **ambiguous** when two candidates need conversions of the same rank and neither is better. Here is one:
 
-```cpp
+```cpp error
 void log_value(double v);
 void log_value(long v);
 
@@ -159,7 +159,7 @@ a3.cpp:1:6: note: 'void set_rate(int)' previously defined here
 
 **By value versus by `const` reference.** These *are* different parameter types, so declaring both is legal. But no call can ever choose between them, because handing an argument to either is an exact match:
 
-```cpp
+```cpp error
 struct Vec3 { double x, y, z; };
 
 double norm(Vec3 v)        { return v.x; }
@@ -255,7 +255,7 @@ a5.cpp:1:6: note: previous specification in 'void step(double)' here
 
 **A default plus an overload is usually an ambiguity.**
 
-```cpp
+```cpp error
 void step(double dt = 0.01);
 void step();
 
@@ -420,7 +420,7 @@ Python works out a default once, when the `def` line runs, and stores that objec
 
 C++ treats a default argument as an expression worked out again on every call that leaves it out. There is no stored object to grow.
 
-The C++ rule is the one you want in flight software, because it removes hidden state: a function's behaviour depends only on its arguments and whatever state it names openly. The C++ hazard is the opposite one — a default that calls a function has a cost and a side effect that are invisible at the call site — which is why defaults should be plain constants.
+The C++ rule is the one you want in flight software, because it removes hidden state: a function's behavior depends only on its arguments and whatever state it names openly. The C++ hazard is the opposite one — a default that calls a function has a cost and a side effect that are invisible at the call site — which is why defaults should be plain constants.
 :::
 
 ::: check
@@ -488,7 +488,7 @@ The linker, which joins object files together, only understands plain symbol nam
 :::
 
 ::: context main-exception The one function allowed to fall off the end
-There is exactly one exception to the rule. If `main` reaches its closing brace without a `return`, C++ acts as if it ended with `return 0;`, and 0 tells the operating system "success". Every other non-`void` function that falls off the end is undefined behaviour.
+There is exactly one exception to the rule. If `main` reaches its closing brace without a `return`, C++ acts as if it ended with `return 0;`, and 0 tells the operating system "success". Every other non-`void` function that falls off the end is undefined behavior.
 
 Lesson examples often still write `return 0;` in `main`. It is not required, but it makes the program's exit status visible to the reader.
 :::
@@ -496,7 +496,7 @@ Lesson examples often still write `return 0;` in `main`. It is not required, but
 ::: context attributes Notes to the compiler in double brackets
 An **attribute** is extra information for the compiler, written inside double square brackets. It does not change what correct code means; it helps the compiler warn you or optimize. C++11 introduced the syntax, and `[[nodiscard]]` arrived in C++17.
 
-Others you will meet: `[[maybe_unused]]` quiets the "unused variable" warning for something you keep on purpose, `[[fallthrough]]` marks a `switch` case that is meant to run into the next one, and `[[deprecated]]` warns anyone who still calls an old function. A compiler ignores an attribute it does not recognise, usually with a warning.
+Others you will meet: `[[maybe_unused]]` quiets the "unused variable" warning for something you keep on purpose, `[[fallthrough]]` marks a `switch` case that is meant to run into the next one, and `[[deprecated]]` warns anyone who still calls an old function. A compiler ignores an attribute it does not recognize, usually with a warning.
 :::
 
 ::: context ranking-ladder Fewer rungs wins

@@ -393,7 +393,7 @@ No. `time_bucket` comes from the TimescaleDB extension, not from PostgreSQL, so 
 Buckets are a fixed grid laid over time. The last lesson of the module steps back and asks, of every pattern so far, when a window function is the right tool and when a join — including a join between two different tables' timestamps — does the job better.
 
 ::: context gyro-word What a gyro measures
-A **gyro**, short for gyroscope, measures how fast the spacecraft is rotating about an axis, in degrees per second. Modern spacecraft gyros have no spinning wheel inside; many use light travelling both ways around a coil of optical fiber, or a tiny vibrating structure. A satellite holding still in attitude reads close to zero, so a sudden reading of 1.2 °/s is large: at that rate it would turn a full circle in five minutes.
+A **gyro**, short for gyroscope, measures how fast the spacecraft is rotating about an axis, in degrees per second. Modern spacecraft gyros have no spinning wheel inside; many use light traveling both ways around a coil of optical fiber, or a tiny vibrating structure. A satellite holding still in attitude reads close to zero, so a sudden reading of 1.2 °/s is large: at that rate it would turn a full circle in five minutes.
 :::
 
 ::: context pixel-budget Four numbers per pixel column
@@ -409,7 +409,7 @@ Each minute bucket includes its start and excludes its end, so the buckets fit t
 :::
 
 ::: context mean-vs-max The spike in the mean and in the max
-The grey trace is the raw 10 Hz signal: a small wobble with one 1-second spike. The bars show each minute's mean (blue) and max (red), drawn to the same scale as the trace, 80 pixels per degree per second.
+The gray trace is the raw 10 Hz signal: a small wobble with one 1-second spike. The bars show each minute's mean (blue) and max (red), drawn to the same scale as the trace, 80 pixels per degree per second.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">

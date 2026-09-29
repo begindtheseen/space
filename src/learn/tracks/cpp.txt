@@ -27,7 +27,7 @@ A **[[compiler|compiler]]** is a program that translates your whole source file 
 
 ## The smallest complete program
 
-Here is a whole C++ program. The rest of the lesson walks through it one line at a time. The grey words after `//` on line 4 are a note for you, not for the compiler; there is more about notes at the end of this lesson.
+Here is a whole C++ program. The rest of the lesson walks through it one line at a time. The gray words after `//` on line 4 are a note for you, not for the compiler; there is more about notes at the end of this lesson.
 
 ```cpp
 #include <iostream>
@@ -336,7 +336,7 @@ Days in orbit: 182
 --- teach
 So far every value you printed was typed straight into the `std::cout` line. Real programs need to remember values and use them again: the fuel left, the number of crew, the name of a city. This lesson gives values names.
 
-## A variable is a labelled box
+## A variable is a labeled box
 
 Picture a box with a label on it. You put a value in the box, and later you ask for it by the label. In C++ that box is a **variable**: a named place that holds a value.
 
@@ -772,7 +772,7 @@ C++ inherited a short way to convert from the older language C: `(double)total`.
 :::
 
 ::: context undefined-behaviour When the rules say nothing
-Dividing an `int` by zero has no answer, and C++ does not promise what happens: the program may crash, or carry on with nonsense. This is called **undefined behaviour**, and it is one of the most dangerous things in C++, because the program might seem fine in testing and fail later. With a `double`, dividing by zero gives a special value on nearly every computer: `1.0 / 0` prints `inf`, short for infinity. Careful code checks a divisor before dividing.
+Dividing an `int` by zero has no answer, and C++ does not promise what happens: the program may crash, or carry on with nonsense. This is called **undefined behavior**, and it is one of the most dangerous things in C++, because the program might seem fine in testing and fail later. With a `double`, dividing by zero gives a special value on nearly every computer: `1.0 / 0` prints `inf`, short for infinity. Careful code checks a divisor before dividing.
 :::
 
 ::: context ariane-5 The conversion that cost a rocket
@@ -909,7 +909,7 @@ Every program starts with three streams: standard input (in), standard output (o
 :::
 
 ::: context uninitialized A box with leftovers in it
-A variable declared without a value, like `int crew;`, holds whatever happened to be in that piece of memory before. Reading it before you put a value in is undefined behaviour: you might get 0, or a random-looking number. Here it is safe, because `std::cin >> crew` fills it before anything reads it. MISRA C, a coding standard used in cars and aircraft, forbids reading a variable before it has been given a value, and many teams give every variable a starting value when they declare it.
+A variable declared without a value, like `int crew;`, holds whatever happened to be in that piece of memory before. Reading it before you put a value in is undefined behavior: you might get 0, or a random-looking number. Here it is safe, because `std::cin >> crew` fills it before anything reads it. MISRA C, a coding standard used in cars and aircraft, forbids reading a variable before it has been given a value, and many teams give every variable a starting value when they declare it.
 :::
 
 ::: context getline-catch The leftover line break
@@ -1523,7 +1523,7 @@ A handy fact: a number is a multiple of both 3 and 5 exactly when it is a multip
 :::
 
 ::: context off-by-one Count the fence posts
-A fence 30 metres long with a post every 10 metres needs 4 posts, not 3: one at each end plus two between. Counting the gaps when you meant the posts (or the other way round) is the oldest counting mistake there is.
+A fence 30 meters long with a post every 10 meters needs 4 posts, not 3: one at each end plus two between. Counting the gaps when you meant the posts (or the other way round) is the oldest counting mistake there is.
 
 ```svg
 <svg viewBox="0 0 360 110" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
@@ -1718,7 +1718,7 @@ Memory is made of **bits**, each a 0 or a 1, grouped eight at a time into **byte
 ::: context overflow A rocket lost to a number too big
 On 4 June 1996 the first Ariane 5 rocket veered off course about 37 seconds after liftoff and was destroyed. Its guidance software converted a 64-bit number with a decimal point, linked to the rocket's sideways speed, into a 16-bit whole number. On Ariane 5's faster flight path the value was too big for 16 bits. The conversion failed, and both guidance computers — the main one and its backup, running the same code — shut down. The code had been reused from Ariane 4, whose flights never produced a value that large.
 
-In C++, overflowing an `int` is **undefined behaviour**: the language makes no promise at all about what happens. Choosing a big enough type is the fix.
+In C++, overflowing an `int` is **undefined behavior**: the language makes no promise at all about what happens. Choosing a big enough type is the fix.
 :::
 
 ::: context zero-factorial Why 0! is 1
@@ -1978,7 +1978,7 @@ There are two new pieces around the type:
 
 So `const std::vector<int>& v` reads "v is a reference to a vector of ints that I promise not to change". The references lesson, coming soon, is all about them. Until then, write it this way whenever a function only reads a vector.
 
-**Watch out:** C++ does not check your index. On a vector with 4 elements, `v[4]` does not stop the program with a helpful error. It reads whatever memory happens to sit past the end, and from then on the program's behaviour is [[undefined|undefined-behaviour]]. So use `v[0]` only when you know the vector is not empty, and keep every index below `size()`.
+**Watch out:** C++ does not check your index. On a vector with 4 elements, `v[4]` does not stop the program with a helpful error. It reads whatever memory happens to sit past the end, and from then on the program's behavior is [[undefined|undefined-behaviour]]. So use `v[0]` only when you know the vector is not empty, and keep every index below `size()`.
 
 **Watch out, too:** dividing a whole-number total by `size()` is whole-number division, so it throws the remainder away, the same as `7 / 2` in the arithmetic lesson. Worse, `size()` gives back an [[unsigned|size-is-unsigned]] number, which breaks negative totals completely. To get an exact average, convert the total to a `double` first: `static_cast<double>(total) / v.size()`.
 
@@ -2019,8 +2019,8 @@ The angle brackets make `std::vector` a **template**: a pattern the compiler fil
 The index is not "which one" but "how many steps from the start". The first element is 0 steps from the start, so it is `v[0]`. That is also what lets the computer find an element fast: it jumps index × (size of one element) bytes from the beginning. Most programming languages count this way. The price is that the last element of a vector with 4 elements is `v[3]`, not `v[4]`, and reaching one past the end is one of the most common bugs there is.
 :::
 
-::: context undefined-behaviour Undefined behaviour
-**Undefined behaviour** means the C++ rules say nothing at all about what happens next. The program might print a strange number, crash, or seem to work today and fail next week. C++ skips the index check on purpose, because checking every access costs time. If you want the check, `v.at(4)` does test the index, and stops with an error called `std::out_of_range` when it is too big. Safety-critical coding rules for aircraft and spacecraft, such as MISRA C++, exist largely to keep programs away from undefined behaviour.
+::: context undefined-behaviour Undefined behavior
+**Undefined behavior** means the C++ rules say nothing at all about what happens next. The program might print a strange number, crash, or seem to work today and fail next week. C++ skips the index check on purpose, because checking every access costs time. If you want the check, `v.at(4)` does test the index, and stops with an error called `std::out_of_range` when it is too big. Safety-critical coding rules for aircraft and spacecraft, such as MISRA C++, exist largely to keep programs away from undefined behavior.
 :::
 
 ::: context size-is-unsigned Numbers that cannot be negative
@@ -2188,7 +2188,7 @@ Inside the computer, a `char` is one byte: a number from 0 to 255 (or −128 to 
 :::
 
 ::: context negative-chars How é becomes negative
-Plain English letters fit in one byte, 0 to 127. Other letters are stored as several bytes in a system called **UTF-8**: `é` is two bytes, 195 and 169. On most PCs a `char` is signed, running from −128 to 127, so those bytes read as −61 and −87. Handing −61 to `std::toupper` is undefined behaviour, the same "the rules say nothing" trouble as reading past the end of a vector. Converting to `unsigned char` turns them back into 195 and 169, which the helpers accept.
+Plain English letters fit in one byte, 0 to 127. Other letters are stored as several bytes in a system called **UTF-8**: `é` is two bytes, 195 and 169. On most PCs a `char` is signed, running from −128 to 127, so those bytes read as −61 and −87. Handing −61 to `std::toupper` is undefined behavior, the same "the rules say nothing" trouble as reading past the end of a vector. Converting to `unsigned char` turns them back into 195 and 169, which the helpers accept.
 :::
 --- task
 Write two functions. No `main`: the checker supplies it.
@@ -2676,7 +2676,7 @@ explicit Account(int start) : balance_(start) {}
 ```
 
 - `(int start)` is its parameter, like any function's.
-- `: balance_(start)` is the **[[member initialiser list|init-list]]**. After the colon, each member gets its first value before the body runs. Here `balance_` starts out equal to `start`.
+- `: balance_(start)` is the **[[member initializer list|init-list]]**. After the colon, each member gets its first value before the body runs. Here `balance_` starts out equal to `start`.
 - `{}` is the body. It is empty because there is nothing more to do.
 - `explicit` means the constructor runs only when you ask for it by name. It stops C++ from [[quietly turning a plain number into an Account|explicit-keyword]].
 
@@ -2825,7 +2825,7 @@ Inside the [[angle brackets|template-args]] `< >` go two types: first the key's 
 
 ### Storing and reading with [ ]
 
-Square brackets with a key work like a labelled box:
+Square brackets with a key work like a labeled box:
 
 ```cpp
 supplies["water"] = 40;                  // store 40 under "water"
@@ -3020,7 +3020,7 @@ Sometimes a pointer has nothing to point at yet. For that there is **nullptr**, 
 int* none = nullptr;   // points at nothing: never follow it
 ```
 
-Following a null pointer (`*none`) is **[[undefined behaviour|undefined-behaviour]]**: C++ makes no promise at all about what happens. Usually the program crashes.
+Following a null pointer (`*none`) is **[[undefined behavior|undefined-behaviour]]**: C++ makes no promise at all about what happens. Usually the program crashes.
 
 **Watch out:** when a function is handed a pointer, it may be handed `nullptr`. Check before you follow it:
 
@@ -3089,7 +3089,7 @@ Memory is made of bytes, and every byte has a number, its address. An `int` usua
 :::
 
 ::: context undefined-behaviour When C++ makes no promise
-The C++ rules list some mistakes, like following a null pointer or reading past the end of an array, as *undefined behaviour*. The compiler is allowed to assume they never happen, so the result can be anything: a crash, a wrong answer, or a program that seems fine today and fails later. On most computers, following a null pointer crashes the program at once. Tony Hoare, who invented the null reference in 1965, later called it his "billion-dollar mistake" because of how many bugs it has caused.
+The C++ rules list some mistakes, like following a null pointer or reading past the end of an array, as *undefined behavior*. The compiler is allowed to assume they never happen, so the result can be anything: a crash, a wrong answer, or a program that seems fine today and fails later. On most computers, following a null pointer crashes the program at once. Tony Hoare, who invented the null reference in 1965, later called it his "billion-dollar mistake" because of how many bugs it has caused.
 :::
 
 ::: context stack-and-heap Two kinds of memory
@@ -3097,7 +3097,7 @@ A function's ordinary variables live on the *stack*: a pile that grows when a fu
 :::
 
 ::: context new-delete-bugs Leaks, double frees and flight rules
-Forgetting `delete` is a *memory leak*: the memory stays taken, and a program that runs for days slowly runs out. Calling `delete` twice, or using the memory after it was deleted, is undefined behaviour and can corrupt anything. Spacecraft software is so careful about this that NASA's Jet Propulsion Laboratory coding rules, the "Power of Ten", forbid asking for new memory at all once the program has finished starting up, and limit how pointers may be used.
+Forgetting `delete` is a *memory leak*: the memory stays taken, and a program that runs for days slowly runs out. Calling `delete` twice, or using the memory after it was deleted, is undefined behavior and can corrupt anything. Spacecraft software is so careful about this that NASA's Jet Propulsion Laboratory coding rules, the "Power of Ten", forbid asking for new memory at all once the program has finished starting up, and limit how pointers may be used.
 :::
 
 ::: context owning-later Who owns what, and where it comes back

@@ -181,7 +181,7 @@ $$
 The work grows like $n^2$, which is called **[[quadratic|quadratic-growth]]**. Double $n$ and the copying goes up four times. Multiply $n$ by 1000 and it goes up a million times. A preallocated loop, by contrast, does one allocation and $n$ writes: work that grows like $n$, called **linear**.
 
 ::: key
-Each assignment may reallocate and copy the whole array, making the loop quadratic in the number of iterations. Preallocate with `zeros(1,n)` and index, or vectorise.
+Each assignment may reallocate and copy the whole array, making the loop quadratic in the number of iterations. Preallocate with `zeros(1,n)` and index, or vectorize.
 :::
 
 The comment `%#ok<AGROW>` in the code above is worth reading. MATLAB's **[[Code Analyzer|code-analyzer]]**, which checks your code as you type in the Editor, underlines `x(end+1)` in a loop and warns that the variable appears to change size on every loop iteration. `AGROW` is the name of that warning, and `%#ok<AGROW>` tells the analyzer "I know, hide it". In the module's exercise it is there on purpose, to mark the bug you are about to fix. In your own code, treat the underline as a request to preallocate.
@@ -269,7 +269,7 @@ The third option is to remove the loop entirely. When each element depends only 
 z = sin(2*pi*t) .* exp(-0.1*t);           % no loop at all
 ```
 
-That is **[[vectorised|vectorisation]]** code, and it uses the dotted operators from lesson 4. Not every loop can be written this way: the drop test cannot, because each step needs the one before it. Lesson 13 covers vectorisation, `tic`/`toc` and the Profiler in depth, including when a preallocated loop is already fast enough.
+That is **[[vectorized|vectorisation]]** code, and it uses the dotted operators from lesson 4. Not every loop can be written this way: the drop test cannot, because each step needs the one before it. Lesson 13 covers vectorization, `tic`/`toc` and the Profiler in depth, including when a preallocated loop is already fast enough.
 
 ::: warning Preallocate the right shape
 `zeros(n)` with one argument makes an $n$-by-$n$ matrix, not a vector. For $n = 10^5$ that is $10^{10}$ numbers, 80 gigabytes, and MATLAB will refuse or grind to a halt. Always give both sizes: `zeros(1, n)` for a row, `zeros(n, 1)` for a column.
@@ -467,5 +467,5 @@ Adding a fourth row means inserting one number after the 5 and one after the 6, 
 :::
 
 ::: context vectorisation One line instead of a loop
-Vectorised code hands a whole array to one operation instead of visiting elements one at a time. The work still happens element by element, but inside MATLAB's compiled libraries rather than through the language's loop machinery. It is often shorter and closer to the maths on paper too. Lesson 13 measures when it pays and when a preallocated loop is already fine.
+Vectorized code hands a whole array to one operation instead of visiting elements one at a time. The work still happens element by element, but inside MATLAB's compiled libraries rather than through the language's loop machinery. It is often shorter and closer to the maths on paper too. Lesson 13 measures when it pays and when a preallocated loop is already fine.
 :::

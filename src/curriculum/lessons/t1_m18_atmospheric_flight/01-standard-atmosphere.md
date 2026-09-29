@@ -29,7 +29,7 @@ Three forces act on the slab:
 
 1. The air below pushes up on the bottom face with pressure $p$. The force is $pA$.
 2. The air above pushes down on the top face with a slightly different pressure, $p + dp$. The force is $(p + dp)A$.
-3. Gravity pulls the slab's own mass down. Its volume is $A\,dh$, so its mass is $\rho A\,dh$, where $\rho$ (the Greek letter "rho") is the **density** — mass per cubic metre. Its weight is $\rho g A\,dh$, with $g$ the pull of gravity.
+3. Gravity pulls the slab's own mass down. Its volume is $A\,dh$, so its mass is $\rho A\,dh$, where $\rho$ (the Greek letter "rho") is the **density** — mass per cubic meter. Its weight is $\rho g A\,dh$, with $g$ the pull of gravity.
 
 The air is not flying off, so up balances down:
 
@@ -43,7 +43,7 @@ $$
 \frac{dp}{dh} = -\rho\, g.
 $$
 
-Read $\frac{dp}{dh}$ as "d p d h": how fast pressure changes as you go up. The minus sign says it *falls*. This balance is **[[hydrostatic equilibrium|slab-picture]]** ("hydrostatic" means "fluid standing still"): the pressure at any height is the weight of all the air above it, per square metre.
+Read $\frac{dp}{dh}$ as "d p d h": how fast pressure changes as you go up. The minus sign says it *falls*. This balance is **[[hydrostatic equilibrium|slab-picture]]** ("hydrostatic" means "fluid standing still"): the pressure at any height is the weight of all the air above it, per square meter.
 
 ## The second law: the ideal gas law
 
@@ -103,13 +103,13 @@ At the sea-level temperature of 288.15 K it would be 8435 m. Warm air is "taller
 
 ## Case two: a layer where the temperature changes steadily
 
-Near the ground, the air gets colder as you go up. Hikers know this: mountain tops have snow in summer. In the lowest layer the temperature drops by the same amount for each metre of climb. Write that as
+Near the ground, the air gets colder as you go up. Hikers know this: mountain tops have snow in summer. In the lowest layer the temperature drops by the same amount for each meter of climb. Write that as
 
 $$
 T = T_b + \lambda\,(h - h_b),
 $$
 
-where $\lambda$ ("lambda") is the **[[lapse rate|lapse-rate]]** — the change in temperature per metre of height. It is negative when the air cools as you climb.
+where $\lambda$ ("lambda") is the **[[lapse rate|lapse-rate]]** — the change in temperature per meter of height. It is negative when the air cools as you climb.
 
 Now solve for the pressure, one step at a time. First, a small step up $dh$ changes the temperature by $dT = \lambda\,dh$, so $dh = dT/\lambda$. Put that into $\frac{dp}{p} = -\frac{g}{RT}\,dh$:
 
@@ -172,7 +172,7 @@ US Standard Atmosphere 1976 anchor values. Sea level: $T = 288.15\ \mathrm{K}$, 
 ::: example Conditions at the tropopause
 Start at sea level and climb 11 km through the troposphere.
 
-**Temperature.** It drops 0.0065 K for every metre:
+**Temperature.** It drops 0.0065 K for every meter:
 
 $$
 T = 288.15 - 0.0065 \times 11\,000 = 288.15 - 71.5 = 216.65\ \mathrm{K}.
@@ -227,7 +227,7 @@ $$
 In the troposphere $R\lambda = -1.866\ \mathrm{m/s^2}$, so the bottom is $9.807 - 1.866 = 7.94$. That makes $H_\rho = 10.4\ \mathrm{km}$ near the ground and 9.0 km at 250 K, but 6.34 km in the stratosphere. Density thins slowly at first, then faster above the tropopause, and no single exponential follows both.
 
 ::: note Why it has to be true
-Take logarithms of the gas law written as $\rho = p/(RT)$: $\ln\rho = \ln p - \ln T - \ln R$. Now ask how each piece changes per metre of height. From the hydrostatic and gas laws, $\frac{d\ln p}{dh} = \frac{1}{p}\frac{dp}{dh} = -\frac{g}{RT}$. From $T = T_b + \lambda(h - h_b)$, $\frac{d\ln T}{dh} = \frac{\lambda}{T}$. And $R$ is constant. So
+Take logarithms of the gas law written as $\rho = p/(RT)$: $\ln\rho = \ln p - \ln T - \ln R$. Now ask how each piece changes per meter of height. From the hydrostatic and gas laws, $\frac{d\ln p}{dh} = \frac{1}{p}\frac{dp}{dh} = -\frac{g}{RT}$. From $T = T_b + \lambda(h - h_b)$, $\frac{d\ln T}{dh} = \frac{\lambda}{T}$. And $R$ is constant. So
 
 $$
 \frac{d\ln\rho}{dh} = -\frac{g}{RT} - \frac{\lambda}{T} = -\frac{g + R\lambda}{RT}
@@ -450,7 +450,7 @@ Engineers call a drop by a factor of $e \approx 2.718$ an **e-folding**. So the 
 :::
 
 ::: context lapse-rate Why air cools as you climb
-Air near the ground is warmed by the ground, which is warmed by sunlight. When a blob of that air rises, it moves into lower pressure, so it expands. Expanding takes energy, and the blob pays for it with its own heat, so it cools. It is the reverse of a bike pump, which gets warm when you squash the air inside it. Real air, with water vapor and weather, averages out to about 6.5 °C colder per kilometre — which is the number the standard adopts. Climb a 3 km mountain and it is about 20 °C colder at the top.
+Air near the ground is warmed by the ground, which is warmed by sunlight. When a blob of that air rises, it moves into lower pressure, so it expands. Expanding takes energy, and the blob pays for it with its own heat, so it cools. It is the reverse of a bike pump, which gets warm when you squash the air inside it. Real air, with water vapor and weather, averages out to about 6.5 °C colder per kilometer — which is the number the standard adopts. Climb a 3 km mountain and it is about 20 °C colder at the top.
 :::
 
 ::: context temperature-profile The zig-zag of temperature

@@ -10,7 +10,7 @@ In the morning you put on your socks, then your shoes. At night you undo it in t
 
 Most of the algebra a [[GNC engineer|gnc]] does in a day is not solving for a mystery $x$. It is taking a *formula* and getting one of its letters by itself: the burnout mass from the mass ratio, the size of an orbit from the time it takes to go around, the time to fall from a given height. The numbers come in at the end. So this lesson treats solving as what it is — undoing operations in reverse order, doing the same thing to both sides — and uses it on formulas full of letters as much as on equations with numbers.
 
-The second half is about **quadratics**, equations where the unknown is squared. They appear the moment anything is squared, which in physics is constantly: distance travelled while speeding up, energy of motion, the distance to a point on a circle. You will derive the famous quadratic formula rather than memorise it. You will meet the **[[discriminant|discriminant-word]]**, which tells you how many answers there are before you work any of them out. And you will learn the one number trap hidden inside the formula, which has caught out real flight software.
+The second half is about **quadratics**, equations where the unknown is squared. They appear the moment anything is squared, which in physics is constantly: distance traveled while speeding up, energy of motion, the distance to a point on a circle. You will derive the famous quadratic formula rather than memorize it. You will meet the **[[discriminant|discriminant-word]]**, which tells you how many answers there are before you work any of them out. And you will learn the one number trap hidden inside the formula, which has caught out real flight software.
 
 Every answer in this lesson ends with a check: put it back into the original equation and see that both sides match. Make that a reflex now, while the equations are easy.
 
@@ -48,7 +48,7 @@ $$
 
 **With brackets**, distribute first: $5(x - 2) = 3x + 8$ gives $5x - 10 = 3x + 8$. Subtract $3x$ and add $10$: $2x = 18$, so $x = 9$. *Check:* $5(7) = 35$ and $27 + 8 = 35$.
 
-Two odd cases are worth recognising on sight.
+Two odd cases are worth recognizing on sight.
 
 - If the unknown cancels out and what is left is **true**, like $2(x + 1) = 2x + 2 \Rightarrow 2 = 2$, then *every* value of $x$ works. The equation is an **identity** — two ways of writing the same thing.
 - If what is left is **false**, like $2x + 1 = 2x + 3 \Rightarrow 1 = 3$, there is **no solution** at all.
@@ -81,7 +81,7 @@ $$
 \left(\frac{T}{2\pi}\right)^2 = \frac{L}{g} \;\Rightarrow\; g = \frac{4\pi^2 L}{T^2} .
 $$
 
-A one-metre pendulum that takes $T = 2.006\,\mathrm{s}$ per swing gives $g = \frac{39.48 \times 1}{2.006^2} = \frac{39.48}{4.024} \approx 9.81\,\mathrm{m/s^2}$. [[For two centuries|pendulum]], this is how gravity was measured.
+A one-meter pendulum that takes $T = 2.006\,\mathrm{s}$ per swing gives $g = \frac{39.48 \times 1}{2.006^2} = \frac{39.48}{4.024} \approx 9.81\,\mathrm{m/s^2}$. [[For two centuries|pendulum]], this is how gravity was measured.
 
 **When the letter appears more than once**, gather it together. Solve the propellant mass fraction $\zeta = \dfrac{m_p}{m_p + m_d}$ for $m_p$:
 
@@ -99,7 +99,7 @@ A stage with $\zeta = 0.949$ and dry mass $m_d = 22\,\mathrm{t}$ carries $m_p = 
 ::: example Geostationary radius from the period
 A **[[geostationary|geostationary]]** satellite goes around exactly once per day, so from the ground it seems to hang still in the sky — which is why TV dishes can point at one spot. How high is it?
 
-The time for one circular orbit, the **period**, is $T = 2\pi\sqrt{r^3/\mu}$, where $r$ is the distance from Earth's centre and $\mu = 3.986 \times 10^{14}\,\mathrm{m^3/s^2}$ is Earth's gravitational parameter. The recipe for $T$ was: cube $r$, divide by $\mu$, take the square root, multiply by $2\pi$. Undo it in reverse: divide by $2\pi$, square, multiply by $\mu$, take the cube root.
+The time for one circular orbit, the **period**, is $T = 2\pi\sqrt{r^3/\mu}$, where $r$ is the distance from Earth's center and $\mu = 3.986 \times 10^{14}\,\mathrm{m^3/s^2}$ is Earth's gravitational parameter. The recipe for $T$ was: cube $r$, divide by $\mu$, take the square root, multiply by $2\pi$. Undo it in reverse: divide by $2\pi$, square, multiply by $\mu$, take the cube root.
 
 $$
 r^3 = \frac{\mu T^2}{4\pi^2}, \qquad r = \left(\frac{\mu T^2}{4\pi^2}\right)^{1/3} .
@@ -114,7 +114,7 @@ One turn of Earth relative to the stars (a **[[sidereal day|sidereal-day]]**) is
 
 Subtract Earth's radius, $6371\,\mathrm{km}$, to get the famous geostationary altitude of about $35\,790\,\mathrm{km}$ — roughly three Earths stacked on top of each other.
 
-*Units check:* $\mathrm{m^3/s^2} \times \mathrm{s^2} = \mathrm{m^3}$, and the cube root of cubic metres is metres.
+*Units check:* $\mathrm{m^3/s^2} \times \mathrm{s^2} = \mathrm{m^3}$, and the cube root of cubic meters is meters.
 :::
 
 ## Quadratic equations by factoring
@@ -336,7 +336,7 @@ Solve $3x^2 - 10x - 8 = 0$ with the quadratic formula and confirm the roots with
 ::: answer
 Read off $a = 3$, $b = -10$, $c = -8$. Then $\Delta = (-10)^2 - 4(3)(-8) = 100 + 96 = 196$, and $\sqrt{\Delta} = 14$. So $x = \dfrac{10 \pm 14}{6}$, giving $x = \frac{24}{6} = 4$ and $x = \frac{-4}{6} = -\tfrac{2}{3}$.
 
-Vieta: the sum $4 - \tfrac{2}{3} = \tfrac{10}{3}$ equals $-b/a = \tfrac{10}{3}$, and the product $4 \times (-\tfrac{2}{3}) = -\tfrac{8}{3}$ equals $c/a = -\tfrac{8}{3}$. Both agree, and they match the factorisation $(3x + 2)(x - 4)$ from the previous lesson.
+Vieta: the sum $4 - \tfrac{2}{3} = \tfrac{10}{3}$ equals $-b/a = \tfrac{10}{3}$, and the product $4 \times (-\tfrac{2}{3}) = -\tfrac{8}{3}$ equals $c/a = -\tfrac{8}{3}$. Both agree, and they match the factorization $(3x + 2)(x - 4)$ from the previous lesson.
 :::
 
 ::: check
@@ -426,7 +426,7 @@ Take $3$ off only one pan and the scale tips: the equation is no longer true. Ev
 ::: context newton-merlin Newton's law, a real engine
 Isaac Newton set out his three laws of motion in 1687, in a book usually called the *Principia*. He wrote the second law in words, about "change of motion"; the tidy form $F = ma$ came later.
 
-The force in the example is realistic: about $845\,\mathrm{kN}$ is the sea-level thrust of one Merlin engine, and nine of them lift a Falcon 9. The whole rocket weighs more than $500$ tonnes at lift-off, though, so its real starting acceleration is far gentler than $3.4g$.
+The force in the example is realistic: about $845\,\mathrm{kN}$ is the sea-level thrust of one Merlin engine, and nine of them lift a Falcon 9. The whole rocket weighs more than $500$ metric tons at lift-off, though, so its real starting acceleration is far gentler than $3.4g$.
 :::
 
 ::: context three-g Why 3 g is a real number
@@ -542,5 +542,5 @@ He also cracked coded Spanish letters for the French king, Henry IV.
 ::: context cancellation Rounding is not a detail
 A computer stores every number with a fixed number of digits, so every result is rounded. Usually that is harmless. It bites when you subtract nearly equal numbers, or let tiny errors pile up.
 
-In 1991, during the Gulf War, a Patriot air-defence battery in Dhahran, Saudi Arabia, had been running for about $100$ hours. A tiny rounding error in the way it counted tenths of a second had grown to about a third of a second. It looked in the wrong place for an incoming missile, which struck a barracks and killed $28$ American soldiers. Not the same trap as this one, but the same family.
+In 1991, during the Gulf War, a Patriot air-defense battery in Dhahran, Saudi Arabia, had been running for about $100$ hours. A tiny rounding error in the way it counted tenths of a second had grown to about a third of a second. It looked in the wrong place for an incoming missile, which struck a barracks and killed $28$ American soldiers. Not the same trap as this one, but the same family.
 :::

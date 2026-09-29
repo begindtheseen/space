@@ -6,11 +6,11 @@ covers:
   - The pseudorange measurement and its error budget
 ---
 
-Your friend stands at the far end of a field. At exactly noon by her watch she shouts. You hear the shout at three seconds past noon by *your* watch, and since sound covers $343$ metres a second, you decide she is about a kilometre away. But suppose your watch runs one second fast. Then the shout really took two seconds, and she is only about $690$ metres away. And if a breeze slowed the sound, the answer is off again. Your "distance" was really *a time difference between two imperfect watches, times a speed*, plus whatever the air did on the way.
+Your friend stands at the far end of a field. At exactly noon by her watch she shouts. You hear the shout at three seconds past noon by *your* watch, and since sound covers $343$ meters a second, you decide she is about a kilometer away. But suppose your watch runs one second fast. Then the shout really took two seconds, and she is only about $690$ meters away. And if a breeze slowed the sound, the answer is off again. Your "distance" was really *a time difference between two imperfect watches, times a speed*, plus whatever the air did on the way.
 
-A GNSS receiver is in exactly that spot. The last lesson ended with it reading the time of transmission off a satellite's signal to the nanosecond, and noting the time of reception by its own clock. Multiply the difference by the speed of light and you get a distance — but not the distance to the satellite. It is called a **[[pseudorange|pseudo-word]]**, and the "pseudo" matters. The receiver's clock is wrong by an unknown amount that can reach milliseconds. The satellite's clock is wrong by a known-ish amount that can reach hundreds of microseconds. And the signal did not fly through empty space at $c$: it crossed a charged ionosphere and a damp lower atmosphere that slowed it by metres. Each of these lands in the number, multiplied by $299{,}792{,}458\,\mathrm{m/s}$.
+A GNSS receiver is in exactly that spot. The last lesson ended with it reading the time of transmission off a satellite's signal to the nanosecond, and noting the time of reception by its own clock. Multiply the difference by the speed of light and you get a distance — but not the distance to the satellite. It is called a **[[pseudorange|pseudo-word]]**, and the "pseudo" matters. The receiver's clock is wrong by an unknown amount that can reach milliseconds. The satellite's clock is wrong by a known-ish amount that can reach hundreds of microseconds. And the signal did not fly through empty space at $c$: it crossed a charged ionosphere and a damp lower atmosphere that slowed it by meters. Each of these lands in the number, multiplied by $299{,}792{,}458\,\mathrm{m/s}$.
 
-Navigation means taking that messy number apart. Some pieces are removed with corrections the satellite broadcasts, some with models, some by using two frequencies. One piece — the receiver clock — cannot be removed at all and must be solved for; that is the next lesson. What is left after every correction is the **error budget**: the leftover metres from each cause, combined into one figure that, multiplied by a geometry factor, becomes the accuracy of the position. An engineer choosing a receiver, or deciding whether GNSS can meet a landing requirement, works from this budget, so its numbers are worth knowing cold.
+Navigation means taking that messy number apart. Some pieces are removed with corrections the satellite broadcasts, some with models, some by using two frequencies. One piece — the receiver clock — cannot be removed at all and must be solved for; that is the next lesson. What is left after every correction is the **error budget**: the leftover meters from each cause, combined into one figure that, multiplied by a geometry factor, becomes the accuracy of the position. An engineer choosing a receiver, or deciding whether GNSS can meet a landing requirement, works from this budget, so its numbers are worth knowing cold.
 
 ## The measurement and its equation
 
@@ -28,7 +28,7 @@ $$
 \rho_i = \|\mathbf{s}_i - \mathbf{x}\| + c\,\delta t_{rx} - c\,\delta t_{sat,i} + I_i + T_i + \varepsilon_i .
 $$
 
-Here $I_i$ is the ionospheric delay and $T_i$ the tropospheric delay (the lower, weather-filled atmosphere), both already in metres. The last term, $\varepsilon_i$ ("epsilon"), collects echoes, receiver noise and everything else.
+Here $I_i$ is the ionospheric delay and $T_i$ the tropospheric delay (the lower, weather-filled atmosphere), both already in meters. The last term, $\varepsilon_i$ ("epsilon"), collects echoes, receiver noise and everything else.
 
 Look at the signs, because they trip people up.
 
@@ -38,7 +38,7 @@ Look at the signs, because they trip people up.
 Convert time to distance once and remember it. One nanosecond is $0.300\,\mathrm{m}$. One microsecond is $299.8\,\mathrm{m}$. One millisecond is $299.8\,\mathrm{km}$. An ordinary crystal clock left to itself can drift a millisecond in a few minutes: $300\,\mathrm{km}$ in every pseudorange at once.
 
 ::: key
-The pseudorange equation: $\rho_i = \|\mathbf{s}_i - \mathbf{x}\| + c\,\delta t_{rx} - c\,\delta t_{sat,i} + I_i + T_i + \varepsilon_i$. The unknowns are the three coordinates of $\mathbf{x}$ and the receiver clock bias $c\,\delta t_{rx}$, four in all — hence four satellites minimum. Everything else is corrected, modelled or tolerated. Conversions: $1\,\mathrm{ns} = 0.3\,\mathrm{m}$, $1\,\mathrm{\mu s} = 300\,\mathrm{m}$, $1\,\mathrm{ms} = 300\,\mathrm{km}$.
+The pseudorange equation: $\rho_i = \|\mathbf{s}_i - \mathbf{x}\| + c\,\delta t_{rx} - c\,\delta t_{sat,i} + I_i + T_i + \varepsilon_i$. The unknowns are the three coordinates of $\mathbf{x}$ and the receiver clock bias $c\,\delta t_{rx}$, four in all — hence four satellites minimum. Everything else is corrected, modeled or tolerated. Conversions: $1\,\mathrm{ns} = 0.3\,\mathrm{m}$, $1\,\mathrm{\mu s} = 300\,\mathrm{m}$, $1\,\mathrm{ms} = 300\,\mathrm{km}$.
 :::
 
 ## How wrong is the raw number?
@@ -49,9 +49,9 @@ Before any correction the terms have wildly different sizes, and it pays to know
 | --- | --- | --- |
 | Receiver clock $c\,\delta t_{rx}$ | up to hundreds of km | unknown; common to all satellites; solved for |
 | Satellite clock $c\,\delta t_{sat}$ | up to $300\,\mathrm{km}$ ($\delta t_{sat}$ up to $1\,\mathrm{ms}$); typically tens of km | broadcast polynomial corrects it to about $1\,\mathrm{m}$ |
-| Ionosphere $I$ | $2$ to $30\,\mathrm{m}$ on L1 (more at solar maximum, low elevation) | modelled or removed with two frequencies |
-| Troposphere $T$ | $2.3\,\mathrm{m}$ at zenith to $25\,\mathrm{m}$ near the horizon | modelled |
-| Multipath | $0.5$ to several metres on code | site and antenna dependent |
+| Ionosphere $I$ | $2$ to $30\,\mathrm{m}$ on L1 (more at solar maximum, low elevation) | modeled or removed with two frequencies |
+| Troposphere $T$ | $2.3\,\mathrm{m}$ at zenith to $25\,\mathrm{m}$ near the horizon | modeled |
+| Multipath | $0.5$ to several meters on code | site and antenna dependent |
 | Receiver noise | $0.1$ to $1\,\mathrm{m}$ | set by $C/N_0$ and the tracking loop |
 | Ephemeris (error in $\mathbf{s}_i$) | about $1\,\mathrm{m}$ along the line of sight | broadcast orbit is a prediction |
 | Hardware delays | tens of ns | common part absorbed into $\delta t_{rx}$; inter-frequency part broadcast as $T_{GD}$ |
@@ -66,11 +66,11 @@ $$
 
 Read it term by term. $a_{f0}$ is the offset at time $t_{oc}$. $a_{f1}$ is how fast the clock drifts, in seconds per second. $a_{f2}$ is how fast the drift itself changes. Then $\Delta t_r$ is a **[[relativistic|relativity]]** term that depends on where the satellite is along its slightly stretched orbit. And $T_{GD}$ is the **group delay**: the difference between the satellite's internal L1 and L2 signal paths, which a single-frequency L1 user must apply. The polynomial is refreshed every two hours and is typically good to a few nanoseconds; a later lesson treats what is left over.
 
-The ionosphere and troposphere are the other big terms. The ionosphere's delay goes as $1/f^2$ and grows with the **[[total electron content|tec]]** along the path. On L1, one TEC unit ($10^{16}$ electrons per square metre) is $0.162\,\mathrm{m}$ of delay. The vertical content ranges from a few units at night to over $100$ on an afternoon at solar maximum. The troposphere's delay does not depend on frequency. At sea level it is about $2.3\,\mathrm{m}$ at the zenith and grows roughly as $1/\sin(\text{elevation})$, because a low signal crosses more air. Both get a lesson of their own; here they are lines in a budget.
+The ionosphere and troposphere are the other big terms. The ionosphere's delay goes as $1/f^2$ and grows with the **[[total electron content|tec]]** along the path. On L1, one TEC unit ($10^{16}$ electrons per square meter) is $0.162\,\mathrm{m}$ of delay. The vertical content ranges from a few units at night to over $100$ on an afternoon at solar maximum. The troposphere's delay does not depend on frequency. At sea level it is about $2.3\,\mathrm{m}$ at the zenith and grows roughly as $1/\sin(\text{elevation})$, because a low signal crosses more air. Both get a lesson of their own; here they are lines in a budget.
 
 ## Which frame, and which instant
 
-Two details in $\|\mathbf{s}_i - \mathbf{x}\|$ cost tens of metres if you forget them.
+Two details in $\|\mathbf{s}_i - \mathbf{x}\|$ cost tens of meters if you forget them.
 
 **Which instant.** $\mathbf{s}_i$ is the satellite's position *when it sent*, about $70$ to $86\,\mathrm{ms}$ before reception. The satellite moves about $270\,\mathrm{m}$ in that time. So the orbit formula must be evaluated at $t_{tx} = t_{rx} - \rho/c$, not at $t_{rx}$.
 
@@ -84,7 +84,7 @@ where $(x_s, y_s)$ and $(x_r, y_r)$ are the satellite's and receiver's coordinat
 
 ## Corrections, then what is left
 
-A receiver treats each pseudorange in a fixed order. It applies the satellite clock correction. It subtracts the modelled ionospheric and tropospheric delays. Then it passes the result — which still holds the geometric range and the receiver clock — to the position solver:
+A receiver treats each pseudorange in a fixed order. It applies the satellite clock correction. It subtracts the modeled ionospheric and tropospheric delays. Then it passes the result — which still holds the geometric range and the receiver clock — to the position solver:
 
 $$
 \tilde\rho_i = \rho_i + c\,\hat{\delta t}_{sat,i} - \hat I_i - \hat T_i = \|\mathbf{s}_i - \mathbf{x}\| + c\,\delta t_{rx} + \underbrace{c\,(\hat{\delta t}_{sat,i} - \delta t_{sat,i}) + (I_i - \hat I_i) + (T_i - \hat T_i) + \varepsilon_i}_{\text{residual error}} .
@@ -106,7 +106,7 @@ Take the channel from the last lesson. Transmit time $302{,}406.348\,597\,6\,\ma
 
 Total: $\delta t_{sat} = 250{,}001.9\,\mathrm{ns}$, which is $74{,}948.68\,\mathrm{m}$. The constant alone is $75\,\mathrm{km}$; the drift after two hours is $6.5\,\mathrm{m}$; relativity $4.4\,\mathrm{m}$; group delay $1.5\,\mathrm{m}$.
 
-**Ionosphere.** A vertical TEC of $30$ units gives $30 \times 0.1624 = 4.87\,\mathrm{m}$ straight up on L1. A slanted path crosses more of the layer. Modelling the ionosphere as a thin shell $350\,\mathrm{km}$ up, the **obliquity factor** at $60^\circ$ elevation is $1.136$, so $\hat I = 5.53\,\mathrm{m}$.
+**Ionosphere.** A vertical TEC of $30$ units gives $30 \times 0.1624 = 4.87\,\mathrm{m}$ straight up on L1. A slanted path crosses more of the layer. Modeling the ionosphere as a thin shell $350\,\mathrm{km}$ up, the **obliquity factor** at $60^\circ$ elevation is $1.136$, so $\hat I = 5.53\,\mathrm{m}$.
 
 **Troposphere.** The Saastamoinen model's zenith delay at sea-level pressure $1013.25\,\mathrm{hPa}$ (hectopascals, the weather-map unit) and latitude $28.56^\circ$ is $2.310\,\mathrm{m}$. Divided by $\sin 60^\circ$, $\hat T = 2.67\,\mathrm{m}$.
 
@@ -116,7 +116,7 @@ $$
 \tilde\rho = 21{,}705{,}684.31 + 74{,}948.68 - 5.53 - 2.67 = 21{,}780{,}624.79\,\mathrm{m}.
 $$
 
-**Sanity check.** The true distance to a satellite at $60^\circ$ elevation from the Cape is about $20{,}843{,}721\,\mathrm{m}$. So the corrected pseudorange still holds about $936{,}904\,\mathrm{m}$ of receiver clock bias — $3.125\,\mathrm{ms}$. That is the fourth unknown, and the next lesson is about it. Everything else has shrunk from kilometres to metres; *how many* metres is what the budget answers.
+**Sanity check.** The true distance to a satellite at $60^\circ$ elevation from the Cape is about $20{,}843{,}721\,\mathrm{m}$. So the corrected pseudorange still holds about $936{,}904\,\mathrm{m}$ of receiver clock bias — $3.125\,\mathrm{ms}$. That is the fourth unknown, and the next lesson is about it. Everything else has shrunk from kilometers to meters; *how many* meters is what the budget answers.
 :::
 
 ## The user equivalent range error
@@ -137,7 +137,7 @@ Two rules matter.
 Splitting accuracy into "how good is each measurement" times "how well does the geometry turn measurements into position" is the organizing idea of the whole subject.
 
 ::: example Three budgets
-Here are typical one-sigma values in metres for a receiver under open sky.
+Here are typical one-sigma values in meters for a receiver under open sky.
 
 | Source | Single-frequency, broadcast model | Dual-frequency, ionosphere-free | Legacy, 1990s |
 | --- | --- | --- | --- |
@@ -155,9 +155,9 @@ Check the first column by hand. Square each entry: $0.36 + 0.36 + 16 + 0.09 + 1 
 
 The dual-frequency column wipes out the ionosphere but pays for it. The ionosphere-free combination amplifies noise and multipath about three times, so those entries triple. The total improves less than you might hope — $3.4\,\mathrm{m}$ against $4.2\,\mathrm{m}$ — until multipath is cut by better antennas and siting.
 
-The legacy column shows how far satellite clocks and orbits have come: about $2\,\mathrm{m}$ each in the 1990s, about half a metre now.
+The legacy column shows how far satellite clocks and orbits have come: about $2\,\mathrm{m}$ each in the 1990s, about half a meter now.
 
-**The modern picture.** A good receiver with two frequencies, a **[[choke-ring antenna|choke-ring]]** and a $15^\circ$ elevation mask reaches a UERE near $1\,\mathrm{m}$. Multiplied by a typical dilution of precision of $1.5$ to $2$, that is where the "one to two metres" of modern GNSS comes from.
+**The modern picture.** A good receiver with two frequencies, a **[[choke-ring antenna|choke-ring]]** and a $15^\circ$ elevation mask reaches a UERE near $1\,\mathrm{m}$. Multiplied by a typical dilution of precision of $1.5$ to $2$, that is where the "one to two meters" of modern GNSS comes from.
 :::
 
 ## Elevation dependence and weighting
@@ -200,7 +200,7 @@ It does not spoil the position if the solver treats the clock bias as a fourth u
 :::
 
 ::: check
-A satellite's broadcast clock polynomial has $a_{f0} = -1.8 \times 10^{-4}\,\mathrm{s}$ and $a_{f1} = 2.0 \times 10^{-12}$. What correction, in metres, applies $3{,}600\,\mathrm{s}$ after $t_{oc}$, and which way does it move the pseudorange?
+A satellite's broadcast clock polynomial has $a_{f0} = -1.8 \times 10^{-4}\,\mathrm{s}$ and $a_{f1} = 2.0 \times 10^{-12}$. What correction, in meters, applies $3{,}600\,\mathrm{s}$ after $t_{oc}$, and which way does it move the pseudorange?
 :::
 
 ::: answer
@@ -224,7 +224,7 @@ $$
 \sqrt{0.36 + 0.36 + 12.25 + 0.09 + 0.64 + 0.09} = \sqrt{13.79} = 3.71\,\mathrm{m}.
 $$
 
-The ionosphere supplies $12.25$ of the $13.79$ square metres. Removing it — with a second frequency, or with differential corrections from a nearby reference station — is the only change that matters. Halving every *other* term would leave the UERE above $3.5\,\mathrm{m}$.
+The ionosphere supplies $12.25$ of the $13.79$ square meters. Removing it — with a second frequency, or with differential corrections from a nearby reference station — is the only change that matters. Halving every *other* term would leave the UERE above $3.5\,\mathrm{m}$.
 :::
 
 ::: check
@@ -232,7 +232,7 @@ Why is the satellite position in the pseudorange equation taken at the transmit 
 :::
 
 ::: answer
-The signal received at $t_{rx}$ left the satellite about $\rho/c \approx 67$ to $86\,\mathrm{ms}$ earlier, and the range must be measured from where the satellite was at that earlier moment. At $3{,}874\,\mathrm{m/s}$ the satellite moves about $270\,\mathrm{m}$ during the trip. Using $t_{rx}$ misplaces it by that much, which is up to tens of metres along the line of sight.
+The signal received at $t_{rx}$ left the satellite about $\rho/c \approx 67$ to $86\,\mathrm{ms}$ earlier, and the range must be measured from where the satellite was at that earlier moment. At $3{,}874\,\mathrm{m/s}$ the satellite moves about $270\,\mathrm{m}$ during the trip. Using $t_{rx}$ misplaces it by that much, which is up to tens of meters along the line of sight.
 
 Separately, the Earth-fixed frame turns about $5\,\mathrm{\mu rad}$ during the trip, and the Sagnac correction — up to about $\pm 33\,\mathrm{m}$ at mid-latitudes — takes care of that.
 :::
@@ -248,7 +248,7 @@ $$
 \sigma = \sqrt{0.16 + 0.36/0.001218} = \sqrt{0.16 + 295.6} = 17.2\,\mathrm{m},
 $$
 
-against $3.5\,\mathrm{m}$ at $10^\circ$ and $0.72\,\mathrm{m}$ at the zenith. Such a measurement is about twenty-four times noisier than a zenith one, and carries far more multipath and unmodelled tropospheric delay than the formula admits. Weighted properly, it barely changes the answer. Unweighted, it drags the fix around by metres. The extra satellites improve the geometry only on paper.
+against $3.5\,\mathrm{m}$ at $10^\circ$ and $0.72\,\mathrm{m}$ at the zenith. Such a measurement is about twenty-four times noisier than a zenith one, and carries far more multipath and unmodelled tropospheric delay than the formula admits. Weighted properly, it barely changes the answer. Unweighted, it drags the fix around by meters. The extra satellites improve the geometry only on paper.
 :::
 
 ## Summary
@@ -267,14 +267,14 @@ against $3.5\,\mathrm{m}$ at $10^\circ$ and $0.72\,\mathrm{m}$ at the zenith. Su
 | Elevation weighting | $\sigma_i^2 = a^2 + b^2/\sin^2\theta_i$; with $a = 0.4$, $b = 0.6\,\mathrm{m}$: $0.72\,\mathrm{m}$ at zenith, $3.5\,\mathrm{m}$ at $10^\circ$ |
 | Position error | $\approx$ DOP $\times$ UERE, where DOP is a pure geometry factor |
 
-The corrected pseudorange still holds the receiver clock bias — nearly a thousand kilometres of it in the example. The next lesson explains why that term cannot be calibrated away, why it is treated as a fourth unknown rather than a nuisance, and what you get for free once you have estimated it.
+The corrected pseudorange still holds the receiver clock bias — nearly a thousand kilometers of it in the example. The next lesson explains why that term cannot be calibrated away, why it is treated as a fourth unknown rather than a nuisance, and what you get for free once you have estimated it.
 
 ::: context pseudo-word A "false" range
 *Pseudo* is Greek for "false", as in *pseudonym*, a false name. A pseudorange has the units and roughly the size of a range, but it is not one: it is a difference of two clock readings, scaled by $c$, and it includes both clocks' errors. The word is a standing warning not to treat the number as a distance until the clock terms are dealt with.
 :::
 
 ::: context ecef ECEF: a frame that spins with Earth
-The **Earth-centred, Earth-fixed** frame, ECEF, puts the origin at Earth's center, the $z$-axis through the North Pole, and the $x$-axis through the point where the equator meets the Greenwich meridian. The axes turn with Earth, so a launch pad has fixed coordinates in it — convenient for maps, and the frame GPS positions are given in. The price is that the frame is rotating, which is where the Sagnac correction comes from.
+The **Earth-centered, Earth-fixed** frame, ECEF, puts the origin at Earth's center, the $z$-axis through the North Pole, and the $x$-axis through the point where the equator meets the Greenwich meridian. The axes turn with Earth, so a launch pad has fixed coordinates in it — convenient for maps, and the frame GPS positions are given in. The price is that the frame is rotating, which is where the Sagnac correction comes from.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
@@ -303,7 +303,7 @@ Einstein's theories say two things about a satellite clock. Weaker gravity high 
 :::
 
 ::: context tec Counting electrons
-Total electron content, TEC, is the number of free electrons in a column one square metre across along the signal's path. The ionosphere's delay is proportional to it: $I = 40.3\,\mathrm{TEC}/f^2$ in SI units. One TEC unit is $10^{16}$ electrons per square metre, and at the L1 frequency it adds $40.3 \times 10^{16}/(1575.42 \times 10^6)^2 = 0.162\,\mathrm{m}$ of delay. The Sun's ultraviolet light makes these electrons, which is why TEC peaks in the afternoon and in years of high solar activity.
+Total electron content, TEC, is the number of free electrons in a column one square meter across along the signal's path. The ionosphere's delay is proportional to it: $I = 40.3\,\mathrm{TEC}/f^2$ in SI units. One TEC unit is $10^{16}$ electrons per square meter, and at the L1 frequency it adds $40.3 \times 10^{16}/(1575.42 \times 10^6)^2 = 0.162\,\mathrm{m}$ of delay. The Sun's ultraviolet light makes these electrons, which is why TEC peaks in the afternoon and in years of high solar activity.
 :::
 
 ::: context sagnac The ground moves while the signal flies
@@ -330,7 +330,7 @@ The Klobuchar model, designed by John Klobuchar in the 1980s, describes the iono
 :::
 
 ::: context choke-ring A trap for echoes
-A **choke-ring antenna** sits inside several deep, concentric metal rings. Signals that bounce off the ground arrive from below the horizon at a low angle, and the rings — each about a quarter wavelength deep — cancel them before they reach the antenna, while the direct signals from above get through. Survey and reference stations use them to push multipath down to a few centimetres on the carrier. They are far too heavy and bulky for a rocket, which is one reason multipath is harder to beat on a vehicle.
+A **choke-ring antenna** sits inside several deep, concentric metal rings. Signals that bounce off the ground arrive from below the horizon at a low angle, and the rings — each about a quarter wavelength deep — cancel them before they reach the antenna, while the direct signals from above get through. Survey and reference stations use them to push multipath down to a few centimeters on the carrier. They are far too heavy and bulky for a rocket, which is one reason multipath is harder to beat on a vehicle.
 :::
 
 ::: context elevation-mask Why low satellites cost so much

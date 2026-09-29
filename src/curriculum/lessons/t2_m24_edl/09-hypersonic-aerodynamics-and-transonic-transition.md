@@ -71,7 +71,7 @@ $$
 \int_0^{\pi/2}\cos^3\phi\,\sin\phi\,d\phi = \int_0^1 u^3\,du = \frac{1}{4}.
 $$
 
-So $C_D = 4 \times \tfrac{1}{4} = 1.0$ exactly. Note that $R$ cancelled: a big sphere and a small one have the same $C_D$.
+So $C_D = 4 \times \tfrac{1}{4} = 1.0$ exactly. Note that $R$ canceled: a big sphere and a small one have the same $C_D$.
 
 **Compare with reality.** Measured hypersonic drag coefficients for spheres come out close to this, about $0.92$. That is exactly what the modified Newtonian form predicts: $C_D = C_{p,\max}/2 = 1.84/2 = 0.92$. So pure Newtonian theory slightly *over*-estimates a sphere.
 
@@ -135,7 +135,7 @@ A single constant $C_D$ — and with it a single constant $\beta$ — is the wro
 The consequence is more than an awkward drag coefficient. Blunt capsules can become **unstable** at transonic and low-supersonic speeds. As the shock pattern reorganizes, the **center of pressure** — the point where the total air force effectively acts — can shift enough to shrink, or even reverse, the vehicle's static margin (t1_m18). The capsule can also start to wobble in pitch, with each swing a little larger than the last. A capsule perfectly stable heat-shield-first at hypersonic speed is not guaranteed to stay that way through this band. That is why real capsules carry thrusters or a **[[drogue parachute|drogue]]** sized with this transition in mind, instead of carrying the hypersonic aerodynamic data straight over.
 
 ::: key The transonic transition
-Roughly Mach $0.8$–$1.2$: shock structure reorganises, drag coefficient rises toward a local peak near Mach $1$ before falling to its subsonic value, and centre-of-pressure shifts can destabilise a shape that was perfectly stable hypersonically. The constant-$\beta$, constant-$L/D$ assumption behind every earlier lesson in this module is valid above this band and must be replaced by Mach-dependent aerodynamic data within and below it.
+Roughly Mach $0.8$–$1.2$: shock structure reorganizes, drag coefficient rises toward a local peak near Mach $1$ before falling to its subsonic value, and center-of-pressure shifts can destabilize a shape that was perfectly stable hypersonically. The constant-$\beta$, constant-$L/D$ assumption behind every earlier lesson in this module is valid above this band and must be replaced by Mach-dependent aerodynamic data within and below it.
 :::
 
 ### Timing the terminal events
@@ -205,7 +205,7 @@ Altitude and elapsed time both vary from flight to flight with atmospheric densi
 | $C_D = 1.0$ (Newtonian sphere) | Windward-hemisphere estimate; real sphere about $0.92$; real capsules about $1.3$–$1.7$ because their shields are flatter; base pressure adds at most $2/(\gamma M^2)$ |
 | Mach independence principle | Above roughly Mach $5$, $C_D$ and $C_L$ are essentially constant — the basis for treating $\beta$ as fixed throughout lessons 2–8 |
 | $40\%$ $C_D$ error example | $\beta$ $28.6\%$ lower; peak-altitude prediction off by $H\ln(1.4) = 2.42\ \mathrm{km}$; peak-$g$ magnitude unaffected |
-| Transonic transition | Roughly Mach $0.8$–$1.2$: $C_D$ rises toward a local peak near Mach $1$, shock structure reorganises, centre of pressure can shift and destabilise the vehicle |
+| Transonic transition | Roughly Mach $0.8$–$1.2$: $C_D$ rises toward a local peak near Mach $1$, shock structure reorganizes, center of pressure can shift and destabilize the vehicle |
 | Terminal-event triggers | Must land inside the parachute's qualified Mach window; Mars uses onboard speed, Earth capsules often a barometric altitude switch once safely subsonic |
 
 The next lesson leaves pure aerodynamic deceleration behind and opens the propulsive part of descent: the entry burn, the aerodynamically guided phase that lessons 6 through 9 have covered, and the landing burn that brings the vehicle the rest of the way to the ground under thrust.

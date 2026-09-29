@@ -411,7 +411,7 @@ It leaves the start heading straight down, circles clockwise, and crosses the $\
 :::
 
 ::: context saddle-picture The launch vehicle's saddle
-The blue lines are the eigenvectors, $\dot{\theta} = \pm 1.41\,\theta$. Along the incoming one the state slides into the origin; along the outgoing one it rushes away. The grey curves are hyperbolas $\dot{\theta}^2 - 2\theta^2 = \pm 1$. Both axes use the same scale.
+The blue lines are the eigenvectors, $\dot{\theta} = \pm 1.41\,\theta$. Along the incoming one the state slides into the origin; along the outgoing one it rushes away. The gray curves are hyperbolas $\dot{\theta}^2 - 2\theta^2 = \pm 1$. Both axes use the same scale.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">

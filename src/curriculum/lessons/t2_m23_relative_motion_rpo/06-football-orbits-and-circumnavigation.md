@@ -9,7 +9,7 @@ covers:
 
 Imagine riding along inside the target spacecraft, looking out of the window at a chaser nearby. Neither vehicle fires an engine. If the chaser's orbit is a slightly different size from yours, you watch it slide steadily away and never come back — the drift of the last lesson. But if the two orbits are exactly the same size, something tidier happens. The chaser traces the same loop outside your window, over and over, once per orbit, forever.
 
-This lesson is about that loop. It has a definite shape: an oval exactly twice as long as it is tall. It has a definite direction: it always goes round the "wrong" way. And you can place it wherever you like. Put it beside the target and it swings back to the target once an orbit. Centre it on the target and the chaser circles the target at a safe distance, a **natural motion circumnavigation**, with no fuel spent after the one burn that starts it.
+This lesson is about that loop. It has a definite shape: an oval exactly twice as long as it is tall. It has a definite direction: it always goes round the "wrong" way. And you can place it wherever you like. Put it beside the target and it swings back to the target once an orbit. Center it on the target and the chaser circles the target at a safe distance, a **natural motion circumnavigation**, with no fuel spent after the one burn that starts it.
 
 Both are standard tools for close inspection. A chaser can watch a tumbling satellite from every side without spending propellant on anything but the first burn.
 
@@ -22,7 +22,7 @@ x(t) = x_0\cos nt + \frac{\dot x_0}{n}\sin nt, \qquad
 y(t) - y_c = -2\left(x_0\sin nt - \frac{\dot x_0}{n}\cos nt\right), \qquad y_c \equiv y_0 - \frac{2\dot x_0}{n}.
 $$
 
-As before, $x$ is radial (up, away from Earth), $y$ is in-track (along the direction of flight), and $n$ is the reference orbit's mean motion. The new symbol $y_c$ is the in-track position of the loop's centre; the sign $\equiv$ means "is defined as".
+As before, $x$ is radial (up, away from Earth), $y$ is in-track (along the direction of flight), and $n$ is the reference orbit's mean motion. The new symbol $y_c$ is the in-track position of the loop's center; the sign $\equiv$ means "is defined as".
 
 ::: note Why it has to be true
 Take the radial row of the CW solution from lesson 3 and replace $\dot y_0$ with $-2nx_0$:
@@ -71,7 +71,7 @@ $$
 That is the equation of an ellipse — an oval — twice as long in-track as it is tall radially.
 
 ::: key The football orbit
-Any drift-free CW initial condition ($\dot y_0 = -2nx_0$) produces a closed ellipse in the $x$–$y$ plane, centred at $(0, y_c)$ with $y_c = y_0 - 2\dot x_0/n$, radial semi-axis $A = \sqrt{x_0^2+(\dot x_0/n)^2}$ and in-track semi-axis $2A$ — always exactly a 2:1 ratio, regardless of the specific $x_0$, $\dot x_0$, $y_0$ chosen. It is traversed once per orbit in the retrograde sense. The shape is nicknamed the **[["football"|football-name]]** for its elongated outline.
+Any drift-free CW initial condition ($\dot y_0 = -2nx_0$) produces a closed ellipse in the $x$–$y$ plane, centered at $(0, y_c)$ with $y_c = y_0 - 2\dot x_0/n$, radial semi-axis $A = \sqrt{x_0^2+(\dot x_0/n)^2}$ and in-track semi-axis $2A$ — always exactly a 2:1 ratio, regardless of the specific $x_0$, $\dot x_0$, $y_0$ chosen. It is traversed once per orbit in the retrograde sense. The shape is nicknamed the **[["football"|football-name]]** for its elongated outline.
 :::
 
 ### Why exactly two to one
@@ -114,7 +114,7 @@ Fire $\Delta v = 0.1\,\mathrm{m/s}$ radially outward from co-location on the ref
 
 **Step 1: the size.** With $x_0 = 0$, the amplitude is $A = \dot x_0/n = 0.1 / 1.1282\times10^{-3} = 88.64\,\mathrm{m}$.
 
-**Step 2: the centre.** $y_c = y_0 - 2\dot x_0/n = 0 - 2 \times 88.64 = -177.28\,\mathrm{m}$. The loop sits behind the target.
+**Step 2: the center.** $y_c = y_0 - 2\dot x_0/n = 0 - 2 \times 88.64 = -177.28\,\mathrm{m}$. The loop sits behind the target.
 
 **Step 3: the path.** With $x_0 = 0$ the formulas become $x = A\sin nt$ and $y = y_c + 2A\cos nt = -2A(1 - \cos nt)$. At one-eighth of an orbit, $nt = \pi/4$: $x = 88.64 \times 0.7071 = 62.68\,\mathrm{m}$ and $y = -177.28 \times (1 - 0.7071) = -51.92\,\mathrm{m}$. All the way round:
 
@@ -125,7 +125,7 @@ Fire $\Delta v = 0.1\,\mathrm{m/s}$ radially outward from co-location on the ref
 
 **Step 4: read it.** The chaser rises, drifts back over the top, reaches $354.56\,\mathrm{m}$ behind at half an orbit, passes underneath, and returns *exactly* to the target after one orbit. The loop is $2A = 177.3\,\mathrm{m}$ tall and $4A = 354.6\,\mathrm{m}$ long: 2:1, as promised.
 
-**Step 5: check against the truth.** Full nonlinear two-body propagation of the same burn agrees with every entry to about a centimetre. The gap is $7\,\mathrm{mm}$ at half an orbit and $11\,\mathrm{mm}$ after one orbit. After three orbits it is $3.3\,\mathrm{cm}$.
+**Step 5: check against the truth.** Full nonlinear two-body propagation of the same burn agrees with every entry to about a centimeter. The gap is $7\,\mathrm{mm}$ at half an orbit and $11\,\mathrm{mm}$ after one orbit. After three orbits it is $3.3\,\mathrm{cm}$.
 
 **Sanity check.** Lesson 4's rule, $1.39\,\mathrm{m/orbit} \times (d/1\,\mathrm{km})^2$ with $d = A = 0.0886\,\mathrm{km}$, gives $1.39 \times 0.00786 = 0.011\,\mathrm{m}$ per orbit — the 11 mm the truth model shows.
 :::
@@ -136,11 +136,11 @@ Same size of burn, same starting point, perpendicular directions. One gives a ti
 
 ## Natural motion circumnavigation
 
-The loop above touches the target once per orbit. That is not a comfortable way to inspect something up close. The fix is to move the loop's centre, while keeping it drift-free.
+The loop above touches the target once per orbit. That is not a comfortable way to inspect something up close. The fix is to move the loop's center, while keeping it drift-free.
 
-The centre is at $y_c = y_0 - 2\dot x_0/n$. You can put it anywhere by choosing the starting in-track position $y_0$. Choose $y_0 = 2\dot x_0/n$ and the centre lands at $y_c = 0$: right on the target. Now the chaser [[circles the target at a stand-off distance|centred-loop]].
+The center is at $y_c = y_0 - 2\dot x_0/n$. You can put it anywhere by choosing the starting in-track position $y_0$. Choose $y_0 = 2\dot x_0/n$ and the center lands at $y_c = 0$: right on the target. Now the chaser [[circles the target at a stand-off distance|centred-loop]].
 
-::: example A centred inspection loop
+::: example A centered inspection loop
 Use the same radial driver, $\dot x_0 = 0.1\,\mathrm{m/s}$, but start ahead of the target at $y_0 = 2\dot x_0/n = 177.28\,\mathrm{m}$ instead of on top of it. Still $x_0 = 0$ and $\dot y_0 = 0$, so still drift-free.
 
 **Step 1: the path.** Now $y_c = 177.28 - 177.28 = 0$. The formulas give $x = A\sin nt$ and $y = 2A\cos nt$, with $A = 88.64\,\mathrm{m}$ as before.
@@ -159,7 +159,7 @@ The loop so far lies flat in the orbital plane. To see the target from above and
 A cross-track starting position $z_0$, with $\dot z_0 = 0$, gives $z(t) = z_0\cos nt$ — the cross-track solution from lesson 3. It repeats at the same rate $n$ as the in-plane motion. And it lines up neatly: the radial motion is $x = A\sin nt$, so $z$ is at its biggest when $x$ passes through zero, and $x$ is at its biggest when $z$ passes through zero. Two waves at the same rate, a quarter cycle apart, are said to be **[[in quadrature|quadrature]]**. Plotted against each other they trace an ellipse; here, $x$ against $z$ traces a circle.
 
 ::: example Tilting the loop out of the orbital plane
-Add $z_0 = 88.64\,\mathrm{m}$, equal to $A$, to the centred loop.
+Add $z_0 = 88.64\,\mathrm{m}$, equal to $A$, to the centered loop.
 
 **Step 1: the path.** $x = A\sin nt$, $y = 2A\cos nt$, $z = A\cos nt$.
 
@@ -187,13 +187,13 @@ The in-track amplitude is $2A = 80\,\mathrm{m}$. The ratio, in-track to radial, 
 :::
 
 ::: check
-Two drift-free loops use the same $0.1\,\mathrm{m/s}$ radial driver. One starts on top of the target ($y_0 = 0$); the other is centred on it ($y_0 = 177.28\,\mathrm{m}$). Do they have the same radial amplitude $A$? The same minimum range to the target?
+Two drift-free loops use the same $0.1\,\mathrm{m/s}$ radial driver. One starts on top of the target ($y_0 = 0$); the other is centered on it ($y_0 = 177.28\,\mathrm{m}$). Do they have the same radial amplitude $A$? The same minimum range to the target?
 :::
 
 ::: answer
 Same amplitude: yes. With $x_0 = 0$, $A = \dot x_0/n$, which does not involve $y_0$. Both have $A = 88.64\,\mathrm{m}$.
 
-Same minimum range: no. The first loop starts at the target, so its minimum range is $0$ — it touches the target once per orbit. The centred loop never comes closer than $A = 88.64\,\mathrm{m}$. Changing $y_0$ slides the same-shaped ellipse along the in-track axis. That slide is exactly what turns a touch-and-go loop into a stand-off loop.
+Same minimum range: no. The first loop starts at the target, so its minimum range is $0$ — it touches the target once per orbit. The centered loop never comes closer than $A = 88.64\,\mathrm{m}$. Changing $y_0$ slides the same-shaped ellipse along the in-track axis. That slide is exactly what turns a touch-and-go loop into a stand-off loop.
 :::
 
 ::: check
@@ -205,11 +205,11 @@ The in-track CW equation is $\ddot y + 2n\dot x = 0$. Adding it up once over tim
 :::
 
 ::: check
-Why does a cross-track *position* offset $z_0$ (rather than a cross-track velocity $\dot z_0$) automatically line up a quarter cycle from the radial motion of the centred loop, with no extra timing calculation?
+Why does a cross-track *position* offset $z_0$ (rather than a cross-track velocity $\dot z_0$) automatically line up a quarter cycle from the radial motion of the centered loop, with no extra timing calculation?
 :::
 
 ::: answer
-The centred loop's radial motion comes from a pure velocity kick, so $x(t) = A\sin nt$: zero at the start. A pure position offset in cross-track gives $z(t) = z_0\cos nt$: biggest at the start. Sine and cosine of the same angle are always a quarter cycle apart. Using a velocity to drive $x$ and a position to drive $z$ is what pairs a sine with a cosine, with no delay to work out.
+The centered loop's radial motion comes from a pure velocity kick, so $x(t) = A\sin nt$: zero at the start. A pure position offset in cross-track gives $z(t) = z_0\cos nt$: biggest at the start. Sine and cosine of the same angle are always a quarter cycle apart. Using a velocity to drive $x$ and a position to drive $z$ is what pairs a sine with a cosine, with no delay to work out.
 :::
 
 ::: check
@@ -225,12 +225,12 @@ At first the loop follows its predicted closed shape closely. Over time it stops
 | Symbol or fact | Meaning |
 | --- | --- |
 | $x(t)=x_0\cos nt+(\dot x_0/n)\sin nt$ | Drift-free radial motion: a pure wave repeating once per orbit |
-| $y(t)-y_c = -2\big(x_0\sin nt-(\dot x_0/n)\cos nt\big)$ | Drift-free in-track motion, centred at $y_c=y_0-2\dot x_0/n$ |
+| $y(t)-y_c = -2\big(x_0\sin nt-(\dot x_0/n)\cos nt\big)$ | Drift-free in-track motion, centered at $y_c=y_0-2\dot x_0/n$ |
 | $A=\sqrt{x_0^2+(\dot x_0/n)^2}$ | Radial semi-axis; the in-track semi-axis is always $2A$ |
 | $\dot y = -2nx$ on a closed orbit | The reason for the 2:1 shape and the direction of travel |
 | Football orbit | The 2:1 ellipse; traversed once per orbit in the retrograde (clockwise from $+\hat{\mathbf{z}}$) sense |
 | Pure radial burn from co-location | Automatically drift-free ($x_0 = 0$ meets $\dot y_0=-2nx_0$); gives a football that touches the target |
-| Centred natural motion circumnavigation | Same driver with $y_0=2\dot x_0/n$: a closed loop around the target, range between $A$ and $2A$ |
+| Centered natural motion circumnavigation | Same driver with $y_0=2\dot x_0/n$: a closed loop around the target, range between $A$ and $2A$ |
 | Adding $z_0$ in quadrature with $x(t)$ | Tilts the loop out of the orbital plane for views from all sides; still closes once per orbit |
 | Loops are fuel-free only ideally | Real perturbations slowly bring back lesson 5's secular drift |
 
@@ -271,7 +271,7 @@ In orbit work, prograde means "the same way the orbit goes round" and retrograde
 :::
 
 ::: context centred-loop Circling the target
-The centred loop from the worked example, to scale and with the same view as before. The target sits at the middle. The closest approach, $A = 89\,\mathrm{m}$, is straight above and below; the farthest, $2A = 177\,\mathrm{m}$, is dead ahead and dead behind.
+The centered loop from the worked example, to scale and with the same view as before. The target sits at the middle. The closest approach, $A = 89\,\mathrm{m}$, is straight above and below; the farthest, $2A = 177\,\mathrm{m}$, is dead ahead and dead behind.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
@@ -312,7 +312,7 @@ Two waves at the same rate, one starting at zero (the radial motion, blue: $x = 
 :::
 
 ::: context safety-ellipse Why the tilt is also a safety feature
-Look at the tilted loop from the front, along the in-track axis, and you see only $x$ and $z$: $x = A\sin nt$, $z = A\cos nt$. That is a circle of radius $A$ around the target, and it never passes through the centre. Radial and cross-track are never both zero at once.
+Look at the tilted loop from the front, along the in-track axis, and you see only $x$ and $z$: $x = A\sin nt$, $z = A\cos nt$. That is a circle of radius $A$ around the target, and it never passes through the center. Radial and cross-track are never both zero at once.
 
 Now suppose some small drift sneaks in, as the warning describes. The chaser slides along in-track — but it slides past the target *around* it, never through it. That is the idea behind the **safety ellipse**, one of the main tools of passive safety in lesson 9.
 :::

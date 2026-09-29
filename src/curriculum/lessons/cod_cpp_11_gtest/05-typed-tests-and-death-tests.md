@@ -3,7 +3,7 @@ id: l05-typed-tests-and-death-tests
 title: Typed tests and death tests
 minutes: 23
 covers:
-  - Typed and type-parameterised tests for template code
+  - Typed and type-parameterized tests for template code
   - Death tests for contract violations
 ---
 
@@ -134,13 +134,13 @@ The test's number matches the arithmetic exactly, so we understand the failure c
 Inside a `TYPED_TEST`, writing plain `buf_` fails to compile. The test body lives in a class template that inherits from `RingBufferTest<TypeParam>`, and C++ does not look inside a base class that depends on a template parameter when it sees a plain name. Writing `this->buf_` tells the compiler "this is a member; look it up later, when the type is known". For a type defined inside the fixture, write `typename TestFixture::SomeType`, where `TestFixture` is GoogleTest's name for the fixture of the current type.
 :::
 
-### Type-parameterised tests: the types come later
+### Type-parameterized tests: the types come later
 
 Sometimes the person who writes the tests does not know the types. Picture a team that owns a *contract* for integrators: any integrator in the flight software must leave a constant alone, must get a straight line exactly, and so on. The team writes those tests once. Every other team that writes a new integrator should be able to run the whole contract against it without editing the tests.
 
-That is a **type-parameterised test**. You write the tests with no type list at all, register them, and let someone else supply the types later — even in a different file. The steps are:
+That is a **type-parameterized test**. You write the tests with no type list at all, register them, and let someone else supply the types later — even in a different file. The steps are:
 
-1. `TYPED_TEST_SUITE_P(Fixture);` declares that this suite is type-parameterised (the `_P` is for "parameterised").
+1. `TYPED_TEST_SUITE_P(Fixture);` declares that this suite is type-parameterized (the `_P` is for "parameterized").
 2. Each test is written with `TYPED_TEST_P(Fixture, Name)`.
 3. `REGISTER_TYPED_TEST_SUITE_P(Fixture, Name1, Name2, ...);` lists every test in the suite.
 4. Later, and possibly elsewhere, `INSTANTIATE_TYPED_TEST_SUITE_P(Prefix, Fixture, TypeList);` runs the whole suite for the given types.
@@ -242,7 +242,7 @@ All six pass. Check the second test by hand for Euler: each step adds $h \cdot f
 If you write a `TYPED_TEST_P` and forget to list it in `REGISTER_TYPED_TEST_SUITE_P`, the program refuses to start. It prints `integrator_contract.hpp:26: You forgot to list test StraightLineIsExact.` and aborts. That is deliberate: a contract test that silently never ran would be worse than no test.
 
 ::: key
-Typed tests: `TYPED_TEST_SUITE(Fixture, ::testing::Types<A, B, C>)` then `TYPED_TEST(Fixture, Name)`, with `TypeParam` naming the current type and `this->` reaching fixture members; use them when you know the types while writing the tests. Type-parameterised tests: `TYPED_TEST_SUITE_P`, `TYPED_TEST_P`, `REGISTER_TYPED_TEST_SUITE_P`, then `INSTANTIATE_TYPED_TEST_SUITE_P(Prefix, Fixture, Types)` elsewhere; use them to ship a contract that types written later must pass.
+Typed tests: `TYPED_TEST_SUITE(Fixture, ::testing::Types<A, B, C>)` then `TYPED_TEST(Fixture, Name)`, with `TypeParam` naming the current type and `this->` reaching fixture members; use them when you know the types while writing the tests. Type-parameterized tests: `TYPED_TEST_SUITE_P`, `TYPED_TEST_P`, `REGISTER_TYPED_TEST_SUITE_P`, then `INSTANTIATE_TYPED_TEST_SUITE_P(Prefix, Fixture, Types)` elsewhere; use them to ship a contract that types written later must pass.
 :::
 
 ## Death tests: pressing the alarm's test button
@@ -392,11 +392,11 @@ A sensor read that fails, a file that is missing, a message with a bad checksum:
 ## Check yourself
 
 ::: check
-A template `Saturate<T>(x, lo, hi)` clamps a value into a range, and your team uses it with `std::int32_t`, `float` and `double`. Nobody outside the team will add types. Typed tests or type-parameterised tests? Write the lines that attach the types.
+A template `Saturate<T>(x, lo, hi)` clamps a value into a range, and your team uses it with `std::int32_t`, `float` and `double`. Nobody outside the team will add types. Typed tests or type-parameterized tests? Write the lines that attach the types.
 :::
 
 ::: answer
-Typed tests. You know all the types while writing the tests, and nobody else will instantiate them, so the extra registering step of type-parameterised tests buys nothing.
+Typed tests. You know all the types while writing the tests, and nobody else will instantiate them, so the extra registering step of type-parameterized tests buys nothing.
 
 ```cpp
 template <typename T>
@@ -430,7 +430,7 @@ Why does GoogleTest insist that a `TYPED_TEST_P` is listed in `REGISTER_TYPED_TE
 :::
 
 ::: answer
-The tests of a type-parameterised suite are instantiated later, possibly in another file, from a list the registering line produces. Registration is how the suite's "table of contents" is fixed at the point where the tests are written. If a test were defined but left off the list, it would compile and never run, for every type, forever — and a contract with a silently missing clause is dangerous. So GoogleTest checks the list against the definitions and aborts at startup with "You forgot to list test ..." when they disagree.
+The tests of a type-parameterized suite are instantiated later, possibly in another file, from a list the registering line produces. Registration is how the suite's "table of contents" is fixed at the point where the tests are written. If a test were defined but left off the list, it would compile and never run, for every type, forever — and a contract with a silently missing clause is dangerous. So GoogleTest checks the list against the definitions and aborts at startup with "You forgot to list test ..." when they disagree.
 :::
 
 ::: check
@@ -464,7 +464,7 @@ The options are: make the check always-on (a macro like `GNC_EXPECTS` that does 
 |---|---|---|
 | Typed test | Same tests for each type in a known list | `TYPED_TEST_SUITE(F, ::testing::Types<A, B>)`, `TYPED_TEST(F, Name)` |
 | `TypeParam`, `this->` | The current type; reaching fixture members | `this->buf_.push(TypeParam(1))` |
-| Type-parameterised test | A contract, instantiated with types later | `TYPED_TEST_SUITE_P`, `TYPED_TEST_P`, `REGISTER_TYPED_TEST_SUITE_P`, `INSTANTIATE_TYPED_TEST_SUITE_P` |
+| Type-parameterized test | A contract, instantiated with types later | `TYPED_TEST_SUITE_P`, `TYPED_TEST_P`, `REGISTER_TYPED_TEST_SUITE_P`, `INSTANTIATE_TYPED_TEST_SUITE_P` |
 | Death test | Passes only if the statement ends the process | `EXPECT_DEATH(stmt, regex)`, `ASSERT_DEATH(stmt, regex)` |
 | Exit test | Says how it must end | `EXPECT_EXIT(stmt, ::testing::ExitedWithCode(n), regex)`, `::testing::KilledBySignal(SIGABRT)` |
 | Naming | Death suites run first, before threads start | suite name ends in `DeathTest` |

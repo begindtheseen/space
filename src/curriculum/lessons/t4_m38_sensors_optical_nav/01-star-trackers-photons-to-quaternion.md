@@ -6,11 +6,11 @@ covers:
   - 'Star trackers: optics, centroiding, star catalogs, lost-in-space identification (triangle and pyramid algorithms), tracking mode'
 ---
 
-Imagine waking up in a field at night with no idea which way you face. You look up, spot the Big Dipper, follow it to the North Star, and now you know. You needed no map of the field — only a map of the *sky*, and the skill to recognise a pattern of dots in it.
+Imagine waking up in a field at night with no idea which way you face. You look up, spot the Big Dipper, follow it to the North Star, and now you know. You needed no map of the field — only a map of the *sky*, and the skill to recognize a pattern of dots in it.
 
 A **star tracker** does that for a spacecraft. It is a small camera that looks at the sky, works out which stars it sees, and reports which way its own box points, as a **[[quaternion|quaternion]]** — four numbers that describe a 3-D orientation — a few times a second. It is good to a few **[[arcseconds|arcsecond]]** (one arcsecond is $1/3600$ of a degree), the most accurate attitude sensor a spacecraft carries. Imaging satellites, space telescopes and deep-space probes all depend on it. And the gyros, which measure turning, slowly **[[drift|gyro-drift]]**; only the stars can correct them.
 
-Between a photon hitting the lens and a quaternion leaving the box there is a chain: collect light, find bright spots, locate each spot precisely, look up a star catalog, recognise the pattern, fit an attitude. Every arcsecond of accuracy, and every way it can fail, lives in one of those steps. We walk the chain once, with real numbers.
+Between a photon hitting the lens and a quaternion leaving the box there is a chain: collect light, find bright spots, locate each spot precisely, look up a star catalog, recognize the pattern, fit an attitude. Every arcsecond of accuracy, and every way it can fail, lives in one of those steps. We walk the chain once, with real numbers.
 
 ## The optics and the detector
 
@@ -46,7 +46,7 @@ Take $f = 28.5\,\mathrm{mm}$, $p = 7.4\,\mathrm{\mu m}$ and a $1024 \times 1024$
 Sanity check: $15^\circ$ is about the width of your hand at arm's length.
 :::
 
-How much light is there? Astronomers measure brightness in **[[magnitudes|magnitude-scale]]**, where bigger numbers mean fainter stars. A magnitude-0 star sends roughly $1000$ photons per second, per square centimetre, per ångström of wavelength band (an ångström is $10^{-10}\,\mathrm{m}$). A silicon detector uses about $3000$ ångströms well, so that is about $3\times10^6$ photons per second per square centimetre. Each step of one magnitude is a factor of $10^{0.4} = 2.512$ fainter. So a magnitude-6 star, near the faint limit of a typical onboard catalog, gives
+How much light is there? Astronomers measure brightness in **[[magnitudes|magnitude-scale]]**, where bigger numbers mean fainter stars. A magnitude-0 star sends roughly $1000$ photons per second, per square centimeter, per ångström of wavelength band (an ångström is $10^{-10}\,\mathrm{m}$). A silicon detector uses about $3000$ ångströms well, so that is about $3\times10^6$ photons per second per square centimeter. Each step of one magnitude is a factor of $10^{0.4} = 2.512$ fainter. So a magnitude-6 star, near the faint limit of a typical onboard catalog, gives
 
 $$
 3\times10^6 \times 10^{-2.4} = 1.19\times10^4\ \text{photons per second per cm}^2.
@@ -56,15 +56,15 @@ The $25\,\mathrm{mm}$ aperture has area $4.91\,\mathrm{cm^2}$, so $5.86\times10^
 
 ## Centroiding
 
-After the exposure, the tracker keeps only pixels brighter than a **threshold**, groups touching bright pixels into clusters, and finds each cluster's centre with the **intensity-weighted centroid**
+After the exposure, the tracker keeps only pixels brighter than a **threshold**, groups touching bright pixels into clusters, and finds each cluster's center with the **intensity-weighted centroid**
 
 $$
 \bar{x} = \frac{\sum_k I_k x_k}{\sum_k I_k}, \qquad \bar{y} = \frac{\sum_k I_k y_k}{\sum_k I_k}.
 $$
 
-Read $\bar{x}$ as "x bar". The sums run over the pixels $k$ of the cluster; $I_k$ is pixel $k$'s brightness and $(x_k, y_k)$ its centre. It is a balance point: a seesaw loaded with each pixel's brightness balances at $\bar{x}$.
+Read $\bar{x}$ as "x bar". The sums run over the pixels $k$ of the cluster; $I_k$ is pixel $k$'s brightness and $(x_k, y_k)$ its center. It is a balance point: a seesaw loaded with each pixel's brightness balances at $\bar{x}$.
 
-The centroid gives accuracy finer than a pixel, with a surprising condition: **the star must be out of focus.** A perfectly focused star is a dot smaller than a pixel. All its light lands in one pixel, so the centroid is that pixel's centre wherever the star really sits: good to half a pixel, no better. Blur the lens so the spot — its **point-spread function** — has a width $\sigma_{\mathrm{psf}}$ ("sigma psf") of about half a pixel. Now light spills into the neighbours in shares that depend on exactly where the star is, and the centroid reads those shares.
+The centroid gives accuracy finer than a pixel, with a surprising condition: **the star must be out of focus.** A perfectly focused star is a dot smaller than a pixel. All its light lands in one pixel, so the centroid is that pixel's center wherever the star really sits: good to half a pixel, no better. Blur the lens so the spot — its **point-spread function** — has a width $\sigma_{\mathrm{psf}}$ ("sigma psf") of about half a pixel. Now light spills into the neighbors in shares that depend on exactly where the star is, and the centroid reads those shares.
 
 How well can it do? With $N$ photons, the centroid is an average of $N$ scattered positions, and an average of $N$ random numbers wobbles by their spread over $\sqrt{N}$. So the best possible error is $\sigma_{\mathrm{psf}}/\sqrt{N}$: for $\sigma_{\mathrm{psf}} = 0.5$ pixel and $N = 2000$, $0.011$ pixel. Read noise, background and the small window push the real figure up, and a wider spot puts more noisy pixels under the star. The simulation below drops photons on a $7 \times 7$ window, adds $4$ electrons of read noise per pixel, discards pixels below three times the read noise, and measures the error.
 
@@ -99,7 +99,7 @@ for sigma_psf in (0.25, 0.5, 0.8):
 # sigma_psf = 0.8 px:   rms centroid error at 300 and 2000 photons = ['0.099', '0.025'] px
 ```
 
-Read the $2000$-photon column first. The sharpest image ($\sigma_{\mathrm{psf}} = 0.25$ pixel) is the *worst*, at $0.066$ pixel, and more light barely helps: its error is a steady pull toward the pixel centre, called **[[pixel locking|pixel-locking]]**. The half-pixel spot reaches $0.017$ pixel, within a factor of $1.6$ of the photon limit. The widest spot pays read noise on more pixels: $0.025$ pixel, and $0.099$ pixel at only $300$ photons. So there is a best blur, a spot about one pixel wide at half its peak brightness, and tracker optics are built to it.
+Read the $2000$-photon column first. The sharpest image ($\sigma_{\mathrm{psf}} = 0.25$ pixel) is the *worst*, at $0.066$ pixel, and more light barely helps: its error is a steady pull toward the pixel center, called **[[pixel locking|pixel-locking]]**. The half-pixel spot reaches $0.017$ pixel, within a factor of $1.6$ of the photon limit. The widest spot pays read noise on more pixels: $0.025$ pixel, and $0.099$ pixel at only $300$ photons. So there is a best blur, a spot about one pixel wide at half its peak brightness, and tracker optics are built to it.
 
 ::: key Sub-pixel centroiding
 Defocus the star deliberately across several pixels so an intensity-weighted centroid reaches roughly $1/10$ pixel or better. A perfectly focused point source lands on one pixel and gives you no sub-pixel information at all.
@@ -111,7 +111,7 @@ Temperature moves the focus. A tracker tested with a one-pixel spot can, hotter 
 
 ## The star catalog
 
-To recognise stars, the tracker needs a **star catalog**: each star's direction in an inertial (non-rotating) frame, built on the ground from survey **[[catalogs|star-surveys]]** such as Hipparcos, Tycho-2 or Gaia and trimmed to what the instrument can use. Each entry gives a star's **right ascension** $\alpha$ ("alpha", its longitude on the sky) and **declination** $\delta$ ("delta", its latitude). These become the unit vector
+To recognize stars, the tracker needs a **star catalog**: each star's direction in an inertial (non-rotating) frame, built on the ground from survey **[[catalogs|star-surveys]]** such as Hipparcos, Tycho-2 or Gaia and trimmed to what the instrument can use. Each entry gives a star's **right ascension** $\alpha$ ("alpha", its longitude on the sky) and **declination** $\delta$ ("delta", its latitude). These become the unit vector
 
 $$
 \hat{\mathbf{r}} = (\cos\delta\cos\alpha,\ \cos\delta\sin\alpha,\ \sin\delta),
@@ -122,8 +122,8 @@ $$
 Three trimming rules matter:
 
 1. **Brightness cut.** Keep stars brighter than a limit chosen so a typical image holds ten to thirty stars. About $5000$ stars are brighter than magnitude $6$ over the whole sky, and about $9000$ brighter than $6.5$. A circular field of half-angle $\alpha_{\mathrm{h}}$ covers a fraction $(1 - \cos\alpha_{\mathrm{h}})/2$ of the sky. So a $15^\circ$ field ($\alpha_{\mathrm{h}} = 7.5^\circ$, fraction $0.00428$) holds on average $5000 \times 0.00428 \approx 21$ stars from the magnitude-6 catalog.
-2. **Close pairs out.** A star with a neighbour within a few pixels is removed; the centroider would merge them into one misplaced spot.
-3. **Unreliable stars out.** Variable stars, and stars whose colour makes their detector brightness hard to predict, go too.
+2. **Close pairs out.** A star with a neighbor within a few pixels is removed; the centroider would merge them into one misplaced spot.
+3. **Unreliable stars out.** Variable stars, and stars whose color makes their detector brightness hard to predict, go too.
 
 One correction is made on board, because it depends on the spacecraft's speed: **[[stellar aberration|aberration]]**. A moving observer sees every star tilted toward its direction of motion, by about $v/c$ (speed over light speed). Earth's orbital speed of $29.78\,\mathrm{km/s}$ gives $29.78/299792 = 9.93\times10^{-5}\,\mathrm{rad}$, which is $20.5''$. A low-Earth-orbit speed of $7.7\,\mathrm{km/s}$ adds up to another $5.3''$, changing direction around each orbit. Both dwarf the tracker's accuracy, so the vectors are corrected using the navigation system's velocity — the first place the tracker depends on something outside itself.
 
@@ -345,11 +345,11 @@ Each quaternion's **[[time stamp|time-tag]]** refers to the middle of the exposu
 ::: example From a spot to a unit vector
 A star's centroid is at $(x, y) = (2.4180\,\mathrm{mm},\ -1.1050\,\mathrm{mm})$ on the tracker above, with $f = 28.5\,\mathrm{mm}$.
 
-**Stack it with $f$.** The direction before normalising is $(2.4180, -1.1050, 28.5)$.
+**Stack it with $f$.** The direction before normalizing is $(2.4180, -1.1050, 28.5)$.
 
 **Its length.** $\sqrt{2.4180^2 + 1.1050^2 + 28.5^2} = 28.624\,\mathrm{mm}$.
 
-**Divide by the length.** $\hat{\mathbf{b}} = (0.08448, -0.03860, 0.99568)$. The last component is the cosine of the angle from the boresight, so the star is $\arccos(0.99568) = 5.33^\circ$ off-centre — inside the $7.5^\circ$ half-field, as it must be.
+**Divide by the length.** $\hat{\mathbf{b}} = (0.08448, -0.03860, 0.99568)$. The last component is the cosine of the angle from the boresight, so the star is $\arccos(0.99568) = 5.33^\circ$ off-center — inside the $7.5^\circ$ half-field, as it must be.
 
 **Centroid error.** A $0.05$-pixel error is $0.05 \times 7.4 = 0.37\,\mathrm{\mu m}$ on the detector, which moves the direction by $0.37\times10^{-3}/28.5 = 1.3\times10^{-5}\,\mathrm{rad}$, or $2.7''$ — the first example's figure. The unit-vector step neither adds accuracy nor loses it.
 :::
@@ -391,7 +391,7 @@ Interstar angles are unchanged by reflections as well as rotations, so a catalog
 :::
 
 ::: check
-A deep-space probe is moving at $32\,\mathrm{km/s}$ relative to the centre of mass of the solar system. At most, how far is a star's apparent direction shifted, and why must the tracker or its host correct for it?
+A deep-space probe is moving at $32\,\mathrm{km/s}$ relative to the center of mass of the solar system. At most, how far is a star's apparent direction shifted, and why must the tracker or its host correct for it?
 :::
 
 ::: answer
@@ -440,7 +440,7 @@ A gyro measures turning rate, and the flight computer adds up (integrates) those
 :::
 
 ::: context pinhole-picture The pinhole, drawn
-A star at angle $\theta$ from the boresight lands a distance $f\tan\theta$ from the centre of the image. In components, $\tan\theta$ along $x$ is $u_x/u_z$, which gives $x = f u_x/u_z$.
+A star at angle $\theta$ from the boresight lands a distance $f\tan\theta$ from the center of the image. In components, $\tan\theta$ along $x$ is $u_x/u_z$, which gives $x = f u_x/u_z$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
@@ -470,7 +470,7 @@ About 2000 years ago the Greek astronomer Hipparchus sorted stars into six class
 :::
 
 ::: context pixel-locking Why a sharp star is a bad star
-Left: a focused star sits off-centre in one pixel, but only that pixel lights, so the centroid (cross) lands on the pixel centre. Right: a blurred star lights its neighbours unevenly, and the balance point lands on the star.
+Left: a focused star sits off-center in one pixel, but only that pixel lights, so the centroid (cross) lands on the pixel center. Right: a blurred star lights its neighbors unevenly, and the balance point lands on the star.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">

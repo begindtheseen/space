@@ -138,7 +138,7 @@ That gap matters. Anything that assumes evenly spaced samples — a spectrum, a 
 **4. The record is complete.** Compare the first and last times with the test log, and the row count with rate × duration.
 
 ::: key
-Before analysing a telemetry file: `np.diff(t)` for the sample period, dropouts (`dt > 1.5 × median`) and monotonicity; `df.describe()` for physical ranges and sentinels; a known physical value for units; row count against rate × duration. Name columns with their units — `alt_m`, `gyro_x_dps` — in every file you write.
+Before analyzing a telemetry file: `np.diff(t)` for the sample period, dropouts (`dt > 1.5 × median`) and monotonicity; `df.describe()` for physical ranges and sentinels; a known physical value for units; row count against rate × duration. Name columns with their units — `alt_m`, `gyro_x_dps` — in every file you write.
 :::
 
 ## Lining up channels recorded at different rates
@@ -400,7 +400,7 @@ The samples below are the CSV from this lesson: one every $0.01\,\mathrm{s}$, un
 :::
 
 ::: context aliasing A fast wave in disguise
-The grey curve wiggles $9$ times a second. Sampled only $10$ times a second (red dots), the samples fall exactly on the slow blue curve, which turns once a second. From the samples alone you cannot tell the two apart. This is why a fast channel must be smoothed *before* it is thinned out.
+The gray curve wiggles $9$ times a second. Sampled only $10$ times a second (red dots), the samples fall exactly on the slow blue curve, which turns once a second. From the samples alone you cannot tell the two apart. This is why a fast channel must be smoothed *before* it is thinned out.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">

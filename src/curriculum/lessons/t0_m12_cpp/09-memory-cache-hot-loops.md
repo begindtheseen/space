@@ -3,10 +3,10 @@ id: l09-memory-cache-hot-loops
 title: Memory layout, the cache, and allocation-free hot loops
 minutes: 26
 covers:
-  - memory layout, cache behaviour, allocation-free hot loops
+  - memory layout, cache behavior, allocation-free hot loops
 ---
 
-Picture a pit crew at a race. Four tyres change in about two seconds, because everything was set up beforehand: every tyre in reach, every wrench in place. Nobody runs to the storeroom mid-stop. A pit stop is judged by its slowest moment, so the crew removes every moment that *might* be slow.
+Picture a pit crew at a race. Four tires change in about two seconds, because everything was set up beforehand: every tire in reach, every wrench in place. Nobody runs to the storeroom mid-stop. A pit stop is judged by its slowest moment, so the crew removes every moment that *might* be slow.
 
 A flight control loop is a pit stop hundreds of times a second, for the whole flight. Its most important job is to finish on time, every cycle. Two things break that promise, and no clever algorithm repairs them. The first is asking for fresh memory from the **heap** mid-loop — the run to the storeroom, which takes a time nobody can bound. The second is reaching for data the processor's fast nearby memory does not hold, which turns a one-nanosecond read into a hundred-nanosecond wait, thousands of times over when the data is laid out badly.
 
@@ -24,7 +24,7 @@ C++ gives every object one of three **storage durations**: how long it lives, an
 
 **Dynamic storage** is the heap, reached through `new` and `malloc`. To hand out a block, the **allocator** — the library code that manages the heap — must find a free block big enough, perhaps split one, perhaps take a lock because another thread is allocating too, perhaps ask the operating system for more. None of these has a bounded duration. The request can fail. And over a long mission the heap becomes **[[fragmented|heap-fragmentation]]**, so a request that worked on day one fails on day ninety.
 
-Hence Power of Ten rule 3: *no dynamic memory allocation after initialisation*. Flight code allocates during start-up, where time is plentiful and a failure can stop the boot, and never again.
+Hence Power of Ten rule 3: *no dynamic memory allocation after initialization*. Flight code allocates during start-up, where time is plentiful and a failure can stop the boot, and never again.
 
 ## Layout: alignment and padding
 
@@ -85,7 +85,7 @@ Rule of thumb: declare members from the largest alignment to the smallest. The `
 :::
 
 ::: warning
-Compiler-specific `#pragma pack` and `[[gnu::packed]]` remove padding by allowing misaligned members. A misaligned load is undefined behaviour in standard C++, faults outright on some flight processors, and is slow on the ones that tolerate it. For a wire format, keep the struct aligned and write out the fields one by one, or `memcpy` each field out of the byte buffer.
+Compiler-specific `#pragma pack` and `[[gnu::packed]]` remove padding by allowing misaligned members. A misaligned load is undefined behavior in standard C++, faults outright on some flight processors, and is slow on the ones that tolerate it. For a wire format, keep the struct aligned and write out the fields one by one, or `memcpy` each field out of the byte buffer.
 :::
 
 ## The cache
@@ -140,7 +140,7 @@ The matrix is stored **[[row-major|row-major]]**: row 0 first, then row 1, and s
 
 Both loops do the same 16.8 million additions. The first walks along rows, reading consecutive addresses: every fetched line gives eight useful doubles, and the prefetcher stays ahead. The second walks down columns. Each step jumps one whole row, $4096 \times 8 = 32\,768$ bytes = 32 KiB, so every addition fetches a fresh line, uses 8 of its 64 bytes, and gets no help from the prefetcher.
 
-Result: about ten times slower, for identical arithmetic. (`volatile` keeps the optimiser from deleting the sums.)
+Result: about ten times slower, for identical arithmetic. (`volatile` keeps the optimizer from deleting the sums.)
 :::
 
 ### Array of structs or struct of arrays
@@ -224,13 +224,13 @@ int main() {
 
 Each `Case` is exactly one cache line, so summing `mass` in the AoS layout fetches 2 million lines — 128 MB — to use 8 bytes of each. The SoA loop reads one 16 MB array and uses every byte: over three times faster here.
 
-It can go faster still. Neighbouring `double`s let the compiler **[[vectorise|vectorise]]** — add several numbers with one instruction. For a floating-point *sum* it needs your permission, because a different order rounds differently. With `-O2 -ffast-math`, which grants it, the SoA sum took about 0.9 ms and the ratio rose to about six.
+It can go faster still. Neighboring `double`s let the compiler **[[vectorize|vectorise]]** — add several numbers with one instruction. For a floating-point *sum* it needs your permission, because a different order rounds differently. With `-O2 -ffast-math`, which grants it, the SoA sum took about 0.9 ms and the ratio rose to about six.
 
 When the loop touches every field of each case — the simulation rather than the statistics — the gap narrows, because now AoS uses its whole line too; on other machines the two are close to even. The access pattern decides, and a Monte Carlo post-processor sweeps one field at a time.
 :::
 
 ::: key
-Struct-of-arrays for a Monte Carlo. Sweeping one field over many cases touches contiguous memory, so every cache line is fully used and the loop can vectorise (a floating-point sum only if the compiler may reorder it, e.g. -ffast-math). Array-of-structs strides over unused fields and wastes most of each line.
+Struct-of-arrays for a Monte Carlo. Sweeping one field over many cases touches contiguous memory, so every cache line is fully used and the loop can vectorize (a floating-point sum only if the compiler may reorder it, e.g. -ffast-math). Array-of-structs strides over unused fields and wastes most of each line.
 :::
 
 For the flight loop itself: small data, laid out contiguously — a state vector in a `std::array` or an Eigen fixed-size type, tables in flat arrays, no pointer chasing, a working set that fits in L1 and L2. A `std::map` lookup in a control loop is a chain of cache misses waiting to happen.
@@ -295,7 +295,7 @@ HotLoopGuard::HotLoopGuard() { g_hot_loop = true; }
 HotLoopGuard::~HotLoopGuard() { g_hot_loop = false; }
 ```
 
-```cpp
+```cpp fragment
 // noalloc_main.cpp
 #include <array>
 #include <cstdio>
@@ -359,7 +359,7 @@ int main(int argc, char**) {
 // Aborted
 ```
 
-`step_naive` allocates once per step: its `std::string` is optimised away, but the `std::vector` is enough. `step_fixed` does the same arithmetic in a `std::array` and allocates nothing — and the guard *proves* it rather than claiming it.
+`step_naive` allocates once per step: its `std::string` is optimized away, but the `std::vector` is enough. `step_fixed` does the same arithmetic in a `std::array` and allocates nothing — and the guard *proves* it rather than claiming it.
 
 Sanity check: each step multiplies `x[0]` by $1 - 0.01 \times 0.1 = 0.999$, over 2000 steps, so $7 \times 10^6 \times 0.999^{2000} \approx 946\,400$.
 
@@ -369,7 +369,7 @@ In a GoogleTest suite (lesson 11) this becomes `EXPECT_EQ(g_allocations, 0)` aro
 Loops need the same discipline. Every loop in flight code has an upper bound a reader can see in the source: a fixed array size, or a `kMaxIterations` on an iterative solver with a convergence `break` inside. A loop whose count depends on data has a worst case nobody can write down. The one deliberate exception is the scheduler's outer loop, meant to run until power-off and marked as such so a checking tool can tell intent from bug.
 
 ::: key
-The Power of Ten requires every loop to have a fixed upper bound because a statically provable bound makes termination checkable by a static analyser and gives a finite worst-case execution time for the real-time scheduler. A runaway loop in flight software is a missed deadline, not a slow program.
+The Power of Ten requires every loop to have a fixed upper bound because a statically provable bound makes termination checkable by a static analyzer and gives a finite worst-case execution time for the real-time scheduler. A runaway loop in flight software is a missed deadline, not a slow program.
 :::
 
 Finally, measure. A loop you have *reasoned* is bounded still gets timed with `std::chrono::steady_clock`, recording the maximum and a histogram — never only the average, which hides exactly the cycles that matter.
@@ -379,10 +379,10 @@ Finally, measure. A loop you have *reasoned* is bounded still gets timed with `s
 Holzmann's rules, as a flight C++ codebase reads them today:
 
 ::: key
-The Power of Ten rules: (1) no complex control flow — no `goto`, no `setjmp`/`longjmp`, no recursion; (2) all loops have a fixed upper bound; (3) no dynamic memory allocation after initialisation; (4) functions short enough to fit one printed page, about 60 lines; (5) at least two assertions per function; (6) declare data at the smallest possible scope; (7) check the return value of every non-void function and the validity of every parameter; (8) minimal preprocessor use — includes and simple macros only; (9) restricted pointer use — one level of dereferencing, no function pointers; (10) compile with all warnings on at the most pedantic setting, with zero warnings tolerated, and run static analysers routinely.
+The Power of Ten rules: (1) no complex control flow — no `goto`, no `setjmp`/`longjmp`, no recursion; (2) all loops have a fixed upper bound; (3) no dynamic memory allocation after initialization; (4) functions short enough to fit one printed page, about 60 lines; (5) at least two assertions per function; (6) declare data at the smallest possible scope; (7) check the return value of every non-void function and the validity of every parameter; (8) minimal preprocessor use — includes and simple macros only; (9) restricted pointer use — one level of dereferencing, no function pointers; (10) compile with all warnings on at the most pedantic setting, with zero warnings tolerated, and run static analyzers routinely.
 :::
 
-Read the ten as one argument. Rules 1 and 2 make control flow analysable by a tool. Rule 3 fixes the memory footprint. Rules 4 and 6 keep functions small enough to review completely. Rules 5 and 7 catch errors where they occur (lesson 8). Rules 8 and 9 remove the two C features that most defeat analysis tools. Rule 10 hands enforcement to the compiler and analysers — lessons 12 and 13.
+Read the ten as one argument. Rules 1 and 2 make control flow analysable by a tool. Rule 3 fixes the memory footprint. Rules 4 and 6 keep functions small enough to review completely. Rules 5 and 7 catch errors where they occur (lesson 8). Rules 8 and 9 remove the two C features that most defeat analysis tools. Rule 10 hands enforcement to the compiler and analyzers — lessons 12 and 13.
 
 Modern C++ meets the rules more comfortably than C: RAII is not dynamic allocation, templates and `constexpr` are compile-time, `std::array`, `std::span` and references replace most pointer arithmetic, and `-Werror` is rule 10 in one flag. Two frictions remain. Virtual functions are function pointers in a table, and each project decides whether rule 9 permits them at module boundaries (most do, with lesson 4's limits). And exceptions are hidden control flow that rules 1 and 7 cannot live with — one more reason they are switched off.
 
@@ -416,7 +416,7 @@ A Monte Carlo has two phases: propagating each case through a full trajectory, a
 ::: answer
 Propagation touches every field of one case together, many times, before moving on. An array-of-structs layout keeps each case's fields on one or two cache lines, so it is the natural fit.
 
-The statistics sweep one field across all cases. A struct-of-arrays layout makes each sweep a contiguous read that uses every byte of every line and can vectorise — the measured factor of three to six.
+The statistics sweep one field across all cases. A struct-of-arrays layout makes each sweep a contiguous read that uses every byte of every line and can vectorize — the measured factor of three to six.
 
 If both matter, convert once, at the boundary.
 :::
@@ -438,7 +438,7 @@ Do not allocate:
 - constructing a `std::span` — it is only a pointer and a length;
 - adding two `Vector3d` — fixed-size Eigen types live on the stack.
 
-The first three belong in initialisation only.
+The first three belong in initialization only.
 :::
 
 ::: check
@@ -458,7 +458,7 @@ Name four of the Power of Ten rules, and for two of them say how the toolchain r
 :::
 
 ::: answer
-Any four of: no recursion or `goto`; fixed loop bounds; no allocation after initialisation; functions of about 60 lines; two assertions per function; smallest scope for data; check every return value; minimal preprocessor; restricted pointers; all warnings on and zero tolerated.
+Any four of: no recursion or `goto`; fixed loop bounds; no allocation after initialization; functions of about 60 lines; two assertions per function; smallest scope for data; check every return value; minimal preprocessor; restricted pointers; all warnings on and zero tolerated.
 
 Tool enforcement, for example:
 
@@ -541,7 +541,7 @@ A prefetcher is a small circuit in the processor that watches the addresses bein
 :::
 
 ::: context row-major Rows laid end to end
-Memory is one long line of bytes, so a grid has to be flattened. Row-major order, used by C++ arrays and NumPy by default, lays row 0 down first, then row 1 after it. Walking along a row steps through neighbouring addresses. Walking down a column jumps a whole row's length each step.
+Memory is one long line of bytes, so a grid has to be flattened. Row-major order, used by C++ arrays and NumPy by default, lays row 0 down first, then row 1 after it. Walking along a row steps through neighboring addresses. Walking down a column jumps a whole row's length each step.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">

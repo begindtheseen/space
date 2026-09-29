@@ -16,9 +16,9 @@ This lesson asks the same solver different questions about the same two points. 
 
 Keep last lesson's problem: $\mathbf{r}_1 = (5000,\ 10\,000,\ 2100)\,\mathrm{km}$, $\mathbf{r}_2=(-14\,600,\ 2500,\ 7000)\,\mathrm{km}$, $\Delta t=3600\,\mathrm{s}$.
 
-Travelling **[[prograde|prograde-retrograde]]** — counterclockwise, seen from above — the spacecraft sweeps the short angle, $\Delta\nu = 100.293°$. That was last lesson's answer, $\mathbf{v}_1 = (-5.9925,\ 1.9254,\ 3.2456)\,\mathrm{km/s}$.
+Traveling **[[prograde|prograde-retrograde]]** — counterclockwise, seen from above — the spacecraft sweeps the short angle, $\Delta\nu = 100.293°$. That was last lesson's answer, $\mathbf{v}_1 = (-5.9925,\ 1.9254,\ 3.2456)\,\mathrm{km/s}$.
 
-Travelling the opposite way around the *same* plane, the spacecraft must sweep the rest of the circle: $\Delta\nu' = 360° - 100.293° = 259.707°$. That is the long way. Nothing in the solver changes except $A$. Its formula now contains $\sin(259.707°)$, which is negative, so $A$ is negative.
+Traveling the opposite way around the *same* plane, the spacecraft must sweep the rest of the circle: $\Delta\nu' = 360° - 100.293° = 259.707°$. That is the long way. Nothing in the solver changes except $A$. Its formula now contains $\sin(259.707°)$, which is negative, so $A$ is negative.
 
 To compare the two, you need a way to measure cost. The standard measure is **[[delta-v|delta-v]]**, written $\Delta v$: the total change of velocity the engines must provide, in km/s. Here, picture the spacecraft sitting on a **[[circular orbit|circular-reference]]** through $\mathbf{r}_1$ before the trip, and wanting to end on a circular orbit through $\mathbf{r}_2$. Each circle lies in the transfer's plane and turns the same way the transfer does. Then
 
@@ -204,7 +204,7 @@ A cost needs a starting point. Lambert tells you the velocity the transfer needs
 :::
 
 ::: context long-way-crash Both one-hour arcs, to scale
-The short-way arc (blue) and the long-way arc (red, dashed) for the one-hour Curtis transfer, drawn to scale in their shared plane. The grey disc is the Earth, radius $6378\,\mathrm{km}$. The short way never comes closer than $11\,332\,\mathrm{km}$ to the center. The long way swings around the back and dips to $3167\,\mathrm{km}$ — deep inside the planet.
+The short-way arc (blue) and the long-way arc (red, dashed) for the one-hour Curtis transfer, drawn to scale in their shared plane. The gray disc is the Earth, radius $6378\,\mathrm{km}$. The short way never comes closer than $11\,332\,\mathrm{km}$ to the center. The long way swings around the back and dips to $3167\,\mathrm{km}$ — deep inside the planet.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">
@@ -258,7 +258,7 @@ Flight time against $z$ for the Curtis pair, short way. On the left, the single-
 :::
 
 ::: context branch-orbits The two one-lap orbits, to scale
-Both one-lap orbits drawn to scale in their plane, with the Earth as the grey disc. Each leaves $\mathbf{r}_1$, loops once around, and arrives at $\mathbf{r}_2$ after $25\,000\,\mathrm{s}$. The long-period orbit (blue) stays well clear of the ground; the short-period one (red, dashed) cuts through the Earth.
+Both one-lap orbits drawn to scale in their plane, with the Earth as the gray disc. Each leaves $\mathbf{r}_1$, loops once around, and arrives at $\mathbf{r}_2$ after $25\,000\,\mathrm{s}$. The long-period orbit (blue) stays well clear of the ground; the short-period one (red, dashed) cuts through the Earth.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 185" font-family="Inter, Arial, sans-serif">

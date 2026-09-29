@@ -6,7 +6,7 @@ covers:
   - "GNSS constellation and signal structure: L1/L2/L5, C/A and P(Y) codes, CDMA, the navigation message"
 ---
 
-Lightning flashes. You count one, two, three — then thunder. Sound covers about $343$ metres a second, so the storm is about a kilometre away. You turned a *delay* into a *distance*.
+Lightning flashes. You count one, two, three — then thunder. Sound covers about $343$ meters a second, so the storm is about a kilometer away. You turned a *delay* into a *distance*.
 
 Satellite navigation does the same with radio waves and far better clocks. Each satellite keeps announcing "this piece of my signal left me at exactly this time". Your receiver hears it a little late, compares the stamp with its own clock, and multiplies the delay by the speed of light. That is a distance. Several distances to several satellites give a position.
 
@@ -15,7 +15,7 @@ The general name is **GNSS**, global navigation satellite system; GPS is the Ame
 That signal has three layers, like a radio show:
 
 - The **carrier** is the station: a pure radio wave at one fixed frequency in the **L-band** ($1$ to $2\,\mathrm{GHz}$).
-- The **ranging code** is a rhythm you know by heart, laid on the wave. Lining up your copy with the one you hear gives the timing, like a ruler with marks a few hundred metres apart.
+- The **ranging code** is a rhythm you know by heart, laid on the wave. Lining up your copy with the one you hear gives the timing, like a ruler with marks a few hundred meters apart.
 - The **navigation message** is slow speech on top of the rhythm: where the satellite is, what its clock is doing, and what time it is.
 
 The receiver locks to the carrier to hold the signal, lines up the code to measure the time of sending, and decodes the message to learn where the sender was.
@@ -151,7 +151,7 @@ $$
 
 **Power received.** An antenna with no gain receives $27.3 - 184.4 = -157.1\,\mathrm{dBW}$. A decibel or two lost in the air and to polarization bring it to the $-158.5\,\mathrm{dBW}$ specification. It matches.
 
-**Sanity check.** $184\,\mathrm{dB}$ means the signal loses eighteen powers of ten on the way down; about a tenth of a femtowatt arrives. A one-watt jammer a few kilometres away, or a spacecraft hearing the satellite from three times as far, shifts that budget by tens of decibels — which is why both get lessons of their own.
+**Sanity check.** $184\,\mathrm{dB}$ means the signal loses eighteen powers of ten on the way down; about a tenth of a femtowatt arrives. A one-watt jammer a few kilometers away, or a spacecraft hearing the satellite from three times as far, shifts that budget by tens of decibels — which is why both get lessons of their own.
 :::
 
 ## The navigation message
@@ -183,7 +183,7 @@ Now the three layers come together. Locked to a satellite, the receiver knows, f
 2. how many bits into the subframe — steps of $20\,\mathrm{ms}$;
 3. how many code repeats into the bit — steps of $1\,\mathrm{ms}$;
 4. how many chips into the code — steps of $977\,\mathrm{ns}$, about $293\,\mathrm{m}$;
-5. the fraction of a chip, from fine alignment of its code copy — a few nanoseconds, a metre or so.
+5. the fraction of a chip, from fine alignment of its code copy — a few nanoseconds, a meter or so.
 
 Like reading a clock's hands plus a stopwatch, adding the pieces gives the **time of transmission** by the satellite's clock, to a nanosecond: a counter $20{,}000\,\mathrm{km}$ away, read to ten digits from a signal buried in noise. The receiver also notes the **time of reception** by its own clock. The difference, times $c$, is the pseudorange; why that is not quite the true range is the next lesson.
 
@@ -286,7 +286,7 @@ L1 is $1575.42\,\mathrm{MHz}$ ($154 \times 10.23\,\mathrm{MHz}$), wavelength $19
 | Transmit time | HOW $+$ bits $\times 20\,\mathrm{ms}$ $+$ code periods $\times 1\,\mathrm{ms}$ $+$ chips $\times 977.5\,\mathrm{ns}$ $+$ fractional chip |
 | Doppler | $f_d = -\dot\rho/\lambda$; static user $\le 930\,\mathrm{m/s}$, $\pm 4.9\,\mathrm{kHz}$ on L1; code Doppler $= $ carrier Doppler$/1540$ |
 
-Next: subtract this transmit time from the receiver's own clock reading, and find out why the result — the pseudorange — misses the true range by tens of metres.
+Next: subtract this transmit time from the receiver's own clock reading, and find out why the result — the pseudorange — misses the true range by tens of meters.
 
 ::: context sidereal-day Why a day is not one spin
 A **solar day**, noon to noon, is $24$ hours. But in that time Earth has also moved about one degree along its orbit around the Sun, so it must turn a little more than once to bring the Sun back overhead. One spin measured against the far-away stars — the **sidereal day** — is shorter: about $23\,\mathrm{h}\,56\,\mathrm{min}\,4\,\mathrm{s}$, or $86{,}164\,\mathrm{s}$. GPS satellites lap twice per sidereal day, which is why their pattern in your sky comes back about four minutes earlier each solar day.

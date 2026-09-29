@@ -3,7 +3,7 @@ id: l06-sensor-models
 title: Sensor models
 minutes: 22
 covers:
-  - "Sensor models: noise, bias and bias instability, scale factor, misalignment, quantisation, latency, dropout, saturation, update rate"
+  - "Sensor models: noise, bias and bias instability, scale factor, misalignment, quantization, latency, dropout, saturation, update rate"
 ---
 
 Step onto an old bathroom scale. With nobody on it, the needle already sits at $1\,\mathrm{kg}$. When you step on, it reads $2\%$ heavy. It only shows whole tenths of a kilogram. It wobbles a little before settling, and it takes a second to settle at all. Put a piano on it and the needle stops at $150\,\mathrm{kg}$ and stays there. Every one of those quirks has a name, and every real sensor on a rocket has all of them.
@@ -28,7 +28,7 @@ Here is the whole cast, matched to the bathroom scale:
 - **Update rate** — how often a fresh reading comes out.
 
 ::: key The IMU error model terms
-Bias (and its instability), scale factor, misalignment and non-orthogonality, random walk noise, quantisation, latency, saturation, and finite update rate. Bias and latency hurt a navigation filter far more than white noise does.
+Bias (and its instability), scale factor, misalignment and non-orthogonality, random walk noise, quantization, latency, saturation, and finite update rate. Bias and latency hurt a navigation filter far more than white noise does.
 :::
 
 ## The sensitivity matrix, and why the order matters
@@ -58,7 +58,7 @@ Bias is different. It comes mostly from electronic offset, and it does not care 
 Keeping the multiplying errors and the adding errors in separate places is what lets calibration pull them apart.
 
 ::: key IMU measurement model
-$\mathbf{a}_{\text{meas}} = (\mathbf{I} + \mathrm{diag}(\mathbf{sf}) + \mathbf{M})\,\mathbf{a}_{\text{true}} + \mathbf{b} + \mathbf{n}$, then quantised. The sensitivity matrix acts on truth first; bias and noise add afterwards, which is why calibration must estimate them in that order and only separates them correctly if the model matches this order.
+$\mathbf{a}_{\text{meas}} = (\mathbf{I} + \mathrm{diag}(\mathbf{sf}) + \mathbf{M})\,\mathbf{a}_{\text{true}} + \mathbf{b} + \mathbf{n}$, then quantized. The sensitivity matrix acts on truth first; bias and noise add afterwards, which is why calibration must estimate them in that order and only separates them correctly if the model matches this order.
 :::
 
 ::: example Why the order matters for calibration, not only for modeling

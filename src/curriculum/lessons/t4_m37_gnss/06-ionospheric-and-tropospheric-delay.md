@@ -127,7 +127,7 @@ At $14{:}00$ the delay is $35.84\,\mathrm{ns}$; multiply by the speed of light t
 A factor of six between mid-afternoon and the small hours. And the model never saw a single real electron — only the date, through the broadcast numbers, and the time of day.
 :::
 
-The model is honest about what it is: a smooth, eight-number fit to an average ionosphere, which is neither smooth nor the same everywhere. It typically takes out only about half of the real delay (in the root-mean-square sense). That is why the pseudorange lesson's single-frequency budget still carried $4.0\,\mathrm{m}$ of ionosphere after the correction. What it cannot see: day-to-day swings in solar activity, **geomagnetic storms** that pile on delay far above the quiet-day curve, the **[[equatorial anomaly|equatorial-anomaly]]** — two ridges of extra electrons either side of the magnetic equator — and travelling ripples in the ionosphere. None of that fits in a cubic in latitude and one cosine in time. To do better, a receiver needs a second look at the same ionosphere at a different frequency.
+The model is honest about what it is: a smooth, eight-number fit to an average ionosphere, which is neither smooth nor the same everywhere. It typically takes out only about half of the real delay (in the root-mean-square sense). That is why the pseudorange lesson's single-frequency budget still carried $4.0\,\mathrm{m}$ of ionosphere after the correction. What it cannot see: day-to-day swings in solar activity, **geomagnetic storms** that pile on delay far above the quiet-day curve, the **[[equatorial anomaly|equatorial-anomaly]]** — two ridges of extra electrons either side of the magnetic equator — and traveling ripples in the ionosphere. None of that fits in a cubic in latitude and one cosine in time. To do better, a receiver needs a second look at the same ionosphere at a different frequency.
 
 ## Removing it outright: the ionosphere-free combination
 
@@ -203,7 +203,7 @@ The magnification is smaller when the two frequencies are further apart. Repeat 
 Ionosphere-free combination: $\rho_{\mathrm{IF}} = (f_1^2\rho_1 - f_2^2\rho_2)/(f_1^2-f_2^2)$. It cancels the first-order ionospheric delay exactly, because the delay scales as $1/f^2$; noise grows roughly threefold. For L1/L2 the coefficients are $2.546$ and $-1.546$, magnifying independent noise by $\sqrt{c_1^2+c_2^2}=2.978$; the wider L1/L5 pair magnifies it by $2.588$.
 :::
 
-## The troposphere: not dispersive, so it must be modelled
+## The troposphere: not dispersive, so it must be modeled
 
 Below the ionosphere is the ordinary air — the troposphere and stratosphere together, which GNSS people lump together as "the troposphere". It slows the signal too, but for a different reason: the gas molecules and water vapor themselves, not free electrons. At radio frequencies this slowing does not depend on frequency at all. So $I_1 = I_2$ for the troposphere, and the ionosphere-free trick — subtracting two measurements that disagree because of a $1/f^2$ term — has nothing to grab. **A second frequency does nothing for the troposphere.** Every receiver has to model it.
 
@@ -241,13 +241,13 @@ To get the vapor pressure from everyday weather, use the Magnus formula for the 
 
 The hot-humid case is about eighteen times the cold-dry one. The hydrostatic delay, meanwhile, moves only a few percent with the weather.
 
-That is why the two parts are handled differently. The hydrostatic part is corrected from a pressure reading and trusted to a centimeter or two. The wet part is either modelled roughly, accepting several centimeters of error, or — in precise work — treated as an unknown and estimated from the data. The receiver's navigation filter carries a slowly wandering zenith wet delay as an extra state beside position, the kind of **[[random-walk state|random-walk]]** the Kalman filtering module describes. Precise point positioning does exactly this, later in this module.
+That is why the two parts are handled differently. The hydrostatic part is corrected from a pressure reading and trusted to a centimeter or two. The wet part is either modeled roughly, accepting several centimeters of error, or — in precise work — treated as an unknown and estimated from the data. The receiver's navigation filter carries a slowly wandering zenith wet delay as an extra state beside position, the kind of **[[random-walk state|random-walk]]** the Kalman filtering module describes. Precise point positioning does exactly this, later in this module.
 :::
 
 Both parts are then mapped from straight up to the real line of sight. The simplest mapping divides by $\sin(\mathrm{el})$, because a flat layer is crossed on a path $1/\sin(\mathrm{el})$ times longer when you look at elevation $\mathrm{el}$. At $\mathrm{el}=60^\circ$ the Cape Canaveral total, $2.310 + 0.227 = 2.537\,\mathrm{m}$ at zenith, maps to $2.93\,\mathrm{m}$ — the pseudorange lesson's figure. But this simple form gets badly wrong below about $15^\circ$. At $5^\circ$ it gives $29\,\mathrm{m}$, more than the "up to $25\,\mathrm{m}$" the pseudorange lesson quoted. The real atmosphere is curved with the Earth, and the ray bends as it passes through layers of changing density; $1/\sin(\mathrm{el})$ ignores both. Working receivers use better **[[mapping functions|mapping]]** — Niell's and Marini's are the standard names — fitted to computer ray-traces through real atmospheres and good well below $10^\circ$.
 
 ::: key
-Troposphere versus ionosphere: the troposphere is not dispersive, so dual-frequency does not help. It must be modelled (Saastamoinen, Hopfield) with a mapping function, or estimated as a zenith delay state. Zenith delay is about $2.3\,\mathrm{m}$, rising steeply at low elevation. The hydrostatic part comes from surface pressure and is stable; the wet part, from humidity, runs from a few centimeters to half a meter and is poorly predicted. The ionosphere, $I=40.3\,\mathrm{TEC}/f^2$, is dispersive: removed by dual-frequency, or modelled by Klobuchar, which takes out roughly half.
+Troposphere versus ionosphere: the troposphere is not dispersive, so dual-frequency does not help. It must be modeled (Saastamoinen, Hopfield) with a mapping function, or estimated as a zenith delay state. Zenith delay is about $2.3\,\mathrm{m}$, rising steeply at low elevation. The hydrostatic part comes from surface pressure and is stable; the wet part, from humidity, runs from a few centimeters to half a meter and is poorly predicted. The ionosphere, $I=40.3\,\mathrm{TEC}/f^2$, is dispersive: removed by dual-frequency, or modeled by Klobuchar, which takes out roughly half.
 :::
 
 ::: warning
@@ -309,7 +309,7 @@ The Klobuchar coefficients are broadcast fresh every day, yet the model still le
 :::
 
 ::: answer
-Anything that is not a smooth function of geomagnetic latitude and local time, repeated the same way every day. That rules out day-to-day swings from solar activity, sudden jumps from geomagnetic storms, the equatorial anomaly's two ridges of extra electrons either side of the magnetic equator (a shape no cubic in latitude can draw), and travelling disturbances. The model is a *climatology* — an average day — not a forecast of the actual one.
+Anything that is not a smooth function of geomagnetic latitude and local time, repeated the same way every day. That rules out day-to-day swings from solar activity, sudden jumps from geomagnetic storms, the equatorial anomaly's two ridges of extra electrons either side of the magnetic equator (a shape no cubic in latitude can draw), and traveling disturbances. The model is a *climatology* — an average day — not a forecast of the actual one.
 :::
 
 ## Summary

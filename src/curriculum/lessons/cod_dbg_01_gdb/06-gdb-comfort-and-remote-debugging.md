@@ -266,7 +266,7 @@ When the target has a different processor from the host (an ARM flight computer 
 For a small microcontroller with no operating system at all, there is nowhere to run gdbserver. Instead a hardware **debug probe** plugs into the board's [[JTAG or SWD|jtag-swd]] pins, and a program on the host, such as OpenOCD, drives the probe and offers a gdb server to your gdb (OpenOCD listens on port 3333 by default). Then `target extended-remote :3333` connects, `monitor reset halt` passes a command straight to OpenOCD, and `load` writes the program into the chip's flash memory. Everything after that is ordinary gdb.
 
 ::: key
-To debug a process on a flight computer you cannot rebuild: run gdbserver on the target, connect a local gdb that has the matching unstripped binary and source (`target remote host:port`), or capture a core dump and analyse it offline against the same build artefacts. That is why build artefacts and symbol files are archived per release.
+To debug a process on a flight computer you cannot rebuild: run gdbserver on the target, connect a local gdb that has the matching unstripped binary and source (`target remote host:port`), or capture a core dump and analyze it offline against the same build artifacts. That is why build artifacts and symbol files are archived per release.
 :::
 
 ::: warning gdbserver trusts whoever connects
@@ -344,9 +344,9 @@ $2 = 3
 Process record is stopped and all execution logs are deleted.
 ```
 
-One `reverse-continue` went straight to the guilty line, in `update`, during cycle 3. Notice the watchpoint report reads backwards too. Travelling back in time, the "old" value is the later one you came from, $-0.8$, and the "new" value is the earlier one, $0.8$.
+One `reverse-continue` went straight to the guilty line, in `update`, during cycle 3. Notice the watchpoint report reads backwards too. Traveling back in time, the "old" value is the later one you came from, $-0.8$, and the "new" value is the earlier one, $0.8$.
 
-Now check the output makes sense. Cycles 0, 1 and 2 multiply each command by $0.8$; cycles 3 and 4 by $-0.8$. So `cmd[0]` ends as $1 \times 0.8^3 \times (-0.8)^2 = 0.8^5 = 0.32768$, and the program printed `cmd[0] = 0.3277`. The two minus signs cancelled, so the command looked healthy while the gain was wrong. This is why checking only the output would never have found this bug.
+Now check the output makes sense. Cycles 0, 1 and 2 multiply each command by $0.8$; cycles 3 and 4 by $-0.8$. So `cmd[0]` ends as $1 \times 0.8^3 \times (-0.8)^2 = 0.8^5 = 0.32768$, and the program printed `cmd[0] = 0.3277`. The two minus signs canceled, so the command looked healthy while the gain was wrong. This is why checking only the output would never have found this bug.
 :::
 
 **rr**, a tool first built at Mozilla for debugging Firefox, takes the same idea much further. `rr record ./gain` runs the program with modest slowdown and saves everything needed to repeat the run exactly: every system call result, every signal, the order the threads ran in. `rr replay` then opens gdb on that recording, with every command from this module, reverse ones included. Every replay has the same addresses, the same thread order and the same bug.

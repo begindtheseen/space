@@ -127,7 +127,7 @@ $$
 Read them "B dot T" and "B dot R". They are the numbers a targeting solution reports and controls. Because the two axes are at right angles, Pythagoras gives back the aim distance: $\sqrt{(B\cdot T)^2 + (B\cdot R)^2} = b$.
 
 ::: key The B-plane
-The B-plane is the plane through the target body center perpendicular to the incoming asymptote $\mathbf{v}_\infty$. The aim point is described by $B\cdot R$ and $B\cdot T$, which behave almost linearly with respect to a correction manoeuvre — which is why interplanetary targeting is done there rather than in position space.
+The B-plane is the plane through the target body center perpendicular to the incoming asymptote $\mathbf{v}_\infty$. The aim point is described by $B\cdot R$ and $B\cdot T$, which behave almost linearly with respect to a correction maneuver — which is why interplanetary targeting is done there rather than in position space.
 :::
 
 ::: example Building the B-plane axes and reading off coordinates
@@ -152,7 +152,7 @@ $$
 
 ## Why flight teams aim in the B-plane
 
-Between launch and arrival, a probe fixes its path with small **trajectory correction manoeuvres**, the burns of the last lesson in this module. Each one is a Newton step, exactly like differential correction: predict the miss, use the sensitivity matrix to find the $\Delta v$ that removes it, burn, repeat. A Newton step works beautifully when the thing you are aiming at responds to the burn almost in a straight line, and badly when it bends.
+Between launch and arrival, a probe fixes its path with small **trajectory correction maneuvers**, the burns of the last lesson in this module. Each one is a Newton step, exactly like differential correction: predict the miss, use the sensitivity matrix to find the $\Delta v$ that removes it, burn, repeat. A Newton step works beautifully when the thing you are aiming at responds to the burn almost in a straight line, and badly when it bends.
 
 **The B-plane coordinates respond almost in a straight line.** The B-plane is built from the far-away, straight part of the approach. A small burn weeks out slides that straight line sideways by an amount proportional to the burn. So $B\cdot T$ and $B\cdot R$ move in proportion to $\Delta v$, and one Newton step lands almost exactly on target.
 

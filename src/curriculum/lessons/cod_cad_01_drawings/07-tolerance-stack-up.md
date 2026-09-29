@@ -4,13 +4,14 @@ title: Tolerance stack-up — worst case and root-sum-square
 minutes: 24
 covers:
   - 'Tolerance stack-up: worst case versus root-sum-square'
+  - 'Datums and datum feature symbols (introduction)'
 ---
 
 Stack five books on a shelf. Each book is "about 3 cm" thick, but no two are exactly the same. Some are a millimeter fat, some a millimeter thin. Now ask: will the stack fit under a shelf that is 15.5 cm high? If every book happens to be fat, the stack is 15.5 cm and it only just fits. If they are a mix, it fits easily. The small differences in each book add up into one bigger difference in the whole stack.
 
 Engineers call this a **[[tolerance stack-up|stack-up-word]]** — working out how the small allowed errors of several parts add up along a chain of parts. Last lesson you met the **tolerance** on a single dimension: the amount a measured size may differ from its **nominal** (the ideal size written on the drawing) and still pass inspection. This lesson asks what happens when parts with tolerances are bolted together. There are two standard ways to add them up. One assumes the worst. The other assumes the statistics of real factories. Knowing which to quote, and when, is a judgment a good engineer has to be able to defend.
 
-For a guidance, navigation and control (GNC) engineer this is not a mechanical side issue. A star tracker — a camera that works out which way a spacecraft points by recognising star patterns — sits on a bracket, on a panel, on the spacecraft structure. Every one of those parts adds a little tilt. The sum of those tilts is how wrong the spacecraft's idea of its own direction can be, before any software runs at all.
+For a guidance, navigation and control (GNC) engineer this is not a mechanical side issue. A star tracker — a camera that works out which way a spacecraft points by recognizing star patterns — sits on a bracket, on a panel, on the spacecraft structure. Every one of those parts adds a little tilt. The sum of those tilts is how wrong the spacecraft's idea of its own direction can be, before any software runs at all.
 
 ## Datums: where the measuring starts
 
@@ -166,7 +167,7 @@ Quote worst case when the interface is safety-critical, when the number of contr
 :::
 
 ::: warning RSS is a bet, not a discount
-People reach for RSS because the number is smaller and the drawings get easier. That is backwards. RSS is a bet that the factory behaves like the bell curve. If you quote RSS, write down why the bet is safe: how many contributors, why they are independent, and what happens to the few assemblies that fall outside. Some teams also multiply the RSS answer by a safety factor such as 1.5 to cover parts that are not centred in their bands.
+People reach for RSS because the number is smaller and the drawings get easier. That is backwards. RSS is a bet that the factory behaves like the bell curve. If you quote RSS, write down why the bet is safe: how many contributors, why they are independent, and what happens to the few assemblies that fall outside. Some teams also multiply the RSS answer by a safety factor such as 1.5 to cover parts that are not centered in their bands.
 :::
 
 ## From millimeters to angles

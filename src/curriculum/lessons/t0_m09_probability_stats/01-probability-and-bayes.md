@@ -6,7 +6,7 @@ covers:
   - sample spaces, conditional probability, Bayes theorem
 ---
 
-Every sensor on a vehicle lies a little. A gyro reports a turning rate that is not quite the true rate. A GNSS receiver (the satellite-navigation box, like the GPS in a phone) reports a position a few metres off. Now and then a star tracker matches the wrong pattern of stars and reports an attitude that is completely wrong.
+Every sensor on a vehicle lies a little. A gyro reports a turning rate that is not quite the true rate. A GNSS receiver (the satellite-navigation box, like the GPS in a phone) reports a position a few meters off. Now and then a star tracker matches the wrong pattern of stars and reports an attitude that is completely wrong.
 
 Navigation is the job of combining these imperfect reports into a best guess of where the vehicle is and which way it points — plus an honest statement of how unsure that guess is. Probability is the language that turns "imperfect", "best" and "honest" into numbers you can compute with.
 
@@ -156,7 +156,7 @@ The pieces have names, and the same names are used throughout estimation:
 
 - $P(A)$ is the **prior**: what you believed about $A$ before seeing $B$.
 - $P(B \mid A)$ is the **likelihood**: how probable the observation $B$ is if $A$ is true. It is the sensor model, run forwards, evaluated at the observation you actually got.
-- $P(B)$ is the **evidence**: the overall chance of the observation. It does not depend on which hypothesis you are testing, so when you only compare hypotheses it is a fixed rescaling number, a **normalising constant**.
+- $P(B)$ is the **evidence**: the overall chance of the observation. It does not depend on which hypothesis you are testing, so when you only compare hypotheses it is a fixed rescaling number, a **normalizing constant**.
 - $P(A \mid B)$ is the **posterior**: what you believe about $A$ after seeing $B$.
 
 ::: key Bayes' theorem

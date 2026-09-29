@@ -361,7 +361,7 @@ Aviation safety researchers use **mode confusion** for the situation where the p
 :::
 
 ::: context cross-product Thirty changes on one grid
-Rows are the mode you are in; columns are the mode requested. Blue cells are the nominal transitions, red the safing edges, orange the one commanded recovery, grey the always-allowed "stay put." Every blank cell is one of the 18 changes the test must see refused.
+Rows are the mode you are in; columns are the mode requested. Blue cells are the nominal transitions, red the safing edges, orange the one commanded recovery, gray the always-allowed "stay put." Every blank cell is one of the 18 changes the test must see refused.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">

@@ -6,9 +6,9 @@ covers:
   - order-of-magnitude (Fermi) estimation
 ---
 
-In 1945, at the first test of an atomic bomb, the physicist [[Enrico Fermi|who-fermi]] dropped scraps of paper as the blast wave passed. From how far they blew, he estimated the bomb's energy at about ten kilotons (as much as ten thousand tonnes of TNT explosive). The instruments later said about twenty. He was within a factor of two, in seconds, with no equipment. That is the standard an **order-of-magnitude estimate** — also called a **[[Fermi estimate|piano-tuners]]** — aims at. Not the exact answer, but the right *size* of answer, with every assumption written down.
+In 1945, at the first test of an atomic bomb, the physicist [[Enrico Fermi|who-fermi]] dropped scraps of paper as the blast wave passed. From how far they blew, he estimated the bomb's energy at about ten kilotons (as much as ten thousand metric tons of TNT explosive). The instruments later said about twenty. He was within a factor of two, in seconds, with no equipment. That is the standard an **order-of-magnitude estimate** — also called a **[[Fermi estimate|piano-tuners]]** — aims at. Not the exact answer, but the right *size* of answer, with every assumption written down.
 
-In guidance and navigation work you will do this daily. A simulation prints a stage propellant mass of $4100\,\mathrm{t}$. Is that believable, or did a unit slip? A colleague proposes a manoeuvre needing $3\,\mathrm{km/s}$ of speed change. Roughly how much of the spacecraft would be propellant? Before trusting a computer, a spreadsheet or a supplier, you should be able to say what the number ought to be, within a factor of a few, from things you already know.
+In guidance and navigation work you will do this daily. A simulation prints a stage propellant mass of $4100\,\mathrm{t}$. Is that believable, or did a unit slip? A colleague proposes a maneuver needing $3\,\mathrm{km/s}$ of speed change. Roughly how much of the spacecraft would be propellant? Before trusting a computer, a spreadsheet or a supplier, you should be able to say what the number ought to be, within a factor of a few, from things you already know.
 
 There is no new maths here — only scientific notation, units, exponents, logarithms and the habit of writing assumptions down. What is new is the attitude: break the unknown into pieces you can guess, guess each honestly, multiply, and ask which guess the answer depends on most. The maths is deliberately rough; the care goes into the bookkeeping. This lesson ends with the skill the module's Fermi exercise grades you on: naming the one assumption that dominates your error.
 
@@ -16,7 +16,7 @@ There is no new maths here — only scientific notation, units, exponents, logar
 
 Here is a problem you might meet before a school party: how many pizzas should you order? You do not know the answer, but you can guess the pieces. About $90$ kids are coming. Each eats about $3$ slices. A pizza has $8$ slices. So you need about $90 \times 3 / 8 \approx 34$ pizzas. No guess is exact, but the answer is clearly "a few dozen", not "five" or "five hundred". That is a Fermi estimate. Engineers do it in five steps.
 
-**1. State the quantity precisely, with its unit.** "How big is a first stage?" is not a question. "What is the propellant mass of a first stage, in tonnes?" is. The unit tells you what your chain of factors must multiply out to. **Dimensional homogeneity** — every term in an equation must have the same units — will then police your working.
+**1. State the quantity precisely, with its unit.** "How big is a first stage?" is not a question. "What is the propellant mass of a first stage, in metric tons?" is. The unit tells you what your chain of factors must multiply out to. **Dimensional homogeneity** — every term in an equation must have the same units — will then police your working.
 
 **2. [[Break it into factors|estimate-tree]] you can estimate.** Rewrite the unknown as numbers multiplied or divided together, each one something you know or can guess to within a factor of two or three. A mass is a volume times a density. A volume is a cross-section times a length. A rate times a time is an amount. Write the chain with units, and check the units cancel down to the one you want. If they do not, the breakdown is wrong, however sensible the numbers look.
 
@@ -30,7 +30,7 @@ Another: the **[[ullage|ullage-word]]** of a tank is the empty space left above 
 
 **4. Multiply, keeping the exponents separate.** Use scientific notation, or add $\log_{10}$ values, as in the last lesson. Keep two figures while you work and report one or two at the end. A Fermi estimate reported to four figures contradicts itself.
 
-**5. Check and criticise.** Compare with anything you know: a published value, a different breakdown, an extreme case. Then list your assumptions. For each, ask: if this guess were off by as much as it plausibly could be, how much would the answer move? The one that moves the answer most is the **dominant assumption**. The honest way to state a result is "about $X$, dominated by my guess of $Y$".
+**5. Check and criticize.** Compare with anything you know: a published value, a different breakdown, an extreme case. Then list your assumptions. For each, ask: if this guess were off by as much as it plausibly could be, how much would the answer move? The one that moves the answer most is the **dominant assumption**. The honest way to state a result is "about $X$, dominated by my guess of $Y$".
 
 ::: example Heartbeats in a lifetime
 How many times does a heart beat in a lifetime? The unit is plain "beats", a count.
@@ -41,7 +41,7 @@ How many times does a heart beat in a lifetime? The unit is plain "beats", a cou
 
 **Multiply:** $70 \times 5.3 \times 10^{5} \times 80$. The plain numbers give $70 \times 80 = 5600$, and $5600 \times 5.3 = 29\,680$. Put the powers of ten back and the total is about $2.97 \times 10^{9}$: roughly three billion beats.
 
-**Criticise:** the minutes per year is exact, so it adds no error. The lifespan might be $70$ to $90$ years — about $\pm 12\%$. The heart rate might average anywhere from $60$ to $100$ over a life that includes sleep and sport — about $-14\%$ to $+43\%$. The heart rate is the dominant assumption. If you wanted a better answer, that is the one guess worth improving.
+**Criticize:** the minutes per year is exact, so it adds no error. The lifespan might be $70$ to $90$ years — about $\pm 12\%$. The heart rate might average anywhere from $60$ to $100$ over a life that includes sleep and sport — about $-14\%$ to $+43\%$. The heart rate is the dominant assumption. If you wanted a better answer, that is the one guess worth improving.
 :::
 
 ## Why rough factors give a usable product
@@ -92,7 +92,7 @@ A Fermi estimate is only as fast as your anchors. Everything below has appeared 
 ## Worked estimates
 
 ::: example The mass of Earth's atmosphere
-Air pressure is the weight of all the air above you, pressing down on each square metre. So sea-level pressure is the atmosphere's weight divided by Earth's surface area: $p_0 = m g / A$. Here $m$ is the atmosphere's mass, $g$ is gravity, and $A = 4\pi R^2$ is the area of a sphere of radius $R$.
+Air pressure is the weight of all the air above you, pressing down on each square meter. So sea-level pressure is the atmosphere's weight divided by Earth's surface area: $p_0 = m g / A$. Here $m$ is the atmosphere's mass, $g$ is gravity, and $A = 4\pi R^2$ is the area of a sphere of radius $R$.
 
 **Rearrange** to get the mass: multiply both sides by $A$ and divide by $g$, giving $m = p_0 A / g$.
 
@@ -106,7 +106,7 @@ $$
 
 **Compare:** the accepted value is $5.15 \times 10^{18}\,\mathrm{kg}$, so the estimate is $2\%$ high — better than Fermi accuracy, because every factor was well known.
 
-**Criticise:** the leftover $2\%$ comes from an assumption I did not state — that the ground is at sea level everywhere. Land stands above the sea, so the average pressure at the ground is a few percent below $p_0$, and the atmosphere weighs a little less. The *method* found the dominant assumption for us: the only guess in the chain was the one that turned out to be off.
+**Criticize:** the leftover $2\%$ comes from an assumption I did not state — that the ground is at sea level everywhere. Land stands above the sea, so the average pressure at the ground is a few percent below $p_0$, and the atmosphere weighs a little less. The *method* found the dominant assumption for us: the only guess in the chain was the one that turned out to be off.
 :::
 
 ::: example Propellant of a first stage from thrust and burn time
@@ -132,12 +132,12 @@ $$
 
 **Compare:** the published propellant load for the vehicle these numbers describe is about $411\,\mathrm{t}$. The estimate is $3\%$ low.
 
-**Criticise.** The thrust and burn time are published figures, good to a few percent. The $I_{sp}$ is the guess. At sea level this engine's $I_{sp}$ is closer to $282\,\mathrm{s}$ ($v_e = 2770\,\mathrm{m/s}$), which gives $m_p = 7.6 \times 10^{6} \times 160 / 2770 = 440\,\mathrm{t}$, $7\%$ high. In vacuum it is about $311\,\mathrm{s}$. The truth is in between, because both thrust and $I_{sp}$ rise as the rocket climbs out of the air, and I used a fixed thrust with an in-between $I_{sp}$.
+**Criticize.** The thrust and burn time are published figures, good to a few percent. The $I_{sp}$ is the guess. At sea level this engine's $I_{sp}$ is closer to $282\,\mathrm{s}$ ($v_e = 2770\,\mathrm{m/s}$), which gives $m_p = 7.6 \times 10^{6} \times 160 / 2770 = 440\,\mathrm{t}$, $7\%$ high. In vacuum it is about $311\,\mathrm{s}$. The truth is in between, because both thrust and $I_{sp}$ rise as the rocket climbs out of the air, and I used a fixed thrust with an in-between $I_{sp}$.
 
 So the dominant assumption is the effective exhaust velocity: its plausible range, $2.8$–$3.1\,\mathrm{km/s}$, moves the answer by about $\pm 5\%$. This is also an independent check on the size-based estimate the module's exercise asks for. Two different breakdowns that agree to ten percent are worth more than either alone.
 :::
 
-First, [[the parts of a liquid-fuelled stage|stage-anatomy]]. It is mostly two tall **tanks**, one of fuel and one of oxidizer, stacked end to end. Each tank is a cylinder closed by rounded **domes** at top and bottom, and the curve of a dome wastes some length. Between the two tanks there is often an **intertank** — a short empty section of hull joining them. Some stages avoid it with a **[[common bulkhead|common-bulkhead]]**: one shared dome that is the bottom of one tank and the top of the other, which saves length and mass. Below the tanks sit the engines and the **thrust structure** that carries their push into the stage. And each tank keeps some ullage, the empty space above the liquid.
+First, [[the parts of a liquid-fueled stage|stage-anatomy]]. It is mostly two tall **tanks**, one of fuel and one of oxidizer, stacked end to end. Each tank is a cylinder closed by rounded **domes** at top and bottom, and the curve of a dome wastes some length. Between the two tanks there is often an **intertank** — a short empty section of hull joining them. Some stages avoid it with a **[[common bulkhead|common-bulkhead]]**: one shared dome that is the bottom of one tank and the top of the other, which saves length and mass. Below the tanks sit the engines and the **thrust structure** that carries their push into the stage. And each tank keeps some ullage, the empty space above the liquid.
 
 ::: example Propellant of a stage from its dimensions
 A large kerosene–oxygen first stage is $10.1\,\mathrm{m}$ across and $42\,\mathrm{m}$ long. Estimate its propellant mass.
@@ -166,7 +166,7 @@ almost exactly the density of water. (The same formula with the module exercise'
 
 **Compare:** the stage described is [[the Saturn V first stage|s-ic]], whose published propellant load is about $2150\,\mathrm{t}$. The estimate is $11\%$ high — well inside a factor of $1.5$.
 
-**Criticise.** The dominant assumption is the tank fraction. At $0.6$ the estimate is $2050\,\mathrm{t}$; at $0.8$ it is $2730\,\mathrm{t}$. That one guess swings the answer by about $\pm 15\%$, while the density is known to a percent and the cylinder volume to a few. To do better, I would spend all my effort on the tank fraction — measuring where the tanks end on a photograph of the stage — and none on the density. The estimate came out high, which says the true tank fraction is nearer $0.63$. Indeed, that stage's domed tank ends and intertank take up more length than a $0.7$ guess allows.
+**Criticize.** The dominant assumption is the tank fraction. At $0.6$ the estimate is $2050\,\mathrm{t}$; at $0.8$ it is $2730\,\mathrm{t}$. That one guess swings the answer by about $\pm 15\%$, while the density is known to a percent and the cylinder volume to a few. To do better, I would spend all my effort on the tank fraction — measuring where the tanks end on a photograph of the stage — and none on the density. The estimate came out high, which says the true tank fraction is nearer $0.63$. Indeed, that stage's domed tank ends and intertank take up more length than a $0.7$ guess allows.
 :::
 
 ::: warning Do not tune the estimate to the answer
@@ -179,7 +179,7 @@ Besides comparing with a published number, three cheap checks catch most bad est
 
 **Units check.** If the units of your chain do not multiply out to the unit you asked for, stop. This catches a forgotten factor faster than staring at the numbers.
 
-**Order-of-magnitude anchors.** A first stage of a few hundred tonnes. A satellite of a few tonnes. An atmosphere of $10^{18}\,\mathrm{kg}$ against an Earth of $6 \times 10^{24}\,\mathrm{kg}$ — one millionth. If a result lands far from every anchor, either you have learned something or made a mistake — and the mistake is far more likely.
+**Order-of-magnitude anchors.** A first stage of a few hundred metric tons. A satellite of a few metric tons. An atmosphere of $10^{18}\,\mathrm{kg}$ against an Earth of $6 \times 10^{24}\,\mathrm{kg}$ — one millionth. If a result lands far from every anchor, either you have learned something or made a mistake — and the mistake is far more likely.
 
 **Limiting cases.** Push a guess to an extreme and see whether the answer behaves. If the tank fraction went to $1$, the stage would be all propellant, and the estimate should rise to $3400\,\mathrm{t}$ — which it does. If the mixture ratio went to zero, the density should fall to that of pure kerosene, and the formula gives exactly that. A breakdown that misbehaves at the extremes is wrong in the middle too.
 
@@ -250,7 +250,7 @@ So the product is uncertain by a factor of $10^{0.52} = 3.3$ — almost exactly 
 :::
 
 ::: check
-Bracket the mass of the engine on a small liquid-fuelled upper stage between "certainly too light" and "certainly too heavy", and give a Fermi value. Then say what you would look for to tighten it.
+Bracket the mass of the engine on a small liquid-fueled upper stage between "certainly too light" and "certainly too heavy", and give a Fermi value. Then say what you would look for to tighten it.
 :::
 
 ::: answer
@@ -264,7 +264,7 @@ To tighten it, look for the thrust-to-weight ratio of engines in that class — 
 | Idea | Statement |
 | --- | --- |
 | Goal | the right size of answer, within a factor of two or three, with assumptions stated |
-| Steps | define with units → break into estimable factors → estimate each → multiply with exponents separate → check and criticise |
+| Steps | define with units → break into estimable factors → estimate each → multiply with exponents separate → check and criticize |
 | Bracketing | geometric mean $\sqrt{ab}$ of a sure-low and a sure-high bound |
 | Error growth | logs add: worst $f^{k}$, typical $f^{\sqrt{k}}$ for $k$ factors each uncertain by $f$ |
 | Dominant assumption | the factor whose plausible range moves the answer most; spend effort there |
@@ -347,7 +347,7 @@ Stand on a line and flip a coin: heads, one step right; tails, one step left. Af
 :::
 
 ::: context stage-anatomy Inside a stage
-A liquid-fuelled first stage, drawn lying on its side. In many kerosene stages, including the Saturn V's first stage and Falcon 9's, the oxidizer tank sits on top.
+A liquid-fueled first stage, drawn lying on its side. In many kerosene stages, including the Saturn V's first stage and Falcon 9's, the oxidizer tank sits on top.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 152" font-family="Inter, Arial, sans-serif">

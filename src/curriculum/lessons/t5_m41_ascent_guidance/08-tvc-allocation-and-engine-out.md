@@ -22,16 +22,16 @@ With all nine running, every ring engine has a partner directly across the ring.
 
 Now one ring engine dies. Its partner across the ring has nobody to balance it, and the rocket starts to swing.
 
-Here is a neat way to find the size of the swing. The broken pattern is exactly the same as "all nine engines still firing" *plus* a pretend force at the dead engine's spot, equal to its thrust, pointing the opposite way (forward). Add that pretend force to the full pattern and the dead engine's thrust is cancelled — which is what really happened. The full pattern makes no moment. So the whole moment comes from the pretend force: size $T_{\text{eng}}$, at sideways distance $R$ from the centerline.
+Here is a neat way to find the size of the swing. The broken pattern is exactly the same as "all nine engines still firing" *plus* a pretend force at the dead engine's spot, equal to its thrust, pointing the opposite way (forward). Add that pretend force to the full pattern and the dead engine's thrust is canceled — which is what really happened. The full pattern makes no moment. So the whole moment comes from the pretend force: size $T_{\text{eng}}$, at sideways distance $R$ from the centerline.
 
 $$
 M_{\text{fail}} = T_{\text{eng}}\, R .
 $$
 
-Read it "M fail equals T eng times R": the lost engine's thrust times its distance from the centerline. The unit is newton-metres, $\mathrm{N\cdot m}$. It is a pitch or yaw moment — the kind that swings the nose sideways — and it does not depend on how far the engines are from the **[[center of mass|center-of-mass]]** along the rocket, because the pretend force points along the axis.
+Read it "M fail equals T eng times R": the lost engine's thrust times its distance from the centerline. The unit is newton-meters, $\mathrm{N\cdot m}$. It is a pitch or yaw moment — the kind that swings the nose sideways — and it does not depend on how far the engines are from the **[[center of mass|center-of-mass]]** along the rocket, because the pretend force points along the axis.
 
 ::: key
-A single missing engine on a symmetric ring produces a residual moment $M_{\text{fail}} = T_{\text{eng}} R$. It equals the moment of a pretend thrust the size of the lost engine's, placed at its old position and pointing the opposite way, because that is exactly what the loss removes from an otherwise self-cancelling pattern.
+A single missing engine on a symmetric ring produces a residual moment $M_{\text{fail}} = T_{\text{eng}} R$. It equals the moment of a pretend thrust the size of the lost engine's, placed at its old position and pointing the opposite way, because that is exactly what the loss removes from an otherwise self-canceling pattern.
 :::
 
 ::: example The size of the imbalance
@@ -46,11 +46,11 @@ It appears the instant the engine drops out, with nothing yet fighting it.
 **Sanity check.** That is like a car's weight (about $13\ \mathrm{kN}$) hanging on the end of a $100\ \mathrm{m}$ pole. Enormous — but the remaining engines are enormous too, as the next section shows.
 :::
 
-## Cancelling it: tilting the engines
+## Canceling it: tilting the engines
 
 The engines that are still running cancel the twist by **[[gimbaling|gimbal]]** — tilting on a pivot so that their thrust points slightly off the rocket's axis. A tilted thrust has a small *sideways* part, $T_{\text{eng}}\sin\delta$, where $\delta$ (read "delta") is the tilt angle.
 
-That sideways push acts at the tail, at the engine's pivot. Here is the crucial point: its lever arm is *not* the ring radius $R$. A sideways push at the tail turns the rocket about its center of mass, and the lever arm is the long distance $L$ from the center of mass down to the engines' pivot plane. For a launch vehicle, $L$ is tens of metres, while $R$ is a metre or two. That mismatch is what makes the fix cheap.
+That sideways push acts at the tail, at the engine's pivot. Here is the crucial point: its lever arm is *not* the ring radius $R$. A sideways push at the tail turns the rocket about its center of mass, and the lever arm is the long distance $L$ from the center of mass down to the engines' pivot plane. For a launch vehicle, $L$ is tens of meters, while $R$ is a meter or two. That mismatch is what makes the fix cheap.
 
 Spread the correction over $N$ engines, each tilted by the same $\delta$. Their combined moment is $N\,T_{\text{eng}}\sin\delta\,L$. Set it equal to the failure moment, $T_{\text{eng}}R$. The engine thrust cancels from both sides:
 
@@ -89,7 +89,7 @@ Real **[[control allocation|control-allocation]]** logic spreads the correction 
 One geometric point is worth making explicit. The center engine sits *on* the centerline, so $R = 0$ for it. Firing straight back, it makes no moment at all — its mere presence cannot balance a missing ring engine. But it gimbals like any other engine, and a sideways push at the tail works through the lever arm $L$, whether the engine is on the centerline or off it. Keep the two mechanisms apart: a *static* imbalance comes from *where* thrust acts (lever arm $R$); an *active* correction comes from *which way* thrust points (lever arm $L$).
 
 ::: warning
-Do not treat allocation as solved once the moment is cancelled. Every degree of tilt spent on engine-out compensation is a degree not available a moment later for ordinary steering and load relief. A design that leaves too little margin after one failure has swapped one problem for a smaller, delayed version of the same problem — due the next time a gust arrives.
+Do not treat allocation as solved once the moment is canceled. Every degree of tilt spent on engine-out compensation is a degree not available a moment later for ordinary steering and load relief. A design that leaves too little margin after one failure has swapped one problem for a smaller, delayed version of the same problem — due the next time a gust arrives.
 :::
 
 Some vehicles take a blunter route: when one engine fails, they also shut down its partner across the ring, so the pattern stays balanced. The Soviet **[[N1 rocket|n1-kord]]** was designed that way. It trades more lost thrust for no steady imbalance at all.
@@ -151,7 +151,7 @@ Now the real thing. Take the module's two-stage vehicle, whose first stage burns
 
 **Compare.** $1080.4/53.8 \approx 20$. The same single-engine loss costs twenty times more at 60% of the burn than at 90%.
 
-Insertion accuracy barely moves in any case — the radius error stays under a metre — because guidance closes the gap regardless. Reserve is what pays. An early failure leaves the rocket flying underpowered for much longer, fighting gravity with less push. Time spent degraded is the expensive part, not the failure itself.
+Insertion accuracy barely moves in any case — the radius error stays under a meter — because guidance closes the gap regardless. Reserve is what pays. An early failure leaves the rocket flying underpowered for much longer, fighting gravity with less push. Time spent degraded is the expensive part, not the failure itself.
 :::
 
 ## When the reserve is not enough
@@ -167,7 +167,7 @@ The nominal flight to 400 km burns $93{,}943\ \mathrm{kg}$ of stage 2's $98{,}90
 
 **The verdict.** The target needs $343.3\ \mathrm{s}$; the tanks can give $336.1\ \mathrm{s}$. Short by $1966\ \mathrm{kg}$, about $7.2\ \mathrm{s}$. The 400 km orbit is unreachable, and guidance can say so before the burn even starts.
 
-**What *is* reachable?** Runs of the same vehicle to lower circular targets show the burn shrinks by about $0.197\ \mathrm{s}$ — about $54\ \mathrm{kg}$ — for every kilometre lower. To save $1966\ \mathrm{kg}$ the target must drop by $1966/53.9 \approx 36\ \mathrm{km}$. So about $364\ \mathrm{km}$ is the edge.
+**What *is* reachable?** Runs of the same vehicle to lower circular targets show the burn shrinks by about $0.197\ \mathrm{s}$ — about $54\ \mathrm{kg}$ — for every kilometer lower. To save $1966\ \mathrm{kg}$ the target must drop by $1966/53.9 \approx 36\ \mathrm{km}$. So about $364\ \mathrm{km}$ is the edge.
 
 **Pick a fallback with margin.** A $350\ \mathrm{km}$ target needs about $50 \times 53.9 = 2694\ \mathrm{kg}$ less than the nominal, so $93{,}943 - 2694 = 91{,}249\ \mathrm{kg}$. That leaves $91{,}977 - 91{,}249 = 728\ \mathrm{kg}$, about $2.7\ \mathrm{s}$ of burn, as a new reserve. Retargeted there, guidance converges exactly as cleanly as in every nominal case.
 

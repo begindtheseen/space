@@ -461,7 +461,7 @@ The first example's two layouts, drawn to scale over two 64-byte lines. `Togethe
 </svg>
 ```
 
-Each coloured box is one 8-byte counter, drawn to scale; the vertical line marks the boundary at byte 64.
+Each colored box is one 8-byte counter, drawn to scale; the vertical line marks the boundary at byte 64.
 :::
 
 ::: context feature-macro Asking the library what it has
@@ -473,5 +473,5 @@ ABI stands for application binary interface. The API is what you can write in so
 :::
 
 ::: context adjacent-line Why some libraries pad to 128
-Intel documents a prefetcher in its cores that, on a miss, may also fetch the neighbouring line so the pair forms an aligned 128-byte block. Two threads writing in neighbouring lines can then still disturb each other a little. For that reason some concurrency libraries pad hot fields to 128 bytes on x86-64 instead of 64. Some ARM processors, including Apple's M-series chips, use 128-byte lines outright. This is one more reason the right number is a property of the processor you fly, checked on that processor.
+Intel documents a prefetcher in its cores that, on a miss, may also fetch the neighboring line so the pair forms an aligned 128-byte block. Two threads writing in neighboring lines can then still disturb each other a little. For that reason some concurrency libraries pad hot fields to 128 bytes on x86-64 instead of 64. Some ARM processors, including Apple's M-series chips, use 128-byte lines outright. This is one more reason the right number is a property of the processor you fly, checked on that processor.
 :::

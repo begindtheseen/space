@@ -15,7 +15,7 @@ There is no single right answer. Interviewers probe three things: do your choice
 The subject is narrow enough to prepare completely. This lesson ends with the design the module's exercise asks for: a vehicle with **[[three IMUs, two GNSS receivers and a star tracker|nav-sensors]]** — inertial units, satellite-navigation receivers, and a camera that navigates by the stars.
 
 ::: key
-What the systems round probes: real-time behaviour, embedded constraints, redundancy and voting, fault detection and isolation, sensor fusion architecture, and timing budgets. The question is usually not what is optimal but what you would actually fly and why.
+What the systems round probes: real-time behavior, embedded constraints, redundancy and voting, fault detection and isolation, sensor fusion architecture, and timing budgets. The question is usually not what is optimal but what you would actually fly and why.
 :::
 
 ## Real-time behavior

@@ -218,9 +218,9 @@ $$
 
 Six rows, as last lesson found. For a left join, add one row for each left key value with no partner: Dorado adds 1, giving 7 — also as last lesson found.
 
-Three consequences are worth memorising:
+Three consequences are worth memorizing:
 
-- **A "one" side on the right can never multiply the left.** If B's join columns are unique, every $n_B(k)$ is 0 or 1, so an inner join returns *at most* as many rows as A has, and a left join returns *exactly* as many. That is why labelling readings with satellite names kept exactly six readings.
+- **A "one" side on the right can never multiply the left.** If B's join columns are unique, every $n_B(k)$ is 0 or 1, so an inner join returns *at most* as many rows as A has, and a left join returns *exactly* as many. That is why labeling readings with satellite names kept exactly six readings.
 - **The "one" side's rows get repeated.** In the same join, Aurora's single satellite row appears three times, once per reading. That repetition is called **fan-out** — one row fanning out into several.
 - **Many-to-many multiplies.** When both $n_A(k)$ and $n_B(k)$ can exceed 1, the output for that key is their product, which can be far larger than either table.
 
@@ -337,7 +337,7 @@ Any row here means `contact_plan` is *not* unique on `sat_id`. Joining it to rea
 Before a join, name each side's key and say whether the join is one-to-one, one-to-many or many-to-many. Predict the row count with $\sum_k n_A(k)\,n_B(k)$. After the join, compare the real count with the prediction. A count that rose where it should have stayed the same means fan-out.
 :::
 
-Fan-out is not a bug by itself. Labelling six readings with satellite names *must* repeat Aurora's name three times; that is what the question asks for. It becomes a bug when you **add things up** afterwards, and the repeated rows get counted as if they were separate. Lesson 04 shows that trap and the ways out of it. First, next lesson teaches the adding-up itself.
+Fan-out is not a bug by itself. Labeling six readings with satellite names *must* repeat Aurora's name three times; that is what the question asks for. It becomes a bug when you **add things up** afterwards, and the repeated rows get counted as if they were separate. Lesson 04 shows that trap and the ways out of it. First, next lesson teaches the adding-up itself.
 
 ## Check yourself
 

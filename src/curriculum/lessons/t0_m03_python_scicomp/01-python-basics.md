@@ -334,7 +334,7 @@ for mf in [400e3, 300e3, 200e3, 100e3, 25e3]:
 
 Check the last row step by step. The mass ratio is $549{,}054 / 25{,}000 \approx 22.0$. Its natural logarithm is $\ln 22.0 \approx 3.09$. The front factor is $I_{sp} g_0 = 311 \times 9.80665 \approx 3050\,\mathrm{m/s}$. Multiply: $3050 \times 3.09 \approx 9420\,\mathrm{m/s}$, about $9.4\,\mathrm{km/s}$.
 
-That is roughly the $\Delta v$ needed to reach low Earth orbit from the ground: the $7.7\,\mathrm{km/s}$ orbital speed plus the gravity and drag losses on the way up. The logarithm makes the rows grow unevenly: halving the final mass from $200$ to $100$ tonnes adds about $2.1\,\mathrm{km/s}$, and every further halving adds the same again.
+That is roughly the $\Delta v$ needed to reach low Earth orbit from the ground: the $7.7\,\mathrm{km/s}$ orbital speed plus the gravity and drag losses on the way up. The logarithm makes the rows grow unevenly: halving the final mass from $200$ to $100$ metric tons adds about $2.1\,\mathrm{km/s}$, and every further halving adds the same again.
 :::
 
 ::: key

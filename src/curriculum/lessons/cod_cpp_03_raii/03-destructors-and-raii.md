@@ -68,7 +68,7 @@ Leaving all those functions on the way up is called **[[stack unwinding|unwindin
 So an exception is just another way out of a scope, and the destructors run on that way out as on any other.
 
 ::: example Watching the order, with and without an exception
-`Tracer` prints when it is built and when it is destroyed. `Stage` holds two `Tracer` members, given their names by default member initialisers.
+`Tracer` prints when it is built and when it is destroyed. `Stage` holds two `Tracer` members, given their names by default member initializers.
 
 ```cpp
 #include <cstdio>
@@ -149,7 +149,7 @@ Two more rules and a warning complete the picture.
 ::: warning An exception nobody catches may skip every destructor
 The guarantee is for exceptions that *are* caught. If an exception escapes `main`, the program calls `std::terminate`, and whether the stack is unwound first is up to the implementation. With g++ on Linux, this program never prints `released`:
 
-```cpp
+```cpp fragment
 struct T { ~T() { std::puts("released"); } };
 int main() { T t; throw std::runtime_error("nobody catches this"); }
 ```
@@ -162,7 +162,7 @@ It prints `terminate called after throwing an instance of 'std::runtime_error'` 
 Now the idea, stated precisely.
 
 ::: key
-**RAII — resource acquisition is initialisation.** Every resource is owned by an object. The constructor acquires it; the destructor releases it. Because destructors run automatically at scope exit — by `return`, by `break`, by the closing brace, or by an exception — the resource is released exactly once and cannot leak.
+**RAII — resource acquisition is initialization.** Every resource is owned by an object. The constructor acquires it; the destructor releases it. Because destructors run automatically at scope exit — by `return`, by `break`, by the closing brace, or by an exception — the resource is released exactly once and cannot leak.
 :::
 
 A **resource** here means anything that must be given back: heap memory, an open file, a locked mutex, a network socket, a hardware channel you have claimed, even "the time I started measuring". Imagine the code without it: every function that opens a file would need a `fclose` before every `return` and every point that could throw — and some later edit would add a `return` and forget one.
@@ -341,7 +341,7 @@ delete through Sensor*:
 
 `read()` was virtual, so the call found `StarTracker`'s version and returned 1. But the destructor was not, so `delete` ran only `~Sensor`. `~StarTracker` never ran, so the `Buffer` member was never destroyed: "buffer acquired" has no matching "buffer released". If `Buffer` had owned heap memory or a file, it would have leaked.
 
-That was the *good* outcome. The standard says this is **undefined behaviour**, full stop. Built with AddressSanitizer (`-fsanitize=address`), the same program stops with `new-delete-type-mismatch`, reporting "size of the allocated type: 16 bytes; size of the deallocated type: 8 bytes" — `delete` handed back a `StarTracker`-sized block as if it were a `Sensor`.
+That was the *good* outcome. The standard says this is **undefined behavior**, full stop. Built with AddressSanitizer (`-fsanitize=address`), the same program stops with `new-delete-type-mismatch`, reporting "size of the allocated type: 16 bytes; size of the deallocated type: 8 bytes" — `delete` handed back a `StarTracker`-sized block as if it were a `Sensor`.
 
 **The fix is one word.** Declare the base destructor `virtual`:
 
@@ -369,12 +369,12 @@ Sanity check: every "acquired" now has a "released", and the base is destroyed l
 There is a second correct design. If code should *never* delete a derived object through a base pointer, make the base destructor **`protected` and non-virtual**. `protected` means derived classes may use it but outside code may not. Then `delete s;` on a `Sensor*` does not compile — g++ says `'Sensor::~Sensor()' is protected within this context` — while using a `StarTracker` through a `Sensor&` still works. The mistake becomes impossible instead of merely handled.
 
 ::: key
-Deleting a derived object through a base pointer with a non-virtual destructor is **undefined behaviour**: in practice only the base destructor runs, so derived members leak. Either make the base destructor **virtual**, or make it **protected and non-virtual** to forbid that deletion.
+Deleting a derived object through a base pointer with a non-virtual destructor is **undefined behavior**: in practice only the base destructor runs, so derived members leak. Either make the base destructor **virtual**, or make it **protected and non-virtual** to forbid that deletion.
 :::
 
 The same rule covers smart pointers. A `std::unique_ptr<Sensor>` that owns a `StarTracker` calls `delete` on a `Sensor*` when it dies, so it needs `virtual ~Sensor()` too.
 
-Where does this matter in flight software? **Anywhere an object is deleted through a base pointer** — a list of `std::unique_ptr<Sensor>` built at start-up from a configuration file, say. And it is one more reason many flight teams avoid owning polymorphic objects on the heap at all. A common style creates every object once, at initialisation, as a [[fixed member or static object|static-allocation]], and never deletes anything, so the question never arises. A virtual destructor is still cheap insurance: a class with virtual functions already carries the [[hidden pointer that virtual calls use|vtable-peek]].
+Where does this matter in flight software? **Anywhere an object is deleted through a base pointer** — a list of `std::unique_ptr<Sensor>` built at start-up from a configuration file, say. And it is one more reason many flight teams avoid owning polymorphic objects on the heap at all. A common style creates every object once, at initialization, as a [[fixed member or static object|static-allocation]], and never deletes anything, so the question never arises. A virtual destructor is still cheap insurance: a class with virtual functions already carries the [[hidden pointer that virtual calls use|vtable-peek]].
 
 ## Check yourself
 
@@ -407,7 +407,7 @@ A base class `Actuator` has virtual functions and a public, non-virtual destruct
 :::
 
 ::: answer
-No undefined behaviour today: the dangerous operation, deleting a derived object through a base pointer, never happens. But nothing stops someone adding it tomorrow, perhaps via a `std::unique_ptr<Actuator>`, and g++ would only warn. Either fix is correct. Make the destructor `virtual` — free here, since the class already carries the hidden table pointer — so that such a deletion is safe. Or make it `protected` and non-virtual, so a future `delete` through `Actuator*` is a compile error while use through `Actuator&` is untouched; that states the design ("actuators are never owned polymorphically") in the code itself.
+No undefined behavior today: the dangerous operation, deleting a derived object through a base pointer, never happens. But nothing stops someone adding it tomorrow, perhaps via a `std::unique_ptr<Actuator>`, and g++ would only warn. Either fix is correct. Make the destructor `virtual` — free here, since the class already carries the hidden table pointer — so that such a deletion is safe. Or make it `protected` and non-virtual, so a future `delete` through `Actuator*` is a compile error while use through `Actuator&` is untouched; that states the design ("actuators are never owned polymorphically") in the code itself.
 :::
 
 ## Summary
@@ -429,7 +429,7 @@ No undefined behaviour today: the dangerous operation, deleting a derived object
 The next lesson asks what happens when an object is copied. For a `Vector3` the compiler's copy is perfect; for a class owning a raw pointer it gives two owners of one resource, and you will see exactly why a destructor that is correct for one object becomes a double free for two.
 
 ::: context raii-name Where the awkward name comes from
-The idea and its name come from Bjarne Stroustrup, who created C++, and from the work on making C++ programs safe when exceptions are thrown. "Resource acquisition is initialisation" describes the first half: getting a resource happens as part of building an object. The half that makes it valuable — the release happens as part of destroying it — is left out, and programmers have joked about the name ever since. Some prefer "scope-bound resource management", which says what it does. Other languages borrowed the idea: Python's `with` statement and Rust's ownership rules solve the same problem.
+The idea and its name come from Bjarne Stroustrup, who created C++, and from the work on making C++ programs safe when exceptions are thrown. "Resource acquisition is initialization" describes the first half: getting a resource happens as part of building an object. The half that makes it valuable — the release happens as part of destroying it — is left out, and programmers have joked about the name ever since. Some prefer "scope-bound resource management", which says what it does. Other languages borrowed the idea: Python's `with` statement and Rust's ownership rules solve the same problem.
 :::
 
 ::: context tilde The tilde as "undo"
@@ -460,7 +460,7 @@ Each function call pushes a frame onto the stack. When `ignition` throws, the ex
 :::
 
 ::: context steady-clock Why a steady clock
-A computer has more than one clock. The **system clock** tells the time of day, and it can jump: when the machine synchronises with a time server or a GPS receiver, it may be set forwards or even backwards. Time a scope with it across such a jump and you can get a negative duration. `std::chrono::steady_clock` never goes backwards; it only counts ticks since some fixed starting point. It cannot tell you the date, but it is exactly right for "how long did this take", which is why every timing measurement in this course uses it.
+A computer has more than one clock. The **system clock** tells the time of day, and it can jump: when the machine synchronizes with a time server or a GPS receiver, it may be set forwards or even backwards. Time a scope with it across such a jump and you can get a negative duration. `std::chrono::steady_clock` never goes backwards; it only counts ticks since some fixed starting point. It cannot tell you the date, but it is exactly right for "how long did this take", which is why every timing measurement in this course uses it.
 :::
 
 ::: context file-limit Why a leaked file matters
@@ -494,7 +494,7 @@ You will write these three once, to understand them, and then mostly use the sta
 :::
 
 ::: context static-allocation Why flight code avoids delete altogether
-NASA JPL's "Power of Ten" rules for safety-critical code include one that forbids dynamic memory allocation after initialisation. The reasons: heap allocation can fail, can take an unpredictable time, and can fragment memory over a long mission. Code written this way creates every object at start-up — as members, as statics, or with memory set aside once — and keeps it until power-off. Nothing is ever deleted, so deletion through a base pointer cannot happen, and polymorphic objects are passed around only by reference.
+NASA JPL's "Power of Ten" rules for safety-critical code include one that forbids dynamic memory allocation after initialization. The reasons: heap allocation can fail, can take an unpredictable time, and can fragment memory over a long mission. Code written this way creates every object at start-up — as members, as statics, or with memory set aside once — and keeps it until power-off. Nothing is ever deleted, so deletion through a base pointer cannot happen, and polymorphic objects are passed around only by reference.
 :::
 
 ::: context vtable-peek The hidden pointer inside a polymorphic object

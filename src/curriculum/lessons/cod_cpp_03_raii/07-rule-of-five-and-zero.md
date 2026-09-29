@@ -74,7 +74,7 @@ The three `static_assert` lines make the compiler check those claims; the build 
 ::: example Checking the rule-of-zero Matrix3
 Add this `main` to the class above and build it with `g++ -std=c++20 -Wall -Wextra -O2`:
 
-```cpp
+```cpp fragment
 int main() {
     Matrix3 a;
     a.at(0, 0) = 1.0; a.at(1, 1) = 2.0; a.at(2, 2) = 3.0;
@@ -178,7 +178,7 @@ The moved-from object is left in a **[[valid but unspecified state|moved-from]]*
 ::: example Tracing all five
 Run this `main` with the class above:
 
-```cpp
+```cpp fragment
 int main() {
     std::puts("HeapMatrix3 a;");
     HeapMatrix3 a;
@@ -314,7 +314,7 @@ It writes assignment once, in terms of the copy constructor and a `noexcept` swa
 ::: example Proving the guarantees, and measuring the cost
 This program uses `SwapMatrix3` from above, plus a second class, `ReuseMatrix3`, whose copy assignment overwrites its existing block in place instead of making a new one:
 
-```cpp
+```cpp fragment
 int  g_allocs    = 0;
 bool g_fail_next = false;
 double* alloc9() {
@@ -409,7 +409,7 @@ Put the two versions side by side:
 | move | copy 72 bytes | copy an 8-byte pointer |
 | bugs possible in ownership code | none written | every line you wrote |
 
-For a small, fixed-size value, the rule of zero wins on speed, simplicity and safety. It also fits a rule most flight software follows: **[[no dynamic allocation after initialisation|no-heap-after-init]]**.
+For a small, fixed-size value, the rule of zero wins on speed, simplicity and safety. It also fits a rule most flight software follows: **[[no dynamic allocation after initialization|no-heap-after-init]]**.
 
 The rule of five is still needed, in a small place. When a resource has no ready-made owner — a file, a DMA buffer — write one small class whose *only* job is owning it, declare all five (often with the copy pair `= delete`d, like `FileHandle` in exercise `cpp03_ex1`), and let every other class hold it as a member and write none. The hand-written ownership code stays a few dozen lines you can test hard.
 
@@ -453,7 +453,7 @@ The by-value `Matrix3` is 72 bytes. The heap version's move constructor moves on
 :::
 
 ::: answer
-First, making a heap matrix costs an allocation, and copying one costs an allocation plus the same 72-byte copy. Every temporary — each `A * B` result — would call the allocator, at least a thousand times a second at 1 kHz, with timing that is hard to bound. The by-value version never allocates, and copying 72 bytes is a handful of instructions. Second, most flight coding rules forbid dynamic allocation after initialisation, so the heap version cannot be used in the loop at all.
+First, making a heap matrix costs an allocation, and copying one costs an allocation plus the same 72-byte copy. Every temporary — each `A * B` result — would call the allocator, at least a thousand times a second at 1 kHz, with timing that is hard to bound. The by-value version never allocates, and copying 72 bytes is a handful of instructions. Second, most flight coding rules forbid dynamic allocation after initialization, so the heap version cannot be used in the loop at all.
 :::
 
 ::: check
@@ -558,5 +558,5 @@ A control loop running at 1 kHz has 1 ms per cycle for reading sensors, estimati
 :::
 
 ::: context no-heap-after-init A rule most flight code follows
-NASA JPL's "Power of Ten" rules for safety-critical code say not to use dynamic memory allocation after initialisation, and many flight C++ standards say the same. Memory is allocated once at start-up, sized for the worst case, and never again. Then the program cannot run out of memory mid-flight, cannot fragment the heap, and has no allocator timing to worry about. A by-value `Matrix3` lives on the stack or inside another object, so it fits this rule without effort.
+NASA JPL's "Power of Ten" rules for safety-critical code say not to use dynamic memory allocation after initialization, and many flight C++ standards say the same. Memory is allocated once at start-up, sized for the worst case, and never again. Then the program cannot run out of memory mid-flight, cannot fragment the heap, and has no allocator timing to worry about. A by-value `Matrix3` lives on the stack or inside another object, so it fits this rule without effort.
 :::

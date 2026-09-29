@@ -92,14 +92,14 @@ The 21 object files together came to 602,352 bytes; `tu01.o` alone was 29,960 by
 0000000000000000 W Kalman<double, 6ul>::update(std::array<double, 6ul> const&, Mat<double, 6ul> const&)
 ```
 
-The `W` means "weak": a definition this file made for itself, which the linker may discard in favour of an identical one. `tu01.o` has 30 of them: `predict`, `update`, `mul` and `inverse` for each of the six filters (24), plus the six `step` functions. (`transpose` is so small the optimizer inlined it everywhere.) Twenty files times 24 filter functions is 480 compiled copies of 24 distinct functions. Sanity check on the output: the program still printed its answer, `0.000` (the state starts at zero and every measurement was zero, so the estimate stays zero).
+The `W` means "weak": a definition this file made for itself, which the linker may discard in favor of an identical one. `tu01.o` has 30 of them: `predict`, `update`, `mul` and `inverse` for each of the six filters (24), plus the six `step` functions. (`transpose` is so small the optimizer inlined it everywhere.) Twenty files times 24 filter functions is 480 compiled copies of 24 distinct functions. Sanity check on the output: the program still printed its answer, `0.000` (the state starts at zero and every measurement was zero, so the estimate stays zero).
 :::
 
 ## `extern template`: build it once, promise it everywhere
 
 The fix has two halves, and you need both.
 
-**Explicit instantiation definition.** In exactly one `.cpp` file, tell the compiler to build every member of a specialisation right now:
+**Explicit instantiation definition.** In exactly one `.cpp` file, tell the compiler to build every member of a specialization right now:
 
 ```cpp
 // kalman_inst.cpp: the one place the filters are compiled.
@@ -112,7 +112,7 @@ template class Kalman<double, 12>;
 template class Kalman<float, 12>;
 ```
 
-Read `template class Kalman<double, 6>;` as "instantiate the class Kalman of double and 6, all of it, here". There is no `<>` after the word `template`: that is what separates it from a specialisation, `template <>`, which lesson 1 used to *replace* a recipe. This line uses the recipe as it is.
+Read `template class Kalman<double, 6>;` as "instantiate the class Kalman of double and 6, all of it, here". There is no `<>` after the word `template`: that is what separates it from a specialization, `template <>`, which lesson 1 used to *replace* a recipe. This line uses the recipe as it is.
 
 **Explicit instantiation declaration.** At the bottom of the header, where every other file sees it, add the promise:
 
@@ -207,7 +207,7 @@ That structure is also the way in. The message always has the same parts, and fo
 ::: example A set of waypoints with no ordering
 A route stored as a `std::set` (which keeps its elements sorted) of a small struct:
 
-```cpp
+```cpp error
 #include <set>
 
 struct Waypoint {
@@ -294,7 +294,7 @@ After the first error the compiler guesses how to continue, and the guesses prod
 
 Lesson 6 showed what constraining a template does for its messages. Here it is on this error. Suppose a small container class of your own is constrained with the standard concept `std::totally_ordered` ("has all of `<`, `>`, `<=`, `>=`, `==` and `!=`"):
 
-```cpp
+```cpp fragment
 template <std::totally_ordered T>
 class Catalog {
 public:
@@ -329,7 +329,7 @@ A header defines `template <typename T> T lerp(T a, T b, T t)` and 40 files call
 :::
 
 ::: answer
-Each file that uses a specialisation instantiates it for itself: 40 copies of `lerp<double>` plus 10 of `lerp<float>`, 50 compiled copies (unless the optimizer inlines them and drops the separate function). The linker keeps one of each, so the program contains 2. For a filter class with big member functions, 48 wasted copies are real build time.
+Each file that uses a specialization instantiates it for itself: 40 copies of `lerp<double>` plus 10 of `lerp<float>`, 50 compiled copies (unless the optimizer inlines them and drops the separate function). The linker keeps one of each, so the program contains 2. For a filter class with big member functions, 48 wasted copies are real build time.
 :::
 
 ::: check
@@ -359,7 +359,7 @@ Linking failed, not compiling: the header promises `extern template class Kalman
 ::: check
 Here is the middle of a real g++ 13 error for this file, `err4.cpp`, with the longest template argument list shortened to `...`. Which line do you read first, and what is the fix?
 
-```cpp
+```cpp error
 #include <map>
 
 struct Vec3 {

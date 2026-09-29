@@ -10,7 +10,7 @@ Put a phone flat on a table and turn it $35^\circ$. Then turn it another $20^\ci
 
 A spacecraft meets this all the time. It yaws (turns left or right) through $35^\circ$, and its camera is bolted on $20^\circ$ off the body's nose. The camera points $55^\circ$ from the reference direction, and the flight software has to get $\cos 55^\circ$ and $\sin 55^\circ$ out of the pieces it already has. Every rotation matrix, every chain of attitude angles and every quaternion product later in the course is the sum formulas, used over and over in three dimensions.
 
-This lesson is about **[[identities|identity-word]]**. An identity is an equation that is true for *every* angle, not only for one special answer. You will build three families of them from the unit circle: the Pythagorean identities, the sum and difference formulas, and the double-angle and half-angle formulas. Nothing here is a string of symbols to memorise blindly. Each one is a fact about the circle that you can rebuild in a minute if you forget it.
+This lesson is about **[[identities|identity-word]]**. An identity is an equation that is true for *every* angle, not only for one special answer. You will build three families of them from the unit circle: the Pythagorean identities, the sum and difference formulas, and the double-angle and half-angle formulas. Nothing here is a string of symbols to memorize blindly. Each one is a fact about the circle that you can rebuild in a minute if you forget it.
 
 ## The Pythagorean identity
 
@@ -267,7 +267,7 @@ Telemetry fits a once-per-orbit disturbance torque as $T(t) = 0.12\cos\omega t +
 
 **Phase:** $\phi = \operatorname{atan2}(0.05, 0.12) = 22.6^\circ = 0.395$ rad. So $T(t) = 0.13\cos(\omega t - 0.395)$.
 
-The torque peaks $22.6^\circ$ of orbit after the cosine reference point. That is $22.6/360$ of the orbit, about six minutes of a 92-minute orbit. Sanity check: $R$ is bigger than both $0.12$ and $0.05$ but less than their sum, as the long side of a right triangle must be. A reaction-wheel controller sizing how much push it needs wants $R$; a controller cancelling the disturbance wants $\phi$. The raw $a$ and $b$ give neither directly.
+The torque peaks $22.6^\circ$ of orbit after the cosine reference point. That is $22.6/360$ of the orbit, about six minutes of a 92-minute orbit. Sanity check: $R$ is bigger than both $0.12$ and $0.05$ but less than their sum, as the long side of a right triangle must be. A reaction-wheel controller sizing how much push it needs wants $R$; a controller canceling the disturbance wants $\phi$. The raw $a$ and $b$ give neither directly.
 :::
 
 ## Products into sums
@@ -282,7 +282,7 @@ The sine formulas give, the same way, $\sin\alpha\cos\beta = \tfrac{1}{2}[\sin(\
 
 In words: multiplying two waves makes two new waves, one at the difference of their frequencies and one at the sum. A radio does this on purpose. It multiplies the signal it receives, at frequency $\omega_1$, by its own steady wave at $\omega_2$, which produces pieces at $\omega_1 - \omega_2$ and $\omega_1 + \omega_2$. A filter keeps the difference. That is how a **[[Doppler shift|doppler]]** of a few kilohertz is pulled out of a carrier wave at billions of cycles per second, and how ground stations measure a spacecraft's speed. The power-reduction formula $\sin^2\theta = (1 - \cos 2\theta)/2$ is the special case $\alpha = \beta$.
 
-::: note How many identities to memorise
+::: note How many identities to memorize
 Two: $\sin^2 + \cos^2 = 1$ and $\cos(\alpha - \beta) = \cos\alpha\cos\beta + \sin\alpha\sin\beta$. Everything in this lesson follows from those in a few lines, using the even/odd and cofunction symmetries of lesson 1. When you are unsure of a sign, set the angles to $0$ or $\pi/4$ and test.
 :::
 
@@ -469,7 +469,7 @@ A spacecraft turns in three dimensions, not two. Its orientation is stored as a 
 :::
 
 ::: context squared-wave Squaring a wave doubles its beat
-The grey wave is $\sin t$. The blue one is $\sin^2 t$. Where the grey wave dips below zero, squaring flips it back up, so the blue wave makes two bumps in the time the grey makes one, and it hovers around $\tfrac{1}{2}$.
+The gray wave is $\sin t$. The blue one is $\sin^2 t$. Where the gray wave dips below zero, squaring flips it back up, so the blue wave makes two bumps in the time the gray makes one, and it hovers around $\tfrac{1}{2}$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">

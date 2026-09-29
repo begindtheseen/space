@@ -24,7 +24,7 @@ export const GNC_CORE: Module[] = [
     tier: 3,
     title: 'Signals, Systems & Transfer Functions',
     summary:
-      'Turn a linear differential-equation model into a transfer function and read its behaviour straight off the pole-zero map. By the end you can sketch a Bode plot by hand, predict overshoot and settling time from zeta and omega-n, and reduce any block diagram to one ratio of polynomials.',
+      'Turn a linear differential-equation model into a transfer function and read its behavior straight off the pole-zero map. By the end you can sketch a Bode plot by hand, predict overshoot and settling time from zeta and omega-n, and reduce any block diagram to one ratio of polynomials.',
     prereqs: ['t0_m08_odes'],
     hours: 45,
     topics: [
@@ -208,12 +208,12 @@ Success: all three give the same expression, and you can state in one sentence w
         choices: [
           'It adds overshoot only; bandwidth is unaffected',
           'It causes an initial undershoot (the response goes the wrong way first) and practically limits achievable closed-loop bandwidth to a fraction of the zero location, roughly wc < z/2',
-          'It makes the system unstable in open loop and must be cancelled by a pole at +2',
+          'It makes the system unstable in open loop and must be canceled by a pole at +2',
           'It adds pure phase lead, which improves stability margins',
         ],
         answer: 1,
         explain:
-          'A right-half-plane zero contributes phase lag while adding magnitude slope, so it behaves like a delay: you cannot invert it and you cannot cancel it (cancelling puts an unstable pole in the controller). In the time domain it produces initial undershoot. Pushing crossover above the zero forces the sensitivity function into a waterbed violation, so practical designs keep gain crossover well below the zero, commonly around half of it. This is a fundamental limitation, not a tuning problem.',
+          'A right-half-plane zero contributes phase lag while adding magnitude slope, so it behaves like a delay: you cannot invert it and you cannot cancel it (canceling puts an unstable pole in the controller). In the time domain it produces initial undershoot. Pushing crossover above the zero forces the sensitivity function into a waterbed violation, so practical designs keep gain crossover well below the zero, commonly around half of it. This is a fundamental limitation, not a tuning problem.',
         b: 0.8,
         bloom: 'analyze',
       },
@@ -236,7 +236,7 @@ Success: all three give the same expression, and you can state in one sentence w
         id: 'q_m25_s_plus_t',
         q: 'Why does S + T = 1 constrain what any feedback design can achieve?',
         choices: [
-          'It does not constrain anything; it is a normalisation convention',
+          'It does not constrain anything; it is a normalization convention',
           'Because S is the transfer from disturbance and reference error and T is the transfer from sensor noise, you cannot make both small at the same frequency — good disturbance rejection at a frequency forces full noise transmission there',
           'It forces the closed-loop DC gain to be exactly one',
           'It guarantees the closed loop is stable whenever the open loop is stable',
@@ -329,7 +329,7 @@ Success: all three give the same expression, and you can state in one sentence w
       {
         id: 'c_m25_rhp_zero',
         front: 'Signature of a right-half-plane zero',
-        back: 'Initial **undershoot** in the step response, and phase lag rather than the phase lead a left-half-plane zero gives. It hard-limits achievable bandwidth (rule of thumb wc < z/2) and cannot be cancelled.',
+        back: 'Initial **undershoot** in the step response, and phase lag rather than the phase lead a left-half-plane zero gives. It hard-limits achievable bandwidth (rule of thumb wc < z/2) and cannot be canceled.',
       },
       {
         id: 'c_m25_delay',
@@ -927,7 +927,7 @@ assert 7.5 < lag < 9.5, f"expected about 8.5 deg of lag, got {lag:.2f}"`,
 - float64 state, coefficients loaded once at init
 - a single **step(x) -> y** call with a bounded, constant instruction count
 
-Use it to realise the 18 rad/s notch from the previous module at 200 Hz. Verify against a Python reference to 1e-12, then measure the worst-case execution time over 1e7 calls.
+Use it to realize the 18 rad/s notch from the previous module at 200 Hz. Verify against a Python reference to 1e-12, then measure the worst-case execution time over 1e7 calls.
 
 Success: bit-comparable output, WCET reported, and you can state why transposed direct-form II is preferred over direct-form I for numerical conditioning in fixed point.`,
       },
@@ -959,7 +959,7 @@ Success: bit-comparable output, WCET reported, and you can state why transposed 
         ],
         answer: 1,
         explain:
-          'Forward Euler is z = 1 + sT, which maps the left half plane to a half plane offset left of z = 1 — stable continuous poles with |sT| large land outside the unit circle. A notch has high-Q poles near the imaginary axis, precisely the worst case. Tustin, z = (1 + sT/2)/(1 - sT/2), is a conformal map of the entire left half plane onto the open unit disk, so stability is always preserved. Its cost is frequency warping, fixed by prewarping at the notch centre frequency.',
+          'Forward Euler is z = 1 + sT, which maps the left half plane to a half plane offset left of z = 1 — stable continuous poles with |sT| large land outside the unit circle. A notch has high-Q poles near the imaginary axis, precisely the worst case. Tustin, z = (1 + sT/2)/(1 - sT/2), is a conformal map of the entire left half plane onto the open unit disk, so stability is always preserved. Its cost is frequency warping, fixed by prewarping at the notch center frequency.',
         b: 1.0,
         bloom: 'understand',
       },
@@ -974,7 +974,7 @@ Success: bit-comparable output, WCET reported, and you can state why transposed 
         ],
         answer: 1,
         explain:
-          'A late output is a time-varying delay, which is worse than a fixed delay because it cannot be compensated and it injects jitter noise. A dropped frame is a held zero-order-hold command plus a lost integrator update. Real flight software instruments overruns explicitly: an overrun counter in telemetry, a deterministic fallback (hold last command, or a reduced-fidelity path guaranteed to fit), and an escalation policy. The correct engineering answer is that WCET must be bounded by design, and the runtime handling is the last line of defence, not the plan.',
+          'A late output is a time-varying delay, which is worse than a fixed delay because it cannot be compensated and it injects jitter noise. A dropped frame is a held zero-order-hold command plus a lost integrator update. Real flight software instruments overruns explicitly: an overrun counter in telemetry, a deterministic fallback (hold last command, or a reduced-fidelity path guaranteed to fit), and an escalation policy. The correct engineering answer is that WCET must be bounded by design, and the runtime handling is the last line of defense, not the plan.',
         b: 1.3,
         bloom: 'analyze',
       },
@@ -1022,7 +1022,7 @@ Success: bit-comparable output, WCET reported, and you can state why transposed 
       {
         id: 'c_m27_prewarp',
         front: 'Tustin with prewarping',
-        back: 's -> (w0 / tan(w0*T/2)) * (z-1)/(z+1). Makes the discrete response exact at the single frequency w0 — use the notch centre or the crossover frequency.',
+        back: 's -> (w0 / tan(w0*T/2)) * (z-1)/(z+1). Makes the discrete response exact at the single frequency w0 — use the notch center or the crossover frequency.',
         formula: true,
       },
       {
@@ -1063,7 +1063,7 @@ Success: bit-comparable output, WCET reported, and you can state why transposed 
       {
         id: 'c_m27_jitter',
         front: 'Jitter vs delay',
-        back: 'A fixed delay can be modelled and compensated. Jitter is a time-varying delay: it cannot be compensated, it injects broadband noise, and it invalidates the LTI analysis your margins came from. Bound it, do not correct it.',
+        back: 'A fixed delay can be modeled and compensated. Jitter is a time-varying delay: it cannot be compensated, it injects broadband noise, and it invalidates the LTI analysis your margins came from. Bound it, do not correct it.',
       },
       {
         id: 'c_m27_quantization',
@@ -1134,7 +1134,7 @@ Success: bit-comparable output, WCET reported, and you can state why transposed 
         kind: 'code',
         lang: 'python',
         hours: 6,
-        prompt: `Build the linearised state-space model of a 3-axis rigid spacecraft with four reaction wheels in a pyramid configuration (state: three body rates and three small attitude angles; input: four wheel torques).
+        prompt: `Build the linearized state-space model of a 3-axis rigid spacecraft with four reaction wheels in a pyramid configuration (state: three body rates and three small attitude angles; input: four wheel torques).
 
 1. Compute the controllability matrix rank with all four wheels healthy.
 2. Fail wheels one at a time and recompute. Which single failures still leave the system controllable? Which pairs do not?
@@ -1329,13 +1329,13 @@ assert np.allclose(np.sort_complex(comb), np.sort_complex(union), atol=1e-9), "s
         q: 'A spacecraft has reaction wheels on only two body axes. Is its attitude controllable?',
         choices: [
           'Yes, always — the Kalman rank test gives full rank because wheels produce internal torques',
-          'Not for the linearised model about rest: the rank test drops by one and the missing direction is rotation about the unactuated axis. The true nonlinear system can be controllable via gyroscopic coupling, but not in the linear sense and not with arbitrary authority',
+          'Not for the linearized model about rest: the rank test drops by one and the missing direction is rotation about the unactuated axis. The true nonlinear system can be controllable via gyroscopic coupling, but not in the linear sense and not with arbitrary authority',
           'No, and no nonlinear scheme can ever reorient it',
           'Yes, because momentum is conserved',
         ],
         answer: 1,
         explain:
-          'Linearised about rest, the angular acceleration about the unactuated axis has no input path, so the controllability matrix loses rank and the PBH test flags the corresponding eigenvalue. Physically you cannot produce torque about that axis directly. The nonlinear system with nonzero body rates can be controllable through the w x Jw coupling term (this is the classic underactuated attitude control result), but control authority is small, the manoeuvre is slow, and the linear design tools do not apply. The honest interview answer names both halves.',
+          'Linearized about rest, the angular acceleration about the unactuated axis has no input path, so the controllability matrix loses rank and the PBH test flags the corresponding eigenvalue. Physically you cannot produce torque about that axis directly. The nonlinear system with nonzero body rates can be controllable through the w x Jw coupling term (this is the classic underactuated attitude control result), but control authority is small, the maneuver is slow, and the linear design tools do not apply. The honest interview answer names both halves.',
         b: 1.3,
         bloom: 'analyze',
       },
@@ -1474,7 +1474,7 @@ assert np.allclose(np.sort_complex(comb), np.sort_complex(union), atol=1e-9), "s
       {
         id: 'c_m28_servo',
         front: 'Integral action in state feedback',
-        back: 'Augment the state with the integral of the tracking error, xi_dot = r - y, and design K on the augmented plant. This gives zero steady-state error to step disturbances, the state-space analogue of the I term.',
+        back: 'Augment the state with the integral of the tracking error, xi_dot = r - y, and design K on the augmented plant. This gives zero steady-state error to step disturbances, the state-space analog of the I term.',
         formula: true,
       },
       {
@@ -1643,7 +1643,7 @@ Q = np.eye(2)
 
 
 def lqr_gain(R: float) -> np.ndarray:
-    """Optimal K for u = -K x, minimising the integral of x'Qx + R u^2.
+    """Optimal K for u = -K x, minimizing the integral of x'Qx + R u^2.
 
     TODO: solve the continuous algebraic Riccati equation with
     scipy.linalg.solve_continuous_are, then form K = R^-1 B' P.
@@ -1721,7 +1721,7 @@ assert abs(Rb - 1/64.0) < 1e-12`,
         kind: 'code',
         lang: 'python',
         hours: 10,
-        prompt: `Take a nominal planar ascent trajectory (state: position, velocity, pitch, pitch rate; control: gimbal angle). Linearise about the nominal at each knot to get A(t), B(t).
+        prompt: `Take a nominal planar ascent trajectory (state: position, velocity, pitch, pitch rate; control: gimbal angle). Linearize about the nominal at each knot to get A(t), B(t).
 
 1. Integrate the differential Riccati equation backwards along the trajectory to get K(t).
 2. Fly the nonlinear plant from a dispersed initial condition using u = u_nom(t) - K(t)*(x - x_nom(t)).
@@ -1823,7 +1823,7 @@ for P in riccati_backward(lambda _: A, lambda _: B, np.eye(2), np.array([[1.0]])
         q: 'Why does full-state-feedback LQR have guaranteed margins while LQG does not?',
         choices: [
           'LQG uses a discrete Riccati equation which is less accurate',
-          'The LQR return difference identity forces the Nyquist plot outside the unit circle centred at -1, giving at least 6 dB gain reduction margin, infinite gain increase margin and at least 60 degrees of phase margin. Inserting an observer breaks that identity, and Doyle 1978 showed LQG margins can be made arbitrarily small',
+          'The LQR return difference identity forces the Nyquist plot outside the unit circle centered at -1, giving at least 6 dB gain reduction margin, infinite gain increase margin and at least 60 degrees of phase margin. Inserting an observer breaks that identity, and Doyle 1978 showed LQG margins can be made arbitrarily small',
           'LQG has better margins than LQR, not worse',
           'LQR margins come from the separation principle, which LQG does not satisfy',
         ],
@@ -1859,13 +1859,13 @@ for P in riccati_backward(lambda _: A, lambda _: B, np.eye(2), np.array([[1.0]])
         ],
         answer: 1,
         explain:
-          'A launch vehicle is a strongly time-varying plant: mass, inertia, centre of gravity, aerodynamic moment and thrust all change through the burn. A midpoint gain is too sluggish early and too aggressive late. TVLQR solves the differential Riccati equation backwards along the nominal, producing K(t) matched to A(t), B(t), and it is computed offline so the onboard cost is a table lookup. The cost-to-go x.T*P(t)*x also serves as a Lyapunov-like certificate for finite-time invariant funnels around the nominal.',
+          'A launch vehicle is a strongly time-varying plant: mass, inertia, center of gravity, aerodynamic moment and thrust all change through the burn. A midpoint gain is too sluggish early and too aggressive late. TVLQR solves the differential Riccati equation backwards along the nominal, producing K(t) matched to A(t), B(t), and it is computed offline so the onboard cost is a table lookup. The cost-to-go x.T*P(t)*x also serves as a Lyapunov-like certificate for finite-time invariant funnels around the nominal.',
         b: 1.2,
         bloom: 'understand',
       },
       {
         id: 'q_m29_bryson',
-        q: 'What is the Bryson rule for initialising Q and R?',
+        q: 'What is the Bryson rule for initializing Q and R?',
         choices: [
           'Set Q = I and R = I always',
           'Set the diagonal entries to the reciprocal of the square of the maximum acceptable value for each state and each input, which non-dimensionalises the problem so every term of the cost is order one at its limit',
@@ -1874,7 +1874,7 @@ for P in riccati_backward(lambda _: A, lambda _: B, np.eye(2), np.array([[1.0]])
         ],
         answer: 1,
         explain:
-          'Q_ii = 1 / (x_i,max)^2 and R_jj = 1 / (u_j,max)^2. The point is scaling, not optimality: a state measured in metres and one measured in radians are otherwise incomparable, and an unscaled Q makes the tuning loop meaningless. Bryson rule gives a defensible starting point from requirements you already have (pointing spec, gimbal limit), after which you iterate on the frontier.',
+          'Q_ii = 1 / (x_i,max)^2 and R_jj = 1 / (u_j,max)^2. The point is scaling, not optimality: a state measured in meters and one measured in radians are otherwise incomparable, and an unscaled Q makes the tuning loop meaningless. Bryson rule gives a defensible starting point from requirements you already have (pointing spec, gimbal limit), after which you iterate on the frontier.',
         b: 0.6,
         bloom: 'recall',
       },
@@ -1957,13 +1957,13 @@ for P in riccati_backward(lambda _: A, lambda _: B, np.eye(2), np.array([[1.0]])
       {
         id: 'c_m29_pmp',
         front: 'Pontryagin minimum principle (the frame LQR sits in)',
-        back: 'With H = L(x,u) + lambda.T*f(x,u): xdot = dH/dlambda, lambdadot = -dH/dx, and u* minimises H pointwise over the admissible set. LQR is the case where that minimisation is a solvable quadratic.',
+        back: 'With H = L(x,u) + lambda.T*f(x,u): xdot = dH/dlambda, lambdadot = -dH/dx, and u* minimizes H pointwise over the admissible set. LQR is the case where that minimization is a solvable quadratic.',
         formula: true,
       },
       {
         id: 'c_m29_ilqr',
         front: 'iLQR / DDP in one line',
-        back: 'Linearise the dynamics and quadratize the cost about the current trajectory, solve the resulting time-varying LQR backward pass for a feedforward plus feedback update, roll forward with line search, repeat. It is Newton method on a trajectory.',
+        back: 'Linearize the dynamics and quadratize the cost about the current trajectory, solve the resulting time-varying LQR backward pass for a feedforward plus feedback update, roll forward with line search, repeat. It is Newton method on a trajectory.',
       },
     ],
     tags: ['interview'],
@@ -1980,7 +1980,7 @@ for P in riccati_backward(lambda _: A, lambda _: B, np.eye(2), np.array([[1.0]])
     prereqs: ['t3_m29_optimal_control_lqr'],
     hours: 55,
     topics: [
-      'Modelling uncertainty: additive, multiplicative (input and output), parametric, unstructured',
+      'Modeling uncertainty: additive, multiplicative (input and output), parametric, unstructured',
       'The small gain theorem and its exact hypotheses',
       'The H2 and H-infinity norms and what each one measures',
       'H-infinity synthesis: mixed sensitivity S/KS/T weighting, the two-Riccati (DGKF) solution',
@@ -2231,13 +2231,13 @@ assert pm_hi < pm_nom, 'and on this loop a lower crossover means less phase marg
         q: 'What does mu > 1 mean?',
         choices: [
           'The nominal closed loop is unstable',
-          'There exists an admissible perturbation in the structured uncertainty set, of size less than the normalisation bound, that destabilizes the loop — so robust stability fails for that uncertainty structure',
+          'There exists an admissible perturbation in the structured uncertainty set, of size less than the normalization bound, that destabilizes the loop — so robust stability fails for that uncertainty structure',
           'The controller has too much gain at DC',
           'The H-infinity norm of the plant exceeds 1',
         ],
         answer: 1,
         explain:
-          'mu(M) is the reciprocal of the size of the smallest structured Delta that makes I - M*Delta singular. Normalising the uncertainty set to ||Delta|| <= 1, robust stability holds iff the peak of mu over frequency is below 1, and mu > 1 exhibits a destabilizing perturbation strictly inside the modelled set. Because mu accounts for the block structure it is never more conservative than the unstructured small gain test, and is often much less conservative. mu is NP-hard to compute exactly, so tools report upper and lower bounds.',
+          'mu(M) is the reciprocal of the size of the smallest structured Delta that makes I - M*Delta singular. Normalizing the uncertainty set to ||Delta|| <= 1, robust stability holds iff the peak of mu over frequency is below 1, and mu > 1 exhibits a destabilizing perturbation strictly inside the modeled set. Because mu accounts for the block structure it is never more conservative than the unstructured small gain test, and is often much less conservative. mu is NP-hard to compute exactly, so tools report upper and lower bounds.',
         b: 1.7,
         bloom: 'understand',
       },
@@ -2252,7 +2252,7 @@ assert pm_hi < pm_nom, 'and on this loop a lower crossover means less phase marg
         ],
         answer: 1,
         explain:
-          'A disk margin models the perturbation as a complex multiplicative factor confined to a disk in the complex plane, so it captures gain and phase varying together rather than one at a time. It is computed from ||S + T/2||inf style formulations and reports equivalent gain and phase ranges. For MIMO it comes in loop-at-a-time and multi-loop flavours, the latter perturbing every channel independently and simultaneously — the case that classical per-axis margins silently ignore, and the case that actually happens on a vehicle.',
+          'A disk margin models the perturbation as a complex multiplicative factor confined to a disk in the complex plane, so it captures gain and phase varying together rather than one at a time. It is computed from ||S + T/2||inf style formulations and reports equivalent gain and phase ranges. For MIMO it comes in loop-at-a-time and multi-loop flavors, the latter perturbing every channel independently and simultaneously — the case that classical per-axis margins silently ignore, and the case that actually happens on a vehicle.',
         b: 1.4,
         bloom: 'understand',
       },
@@ -2294,13 +2294,13 @@ assert pm_hi < pm_nom, 'and on this loop a lower crossover means less phase marg
       {
         id: 'c_m30_h2_norm',
         front: 'H2 norm',
-        back: 'The root-mean-square output for unit-intensity white noise input; equivalently the square root of the integral of trace(G*(jw)G(jw)) dw / (2*pi). LQG minimises an H2 norm.',
+        back: 'The root-mean-square output for unit-intensity white noise input; equivalently the square root of the integral of trace(G*(jw)G(jw)) dw / (2*pi). LQG minimizes an H2 norm.',
         formula: true,
       },
       {
         id: 'c_m30_mixsens',
         front: 'Mixed-sensitivity H-infinity problem',
-        back: 'Minimise the H-infinity norm of the stacked [W1*S; W2*K*S; W3*T]. W1 shapes tracking and disturbance rejection, W2 bounds actuator effort, W3 forces roll-off and robustness.',
+        back: 'Minimize the H-infinity norm of the stacked [W1*S; W2*K*S; W3*T]. W1 shapes tracking and disturbance rejection, W2 bounds actuator effort, W3 forces roll-off and robustness.',
         formula: true,
       },
       {
@@ -2349,7 +2349,7 @@ assert pm_hi < pm_nom, 'and on this loop a lower crossover means less phase marg
       {
         id: 'c_m30_adaptive',
         front: 'Why adaptive control is treated with suspicion in flight programs',
-        back: 'MRAC can lose robustness to unmodelled dynamics and time delay, and its transient behaviour is hard to certify. L1 adaptive control decouples adaptation rate from robustness with a low-pass filter, which is why it is the variant that actually gets flown.',
+        back: 'MRAC can lose robustness to unmodelled dynamics and time delay, and its transient behavior is hard to certify. L1 adaptive control decouples adaptation rate from robustness with a low-pass filter, which is why it is the variant that actually gets flown.',
       },
     ],
     tags: ['interview'],
@@ -2453,7 +2453,7 @@ Success: a complete, correct proof, plus a clear statement of WHICH equilibrium 
 
 1. Use the sign-blind law u = -K*q_v - P*w and show the vehicle sometimes rotates nearly 360 degrees to reach an attitude it was already 1 degree away from.
 2. Add the standard fix: multiply the vector part by sign(q_0) (equivalently, always work with the quaternion in the half where q_0 >= 0).
-3. Plot the total rotation angle travelled with and without the fix over 200 random initial attitudes.
+3. Plot the total rotation angle traveled with and without the fix over 200 random initial attitudes.
 
 Success: mean path length drops sharply with the fix, and you can state why the double cover of SO(3) by the unit quaternions causes this and why no continuous state-feedback law on SO(3) can be globally asymptotically stabilizing.`,
         starter: `import numpy as np
@@ -2495,7 +2495,7 @@ assert path_naive > path_fixed + np.radians(100.0), "the naive law should unwind
 J = np.diag([120.0, 100.0, 80.0])
 _, q, _, _ = simulate(np.array([0.0, 1.0, 0.0, 0.0]), np.array([0.02, -0.01, 0.03]), J, 20 * np.eye(3), 80 * np.eye(3))
 n = np.linalg.norm(q, axis=1)
-assert np.max(np.abs(n - 1.0)) < 1e-6, "renormalise the quaternion each step"`,
+assert np.max(np.abs(n - 1.0)) < 1e-6, "renormalize the quaternion each step"`,
           },
         ],
       },
@@ -2618,7 +2618,7 @@ assert abs(ultimate_bound(0.10)/ultimate_bound(0.05) - 2.0) < 1e-9`,
         id: 'q_m31_unwinding',
         q: 'What is quaternion unwinding and what is the one-line fix?',
         choices: [
-          'Loss of quaternion normalisation from integration error; fix by renormalising',
+          'Loss of quaternion normalization from integration error; fix by renormalizing',
           'The unit quaternions double cover SO(3), so q and -q are the same physical attitude. A law that drives q_v to zero without regard to the sign of q0 can choose the equilibrium at q = [+1,0,0,0] when the vehicle is already almost at [-1,0,0,0], commanding an unnecessary rotation of nearly 360 degrees. The fix is to multiply the feedback by sign(q0)',
           'Gimbal lock at 90 degrees of pitch; fix by switching to Euler angles',
           'An integrator wind-up specific to attitude loops; fix with anti-windup',
@@ -2664,13 +2664,13 @@ assert abs(ultimate_bound(0.10)/ultimate_bound(0.05) - 2.0) < 1e-9`,
         q: 'You feedback-linearize a plant input-output and the closed loop tracks perfectly in simulation, then the internal states diverge. What happened?',
         choices: [
           'The relative degree was computed incorrectly',
-          'The plant has unstable zero dynamics — the internal dynamics rendered unobservable by the input-output linearization are unstable, which is the nonlinear analogue of cancelling a right-half-plane zero',
+          'The plant has unstable zero dynamics — the internal dynamics rendered unobservable by the input-output linearization are unstable, which is the nonlinear analog of canceling a right-half-plane zero',
           'The controller gains were too small',
           'The integration step was too large',
         ],
         answer: 1,
         explain:
-          'Input-output feedback linearization makes the map from the new input to the output a chain of integrators of length equal to the relative degree r. When r is less than the state dimension n, the remaining n - r states form the internal dynamics, whose zero-input behaviour is the zero dynamics. If those are unstable the plant is non-minimum phase and the design is unusable — exactly as pole-zero cancelling an unstable zero is in the linear case. The remedies are to choose a different output, accept approximate tracking, or use a method that does not require inverting the plant.',
+          'Input-output feedback linearization makes the map from the new input to the output a chain of integrators of length equal to the relative degree r. When r is less than the state dimension n, the remaining n - r states form the internal dynamics, whose zero-input behavior is the zero dynamics. If those are unstable the plant is non-minimum phase and the design is unusable — exactly as pole-zero canceling an unstable zero is in the linear case. The remedies are to choose a different output, accept approximate tracking, or use a method that does not require inverting the plant.',
         b: 1.8,
         bloom: 'analyze',
       },
@@ -2734,7 +2734,7 @@ assert abs(ultimate_bound(0.10)/ultimate_bound(0.05) - 2.0) < 1e-9`,
       {
         id: 'c_m31_zero_dynamics',
         front: 'Zero dynamics',
-        back: 'The internal dynamics with the output held identically at zero. Unstable zero dynamics means non-minimum phase, and input-output feedback linearization is then unusable — the nonlinear version of cancelling an unstable zero.',
+        back: 'The internal dynamics with the output held identically at zero. Unstable zero dynamics means non-minimum phase, and input-output feedback linearization is then unusable — the nonlinear version of canceling an unstable zero.',
       },
       {
         id: 'c_m31_backstepping',
@@ -2750,7 +2750,7 @@ assert abs(ultimate_bound(0.10)/ultimate_bound(0.05) - 2.0) < 1e-9`,
       {
         id: 'c_m31_pwpf',
         front: 'PWPF modulation',
-        back: 'Pulse-width pulse-frequency modulation converts a continuous torque command into on-off thruster pulses using a lag filter and a Schmitt trigger. It approximates linear behaviour on average while respecting the minimum impulse bit, and its hysteresis band sets the limit-cycle amplitude.',
+        back: 'Pulse-width pulse-frequency modulation converts a continuous torque command into on-off thruster pulses using a lag filter and a Schmitt trigger. It approximates linear behavior on average while respecting the minimum impulse bit, and its hysteresis band sets the limit-cycle amplitude.',
       },
       {
         id: 'c_m31_describing',
@@ -2830,7 +2830,7 @@ assert abs(ultimate_bound(0.10)/ultimate_bound(0.05) - 2.0) < 1e-9`,
 2. Compare to LQR with the command simply clipped to the limits.
 3. Sweep the initial condition out to where the clipped LQR violates the state constraint or overshoots badly, and identify the region where MPC is strictly better.
 
-Success: the constraint is honoured by MPC at every step, and you can point to the specific initial conditions where clipping fails and explain why.`,
+Success: the constraint is honored by MPC at every step, and you can point to the specific initial conditions where clipping fails and explain why.`,
         starter: `import numpy as np
 
 
@@ -2887,14 +2887,14 @@ assert np.linalg.norm(x) < 0.05, "MPC should drive the state to the origin"`,
         hours: 8,
         prompt: `Use the Clohessy-Wiltshire equations for a chaser approaching a target.
 
-1. Set up an MPC that minimises fuel subject to thruster limits and a terminal box around the docking port.
-2. Add an approach-corridor constraint (a cone) and a spherical keep-out zone. The keep-out zone is **non-convex** — handle it by a rotating separating hyperplane linearised about the previous solution, and state honestly what guarantee you lose.
+1. Set up an MPC that minimizes fuel subject to thruster limits and a terminal box around the docking port.
+2. Add an approach-corridor constraint (a cone) and a spherical keep-out zone. The keep-out zone is **non-convex** — handle it by a rotating separating hyperplane linearized about the previous solution, and state honestly what guarantee you lose.
 3. Report delta-v and the number of QP iterations per step.
 
-Success: the trajectory respects the corridor and avoids the sphere, and you can explain what the linearised keep-out constraint costs you in terms of global optimality and feasibility guarantees.`,
+Success: the trajectory respects the corridor and avoids the sphere, and you can explain what the linearized keep-out constraint costs you in terms of global optimality and feasibility guarantees.`,
         starter: `"""MPC rendezvous in the Clohessy-Wiltshire frame.
 
-CW linearises relative motion about a circular reference orbit. It is only
+CW linearizes relative motion about a circular reference orbit. It is only
 valid for separations small against the orbit radius — which covers the whole
 of proximity operations, and nothing beyond it.
 """
@@ -2924,12 +2924,12 @@ def propagate(x0: np.ndarray, t: float) -> np.ndarray:
     return cw_stm(N, t) @ x0
 
 
-def keepout_halfspace(p_prev: np.ndarray, centre: np.ndarray, radius: float):
-    """Linearise the non-convex keep-out sphere into a separating half-space.
+def keepout_halfspace(p_prev: np.ndarray, center: np.ndarray, radius: float):
+    """Linearize the non-convex keep-out sphere into a separating half-space.
 
     Returns (a, b) such that the constraint is a . p >= b.
 
-    TODO: take the unit vector from the sphere centre toward the previous
+    TODO: take the unit vector from the sphere center toward the previous
     solution p_prev, and require the new point to stay on that side of the
     tangent plane. You lose the global guarantee: the result depends on which
     side the previous iterate happened to be on.
@@ -2964,7 +2964,7 @@ assert np.allclose(P[np.ix_(idx, idx)], np.eye(4), atol=1e-6), 'radial/cross-tra
 assert abs(x[1] + 500.0) < 1e-6 and abs(x[0]) < 1e-6`,
           },
           {
-            name: 'the linearised keep-out plane passes through the sphere surface',
+            name: 'the linearized keep-out plane passes through the sphere surface',
             assert: `c = np.array([0.0, 0.0, 0.0]); r = 50.0
 a, b = keepout_halfspace(np.array([100.0, 0.0, 0.0]), c, r)
 assert abs(np.linalg.norm(a) - 1.0) < 1e-9, 'normal must be a unit vector'
@@ -3073,14 +3073,14 @@ assert max_horizon(d) == 20`,
         id: 'q_m32_vs_lqr',
         q: 'When does MPC beat LQR, and when is LQR the right answer?',
         choices: [
-          'MPC is always better because it optimises over a horizon',
-          'MPC wins when constraints are active and shape the optimal behaviour, when the plant or the references are strongly time-varying and known in advance, or when you need to plan around a state constraint. LQR wins when constraints are rarely active, when the CPU or certification budget is tight, and when you need guaranteed margins and a closed-form, testable gain',
+          'MPC is always better because it optimizes over a horizon',
+          'MPC wins when constraints are active and shape the optimal behavior, when the plant or the references are strongly time-varying and known in advance, or when you need to plan around a state constraint. LQR wins when constraints are rarely active, when the CPU or certification budget is tight, and when you need guaranteed margins and a closed-form, testable gain',
           'LQR is always better because it has guaranteed margins',
           'They are mathematically identical',
         ],
         answer: 1,
         explain:
-          'Unconstrained linear MPC with an infinite horizon IS LQR, so the entire value of MPC comes from constraints and preview. If your actuator is rarely saturated and there is no state constraint, MPC buys you an online optimiser, a solver failure mode and a certification headache in exchange for nothing. When constraints bind — thruster limits during a fuel-limited descent, a keep-out zone, a glideslope — MPC plans around them instead of discovering them at saturation. Preview of a known reference or disturbance (wind profile, target motion) is the other decisive advantage.',
+          'Unconstrained linear MPC with an infinite horizon IS LQR, so the entire value of MPC comes from constraints and preview. If your actuator is rarely saturated and there is no state constraint, MPC buys you an online optimizer, a solver failure mode and a certification headache in exchange for nothing. When constraints bind — thruster limits during a fuel-limited descent, a keep-out zone, a glideslope — MPC plans around them instead of discovering them at saturation. Preview of a known reference or disturbance (wind profile, target motion) is the other decisive advantage.',
         b: 1.0,
         bloom: 'analyze',
       },
@@ -3110,7 +3110,7 @@ assert max_horizon(d) == 20`,
         ],
         answer: 1,
         explain:
-          'Hard state constraints plus disturbance equals eventual infeasibility, so flight formulations almost never use hard state constraints. Softening with slacks and a large linear penalty keeps the QP always feasible and recovers the hard constraint whenever it is attainable (that is the role of an exact penalty). Separately, flight software must never depend on an optimiser succeeding: the standard architecture keeps the previous feasible plan and a simple certified fallback law, with a deterministic switch and a telemetry counter. Both mitigations are used together, not as alternatives.',
+          'Hard state constraints plus disturbance equals eventual infeasibility, so flight formulations almost never use hard state constraints. Softening with slacks and a large linear penalty keeps the QP always feasible and recovers the hard constraint whenever it is attainable (that is the role of an exact penalty). Separately, flight software must never depend on an optimizer succeeding: the standard architecture keeps the previous feasible plan and a simple certified fallback law, with a deterministic switch and a telemetry counter. Both mitigations are used together, not as alternatives.',
         b: 1.4,
         bloom: 'apply',
       },
@@ -3139,7 +3139,7 @@ assert max_horizon(d) == 20`,
       {
         id: 'c_m32_qp',
         front: 'Linear MPC as a QP',
-        back: 'Quadratic cost plus linear dynamics and polytopic constraints gives min 0.5*z.T*H*z + f.T*z subject to A_in*z <= b_in and A_eq*z = b_eq. H is positive definite when R is, so the problem is convex with a unique minimiser.',
+        back: 'Quadratic cost plus linear dynamics and polytopic constraints gives min 0.5*z.T*H*z + f.T*z subject to A_in*z <= b_in and A_eq*z = b_eq. H is positive definite when R is, so the problem is convex with a unique minimizer.',
         formula: true,
       },
       {
@@ -3177,12 +3177,12 @@ assert max_horizon(d) == 20`,
       {
         id: 'c_m32_warmstart',
         front: 'Warm starting',
-        back: 'Initialise the solver with the previous solution shifted one step and the terminal law appended. Typically cuts iterations by a large factor — but the WORST case, not the warm-started average, is what you certify against.',
+        back: 'Initialize the solver with the previous solution shifted one step and the terminal law appended. Typically cuts iterations by a large factor — but the WORST case, not the warm-started average, is what you certify against.',
       },
       {
         id: 'c_m32_osqp',
         front: 'OSQP in one line',
-        back: 'An operator-splitting (ADMM) QP solver: division-free after a single factorisation, fixed memory, and it detects infeasibility. Its predictable per-iteration cost is why it appears in embedded code generation.',
+        back: 'An operator-splitting (ADMM) QP solver: division-free after a single factorization, fixed memory, and it detects infeasibility. Its predictable per-iteration cost is why it appears in embedded code generation.',
       },
       {
         id: 'c_m32_horizon',
@@ -3192,11 +3192,11 @@ assert max_horizon(d) == 20`,
       {
         id: 'c_m32_lqr_equiv',
         front: 'The equivalence to remember',
-        back: 'Unconstrained linear MPC with an infinite horizon is exactly LQR. Every benefit of MPC comes from constraints, preview, or time variation — never from the optimisation alone.',
+        back: 'Unconstrained linear MPC with an infinite horizon is exactly LQR. Every benefit of MPC comes from constraints, preview, or time variation — never from the optimization alone.',
       },
       {
         id: 'c_m32_fallback',
-        front: 'The flight-software rule for onboard optimisers',
+        front: 'The flight-software rule for onboard optimizers',
         back: 'Never let a control cycle depend on a solver succeeding. Cap iterations, keep the last feasible plan, and carry a certified simple fallback law with a deterministic switch and a telemetry counter.',
       },
     ],
@@ -3358,7 +3358,7 @@ assert np.max(np.abs(rot - A_svd @ v)) < 1e-7, "the two Wahba solutions must agr
 
 1. Implement Gauss-Newton with an analytic Jacobian and show it diverges from a poor initial guess.
 2. Implement Levenberg-Marquardt with an adaptive damping parameter and show it converges from the same guess.
-3. Report the estimated covariance from inv(J.T*inv(R)*J) and compare it against the sample covariance from 1000 noise realisations.
+3. Report the estimated covariance from inv(J.T*inv(R)*J) and compare it against the sample covariance from 1000 noise realizations.
 
 Success: LM converges where GN does not, and the analytic covariance matches the sample covariance within a few percent.`,
         starter: `import numpy as np
@@ -3413,14 +3413,14 @@ Write a short note explaining what physical situations in navigation create near
         id: 'q_m33_wahba',
         q: 'State the Wahba problem and give its SVD solution.',
         choices: [
-          'Minimise the sum of squared range residuals; solve by normal equations',
-          'Find the rotation A minimising 0.5 * sum of a_i * ||b_i - A*r_i||^2 over proper rotations. Form B = sum a_i * outer(b_i, r_i), take B = U*S*V.T, and set A = U * diag(1, 1, det(U)*det(V)) * V.T',
-          'Find the quaternion that maximises the trace of B; solve by normal equations',
+          'Minimize the sum of squared range residuals; solve by normal equations',
+          'Find the rotation A minimizing 0.5 * sum of a_i * ||b_i - A*r_i||^2 over proper rotations. Form B = sum a_i * outer(b_i, r_i), take B = U*S*V.T, and set A = U * diag(1, 1, det(U)*det(V)) * V.T',
+          'Find the quaternion that maximizes the trace of B; solve by normal equations',
           'Fit a rotation by three successive Euler angle least-squares fits',
         ],
         answer: 1,
         explain:
-          'Wahba (1965) asks for the least-squares rotation aligning two sets of unit vectors. Expanding the cost shows minimising it is the same as maximising trace(A*B.T), the orthogonal Procrustes problem. The SVD of the attitude profile matrix gives the maximiser, and the det(U)*det(V) correction is essential: without it the answer can be a reflection, which has determinant -1 and is not a physical attitude.',
+          'Wahba (1965) asks for the least-squares rotation aligning two sets of unit vectors. Expanding the cost shows minimizing it is the same as maximizing trace(A*B.T), the orthogonal Procrustes problem. The SVD of the attitude profile matrix gives the maximizer, and the det(U)*det(V) correction is essential: without it the answer can be a reflection, which has determinant -1 and is not a physical attitude.',
         b: 1.3,
         bloom: 'recall',
       },
@@ -3435,7 +3435,7 @@ Write a short note explaining what physical situations in navigation create near
         ],
         answer: 1,
         explain:
-          'TRIAD is a deterministic construction, not an estimator: it uses exactly two vectors, trusts the primary one completely, and discards information. The cross product that defines the second triad axis shrinks like sin of the separation angle, so the normalisation divides noise by a small number. QUEST solves Wahba by finding the largest eigenvalue of the K matrix with an efficient Newton iteration, weights observations by their actual accuracy, extends to many vectors, and produces an attitude covariance you can hand to a filter. Geometry still matters for QUEST, but it fails gracefully rather than catastrophically.',
+          'TRIAD is a deterministic construction, not an estimator: it uses exactly two vectors, trusts the primary one completely, and discards information. The cross product that defines the second triad axis shrinks like sin of the separation angle, so the normalization divides noise by a small number. QUEST solves Wahba by finding the largest eigenvalue of the K matrix with an efficient Newton iteration, weights observations by their actual accuracy, extends to many vectors, and produces an attitude covariance you can hand to a filter. Geometry still matters for QUEST, but it fails gracefully rather than catastrophically.',
         b: 1.2,
         bloom: 'analyze',
       },
@@ -3444,13 +3444,13 @@ Write a short note explaining what physical situations in navigation create near
         q: 'Show that weighted least squares with W = inv(R) is the maximum likelihood estimator for a linear model under Gaussian noise.',
         choices: [
           'It is not; ML requires a prior on the state',
-          'With y = H*x + v, v ~ N(0, R), the log-likelihood is -0.5*(y - H*x).T*inv(R)*(y - H*x) plus a constant, so maximising it is exactly minimising the inv(R)-weighted residual norm, giving x_hat = inv(H.T*inv(R)*H)*H.T*inv(R)*y',
+          'With y = H*x + v, v ~ N(0, R), the log-likelihood is -0.5*(y - H*x).T*inv(R)*(y - H*x) plus a constant, so maximizing it is exactly minimizing the inv(R)-weighted residual norm, giving x_hat = inv(H.T*inv(R)*H)*H.T*inv(R)*y',
           'It holds only when R is diagonal',
           'It holds only for scalar measurements',
         ],
         answer: 1,
         explain:
-          'The Gaussian density has exponent -0.5 times the Mahalanobis norm of the residual, so the negative log-likelihood is the inv(R)-weighted sum of squares up to an additive constant. Maximum likelihood and weighted least squares are therefore the same optimisation. This also explains the weighting: measurements are weighted by their inverse covariance, that is, by their information. Adding a Gaussian prior turns the same argument into MAP estimation, and the resulting recursive form is the Kalman filter.',
+          'The Gaussian density has exponent -0.5 times the Mahalanobis norm of the residual, so the negative log-likelihood is the inv(R)-weighted sum of squares up to an additive constant. Maximum likelihood and weighted least squares are therefore the same optimization. This also explains the weighting: measurements are weighted by their inverse covariance, that is, by their information. Adding a Gaussian prior turns the same argument into MAP estimation, and the resulting recursive form is the Kalman filter.',
         b: 1.1,
         bloom: 'apply',
       },
@@ -3459,13 +3459,13 @@ Write a short note explaining what physical situations in navigation create near
         q: 'Your normal matrix H.T*W*H has condition number 1e12. Diagnose and fix.',
         choices: [
           'The measurements are wrong; discard the data',
-          'One state direction is nearly unobservable from this data. Never form the normal equations at that conditioning — solve by QR or SVD on the weighted design matrix, which halves the effective condition number. Fix the underlying problem by adding geometry-diverse measurements, rescaling states to comparable units, estimating fewer parameters, or regularising with a prior',
+          'One state direction is nearly unobservable from this data. Never form the normal equations at that conditioning — solve by QR or SVD on the weighted design matrix, which halves the effective condition number. Fix the underlying problem by adding geometry-diverse measurements, rescaling states to comparable units, estimating fewer parameters, or regularizing with a prior',
           'Increase the numerical precision to float128 and proceed',
           'Reduce the measurement noise covariance R',
         ],
         answer: 1,
         explain:
-          'A condition number of 1e12 on the normal matrix means roughly 1e6 on the design matrix, so forming H.T*W*H throws away half your significant digits before you start. Orthogonal factorisations work on the design matrix directly and avoid the squaring. Just as importantly, the conditioning usually has a physical cause worth fixing: poor observation geometry, an over-parameterised state where two parameters trade off (a classic being a constant accelerometer bias against a gravity error over a short arc), or states with wildly different units. Regularisation or a consider-covariance treatment is the answer when you cannot improve geometry.',
+          'A condition number of 1e12 on the normal matrix means roughly 1e6 on the design matrix, so forming H.T*W*H throws away half your significant digits before you start. Orthogonal factorizations work on the design matrix directly and avoid the squaring. Just as importantly, the conditioning usually has a physical cause worth fixing: poor observation geometry, an over-parameterized state where two parameters trade off (a classic being a constant accelerometer bias against a gravity error over a short arc), or states with wildly different units. Regularization or a consider-covariance treatment is the answer when you cannot improve geometry.',
         b: 1.5,
         bloom: 'analyze',
       },
@@ -3489,7 +3489,7 @@ Write a short note explaining what physical situations in navigation create near
       {
         id: 'c_m33_normal',
         front: 'Normal equations',
-        back: 'x_hat = inv(H.T*H)*H.T*y minimises ||y - H*x||^2. Correct in exact arithmetic; numerically it squares the condition number, so prefer QR or SVD.',
+        back: 'x_hat = inv(H.T*H)*H.T*y minimizes ||y - H*x||^2. Correct in exact arithmetic; numerically it squares the condition number, so prefer QR or SVD.',
         formula: true,
       },
       {
@@ -3506,7 +3506,7 @@ Write a short note explaining what physical situations in navigation create near
       {
         id: 'c_m33_ml_wls',
         front: 'ML equals WLS under Gaussian noise',
-        back: 'The Gaussian negative log-likelihood is 0.5*(y - H*x).T*inv(R)*(y - H*x) plus a constant, so maximising likelihood IS minimising the inverse-covariance-weighted residual.',
+        back: 'The Gaussian negative log-likelihood is 0.5*(y - H*x).T*inv(R)*(y - H*x) plus a constant, so maximizing likelihood IS minimizing the inverse-covariance-weighted residual.',
         formula: true,
       },
       {
@@ -3530,13 +3530,13 @@ Write a short note explaining what physical situations in navigation create near
       {
         id: 'c_m33_wahba',
         front: 'The Wahba problem',
-        back: 'Minimise 0.5 * sum of a_i * ||b_i - A*r_i||^2 over proper rotations A, given body observations b_i and reference vectors r_i. It is the orthogonal Procrustes problem on SO(3).',
+        back: 'Minimize 0.5 * sum of a_i * ||b_i - A*r_i||^2 over proper rotations A, given body observations b_i and reference vectors r_i. It is the orthogonal Procrustes problem on SO(3).',
         formula: true,
       },
       {
         id: 'c_m33_profile',
         front: 'Attitude profile matrix',
-        back: 'B = sum of a_i * outer(b_i, r_i). Minimising the Wahba cost equals maximising trace(A*B.T). Every Wahba solver is a different way of doing that maximisation.',
+        back: 'B = sum of a_i * outer(b_i, r_i). Minimizing the Wahba cost equals maximizing trace(A*B.T). Every Wahba solver is a different way of doing that maximization.',
         formula: true,
       },
       {
@@ -3559,18 +3559,18 @@ Write a short note explaining what physical situations in navigation create near
       {
         id: 'c_m33_triad',
         front: 'TRIAD and its weakness',
-        back: 'Deterministic two-vector method: build an orthonormal triad from the primary observation and the normalised cross product. Error blows up like 1/sin(angle between the two vectors), and it cannot use a third measurement.',
+        back: 'Deterministic two-vector method: build an orthonormal triad from the primary observation and the normalized cross product. Error blows up like 1/sin(angle between the two vectors), and it cannot use a third measurement.',
       },
       {
         id: 'c_m33_cond',
         front: 'Condition number as an observability metric',
-        back: 'cond(H.T*W*H) = cond(H_weighted)^2. A large value means some state direction carries almost no information. Solve by QR/SVD, and fix the geometry, the parameterisation or the state list.',
+        back: 'cond(H.T*W*H) = cond(H_weighted)^2. A large value means some state direction carries almost no information. Solve by QR/SVD, and fix the geometry, the parameterization or the state list.',
         formula: true,
       },
       {
         id: 'c_m33_huber',
         front: 'Huber loss',
-        back: 'Quadratic for small residuals, linear beyond a threshold k (usually 1.345 sigma for 95% Gaussian efficiency). It bounds the influence of outliers without the all-or-nothing behaviour of hard rejection.',
+        back: 'Quadratic for small residuals, linear beyond a threshold k (usually 1.345 sigma for 95% Gaussian efficiency). It bounds the influence of outliers without the all-or-nothing behavior of hard rejection.',
         formula: true,
       },
     ],
@@ -3744,7 +3744,7 @@ for joseph in (True, False):
         kind: 'code',
         lang: 'python',
         hours: 7,
-        prompt: `Run 500 independent Monte Carlo realisations of your constant-velocity filter against truth.
+        prompt: `Run 500 independent Monte Carlo realizations of your constant-velocity filter against truth.
 
 1. At each step compute NEES = e.T*inv(P)*e with e = x_true - x_hat, average over runs, and plot against the two-sided 95% chi-square bounds for 500*n degrees of freedom divided by 500.
 2. Compute NIS = nu.T*inv(S)*nu from the innovations, which needs no truth and can therefore be run on real flight data.
@@ -3764,7 +3764,7 @@ from scipy.stats import chi2
 
 
 def nees(x_true: np.ndarray, x_hat: np.ndarray, P: np.ndarray) -> float:
-    """Normalised estimation error squared: e' P^-1 e.
+    """Normalized estimation error squared: e' P^-1 e.
 
     TODO: form the error, then use np.linalg.solve rather than inv — the
     covariance is often near-singular and inv will happily hand you garbage.
@@ -3773,7 +3773,7 @@ def nees(x_true: np.ndarray, x_hat: np.ndarray, P: np.ndarray) -> float:
 
 
 def nis(innovation: np.ndarray, S: np.ndarray) -> float:
-    """Normalised innovation squared: nu' S^-1 nu.
+    """Normalized innovation squared: nu' S^-1 nu.
 
     TODO: same shape as NEES, but it needs no truth at all.
     """
@@ -3853,8 +3853,8 @@ For each, identify the signature in the **innovation sequence** (mean, whiteness
         id: 'q_m34_gain',
         q: 'Derive the Kalman gain from the minimum-variance condition. What is the result?',
         choices: [
-          'K = P*H.T, minimising the innovation',
-          'Minimising the trace of P_plus = (I - K*H)*P_minus*(I - K*H).T + K*R*K.T with respect to K gives K = P_minus*H.T*inv(H*P_minus*H.T + R)',
+          'K = P*H.T, minimizing the innovation',
+          'Minimizing the trace of P_plus = (I - K*H)*P_minus*(I - K*H).T + K*R*K.T with respect to K gives K = P_minus*H.T*inv(H*P_minus*H.T + R)',
           'K = inv(R)*H*P_minus',
           'K = H*P_minus*inv(R)',
         ],
@@ -3875,7 +3875,7 @@ For each, identify the signature in the **innovation sequence** (mean, whiteness
         ],
         answer: 1,
         explain:
-          'NEES above the bound means the actual error is larger than the covariance claims — an optimistic filter, which is the dangerous direction because downstream consumers trust the covariance. Correlated innovations point to structure the filter is not modelling: a bias, a mismodelled dynamic, or a timing error that makes every residual lean the same way. The three standard remedies in order of preference are: model the effect explicitly by augmenting the state, treat it with a consider covariance, or, as a blunt instrument, inflate Q. Timing and time-tag errors are a hugely underrated cause in real navigation systems.',
+          'NEES above the bound means the actual error is larger than the covariance claims — an optimistic filter, which is the dangerous direction because downstream consumers trust the covariance. Correlated innovations point to structure the filter is not modeling: a bias, a mismodelled dynamic, or a timing error that makes every residual lean the same way. The three standard remedies in order of preference are: model the effect explicitly by augmenting the state, treat it with a consider covariance, or, as a blunt instrument, inflate Q. Timing and time-tag errors are a hugely underrated cause in real navigation systems.',
         b: 1.6,
         bloom: 'analyze',
       },
@@ -3920,7 +3920,7 @@ For each, identify the signature in the **innovation sequence** (mean, whiteness
         ],
         answer: 1,
         explain:
-          'K = P*H.T*inv(H*P*H.T + R) is a trust ratio: prediction confidence in the numerator, total innovation variance in the denominator. Zero gain means the filter believes its prediction completely. That is correct when the measurement really is comparatively poor, and catastrophic when the covariance shrank for the wrong reason — too little Q, unmodelled dynamics, or a stale model. The symptom is large innovations relative to sqrt(S) with a covariance that keeps claiming tiny errors. Fading memory, Q inflation, or a lower bound on P are the standard defences.',
+          'K = P*H.T*inv(H*P*H.T + R) is a trust ratio: prediction confidence in the numerator, total innovation variance in the denominator. Zero gain means the filter believes its prediction completely. That is correct when the measurement really is comparatively poor, and catastrophic when the covariance shrank for the wrong reason — too little Q, unmodelled dynamics, or a stale model. The symptom is large innovations relative to sqrt(S) with a covariance that keeps claiming tiny errors. Fading memory, Q inflation, or a lower bound on P are the standard defenses.',
         b: 1.2,
         bloom: 'understand',
       },
@@ -4105,12 +4105,12 @@ For each, identify the signature in the **innovation sequence** (mean, whiteness
         kind: 'code',
         lang: 'python',
         hours: 9,
-        prompt: `Classic hard problem: a stationary observer measures only the bearing to a constant-velocity target. The measurement is strongly nonlinear in the state and the geometry is weakly observable without an observer manoeuvre.
+        prompt: `Classic hard problem: a stationary observer measures only the bearing to a constant-velocity target. The measurement is strongly nonlinear in the state and the geometry is weakly observable without an observer maneuver.
 
 1. Implement an EKF with an analytic Jacobian.
 2. Implement a UKF with the scaled unscented transform (alpha = 1e-3, beta = 2, kappa = 0).
 3. Run 300 Monte Carlo trials. Report position RMSE, average NEES, and divergence rate (fraction of runs whose error exceeds 5 sigma) for both.
-4. Repeat with an observer manoeuvre partway through and show the observability change.
+4. Repeat with an observer maneuver partway through and show the observability change.
 
 Success: the UKF has a lower divergence rate, you can quantify the cost ratio (2n+1 propagations vs one propagation plus a Jacobian), and you can state which nonlinearity characteristic decides between them.`,
         starter: `import numpy as np
@@ -4172,7 +4172,7 @@ assert abs(float(m) - 4.5) < 1e-8, "UT should capture the second-order mean shif
         prompt: `Build a multiplicative EKF with a 6-element error state: three-axis attitude error (small-angle rotation vector) and three-axis gyro bias.
 
 Nominal state: a unit quaternion plus a bias vector, propagated with the gyro measurement.
-Error state: delta_theta and delta_b, propagated with the standard linearised model.
+Error state: delta_theta and delta_b, propagated with the standard linearized model.
 Measurements: a sun vector and a magnetometer vector, each with its own noise covariance.
 
 Steps:
@@ -4223,7 +4223,7 @@ assert abs(np.linalg.norm(quat_from_rotvec(np.array([1e-9, 0.0, 0.0]))) - 1.0) <
 q = np.array([1.0, 0.0, 0.0, 0.0]); b = np.zeros(3); P = np.eye(6) * 1e-4
 for _ in range(2000):
     q, b, P = mekf_propagate(q, b, P, np.array([0.01, -0.02, 0.005]), 0.01, 1e-9, 1e-12)
-assert abs(np.linalg.norm(q) - 1.0) < 1e-9, "renormalise the nominal quaternion"
+assert abs(np.linalg.norm(q) - 1.0) < 1e-9, "renormalize the nominal quaternion"
 assert np.allclose(P, P.T, atol=1e-12), "covariance must stay symmetric"`,
           },
           {
@@ -4265,7 +4265,7 @@ import numpy as np
 def effective_sample_size(w: np.ndarray) -> float:
     """ESS = 1 / sum(w^2) for weights that sum to one.
 
-    TODO: normalise first, then one line. ESS near N means the cloud is
+    TODO: normalize first, then one line. ESS near N means the cloud is
     healthy; ESS near 1 means a single particle carries all the weight.
     """
     raise NotImplementedError
@@ -4342,7 +4342,7 @@ assert int((idx == 0).sum()) == 3, f'expected 3 copies of the heavy particle, go
         ],
         answer: 1,
         explain:
-          'The core issue is that attitude lives on a group, not a vector space. Adding a correction to a unit quaternion produces something off the unit sphere; renormalising afterwards is an unmodelled nonlinear operation that makes the covariance wrong. The 4x4 covariance also has a null direction along q itself, since motion in that direction is physically meaningless, which means the filter is estimating a quantity with a structurally singular covariance. The MEKF resolves both problems by separating a nominal (large, on-manifold) part from an error (small, in the tangent space at the nominal). The tangent space is genuinely 3-dimensional, the error stays small so linearization is excellent, and the injection keeps the nominal exactly on the manifold.',
+          'The core issue is that attitude lives on a group, not a vector space. Adding a correction to a unit quaternion produces something off the unit sphere; renormalizing afterwards is an unmodelled nonlinear operation that makes the covariance wrong. The 4x4 covariance also has a null direction along q itself, since motion in that direction is physically meaningless, which means the filter is estimating a quantity with a structurally singular covariance. The MEKF resolves both problems by separating a nominal (large, on-manifold) part from an error (small, in the tangent space at the nominal). The tangent space is genuinely 3-dimensional, the error stays small so linearization is excellent, and the injection keeps the nominal exactly on the manifold.',
         b: 1.7,
         bloom: 'understand',
       },
@@ -4367,12 +4367,12 @@ assert int((idx == 0).sum()) == 3, f'expected 3 copies of the heavy particle, go
         choices: [
           'Reset simply zeroes the error state; no covariance change is needed',
           'After the error estimate is injected into the nominal state, the error state is set to zero, which re-anchors the tangent space at the NEW nominal. Because the map from the old error coordinates to the new ones is not the identity, the covariance must be transformed by the Jacobian of that reset map, G = I - skew(0.5*delta_theta) for the attitude block',
-          'Reset reinitialises the covariance to its initial value',
+          'Reset reinitializes the covariance to its initial value',
           'The Jacobian is applied to the state, not the covariance',
         ],
         answer: 1,
         explain:
-          'The error state parameterises a perturbation relative to a specific nominal. Once the nominal moves, the same physical uncertainty is described by different coordinates, so the covariance must be pushed through the change of coordinates. For attitude, the reset Jacobian is G = I - skew(0.5*delta_theta) (equivalently the left Jacobian of the exponential map to first order), and P is updated as G*P*G.T. The correction is second order in the error, so implementations that omit it often still work; but it matters for consistency in high-accuracy filters and it is a favourite interview detail because it shows whether you understand what the error state IS.',
+          'The error state parameterizes a perturbation relative to a specific nominal. Once the nominal moves, the same physical uncertainty is described by different coordinates, so the covariance must be pushed through the change of coordinates. For attitude, the reset Jacobian is G = I - skew(0.5*delta_theta) (equivalently the left Jacobian of the exponential map to first order), and P is updated as G*P*G.T. The correction is second order in the error, so implementations that omit it often still work; but it matters for consistency in high-accuracy filters and it is a favorite interview detail because it shows whether you understand what the error state IS.',
         b: 2.0,
         bloom: 'analyze',
       },
@@ -4381,13 +4381,13 @@ assert int((idx == 0).sum()) == 3, f'expected 3 copies of the heavy particle, go
         q: 'When is a particle filter the only correct choice, and what is its practical killer?',
         choices: [
           'Whenever the dynamics are nonlinear; its killer is numerical instability',
-          'When the posterior is genuinely multi-modal or strongly non-Gaussian — terrain-referenced navigation over ambiguous terrain, initial lost-in-space localisation, data association ambiguity. Its killer is the curse of dimensionality: the number of particles needed grows exponentially with the effective state dimension, so it is impractical beyond roughly a handful of dimensions unless you Rao-Blackwellise',
+          'When the posterior is genuinely multi-modal or strongly non-Gaussian — terrain-referenced navigation over ambiguous terrain, initial lost-in-space localization, data association ambiguity. Its killer is the curse of dimensionality: the number of particles needed grows exponentially with the effective state dimension, so it is impractical beyond roughly a handful of dimensions unless you Rao-Blackwellise',
           'When the measurement rate is very high; its killer is compute cost per measurement',
-          'When the noise is coloured; its killer is resampling',
+          'When the noise is colored; its killer is resampling',
         ],
         answer: 1,
         explain:
-          'A Gaussian filter of any flavour represents the posterior with one mean and one covariance, so it cannot represent two competing hypotheses — it averages them, landing in a place neither hypothesis supports, or it locks arbitrarily onto one. A particle filter represents an arbitrary distribution by samples and handles this naturally. The price is that sample-based representation of a high-dimensional density needs exponentially many samples; in practice people Rao-Blackwellise, sampling only the few nonlinear or ambiguous dimensions and running an analytic Kalman filter conditioned on each sample. Degeneracy (all weight on one particle) and impoverishment after aggressive resampling are the other standard failure modes, handled by effective-sample-size triggered resampling and roughening.',
+          'A Gaussian filter of any flavor represents the posterior with one mean and one covariance, so it cannot represent two competing hypotheses — it averages them, landing in a place neither hypothesis supports, or it locks arbitrarily onto one. A particle filter represents an arbitrary distribution by samples and handles this naturally. The price is that sample-based representation of a high-dimensional density needs exponentially many samples; in practice people Rao-Blackwellise, sampling only the few nonlinear or ambiguous dimensions and running an analytic Kalman filter conditioned on each sample. Degeneracy (all weight on one particle) and impoverishment after aggressive resampling are the other standard failure modes, handled by effective-sample-size triggered resampling and roughening.',
         b: 1.6,
         bloom: 'understand',
       },
@@ -4462,7 +4462,7 @@ assert int((idx == 0).sum()) == 3, f'expected 3 copies of the heavy particle, go
       {
         id: 'c_m35_vector_jac',
         front: 'Measurement Jacobian for a rotated reference vector',
-        back: 'With the predicted body vector v_hat = A(q)*r, the Jacobian with respect to delta_theta is skew(v_hat) (sign depends on the error convention). Memorise the convention you use and never mix two.',
+        back: 'With the predicted body vector v_hat = A(q)*r, the Jacobian with respect to delta_theta is skew(v_hat) (sign depends on the error convention). Memorize the convention you use and never mix two.',
         formula: true,
       },
       {
@@ -4473,12 +4473,12 @@ assert int((idx == 0).sum()) == 3, f'expected 3 copies of the heavy particle, go
       {
         id: 'c_m35_pf',
         front: 'Bootstrap particle filter loop',
-        back: 'Propagate each particle through the dynamics with sampled noise, weight by the measurement likelihood, normalise, and resample when the effective sample size drops below a threshold (often N/2).',
+        back: 'Propagate each particle through the dynamics with sampled noise, weight by the measurement likelihood, normalize, and resample when the effective sample size drops below a threshold (often N/2).',
       },
       {
         id: 'c_m35_ess',
         front: 'Effective sample size',
-        back: 'N_eff = 1 / sum of the squared normalised weights. It falls to 1 when one particle holds all the weight (degeneracy). Resample on N_eff, not every step, and add roughening to avoid impoverishment.',
+        back: 'N_eff = 1 / sum of the squared normalized weights. It falls to 1 when one particle holds all the weight (degeneracy). Resample on N_eff, not every step, and add roughening to avoid impoverishment.',
         formula: true,
       },
       {
@@ -4489,7 +4489,7 @@ assert int((idx == 0).sum()) == 3, f'expected 3 copies of the heavy particle, go
       {
         id: 'c_m35_imm',
         front: 'IMM filter',
-        back: 'Run a bank of filters for different motion models, mix their estimates each step according to a Markov transition matrix over models, and combine by model probability. Standard for manoeuvring-target tracking.',
+        back: 'Run a bank of filters for different motion models, mix their estimates each step according to a Markov transition matrix over models, and combine by model probability. Standard for maneuvering-target tracking.',
       },
       {
         id: 'c_m35_iekf',
@@ -4507,7 +4507,7 @@ assert int((idx == 0).sum()) == 3, f'expected 3 copies of the heavy particle, go
     tier: 4,
     title: 'Inertial Navigation & IMU Mechanization',
     summary:
-      'Write a strapdown mechanization that survives contact with a real IMU: coning and sculling corrections, Allan variance characterisation, and a 15-state error-state INS/GNSS filter. You will be able to predict free-inertial drift from a gyro bias spec and explain what the Schuler period actually bounds.',
+      'Write a strapdown mechanization that survives contact with a real IMU: coning and sculling corrections, Allan variance characterization, and a 15-state error-state INS/GNSS filter. You will be able to predict free-inertial drift from a gyro bias spec and explain what the Schuler period actually bounds.',
     prereqs: ['t4_m35_nonlinear_filters', 't1_m15_rotating_frames', 't1_m17_attitude_kinematics'],
     hours: 70,
     topics: [
@@ -4653,12 +4653,12 @@ assert np.linalg.norm(v) < 1.0, "a perfect stationary IMU should show under 1 m/
         kind: 'code',
         lang: 'python',
         hours: 6,
-        prompt: `Compute the overlapping Allan deviation of a long static gyro record (use a public IMU dataset or synthesise one with known ARW, bias instability and rate random walk).
+        prompt: `Compute the overlapping Allan deviation of a long static gyro record (use a public IMU dataset or synthesize one with known ARW, bias instability and rate random walk).
 
 1. Implement the overlapping Allan variance estimator.
 2. Plot log-log Allan deviation against averaging time.
 3. Read off **angle random walk** from the -1/2 slope at tau = 1 s, **bias instability** from the flat minimum (divide by 0.664), and **rate random walk** from the +1/2 slope at tau = 3 s.
-4. Confirm your extracted parameters match the values you synthesised.
+4. Confirm your extracted parameters match the values you synthesized.
 
 Success: all three parameters recovered within 10%, and you can name the slope for each noise type from memory.`,
         starter: `import numpy as np
@@ -4822,7 +4822,7 @@ assert abs(true_coning_rate(1.0, 20.0) - a*a*w/2) < 1e-12`,
           'Coning is random gyro noise; the error is random and averages out',
           'Coning is angular motion where the body axis sweeps a cone — for example sinusoidal rotation about two orthogonal axes in quadrature. Because finite rotations do not commute, the integral of the angular rate is not the net rotation; the commutator term accumulates as a systematic drift about the third axis, which is why it never averages out',
           'Coning is an accelerometer effect caused by vibration; it is handled by sculling correction',
-          'Coning is an artifact of quaternion normalisation',
+          'Coning is an artifact of quaternion normalization',
         ],
         answer: 1,
         explain:
@@ -4871,7 +4871,7 @@ assert abs(true_coning_rate(1.0, 20.0) - a*a*w/2) < 1e-12`,
         ],
         answer: 1,
         explain:
-          'On a log-log Allan deviation plot each noise process has a signature slope: -1 is quantization noise, -1/2 is angle (or velocity) random walk from white rate noise, 0 (the flat floor) is bias instability, +1/2 is rate random walk, and +1 is a rate ramp or drift. ARW is read at tau = 1 s directly; bias instability is the minimum value divided by 0.664; rate random walk is read at tau = 3 s times a factor of 3. Those five slopes are worth memorising because every IMU datasheet is written in their language.',
+          'On a log-log Allan deviation plot each noise process has a signature slope: -1 is quantization noise, -1/2 is angle (or velocity) random walk from white rate noise, 0 (the flat floor) is bias instability, +1/2 is rate random walk, and +1 is a rate ramp or drift. ARW is read at tau = 1 s directly; bias instability is the minimum value divided by 0.664; rate random walk is read at tau = 3 s times a factor of 3. Those five slopes are worth memorizing because every IMU datasheet is written in their language.',
         b: 1.0,
         bloom: 'recall',
       },
@@ -4925,7 +4925,7 @@ assert abs(true_coning_rate(1.0, 20.0) - a*a*w/2) < 1e-12`,
       {
         id: 'c_m36_sculling',
         front: 'Sculling error',
-        back: 'The velocity-channel analogue of coning: correlated angular and linear vibration produces a systematic velocity error when specific force is integrated naively. Corrected with multi-sample sculling algorithms.',
+        back: 'The velocity-channel analog of coning: correlated angular and linear vibration produces a systematic velocity error when specific force is integrated naively. Corrected with multi-sample sculling algorithms.',
       },
       {
         id: 'c_m36_earth_rate',
@@ -5039,7 +5039,7 @@ assert abs(true_coning_rate(1.0, 20.0) - a*a*w/2) < 1e-12`,
 3. Report the residuals and compare them to the expected user-equivalent range error.
 4. Then implement the DOP computation from the same geometry matrix.
 
-Success: convergence in under six iterations from a centre-of-Earth initial guess, and DOP values consistent with the geometry you supplied.`,
+Success: convergence in under six iterations from a center-of-Earth initial guess, and DOP values consistent with the geometry you supplied.`,
         starter: `import numpy as np
 
 C_LIGHT = 299792458.0
@@ -5127,7 +5127,7 @@ G = 9.80665
 
 
 def free_inertial_position_error(accel_bias_mg: float, t: float) -> float:
-    """Position error from an uncompensated accelerometer bias, metres.
+    """Position error from an uncompensated accelerometer bias, meters.
 
     TODO: a constant bias b integrates twice, so the error is 0.5 * b * t^2.
     Convert milli-g to m/s^2 first.
@@ -5136,7 +5136,7 @@ def free_inertial_position_error(accel_bias_mg: float, t: float) -> float:
 
 
 def tilt_induced_error(gyro_bias_dph: float, t: float) -> float:
-    """Position error from gravity leaking through a growing tilt, metres.
+    """Position error from gravity leaking through a growing tilt, meters.
 
     A gyro bias tilts the platform linearly in time; that tilt projects
     gravity into the horizontal channel, which then integrates twice more.
@@ -5231,13 +5231,13 @@ Deliver a short note on how DOP would feed a launch-window analysis.`,
         q: 'What is the linearized pseudorange measurement Jacobian row for satellite i?',
         choices: [
           '[unit line of sight (3 components), 0]',
-          '[-e_i.T, 1] where e_i is the unit vector from the receiver estimate toward satellite i, so the partial with respect to position is minus the line-of-sight unit vector and the partial with respect to clock bias (in metres) is 1',
+          '[-e_i.T, 1] where e_i is the unit vector from the receiver estimate toward satellite i, so the partial with respect to position is minus the line-of-sight unit vector and the partial with respect to clock bias (in meters) is 1',
           '[e_i.T, -1]',
           '[position difference (3 components), speed of light]',
         ],
         answer: 1,
         explain:
-          'With rho = ||s_i - x|| + b, the partial with respect to x is -(s_i - x).T / ||s_i - x|| = -e_i.T, and the partial with respect to b (expressed in metres) is exactly 1. Stacking these rows gives the geometry matrix G, and inv(G.T*G) is the DOP matrix. Notice that the clock column being all ones is why a satellite directly overhead and a satellite on the horizon contribute so differently: DOP is entirely about how well the line-of-sight unit vectors span three dimensions while remaining distinguishable from the all-ones clock direction.',
+          'With rho = ||s_i - x|| + b, the partial with respect to x is -(s_i - x).T / ||s_i - x|| = -e_i.T, and the partial with respect to b (expressed in meters) is exactly 1. Stacking these rows gives the geometry matrix G, and inv(G.T*G) is the DOP matrix. Notice that the clock column being all ones is why a satellite directly overhead and a satellite on the horizon contribute so differently: DOP is entirely about how well the line-of-sight unit vectors span three dimensions while remaining distinguishable from the all-ones clock direction.',
         b: 1.2,
         bloom: 'apply',
       },
@@ -5261,7 +5261,7 @@ Deliver a short note on how DOP would feed a launch-window analysis.`,
         q: 'A booster GNSS receiver loses lock during the entry burn. What carries navigation, and for how long?',
         choices: [
           'Nothing; navigation is lost until lock is regained',
-          'The inertial solution coasts, with error growth set by IMU quality: a navigation-grade IMU holds metre-level position for tens of seconds and drifts through hundreds of metres over a couple of minutes, while a tactical-grade unit degrades far faster. Radar altimeter, optical or terrain-relative measurements can bound it, and the receiver reacquires faster if the inertial solution aids the tracking loops',
+          'The inertial solution coasts, with error growth set by IMU quality: a navigation-grade IMU holds meter-level position for tens of seconds and drifts through hundreds of meters over a couple of minutes, while a tactical-grade unit degrades far faster. Radar altimeter, optical or terrain-relative measurements can bound it, and the receiver reacquires faster if the inertial solution aids the tracking loops',
           'The star tracker provides position during the outage',
           'The flight computer extrapolates the last GNSS fix with a constant-velocity model',
         ],
@@ -5278,11 +5278,11 @@ Deliver a short note on how DOP would feed a launch-window analysis.`,
           'By averaging the two frequencies',
           'Ionospheric delay is dispersive, scaling as 1/f^2, so a linear combination of the L1 and L2 pseudoranges with coefficients f1^2/(f1^2 - f2^2) and -f2^2/(f1^2 - f2^2) cancels the first-order term exactly, at the cost of roughly tripling the noise',
           'By using the L2 signal only, which is unaffected by the ionosphere',
-          'By modelling the ionosphere with the Klobuchar parameters broadcast on L2',
+          'By modeling the ionosphere with the Klobuchar parameters broadcast on L2',
         ],
         answer: 1,
         explain:
-          'The ionosphere is a dispersive medium for the ionised plasma: group delay on the code scales as 40.3*TEC/f^2, and it advances the carrier phase by the same amount. Because the frequency dependence is known, two frequencies give two equations for the delay and the true range, and the ionosphere-free combination eliminates the first-order term. The cost is a noise amplification of about a factor of three, so single-frequency receivers use a broadcast model (Klobuchar) that removes only about half the error. Second-order ionospheric terms matter only for the most precise geodetic work.',
+          'The ionosphere is a dispersive medium for the ionized plasma: group delay on the code scales as 40.3*TEC/f^2, and it advances the carrier phase by the same amount. Because the frequency dependence is known, two frequencies give two equations for the delay and the true range, and the ionosphere-free combination eliminates the first-order term. The cost is a noise amplification of about a factor of three, so single-frequency receivers use a broadcast model (Klobuchar) that removes only about half the error. Second-order ionospheric terms matter only for the most precise geodetic work.',
         b: 1.5,
         bloom: 'understand',
       },
@@ -5321,17 +5321,17 @@ Deliver a short note on how DOP would feed a launch-window analysis.`,
       {
         id: 'c_m37_tropo',
         front: 'Troposphere versus ionosphere',
-        back: 'The troposphere is NOT dispersive, so dual-frequency does not help; it must be modelled (Saastamoinen, Hopfield) with a mapping function, or estimated as a zenith delay state. Zenith delay is about 2.3 m, rising steeply at low elevation.',
+        back: 'The troposphere is NOT dispersive, so dual-frequency does not help; it must be modeled (Saastamoinen, Hopfield) with a mapping function, or estimated as a zenith delay state. Zenith delay is about 2.3 m, rising steeply at low elevation.',
       },
       {
         id: 'c_m37_carrier',
         front: 'Carrier phase measurement',
-        back: 'Millimetre-level precision but biased by an unknown integer number of wavelengths (19 cm on L1). Resolve the ambiguity (LAMBDA) and you have centimetre positioning; lose lock and the cycle slip must be detected and repaired.',
+        back: 'Millimeter-level precision but biased by an unknown integer number of wavelengths (19 cm on L1). Resolve the ambiguity (LAMBDA) and you have centimeter positioning; lose lock and the cycle slip must be detected and repaired.',
       },
       {
         id: 'c_m37_rtk',
         front: 'DGNSS, RTK and PPP',
-        back: 'DGNSS: broadcast code corrections, metre to decimetre. RTK: carrier phase plus a nearby base station, centimetre, short baselines. PPP: precise orbit and clock products with no base station, decimetre after a long convergence.',
+        back: 'DGNSS: broadcast code corrections, meter to decimetre. RTK: carrier phase plus a nearby base station, centimeter, short baselines. PPP: precise orbit and clock products with no base station, decimetre after a long convergence.',
       },
       {
         id: 'c_m37_raim',
@@ -5494,11 +5494,11 @@ assert np.allclose(a1, a2, atol=1e-12), "interstar angles must be invariant unde
         kind: 'code',
         lang: 'python',
         hours: 5,
-        prompt: `Synthesise magnetometer data from a tumbling spacecraft with a hard-iron offset, a soft-iron matrix and noise.
+        prompt: `Synthesize magnetometer data from a tumbling spacecraft with a hard-iron offset, a soft-iron matrix and noise.
 
 1. Show that the raw measurements lie on an ellipsoid rather than a sphere.
 2. Fit the ellipsoid by least squares on the quadratic form.
-3. Extract the hard-iron bias (centre) and the soft-iron correction (from the matrix square root of the quadratic form).
+3. Extract the hard-iron bias (center) and the soft-iron correction (from the matrix square root of the quadratic form).
 4. Apply the calibration and show the corrected data lies on a sphere of the expected field magnitude.
 
 Success: residual radius spread drops by an order of magnitude and the recovered bias matches truth.`,
@@ -5570,7 +5570,7 @@ Deliver a plot of attitude error contribution against orbital position and a one
         ],
         answer: 1,
         explain:
-          'Think of it geometrically. A star displaced by delta pixels rotates the estimated attitude about an axis in the focal plane by delta/f radians — that is the cross-boresight sensitivity. To sense roll, the same delta must be interpreted as an arc about the boresight, and the arc radius is the star angular distance from the centre, which is bounded by the half field of view. So the roll sensitivity is smaller by a factor of about tan(half FOV). A narrow field of view therefore buys cross-boresight accuracy and pays for it in roll. The mitigation is either a wider field, or a second tracker whose boresight is orthogonal to the first — which is why flight vehicles fly two or three heads at different orientations.',
+          'Think of it geometrically. A star displaced by delta pixels rotates the estimated attitude about an axis in the focal plane by delta/f radians — that is the cross-boresight sensitivity. To sense roll, the same delta must be interpreted as an arc about the boresight, and the arc radius is the star angular distance from the center, which is bounded by the half field of view. So the roll sensitivity is smaller by a factor of about tan(half FOV). A narrow field of view therefore buys cross-boresight accuracy and pays for it in roll. The mitigation is either a wider field, or a second tracker whose boresight is orthogonal to the first — which is why flight vehicles fly two or three heads at different orientations.',
         b: 1.3,
         bloom: 'understand',
       },
@@ -5600,7 +5600,7 @@ Deliver a plot of attitude error contribution against orbital position and a one
         ],
         answer: 1,
         explain:
-          'The inertial solution answers "how have I moved" with drift; it never answers "where am I relative to the hazard-free landing site". Before TRN, Mars landing ellipses were kilometres across, dominated by delivery and map-tie uncertainty. The Mars 2020 Lander Vision System matched descent imagery to an orbital map during parachute descent and cut the position uncertainty to tens of metres, which is what made Terrain Relative Navigation and the associated divert possible in the Jezero hazard field. The same architecture — absolute fixes against a map, fused with an inertial solution in a filter — is what any precision landing system needs.',
+          'The inertial solution answers "how have I moved" with drift; it never answers "where am I relative to the hazard-free landing site". Before TRN, Mars landing ellipses were kilometers across, dominated by delivery and map-tie uncertainty. The Mars 2020 Lander Vision System matched descent imagery to an orbital map during parachute descent and cut the position uncertainty to tens of meters, which is what made Terrain Relative Navigation and the associated divert possible in the Jezero hazard field. The same architecture — absolute fixes against a map, fused with an inertial solution in a filter — is what any precision landing system needs.',
         b: 1.2,
         bloom: 'understand',
       },
@@ -5630,7 +5630,7 @@ Deliver a plot of attitude error contribution against orbital position and a one
         ],
         answer: 1,
         explain:
-          'Back-projecting a pixel through the intrinsics gives a ray, not a point. That is why monocular optical navigation needs several landmarks (three known landmarks give a P3P solution with up to four candidate poses), or motion over time to obtain parallax, or a laser altimeter to supply range directly. It is also why the scale of monocular visual odometry is unobservable without an accelerometer or a known baseline. When you write the measurement model, the residual is properly expressed in normalised image coordinates or as an angle, with the covariance derived from the centroid uncertainty in pixels times the inverse focal length.',
+          'Back-projecting a pixel through the intrinsics gives a ray, not a point. That is why monocular optical navigation needs several landmarks (three known landmarks give a P3P solution with up to four candidate poses), or motion over time to obtain parallax, or a laser altimeter to supply range directly. It is also why the scale of monocular visual odometry is unobservable without an accelerometer or a known baseline. When you write the measurement model, the residual is properly expressed in normalized image coordinates or as an angle, with the covariance derived from the centroid uncertainty in pixels times the inverse focal length.',
         b: 1.0,
         bloom: 'apply',
       },
@@ -5681,7 +5681,7 @@ Deliver a plot of attitude error contribution against orbital position and a one
       {
         id: 'c_m38_hardsoft',
         front: 'Hard-iron and soft-iron',
-        back: 'Hard iron is an additive offset from the spacecraft own permanent dipole; soft iron is a multiplicative distortion from induced magnetisation. Calibration fits an ellipsoid: centre gives hard iron, the shape matrix gives soft iron.',
+        back: 'Hard iron is an additive offset from the spacecraft own permanent dipole; soft iron is a multiplicative distortion from induced magnetization. Calibration fits an ellipsoid: center gives hard iron, the shape matrix gives soft iron.',
         formula: true,
       },
       {
@@ -5698,12 +5698,12 @@ Deliver a plot of attitude error contribution against orbital position and a one
       {
         id: 'c_m38_trn',
         front: 'Terrain relative navigation',
-        back: 'Match descent imagery to an onboard map (craters, landmarks, template patches) for an ABSOLUTE position fix relative to the terrain. It removes both inertial drift and map-tie error, which is what turns a kilometre landing ellipse into tens of metres.',
+        back: 'Match descent imagery to an onboard map (craters, landmarks, template patches) for an ABSOLUTE position fix relative to the terrain. It removes both inertial drift and map-tie error, which is what turns a kilometer landing ellipse into tens of meters.',
       },
       {
         id: 'c_m38_altimeter',
         front: 'Radar versus laser altimeter',
-        back: 'Radar: long range, works through dust and in daylight, wide beam so it averages terrain. Lidar: narrow beam, centimetre precision, gives slant range and can build a hazard map — but it is scattered by dust and plume.',
+        back: 'Radar: long range, works through dust and in daylight, wide beam so it averages terrain. Lidar: narrow beam, centimeter precision, gives slant range and can build a hazard map — but it is scattered by dust and plume.',
       },
       {
         id: 'c_m38_alignment',
@@ -5983,13 +5983,13 @@ def pc_circular(miss_m: float, sigma_m: float, radius_m: float = HARD_BODY_M) ->
     constant across it, so
         Pc = (radius^2 / (2 sigma^2)) * exp(-miss^2 / (2 sigma^2))
     Derive it by integrating the 2-D Gaussian over a disc of radius \`radius\`
-    centred at \`miss\`.
+    centered at \`miss\`.
     """
     raise NotImplementedError
 
 
 def dilution_peak_sigma(miss_m: float) -> float:
-    """The sigma at which Pc is maximised for a fixed miss distance.
+    """The sigma at which Pc is maximized for a fixed miss distance.
 
     TODO: differentiate log Pc with respect to sigma and set it to zero. The
     answer is miss / sqrt(2), and it does not depend on the hard-body radius
@@ -6081,7 +6081,7 @@ assert abs(pc_circular(m, s, 40.0)/pc_circular(m, s, 20.0) - 4.0) < 1e-9`,
         ],
         answer: 1,
         explain:
-          'A pure white process noise is a poor description of a mismodelled force, which is typically correlated over minutes to hours. DMC models it as a coloured process with a correlation time chosen to match the physics, so the filter can absorb a smooth error without over-fitting or drifting. It is the standard answer to residuals that show slow structure in a low Earth orbit solution where drag is uncertain. The alternatives are to model the effect explicitly (better when you can) or to use a consider covariance (better when the parameter is badly observable and you only want its uncertainty accounted for).',
+          'A pure white process noise is a poor description of a mismodelled force, which is typically correlated over minutes to hours. DMC models it as a colored process with a correlation time chosen to match the physics, so the filter can absorb a smooth error without over-fitting or drifting. It is the standard answer to residuals that show slow structure in a low Earth orbit solution where drag is uncertain. The alternatives are to model the effect explicitly (better when you can) or to use a consider covariance (better when the parameter is badly observable and you only want its uncertainty accounted for).',
         b: 1.6,
         bloom: 'understand',
       },
@@ -6090,13 +6090,13 @@ assert abs(pc_circular(m, s, 40.0)/pc_circular(m, s, 20.0) - 4.0) < 1e-9`,
         q: 'Your OD covariance is optimistic compared to the actual errors. Name three causes.',
         choices: [
           'Too many measurements; too many stations; too long an arc',
-          'Unmodelled or mismodelled dynamics with too little process noise (drag, solar radiation pressure, an undetected manoeuvre); measurement errors that are correlated or biased rather than white and zero-mean (station biases, timing, tropospheric mismodelling), so the data carries less independent information than the filter assumes; and linearization error over a long arc, or neglected parameter uncertainty that a consider covariance would capture',
+          'Unmodelled or mismodelled dynamics with too little process noise (drag, solar radiation pressure, an undetected maneuver); measurement errors that are correlated or biased rather than white and zero-mean (station biases, timing, tropospheric mismodelling), so the data carries less independent information than the filter assumes; and linearization error over a long arc, or neglected parameter uncertainty that a consider covariance would capture',
           'Numerical round-off only',
           'The reference trajectory was integrated with too small a step size',
         ],
         answer: 1,
         explain:
-          'An optimistic covariance means the filter believes it has more information than it does. The three families of cause are dynamics, measurements and linearization. Correlated measurement error is the one people forget: if a station has a range bias, one hundred measurements from that pass are nearly one measurement in information content, yet the filter counts one hundred. The remedies mirror the causes: DMC or explicit force modelling, station bias states or consider parameters, data weighting and de-correlation, and covariance realism factors validated against overlapping-arc comparisons.',
+          'An optimistic covariance means the filter believes it has more information than it does. The three families of cause are dynamics, measurements and linearization. Correlated measurement error is the one people forget: if a station has a range bias, one hundred measurements from that pass are nearly one measurement in information content, yet the filter counts one hundred. The remedies mirror the causes: DMC or explicit force modeling, station bias states or consider parameters, data weighting and de-correlation, and covariance realism factors validated against overlapping-arc comparisons.',
         b: 1.7,
         bloom: 'analyze',
       },
@@ -6184,12 +6184,12 @@ assert abs(pc_circular(m, s, 40.0)/pc_circular(m, s, 20.0) - 4.0) < 1e-9`,
       {
         id: 'c_m39_editing',
         front: 'Residual editing',
-        back: 'Reject measurements whose normalised residual exceeds a threshold (commonly 3 sigma), but always count and trend the rejections. A rising edit rate is the first symptom of an unmodelled manoeuvre or a dynamics error.',
+        back: 'Reject measurements whose normalized residual exceeds a threshold (commonly 3 sigma), but always count and trend the rejections. A rising edit rate is the first symptom of an unmodelled maneuver or a dynamics error.',
       },
       {
         id: 'c_m39_maneuver',
-        front: 'Manoeuvre estimation',
-        back: 'Either solve for an impulsive delta-v at a known epoch as extra state parameters, or detect the manoeuvre from a residual break and split the arc. An undetected manoeuvre is the classic cause of a wildly optimistic covariance.',
+        front: 'Maneuver estimation',
+        back: 'Either solve for an impulsive delta-v at a known epoch as extra state parameters, or detect the maneuver from a residual break and split the arc. An undetected maneuver is the classic cause of a wildly optimistic covariance.',
       },
     ],
   },
@@ -6212,7 +6212,7 @@ assert abs(pc_circular(m, s, 40.0)/pc_circular(m, s, 20.0) - 4.0) < 1e-9`,
       'Open-loop vs closed-loop guidance; reference-trajectory following vs explicit guidance',
       'Line-of-sight guidance and pursuit guidance',
       'Proportional navigation: derivation, the navigation constant N, and the LOS-rate nulling principle',
-      'Why N between 3 and 5; augmented proportional navigation for manoeuvring targets',
+      'Why N between 3 and 5; augmented proportional navigation for maneuvering targets',
       'True vs pure proportional navigation',
       'Optimal guidance from an LQ formulation and how PN emerges from it',
       'Zero-effort-miss and zero-effort-velocity guidance; the ZEM/ZEV feedback law for landing',
@@ -6265,15 +6265,15 @@ assert abs(pc_circular(m, s, 40.0)/pc_circular(m, s, 20.0) - 4.0) < 1e-9`,
         kind: 'code',
         lang: 'python',
         hours: 7,
-        prompt: `Implement planar proportional navigation against a non-manoeuvring and then a manoeuvring target.
+        prompt: `Implement planar proportional navigation against a non-maneuvering and then a maneuvering target.
 
 1. Compute line-of-sight rate and closing velocity from the relative state.
 2. Command a_c = N * Vc * lambda_dot perpendicular to the line of sight.
 3. Sweep N from 2 to 6 and plot miss distance and peak commanded acceleration.
 4. Add a first-order autopilot lag and re-run; show how the optimal N moves.
-5. Implement augmented PN and show the improvement against a constant-g manoeuvring target.
+5. Implement augmented PN and show the improvement against a constant-g maneuvering target.
 
-Success: miss distance collapses for N >= 3 without lag, the lag case shows the classic trade, and APN visibly beats PN against the manoeuvring target.`,
+Success: miss distance collapses for N >= 3 without lag, the lag case shows the classic trade, and APN visibly beats PN against the maneuvering target.`,
         starter: `import numpy as np
 
 
@@ -6501,16 +6501,16 @@ assert abs(base - 0.5*0.4*300.0**2*np.deg2rad(2.0)) < 1e-9`,
       },
       {
         id: 'q_m40_n3',
-        q: 'Why is N = 3 the theoretically optimal navigation constant against a non-manoeuvring target?',
+        q: 'Why is N = 3 the theoretically optimal navigation constant against a non-maneuvering target?',
         choices: [
           'Because three is the number of spatial dimensions',
-          'Because minimising the integral of squared acceleration subject to zero terminal miss gives exactly a_c = 3*Vc*lambda_dot; N = 3 is the minimum-control-energy solution. Real designs use 4 or 5 to buy robustness against autopilot lag, noise and target manoeuvre, paying for it in peak acceleration',
-          'Because miss distance is minimised at N = 3 in all cases',
+          'Because minimizing the integral of squared acceleration subject to zero terminal miss gives exactly a_c = 3*Vc*lambda_dot; N = 3 is the minimum-control-energy solution. Real designs use 4 or 5 to buy robustness against autopilot lag, noise and target maneuver, paying for it in peak acceleration',
+          'Because miss distance is minimized at N = 3 in all cases',
           'Because the LOS rate transfer function has three poles',
         ],
         answer: 1,
         explain:
-          'Pose the terminal guidance problem as minimising the integral of the squared commanded acceleration subject to driving zero-effort-miss to zero. The optimal feedback is a_c = 3*ZEM/tgo^2, which for a non-manoeuvring target is identical to 3*Vc*lambda_dot. Larger N nulls errors faster and is more tolerant of lag and of late disturbances, at the cost of higher peak acceleration and more sensitivity to LOS-rate noise (which grows near intercept as range shrinks). The practical range of 3 to 5 is where that trade lands for real seekers and real autopilots.',
+          'Pose the terminal guidance problem as minimizing the integral of the squared commanded acceleration subject to driving zero-effort-miss to zero. The optimal feedback is a_c = 3*ZEM/tgo^2, which for a non-maneuvering target is identical to 3*Vc*lambda_dot. Larger N nulls errors faster and is more tolerant of lag and of late disturbances, at the cost of higher peak acceleration and more sensitivity to LOS-rate noise (which grows near intercept as range shrinks). The practical range of 3 to 5 is where that trade lands for real seekers and real autopilots.',
         b: 1.5,
         bloom: 'understand',
       },
@@ -6533,7 +6533,7 @@ assert abs(base - 0.5*0.4*300.0**2*np.deg2rad(2.0)) < 1e-9`,
         id: 'q_m40_gravity_turn',
         q: 'Why is a gravity turn efficient, and what does it cost you?',
         choices: [
-          'It minimises drag losses by flying the shortest path',
+          'It minimizes drag losses by flying the shortest path',
           'Flying at zero angle of attack means the aerodynamic side force and the associated q*alpha structural load are near zero, and no propellant is spent generating lift or fighting the atmosphere to turn — gravity does the turning for free. The cost is that the trajectory is then determined almost entirely by the initial pitch kick, so you give up in-flight shaping exactly where the vehicle is most load-limited',
           'It eliminates gravity losses entirely',
           'It allows the engines to be throttled down through max-Q',
@@ -6586,7 +6586,7 @@ assert abs(base - 0.5*0.4*300.0**2*np.deg2rad(2.0)) < 1e-9`,
       {
         id: 'c_m40_n',
         front: 'Why N is 3 to 5',
-        back: 'N = 3 is the minimum-control-energy optimum against a non-manoeuvring target. Higher N is more tolerant of autopilot lag and late disturbances but costs peak acceleration and amplifies LOS-rate noise near intercept.',
+        back: 'N = 3 is the minimum-control-energy optimum against a non-maneuvering target. Higher N is more tolerant of autopilot lag and late disturbances but costs peak acceleration and amplifies LOS-rate noise near intercept.',
       },
       {
         id: 'c_m40_apn',
@@ -6597,7 +6597,7 @@ assert abs(base - 0.5*0.4*300.0**2*np.deg2rad(2.0)) < 1e-9`,
       {
         id: 'c_m40_zem',
         front: 'Zero-effort miss',
-        back: 'ZEM = r_f - (r + v*tgo + 0.5*g*tgo^2): the terminal position error if you never thrust again. Compute it by propagating the UNCONTROLLED dynamics, so it generalises to any force model.',
+        back: 'ZEM = r_f - (r + v*tgo + 0.5*g*tgo^2): the terminal position error if you never thrust again. Compute it by propagating the UNCONTROLLED dynamics, so it generalizes to any force model.',
         formula: true,
       },
       {
@@ -6615,7 +6615,7 @@ assert abs(base - 0.5*0.4*300.0**2*np.deg2rad(2.0)) < 1e-9`,
       {
         id: 'c_m40_pn_from_zem',
         front: 'PN as a ZEM law',
-        back: 'a_c = N*ZEM/tgo^2. For a non-manoeuvring target this is identical to N*Vc*lambda_dot, which is why N = 3 is the minimum-energy constant.',
+        back: 'a_c = N*ZEM/tgo^2. For a non-maneuvering target this is identical to N*Vc*lambda_dot, which is why N = 3 is the minimum-energy constant.',
         formula: true,
       },
       {
@@ -6637,7 +6637,7 @@ assert abs(base - 0.5*0.4*300.0**2*np.deg2rad(2.0)) < 1e-9`,
       {
         id: 'c_m40_adjoint',
         front: 'Adjoint method for miss distance',
-        back: 'Run the linearised guidance loop BACKWARD from the terminal time to get miss-distance sensitivity to every disturbance in one integration, instead of one simulation per disturbance. Zarchan standard technique.',
+        back: 'Run the linearized guidance loop BACKWARD from the terminal time to get miss-distance sensitivity to every disturbance in one integration, instead of one simulation per disturbance. Zarchan standard technique.',
       },
       {
         id: 'c_m40_explicit',
@@ -6720,32 +6720,112 @@ assert abs(base - 0.5*0.4*300.0**2*np.deg2rad(2.0)) < 1e-9`,
         kind: 'code',
         lang: 'python',
         hours: 8,
-        prompt: `Consider flat-Earth, constant-gravity, vacuum ascent with constant exhaust velocity.
+        prompt: `Consider flat-Earth, constant-gravity, vacuum ascent with constant exhaust velocity and constant mass flow, starting from rest at the origin.
 
 1. Write the Hamiltonian, apply the Euler-Lagrange conditions, and show the costates for the velocity components are linear in time, so the optimal thrust direction satisfies tan(pitch) = A + B*t.
-2. Implement a two-parameter shooting solve for A and B that hits a target burnout altitude, horizontal velocity and vertical velocity.
-3. Compare the propellant used against a direct-collocation optimal solution.
+2. Implement \`integrate_ascent\` with RK4 (a 0.1 s step is accurate to well under a meter; plain Euler needs about 0.01 s). Make the last step land exactly on \`t_burn\`.
+3. Implement a three-parameter shooting solve for A, B and the burn time t_burn that hits a target burnout altitude, horizontal velocity and vertical velocity: three unknowns for three conditions, as lesson 3 sets it up. Use Newton's method with a finite-difference Jacobian, and start from A = 1, B = -0.01, t_burn = 150 s (a nonzero B keeps the Jacobian from going singular).
+4. Check optimality without an optimizer: add a small extra term c*t^2 to tan(pitch), re-solve for (A, B, t_burn) for c between -4e-5 and +4e-5, and show the burn time (and so the propellant, at constant flow) is smallest at c = 0. The minimum is shallow (about 0.04 s at the ends of that range), so converge each solve tightly.
 
-Success: the shooting solution matches the collocation optimum to under 0.1%, and you can reproduce the derivation from memory.`,
+The test vehicle has a mass of 50 t, including 38 t of propellant, and burns 200 kg/s at an exhaust velocity of 3400 m/s. Its thrust is 680 kN, a thrust-to-weight ratio of 1.39 at ignition. The target is horizontal velocity 2800 m/s, vertical velocity 0 and altitude 60 km.
+
+Success: the shooting solve meets all three targets inside the propellant load (the reference burn is 171.16 s, 34.2 t of propellant), step 4 shows a minimum at c = 0, and you can reproduce the derivation from memory.`,
         starter: `import numpy as np
+
+G0 = 9.80665
 
 
 def linear_tangent_pitch(A, B, t):
-    """Thrust pitch angle from the linear tangent law: tan(pitch) = A + B*t."""
+    \"\"\"Thrust pitch angle (rad above horizontal) from tan(pitch) = A + B*t.\"\"\"
     raise NotImplementedError
 
 
-def integrate_ascent(A, B, t_burn, m0, mdot, ve, g=9.80665, dt=0.01):
-    """Flat-Earth vacuum ascent under linear tangent steering.
+def integrate_ascent(A, B, t_burn, m0, mdot, ve, g=G0, dt=0.1):
+    \"\"\"Fly from rest at the origin for t_burn seconds under linear tangent steering.
 
-    Returns the terminal state (x, z, vx, vz).
-    """
+    Flat Earth, uniform gravity, no drag, constant mass flow. Returns the
+    terminal state (x, z, vx, vz) in m and m/s.
+    \"\"\"
     raise NotImplementedError
 
 
-def solve_AB(target_vx, target_vz, target_z, m0, mdot, ve, t_burn, g=9.80665):
-    """Two-parameter shooting for (A, B) that meets the terminal conditions."""
+def solve_steering(target_vx, target_vz, target_z, m0, mdot, ve, g=G0,
+                   guess=(1.0, -0.01, 150.0)):
+    \"\"\"Three-parameter shooting: find (A, B, t_burn) that meets the terminal conditions.\"\"\"
     raise NotImplementedError
+`,
+        solution: `import numpy as np
+
+G0 = 9.80665
+
+
+def linear_tangent_pitch(A, B, t):
+    \"\"\"Thrust pitch angle (rad above horizontal) from tan(pitch) = A + B*t.\"\"\"
+    return np.arctan(A + B * t)
+
+
+def integrate_ascent(A, B, t_burn, m0, mdot, ve, g=G0, dt=0.1):
+    \"\"\"Fly from rest at the origin for t_burn seconds under linear tangent steering.
+
+    Flat Earth, uniform gravity, no drag, constant mass flow. Returns the
+    terminal state (x, z, vx, vz) in m and m/s.
+    \"\"\"
+    n = max(1, int(np.ceil(t_burn / dt)))
+    h = t_burn / n                      # land exactly on t_burn
+
+    def f(t, s):
+        beta = linear_tangent_pitch(A, B, t)
+        a = mdot * ve / (m0 - mdot * t)  # thrust acceleration T/m
+        return np.array([s[2], s[3], a * np.cos(beta), a * np.sin(beta) - g])
+
+    s = np.zeros(4)
+    for k in range(n):
+        t = k * h
+        k1 = f(t, s)
+        k2 = f(t + h / 2, s + h / 2 * k1)
+        k3 = f(t + h / 2, s + h / 2 * k2)
+        k4 = f(t + h, s + h * k3)
+        s = s + h / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
+    x, z, vx, vz = s
+    return x, z, vx, vz
+
+
+def solve_steering(target_vx, target_vz, target_z, m0, mdot, ve, g=G0,
+                   guess=(1.0, -0.01, 150.0)):
+    \"\"\"Three-parameter shooting: find (A, B, t_burn) that meets the terminal conditions.\"\"\"
+    target = np.array([target_vx, target_vz, target_z])
+    weight = np.array([1.0, 1.0, 0.01])   # 1 m/s counts like 100 m of altitude
+
+    def residual(p):
+        x, z, vx, vz = integrate_ascent(p[0], p[1], p[2], m0, mdot, ve, g)
+        return (np.array([vx, vz, z]) - target) * weight
+
+    p = np.array(guess, dtype=float)
+    steps = np.array([1e-6, 1e-8, 1e-4])  # finite-difference step per unknown
+    for _ in range(30):
+        r = residual(p)
+        if np.max(np.abs(r)) < 1e-6:
+            break
+        J = np.column_stack([(residual(p + steps[i] * np.eye(3)[i]) - r) / steps[i]
+                             for i in range(3)])
+        dp = np.linalg.solve(J, -r)
+        lam = 1.0                           # halve the step until the miss shrinks
+        while lam > 1e-3:
+            trial = p + lam * dp
+            if 0.0 < trial[2] < m0 / mdot and np.linalg.norm(residual(trial)) < np.linalg.norm(r):
+                break
+            lam /= 2
+        p = trial
+    A, B, t_burn = p
+    return A, B, t_burn
+
+
+if __name__ == "__main__":
+    m0, mdot, ve = 50000.0, 200.0, 3400.0
+    A, B, t_burn = solve_steering(2800.0, 0.0, 60000.0, m0, mdot, ve)
+    print(f"A = {A:.6f}, B = {B:.8f}, t_burn = {t_burn:.3f} s")
+    print("terminal state:", np.round(integrate_ascent(A, B, t_burn, m0, mdot, ve), 3))
+    print(f"propellant used: {mdot * t_burn:.0f} kg")
 `,
         tests: [
           {
@@ -6764,13 +6844,28 @@ p = np.array([linear_tangent_pitch(2.5, -0.02, t) for t in ts])
 assert np.all(np.diff(p) < 0), "negative B must pitch the vehicle over monotonically"`,
           },
           {
+            name: 'horizontal thrust matches the rocket equation',
+            assert: `import numpy as np
+m0, mdot, ve, t = 50000.0, 200.0, 3400.0, 100.0
+x, z, vx, vz = integrate_ascent(0.0, 0.0, t, m0, mdot, ve)
+mf = m0 - mdot * t
+assert abs(vx - ve * np.log(m0 / mf)) < 0.5, "with pitch 0, vx must follow ve*ln(m0/m)"
+assert abs(vz + G0 * t) < 0.5, "with pitch 0, only gravity acts vertically"
+assert abs(z + 0.5 * G0 * t * t) < 20.0, "altitude must fall as g*t^2/2"
+assert abs(x - ve * (t - (mf / mdot) * np.log(m0 / mf))) < 20.0, "downrange distance is off; check the integrator and its step"`,
+          },
+          {
             name: 'shooting hits the terminal conditions',
             assert: `import numpy as np
-m0, mdot, ve, t_burn = 100000.0, 300.0, 3000.0, 200.0
-tgt = (5200.0, 0.0, 180000.0)
-A, B = solve_AB(tgt[0], tgt[1], tgt[2], m0, mdot, ve, t_burn)
+m0, mdot, ve = 50000.0, 200.0, 3400.0
+tgt = (2800.0, 0.0, 60000.0)
+A, B, t_burn = solve_steering(tgt[0], tgt[1], tgt[2], m0, mdot, ve)
+assert 0.0 < t_burn < 190.0, "the burn must end before the 38 t of propellant runs out"
 x, z, vx, vz = integrate_ascent(A, B, t_burn, m0, mdot, ve)
-assert abs(vx - tgt[0]) < 5.0 and abs(vz - tgt[1]) < 5.0, "terminal velocity not met"`,
+assert abs(vx - tgt[0]) < 1.0 and abs(vz - tgt[1]) < 1.0, "terminal velocity not met"
+assert abs(z - tgt[2]) < 100.0, "terminal altitude not met"
+assert B < 0, "the vehicle must pitch over during the burn"
+assert abs(t_burn - 171.16) < 0.2, "burn time should be about 171.2 s"`,
             hidden: true,
           },
         ],
@@ -6791,7 +6886,7 @@ Each cycle, from the current state and vehicle parameters:
 Then:
 - Show convergence from initial conditions dispersed by +/-5% in velocity and +/-10 km in altitude.
 - Plot the tgo estimate and steering parameters against time and demonstrate they settle.
-- Show behaviour when the vehicle is short on performance so the target is unreachable.
+- Show behavior when the vehicle is short on performance so the target is unreachable.
 
 Success: the vehicle inserts within tolerance from every dispersed case, and the unreachable case degrades in a controlled, detectable way rather than diverging.`,
         starter: `"""Powered Explicit Guidance, reduced to the part that matters.
@@ -6837,9 +6932,9 @@ def steering_coefficients(dv_needed: np.ndarray, tgo: float):
 
 
 def thrust_direction(A: np.ndarray, B: np.ndarray, t: float) -> np.ndarray:
-    """Normalised commanded direction at time t into the cycle.
+    """Normalized commanded direction at time t into the cycle.
 
-    TODO: normalise A + B*t. Never command an unnormalised vector: the
+    TODO: normalize A + B*t. Never command an unnormalised vector: the
     autopilot will read the magnitude as a throttle request.
     """
     raise NotImplementedError
@@ -6909,7 +7004,7 @@ Deliver a one-page contingency note with the reachable-orbit envelope against fa
           'It is an empirical fit to Saturn V flight data',
           'From the Euler-Lagrange conditions for the minimum-propellant flat-Earth vacuum ascent problem: the primer vector (the velocity costate) obeys a linear differential equation with constant gravity, so its components are linear in time, and the optimal thrust direction is along it (along -lambda_v under the minimum-principle sign convention) — giving tan(pitch) = A + B*t',
           'From the requirement that angle of attack stay zero through the atmosphere',
-          'From linearising proportional navigation about a nominal ascent trajectory',
+          'From linearizing proportional navigation about a nominal ascent trajectory',
         ],
         answer: 1,
         explain:
@@ -6958,7 +7053,7 @@ Deliver a one-page contingency note with the reachable-orbit envelope against fa
         ],
         answer: 1,
         explain:
-          'This is the single best argument for explicit guidance over reference-following, and it is a favourite interview question. A reference-tracking scheme has nothing sensible to track after a thrust loss. An explicit scheme sees only a different tgo and a different acceleration profile and keeps solving the same boundary-value problem. The flight-program work is not in the guidance algorithm but in the decision logic: how much performance reserve exists as a function of failure time, which degraded orbits are acceptable, when the crossover to an abort mode occurs, and how the attitude control system handles the thrust asymmetry and the changed control authority.',
+          'This is the single best argument for explicit guidance over reference-following, and it is a favorite interview question. A reference-tracking scheme has nothing sensible to track after a thrust loss. An explicit scheme sees only a different tgo and a different acceleration profile and keeps solving the same boundary-value problem. The flight-program work is not in the guidance algorithm but in the decision logic: how much performance reserve exists as a function of failure time, which degraded orbits are acceptable, when the crossover to an abort mode occurs, and how the attitude control system handles the thrust asymmetry and the changed control authority.',
         b: 1.5,
         bloom: 'apply',
       },
@@ -6973,7 +7068,7 @@ Deliver a one-page contingency note with the reachable-orbit envelope against fa
         ],
         answer: 1,
         explain:
-          'Designing a single pitch program to survive a worst-case wind envelope would cost enormous structural margin and performance. Instead, wind is measured in the hours before launch, the trajectory is re-optimised against that actual profile, and the resulting steering commands are loaded. It converts a worst-case design problem into a day-specific one, buying both payload and launch availability. It is also a serious verification burden, since the updated loads must be checked automatically against limits inside the countdown timeline.',
+          'Designing a single pitch program to survive a worst-case wind envelope would cost enormous structural margin and performance. Instead, wind is measured in the hours before launch, the trajectory is re-optimized against that actual profile, and the resulting steering commands are loaded. It converts a worst-case design problem into a day-specific one, buying both payload and launch availability. It is also a serious verification burden, since the updated loads must be checked automatically against limits inside the countdown timeline.',
         b: 1.2,
         bloom: 'recall',
       },
@@ -7004,7 +7099,7 @@ Deliver a one-page contingency note with the reachable-orbit envelope against fa
       {
         id: 'c_m41_upfg',
         front: 'UPFG',
-        back: 'Unified Powered Flight Guidance, the Space Shuttle ascent algorithm (Tim Brand, Draper Laboratory). PEG generalised to multiple phases, staging, and a variety of terminal targets.',
+        back: 'Unified Powered Flight Guidance, the Space Shuttle ascent algorithm (Tim Brand, Draper Laboratory). PEG generalized to multiple phases, staging, and a variety of terminal targets.',
       },
       {
         id: 'c_m41_igm',
@@ -7029,7 +7124,7 @@ Deliver a one-page contingency note with the reachable-orbit envelope against fa
       {
         id: 'c_m41_iload',
         front: 'Day-of-launch I-load update',
-        back: 'Re-optimise the pitch program on launch day against the measured wind profile, so loads are sized for the actual atmosphere and not a worst-case envelope. Buys payload and launch availability.',
+        back: 'Re-optimize the pitch program on launch day against the measured wind profile, so loads are sized for the actual atmosphere and not a worst-case envelope. Buys payload and launch availability.',
       },
       {
         id: 'c_m41_targets',
@@ -7038,7 +7133,7 @@ Deliver a one-page contingency note with the reachable-orbit envelope against fa
       },
       {
         id: 'c_m41_engine_out',
-        front: 'Engine-out behaviour of explicit guidance',
+        front: 'Engine-out behavior of explicit guidance',
         back: 'Recompute tgo with the reduced thrust and mass flow, re-solve the steering, burn longer on a gentler acceleration profile (slower velocity build-up). No special case in the algorithm — the work is in the reserve and fallback-target decision logic.',
       },
       {
@@ -7048,8 +7143,8 @@ Deliver a one-page contingency note with the reachable-orbit envelope against fa
       },
       {
         id: 'c_m41_offline_online',
-        front: 'Offline optimisation vs onboard guidance',
-        back: 'The full ascent trajectory is optimised offline with high-fidelity models to set the pitch program, staging and I-loads. Onboard guidance then only has to close the remaining boundary-value problem in real time from the actual state.',
+        front: 'Offline optimization vs onboard guidance',
+        back: 'The full ascent trajectory is optimized offline with high-fidelity models to set the pitch program, staging and I-loads. Onboard guidance then only has to close the remaining boundary-value problem in real time from the actual state.',
       },
     ],
     tags: ['interview'],

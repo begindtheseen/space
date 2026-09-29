@@ -76,7 +76,7 @@ This is the equation of motion of a rocket. Mass times acceleration equals the e
 No outside object appears in the thrust. The rocket does not push against the air, or the pad, or anything else; it pushes against its own exhaust, and works better in vacuum than in air. And the external forces act on the mass $m$ actually on board at that instant. That is the correct sense in which the mass "varies": $m$ is a known function of time on the left side, not something to be differentiated on the right.
 
 ::: key The correct equation of motion
-The correct equation of motion for a rocket under external forces is $m\,d\mathbf{v}/dt = \mathbf{F}_{\mathrm{ext}} + \mathbf{v}_e|\dot{m}| = \mathbf{F}_{\mathrm{ext}} + \mathbf{T}$, with $\mathbf{T}$ the thrust. The propellant term appears as a force because of the momentum it carries away, not because mass is changing inside $F = ma$.
+The correct equation of motion for a rocket under external forces is $m\,d\mathbf{v}/dt = \mathbf{F}_{\mathrm{ext}} + \mathbf{v}_e|\dot{m}| = \mathbf{F}_{\mathrm{ext}} + \mathbf{T}$, with $\mathbf{T}$ the thrust ($\mathbf{v}_e$ has the exhaust speed and points along the thrust, opposite to the exhaust flow). The propellant term appears as a force because of the momentum it carries away, not because mass is changing inside $F = ma$.
 :::
 
 ### Variable-mass systems in general

@@ -139,7 +139,7 @@ print(f"error, inv @ b     = {np.linalg.norm(x_inv - x_true):.1e}")
 :::
 
 ::: key Why prefer solve(A, b) over inv(A) @ b
-solve factorises once and back-substitutes, costing about a third of the work of forming an explicit inverse, and it avoids the extra rounding of computing and then multiplying by the inverse. Explicit inverses are for when you genuinely need the matrix itself, which is rare.
+solve factorizes once and back-substitutes, costing about a third of the work of forming an explicit inverse, and it avoids the extra rounding of computing and then multiplying by the inverse. Explicit inverses are for when you genuinely need the matrix itself, which is rare.
 :::
 
 ::: warning Solving for many right-hand sides

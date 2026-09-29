@@ -126,7 +126,7 @@ The pairs are fixed:
 - `new[]` pairs with `delete[]`.
 - `malloc` pairs with `free`.
 
-Any other combination is **undefined behaviour** — the standard promises nothing about what happens. That includes `free()`-ing a pointer from `new`, and `delete`-ing one from `malloc`.
+Any other combination is **undefined behavior** — the standard promises nothing about what happens. That includes `free()`-ing a pointer from `new`, and `delete`-ing one from `malloc`.
 
 ::: example `new[]` then `delete`: what two tools say, and what the program does
 ```cpp
@@ -171,7 +171,7 @@ allocated by thread T0 here:
 
 The report gives you both ends. Line 7 is where the memory was wrongly released, line 4 is where it was allocated, and the header names the two functions that did not match: `operator new []` and `operator delete`. The region is 32 bytes because the array was $4 \times 8 = 32$ bytes of `double`.
 
-And the same program built at `-O1` with no sanitizer printed `buf[0] = -9.81` and **exited 0**. Nothing visibly went wrong. That is the characteristic danger of this whole module. The bug is real, the behaviour is undefined, and one build's observable result is a clean run. For `double`, which has no destructor and so no cookie, the two release paths happen to do the same thing on this implementation. Give the type a destructor, or change the allocator, and the same line can crash or corrupt the heap.
+And the same program built at `-O1` with no sanitizer printed `buf[0] = -9.81` and **exited 0**. Nothing visibly went wrong. That is the characteristic danger of this whole module. The bug is real, the behavior is undefined, and one build's observable result is a clean run. For `double`, which has no destructor and so no cookie, the two release paths happen to do the same thing on this implementation. Give the type a destructor, or change the allocator, and the same line can crash or corrupt the heap.
 :::
 
 ## When allocation fails
@@ -209,7 +209,7 @@ Two things to keep.
 
 First, `delete nullptr` and `delete[] nullptr` are defined and do nothing. So a guard like `if (p) delete p;` is noise.
 
-Second, on Linux the failure you get is rarely the failure you fear. The kernel **[[overcommits|overcommit]]**: a request that fits the address space usually succeeds, and a real shortage shows up later, when the out-of-memory killer ends the process. Asking for 512 TiB fails cleanly because no address space that large exists. Asking for 4 GiB on a 2 GiB machine may succeed now and kill you later. On a flight target with no overcommit and no swap, `new` failing is a real, testable event. That is one more reason flight code does all its allocation at initialisation, where a failure can be handled before anything is flying.
+Second, on Linux the failure you get is rarely the failure you fear. The kernel **[[overcommits|overcommit]]**: a request that fits the address space usually succeeds, and a real shortage shows up later, when the out-of-memory killer ends the process. Asking for 512 TiB fails cleanly because no address space that large exists. Asking for 4 GiB on a 2 GiB machine may succeed now and kill you later. On a flight target with no overcommit and no swap, `new` failing is a real, testable event. That is one more reason flight code does all its allocation at initialization, where a failure can be handled before anything is flying.
 
 ::: warning
 If a constructor throws part way through a `new` expression, the language calls the matching `operator delete` on the storage automatically, so the *memory* does not leak. What can still leak is anything the constructor had already acquired through a raw pointer member. That member is never cleaned up, because the object's lifetime never began and so its destructor never runs. Members that own their resources — a `unique_ptr`, a `std::vector` — are destroyed properly. That is the rule of zero (lesson 13) seen from the exception side.
@@ -341,7 +341,7 @@ Notice also that the copy constructor and copy assignment are `= delete`d, meani
 :::
 
 ::: key
-`new T(args)` allocates then constructs; `delete p` destructs then deallocates. `new[]` may allocate extra bytes for an array cookie holding the element count, which is why `delete[]` is a different operation and why mismatching the forms is undefined behaviour. Placement `new`, written `::new (address) T(args)`, runs a constructor in storage you already own and allocates nothing; end that object's life with an explicit `p->~T()`.
+`new T(args)` allocates then constructs; `delete p` destructs then deallocates. `new[]` may allocate extra bytes for an array cookie holding the element count, which is why `delete[]` is a different operation and why mismatching the forms is undefined behavior. Placement `new`, written `::new (address) T(args)`, runs a constructor in storage you already own and allocates nothing; end that object's life with an explicit `p->~T()`.
 :::
 
 ## Check yourself
@@ -367,7 +367,7 @@ The three early exits skip the `delete`, so the `Widget` leaks on each of those 
 
 Adding a `delete` before each `return` is not the fix. It does not help the `throw`, and the next person to add a fourth exit will forget.
 
-The smallest correct change is `auto w = std::make_unique<Widget>(cfg);` and removing the `delete`. The `unique_ptr`'s destructor runs on every path out of the scope, including while an exception is travelling up, so the leak becomes impossible rather than merely absent today. That is lesson 14's subject, and it is why a bare `new` and `delete` in ordinary application code is a review finding under most modern C++ style guides.
+The smallest correct change is `auto w = std::make_unique<Widget>(cfg);` and removing the `delete`. The `unique_ptr`'s destructor runs on every path out of the scope, including while an exception is traveling up, so the leak becomes impossible rather than merely absent today. That is lesson 14's subject, and it is why a bare `new` and `delete` in ordinary application code is a review finding under most modern C++ style guides.
 :::
 
 ::: check
@@ -379,7 +379,7 @@ It cannot run out because it allocates nothing: you supplied the storage, so the
 
 Three obligations shift to you.
 
-1. The storage must be large enough — at least `sizeof(T)` — and correctly aligned for `T`. That is what `alignas(T)` on the byte array buys. Wrong alignment is undefined behaviour, and on some processors a hardware fault.
+1. The storage must be large enough — at least `sizeof(T)` — and correctly aligned for `T`. That is what `alignas(T)` on the byte array buys. Wrong alignment is undefined behavior, and on some processors a hardware fault.
 2. The storage must not already hold a live object. Otherwise you have silently ended that object's lifetime without running its destructor.
 3. You must call `p->~T()` yourself before the storage is reused or goes away, because no `delete` is coming.
 :::
@@ -397,13 +397,13 @@ The general lesson: a byte-by-byte copy is correct exactly when the object owns 
 :::
 
 ::: check
-Flight rules say all allocation happens during initialisation and none afterwards. Does placement `new` in a control loop break that rule?
+Flight rules say all allocation happens during initialization and none afterwards. Does placement `new` in a control loop break that rule?
 :::
 
 ::: answer
 No — and this is precisely why placement `new` exists. The rule is about the *allocator*: calls whose worst-case time has no bound and whose repeated use fragments the heap.
 
-Placement `new` calls no allocation function. It writes a constructor's worth of bytes into storage obtained once, at initialisation, or into a static or automatic object that was never allocated at all. Its cost is exactly the constructor's cost, which for a small struct is a few stores to memory and completely predictable.
+Placement `new` calls no allocation function. It writes a constructor's worth of bytes into storage obtained once, at initialization, or into a static or automatic object that was never allocated at all. Its cost is exactly the constructor's cost, which for a small struct is a few stores to memory and completely predictable.
 
 That is how a fixed-capacity queue, a **ring buffer** of telemetry frames (a fixed array used in a circle, oldest slot reused first) and a pool of message objects are built in flight code. The memory is reserved up front, and objects appear and disappear inside it at a rate the loop controls.
 :::
@@ -417,7 +417,7 @@ That is how a fixed-capacity queue, a **ring buffer** of telemetry frames (a fix
 | `new T[n]` | `operator new[](…)`, possibly plus an array cookie, then `n` constructors in order |
 | `delete[] p` | `n` destructors in reverse order, then `operator delete[]` |
 | array cookie | the element count, stored before the first element when `~T` is non-trivial |
-| mismatching the forms | undefined behaviour; `-Wall` warns, ASan reports `alloc-dealloc-mismatch` |
+| mismatching the forms | undefined behavior; `-Wall` warns, ASan reports `alloc-dealloc-mismatch` |
 | allocation failure | `std::bad_alloc` thrown; `new (std::nothrow) T` returns `nullptr` instead |
 | `delete nullptr` | defined, does nothing |
 | `::new (addr) T(args)` | placement new: constructs in your storage, allocates nothing, cannot run out |
@@ -429,13 +429,13 @@ Lesson 07 asks what the allocator is actually doing when you call `new`, how lon
 ::: context replacing-operator-new Swapping out the allocator
 The standard explicitly allows a program to supply its own global `operator new` and `operator delete`. Define them once, anywhere in the program, and every `new` expression uses yours instead of the library's.
 
-Flight and embedded teams use this for more than printing. A test build can replace `operator new` with one that counts calls — or that stops the program — once initialisation is over. Run the full test suite, and the count proves that no code path allocates while the vehicle is "flying".
+Flight and embedded teams use this for more than printing. A test build can replace `operator new` with one that counts calls — or that stops the program — once initialization is over. Run the full test suite, and the count proves that no code path allocates while the vehicle is "flying".
 :::
 
 ::: context malloc-free The C allocator underneath
 `malloc(n)` is the C library's function for "give me `n` bytes": it returns a pointer to raw, uninitialised memory, or null if it cannot. `free(p)` gives the block back. Neither knows anything about constructors or destructors.
 
-On Linux, g++'s default `operator new` is itself a thin layer over `malloc`. That is why the replacement here can call `malloc` and nothing looks different — and why lesson 07 studies `malloc`'s behaviour when it asks how long `new` takes.
+On Linux, g++'s default `operator new` is itself a thin layer over `malloc`. That is why the replacement here can call `malloc` and nothing looks different — and why lesson 07 studies `malloc`'s behavior when it asks how long `new` takes.
 :::
 
 ::: context sized-deallocation Why pass the size back?

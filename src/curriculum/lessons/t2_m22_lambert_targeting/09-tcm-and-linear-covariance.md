@@ -1,15 +1,15 @@
 ---
 id: l09-tcm-and-linear-covariance
-title: Trajectory correction manoeuvres and linear covariance analysis
+title: Trajectory correction maneuvers and linear covariance analysis
 minutes: 25
 covers:
-  - trajectory correction manoeuvres
+  - trajectory correction maneuvers
   - linear covariance analysis of targeting errors
 ---
 
 Picture driving down a very long, straight road toward a gate far away. If your steering is off by a hair at the start, you will miss the gate by a lot at the end. The fix is easy early on: a gentle nudge of the wheel. Leave it until the last few meters and you have to yank the wheel hard. But there is a catch. At the very start you cannot yet tell whether you are off — the gate is too far away to see well. You have to drive a while before you know which way to nudge.
 
-A spacecraft on its way to Mars is in the same position. Every burn in this module so far has been one clean event: solve Lambert, fly the answer. Real flight is messier. The launch vehicle drops the spacecraft off with small errors. The departure burn has its own execution error. Navigation knows the spacecraft's state only to some finite precision. All of that spread of possible errors — the **[[dispersion|dispersion-word]]** — must be found and removed before arrival. It is removed by small, planned burns called **trajectory correction manoeuvres**, or **TCMs**.
+A spacecraft on its way to Mars is in the same position. Every burn in this module so far has been one clean event: solve Lambert, fly the answer. Real flight is messier. The launch vehicle drops the spacecraft off with small errors. The departure burn has its own execution error. Navigation knows the spacecraft's state only to some finite precision. All of that spread of possible errors — the **[[dispersion|dispersion-word]]** — must be found and removed before arrival. It is removed by small, planned burns called **trajectory correction maneuvers**, or **TCMs**.
 
 This lesson answers two questions with tools you already have. First: does it matter *when* a correction burn happens, and by how much? Second: without simulating thousands of random trajectories, can a mission predict how big its errors at Mars will be, and how big the correction burns must be? Both answers come from the state transition matrix. The lesson ends by showing that the same idea — solve, burn, re-measure, re-solve — is how Lambert sits inside a rendezvous guidance loop.
 
@@ -56,7 +56,7 @@ Leverage alone says: correct as early as possible, right after launch. The other
 
 **Orbit determination** — working out the spacecraft's actual path from tracking data (radio ranging, Doppler shift and so on) — needs time. Measurements pile up over days, and only then is the departure error known well enough to be worth correcting. Burn too early, with a poorly known error, and you may be correcting noise: spending propellant to chase an error bar rather than a real error. Worse, the burn has its own execution error, which can be as large as the error it was meant to fix.
 
-::: key Trajectory correction manoeuvres
+::: key Trajectory correction maneuvers
 A TCM is a small burn that removes accumulated targeting error. Early TCMs are cheap because the error has not yet propagated into a large miss, but they must wait long enough for orbit determination to have converged — a genuine trade, not a preference.
 :::
 
@@ -92,7 +92,7 @@ Step by step: the first equality is the definition. The second uses $(\boldsymbo
 $$
 \mathbf{P}_f = \boldsymbol{\Phi}(t_f,t_0)\,\mathbf{P}_0\,\boldsymbol{\Phi}(t_f,t_0)^{\top} .
 $$
-The same matrix that propagates one perturbation propagates a whole distribution's spread. It is valid exactly as far as the linearisation holds, and is no substitute for a nonlinear Monte Carlo once dispersions grow large enough that it does not.
+The same matrix that propagates one perturbation propagates a whole distribution's spread. It is valid exactly as far as the linearization holds, and is no substitute for a nonlinear Monte Carlo once dispersions grow large enough that it does not.
 :::
 
 To picture a covariance, take the $3\times3$ position block of $\mathbf{P}$. Its **eigenvalues** — the special stretch factors of the matrix — are the squares of the half-lengths (semi-axes) of the $1\sigma$ **uncertainty ellipsoid**, a stretched ball that the spacecraft is inside about as often as a $1\sigma$ error suggests.
@@ -126,7 +126,7 @@ $$
 (This assumes navigation has measured the error perfectly by the time of the burn. Real analyses add the navigation uncertainty and the burn's own execution error as extra covariance terms.)
 
 ::: key What linear covariance gives you
-Linear covariance analysis propagates a covariance through the same STM that propagates the state, producing a predicted dispersion at the target (and the $\Delta v$ statistics of the correction) without running a Monte Carlo — valid only while the linearisation holds.
+Linear covariance analysis propagates a covariance through the same STM that propagates the state, producing a predicted dispersion at the target (and the $\Delta v$ statistics of the correction) without running a Monte Carlo — valid only while the linearization holds.
 :::
 
 ::: example How big should the TCM budget be?
@@ -153,8 +153,8 @@ Use the same $\mathbf{P}_0$ and the same $270$-day transfer. The arrival positio
 These numbers are not rules of thumb. They come from this mission's own injection error and this trajectory's own $\boldsymbol{\Phi}$, which is exactly what a propellant budget should be sized against — and not one random trajectory had to be simulated.
 :::
 
-::: warning Linear covariance is only as good as the linearisation
-Everything in this lesson rests on $\delta\mathbf{x}_f \approx \boldsymbol{\Phi}\,\delta\mathbf{x}_0$ being accurate. That holds well for the small, early errors of a well-controlled injection, which is why linear covariance is standard practice for TCM sizing and B-plane statistics. It stops being trustworthy when an error grows large, or when the path passes through strongly curved dynamics (a close planetary flyby, for instance), so that the second-order terms the linearisation throws away matter. So linear covariance is the fast first answer, and a full nonlinear Monte Carlo, run closer to launch, confirms it rather than replacing it.
+::: warning Linear covariance is only as good as the linearization
+Everything in this lesson rests on $\delta\mathbf{x}_f \approx \boldsymbol{\Phi}\,\delta\mathbf{x}_0$ being accurate. That holds well for the small, early errors of a well-controlled injection, which is why linear covariance is standard practice for TCM sizing and B-plane statistics. It stops being trustworthy when an error grows large, or when the path passes through strongly curved dynamics (a close planetary flyby, for instance), so that the second-order terms the linearization throws away matter. So linear covariance is the fast first answer, and a full nonlinear Monte Carlo, run closer to launch, confirms it rather than replacing it.
 :::
 
 ## Closing the loop: Lambert inside a rendezvous
@@ -254,7 +254,7 @@ Skipping the linear analysis throws away a fast, cheap, explanatory first answer
 | Along-track stretching | A round injection error becomes a long, thin ellipsoid along the path |
 | $\mathbf{P}_{\delta v} = \boldsymbol{\Phi}_{rv}^{-1}\mathbf{P}_{r,f}(\boldsymbol{\Phi}_{rv}^{-1})^{\top}$ | Correction-burn statistics without a Monte Carlo ($9.34\,\mathrm{m/s}$ $1\sigma$ for a day-170 TCM in the example) |
 | Rendezvous loop | Predict target, solve Lambert, burn, re-solve every cycle |
-| Validity | Only as good as the linearisation; confirm with a nonlinear Monte Carlo |
+| Validity | Only as good as the linearization; confirm with a nonlinear Monte Carlo |
 
 Every lesson in this module has built toward one picture. Lambert gives the first guess. The state transition matrix says how sensitive that guess is. Differential correction, B-plane targeting, TCM planning and rendezvous guidance are all the same Newton step — measure the miss, divide by the sensitivity, burn — applied wherever the mission needs it, and repeated until the spacecraft arrives.
 
@@ -287,7 +287,7 @@ A small sideways push tilts the orbit plane slightly, like tilting a hula hoop a
 :::
 
 ::: context tcm-schedule How real missions plan their TCMs
-Mars landers typically plan about five or six TCMs. The first comes a few weeks after launch; others follow through the cruise; the last come in the final days or hours before atmospheric entry, to put the spacecraft into a narrow entry corridor. A planned TCM is often cancelled when navigation shows the trajectory is already good enough, because every burn adds its own small error — and uses propellant.
+Mars landers typically plan about five or six TCMs. The first comes a few weeks after launch; others follow through the cruise; the last come in the final days or hours before atmospheric entry, to put the spacecraft into a narrow entry corridor. A planned TCM is often canceled when navigation shows the trajectory is already good enough, because every burn adds its own small error — and uses propellant.
 :::
 
 ::: context monte-carlo-name Why it is called Monte Carlo

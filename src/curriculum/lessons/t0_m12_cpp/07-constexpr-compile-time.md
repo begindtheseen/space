@@ -22,7 +22,7 @@ Start with two promises. `const` is a promise that a value will not change after
 
 Why bother? Some places in C++ *require* a value known while building — a fixed array's size, a template argument, a `static_assert`, a `case` label — and a `constexpr` value fits all of them.
 
-A `constexpr` *function* is one the compiler is allowed to run while building, when all its inputs are known then. Call the same function with a value that only exists at run time, and it runs as an ordinary function. The keyword adds an ability; it does not take one away. Since C++14 such a function can have loops, local variables and `if` statements. Since C++20 nearly the whole language is allowed. What is still forbidden is anything whose result the compiler could not reproduce: reading or writing files, reading memory that was never set, and any **[[undefined behaviour|ub-at-compile-time]]** — the operations C++ refuses to give a meaning to, such as overflowing a signed integer. If a compile-time calculation tries one, the build fails. That makes compile-time evaluation a free checker for whatever code it touches.
+A `constexpr` *function* is one the compiler is allowed to run while building, when all its inputs are known then. Call the same function with a value that only exists at run time, and it runs as an ordinary function. The keyword adds an ability; it does not take one away. Since C++14 such a function can have loops, local variables and `if` statements. Since C++20 nearly the whole language is allowed. What is still forbidden is anything whose result the compiler could not reproduce: reading or writing files, reading memory that was never set, and any **[[undefined behavior|ub-at-compile-time]]** — the operations C++ refuses to give a meaning to, such as overflowing a signed integer. If a compile-time calculation tries one, the build fails. That makes compile-time evaluation a free checker for whatever code it touches.
 
 ```cpp
 #include <cstdio>
@@ -121,7 +121,7 @@ Sanity check: Python's `zlib.crc32` gives `0x75F2B455` for the same packet.
 :::
 
 ::: example A sine table for a processor without a fast sine
-Some flight processors, and the programmable chips called FPGAs, have no quick way to compute a sine. A common trick is a table of sines plus **linear interpolation** — joining neighbouring table entries with straight lines and reading off the line. `std::sin` is not guaranteed to work at compile time, so the table below computes its own sine with a **[[Taylor series|taylor-sine]]** — a sum of ever-smaller terms — and then checks itself.
+Some flight processors, and the programmable chips called FPGAs, have no quick way to compute a sine. A common trick is a table of sines plus **linear interpolation** — joining neighboring table entries with straight lines and reading off the line. `std::sin` is not guaranteed to work at compile time, so the table below computes its own sine with a **[[Taylor series|taylor-sine]]** — a sum of ever-smaller terms — and then checks itself.
 
 ```cpp
 #include <array>
@@ -203,7 +203,7 @@ That matches the measured $4.71 \times 10^{-6}$: fine for a coarse attitude disp
 
 A **`consteval`** function (say "const-eval") — also called an *immediate* function — *must* be worked out while building. Call it with a run-time value and the build fails with an error such as `'c' is not a constant expression`. Use it for anything that must never run on the vehicle: a timer's reload value, a scale factor, a configuration check.
 
-A **`constinit`** variable is a global (or a `static` local) whose starting value must be a constant expression. So it is filled in while building and sits in the program as data. This removes a whole family of embedded bugs, the **[[static initialisation order|static-init-order]]** problem: one global's set-up code reads another global that has not been set up yet, because C++ does not say which order globals in different source files get set up at start-up. A `constinit` global has no start-up code, so there is nothing to put in the wrong order.
+A **`constinit`** variable is a global (or a `static` local) whose starting value must be a constant expression. So it is filled in while building and sits in the program as data. This removes a whole family of embedded bugs, the **[[static initialization order|static-init-order]]** problem: one global's set-up code reads another global that has not been set up yet, because C++ does not say which order globals in different source files get set up at start-up. A `constinit` global has no start-up code, so there is nothing to put in the wrong order.
 
 **`if constexpr`** is an `if` decided while building. Inside a template, the branch not taken is not even compiled for that type. So one generic function can do different things for a `float` and a `std::int16_t`, and neither path has to make sense for the other type.
 
@@ -245,14 +245,14 @@ int main() {
 Check the tick count: a $2.5\,\mathrm{ms}$ control period on a $1\,\mu\mathrm{s}$ timer is $0.0025 / 0.000001 = 2500$ ticks, and the `+ 0.5` rounds to the nearest whole tick. `std::is_floating_point_v` and `std::is_integral_v` are **type traits**: yes-or-no questions about a type, answered while building — older cousins of lesson 5's concepts.
 
 ::: key
-`constexpr` marks a variable or function the compiler *may* evaluate at compile time; `consteval` marks a function it *must*; `constinit` marks a static variable whose initialiser must be a constant expression, so it needs no run-time initialisation. `static_assert` fails the build when a compile-time condition is false. Compile-time evaluation follows IEEE rounding and refuses to perform undefined behaviour.
+`constexpr` marks a variable or function the compiler *may* evaluate at compile time; `consteval` marks a function it *must*; `constinit` marks a static variable whose initializer must be a constant expression, so it needs no run-time initialization. `static_assert` fails the build when a compile-time condition is false. Compile-time evaluation follows IEEE rounding and refuses to perform undefined behavior.
 :::
 
 ## Units as types
 
 Think of a grocery receipt. You can add apples to apples, but "3 apples plus 2 dollars" is nonsense. Physics works the same way: you can add a length to a length, but never a length to a time. Dividing is different. A length divided by a time is a new kind of thing, a speed.
 
-Lesson 2 wrapped a `double` in `struct Seconds`. That needs a new struct for every unit, and cannot say that metres divided by seconds gives metres per second. A template can.
+Lesson 2 wrapped a `double` in `struct Seconds`. That needs a new struct for every unit, and cannot say that meters divided by seconds gives meters per second. A template can.
 
 The idea: every physical unit is lengths, times and masses raised to whole-number powers. Speed is $\mathrm{m^1\,s^{-1}}$. Force is $\mathrm{kg\,m\,s^{-2}}$. So a `Quantity<L, T, M>` stores those three powers — the **exponents** of length, time and mass — as part of its *type*. Then:
 
@@ -425,7 +425,7 @@ Compile-time floating-point arithmetic is still floating-point arithmetic. A `st
 :::
 
 ::: warning
-`constexpr` on a function does not make it run at compile time. Only a place that *requires* a constant — initialising a `constexpr` variable, a `static_assert`, a template argument — guarantees that. `const auto table = make_table();` may well be computed at run time during start-up. Write `constexpr auto table = make_table();` when you mean the compiler to do the work, or mark the function `consteval` when it must never run on the target.
+`constexpr` on a function does not make it run at compile time. Only a place that *requires* a constant — initializing a `constexpr` variable, a `static_assert`, a template argument — guarantees that. `const auto table = make_table();` may well be computed at run time during start-up. Write `constexpr auto table = make_table();` when you mean the compiler to do the work, or mark the function `consteval` when it must never run on the target.
 :::
 
 ## Check yourself
@@ -437,7 +437,7 @@ What is the difference between `const double kMu = compute_mu();` and `constexpr
 ::: answer
 The `const` version only promises that `kMu` is not changed after it is set. `compute_mu()` may run at start-up and do anything.
 
-The `constexpr` version requires the starting value to be a constant expression worked out by the compiler. So `compute_mu` must itself be declared `constexpr`, and running it must involve no file or device input and output, no reading of run-time state, and no undefined behaviour.
+The `constexpr` version requires the starting value to be a constant expression worked out by the compiler. So `compute_mu` must itself be declared `constexpr`, and running it must involve no file or device input and output, no reading of run-time state, and no undefined behavior.
 
 In return, `kMu` can be used as an array size or inside a `static_assert`, and it sits in the program as a literal number rather than as code.
 :::
@@ -447,7 +447,7 @@ A colleague writes `const auto kCrcTable = make_crc32_table();` at global scope 
 :::
 
 ::: answer
-`constexpr` on `make_crc32_table` *allows* compile-time evaluation but does not *require* it. A `const` variable is not a place that demands a constant expression, so the compiler is free to call the function during start-up — and at low optimisation levels it will.
+`constexpr` on `make_crc32_table` *allows* compile-time evaluation but does not *require* it. A `const` variable is not a place that demands a constant expression, so the compiler is free to call the function during start-up — and at low optimization levels it will.
 
 Declaring the variable `constexpr auto kCrcTable = make_crc32_table();` (or `constinit`) forces the compiler to evaluate it. The table then becomes read-only data with no start-up cost. Adding a `static_assert` on one entry proves it, because a `static_assert` can only read a value known while building.
 :::
@@ -494,11 +494,11 @@ It belongs in the code because a run-time test can only observe that one particu
 
 | Item | Meaning |
 | --- | --- |
-| `const` | not modified after initialisation; may be computed at run time |
-| `constexpr` variable | initialised from a constant expression; usable as an array bound or template argument |
+| `const` | not modified after initialization; may be computed at run time |
+| `constexpr` variable | initialized from a constant expression; usable as an array bound or template argument |
 | `constexpr` function | may be evaluated at compile time with constant arguments; ordinary otherwise |
 | `consteval` | must be evaluated at compile time; run-time argument is a compile error |
-| `constinit` | static variable initialised at compile time; no dynamic initialisation order problem |
+| `constinit` | static variable initialized at compile time; no dynamic initialization order problem |
 | `static_assert(cond, "msg")` | build fails if `cond` is false; a unit test with no run-time cost |
 | `if constexpr` | compile-time branch; the untaken branch is not compiled |
 | compile-time table | `constexpr auto t = make_table();` — literal data in read-only memory |
@@ -536,7 +536,7 @@ A C++ program lives through two separate moments. First the compiler reads your 
 :::
 
 ::: context ub-at-compile-time The compiler as a free bug detector
-Undefined behaviour is the set of operations C++ gives no meaning to — overflowing a signed integer, reading past the end of an array, reading a variable that was never set. At run time these often *seem* to work, which is why they are dangerous. When the compiler evaluates a `constexpr` function, though, it is required to stop with an error the moment it hits one. So calling your function inside a `static_assert` with test inputs checks that path for undefined behaviour for free. Lesson 12 returns to undefined behaviour and the run-time tools that hunt it.
+Undefined behavior is the set of operations C++ gives no meaning to — overflowing a signed integer, reading past the end of an array, reading a variable that was never set. At run time these often *seem* to work, which is why they are dangerous. When the compiler evaluates a `constexpr` function, though, it is required to stop with an error the moment it hits one. So calling your function inside a `static_assert` with test inputs checks that path for undefined behavior for free. Lesson 12 returns to undefined behavior and the run-time tools that hunt it.
 :::
 
 ::: context read-only-data Why read-only data is safer

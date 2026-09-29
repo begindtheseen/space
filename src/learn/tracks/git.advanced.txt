@@ -1953,7 +1953,7 @@ The picture below shows the two states. Normally HEAD points at a branch name, a
 :::
 
 ::: context checkout-detach checkout, switch and --detach
-`git checkout` used to do every kind of moving around, so it happily takes a commit id and detaches HEAD without asking. `git switch`, its newer replacement, is more careful: `git switch 8d0a4ee` refuses, because it expects a branch. To look at an old commit with `switch`, you say so on purpose: `git switch --detach 8d0a4ee`. Both land you in exactly the same detached state. You will meet `git checkout <id>` in many guides online, so it helps to recognise what it does.
+`git checkout` used to do every kind of moving around, so it happily takes a commit id and detaches HEAD without asking. `git switch`, its newer replacement, is more careful: `git switch 8d0a4ee` refuses, because it expects a branch. To look at an old commit with `switch`, you say so on purpose: `git switch --detach 8d0a4ee`. Both land you in exactly the same detached state. You will meet `git checkout <id>` in many guides online, so it helps to recognize what it does.
 :::
 
 ::: context who-detaches When git detaches HEAD on its own
@@ -2112,7 +2112,7 @@ Once a version is shipped, people keep using it, sometimes for years. A team can
 :::
 
 ::: context picked-labels Why the other side has no branch name
-In a merge conflict, the other side is labelled with the branch you are merging. A cherry-pick does not bring a branch, only one commit, so git labels that side with the commit's id and message. It is also worth knowing why this conflicted. Git compares three versions of the line: the one before the fix, the fix, and yours. If you run `git config merge.conflictStyle diff3` once, conflict markers also show that "before" version, between `|||||||` and `=======`. Here it would say `check fuel >= 10`, which makes the clash obvious.
+In a merge conflict, the other side is labeled with the branch you are merging. A cherry-pick does not bring a branch, only one commit, so git labels that side with the commit's id and message. It is also worth knowing why this conflicted. Git compares three versions of the line: the one before the fix, the fix, and yours. If you run `git config merge.conflictStyle diff3` once, conflict markers also show that "before" version, between `|||||||` and `=======`. Here it would say `check fuel >= 10`, which makes the clash obvious.
 
 ```svg
 <svg viewBox="0 0 360 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">

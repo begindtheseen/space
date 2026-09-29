@@ -862,7 +862,7 @@ Picture a shop where every worker at the back can hand a problem up to the front
 
 The run loop is the **error boundary**: the [[one place that reports problems|error-boundary]]. It catches the error, turns it into an `error: ...` line, and carries on with the next command. One typo must never lose the rest of someone's input.
 
-```python
+```python fragment
 try:
     command = parse_command(line)
 except ValueError as err:
@@ -1399,7 +1399,7 @@ The mathematician Stephen Kleene described "regular expressions" in the 1950s, a
 :::
 
 ::: context raw-strings Why the r matters
-In an ordinary Python string, a backslash starts an escape: `"\n"` is a newline, and `"\b"` is a backspace character. In a regex, `\b` means something else (the edge of a word), so an ordinary string would quietly hand `re` the wrong thing. It is worse in a replacement: in an ordinary string `"\1"` becomes an invisible character with code 1, not "group 1". A raw string, `r"\1"`, keeps the backslash and the 1 exactly as typed. Newer versions of Python even warn you about backslashes they do not recognise in ordinary strings.
+In an ordinary Python string, a backslash starts an escape: `"\n"` is a newline, and `"\b"` is a backspace character. In a regex, `\b` means something else (the edge of a word), so an ordinary string would quietly hand `re` the wrong thing. It is worse in a replacement: in an ordinary string `"\1"` becomes an invisible character with code 1, not "group 1". A raw string, `r"\1"`, keeps the backslash and the 1 exactly as typed. Newer versions of Python even warn you about backslashes they do not recognize in ordinary strings.
 :::
 
 ::: context greedy-lazy Greedy grabs, lazy stops early
@@ -1545,7 +1545,7 @@ The rules:
 - Ordinary lines that come one after another form one paragraph. Their text is joined with single spaces.
 - A blank line ends a paragraph. A heading also ends any paragraph before it.
 
-### Step 1: recognise a heading
+### Step 1: recognize a heading
 
 A regular expression can state the heading rule exactly:
 
@@ -1850,7 +1850,7 @@ list_kind = None      # None (no list open), "ul" or "ol"
 
 ### Step 3: a helper that changes the state
 
-```python
+```python fragment
 def list_item(kind, text):
     nonlocal list_kind
     if list_kind != kind:
@@ -1891,7 +1891,7 @@ The fix: in the "ordinary line" branch, if a list is open, call `flush()` first,
 
 **Watch out:** the two ways lists go wrong are ordinary text being swallowed into the list, and a list that is never closed. Test both: text right after a list, and a list at the very end of the input.
 
-One variable and a few rules about when it changes: that is a whole state machine. The same shape, with more states, is how [[flight software|state-machines-later]] is organised.
+One variable and a few rules about when it changes: that is a whole state machine. The same shape, with more states, is how [[flight software|state-machines-later]] is organized.
 
 ::: context list-tags The browser does the numbering
 In `<ol>` the browser numbers the items itself: 1, 2, 3. That is why your converter throws the typed numbers away. `22. two` becomes plain `<li>two</li>`, shown as number 2 if it is the second item. `<ul>`, `<ol>` and `<li>` are three of the oldest tags in HTML. Real Markdown also allows `+` as a bullet and lists inside lists (by indenting), which this converter leaves out.
@@ -1927,7 +1927,7 @@ Only for *assigning* to a name that belongs to the outer function. `flush` last 
 :::
 
 ::: context state-machines-later State machines fly
-State machines are one of the most common shapes in real software, especially where safety matters. Flight software is usually organised into modes such as "on the pad", "ascent" or "coast", and a command or a sensor reading that is fine in one mode may be ignored or refused in another. Writing the modes down as explicit states makes it possible to check every case. You will build a bigger one yourself in the text adventure capstone at the end of this course.
+State machines are one of the most common shapes in real software, especially where safety matters. Flight software is usually organized into modes such as "on the pad", "ascent" or "coast", and a command or a sensor reading that is fine in one mode may be ignored or refused in another. Writing the modes down as explicit states makes it possible to check every case. You will build a bigger one yourself in the text adventure capstone at the end of this course.
 :::
 --- task
 Extend `convert` with lists:
@@ -2121,7 +2121,7 @@ Inside a fence, *nothing* is Markdown. No headings, no lists, no emphasis, and e
 
 `<pre>` means "[[preformatted|pre-tag]]": show the text exactly as it is, spaces and line breaks included. The **[[class|language-class]]** attribute records the language. Without a language name, the tag is plain `<code>`.
 
-### Step 1: recognise a fence
+### Step 1: recognize a fence
 
 The opening fence is three backticks, maybe some spaces, maybe a language name. Its pattern:
 
@@ -2195,7 +2195,7 @@ You need `import sys` at the top. Because `convert` takes a string and returns a
 With this lesson you have built a real tool: a document converter with inline formatting, block structure, state, a mode for code, and a command-line interface. It is about a hundred lines, blank lines included, and each part can be tested on its own.
 
 ::: context fence-name Why "fence"
-The three backticks stand like a fence around the code, marking where Markdown stops and starts again. Fenced code blocks were popularised by GitHub's version of Markdown and later written into CommonMark. The first Markdown had only one way to show code: indent every line by four spaces. Fences are easier to type and leave room for a language name. CommonMark also allows fences of three tildes (`~~~`), which this converter does not handle.
+The three backticks stand like a fence around the code, marking where Markdown stops and starts again. Fenced code blocks were popularized by GitHub's version of Markdown and later written into CommonMark. The first Markdown had only one way to show code: indent every line by four spaces. Fences are easier to type and leave room for a language name. CommonMark also allows fences of three tildes (`~~~`), which this converter does not handle.
 :::
 
 ::: context pre-tag Normally HTML ignores your spaces
@@ -2203,7 +2203,7 @@ In ordinary HTML, the browser squashes any run of spaces and line breaks into a 
 :::
 
 ::: context language-class What the class is for
-`class="language-python"` does not change anything by itself. It is a label that other programs read. Syntax highlighters, small programs that colour keywords, strings and comments, look for a class starting with `language-` to know which rules to use. CommonMark recommends exactly this form, so your converter's output works with the common highlighters.
+`class="language-python"` does not change anything by itself. It is a label that other programs read. Syntax highlighters, small programs that color keywords, strings and comments, look for a class starting with `language-` to know which rules to use. CommonMark recommends exactly this form, so your converter's output works with the common highlighters.
 :::
 
 ::: context consume-lines One index, jumping ahead
@@ -3942,7 +3942,7 @@ This first capstone is a to-do list with an **undo** button.
 
 Think of a builder handed a drawing of a finished house. The drawing says what the house must look like. It does not say which wall to build first. That part is the builder's job, and here it is yours. Five steps help.
 
-**1. Read it twice, then write every behaviour as a one-line example.** A **behaviour** is one thing the program must do in one situation. Writing them down turns a paragraph of rules into a checklist you can tick off:
+**1. Read it twice, then write every behavior as a one-line example.** A **behavior** is one thing the program must do in one situation. Writing them down turns a paragraph of rules into a checklist you can tick off:
 
 ```
 add("buy milk")                    returns 1
@@ -3960,7 +3960,7 @@ items = {
 next_id = 3
 ```
 
-**3. Build a skeleton.** A **skeleton** is the class with every method written down but doing nothing yet: each body is `pass`. It already runs, so you can try it at once. Then make one behaviour work at a time, and try each one as you go.
+**3. Build a skeleton.** A **skeleton** is the class with every method written down but doing nothing yet: each body is `pass`. It already runs, so you can try it at once. Then make one behavior work at a time, and try each one as you go.
 
 ```python
 class TodoList:
@@ -4042,7 +4042,7 @@ Fred Brooks, who led the team that built the operating system for IBM's System/3
 Picture the allowed inputs as a field with a fence around it. Most inputs sit in the middle of the field, and most code handles them fine. The trouble is near the fence: an empty list, the first id, the last item, zero, doing something twice. Testers call this **boundary testing**: for every limit, try the value just inside it, exactly on it, and just outside it. For this to-do list the fence posts include an empty history, an unknown id, and a title that is only spaces.
 :::
 
-::: context refactor Changing the shape, not the behaviour
+::: context refactor Changing the shape, not the behavior
 The word was made popular by Martin Fowler's 1999 book *Refactoring*. The rule is strict: after a refactoring, the program must do exactly what it did before, only written more clearly. That is why you refactor *after* the checks pass. Run them again after every small change, and if one fails, you know the last change broke something. Tests are what make refactoring safe; without them, every tidy-up is a gamble.
 :::
 
@@ -4305,7 +4305,7 @@ FUNCTIONS["max"](*args)      # the same as max(1, 7, 3): 7
 
 ### let is a statement
 
-An **expression** is something that has a value, like `rate * 2`. A **statement** is an instruction that does something, like "store this value under this name". `let x = ...` is a [[statement|statement-expression]], so it is not part of the expression grammar at all. Recognise it first, before any parsing, with a regular expression:
+An **expression** is something that has a value, like `rate * 2`. A **statement** is an instruction that does something, like "store this value under this name". `let x = ...` is a [[statement|statement-expression]], so it is not part of the expression grammar at all. Recognize it first, before any parsing, with a regular expression:
 
 ```python
 LET = re.compile(r"^let\s+([A-Za-z_]\w*)\s*=(.*)$")
@@ -4627,6 +4627,8 @@ Define your own exception class, raise it for every deliberate error (with the e
 (lambda i: (i.execute("let x = 5"), i.execute("let x = 1 / 0"), i.execute("x"))[1:])(Interpreter()) == ("error: division by zero", "5")
 --- check test | Names are case-sensitive and can contain digits and underscores
 (lambda i: (i.execute("let total_2 = 3"), i.execute("total_2 * 2"), i.execute("Total_2"))[1:])(Interpreter()) == ("6", "error: unknown variable Total_2")
+--- check test | Zero to a negative power replies with an error, never raises
+Interpreter().execute("0 ^ -1").startswith("error: ")
 
 === pyp-15 | Capstone: a bank ledger with validation
 --- teach
@@ -5124,7 +5126,7 @@ People forgive a missing full stop; programs do not. Whenever output is read by 
 :::
 
 ::: context where-next After the Python ladder
-Python is everywhere in aerospace work on the ground: analysing test data, planning trajectories, running tests, and building the tools that talk to spacecraft. The software on board is usually written in C or C++, because it must run in tight memory with exactly predictable timing. NASA JPL's F Prime flight software framework, for example, is written in C++, and much of the tooling around it is Python. The C++ courses here start from the ideas you now know: variables, loops, functions, classes, and the habit of designing before you type.
+Python is everywhere in aerospace work on the ground: analyzing test data, planning trajectories, running tests, and building the tools that talk to spacecraft. The software on board is usually written in C or C++, because it must run in tight memory with exactly predictable timing. NASA JPL's F Prime flight software framework, for example, is written in C++, and much of the tooling around it is Python. The C++ courses here start from the ideas you now know: variables, loops, functions, classes, and the habit of designing before you type.
 :::
 --- task
 The starter defines `WORLD`, an example world. Build a class `Game(world)` that works for any world of that shape: `start`, `goal`, and `rooms`, each room with `description`, `exits`, `items` and optionally `locked`, which maps a direction to the item needed to go that way.

@@ -20,7 +20,7 @@ In aviation the approval comes from an authority such as the FAA in the United S
 
 The evidence has a shape. A team writes **plans** before coding, starting with the **[[PSAC|psac]]**, the Plan for Software Aspects of Certification, which tells the authority how the team intends to comply. Then it keeps **[[traceability|traceability]]**: every high-level requirement traces down to low-level requirements, to the code that implements them, and to the tests that verify them, and every line of code traces back up to a requirement. At the end, a Software Accomplishment Summary states what was done and whether the plans were followed.
 
-This is why a keyword like Rust's `unsafe` does not end the conversation. Certification asks: is every part of the code backed by requirements, reviews and tests, and can an auditor follow the argument? An `unsafe` block is a place where the compiler's checks stop and a human's argument takes over. If that block is small, has its invariants written down, sits behind a safe API, has been reviewed and has been run under **miri** (the interpreter from the ownership module that detects undefined behaviour), then it is exactly the kind of evidence an auditor can check. The safe code around it keeps all of its compiler-checked guarantees.
+This is why a keyword like Rust's `unsafe` does not end the conversation. Certification asks: is every part of the code backed by requirements, reviews and tests, and can an auditor follow the argument? An `unsafe` block is a place where the compiler's checks stop and a human's argument takes over. If that block is small, has its invariants written down, sits behind a safe API, has been reviewed and has been run under **miri** (the interpreter from the ownership module that detects undefined behavior), then it is exactly the kind of evidence an auditor can check. The safe code around it keeps all of its compiler-checked guarantees.
 
 ::: key
 unsafe is not a certification dealbreaker, because certification cares about evidence, not about the absence of a keyword. unsafe blocks that are small, documented with their invariants, wrapped in safe APIs, reviewed and checked with miri are auditable, and the surrounding safe code still carries its guarantees.
@@ -289,7 +289,7 @@ Traceability links each requirement to the code that implements it and the tests
 :::
 
 ::: context arp-safety Where the DAL comes from
-ARP4754A (guidelines for developing aircraft and systems) and ARP4761 (safety assessment methods), both from the standards body SAE, describe how an aircraft's functions are analysed for what could go wrong, and how bad each failure would be. The DAL of each software item falls out of that analysis. The software team does not pick its own DAL; it inherits one from the system safety work, which is why a GNC engineer ends up in those meetings.
+ARP4754A (guidelines for developing aircraft and systems) and ARP4761 (safety assessment methods), both from the standards body SAE, describe how an aircraft's functions are analyzed for what could go wrong, and how bad each failure would be. The DAL of each software item falls out of that analysis. The software team does not pick its own DAL; it inherits one from the system safety work, which is why a GNC engineer ends up in those meetings.
 :::
 
 ::: context independence Why the author cannot be the checker

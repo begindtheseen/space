@@ -196,7 +196,7 @@ $$
 where $s_j$ is a typical size for parameter $j$. With $s = (10^{-5}, 10^{3}, 10^{-6})$ and residuals divided by the noise $\sigma$, the column lengths become about 190, 148 and 54, and the condition number drops to about 11.
 
 ::: key
-Why scale decision variables before optimising? Solvers use one set of tolerances across all variables. If one parameter is 1e-6 and another is 1e6, the trust region and convergence tests are meaningless for one of them. Normalise to order 1, or supply x_scale.
+Why scale decision variables before optimizing? Solvers use one set of tolerances across all variables. If one parameter is 1e-6 and another is 1e6, the trust region and convergence tests are meaningless for one of them. Normalize to order 1, or supply x_scale.
 :::
 
 ::: example Fitting gyro warm-up with and without scaling
@@ -360,7 +360,7 @@ An ordinary derivative asks how a function changes when its one input changes. W
 :::
 
 ::: context column-fingerprint Columns as fingerprints
-Each column of the Jacobian is a curve over time: how the whole data record would shift if you nudged one parameter. For the leaking tank, the $p_0$ column starts at 1 and fades, while the $\tau$ column starts at zero, rises, and fades later. Because the two shapes are different, the data can tell the parameters apart. When two columns have nearly the same shape, any change in one parameter can be cancelled by a change in the other, and the fit cannot separate them.
+Each column of the Jacobian is a curve over time: how the whole data record would shift if you nudged one parameter. For the leaking tank, the $p_0$ column starts at 1 and fades, while the $\tau$ column starts at zero, rises, and fades later. Because the two shapes are different, the data can tell the parameters apart. When two columns have nearly the same shape, any change in one parameter can be canceled by a change in the other, and the fit cannot separate them.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">

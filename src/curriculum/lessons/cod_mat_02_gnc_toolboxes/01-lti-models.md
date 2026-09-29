@@ -161,7 +161,7 @@ pole(ss(G2)*ss(G1))      % G1 then G2 in state space: both poles kept
 
 **Step 3.** The state-space series still has a pole at $+1$. That mode is inside the hardware. The input can no longer excite it, but any small disturbance or starting offset will, and it grows like $e^{t}$ — nearly triple every second.
 
-**Sanity check.** Cancelling $(s-1)$ is algebra on paper; it cannot remove a real, unstable part from a real machine. The state-space answer is the one that matches the hardware.
+**Sanity check.** Canceling $(s-1)$ is algebra on paper; it cannot remove a real, unstable part from a real machine. The state-space answer is the one that matches the hardware.
 :::
 
 ::: key
@@ -320,7 +320,7 @@ The French mathematician Pierre-Simon Laplace gave his name to a transform that 
 :::
 
 ::: context state-word A save file for a system
-Think of a video game's save file. It does not store everything that happened; it stores only enough — position, health, inventory — to carry on exactly where you left off. A system's state is the same idea. For a rigid spacecraft turning about one axis, two numbers are enough: the angle and the turn rate. A full 3D attitude needs more: an attitude (often a quaternion, four numbers) and three body rates. For a model with nothing cancelled or hidden, the number of states equals the number of poles, which is why a second-order plant like $\frac{1}{Js^2}$ has two.
+Think of a video game's save file. It does not store everything that happened; it stores only enough — position, health, inventory — to carry on exactly where you left off. A system's state is the same idea. For a rigid spacecraft turning about one axis, two numbers are enough: the angle and the turn rate. A full 3D attitude needs more: an attitude (often a quaternion, four numbers) and three body rates. For a model with nothing canceled or hidden, the number of states equals the number of poles, which is why a second-order plant like $\frac{1}{Js^2}$ has two.
 :::
 
 ::: context hidden-mode A pole hiding behind a zero

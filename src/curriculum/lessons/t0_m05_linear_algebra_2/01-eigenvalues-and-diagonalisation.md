@@ -1,9 +1,9 @@
 ---
 id: l01-eigenvalues-and-diagonalisation
-title: Eigenvalues, eigenvectors and diagonalisation
+title: Eigenvalues, eigenvectors and diagonalization
 minutes: 23
 covers:
-  - eigenvalues, eigenvectors, diagonalisation
+  - eigenvalues, eigenvectors, diagonalization
 ---
 
 Draw a few arrows on a sheet of rubber, all starting from the same dot. Now grab the sheet and stretch it. Most of the arrows do two things at once: they get longer or shorter, and they swing round to point somewhere new. But a few special arrows do not swing at all. They stay on their own line and only get longer, or shorter, or flip to point the other way.
@@ -168,7 +168,7 @@ The bracket came from the top-left $2\times 2$ block: $(0.866 - \lambda)^2 - (-0
 **A bonus.** For any rotation, $\operatorname{tr}(\mathbf{R}) = 1 + 2\cos\theta$. Turn that around and you can read the angle straight off the matrix: $\theta = \arccos\left((\operatorname{tr}\mathbf{R} - 1)/2\right)$. Here $\arccos(0.866) = 30^\circ$. Attitude software does exactly this to squeeze a **[[single angle out of a rotation error|attitude-error-angle]]**.
 :::
 
-## Diagonalisation
+## Diagonalization
 
 Suppose $\mathbf{A}$ has $n$ independent eigenvectors $\mathbf{v}_1, \dots, \mathbf{v}_n$, with eigenvalues $\lambda_1, \dots, \lambda_n$. Stand the eigenvectors side by side as the columns of a matrix $\mathbf{V}$. Put the eigenvalues down the diagonal of $\boldsymbol{\Lambda}$ ("capital lambda"), with zeros everywhere else. Multiplying one column at a time,
 
@@ -178,7 +178,7 @@ The last step works because multiplying $\mathbf{V}$ on the right by a diagonal 
 
 $$\mathbf{A} = \mathbf{V}\boldsymbol{\Lambda}\mathbf{V}^{-1}, \qquad \boldsymbol{\Lambda} = \mathbf{V}^{-1}\mathbf{A}\mathbf{V}.$$
 
-This is **diagonalisation**, and it is best read as a recipe, right to left. To apply $\mathbf{A}$ to a vector $\mathbf{x}$:
+This is **diagonalization**, and it is best read as a recipe, right to left. To apply $\mathbf{A}$ to a vector $\mathbf{x}$:
 
 1. Compute $\mathbf{z} = \mathbf{V}^{-1}\mathbf{x}$. These are the coordinates of $\mathbf{x}$ measured along the eigenvectors — "how much of each eigenvector is in $\mathbf{x}$".
 2. Scale each coordinate by its own eigenvalue: $\boldsymbol{\Lambda}\mathbf{z}$.
@@ -298,7 +298,7 @@ The matrix $\mathbf{A} = \begin{pmatrix} 1 & 2 \\ 2 & 4 \end{pmatrix}$ is singul
 :::
 
 ::: check
-Is $\mathbf{A} = \begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$ diagonalisable? Explain.
+Is $\mathbf{A} = \begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$ diagonalizable? Explain.
 :::
 
 ::: answer
@@ -319,8 +319,8 @@ One eigenvector is not enough to build an invertible $2\times 2$ matrix $\mathbf
 | Checks | $\sum\lambda_i = \operatorname{tr}\mathbf{A}$, $\prod\lambda_i = \det\mathbf{A}$; singular $\Leftrightarrow$ some $\lambda = 0$ |
 | Complex pairs | $\sigma \pm i\omega$ for real $\mathbf{A}$; rotation by $\theta$ has $e^{\pm i\theta}$ |
 | Rotations | axis is the eigenvector for $\lambda = 1$; $\operatorname{tr}\mathbf{R} = 1 + 2\cos\theta$ |
-| Diagonalisation | $\mathbf{A} = \mathbf{V}\boldsymbol{\Lambda}\mathbf{V}^{-1}$ when $n$ independent eigenvectors exist; $\mathbf{A}^k = \mathbf{V}\boldsymbol{\Lambda}^k\mathbf{V}^{-1}$ |
-| Guaranteed | distinct eigenvalues $\Rightarrow$ diagonalisable |
+| Diagonalization | $\mathbf{A} = \mathbf{V}\boldsymbol{\Lambda}\mathbf{V}^{-1}$ when $n$ independent eigenvectors exist; $\mathbf{A}^k = \mathbf{V}\boldsymbol{\Lambda}^k\mathbf{V}^{-1}$ |
+| Guaranteed | distinct eigenvalues $\Rightarrow$ diagonalizable |
 | Defective | repeated $\lambda$ with too few eigenvectors, e.g. the double integrator $\begin{pmatrix} 0 & 1 \\ 0 & 0 \end{pmatrix}$ |
 
 The next lesson uses $\mathbf{A} = \mathbf{V}\boldsymbol{\Lambda}\mathbf{V}^{-1}$ to compute $e^{\mathbf{A}t}$, the matrix that carries the state of a linear system forward in time — and shows how to handle defective matrices like the double integrator, which have no such factorization.

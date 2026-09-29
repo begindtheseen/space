@@ -3,7 +3,7 @@ id: l11-endianness-and-serialising-telemetry
 title: Endianness and putting telemetry on the wire
 minutes: 25
 covers:
-  - Endianness and serialising telemetry
+  - Endianness and serializing telemetry
 ---
 
 When you write the number one thousand two hundred thirty-four, you write `1234`: the thousands first, the ones last. Nobody taught you that as a rule, but everyone who reads your number relies on it. Now imagine a friend who writes the same number ones-first: `4321`. Both of you are consistent. Both of you are right. And every number you pass to each other comes out wrong.

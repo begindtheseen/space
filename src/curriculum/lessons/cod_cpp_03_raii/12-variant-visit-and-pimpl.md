@@ -179,7 +179,7 @@ error: no type named 'type' in 'struct std::invoke_result<overloaded<...>, const
 
 (the `...` stands for the three long lambda type names). Decoded: "your visitor cannot be called with a `const Entry&`". The compiler tried to build a call for every alternative, and one was missing.
 
-The day someone adds a fifth mode, `Abort`, every `std::visit` that does not handle it stops compiling, and each error points at a place that needs a decision. With virtual functions, a new derived class that forgets to override a non-pure function compiles fine and quietly gets the base behaviour.
+The day someone adds a fifth mode, `Abort`, every `std::visit` that does not handle it stops compiling, and each error points at a place that needs a decision. With virtual functions, a new derived class that forgets to override a non-pure function compiles fine and quietly gets the base behavior.
 
 ::: warning The catch-all that switches the check off
 A lambda with an `auto` parameter, such as `[](const auto&) { return "other"; }`, accepts *any* type. Put one in a visitor and it silently handles every missing case, including the `Abort` mode added next year. In a mode machine, write one lambda per mode instead, so the compiler keeps checking.
@@ -278,7 +278,7 @@ The fix is the pattern above: declare the destructor in the header, and define i
 ::: example What recompiles when the insides change
 The program is three files: the two above and a `main.cpp` that logs three samples. A three-rule `Makefile` says `main.o` depends on `main.cpp` and `recorder.hpp`, and `recorder.o` depends on `recorder.cpp` and `recorder.hpp`. `make` rebuilds only what is older than the files it depends on.
 
-```cpp
+```cpp fragment
 // main.cpp
 #include "recorder.hpp"
 #include <cstdio>
@@ -393,7 +393,7 @@ Not for `Vector3`. Every `Vector3` would cost a heap allocation, every access wo
 That completes the module. You can now build a class that owns its resources, copies and moves them correctly, and says precisely what it promises — and choose between inheritance, CRTP and `std::variant` for "many kinds of thing". The next module, **The Standard Library: Containers, Algorithms, Lambdas** (`cod_cpp_04_stl`), puts these classes to work: `std::vector` and its relatives, the algorithms that run over them, and lambdas taught properly, including every capture form you glimpsed here.
 
 ::: context tagged-union The unsafe ancestor
-C has a `union`: several members sharing the same bytes, only one meaningful at a time. It does not remember which one. So C programmers pair it with a tag, an enum saying which member is live, and must keep the two in step by hand. Reading the wrong member is undefined behaviour. `std::variant` is that tag and union, fused, with the checking done for you.
+C has a `union`: several members sharing the same bytes, only one meaningful at a time. It does not remember which one. So C programmers pair it with a tag, an enum saying which member is live, and must keep the two in step by hand. Reading the wrong member is undefined behavior. `std::variant` is that tag and union, fused, with the checking done for you.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
@@ -426,7 +426,7 @@ A launch vehicle's sequencer steps through countdown, ignition, liftoff, staging
 :::
 
 ::: context expression-problem A trade-off with a name
-In 1998 the computer scientist Philip Wadler named this the expression problem: a program has data types and operations on them, and a design makes one of "add a type" or "add an operation" easy and the other hard. Object-oriented class hierarchies favour new types; the tagged unions of functional languages, and `std::variant`, favour new operations. Clever designs can get part of both, at a cost in complexity.
+In 1998 the computer scientist Philip Wadler named this the expression problem: a program has data types and operations on them, and a design makes one of "add a type" or "add an operation" easy and the other hard. Object-oriented class hierarchies favor new types; the tagged unions of functional languages, and `std::variant`, favor new operations. Clever designs can get part of both, at a cost in complexity.
 :::
 
 ::: context compilation-firewall Why a header change spreads

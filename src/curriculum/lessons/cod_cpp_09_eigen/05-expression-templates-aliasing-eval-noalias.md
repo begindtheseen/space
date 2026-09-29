@@ -33,7 +33,7 @@ One pass, no temporaries. Because every size is known to the compiler for fixed-
 ::: example Looking at the recipe card
 This program prints the type Eigen actually builds for `a + b`, then shows what lazy evaluation means in practice.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <cxxabi.h>
 #include <cstdlib>
@@ -105,7 +105,7 @@ Why is `a = a * b` hazardous? The product reads `a` while writing it. Eigen inse
 "Coefficient-wise expressions" here means the ones that pull from other positions of the destination, like the transpose and the blocks above; a plain entry-by-entry sum is fine. **`.eval()`** is the fix: it forces the part of the expression it is attached to into a real temporary matrix before any writing starts. You pay for one copy; you get a correct answer.
 
 ::: example a = a.transpose(), in debug and in release
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -174,7 +174,7 @@ $$
 The natural Eigen spelling of that line has the same kind of aliasing as the transpose, only better hidden.
 
 ::: example Symmetrizing a covariance, wrongly and rightly
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -244,7 +244,7 @@ x.noalias() += K * y;     // works with += and -= too
 ::: example Counting the allocations
 This program counts every call to `malloc` (the linker option `-Wl,--wrap=malloc` [[routes each call through our counting function|linker-wrap]] first) while it multiplies two 40-by-40 dynamic matrices.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <cstdio>
 #include <cstdlib>

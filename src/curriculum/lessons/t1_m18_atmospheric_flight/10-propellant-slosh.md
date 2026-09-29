@@ -8,7 +8,7 @@ covers:
 
 Carry a full bowl of soup across the kitchen and stop suddenly. The soup runs up one side, falls back, runs up the other, and keeps rocking long after you have stopped. Jiggle the bowl at exactly the wrong rhythm and each rock gets bigger, until the soup is on the floor.
 
-A rocket carries its soup by the hundreds of tonnes. Most of a launch vehicle's mass at lift-off is liquid oxygen and fuel, sitting in tanks a few meters wide. When the vehicle pitches, or a gust shoves it sideways, the liquid does not follow like a solid block. Its **[[free surface|free-surface]]** — the top of the liquid, where it meets the gas above — tilts, swings back, and swings again, pushing on the tank walls. The gyros, the accelerometers and the controller all feel that push.
+A rocket carries its soup by the hundreds of metric tons. Most of a launch vehicle's mass at lift-off is liquid oxygen and fuel, sitting in tanks a few meters wide. When the vehicle pitches, or a gust shoves it sideways, the liquid does not follow like a solid block. Its **[[free surface|free-surface]]** — the top of the liquid, where it meets the gas above — tilts, swings back, and swings again, pushing on the tank walls. The gyros, the accelerometers and the controller all feel that push.
 
 This is **propellant slosh**: the rocking of liquid propellant inside its tank. Two facts make it a control problem, not a structures problem. It is almost undamped, so once started it keeps going. And its frequency, a few tenths of a hertz for a large booster, sits right where the attitude loop has its **[[crossover|crossover]]** — the frequency where the controller is working hardest.
 
@@ -122,7 +122,7 @@ where $m_{\text{liq}}$ is all the liquid in the tank.
 | $m_1/m_{\text{liq}}$ | 0.660 | 0.432 | 0.227 | 0.151 | 0.114 | 0.076 |
 | $L_1/R$ | 0.748 | 0.571 | 0.544 | 0.543 | 0.543 | 0.543 |
 
-In a deep tank only about the top radius of liquid rocks, so the share falls like $R/h$ — still tens of tonnes on a booster. The attachment point of the mass (or the pendulum's hinge) lies a fraction of a radius below the free surface; Abramson's and Dodge's slosh handbooks tabulate it. For control work the numbers that matter are the frequency, the slosh mass, and the station along the vehicle where it acts. Higher modes carry very little mass — the second carries about $1.4\ \%$ of the liquid at $h/R = 1$ — and are normally left out.
+In a deep tank only about the top radius of liquid rocks, so the share falls like $R/h$ — still tens of metric tons on a booster. The attachment point of the mass (or the pendulum's hinge) lies a fraction of a radius below the free surface; Abramson's and Dodge's slosh handbooks tabulate it. For control work the numbers that matter are the frequency, the slosh mass, and the station along the vehicle where it acts. Higher modes carry very little mass — the second carries about $1.4\ \%$ of the liquid at $h/R = 1$ — and are normally left out.
 
 ::: example Slosh mass and pendulum length
 The oxygen tank ($R = 1.83\ \mathrm{m}$) holds 250 t of liquid at $h/R = 2$.

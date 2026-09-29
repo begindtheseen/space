@@ -54,7 +54,7 @@ A burger is \$5 and a drink is \$3, the same as the fiddling found. Read `A \ b`
 Always check a solve by putting the answer back in. `A*x - b` is the **residual**, the amount by which the equations fail. Here it is `[0; 0]`, so the answer is exact.
 
 ::: key
-`x = A\b` solves $\mathbf{A}\mathbf{x} = \mathbf{b}$. `x = b/A` solves $\mathbf{x}\mathbf{A} = \mathbf{b}$. Backslash chooses an appropriate factorisation for the structure of A and solves directly, which is faster and more accurate than forming an explicit inverse. MATLAB documentation warns against `inv` for exactly this reason.
+`x = A\b` solves $\mathbf{A}\mathbf{x} = \mathbf{b}$. `x = b/A` solves $\mathbf{x}\mathbf{A} = \mathbf{b}$. Backslash chooses an appropriate factorization for the structure of A and solves directly, which is faster and more accurate than forming an explicit inverse. MATLAB documentation warns against `inv` for exactly this reason.
 :::
 
 ## Why not the inverse?
@@ -136,12 +136,12 @@ Phase two is two triangle solves (below), which cost only about $2n^2$. To build
 
 ## What backslash looks at first
 
-The backslash is not one algorithm. It is a dispatcher: before solving, it inspects $\mathbf{A}$ and picks the cheapest reliable method for that shape. That is what "chooses an appropriate factorisation for the structure of A" means. A **factorisation** splits a matrix into a product of simpler matrices that are easy to solve with.
+The backslash is not one algorithm. It is a dispatcher: before solving, it inspects $\mathbf{A}$ and picks the cheapest reliable method for that shape. That is what "chooses an appropriate factorization for the structure of A" means. A **factorization** splits a matrix into a product of simpler matrices that are easy to solve with.
 
 - **Triangular.** If every entry above the diagonal (or below it) is zero, $\mathbf{A}$ is **triangular**. The last equation then has one unknown, the one above it has two, and so on. You solve from one end, plugging in as you go. That is **substitution**, and it costs only about $n^2$ operations.
-- **Symmetric with a positive diagonal.** If $\mathbf{A}$ equals its own transpose and its diagonal entries are positive, backslash first tries a **[[Cholesky factorisation|cholesky]]**, which is about twice as fast as the general method. If that attempt fails, it falls back to another method.
-- **General square.** Otherwise it uses an **LU factorisation**: it writes $\mathbf{A}$ as a lower-triangular $\mathbf{L}$ times an upper-triangular $\mathbf{U}$ (with rows swapped as needed for accuracy, called **[[pivoting|pivoting]]**). Then two cheap triangle solves finish the job. This is elimination, done in an organized way.
-- **Not square.** If there are more equations than unknowns, it uses a **QR factorisation** to find the best-fitting answer. The next section is about that case.
+- **Symmetric with a positive diagonal.** If $\mathbf{A}$ equals its own transpose and its diagonal entries are positive, backslash first tries a **[[Cholesky factorization|cholesky]]**, which is about twice as fast as the general method. If that attempt fails, it falls back to another method.
+- **General square.** Otherwise it uses an **LU factorization**: it writes $\mathbf{A}$ as a lower-triangular $\mathbf{L}$ times an upper-triangular $\mathbf{U}$ (with rows swapped as needed for accuracy, called **[[pivoting|pivoting]]**). Then two cheap triangle solves finish the job. This is elimination, done in an organized way.
+- **Not square.** If there are more equations than unknowns, it uses a **QR factorization** to find the best-fitting answer. The next section is about that case.
 - **Sparse.** If $\mathbf{A}$ is stored as a **[[sparse|sparse-matrices]]** matrix, one that records only its nonzero entries, backslash uses solvers that skip the zeros. A million-unknown system that is mostly zeros can then solve in seconds.
 
 MATLAB's documentation for `mldivide` includes a flowchart of these checks, with a few more special shapes besides. You do not need to memorize it. The point is that `A\b` gets smarter as your matrix gets more special, and `inv(A)*b` cannot use any of it.
@@ -242,7 +242,7 @@ A teammate fits a line to 200 thrust-stand readings with `c = inv(M'*M)*M'*y`, w
 :::
 
 ::: answer
-`c = M\y`. Backslash on a tall matrix returns the least-squares fit directly, using a QR factorisation. The teammate's formula is the textbook one, but it forms `M'*M`, which squares the condition number, and then inverts it. That throws away accuracy twice and costs extra work for no gain.
+`c = M\y`. Backslash on a tall matrix returns the least-squares fit directly, using a QR factorization. The teammate's formula is the textbook one, but it forms `M'*M`, which squares the condition number, and then inverts it. That throws away accuracy twice and costs extra work for no gain.
 :::
 
 ## Summary

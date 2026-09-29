@@ -73,7 +73,7 @@ $$
 
 Step by step: the first inequality adds the two passivity statements. The next step substitutes the wiring. The last step uses the fact that $\mathbf{y}_1^\mathsf{T}\mathbf{y}_2$ is a single number, so it equals its own transpose $\mathbf{y}_2^\mathsf{T}\mathbf{y}_1$. The two cross terms cancel exactly.
 
-So $\dot{V} \le 0$, and Lyapunov's direct method gives stability. No model terms were cancelled, and nothing inside either block was needed.
+So $\dot{V} \le 0$, and Lyapunov's direct method gives stability. No model terms were canceled, and nothing inside either block was needed.
 
 If either block is output-strictly passive, its margin survives the sum: $\dot{V} \le -\varepsilon\lVert\mathbf{y}\rVert^2$. Now $\dot{V}$ is strictly negative whenever that output is not zero. That is still only negative *semi*-definite in the full state, so LaSalle's principle finishes the job, as it has every time in this module. It works as long as the output being zero forever forces the whole state to rest — engineers call that property **zero-state detectability**.
 

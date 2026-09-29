@@ -14,31 +14,31 @@ Every number in this course comes with a unit: $7.7\,\mathrm{km/s}$, $411\,\math
 
 ## The base units
 
-A **unit** is an agreed amount that we count in. Saying a rod is $3$ metres long means it is three of the agreed "metre" laid end to end. Almost everything in this course is built from three **base units**:
+A **unit** is an agreed amount that we count in. Saying a rod is $3$ meters long means it is three of the agreed "meter" laid end to end. Almost everything in this course is built from three **base units**:
 
 | Quantity | Unit | Symbol | Everyday feel |
 | --- | --- | --- | --- |
-| Length | [[metre|metre-history]] | m | one big step; a doorway is a bit less than one metre wide |
-| Mass | [[kilogram|kilogram-history]] | kg | a one-litre bottle of water |
+| Length | [[meter|metre-history]] | m | one big step; a doorway is a bit less than one meter wide |
+| Mass | [[kilogram|kilogram-history]] | kg | a one-liter bottle of water |
 | Time | second | s | the time it takes to say "one-Mississippi" |
 
 One more unit is so handy it is used everywhere alongside them:
 
 | Quantity | Unit | Symbol | Everyday feel |
 | --- | --- | --- | --- |
-| Volume | litre | L | a large water bottle; a box $10\,\mathrm{cm}$ on each side |
+| Volume | liter | L | a large water bottle; a box $10\,\mathrm{cm}$ on each side |
 
-The symbols are part of the language, and the capital letters matter. Metre is a small $\mathrm{m}$. Litre is a capital $\mathrm{L}$, because a small l looks too much like the number $1$. You write $3\,\mathrm{m}$, with a space, and you never add an "s" for plurals: $3\,\mathrm{m}$, not "3 ms" — which would mean three milliseconds!
+The symbols are part of the language, and the capital letters matter. Meter is a small $\mathrm{m}$. Liter is a capital $\mathrm{L}$, because a small l looks too much like the number $1$. You write $3\,\mathrm{m}$, with a space, and you never add an "s" for plurals: $3\,\mathrm{m}$, not "3 ms" — which would mean three milliseconds!
 
-Other units are built by combining these. Speed is metres per second, $\mathrm{m/s}$. Area is square metres, $\mathrm{m^2}$, and volume is cubic metres, $\mathrm{m^3}$ — you met both in the lesson on area and volume.
+Other units are built by combining these. Speed is meters per second, $\mathrm{m/s}$. Area is square meters, $\mathrm{m^2}$, and volume is cubic meters, $\mathrm{m^3}$ — you met both in the lesson on area and volume.
 
 ::: key Base units
-Length in metres (m), mass in kilograms (kg), time in seconds (s). Volume is often given in litres (L).
+Length in meters (m), mass in kilograms (kg), time in seconds (s). Volume is often given in liters (L).
 :::
 
 ## Prefixes: bigger and smaller units
 
-A metre is a good size for a rocket but a silly size for the distance to orbit or the thickness of a sheet of foil. Instead of inventing new units, the metric system sticks a **prefix** — a short word part — on the front of the unit. The prefix says how many times bigger or smaller.
+A meter is a good size for a rocket but a silly size for the distance to orbit or the thickness of a sheet of foil. Instead of inventing new units, the metric system sticks a **prefix** — a short word part — on the front of the unit. The prefix says how many times bigger or smaller.
 
 | Prefix | Symbol | Means | As a number | Example |
 | --- | --- | --- | --- | --- |
@@ -48,10 +48,10 @@ A metre is a good size for a rocket but a silly size for the distance to orbit o
 | (none) | | one | 1 | $1\,\mathrm{m}$ |
 | centi- | c | a hundredth of | 0.01 | $1\,\mathrm{cm} = 0.01\,\mathrm{m}$ |
 | milli- | m | a thousandth of | 0.001 | $1\,\mathrm{mm} = 0.001\,\mathrm{m}$ |
-| micro- | µ | a millionth of | 0.000 001 | a human hair is about $70\,\mu\mathrm{m}$ (micrometres) thick |
+| micro- | µ | a millionth of | 0.000 001 | a human hair is about $70\,\mu\mathrm{m}$ (micrometers) thick |
 | nano- | n | a billionth of | 0.000 000 001 | light travels about $30\,\mathrm{cm}$ in a [[nanosecond|nanosecond-gps]] |
 
-The same prefixes work on any unit. A kilometre is a thousand metres. A kilogram is a thousand grams. A millisecond is a thousandth of a second, and a milligram is a thousandth of a gram. Learn the prefix once and you know it everywhere.
+The same prefixes work on any unit. A kilometer is a thousand meters. A kilogram is a thousand grams. A millisecond is a thousandth of a second, and a milligram is a thousandth of a gram. Learn the prefix once and you know it everywhere.
 
 The symbol µ is the Greek letter "mu", said "myoo". The **newton** (N) in the table is the unit of force — how hard something pushes or pulls. It shows up again below.
 
@@ -59,10 +59,10 @@ The symbol µ is the Greek letter "mu", said "myoo". The **newton** (N) in the t
 kilo- = 1000 ×, centi- = 1/100, milli- = 1/1000. 1 km = 1000 m, 1 cm = 0.01 m, 1 kg = 1000 g, 1 L = 1000 mL.
 :::
 
-Two more names you will see on every rocket data sheet. The **gram** (g) is a thousandth of a kilogram — a paper clip is about a gram. (The kilogram is the one base unit whose name already has a prefix in it.) And the **[[tonne|tonne]]** (t) is a thousand kilograms. It is not an official prefix unit, but it is the natural size for rockets: the Falcon 9 first stage carries about $411\,\mathrm{t}$ of propellant.
+Two more names you will see on every rocket data sheet. The **gram** (g) is a thousandth of a kilogram — a paper clip is about a gram. (The kilogram is the one base unit whose name already has a prefix in it.) And the **[[metric ton|tonne]]** (t) is a thousand kilograms. It is not an official prefix unit, but it is the natural size for rockets: the Falcon 9 first stage carries about $411\,\mathrm{t}$ of propellant.
 
 ::: warning Capital or small letter?
-$\mathrm{m}$ is milli- (a thousandth) or metre, depending on where it sits; $\mathrm{M}$ is mega- (a million). So $1\,\mathrm{mm}$ is a millimetre and $1\,\mathrm{Mm}$ is a million metres — a billion times bigger than a millimetre. Likewise $\mathrm{mN}$ and $\mathrm{MN}$. Copy symbols exactly, capital letters and all.
+$\mathrm{m}$ is milli- (a thousandth) or meter, depending on where it sits; $\mathrm{M}$ is mega- (a million). So $1\,\mathrm{mm}$ is a millimeter and $1\,\mathrm{Mm}$ is a million meters — a billion times bigger than a millimeter. Likewise $\mathrm{mN}$ and $\mathrm{MN}$. Copy symbols exactly, capital letters and all.
 :::
 
 ## Converting: move the decimal point
@@ -74,33 +74,33 @@ The rule has two halves:
 - **Big unit to small unit: multiply.** Small units are tiny, so you need *more* of them. The number gets bigger; the decimal point moves right. $3.7\,\mathrm{m} = 3.7 \times 100 = 370\,\mathrm{cm}$.
 - **Small unit to big unit: divide.** You need *fewer* big units. The number gets smaller; the point moves left. $2540\,\mathrm{mL} = 2540 \div 1000 = 2.54\,\mathrm{L}$.
 
-How many places? Count the zeros in the step. Metres to centimetres is $\times 100$, two zeros, two places. Kilograms to grams is $\times 1000$, three places. Picture it as a [[staircase|prefix-staircase]]: stepping down to smaller units multiplies, stepping up divides.
+How many places? Count the zeros in the step. Meters to centimeters is $\times 100$, two zeros, two places. Kilograms to grams is $\times 1000$, three places. Picture it as a [[staircase|prefix-staircase]]: stepping down to smaller units multiplies, stepping up divides.
 
 ::: example Falcon 9 in different units
 Convert each measurement. Say which way the point moves before you move it.
 
-**Diameter $3.7\,\mathrm{m}$ into millimetres.** Metres to millimetres: big to small, $\times 1000$, three places right. $3.7 \to 37 \to 370 \to 3700$. So $3.7\,\mathrm{m} = 3700\,\mathrm{mm}$.
+**Diameter $3.7\,\mathrm{m}$ into millimeters.** Meters to millimeters: big to small, $\times 1000$, three places right. $3.7 \to 37 \to 370 \to 3700$. So $3.7\,\mathrm{m} = 3700\,\mathrm{mm}$.
 
-**Propellant $411\,\mathrm{t}$ into kilograms.** Tonnes to kilograms: big to small, $\times 1000$. $411\,\mathrm{t} = 411\,000\,\mathrm{kg}$.
+**Propellant $411\,\mathrm{t}$ into kilograms.** Metric tons to kilograms: big to small, $\times 1000$. $411\,\mathrm{t} = 411\,000\,\mathrm{kg}$.
 
 **A $35\,\mathrm{g}$ sensor into kilograms.** Grams to kilograms: small to big, $\div 1000$, three places left. $35 \to 3.5 \to 0.35 \to 0.035$. So $35\,\mathrm{g} = 0.035\,\mathrm{kg}$.
 
-**An orbit $420\,\mathrm{km}$ up, in metres.** Big to small, $\times 1000$: $420\,000\,\mathrm{m}$.
+**An orbit $420\,\mathrm{km}$ up, in meters.** Big to small, $\times 1000$: $420\,000\,\mathrm{m}$.
 
-**Sanity check every time.** A smaller unit must give a bigger number, and a bigger unit a smaller number. $3700$ millimetres, each tiny, makes sense for a rocket's width; $0.0037$ would not.
+**Sanity check every time.** A smaller unit must give a bigger number, and a bigger unit a smaller number. $3700$ millimeters, each tiny, makes sense for a rocket's width; $0.0037$ would not.
 :::
 
 ::: warning Moving the point the wrong way
 The most common slip is moving the decimal point in the wrong direction — getting $0.0037\,\mathrm{mm}$ for the rocket's width instead of $3700\,\mathrm{mm}$. The answers differ by a factor of a million. Always ask: "Is my new unit smaller? Then I need *more* of them."
 :::
 
-Sometimes you step across two prefixes. There are $1000$ millimetres in a metre and $1000$ metres in a kilometre, so there are $1000 \times 1000 = 1\,000\,000$ millimetres in a kilometre. Go through the base unit if in doubt: convert to metres first, then to the unit you want.
+Sometimes you step across two prefixes. There are $1000$ millimeters in a meter and $1000$ meters in a kilometer, so there are $1000 \times 1000 = 1\,000\,000$ millimeters in a kilometer. Go through the base unit if in doubt: convert to meters first, then to the unit you want.
 
 ## Converting areas and volumes
 
-Here is where people get caught. A metre is $100$ centimetres. But a *square* metre is not $100$ square centimetres.
+Here is where people get caught. A meter is $100$ centimeters. But a *square* meter is not $100$ square centimeters.
 
-Picture a square $1\,\mathrm{m}$ on each side, and cut it into little squares $1\,\mathrm{cm}$ on each side. Along the top there are $100$ of them. Down the side there are $100$ rows. So there are $100 \times 100 = 10\,000$ little squares in [[one square metre|square-metre-grid]]:
+Picture a square $1\,\mathrm{m}$ on each side, and cut it into little squares $1\,\mathrm{cm}$ on each side. Along the top there are $100$ of them. Down the side there are $100$ rows. So there are $100 \times 100 = 10\,000$ little squares in [[one square meter|square-metre-grid]]:
 
 $$
 1\,\mathrm{m^2} = 100\,\mathrm{cm} \times 100\,\mathrm{cm} = 10\,000\,\mathrm{cm^2}.
@@ -116,26 +116,26 @@ $$
 Lengths convert by the plain factor. Areas convert by the factor squared. Volumes convert by the factor cubed. The circular end of a Falcon 9, $10.75\,\mathrm{m^2}$, is $10.75 \times 10\,000 = 107\,500\,\mathrm{cm^2}$ — not $1075\,\mathrm{cm^2}$.
 :::
 
-### Litres and cubic metres
+### Liters and cubic meters
 
-A litre is the volume of a box $10\,\mathrm{cm}$ on every side: $10 \times 10 \times 10 = 1000\,\mathrm{cm^3}$. So a millilitre, a thousandth of a litre, is exactly one cubic centimetre: $1\,\mathrm{mL} = 1\,\mathrm{cm^3}$.
+A liter is the volume of a box $10\,\mathrm{cm}$ on every side: $10 \times 10 \times 10 = 1000\,\mathrm{cm^3}$. So a milliliter, a thousandth of a liter, is exactly one cubic centimeter: $1\,\mathrm{mL} = 1\,\mathrm{cm^3}$.
 
-How many litres fit in a cubic metre? A cubic metre is $1\,000\,000\,\mathrm{cm^3}$, and each litre is $1000\,\mathrm{cm^3}$, so $1\,000\,000 \div 1000 = 1000$ litres. Or picture it: a cubic metre box is $100\,\mathrm{cm}$ each way, which is $10$ litre-boxes each way, and $10 \times 10 \times 10 = 1000$.
+How many liters fit in a cubic meter? A cubic meter is $1\,000\,000\,\mathrm{cm^3}$, and each liter is $1000\,\mathrm{cm^3}$, so $1\,000\,000 \div 1000 = 1000$ liters. Or picture it: a cubic meter box is $100\,\mathrm{cm}$ each way, which is $10$ liter-boxes each way, and $10 \times 10 \times 10 = 1000$.
 
 $$
 1\,\mathrm{m^3} = 1000\,\mathrm{L}.
 $$
 
-And a very handy fact: a litre of water has a mass of about $1\,\mathrm{kg}$. The metric system was designed that way. So a cubic metre of water, $1000\,\mathrm{L}$, has a mass of about $1000\,\mathrm{kg}$ — one tonne.
+And a very handy fact: a liter of water has a mass of about $1\,\mathrm{kg}$. The metric system was designed that way. So a cubic meter of water, $1000\,\mathrm{L}$, has a mass of about $1000\,\mathrm{kg}$ — one metric ton.
 
 ::: example How much does the tank hold?
-The liquid oxygen tank of a stage holds $244\,\mathrm{m^3}$. How many litres is that? Liquid oxygen has a mass of $1141\,\mathrm{kg}$ per cubic metre. Compare its mass with the same volume of water.
+The liquid oxygen tank of a stage holds $244\,\mathrm{m^3}$. How many liters is that? Liquid oxygen has a mass of $1141\,\mathrm{kg}$ per cubic meter. Compare its mass with the same volume of water.
 
-**Cubic metres to litres.** Each cubic metre is $1000\,\mathrm{L}$: $244 \times 1000 = 244\,000\,\mathrm{L}$. That would fill about a thousand bathtubs.
+**Cubic meters to liters.** Each cubic meter is $1000\,\mathrm{L}$: $244 \times 1000 = 244\,000\,\mathrm{L}$. That would fill about a thousand bathtubs.
 
-**Mass of the oxygen.** $244 \times 1141 \approx 278\,400\,\mathrm{kg}$. In tonnes, divide by $1000$: about $278\,\mathrm{t}$.
+**Mass of the oxygen.** $244 \times 1141 \approx 278\,400\,\mathrm{kg}$. In metric tons, divide by $1000$: about $278\,\mathrm{t}$.
 
-**Compare with water.** $244\,\mathrm{m^3}$ of water would be about $244\,\mathrm{t}$, since each cubic metre of water is one tonne. The oxygen is heavier, because $1141$ is bigger than $1000$: each litre of liquid oxygen has a mass of about $1.14\,\mathrm{kg}$.
+**Compare with water.** $244\,\mathrm{m^3}$ of water would be about $244\,\mathrm{t}$, since each cubic meter of water is one metric ton. The oxygen is heavier, because $1141$ is bigger than $1000$: each liter of liquid oxygen has a mass of about $1.14\,\mathrm{kg}$.
 
 **Sanity check.** Liquid oxygen is a bit denser than water, so its mass should be a bit more than $244\,\mathrm{t}$. It is.
 :::
@@ -213,8 +213,8 @@ A **measurement** is always a number *and* a unit. Two habits make measurements 
 | $1\,\mathrm{m}$ | one big step |
 | $1\,\mathrm{km}$ | a 12-minute walk |
 | $1\,\mathrm{g}$ | a paper clip |
-| $1\,\mathrm{kg}$ | a litre of water |
-| $1\,\mathrm{t}$ | a small car; a cubic metre of water |
+| $1\,\mathrm{kg}$ | a liter of water |
+| $1\,\mathrm{t}$ | a small car; a cubic meter of water |
 
 If a calculation says a satellite's solar panel is $4\,\mathrm{mm}$ wide, or a tank of propellant weighs $3\,\mathrm{g}$, a benchmark tells you straight away to go looking for the slip.
 
@@ -226,17 +226,17 @@ The United States still uses **customary units** in daily life: inches, feet and
 - [Exponents, radicals and scaling laws](#/module/t0_m01_algebra_precalc?lesson=l02-exponents-and-radicals) writes each prefix as a power of ten — kilo is $10^3$, micro is $10^{-6}$ — so that converting becomes adding exponents.
 - [Units, conversions and dimensional analysis](#/module/t0_m01_algebra_precalc?lesson=l10-units-and-dimensional-analysis) handles pounds, feet and psi, and shows how to catch a wrong unit before it causes damage.
 - [Scientific notation and significant figures](#/module/t0_m01_algebra_precalc?lesson=l11-scientific-notation-and-significant-figures) writes $7\,607\,000\,\mathrm{N}$ as $7.607\,\mathrm{MN}$, and decides how many digits a measurement deserves.
-- [Signed numbers, fractions and ratios](#/module/t0_m01_algebra_precalc?lesson=l01-signed-numbers-and-fractions) turns tonnes into kilograms and mass into weight to find whether a rocket's engines can lift it.
+- [Signed numbers, fractions and ratios](#/module/t0_m01_algebra_precalc?lesson=l01-signed-numbers-and-fractions) turns metric tons into kilograms and mass into weight to find whether a rocket's engines can lift it.
 :::
 
 ## Check yourself
 
 ::: check
-Convert: $45\,\mathrm{mm}$ into centimetres and into metres; $0.25\,\mathrm{kg}$ into grams; $3500\,\mathrm{mL}$ into litres.
+Convert: $45\,\mathrm{mm}$ into centimeters and into meters; $0.25\,\mathrm{kg}$ into grams; $3500\,\mathrm{mL}$ into liters.
 :::
 
 ::: answer
-$45\,\mathrm{mm}$: there are $10\,\mathrm{mm}$ in a centimetre, so small to big, $\div 10$: $4.5\,\mathrm{cm}$. There are $1000\,\mathrm{mm}$ in a metre, so $\div 1000$: $0.045\,\mathrm{m}$.
+$45\,\mathrm{mm}$: there are $10\,\mathrm{mm}$ in a centimeter, so small to big, $\div 10$: $4.5\,\mathrm{cm}$. There are $1000\,\mathrm{mm}$ in a meter, so $\div 1000$: $0.045\,\mathrm{m}$.
 
 $0.25\,\mathrm{kg}$: big to small, $\times 1000$: $250\,\mathrm{g}$.
 
@@ -244,23 +244,23 @@ $3500\,\mathrm{mL}$: small to big, $\div 1000$: $3.5\,\mathrm{L}$.
 :::
 
 ::: check
-A satellite's solar panel has an area of $3\,\mathrm{m^2}$. How many square centimetres is that? Explain why the answer is not $300\,\mathrm{cm^2}$.
+A satellite's solar panel has an area of $3\,\mathrm{m^2}$. How many square centimeters is that? Explain why the answer is not $300\,\mathrm{cm^2}$.
 :::
 
 ::: answer
-One square metre is $100 \times 100 = 10\,000\,\mathrm{cm^2}$, so $3\,\mathrm{m^2} = 30\,000\,\mathrm{cm^2}$.
+One square meter is $100 \times 100 = 10\,000\,\mathrm{cm^2}$, so $3\,\mathrm{m^2} = 30\,000\,\mathrm{cm^2}$.
 
 $300$ comes from using the length factor, $100$, only once. An area has two directions, so the factor goes in twice.
 :::
 
 ::: check
-A small tank holds $2.5\,\mathrm{m^3}$. How many litres is that? If it were filled with water, about how many kilograms of water would that be?
+A small tank holds $2.5\,\mathrm{m^3}$. How many liters is that? If it were filled with water, about how many kilograms of water would that be?
 :::
 
 ::: answer
 $1\,\mathrm{m^3} = 1000\,\mathrm{L}$, so $2.5 \times 1000 = 2500\,\mathrm{L}$.
 
-A litre of water is about $1\,\mathrm{kg}$, so about $2500\,\mathrm{kg}$, which is $2.5\,\mathrm{t}$.
+A liter of water is about $1\,\mathrm{kg}$, so about $2500\,\mathrm{kg}$, which is $2.5\,\mathrm{t}$.
 :::
 
 ::: check
@@ -299,7 +299,7 @@ $20\,\mathrm{ms}$ is $20$ thousandths of a second, $0.020\,\mathrm{s}$. In one s
 
 | Idea | In one line |
 | --- | --- |
-| Base units | metre (m), kilogram (kg), second (s); litre (L) for volume |
+| Base units | meter (m), kilogram (kg), second (s); liter (L) for volume |
 | Prefixes | giga $\times$1 000 000 000, mega $\times$1 000 000, kilo $\times$1000, centi 1/100, milli 1/1000, micro 1/1 000 000, nano 1/1 000 000 000 |
 | Handy facts | 1 km = 1000 m, 1 cm = 0.01 m, 1 kg = 1000 g, 1 t = 1000 kg, 1 L = 1000 mL |
 | Converting | big to small: multiply (point moves right); small to big: divide (point moves left) |
@@ -308,10 +308,10 @@ $20\,\mathrm{ms}$ is $20$ thousandths of a second, $0.020\,\mathrm{s}$. In one s
 | Mass vs weight | mass in kg, the same everywhere; weight is a force in N, mass × gravity (9.80665 on Earth) |
 | Time | 60 s = 1 min, 60 min = 1 h = 3600 s, 1 day = 86 400 s |
 
-Next, the last Basecamp lesson puts lengths and times together: speed, and the other "per" quantities — kilograms per second, litres per minute — along with how to average a set of measurements.
+Next, the last Basecamp lesson puts lengths and times together: speed, and the other "per" quantities — kilograms per second, liters per minute — along with how to average a set of measurements.
 
-::: context metre-history A metre from the size of the Earth
-The French scientists of the 1790s defined the metre as one ten-millionth of the distance from the North Pole to the equator, measured along a line through Paris. Two surveyors spent years measuring part of that line. It is why Earth's circumference comes out close to a round number: four quarters of $10\,000\,\mathrm{km}$, about $40\,000\,\mathrm{km}$. Since 1983 the metre has been defined by the speed of light instead: the distance light travels in a vacuum in $1/299\,792\,458$ of a second.
+::: context metre-history A meter from the size of the Earth
+The French scientists of the 1790s defined the meter as one ten-millionth of the distance from the North Pole to the equator, measured along a line through Paris. Two surveyors spent years measuring part of that line. It is why Earth's circumference comes out close to a round number: four quarters of $10\,000\,\mathrm{km}$, about $40\,000\,\mathrm{km}$. Since 1983 the meter has been defined by the speed of light instead: the distance light travels in a vacuum in $1/299\,792\,458$ of a second.
 :::
 
 ::: context kilogram-history The kilogram in a vault
@@ -322,8 +322,8 @@ For 130 years, the kilogram was one particular metal cylinder, about the size of
 Light, and radio, travels about $300\,000\,\mathrm{km}$ every second. That is about $30\,\mathrm{cm}$ in a nanosecond, a billionth of a second. A GPS receiver works out where it is by timing radio signals from satellites. If its timing were off by only one microsecond — a thousand nanoseconds — its position would be off by about $300\,\mathrm{m}$. That is why GPS satellites carry extremely accurate atomic clocks.
 :::
 
-::: context tonne Tonne, ton and ton
-A metric **tonne** is $1000\,\mathrm{kg}$. The American "short ton" is $2000$ pounds, about $907\,\mathrm{kg}$, and the British "long ton" is about $1016\,\mathrm{kg}$. They are close, but not the same, which is why the metric one is often spelled "tonne" or called a "metric ton". In this course, $\mathrm{t}$ always means $1000\,\mathrm{kg}$.
+::: context tonne Metric ton, ton and ton
+A metric **metric ton** is $1000\,\mathrm{kg}$. The American "short ton" is $2000$ pounds, about $907\,\mathrm{kg}$, and the British "long ton" is about $1016\,\mathrm{kg}$. They are close, but not the same, which is why the metric one is often spelled "metric ton" or called a "metric ton". In this course, $\mathrm{t}$ always means $1000\,\mathrm{kg}$.
 :::
 
 ::: context prefix-staircase The conversion staircase
@@ -351,7 +351,7 @@ Going down the stairs to a smaller unit, multiply. Going up to a bigger unit, di
 So $1\,\mathrm{km} = 1000\,\mathrm{m} = 100\,000\,\mathrm{cm} = 1\,000\,000\,\mathrm{mm}$.
 :::
 
-::: context square-metre-grid A square metre, cut up
+::: context square-metre-grid A square meter, cut up
 The big square is $1\,\mathrm{m}$ on each side. The grid cuts it into $10 \times 10 = 100$ squares, each $10\,\mathrm{cm}$ on a side and so $100\,\mathrm{cm^2}$ in area. That makes $100 \times 100 = 10\,000\,\mathrm{cm^2}$ in all.
 
 ```svg

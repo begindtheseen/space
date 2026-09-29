@@ -8,7 +8,7 @@ covers:
 
 A single telemetry reading tells you where something is. Two readings in a row tell you where it is *going*. A battery at 0.70 is fine; a battery at 0.70 that was at 0.85 ten minutes ago is draining fast, and an operator wants to know now. Almost every alarm that matters on a spacecraft is about change: a temperature climbing, a wheel speeding up, a pressure dropping, a stream of samples that suddenly stops arriving.
 
-To see change, each row needs to reach its neighbour. In the joins module you did that with a [[self-join|self-join-callback]], pairing each reading with the one before it, and you saw how clumsy that is. This lesson teaches the **offset functions**, the window functions that reach straight to another row of the same window: `LAG` for the row before, `LEAD` for the row after, and `FIRST_VALUE`, `LAST_VALUE` and `NTH_VALUE` for a row at a fixed position.
+To see change, each row needs to reach its neighbor. In the joins module you did that with a [[self-join|self-join-callback]], pairing each reading with the one before it, and you saw how clumsy that is. This lesson teaches the **offset functions**, the window functions that reach straight to another row of the same window: `LAG` for the row before, `LEAD` for the row after, and `FIRST_VALUE`, `LAST_VALUE` and `NTH_VALUE` for a row at a fixed position.
 
 By the end you will compute a per-satellite rate of change, explain exactly why the first row of each satellite comes out NULL, find gaps in a telemetry stream, and know about the one offset function — LAST_VALUE — that surprises nearly everyone the first time.
 
@@ -470,13 +470,13 @@ Either way, `final_v` is 0.63 on all four SAT-002 rows.
 | Named window | `WINDOW w AS (...)`, used as `OVER w` |
 | Whole-partition frame | `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING` |
 
-Next lesson returns to the aggregate functions with an ORDER BY inside OVER — the "so far" behaviour you have now seen from both sides — and builds running totals and moving averages from it, the smoothing that turns a noisy telemetry channel into a readable trend.
+Next lesson returns to the aggregate functions with an ORDER BY inside OVER — the "so far" behavior you have now seen from both sides — and builds running totals and moving averages from it, the smoothing that turns a noisy telemetry channel into a readable trend.
 
 ::: context self-join-callback The self-join this replaces
 In the joins module, pairing each reading with the one before it meant joining the table to itself and matching each row to the latest earlier row of the same satellite — a join condition plus a subquery to find "the latest earlier one". It works, but the database may compare each row with many others, and the query hides a simple idea under a lot of syntax. `LAG(value) OVER (PARTITION BY sat_id ORDER BY ts)` says the same thing in one expression, and the database answers it by sorting each satellite's rows once and reading them in order. The last lesson of this module weighs the two against each other.
 :::
 
-::: context lag-lead-picture Arrows between neighbouring rows
+::: context lag-lead-picture Arrows between neighboring rows
 LAG points each row at the one before it; LEAD at the one after. The wall between partitions stops both arrows, which is where the NULLs come from.
 
 ```svg

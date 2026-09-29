@@ -91,7 +91,7 @@ How much does a given $\alpha$ buy, and what does it cost?
 | 0.05 | 64.8° | 20 |
 | 0.01 | 78.6° | 100 |
 
-That table is the whole trade. One section can in principle give almost $90^\circ$. But the gain at high frequency grows as $1/\alpha$, and with it the sensor noise the actuator sees and the loop gain sitting on top of every resonance nobody modelled. Below about $\alpha = 0.1$ (about $55^\circ$) designers usually refuse to pay. When more than $55^\circ$ is truly needed, two lead sections in a row with $\alpha = 0.3$ give $2 \times 32.6 = 65^\circ$ for a high-frequency boost of $3.3 \times 3.3 = 11$. A single section giving $65^\circ$ would need $\alpha = 0.049$ and cost a boost of about $20$.
+That table is the whole trade. One section can in principle give almost $90^\circ$. But the gain at high frequency grows as $1/\alpha$, and with it the sensor noise the actuator sees and the loop gain sitting on top of every resonance nobody modeled. Below about $\alpha = 0.1$ (about $55^\circ$) designers usually refuse to pay. When more than $55^\circ$ is truly needed, two lead sections in a row with $\alpha = 0.3$ give $2 \times 32.6 = 65^\circ$ for a high-frequency boost of $3.3 \times 3.3 = 11$. A single section giving $65^\circ$ would need $\alpha = 0.049$ and cost a boost of about $20$.
 
 ::: example A lead for the gimbal actuator: 4 rad/s and 60° of phase margin
 **Step 1: look at the plant at the target crossover**, $\omega_c = 4\ \mathrm{rad/s}$:
@@ -189,7 +189,7 @@ For the attitude loop of the PID lesson ($k_p = 4800$, $k_d = 3360$, $N = 10\ \m
 That difference is a design decision, not a detail. An integrator gives zero steady-state error. It also brings windup, a mode-switching problem, a pole sitting on the stability boundary, and $90^\circ$ of lag at low frequency. A lag gives a *finite* error — for a constant command, $1/(1+\beta L_{\text{other}}(0))$, where $L_{\text{other}}(0)$ is the rest of the loop's DC gain — and none of those problems. On a loop whose actuator saturates often, or whose controller is often switched in and out, choosing $\beta = 20$ and accepting a small leftover error is often the better engineering.
 
 ::: warning
-A lag leaves a slow closed-loop pole sitting next to its own zero, near the origin. That [[nearly cancelling pair|lag-dipole]] adds a slow, small tail to the step response. In the gimbal design above, the tail starts at about 9% of the step and dies with a time constant of $1/0.433 = 2.3\ \mathrm{s}$. It raises the overshoot from 8.4% to 15.9%, and it stretches the 2% settling time from $1.0\ \mathrm{s}$ to $3.5\ \mathrm{s}$ and the 1% settling time from $1.5\ \mathrm{s}$ to $5.1\ \mathrm{s}$ — while the 5% settling time only moves from $0.89$ to $1.18\ \mathrm{s}$. A loose settling criterion can hide the tail entirely. Simulate the step response out to several times $\beta T$ before calling the design finished.
+A lag leaves a slow closed-loop pole sitting next to its own zero, near the origin. That [[nearly canceling pair|lag-dipole]] adds a slow, small tail to the step response. In the gimbal design above, the tail starts at about 9% of the step and dies with a time constant of $1/0.433 = 2.3\ \mathrm{s}$. It raises the overshoot from 8.4% to 15.9%, and it stretches the 2% settling time from $1.0\ \mathrm{s}$ to $3.5\ \mathrm{s}$ and the 1% settling time from $1.5\ \mathrm{s}$ to $5.1\ \mathrm{s}$ — while the 5% settling time only moves from $0.89$ to $1.18\ \mathrm{s}$. A loose settling criterion can hide the tail entirely. Simulate the step response out to several times $\beta T$ before calling the design finished.
 :::
 
 ::: warning
@@ -368,7 +368,7 @@ Imagine a ground antenna turning to follow a satellite crossing the sky at a ste
 Double $K_v$ and the trailing error halves. Adding a second integrator would drive it to zero, at the cost of the extra phase lag the lag network is designed to avoid.
 :::
 
-::: context lag-dipole The nearly cancelling pair
+::: context lag-dipole The nearly canceling pair
 Zoom in near the origin of the $s$-plane for the gimbal loop with its lag (to scale).
 
 ```svg

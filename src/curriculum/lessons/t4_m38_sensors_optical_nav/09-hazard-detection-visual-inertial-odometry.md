@@ -26,17 +26,17 @@ Both are properties of the ground in a small patch around the candidate spot, ab
 
 ### Fitting the plane
 
-The **elevation map** (also called a digital elevation model, or DEM) gives the ground height $z_k$ at many points $(x_k, y_k)$, often one per metre. A tilted plane has the equation
+The **elevation map** (also called a digital elevation model, or DEM) gives the ground height $z_k$ at many points $(x_k, y_k)$, often one per meter. A tilted plane has the equation
 
 $$
 z = ax + by + c .
 $$
 
-Here $a$ is how much the height rises per metre you step in $x$, $b$ the same for $y$, and $c$ the height at $x = y = 0$. We want the $a, b, c$ that make the plane pass as close as possible to all the measured heights at once. That is exactly the **[[linear least-squares|plane-fit]]** problem from the least-squares module: put one row $(x_k, y_k, 1)$ per measured point into a matrix $\mathbf{A}$, and solve $\mathbf{A}(a, b, c)^\mathsf{T} \approx \mathbf{z}$.
+Here $a$ is how much the height rises per meter you step in $x$, $b$ the same for $y$, and $c$ the height at $x = y = 0$. We want the $a, b, c$ that make the plane pass as close as possible to all the measured heights at once. That is exactly the **[[linear least-squares|plane-fit]]** problem from the least-squares module: put one row $(x_k, y_k, 1)$ per measured point into a matrix $\mathbf{A}$, and solve $\mathbf{A}(a, b, c)^\mathsf{T} \approx \mathbf{z}$.
 
 ### Slope
 
-The steepest way up the plane rises $\sqrt{a^2 + b^2}$ metres per metre walked (Pythagoras on the two rates). The angle of that climb, which is also the angle between the plane's "straight up" direction (its normal) and true vertical, is the slope:
+The steepest way up the plane rises $\sqrt{a^2 + b^2}$ meters per meter walked (Pythagoras on the two rates). The angle of that climb, which is also the angle between the plane's "straight up" direction (its normal) and true vertical, is the slope:
 
 $$
 \text{slope} = \arctan\sqrt{a^2 + b^2}.
@@ -51,21 +51,21 @@ Fit $z = ax + by + c$ to the local elevation map by least squares. **Slope** $= 
 :::
 
 ::: example Checking one site by hand
-A plane fit gives $a = 0.1$ and $b = 0.2$ (heights in metres, positions in metres). The lander tolerates at most $12^\circ$.
+A plane fit gives $a = 0.1$ and $b = 0.2$ (heights in meters, positions in meters). The lander tolerates at most $12^\circ$.
 
-**Steepest rise.** $\sqrt{0.1^2 + 0.2^2} = \sqrt{0.05} \approx 0.224$: the ground climbs about $22\,\mathrm{cm}$ for every metre you walk uphill.
+**Steepest rise.** $\sqrt{0.1^2 + 0.2^2} = \sqrt{0.05} \approx 0.224$: the ground climbs about $22\,\mathrm{cm}$ for every meter you walk uphill.
 
 **Angle.** $\arctan(0.224) \approx 12.6^\circ$.
 
 **Verdict.** $12.6^\circ$ is more than $12^\circ$, so the site fails on slope, however smooth it is. **Sanity check:** a rise of about one part in five feels like a steep driveway, and $12^\circ$ is about that steep, so the answer is in the right range.
 :::
 
-::: warning Keep the grid in metres
-The formula $\arctan\sqrt{a^2 + b^2}$ only gives the real slope if $x$, $y$ and $z$ are in the same unit. Elevation maps are often stored by pixel index. If each pixel is $0.5\,\mathrm{m}$ and you fit heights in metres against positions in pixels, every rate comes out half as big as it should, and a $20^\circ$ slope reads as about $10^\circ$ — a dangerous site passed as safe. Convert pixel positions to metres before fitting.
+::: warning Keep the grid in meters
+The formula $\arctan\sqrt{a^2 + b^2}$ only gives the real slope if $x$, $y$ and $z$ are in the same unit. Elevation maps are often stored by pixel index. If each pixel is $0.5\,\mathrm{m}$ and you fit heights in meters against positions in pixels, every rate comes out half as big as it should, and a $20^\circ$ slope reads as about $10^\circ$ — a dangerous site passed as safe. Convert pixel positions to meters before fitting.
 :::
 
 ::: example A synthetic landing zone, surveyed for hazards
-A $120\,\mathrm{m} \times 120\,\mathrm{m}$ elevation map, one height per metre, holds a gentle grade, a steep ramp and a field of boulders, with $1\,\mathrm{cm}$ of sensor noise. The lander allows $12^\circ$ of slope and $0.15\,\mathrm{m}$ of roughness over a $13\,\mathrm{m}$ square around each site.
+A $120\,\mathrm{m} \times 120\,\mathrm{m}$ elevation map, one height per meter, holds a gentle grade, a steep ramp and a field of boulders, with $1\,\mathrm{cm}$ of sensor noise. The lander allows $12^\circ$ of slope and $0.15\,\mathrm{m}$ of roughness over a $13\,\mathrm{m}$ square around each site.
 
 ```python
 import numpy as np
@@ -115,7 +115,7 @@ print(f"safe sites: {ok} of {len(centres)**2}")
 
 **Reading the four sites.** The open plain passes both tests. The ramp fails on slope alone: $15.75^\circ$, yet perfectly smooth ($1\,\mathrm{cm}$, which is only the sensor noise). The rock field is the surprise. On average it is nearly flat, $1.15^\circ$, and would sail through a slope-only check; only the roughness, $0.424\,\mathrm{m}$ against a $0.15\,\mathrm{m}$ limit, catches the boulders. The ramp's foot fails on roughness too: the window straddles the bend where flat ground turns into ramp, and no single plane fits a bend.
 
-**Sanity check.** The ramp rises $0.28\,\mathrm{m}$ per metre plus the $0.002$ grade, and $\arctan(0.282) \approx 15.7^\circ$, matching the fit.
+**Sanity check.** The ramp rises $0.28\,\mathrm{m}$ per meter plus the $0.002$ grade, and $\arctan(0.282) \approx 15.7^\circ$, matching the fit.
 
 Surveying a $27 \times 27$ grid of sites finds $333$ of $729$ safe, about $45.7\%$. A real site selector does not stop at the first safe site: it picks the best one, far from any hazard, that the lander can still reach with its remaining fuel.
 :::
@@ -124,9 +124,9 @@ This is what China's **[[Chang'e 3|change-hover]]** lander did on the Moon in 20
 
 ## Visual-inertial odometry: what the accelerometer adds
 
-The camera lesson ended with a fact worth restating: a single camera cannot measure the size of anything. Make every point in the world and every camera position twice as far from the origin, and every picture stays the same. A camera alone recovers **shape** — where things are compared with each other — never **scale** in real metres.
+The camera lesson ended with a fact worth restating: a single camera cannot measure the size of anything. Make every point in the world and every camera position twice as far from the origin, and every picture stays the same. A camera alone recovers **shape** — where things are compared with each other — never **scale** in real meters.
 
-An accelerometer measures something a camera cannot. Its reading has real units, metres per second squared. Integrate it once and you get a speed change in metres per second; integrate again and you get a distance in metres. If a vehicle starts from rest and accelerates at $0.25\,\mathrm{m/s^2}$ for $2\,\mathrm{s}$, it moves $\tfrac12 \times 0.25 \times 2^2 = 0.5\,\mathrm{m}$ — a real distance, not "some multiple of something".
+An accelerometer measures something a camera cannot. Its reading has real units, meters per second squared. Integrate it once and you get a speed change in meters per second; integrate again and you get a distance in meters. If a vehicle starts from rest and accelerates at $0.25\,\mathrm{m/s^2}$ for $2\,\mathrm{s}$, it moves $\tfrac12 \times 0.25 \times 2^2 = 0.5\,\mathrm{m}$ — a real distance, not "some multiple of something".
 
 **Visual-inertial odometry** (VIO) combines the two:
 
@@ -247,7 +247,7 @@ for maneuver in (False, True):
 #    estimate error after Gauss-Newton: 57.3
 ```
 
-**Without a maneuver**, the smallest eigenvalue is about $-0.00000000000004$: zero, apart from the computer's rounding. That is the blind direction the argument predicted, and no number of extra bearings, however precise, can shrink it. The solver, fed real noisy bearings, runs off along that direction to an error near $10^{15}$ metres. There is nothing in the data to stop it.
+**Without a maneuver**, the smallest eigenvalue is about $-0.00000000000004$: zero, apart from the computer's rounding. That is the blind direction the argument predicted, and no number of extra bearings, however precise, can shrink it. The solver, fed real noisy bearings, runs off along that direction to an error near $10^{15}$ meters. There is nothing in the data to stop it.
 
 **With one maneuver**, all four eigenvalues are positive. The smallest, $5.47 \times 10^{-4}$, means an uncertainty along the weakest direction of about $1/\sqrt{5.47 \times 10^{-4}} \approx 43\,\mathrm{m}$. The solver lands $57\,\mathrm{m}$ from the truth — a little over one of those uncertainties, which is what noisy data should give.
 
@@ -334,7 +334,7 @@ The most direct fix is a deliberate maneuver: fire the thrusters to change the i
 | $\mathbf{F} = \mathbf{J}^\mathsf{T}\mathbf{J}/\sigma^2$ | Fisher information; a zero eigenvalue marks a blind direction |
 | Observer maneuver | Bends the relative path and restores the range |
 
-Hazard maps and observability both ask what a sensor's geometry really lets you know, and what it can never tell you however much data arrives. The next lesson takes that question into the last metres before docking, where the target is close enough to touch and its surface may barely return a signal at all.
+Hazard maps and observability both ask what a sensor's geometry really lets you know, and what it can never tell you however much data arrives. The next lesson takes that question into the last meters before docking, where the target is close enough to touch and its surface may barely return a signal at all.
 
 ::: context plane-fit The best tilted board
 Imagine laying a stiff board over a bumpy patch of ground so that it sits as close as possible to every point at once. That board is the least-squares plane. Its tilt is the slope; the gaps between board and ground are the residuals.
@@ -365,7 +365,7 @@ The same least-squares machinery that fitted orbits and calibrations earlier in 
 :::
 
 ::: context rms Root mean square
-RMS stands for **root mean square**, and it is done in the reverse of that order: *square* each residual, take the *mean* (average) of the squares, then the square *root*. Squaring makes every residual positive, so bumps above the plane and pits below it both count instead of cancelling. The square root brings the answer back to metres. Residuals of $+0.3$, $-0.3$, $+0.3$ and $-0.3\,\mathrm{m}$ average to zero, but their RMS is $0.3\,\mathrm{m}$ — the honest size of the bumps.
+RMS stands for **root mean square**, and it is done in the reverse of that order: *square* each residual, take the *mean* (average) of the squares, then the square *root*. Squaring makes every residual positive, so bumps above the plane and pits below it both count instead of canceling. The square root brings the answer back to meters. Residuals of $+0.3$, $-0.3$, $+0.3$ and $-0.3\,\mathrm{m}$ average to zero, but their RMS is $0.3\,\mathrm{m}$ — the honest size of the bumps.
 :::
 
 ::: context change-hover Hover, look, then land

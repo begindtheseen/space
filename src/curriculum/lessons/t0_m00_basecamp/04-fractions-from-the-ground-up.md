@@ -231,10 +231,10 @@ Notice the last two. Some fractions give decimals that **repeat** forever. Which
 
 ### A fraction of an amount
 
-"Three quarters of 400 tonnes" means: cut 400 tonnes into 4 equal parts, and take 3 of them. Divide by the bottom, multiply by the top:
+"Three quarters of 400 metric tons" means: cut 400 metric tons into 4 equal parts, and take 3 of them. Divide by the bottom, multiply by the top:
 
 $$
-400 \div 4 = 100, \qquad 100 \times 3 = 300 \text{ tonnes}.
+400 \div 4 = 100, \qquad 100 \times 3 = 300 \text{ metric tons}.
 $$
 
 The word "of" in "a fraction of an amount" means multiply: $\frac{3}{4} \times 400 = 300$. And a percent of an amount works the same way, because a percent is a fraction: $25\%$ of 400 t is $\frac{1}{4}$ of 400 t, which is 100 t.

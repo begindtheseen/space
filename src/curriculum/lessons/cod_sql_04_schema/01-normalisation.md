@@ -1,16 +1,16 @@
 ---
 id: l01-normalisation
-title: Normalisation, and when to break it
+title: Normalization, and when to break it
 minutes: 23
 covers:
-  - Normalisation to third normal form and deliberate denormalisation for analytics
+  - Normalization to third normal form and deliberate denormalisation for analytics
 ---
 
 Picture a class sign-up sheet that has been passed around for a whole school year. Every time someone signs up for a club, they write their name, their homeroom, their homeroom teacher's name and the club's meeting room on a fresh line. Then the math teacher gets married and changes her name. Somebody fixes it on three lines and misses the other forty. Now the sheet says two different things about the same teacher, and nobody can tell which one is right.
 
 That sheet has a design problem, not a spelling problem. The same fact — who teaches homeroom 7B — is written down many times, so it can be written down *differently*. Every one of those copies is a chance to disagree.
 
-This module is about designing storage for a real fleet: six thousand satellites, each sending dozens of measurements every second, kept for years. Before indexes, partitions and ingest pipelines, you need tables that cannot contradict themselves. The method for getting there is called **[[normalisation|codd]]** — rearranging columns into tables so that each fact is stored in exactly one place. By the end of this lesson you will be able to take a messy telemetry table apart into clean ones, prove you lost nothing, and then — on purpose, for speed — glue some of it back together.
+This module is about designing storage for a real fleet: six thousand satellites, each sending dozens of measurements every second, kept for years. Before indexes, partitions and ingest pipelines, you need tables that cannot contradict themselves. The method for getting there is called **[[normalization|codd]]** — rearranging columns into tables so that each fact is stored in exactly one place. By the end of this lesson you will be able to take a messy telemetry table apart into clean ones, prove you lost nothing, and then — on purpose, for speed — glue some of it back together.
 
 ## The spreadsheet that became a table
 
@@ -44,7 +44,7 @@ The primary key is `(sat_id, ts, channel)`: one satellite, one moment, one measu
 
 ## Three ways a table can lie
 
-A table that stores one fact in many places misbehaves in three recognisable ways. Database people call them **anomalies** — situations where an ordinary insert, update or delete leaves the data wrong or makes a fact impossible to record.
+A table that stores one fact in many places misbehaves in three recognizable ways. Database people call them **anomalies** — situations where an ordinary insert, update or delete leaves the data wrong or makes a fact impossible to record.
 
 ### The update anomaly
 
@@ -105,7 +105,7 @@ DELETE 1
 Plane 3 — and the fact that it is inclined at 70 degrees — has vanished from the database. Nobody asked to forget it. A **delete anomaly** is this: removing one fact destroys a different fact that happened to live on the same row.
 
 ::: key The three anomalies
-Redundancy causes **update anomalies** (one fact, many copies, some missed), **insert anomalies** (cannot record a fact without an unrelated one) and **delete anomalies** (removing one fact loses another). Normalisation removes them by storing each fact once.
+Redundancy causes **update anomalies** (one fact, many copies, some missed), **insert anomalies** (cannot record a fact without an unrelated one) and **delete anomalies** (removing one fact loses another). Normalization removes them by storing each fact once.
 :::
 
 ## What depends on what
@@ -240,7 +240,7 @@ INSERT 0 2
 INSERT 0 7
 ```
 
-Two planes, three satellites, two channels, seven readings. (Had the rename mistake been left in, `satellite` would have received two rows for SAT-001 and the primary key would have refused the second — normalising often exposes contradictions like that, which is a feature.)
+Two planes, three satellites, two channels, seven readings. (Had the rename mistake been left in, `satellite` would have received two rows for SAT-001 and the primary key would have refused the second — normalizing often exposes contradictions like that, which is a feature.)
 
 **Step 3: prove nothing was lost.** Join the four tables back together and compare with the original in both directions using `EXCEPT` from the joins module:
 
@@ -316,11 +316,11 @@ rows — about 1.58 billion copies of "Pathfinder-1".
 
 ## Breaking the rules on purpose
 
-Normalisation makes writes safe. It makes some reads slower. Every question an analyst asks — "average bus temperature by plane, last month" — now needs joins, and a join across billions of readings is real work. Analytics tools and the engineers using them also prefer one wide, flat table they can filter and group without knowing the schema.
+Normalization makes writes safe. It makes some reads slower. Every question an analyst asks — "average bus temperature by plane, last month" — now needs joins, and a join across billions of readings is real work. Analytics tools and the engineers using them also prefer one wide, flat table they can filter and group without knowing the schema.
 
-So teams **denormalise**: they deliberately store a copy of data in a less normalised shape, trading redundancy for faster, simpler reads. The rule that keeps this safe is about *which* copy is the truth.
+So teams **denormalise**: they deliberately store a copy of data in a less normalized shape, trading redundancy for faster, simpler reads. The rule that keeps this safe is about *which* copy is the truth.
 
-- The normalised tables are the **[[source of truth|source-of-truth]]**. All writes go there, and only there.
+- The normalized tables are the **[[source of truth|source-of-truth]]**. All writes go there, and only there.
 - The denormalised table is **derived**: rebuilt from the source by a job you can re-run at any time. Nobody edits it by hand.
 - The copy states how fresh it is ("rebuilt nightly at 02:00 UTC"), because between rebuilds it can be behind.
 
@@ -328,7 +328,7 @@ Common shapes of deliberate denormalisation in telemetry work:
 
 - a **pre-joined flat table** with satellite name, plane and units on every reading, for analysts;
 - a **[[wide table|wide-table]]** with one column per channel (`batt_soc`, `bus_temp`, …) and one row per satellite per second;
-- **stored rollups** such as per-minute averages, which lesson 10 builds as materialised views.
+- **stored rollups** such as per-minute averages, which lesson 10 builds as materialized views.
 
 ::: example A flat table for the analysts
 Build the pre-joined copy from the 3NF tables (after the rename, the new satellite and the deletion above):
@@ -431,12 +431,12 @@ The fix is lost at the next hourly rebuild, because `reading_flat` is recreated 
 | 2NF | 1NF, no partial dependency on part of a composite key |
 | 3NF | 2NF, no transitive dependency between non-key columns |
 | Lossless check | rebuild by joining; `EXCEPT` both ways gives zero rows |
-| Deliberate denormalisation | derived, rebuildable copies for analytics; truth stays normalised |
+| Deliberate denormalisation | derived, rebuildable copies for analytics; truth stays normalized |
 
 The `reading` table you built is the start of a pattern analytics teams use everywhere: one big table of measurements surrounded by small tables that describe them. Next lesson gives that shape its name — the star schema — and asks what kind of key each of those small tables should have.
 
 ::: context codd Where "normal form" comes from
-The relational database was proposed by Edgar F. Codd, a mathematician at IBM, in a 1970 paper. That paper already asked for tables with no lists inside cells, which became first normal form. In 1971 he defined second and third normal form, and in 1974 he and Raymond Boyce tightened the third into "Boyce-Codd normal form". "Normal" is used the way mathematicians use it: a standard, tidy shape that everything can be rewritten into. The British spelling "normalisation" and the American "normalization" name the same thing.
+The relational database was proposed by Edgar F. Codd, a mathematician at IBM, in a 1970 paper. That paper already asked for tables with no lists inside cells, which became first normal form. In 1971 he defined second and third normal form, and in 1974 he and Raymond Boyce tightened the third into "Boyce-Codd normal form". "Normal" is used the way mathematicians use it: a standard, tidy shape that everything can be rewritten into. The British spelling "normalization" and the American "normalization" name the same thing.
 :::
 
 ::: context inclination The tilt of an orbit
@@ -493,7 +493,7 @@ An orbit is a flat ellipse around Earth. Its **inclination** is the angle betwee
 :::
 
 ::: context beyond-3nf Are there more normal forms?
-Yes: Boyce-Codd normal form (BCNF), fourth and fifth normal form, and a few more. BCNF closes a rare gap in 3NF that appears when a table has two overlapping candidate keys. The fourth and fifth deal with independent lists stuffed into one table. In practice, a design that reaches 3NF by the method in this lesson — one table per determinant — is almost always in BCNF too, and 3NF is the level working engineers mean when they say "normalised".
+Yes: Boyce-Codd normal form (BCNF), fourth and fifth normal form, and a few more. BCNF closes a rare gap in 3NF that appears when a table has two overlapping candidate keys. The fourth and fifth deal with independent lists stuffed into one table. In practice, a design that reaches 3NF by the method in this lesson — one table per determinant — is almost always in BCNF too, and 3NF is the level working engineers mean when they say "normalized".
 :::
 
 ::: context four-tables The four tables and how they point

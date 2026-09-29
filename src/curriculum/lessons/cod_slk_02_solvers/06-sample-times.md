@@ -3,7 +3,7 @@ id: l06-sample-times
 title: 'Sample times: the beat every block runs on'
 minutes: 22
 covers:
-  - 'Sample times: continuous, discrete, inherited, constant; colour coding'
+  - 'Sample times: continuous, discrete, inherited, constant; color coding'
 ---
 
 Think about the clocks in a school. The bell rings every 50 minutes to change classes. The cafeteria runs on its own schedule, once at noon. The hall lights stay on the whole day and never change. And the teacher's voice is continuous: it never stops between bells. All of these run side by side in the same building, each on its own timing.
@@ -87,7 +87,7 @@ Simulink works out these rates when it compiles the model — when you run it, o
 The catch is in the word "non-local". Look at an inherited block by itself and you cannot tell its rate. The answer lives somewhere upstream, maybe three subsystems away. Change that far-off block, and this one changes too, without anyone touching it.
 
 ::: key
-Inherited sample time (-1): the block takes the rate of its driving signal, which lets a subsystem be reused at several rates. It also makes the actual rate non-local, so sample-time colour coding and the model display are how you check what you actually got.
+Inherited sample time (-1): the block takes the rate of its driving signal, which lets a subsystem be reused at several rates. It also makes the actual rate non-local, so sample-time color coding and the model display are how you check what you actually got.
 :::
 
 ::: example A reused filter, ten times too slow
@@ -136,7 +136,7 @@ Two details make the colors trustworthy only if you know them:
 The key to the map is the **Timing Legend**, a panel (Ctrl+J opens it) that lists every rate in the model. Each row shows the color, a short **annotation** such as D1 for the fastest discrete rate and D2 for the next, and the actual period and offset. You can also choose to show those annotations on the diagram itself, instead of or alongside the colors, which helps anyone who has trouble telling the colors apart. Click a row in the legend and Simulink highlights the blocks at that rate.
 
 ::: key
-Sample-time colour coding: after Update Diagram, each rate in the model is drawn in its own colour — continuous black, the fastest discrete rate red, the next green, and so on by speed, with separate colours for constant, triggered and hybrid (multi-rate) blocks. The Timing Legend lists every colour with its annotation (D1, D2, …) and its period and offset.
+Sample-time color coding: after Update Diagram, each rate in the model is drawn in its own color — continuous black, the fastest discrete rate red, the next green, and so on by speed, with separate colors for constant, triggered and hybrid (multi-rate) blocks. The Timing Legend lists every color with its annotation (D1, D2, …) and its period and offset.
 :::
 
 Here is how a GNC engineer uses the map in practice. Open a model from another team and turn on the colors. The plant should be black. The flight software should be red, green and further colors, in blocks that match the design document. A hybrid subsystem is a place where rates meet and deserves a close look; lesson 7 shows the Rate Transition block that belongs there. A constant block where you expected a changing signal is a parameter someone froze. And any block colored "continuous" inside the flight software is a bug waiting to happen, because the flight computer has no continuous time to give it.
@@ -196,7 +196,7 @@ The Gain and Sum blocks are inherited (-1). Their only inputs are constant (inf)
 | Inherited | `-1` | At the rate of its driving signal | Gain, Sum, Product, Saturation |
 | Constant | `inf` | Once, at the start | Constant |
 | Fundamental sample time | `auto` fixed step | GCD of all periods and offsets | — |
-| Colour coding | Debug, Information Overlays, Sample Time | Black continuous, red fastest discrete, green next | Timing Legend lists them all |
+| Color coding | Debug, Information Overlays, Sample Time | Black continuous, red fastest discrete, green next | Timing Legend lists them all |
 
 A model with several rates needs something at every place where they meet, or a fast block will read a slow signal halfway through its update. The next lesson builds multirate models properly with the Rate Transition block, and weighs its two promises: data integrity and determinism.
 

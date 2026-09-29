@@ -289,7 +289,7 @@ A star tracker is a small camera that photographs the stars, matches the pattern
 :::
 
 ::: context chord-vs-arc Why the chord bunches up
-A two-dimensional slice of the picture. Blue dots: SLERP at $t = 0, \tfrac14, \tfrac12, \tfrac34, 1$, evenly spaced along the arc. Grey dots: the straight-line mix at the same $t$ values, evenly spaced along the chord. Red dots: those chord points pushed out to the circle (NLERP). The red dots crowd toward the middle, so NLERP covers the middle faster — its angular rate peaks there.
+A two-dimensional slice of the picture. Blue dots: SLERP at $t = 0, \tfrac14, \tfrac12, \tfrac34, 1$, evenly spaced along the arc. Gray dots: the straight-line mix at the same $t$ values, evenly spaced along the chord. Red dots: those chord points pushed out to the circle (NLERP). The red dots crowd toward the middle, so NLERP covers the middle faster — its angular rate peaks there.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">

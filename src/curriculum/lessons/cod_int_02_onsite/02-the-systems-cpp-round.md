@@ -3,7 +3,7 @@ id: l02-the-systems-cpp-round
 title: The systems C++ round
 minutes: 25
 covers:
-  - 'Systems C++ round: pointers and memory, double delete, RAII, rule of five, unique_ptr versus shared_ptr, virtual destructors, vtable layout, move semantics, undefined behaviour, static and const and volatile, data races, cache effects'
+  - 'Systems C++ round: pointers and memory, double delete, RAII, rule of five, unique_ptr versus shared_ptr, virtual destructors, vtable layout, move semantics, undefined behavior, static and const and volatile, data races, cache effects, avoiding new in a hot path'
 ---
 
 Think about a library book. You borrow it, and exactly one thing must happen next: you return it, once. If you never return it, the library slowly runs out of books. If you return it twice, the second return confuses the records — maybe someone else's book gets marked as returned. If you keep reading it after you returned it, you are reading a book that now belongs to someone else, and the pages may change under you.
@@ -17,10 +17,10 @@ Flight software is written in C++ largely because it gives this control, which i
 Learn the list itself first, so that in the room you can see which of the ten a question is really about.
 
 ::: key Systems C++ round: the ten things to have ready
-What double delete does, RAII in three sentences, rule of five and when moves are suppressed, unique_ptr versus shared_ptr cost, virtual destructors, vtable layout, what std::move actually does, three examples of undefined behaviour, what a data race is, and why you would avoid new in a hot path.
+What double delete does, RAII in three sentences, rule of five and when moves are suppressed, unique_ptr versus shared_ptr cost, virtual destructors, vtable layout, what std::move actually does, three examples of undefined behavior, what a data race is, and why you would avoid new in a hot path. Beside the ten, know static, const and volatile, and cache effects.
 :::
 
-Two more topics come up beside these — `static`, `const` and `volatile`, and cache effects — and are covered at the end.
+The two extras, `static`, `const` and `volatile`, and cache effects, are covered at the end.
 
 ## Pointers, the heap, and double delete
 
@@ -28,15 +28,15 @@ A **pointer** is a variable that holds a memory address — like a slip of paper
 
 Deleting frees the memory, but the slip of paper still has the old locker number on it. That leftover is a **dangling pointer**.
 
-**Double delete** is calling `delete` twice on the same address. It is **[[undefined behaviour|what-ub-means]]** — the C++ standard puts no requirements at all on what happens next. In practice, one of three things tends to happen:
+**Double delete** is calling `delete` twice on the same address. It is **[[undefined behavior|what-ub-means]]** — the C++ standard puts no requirements at all on what happens next. In practice, one of three things tends to happen:
 
 - the memory allocator notices and stops the program with an error message;
 - nothing visible happens now, but the allocator's records are corrupted, and a crash happens much later in unrelated code;
 - the same block ends up handed out to two later `new` calls, so two objects silently share memory and overwrite each other.
 
-The last two are the dangerous ones, because the crash appears far from the cause. This lesson does not run a double delete: a program with undefined behaviour has no "real output" to show. Lesson 3 shows how tools catch this class of bug.
+The last two are the dangerous ones, because the crash appears far from the cause. This lesson does not run a double delete: a program with undefined behavior has no "real output" to show. Lesson 3 shows how tools catch this class of bug.
 
-The interview answer: "Double delete is undefined behaviour. It usually corrupts the allocator's bookkeeping, so the symptom often shows up later, somewhere else. The cure is not to be careful — it is to make ownership automatic, so no human writes `delete` at all."
+The interview answer: "Double delete is undefined behavior. It usually corrupts the allocator's bookkeeping, so the symptom often shows up later, somewhere else. The cure is not to be careful — it is to make ownership automatic, so no human writes `delete` at all."
 
 ## RAII in three sentences
 
@@ -203,7 +203,7 @@ Sanity check: shared is exactly double, because $16 = 2 \times 8$. In a real pro
 
 A **virtual function** is one a derived class can replace, with the right version chosen at run time: call `read()` through a `Sensor*` that points at a `Gyro`, and `Gyro`'s version runs.
 
-Destruction works the same way — but only if the destructor is virtual. If you `delete` a derived object through a pointer to its base, and the base destructor is **not** virtual, the behaviour is undefined. In practice, usually only the base part is destroyed, so anything the derived class owns (a buffer, a file) leaks.
+Destruction works the same way — but only if the destructor is virtual. If you `delete` a derived object through a pointer to its base, and the base destructor is **not** virtual, the behavior is undefined. In practice, usually only the base part is destroyed, so anything the derived class owns (a buffer, a file) leaks.
 
 ```cpp
 #include <cstdio>
@@ -234,7 +234,7 @@ int main() {
 Both destructors ran, derived first. Lesson 3 breaks this on purpose.
 
 ::: key Virtual destructors
-A class meant to be deleted through a pointer to its base needs a virtual destructor. Without one, deleting a derived object through a base pointer is undefined behaviour, and in practice the derived part's resources leak.
+A class meant to be deleted through a pointer to its base needs a virtual destructor. Without one, deleting a derived object through a base pointer is undefined behavior, and in practice the derived part's resources leak.
 :::
 
 How does the program know, at run time, which `read()` to call? The C++ standard does not say; it is **implementation-defined**, meaning each compiler chooses and documents its own way. The way every major compiler actually does it is the **[[vtable|vtable-picture]]**:
@@ -274,23 +274,23 @@ After the first `std::move`, `a` still holds its text. Only when `b` was built d
 `std::move` on a `const` object produces a `const` rvalue reference. The move constructor cannot accept that (it needs to modify the source), so the copy constructor is chosen instead — silently. If a move "is not making things faster", check for `const`.
 :::
 
-## Three examples of undefined behaviour
+## Three examples of undefined behavior
 
-Undefined behaviour is not "it crashes". It is "no promise at all": the compiler may assume it never happens and optimize on that, so the program can do things that look impossible in the source. Three examples to have ready:
+Undefined behavior is not "it crashes". It is "no promise at all": the compiler may assume it never happens and optimize on that, so the program can do things that look impossible in the source. Three examples to have ready:
 
-1. **Signed integer overflow.** If an `int` goes past its largest value, the behaviour is undefined. (Unsigned integers are different: they wrap around by rule.) A compiler may, for example, delete a check like `if (x + 1 < x)`, because for signed `x` it "cannot" be true.
+1. **Signed integer overflow.** If an `int` goes past its largest value, the behavior is undefined. (Unsigned integers are different: they wrap around by rule.) A compiler may, for example, delete a check like `if (x + 1 < x)`, because for signed `x` it "cannot" be true.
 2. **Reading or writing outside an array.** `a[10]` on a ten-element array touches memory that is not part of it. It might read junk, overwrite another variable, or crash.
 3. **Using memory after it is freed** — dereferencing a dangling pointer, or a double delete. Also: null dereference, uninitialized reads, and data races.
 
-::: key Three examples of undefined behaviour
-Signed integer overflow; out-of-bounds array access; use after free (or double delete, or null dereference). The compiler may assume undefined behaviour never happens, so the symptom can be anything, anywhere.
+::: key Three examples of undefined behavior
+Signed integer overflow; out-of-bounds array access; use after free (or double delete, or null dereference). The compiler may assume undefined behavior never happens, so the symptom can be anything, anywhere.
 :::
 
 ## Data races, and std::atomic or a mutex
 
 Picture two people updating one whiteboard tally at once. Both read "41", both add one, both write "42". Two events, one recorded.
 
-A **data race** is the precise version: two threads access the same memory location at the same time, at least one of them writes, and nothing orders the two accesses. In C++ a data race is undefined behaviour — not just a wrong count, but no promises at all.
+A **data race** is the precise version: two threads access the same memory location at the same time, at least one of them writes, and nothing orders the two accesses. In C++ a data race is undefined behavior — not just a wrong count, but no promises at all.
 
 There are two standard fixes. `std::atomic<T>` makes each operation on one variable indivisible. A **[[mutex|mutex-meaning]]** (short for "mutual exclusion") is a lock: only one thread at a time can hold it, so a whole block of code runs without interference. `std::lock_guard` is the RAII wrapper that locks in its constructor and unlocks in its destructor.
 
@@ -327,7 +327,7 @@ int main() {
 Two threads times one million increments is two million, and both counters get it exactly. The unprotected version is a data race, so it is not run here: its output would mean nothing.
 
 ::: key What a data race is
-Two threads access the same memory location concurrently, at least one access is a write, and there is no synchronization between them. It is undefined behaviour. Fix it with std::atomic for a single variable or a mutex for a larger section.
+Two threads access the same memory location concurrently, at least one access is a write, and there is no synchronization between them. It is undefined behavior. Fix it with std::atomic for a single variable or a mutex for a larger section.
 :::
 
 ## static, const and volatile
@@ -462,7 +462,7 @@ Why did `sizeof(Sensor)` print 8 when `Sensor` has no data members? What is the 
 :::
 
 ::: answer
-Each object of a class with virtual functions carries a hidden pointer (the vptr) to its class's table, and a pointer is 8 bytes on a 64-bit machine. The careful phrasing: "vtable layout is implementation-defined — the standard only specifies the behaviour of virtual calls — but every major compiler uses one table per class and one vptr per object."
+Each object of a class with virtual functions carries a hidden pointer (the vptr) to its class's table, and a pointer is 8 bytes on a 64-bit machine. The careful phrasing: "vtable layout is implementation-defined — the standard only specifies the behavior of virtual calls — but every major compiler uses one table per class and one vptr per object."
 :::
 
 ::: check
@@ -470,14 +470,14 @@ A teammate says "I made the flag `volatile`, so the two threads are safe now." W
 :::
 
 ::: answer
-`volatile` only stops the compiler from removing or merging accesses. It does not make operations indivisible or order memory between threads, so unsynchronized access with at least one writer is still a data race — undefined behaviour. Use `std::atomic<bool>` for a flag, or a mutex.
+`volatile` only stops the compiler from removing or merging accesses. It does not make operations indivisible or order memory between threads, so unsynchronized access with at least one writer is still a data race — undefined behavior. Use `std::atomic<bool>` for a flag, or a mutex.
 :::
 
 ## Summary
 
 | Idea | In one line |
 | --- | --- |
-| Double delete | undefined behaviour; often fails later, far away |
+| Double delete | undefined behavior; often fails later, far away |
 | RAII | acquire in the constructor, release in the destructor, destructor runs automatically |
 | Rule of five | declaring a destructor or a copy operation suppresses the implicit moves |
 | Rule of zero | hold resources in RAII members and declare none of the five |
@@ -486,7 +486,7 @@ A teammate says "I made the flag `volatile`, so the two threads are safe now." W
 | Virtual destructor | needed to delete a derived object through a base pointer |
 | vtable | implementation-defined; commonly one table per class, one vptr per object |
 | std::move | a cast to an rvalue reference; the move constructor does the moving |
-| Undefined behaviour | signed overflow, out of bounds, use after free; no promises at all |
+| Undefined behavior | signed overflow, out of bounds, use after free; no promises at all |
 | Data race | concurrent access, at least one write, no synchronization; fix with atomic or mutex |
 | volatile | for memory-mapped hardware, not for threads |
 | new in a hot path | unpredictable time, possible locking, fragmentation; allocate at startup |
@@ -499,7 +499,7 @@ The **stack** holds a function's local variables. It is fast and automatic: the 
 :::
 
 ::: context what-ub-means Why the standard leaves it undefined
-Different processors do different things when, say, an integer overflows or a bad address is read. If the standard pinned down one answer, every compiler on every chip would have to add checks to produce it, and C++ would run slower. So the standard says "no requirements" instead. The price is that a program containing undefined behaviour means nothing: the compiler may assume the situation never occurs and optimize the code around that assumption.
+Different processors do different things when, say, an integer overflows or a bad address is read. If the standard pinned down one answer, every compiler on every chip would have to add checks to produce it, and C++ would run slower. So the standard says "no requirements" instead. The price is that a program containing undefined behavior means nothing: the compiler may assume the situation never occurs and optimize the code around that assumption.
 :::
 
 ::: context raii-name A name that describes half the idea

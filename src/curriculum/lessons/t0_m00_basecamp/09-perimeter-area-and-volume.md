@@ -6,7 +6,7 @@ covers:
   - perimeter, area and volume
 ---
 
-Three questions come up about any object you can hold. How far is it *around* the edge? How much *surface* does it have? How much does it *hold*? The first is its **perimeter**, the second its **area**, the third its **volume**. You already use all three: a fence goes around a yard, paint covers a wall, and a water bottle holds half a litre.
+Three questions come up about any object you can hold. How far is it *around* the edge? How much *surface* does it have? How much does it *hold*? The first is its **perimeter**, the second its **area**, the third its **volume**. You already use all three: a fence goes around a yard, paint covers a wall, and a water bottle holds half a liter.
 
 A rocket is built almost entirely out of a few simple shapes. Its body and tanks are **cylinders** — the shape of a soup can. Its nose is close to a **cone**. Many of the small tanks that hold high-pressure gas are **spheres**. The hole at the narrowest point of an engine's nozzle is a **circle**. So when an engineer asks "how much **propellant** — the fuel and the oxygen it burns with — fits?", "how much air pushes on the front?" or "how much metal does the skin need?", the answer is one of the formulas in this lesson.
 
@@ -24,7 +24,7 @@ $$
 
 A solar panel $2\,\mathrm{m}$ long and $1.5\,\mathrm{m}$ wide has perimeter $2 \times (2 + 1.5) = 2 \times 3.5 = 7\,\mathrm{m}$. That is the length of the metal frame around its edge.
 
-Perimeter is a length, so it is measured in ordinary length units: metres, centimetres, kilometres.
+Perimeter is a length, so it is measured in ordinary length units: meters, centimeters, kilometers.
 
 ### Around a circle: the circumference
 
@@ -44,7 +44,7 @@ Drawings and data sheets usually give the **diameter**, because that is what a t
 
 ## Area: how much surface
 
-Area is how much flat surface a shape covers. The trick is to measure it by counting **[[unit squares|why-squares]]**. A **square metre**, written $\mathrm{m^2}$ and read "square metre" or "metre squared", is the area of a square $1\,\mathrm{m}$ on each side. A floor with an area of $12\,\mathrm{m^2}$ could be covered by twelve such tiles.
+Area is how much flat surface a shape covers. The trick is to measure it by counting **[[unit squares|why-squares]]**. A **square meter**, written $\mathrm{m^2}$ and read "square meter" or "meter squared", is the area of a square $1\,\mathrm{m}$ on each side. A floor with an area of $12\,\mathrm{m^2}$ could be covered by twelve such tiles.
 
 ### Rectangles
 
@@ -54,10 +54,10 @@ $$
 A = l \times w.
 $$
 
-The units multiply too: metres times metres gives square metres. The solar panel from before has area $2 \times 1.5 = 3\,\mathrm{m^2}$.
+The units multiply too: meters times meters gives square meters. The solar panel from before has area $2 \times 1.5 = 3\,\mathrm{m^2}$.
 
 ::: warning Perimeter and area are different things
-Perimeter adds lengths and comes out in metres. Area multiplies lengths and comes out in square metres. A $1\,\mathrm{m}$ by $9\,\mathrm{m}$ strip and a $3\,\mathrm{m}$ by $3\,\mathrm{m}$ square both have area $9\,\mathrm{m^2}$. But their perimeters are $20\,\mathrm{m}$ and $12\,\mathrm{m}$. If your answer for an area is in plain metres, a length got added somewhere it should have been multiplied.
+Perimeter adds lengths and comes out in meters. Area multiplies lengths and comes out in square meters. A $1\,\mathrm{m}$ by $9\,\mathrm{m}$ strip and a $3\,\mathrm{m}$ by $3\,\mathrm{m}$ square both have area $9\,\mathrm{m^2}$. But their perimeters are $20\,\mathrm{m}$ and $12\,\mathrm{m}$. If your answer for an area is in plain meters, a length got added somewhere it should have been multiplied.
 :::
 
 ### Triangles
@@ -134,7 +134,7 @@ exactly four times the area of a circle with the same radius. Later in the cours
 
 ## Volume: how much it holds
 
-**Volume** is how much space a solid takes up — how much water it would hold if it were hollow. We count it in **cubic** units. A **cubic metre**, $\mathrm{m^3}$, is the space inside a box $1\,\mathrm{m}$ on every side. A cubic centimetre, $\mathrm{cm^3}$, is a sugar cube.
+**Volume** is how much space a solid takes up — how much water it would hold if it were hollow. We count it in **cubic** units. A **cubic meter**, $\mathrm{m^3}$, is the space inside a box $1\,\mathrm{m}$ on every side. A cubic centimeter, $\mathrm{cm^3}$, is a sugar cube.
 
 ### Boxes
 
@@ -144,7 +144,7 @@ $$
 V = l \times w \times h.
 $$
 
-Length times width times height: three lengths multiplied, so the units are metres cubed. The CubeSat above has volume $10 \times 10 \times 30 = 3000\,\mathrm{cm^3}$.
+Length times width times height: three lengths multiplied, so the units are meters cubed. The CubeSat above has volume $10 \times 10 \times 30 = 3000\,\mathrm{cm^3}$.
 
 ### Cylinders: the end times the height
 
@@ -165,9 +165,9 @@ Treat the Falcon 9 first stage as a plain cylinder, $3.7\,\mathrm{m}$ across and
 
 **End area.** $A = \pi r^2 = \pi \times 1.85^2 = \pi \times 3.4225 \approx 10.75\,\mathrm{m^2}$.
 
-**Volume.** Multiply by the height: $V = 10.75 \times 41 \approx 441\,\mathrm{m^3}$. That is the space inside the whole stage, if every metre of it were tank.
+**Volume.** Multiply by the height: $V = 10.75 \times 41 \approx 441\,\mathrm{m^3}$. That is the space inside the whole stage, if every meter of it were tank.
 
-**Does it make sense?** The stage carries about $411\,\mathrm{t}$ of propellant, and every cubic metre of that propellant has a mass of about $1015\,\mathrm{kg}$ (a tonne, $\mathrm{t}$, is $1000\,\mathrm{kg}$). So it fills about $411\,000 \div 1015 \approx 405\,\mathrm{m^3}$. That is less than the $441\,\mathrm{m^3}$ upper limit, as it has to be — the engines and the gaps between the tanks take up the rest.
+**Does it make sense?** The stage carries about $411\,\mathrm{t}$ of propellant, and every cubic meter of that propellant has a mass of about $1015\,\mathrm{kg}$ (a metric ton, $\mathrm{t}$, is $1000\,\mathrm{kg}$). So it fills about $411\,000 \div 1015 \approx 405\,\mathrm{m^3}$. That is less than the $441\,\mathrm{m^3}$ upper limit, as it has to be — the engines and the gaps between the tanks take up the rest.
 
 **Skin.** The curved side is circumference times height: $2\pi r h = 2 \times \pi \times 1.85 \times 41 \approx 477\,\mathrm{m^2}$. The two ends add $2 \times 10.75 = 21.5\,\mathrm{m^2}$, for about $498\,\mathrm{m^2}$ in all. Nearly all of the skin is the long side, because the stage is eleven times taller than it is wide.
 :::
@@ -239,7 +239,7 @@ A small tank is a cylinder with radius $1\,\mathrm{m}$ and height $4\,\mathrm{m}
 
 **Compare.** Volume: $100.5 \div 12.6 \approx 8$. Skin: $125.7 \div 31.4 = 4$. Exactly the scaling rule.
 
-**What it means.** The big tank holds $8$ times the propellant but needs only $4$ times the metal. Each square metre of skin now looks after twice as much propellant. This is part of [[why big rockets are efficient|square-cube]].
+**What it means.** The big tank holds $8$ times the propellant but needs only $4$ times the metal. Each square meter of skin now looks after twice as much propellant. This is part of [[why big rockets are efficient|square-cube]].
 :::
 
 ::: note Where this comes back
@@ -260,7 +260,7 @@ Fence is perimeter: $P = 2 \times (30 + 20) = 2 \times 50 = 100\,\mathrm{m}$.
 
 Surface is area: $A = 30 \times 20 = 600\,\mathrm{m^2}$.
 
-The fence is a length (metres), the concrete is an area (square metres).
+The fence is a length (meters), the concrete is an area (square meters).
 :::
 
 ::: check
@@ -278,11 +278,11 @@ Sanity check: a $40\,\mathrm{cm}$ square would have area $1600\,\mathrm{cm^2}$, 
 :::
 
 ::: check
-A satellite keeps helium in a spherical tank $60\,\mathrm{cm}$ across. Find its volume in cubic metres.
+A satellite keeps helium in a spherical tank $60\,\mathrm{cm}$ across. Find its volume in cubic meters.
 :::
 
 ::: answer
-Work in metres: $60\,\mathrm{cm} = 0.6\,\mathrm{m}$ across, so $r = 0.3\,\mathrm{m}$.
+Work in meters: $60\,\mathrm{cm} = 0.6\,\mathrm{m}$ across, so $r = 0.3\,\mathrm{m}$.
 
 $r^3 = 0.3 \times 0.3 \times 0.3 = 0.027$.
 
@@ -356,7 +356,7 @@ The blue line is the circle's edge unrolled flat: three diameters and a little b
 :::
 
 ::: context why-squares Why area comes in squares
-You could measure area in any shape of tile — triangles, hexagons, circles. Squares win because they fit together with no gaps, and a rectangle $l$ squares long and $w$ squares wide holds exactly $l \times w$ of them. That is also why "squared" means "times itself": a square with side $a$ has area $a \times a = a^2$. When you see $\mathrm{m^2}$, picture a floor tile one metre on each side.
+You could measure area in any shape of tile — triangles, hexagons, circles. Squares win because they fit together with no gaps, and a rectangle $l$ squares long and $w$ squares wide holds exactly $l \times w$ of them. That is also why "squared" means "times itself": a square with side $a$ has area $a \times a = a^2$. When you see $\mathrm{m^2}$, picture a floor tile one meter on each side.
 :::
 
 ::: context circle-slices The pizza rearranged
@@ -394,7 +394,7 @@ As a rocket climbs, air rams into its front. The force depends on how fast it go
 :::
 
 ::: context cubesat Satellites the size of a loaf of bread
-A CubeSat is a small satellite built from standard $10\,\mathrm{cm}$ cubes called "units". Universities and companies launch them because they are cheap and many can ride along on one rocket. A 1U CubeSat is one cube; a 3U is three stacked end to end, about the size of a loaf of bread. Because they are so small, every square centimetre of surface is fought over — for solar cells, antennas and cameras.
+A CubeSat is a small satellite built from standard $10\,\mathrm{cm}$ cubes called "units". Universities and companies launch them because they are cheap and many can ride along on one rocket. A 1U CubeSat is one cube; a 3U is three stacked end to end, about the size of a loaf of bread. Because they are so small, every square centimeter of surface is fought over — for solar cells, antennas and cameras.
 :::
 
 ::: context cylinder-net Unrolling a can

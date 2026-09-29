@@ -323,7 +323,7 @@ On a rocket this happens in the first minute or two of flight. Buffet does not p
 :::
 
 ::: context ramp-lag The output runs behind the ramp
-The pitch-rate loop ($\omega_n = 2.5\,\mathrm{rad/s}$, $\zeta = 0.6$) following a unit ramp from rest. The command is the grey line. The output (red) starts slowly, then climbs at the same rate, but always $2\zeta/\omega_n = 0.48\,\mathrm{s}$ behind.
+The pitch-rate loop ($\omega_n = 2.5\,\mathrm{rad/s}$, $\zeta = 0.6$) following a unit ramp from rest. The command is the gray line. The output (red) starts slowly, then climbs at the same rate, but always $2\zeta/\omega_n = 0.48\,\mathrm{s}$ behind.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 205" font-family="Inter, Arial, sans-serif">
@@ -417,7 +417,7 @@ Put the notch at the bending frequency and the autopilot becomes almost deaf and
 :::
 
 ::: context buildup How a resonance builds up
-Driving exactly at resonance from rest, with $\zeta = 0.05$ so the growth fits on the page. The red curve is the exact response, scaled so that the final steady size is $1$ (grey dashed lines). It starts at zero and grows inside the blue envelope $1 - e^{-\zeta\omega_n t}$.
+Driving exactly at resonance from rest, with $\zeta = 0.05$ so the growth fits on the page. The red curve is the exact response, scaled so that the final steady size is $1$ (gray dashed lines). It starts at zero and grows inside the blue envelope $1 - e^{-\zeta\omega_n t}$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">

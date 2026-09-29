@@ -139,7 +139,7 @@ The wrap works in three moves. Shift the angle up by $\pi$ so the target range b
 ::: example Configure and build the layout
 The demo program:
 
-```cpp
+```cpp fragment
 // apps/gnc_demo/main.cpp
 #include <gnc/angles.hpp>
 

@@ -76,7 +76,7 @@ $$
 A = \sin\Delta\nu\,\sqrt{\frac{r_1 r_2}{1-\cos\Delta\nu}} .
 $$
 
-$A$ is a length, in kilometres. It is the quantity the next lesson's solver is built around. And $A$, it turns out, can be written using only $s$ and $c$:
+$A$ is a length, in kilometers. It is the quantity the next lesson's solver is built around. And $A$, it turns out, can be written using only $s$ and $c$:
 
 $$
 A^2 = 2s(s-c) .
@@ -226,7 +226,7 @@ Why must the direction of travel be given as part of Lambert's problem? Why can'
 :::
 
 ::: answer
-Two position vectors and the focus fix a plane, but not which way around that plane the spacecraft moves. Travelling one way sweeps $\Delta\nu$; travelling the other way sweeps $360° - \Delta\nu$. These are different transfers with different orbits and different flight times, and both pass through the same two points. So the vectors alone are consistent with more than one answer, and the direction has to be supplied.
+Two position vectors and the focus fix a plane, but not which way around that plane the spacecraft moves. Traveling one way sweeps $\Delta\nu$; traveling the other way sweeps $360° - \Delta\nu$. These are different transfers with different orbits and different flight times, and both pass through the same two points. So the vectors alone are consistent with more than one answer, and the direction has to be supplied.
 :::
 
 ::: check
@@ -321,7 +321,7 @@ A **chord** is the straight line joining two points on a curve; the word comes f
 :::
 
 ::: context semiperimeter-heron An old friend of triangles
-The semiperimeter — half the distance around a triangle — is not new to Lambert. About two thousand years ago Heron of Alexandria gave a formula for a triangle's area using it: area $= \sqrt{s(s-a)(s-b)(s-c)}$ for sides $a$, $b$, $c$. Whenever a formula about a triangle comes out symmetric and tidy, $s$ is often hiding inside it. In Lambert's problem $s$ and $s - c$ are the two lengths that survive all the cancelling.
+The semiperimeter — half the distance around a triangle — is not new to Lambert. About two thousand years ago Heron of Alexandria gave a formula for a triangle's area using it: area $= \sqrt{s(s-a)(s-b)(s-c)}$ for sides $a$, $b$, $c$. Whenever a formula about a triangle comes out symmetric and tidy, $s$ is often hiding inside it. In Lambert's problem $s$ and $s - c$ are the two lengths that survive all the canceling.
 :::
 
 ::: context lambert-the-man Who Lambert was

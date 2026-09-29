@@ -18,7 +18,7 @@ The plan: position to longitude and latitude, the shape of a track, then each or
 
 ### Two frames that share an axis
 
-The **ECI** frame (Earth-centred inertial) from the elements lesson has its $x$-axis, $\hat{\mathbf{I}}$, pointing toward the **[[vernal equinox|vernal-equinox]]**, a fixed direction among the stars. The **ECEF** frame (Earth-centred, Earth-fixed) shares the same $z$-axis through the North Pole. But its $x$-axis points at the Greenwich meridian — longitude zero — and it turns with the planet.
+The **ECI** frame (Earth-centered inertial) from the elements lesson has its $x$-axis, $\hat{\mathbf{I}}$, pointing toward the **[[vernal equinox|vernal-equinox]]**, a fixed direction among the stars. The **ECEF** frame (Earth-centered, Earth-fixed) shares the same $z$-axis through the North Pole. But its $x$-axis points at the Greenwich meridian — longitude zero — and it turns with the planet.
 
 How fast does it turn? Relative to the stars, Earth spins eastward at
 
@@ -38,13 +38,13 @@ $$
 \lambda = \operatorname{atan2}(y, x) - \theta_g, \qquad \text{wrapped to } (-180^\circ, 180^\circ],
 $$
 
-with east counted positive. Its **geocentric latitude** — the angle up from the equator, measured at Earth's centre — is
+with east counted positive. Its **geocentric latitude** — the angle up from the equator, measured at Earth's center — is
 
 $$
 \phi' = \arcsin\frac{z}{r}.
 $$
 
-Maps use a slightly different latitude. Earth is a little fatter at the equator than through the poles, so "straight down" at a spot on the ground does not point exactly at the centre. **[[Geodetic latitude|geodetic]]** $\phi$ is measured from that local "straight down" line, the normal to the reference ellipsoid. With flattening $f = 1/298.257\,223\,563$ (how much the ellipsoid is squashed), the two are related for a point on the surface by
+Maps use a slightly different latitude. Earth is a little fatter at the equator than through the poles, so "straight down" at a spot on the ground does not point exactly at the center. **[[Geodetic latitude|geodetic]]** $\phi$ is measured from that local "straight down" line, the normal to the reference ellipsoid. With flattening $f = 1/298.257\,223\,563$ (how much the ellipsoid is squashed), the two are related for a point on the surface by
 
 $$
 \tan\phi = \frac{\tan\phi'}{(1 - f)^2}.
@@ -110,7 +110,7 @@ $$
 \sin\phi' = \sin i\,\sin u,
 $$
 
-where $u$ is the **argument of latitude** — the angle travelled along the orbit from the ascending node. As $u$ runs from $0^\circ$ to $360^\circ$, $\sin u$ swings between $-1$ and $+1$, so $\sin\phi'$ swings between $\pm\sin i$. For a **retrograde** orbit ($i > 90^\circ$) the band is $\pm(180^\circ - i)$ instead.
+where $u$ is the **argument of latitude** — the angle traveled along the orbit from the ascending node. As $u$ runs from $0^\circ$ to $360^\circ$, $\sin u$ swings between $-1$ and $+1$, so $\sin\phi'$ swings between $\pm\sin i$. For a **retrograde** orbit ($i > 90^\circ$) the band is $\pm(180^\circ - i)$ instead.
 
 ::: note Why it has to be true
 Put the satellite in its orbit plane at angle $u$ from the ascending node, on a circle of radius $r$. Along the node line it is $r\cos u$; across it, still in the plane, it is $r\sin u$. The plane is tilted by $i$ about the node line, so the across-part rises out of the equator by the factor $\sin i$: the height above the equatorial plane is $z = r\sin u\,\sin i$. Divide by $r$: $\sin\phi' = z/r = \sin i\,\sin u$.
@@ -126,13 +126,13 @@ $$
 
 Earth's squashed shape adds a slow backward drift of the orbit plane, $\dot{\Omega} = -4.96^\circ$ per day for the ISS (the formula is below). Over one $5569\,\mathrm{s}$ orbit that moves the node another $0.32^\circ$ west, for a total of $23.59^\circ$ per orbit.
 
-The ISS makes $15.51$ revolutions a day, so after a day the pattern nearly repeats, drifting slowly. Changing $a$ by a few kilometres changes the period enough to make the repeat exact. That is how imaging satellites are placed on **repeating grids** of ground tracks.
+The ISS makes $15.51$ revolutions a day, so after a day the pattern nearly repeats, drifting slowly. Changing $a$ by a few kilometers changes the period enough to make the repeat exact. That is how imaging satellites are placed on **repeating grids** of ground tracks.
 
 ### Tracks that stand still or loop
 
 When the satellite moves east more slowly than the ground beneath it, the track runs backward — westward — near the equator. A **geostationary** satellite is the extreme case. Its angular rate equals $\omega_E$, so its longitude never changes and its whole track is a single point.
 
-Small errors turn that point into recognisable shapes:
+Small errors turn that point into recognizable shapes:
 
 - **An inclination $i$** makes the point swing north and south by $\pm i$ once a day, and east and west by $\pm i^2/4$ (with $i$ in radians). Together these trace a figure eight. For $i = 3^\circ$ that is $\pm 3^\circ$ of latitude and $\pm 0.039^\circ$ of longitude.
 - **An eccentricity $e$** makes the longitude rock back and forth by $\pm 2e$ radians once a day, as the satellite runs ahead of and then behind the steadily turning Earth. $e = 0.001$ gives $\pm 0.115^\circ$.
@@ -166,7 +166,7 @@ Two orbit families are built entirely around these facts.
 
 Roughly $200$ to $2000\,\mathrm{km}$ altitude, periods from $88$ to $127\,\mathrm{min}$, speeds near $7.7\,\mathrm{km/s}$. The ISS at about $413\,\mathrm{km}$ and $51.6^\circ$ is the classic example. Most Earth-observation satellites and many communications constellations live here.
 
-Air drag matters below about $600\,\mathrm{km}$. The ISS loses tens of metres of altitude per day and fires its engines now and then to climb back up (a **reboost**). And for anything beyond rough planning, the two-body model needs $J_2$ added within a day.
+Air drag matters below about $600\,\mathrm{km}$. The ISS loses tens of meters of altitude per day and fires its engines now and then to climb back up (a **reboost**). And for anything beyond rough planning, the two-body model needs $J_2$ added within a day.
 
 ### MEO — medium Earth orbit
 
@@ -186,7 +186,7 @@ The ellipse a launcher delivers a GEO satellite to. Its perigee is in LEO ($250\
 
 Its inclination is inherited from the launch site: about $28.5^\circ$ from Cape Canaveral and about $6^\circ$ from Kourou. That tilt has to be removed at apogee, along with the $1.47\,\mathrm{km/s}$ needed to make the orbit circular. That is why **[[equatorial launch sites|launch-latitude]]** are prized for GEO missions.
 
-The apogee burn is placed at a node, so one burn both circularises and removes the tilt. The perigee is therefore at the opposite node: $\omega = 180^\circ$ or $0^\circ$.
+The apogee burn is placed at a node, so one burn both circularizes and removes the tilt. The perigee is therefore at the opposite node: $\omega = 180^\circ$ or $0^\circ$.
 
 ### SSO — sun-synchronous orbit
 
@@ -341,7 +341,7 @@ A GEO satellite is drifting east at $0.05^\circ$ per day. Is its semi-major axis
 ::: answer
 **Direction.** Drifting east means the satellite is running ahead of Earth. Its period is shorter than a sidereal day, so $a$ is too *small*.
 
-**Size.** Each kilometre of error gives $0.0128^\circ$ per day. So the error is $0.05/0.0128 = 3.9\,\mathrm{km}$ too low.
+**Size.** Each kilometer of error gives $0.0128^\circ$ per day. So the error is $0.05/0.0128 = 3.9\,\mathrm{km}$ too low.
 
 **The fix.** Raise the orbit by $3.9\,\mathrm{km}$. For a near-circular orbit a small tangential burn changes $a$ by $\Delta a/a \approx 2\Delta v/v_c$, so $\Delta v \approx \tfrac{1}{2}v_c\,\Delta a/a = 0.5 \times 3.075 \times 3.9/42\,164 = 1.4 \times 10^{-4}\,\mathrm{km/s}$ — about $0.14\,\mathrm{m/s}$. That stops the drift.
 :::
@@ -423,7 +423,7 @@ The step along the orbit is drawn about thirty times too big so you can see it. 
 :::
 
 ::: context geodetic Two ways to measure latitude
-On a squashed Earth, the line pointing "straight down" at your feet — the direction a plumb line hangs, and the normal to the ellipsoid — does not pass through the centre. **Geocentric** latitude $\phi'$ uses the line to the centre. **Geodetic** latitude $\phi$ uses the local normal, and it is a little larger at every latitude between the equator and the poles.
+On a squashed Earth, the line pointing "straight down" at your feet — the direction a plumb line hangs, and the normal to the ellipsoid — does not pass through the center. **Geocentric** latitude $\phi'$ uses the line to the center. **Geodetic** latitude $\phi$ uses the local normal, and it is a little larger at every latitude between the equator and the poles.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
@@ -476,7 +476,7 @@ The line leaves the right edge and comes back on the left: the map wraps at $180
 :::
 
 ::: context station-keeping Keeping a satellite in its box
-A GEO operator is given a slot — a longitude — and must keep the satellite inside a small box around it, commonly about $\pm 0.05^\circ$ to $\pm 0.1^\circ$ in longitude and latitude. Neighbours sit a fraction of a degree away, and dish antennas on the ground point at a fixed spot.
+A GEO operator is given a slot — a longitude — and must keep the satellite inside a small box around it, commonly about $\pm 0.05^\circ$ to $\pm 0.1^\circ$ in longitude and latitude. Neighbors sit a fraction of a degree away, and dish antennas on the ground point at a fixed spot.
 
 The Sun and Moon keep pulling the inclination up, by close to $1^\circ$ a year, and Earth's lumpy gravity makes the longitude drift. So thrusters fire every week or two. The fuel for this usually decides how long a GEO satellite lives.
 :::
@@ -522,7 +522,7 @@ Seen face-on, the orbit is lopsided: a close pass under the south, a long slow a
 :::
 
 ::: context pear-shape Earth is slightly pear-shaped
-$J_2$ describes the equatorial bulge, which is the same north and south. $J_3$ describes a tiny difference between the hemispheres: measured from a perfect ellipsoid, Earth is very slightly pear-shaped, with the stem at the north. The effect is only tens of metres, and it was first spotted in the tracking of the early satellite Vanguard 1, launched in 1958.
+$J_2$ describes the equatorial bulge, which is the same north and south. $J_3$ describes a tiny difference between the hemispheres: measured from a perfect ellipsoid, Earth is very slightly pear-shaped, with the stem at the north. The effect is only tens of meters, and it was first spotted in the tracking of the early satellite Vanguard 1, launched in 1958.
 
-Although it is about $400$ times smaller than $J_2$, $J_3$ still matters for orbits where $J_2$'s biggest effects have been cancelled — which is exactly what a frozen orbit does.
+Although it is about $400$ times smaller than $J_2$, $J_3$ still matters for orbits where $J_2$'s biggest effects have been canceled — which is exactly what a frozen orbit does.
 :::

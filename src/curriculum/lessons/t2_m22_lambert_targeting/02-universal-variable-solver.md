@@ -44,7 +44,7 @@ $C$ and $S$ are the **Stumpff functions**. They are worth restating, because the
 $$
 C(z) = \frac{1-\cos\sqrt{z}}{z}, \qquad S(z) = \frac{\sqrt{z}-\sin\sqrt{z}}{z^{3/2}} \qquad (z > 0),
 $$
-with the hyperbolic analogues ($\cosh$ and $\sinh$ of $\sqrt{-z}$) for $z < 0$, and $C(0) = \tfrac{1}{2}$, $S(0) = \tfrac{1}{6}$. Near $z = 0$ use the **[[series|stumpff-series]]** $C = \tfrac{1}{2} - \tfrac{z}{24} + \tfrac{z^2}{720} - \cdots$ and $S = \tfrac{1}{6} - \tfrac{z}{120} + \tfrac{z^2}{5040} - \cdots$ to avoid cancellation.
+with the hyperbolic analogs ($\cosh$ and $\sinh$ of $\sqrt{-z}$) for $z < 0$, and $C(0) = \tfrac{1}{2}$, $S(0) = \tfrac{1}{6}$. Near $z = 0$ use the **[[series|stumpff-series]]** $C = \tfrac{1}{2} - \tfrac{z}{24} + \tfrac{z^2}{720} - \cdots$ and $S = \tfrac{1}{6} - \tfrac{z}{120} + \tfrac{z^2}{5040} - \cdots$ to avoid cancellation.
 :::
 
 ## Joining the two descriptions
@@ -55,7 +55,7 @@ $$
 y \equiv \chi^2 C(z) .
 $$
 
-$y$ is a length, in kilometres. It is only a name for now. With it, the universal $f$ reads $f = 1 - y/r_1$.
+$y$ is a length, in kilometers. It is only a name for now. With it, the universal $f$ reads $f = 1 - y/r_1$.
 
 ### Step 1: the two $f$'s give $p$
 
@@ -113,7 +113,7 @@ Step 1 gave $(1-\cos\Delta\nu)/p = y/(r_1r_2)$. So the bracket is $\dfrac{y}{r_1
 
 The factor in front is $\sqrt{\mu}\,\sqrt{\dfrac{y}{r_1r_2(1-\cos\Delta\nu)}}\,\dfrac{1-\cos\Delta\nu}{\sin\Delta\nu} = \dfrac{\sqrt{\mu}\,\sqrt{y}\,\sqrt{1-\cos\Delta\nu}}{\sqrt{r_1r_2}\,\sin\Delta\nu} = \dfrac{\sqrt{\mu}\,\sqrt{y}}{A}$, using the definition of $A$ in the last step.
 
-Setting the two $\dot f$'s equal and cancelling $\sqrt{\mu}/(r_1r_2)$ from both sides:
+Setting the two $\dot f$'s equal and canceling $\sqrt{\mu}/(r_1r_2)$ from both sides:
 
 $$
 \chi\,(zS-1) = \frac{\sqrt{y}}{A}\,(y - r_1 - r_2) .
@@ -214,12 +214,12 @@ $$
 \mathbf{r}(3600\,\mathrm{s}) = (-14\,600.000000,\ 2500.000000,\ 7000.000000)\,\mathrm{km} .
 $$
 
-**Step 3.** Subtract the target. The miss, $\lVert\mathbf{r}(3600\,\mathrm{s})-\mathbf{r}_2\rVert$, is about $1\times10^{-11}\,\mathrm{km}$ — around ten nanometres.
+**Step 3.** Subtract the target. The miss, $\lVert\mathbf{r}(3600\,\mathrm{s})-\mathbf{r}_2\rVert$, is about $1\times10^{-11}\,\mathrm{km}$ — around ten nanometers.
 
-**Sanity check.** Is ten nanometres "zero"? A computer stores about 16 significant digits, and the coordinates are around $10^4\,\mathrm{km}$. So the smallest step it can even represent there is about $10^4 \times 2\times10^{-16} \approx 2\times10^{-12}\,\mathrm{km}$. A miss a few times that is **[[as close as the arithmetic allows|double-precision]]**. The solver is right.
+**Sanity check.** Is ten nanometers "zero"? A computer stores about 16 significant digits, and the coordinates are around $10^4\,\mathrm{km}$. So the smallest step it can even represent there is about $10^4 \times 2\times10^{-16} \approx 2\times10^{-12}\,\mathrm{km}$. A miss a few times that is **[[as close as the arithmetic allows|double-precision]]**. The solver is right.
 :::
 
-The tiny miss comes from solving $F(z) = 0$ very tightly. Loosen that, and the miss grows in step. An error of $10^{-8}$ in $z$ misses $\mathbf{r}_2$ by about $3\,\mathrm{cm}$. An error of $10^{-4}$ misses by about $300\,\mathrm{m}$. Three centimetres is excellent for any real mission. The point is the link itself: how precisely you solve for $z$ sets how precisely you land. That link, not a textbook match, is what tells you the solver is built right.
+The tiny miss comes from solving $F(z) = 0$ very tightly. Loosen that, and the miss grows in step. An error of $10^{-8}$ in $z$ misses $\mathbf{r}_2$ by about $3\,\mathrm{cm}$. An error of $10^{-4}$ misses by about $300\,\mathrm{m}$. Three centimeters is excellent for any real mission. The point is the link itself: how precisely you solve for $z$ sets how precisely you land. That link, not a textbook match, is what tells you the solver is built right.
 
 ::: warning $A$ is positive only on the short way
 $A$ takes the sign of $\sin\Delta\nu$: positive for $\Delta\nu < 180°$, negative for $\Delta\nu > 180°$. The formulas above work with either sign, and the next lesson uses a long-way transfer with negative $A$. But a solver that quietly assumes $A > 0$ — say, by computing it as $\sqrt{2s(s-c)}$ and dropping the sign — returns the wrong orbit, or fails, the moment someone asks for the long way round.
@@ -260,7 +260,7 @@ A colleague's solver returns a $\mathbf{v}_1$ that, flown forward by the request
 :::
 
 ::: answer
-No. A correct universal-variable solver misses by an amount set by its tolerance on $z$ — centimetres or less is normal. $40\,\mathrm{km}$ means a real bug, not rounding.
+No. A correct universal-variable solver misses by an amount set by its tolerance on $z$ — centimeters or less is normal. $40\,\mathrm{km}$ means a real bug, not rounding.
 
 Check first: the transfer angle (is $\Delta\nu$ worked out with the right prograde/retrograde logic, so short way and long way are not swapped?), the sign of $A$ (does it match $\sin\Delta\nu$?), and the Stumpff functions near $z \approx 0$ (are they using the series there, rather than the cosine formula that loses its digits?).
 :::
@@ -370,5 +370,5 @@ Newton's method fits a straight line to the function where you stand and jumps t
 :::
 
 ::: context double-precision How precise a computer can be
-Ordinary computer arithmetic, called double precision, keeps about 16 significant digits. So a number near $15\,000\,\mathrm{km}$ can only be pinned down to within about $2\times10^{-12}\,\mathrm{km}$, a couple of nanometres. Every step of a calculation can add an error that size. When a check lands within a few of those steps of perfect, it has hit the floor: there is nothing more to gain, and nothing is wrong.
+Ordinary computer arithmetic, called double precision, keeps about 16 significant digits. So a number near $15\,000\,\mathrm{km}$ can only be pinned down to within about $2\times10^{-12}\,\mathrm{km}$, a couple of nanometers. Every step of a calculation can add an error that size. When a check lands within a few of those steps of perfect, it has hit the floor: there is nothing more to gain, and nothing is wrong.
 :::

@@ -10,11 +10,11 @@ Think about parking a car in a garage. You do not work out one perfect push on t
 
 The two-impulse targeting of the last lesson is the opposite kind of plan. It computes exactly the right burn for exactly one planned trip. That is powerful but brittle. If a burn fires a little late, or a little weak, the whole plan has to be worked out again. And even a perfect burn missed by $38.5\,\mathrm{cm}$ in the last lesson's reality check, because the CW model is not quite the real physics.
 
-A final approach needs something more forgiving: a rule that says, continuously, "given how far away you are right now, here is how fast you should be closing". That rule is a **glideslope** — a guidance law that sets the closing speed from the range that is left. The name comes from the **[[radio beam that guides airliners down to a runway|aircraft-glideslope]]** at a steady, predictable angle. On a real vehicle it is the rule that brings a spacecraft the last few hundred metres to a space station.
+A final approach needs something more forgiving: a rule that says, continuously, "given how far away you are right now, here is how fast you should be closing". That rule is a **glideslope** — a guidance law that sets the closing speed from the range that is left. The name comes from the **[[radio beam that guides airliners down to a runway|aircraft-glideslope]]** at a steady, predictable angle. On a real vehicle it is the rule that brings a spacecraft the last few hundred meters to a space station.
 
 ## The glideslope law
 
-First, two symbols. The **range** $r$ is the straight-line distance from the chaser to the target. It is always positive and shrinks toward zero as the chaser closes. Its rate of change is $\dot r$, read "**[[r-dot|newton-dot]]**" — how many metres per second the range is changing. When the chaser is closing, $r$ is shrinking, so $\dot r$ is negative. The **closing rate** is the size of $\dot r$: how fast the gap shrinks.
+First, two symbols. The **range** $r$ is the straight-line distance from the chaser to the target. It is always positive and shrinks toward zero as the chaser closes. Its rate of change is $\dot r$, read "**[[r-dot|newton-dot]]**" — how many meters per second the range is changing. When the chaser is closing, $r$ is shrinking, so $\dot r$ is negative. The **closing rate** is the size of $\dot r$: how fast the gap shrinks.
 
 The standard glideslope sets the closing rate as a straight-line function of range:
 
@@ -24,7 +24,7 @@ $$
 
 Read it as "closing rate equals $a$ plus $b$ times the range". The two numbers you choose mean:
 
-- $b$, in $\mathrm{s^{-1}}$ (per second): how much closing rate you get per metre of range. With $b = 0.001\,\mathrm{s^{-1}}$, you close at $1\,\mathrm{m/s}$ when $1000\,\mathrm{m}$ away, and at $0.01\,\mathrm{m/s}$ when $10\,\mathrm{m}$ away.
+- $b$, in $\mathrm{s^{-1}}$ (per second): how much closing rate you get per meter of range. With $b = 0.001\,\mathrm{s^{-1}}$, you close at $1\,\mathrm{m/s}$ when $1000\,\mathrm{m}$ away, and at $0.01\,\mathrm{m/s}$ when $10\,\mathrm{m}$ away.
 - $a$, in $\mathrm{m/s}$: a **floor** — a small closing rate you keep even when the range is almost zero.
 
 The minus sign is there because closing makes $r$ smaller.
@@ -69,7 +69,7 @@ $$
 r(t) = r_0 e^{-bt}.
 $$
 
-The closing rate is always exactly $b$ times the range. So the approach slows itself down as it gets close: ten times closer means ten times slower. The catch is that $e^{-bt}$ is never zero for any finite time. The chaser gets as close as you like, but in principle it **never quite arrives**. Each last centimetre takes as long as the one before.
+The closing rate is always exactly $b$ times the range. So the approach slows itself down as it gets close: ten times closer means ten times slower. The catch is that $e^{-bt}$ is never zero for any finite time. The chaser gets as close as you like, but in principle it **never quite arrives**. Each last centimeter takes as long as the one before.
 
 ### With a floor: $a > 0$
 
@@ -127,7 +127,7 @@ $$
 | 30 m $\to$ 10 m | 1098.6 s (18.3 min) | 0.030 m/s | 0.010 m/s |
 | 250 m $\to$ 10 m | 3218.9 s (53.6 min) | 0.250 m/s | 0.010 m/s |
 
-**Does it make sense?** The two short segments [[add up to the long one|log-segments]]: $2120.3 + 1098.6 = 3218.9\,\mathrm{s}$. And the closing rate always drops by the same factor as the range. A chaser ten times closer is closing ten times more slowly — exactly the self-calming behaviour a final approach wants.
+**Does it make sense?** The two short segments [[add up to the long one|log-segments]]: $2120.3 + 1098.6 = 3218.9\,\mathrm{s}$. And the closing rate always drops by the same factor as the range. A chaser ten times closer is closing ten times more slowly — exactly the self-calming behavior a final approach wants.
 :::
 
 ::: example A floored glideslope arriving at a set contact rate
@@ -202,7 +202,7 @@ Using the closed-form solution, not only intuition, explain why the $a = 0$ glid
 ::: answer
 With $a = 0$, $r(t) = r_0e^{-bt}$. The factor $e^{-bt}$ is positive for every finite $t$. It only approaches zero as $t$ grows without limit. So the equation $r(t) = 0$ has no finite solution.
 
-In words: the closing rate is always exactly proportional to the range, so the rate shrinks right along with the range. The last few centimetres are covered ever more slowly and, in principle, take forever.
+In words: the closing rate is always exactly proportional to the range, so the rate shrinks right along with the range. The last few centimeters are covered ever more slowly and, in principle, take forever.
 :::
 
 ::: check
@@ -272,7 +272,7 @@ At a big airport, a radio transmitter beside the runway sends out a beam tilted 
 :::
 
 ::: context newton-dot The dot on top
-A dot over a letter means "rate of change with time". So $\dot r$, said "r-dot", is how fast $r$ is changing, and $\ddot x$, "x-double-dot", is how fast the rate of $x$ is changing. Isaac Newton used dots this way when he invented calculus, and physicists and engineers still use them for time rates. Here $\dot r$ has units of metres per second, because $r$ is in metres and time is in seconds.
+A dot over a letter means "rate of change with time". So $\dot r$, said "r-dot", is how fast $r$ is changing, and $\ddot x$, "x-double-dot", is how fast the rate of $x$ is changing. Isaac Newton used dots this way when he invented calculus, and physicists and engineers still use them for time rates. Here $\dot r$ has units of meters per second, because $r$ is in meters and time is in seconds.
 :::
 
 ::: context time-constant What the time constant means

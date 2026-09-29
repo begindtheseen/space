@@ -4,7 +4,7 @@ title: Approach corridors, keep-out spheres and abort trajectories
 minutes: 21
 covers:
   - approach corridors and keep-out spheres
-  - abort trajectories and collision avoidance manoeuvres
+  - abort trajectories and collision avoidance maneuvers
 ---
 
 Think of a public swimming pool with a diving board. There is a roped-off area under the board that nobody may swim into unless the lifeguard waves them in. And when a diver does go, there is one path — straight down from the end of the board — that they have to stay on. The pool also has a plan for trouble: if someone gets into difficulty, the lifeguard already knows exactly what to do. Nobody works it out on the spot.
@@ -107,7 +107,7 @@ Real protected volumes are stretched in-track, because the same velocity-error b
 
 Passive safety answers the question "what happens if we do nothing more?" Sometimes the answer is not good enough, and you need to act.
 
-An **abort** is any planned way of breaking off the approach and getting to a safe place. The sharpest kind is a **collision avoidance maneuver**, or **CAM** — a specific burn, worked out in advance for each phase of the approach, that fires the moment a serious fault is detected. (The course's topic list uses the British spelling, *manoeuvre*.) Its job is to put the chaser on a free-drift path that clears the keep-out zone and keeps clearing it for the required time, often 24 hours, with no further burns.
+An **abort** is any planned way of breaking off the approach and getting to a safe place. The sharpest kind is a **collision avoidance maneuver**, or **CAM** — a specific burn, worked out in advance for each phase of the approach, that fires the moment a serious fault is detected. (The course's topic list uses the British spelling, *maneuver*.) Its job is to put the chaser on a free-drift path that clears the keep-out zone and keeps clearing it for the required time, often 24 hours, with no further burns.
 
 The previous lesson hinted at the key finding. When the danger is an in-track closing rate with little radial offset, the most useful CAM is often not "push away" but "stop closing": a **retrograde** burn, one that points against the closing velocity and cancels it.
 
@@ -120,7 +120,7 @@ Compare with the previous lesson's $200\,\mathrm{m}$ case, which went $37.8\,\ma
 
 **CAMs of different sizes.** Now fire a retrograde burn that cancels part of the closing rate, and propagate again:
 
-| Share of closing rate cancelled | Minimum range |
+| Share of closing rate canceled | Minimum range |
 | --- | --- |
 | 0% (no CAM) | 19.9 m |
 | 25% | 22.0 m |
@@ -131,7 +131,7 @@ Compare with the previous lesson's $200\,\mathrm{m}$ case, which went $37.8\,\ma
 Each extra slice of rate removed buys back more distance. So even a CAM that cannot fully cancel the rate — a thruster at its limit, or a partial failure — still helps, roughly in proportion to how much rate it removes.
 :::
 
-Look closely at the last row, though. Cancelling 100% of the closing rate leaves the chaser at rest, $30\,\mathrm{m}$ behind the target on the V-bar. In the ideal CW model that spot is an **[[equilibrium|vbar-equilibrium]]**: it has the same orbit as the target, only a little behind, so it stays put. That is "no penetration", but it is not "moving away". The chaser is parked right where the failure happened.
+Look closely at the last row, though. Canceling 100% of the closing rate leaves the chaser at rest, $30\,\mathrm{m}$ behind the target on the V-bar. In the ideal CW model that spot is an **[[equilibrium|vbar-equilibrium]]**: it has the same orbit as the target, only a little behind, so it stays put. That is "no penetration", but it is not "moving away". The chaser is parked right where the failure happened.
 
 The rows above it tell a different story. With a little closing rate left over, the chaser first creeps in, then the leftover in-track velocity (a slightly bigger orbit) makes it drift backward, away from the target, for good. After 24 hours the 75% case is about $2\,\mathrm{km}$ away. That is what a real CAM wants: a path that **leaves** and keeps leaving on its own.
 
@@ -186,7 +186,7 @@ A fixed tolerance could not do both. Either it would be tight enough for the end
 :::
 
 ::: check
-A fault calls for a CAM. Two burns of equal size are on the table: one straight out radially, one retrograde (cancelling the closing rate). The chaser has a large closing rate and almost no radial offset. Which is usually better, and why?
+A fault calls for a CAM. Two burns of equal size are on the table: one straight out radially, one retrograde (canceling the closing rate). The chaser has a large closing rate and almost no radial offset. Which is usually better, and why?
 :::
 
 ::: answer
@@ -216,7 +216,7 @@ Computing and checking a CAM ahead of time, for every credible failure at every 
 | $d_{\text{lat}}(r) = r\tan\theta_c$ | Largest lateral offset allowed in a corridor of half-angle $\theta_c$ at range $r$ |
 | Inside the sphere | Stay in the corridor, with bounded closing rate and attitude |
 | Collision avoidance maneuver (CAM) | A burn computed and checked in advance, fired the moment a fault is detected |
-| 30 m gate example | No CAM: 19.9 m minimum range; fully rate-cancelling CAM: 30.0 m, but parked, not departing |
+| 30 m gate example | No CAM: 19.9 m minimum range; fully rate-canceling CAM: 30.0 m, but parked, not departing |
 | A good CAM | Ends on a free-drift path that leaves by itself, flown with the thrusters that survive the failure |
 
 With the geometry and the escape plans in place, the next lesson follows a real vehicle all the way in: the choice between docking and berthing, and the ISS visiting-vehicle profile that ties every hold point, gate and CAM together.

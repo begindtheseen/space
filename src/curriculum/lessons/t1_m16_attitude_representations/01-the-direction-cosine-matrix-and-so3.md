@@ -226,7 +226,7 @@ Why do nine direction cosines carry only three independent numbers, and what doe
 ::: answer
 The columns must be perpendicular unit arrows, which is $\mathbf{C}^\top\mathbf{C}=\mathbf{I}_3$. That grid is symmetric, so the equation gives six independent rules — three lengths and three right angles — on nine entries, leaving $9-6=3$ free. The determinant rule only picks one of two separate pieces (rotations rather than mirror images) and costs no further freedom. So $SO(3)$ is three-dimensional.
 
-A three-number representation therefore has the right count. But $SO(3)$ is curved and closes back on itself, and no single three-number labelling can cover it everywhere. Every three-number representation must fail somewhere: Euler angles at gimbal lock, classical Rodrigues parameters at $180^\circ$, modified Rodrigues parameters at $360^\circ$.
+A three-number representation therefore has the right count. But $SO(3)$ is curved and closes back on itself, and no single three-number labeling can cover it everywhere. Every three-number representation must fail somewhere: Euler angles at gimbal lock, classical Rodrigues parameters at $180^\circ$, modified Rodrigues parameters at $360^\circ$.
 :::
 
 ::: check

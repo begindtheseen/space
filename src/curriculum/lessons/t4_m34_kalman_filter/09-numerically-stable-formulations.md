@@ -85,7 +85,7 @@ $$
 \mathbf{v}^{\mathsf{T}}(\mathbf{S}\mathbf{S}^{\mathsf{T}})\mathbf{v} = (\mathbf{S}^{\mathsf{T}}\mathbf{v})^{\mathsf{T}}(\mathbf{S}^{\mathsf{T}}\mathbf{v}) = \lVert \mathbf{S}^{\mathsf{T}}\mathbf{v}\rVert^2 \geq 0.
 $$
 
-The first step regroups the product; the second recognises a vector dotted with itself, which is a sum of squares. A sum of squares of real numbers cannot be negative. Nothing here asked whether $\mathbf{S}$ was accurate — the guarantee lives in the *shape* of the calculation.
+The first step regroups the product; the second recognizes a vector dotted with itself, which is a sum of squares. A sum of squares of real numbers cannot be negative. Nothing here asked whether $\mathbf{S}$ was accurate — the guarantee lives in the *shape* of the calculation.
 :::
 
 ### The array update

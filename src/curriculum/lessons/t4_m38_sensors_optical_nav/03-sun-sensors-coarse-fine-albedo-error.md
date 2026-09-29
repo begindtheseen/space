@@ -95,7 +95,7 @@ The lit-set solve trusts the model $I_j = \hat{\mathbf{n}}_j\cdot\mathbf{x}$ for
 
 A few degrees is fine for finding the Sun in an emergency (**safe mode**) or pointing solar panels roughly. Precise panel pointing, or a backup fine attitude reference, needs ten times better or more. A **fine digital sun sensor** gets there differently. It does not fit anything. It *reads* the angle.
 
-Above a row of light detectors sits a **reticle**: a plate etched with clear and dark bands. Sunlight coming in at angle $\theta$ from straight on casts the band pattern onto the detectors, shifted by an amount that depends on $\theta$. Each detector under a clear band reads "1", each under a dark band reads "0". The bands are laid out as a **[[Gray code|gray-code]]**, a binary numbering in which neighbouring values differ in only one bit. So the string of 1s and 0s *is* the number of the angle cell the Sun is in. A second, crossed reticle gives the other axis.
+Above a row of light detectors sits a **reticle**: a plate etched with clear and dark bands. Sunlight coming in at angle $\theta$ from straight on casts the band pattern onto the detectors, shifted by an amount that depends on $\theta$. Each detector under a clear band reads "1", each under a dark band reads "0". The bands are laid out as a **[[Gray code|gray-code]]**, a binary numbering in which neighboring values differ in only one bit. So the string of 1s and 0s *is* the number of the angle cell the Sun is in. A second, crossed reticle gives the other axis.
 
 If the reticle carries some number of bits, it splits the field into $2^{\text{bits}}$ cells, so
 
@@ -126,7 +126,7 @@ Everything so far assumed the only light is the Sun's. In low Earth orbit that i
 
 Earth reflects about $30\%$ of the sunlight that reaches it. That fraction is its **bond albedo**, $a_E \approx 0.30$. Model Earth as a **[[matte|lambertian]]** ball: each sunlit patch glows in proportion to how squarely the Sun hits it, and sends that glow out evenly in all directions. A cell then receives the sum of the glow from every patch it can see, weighted by how squarely the cell faces each one.
 
-One number checks the model. Directly under the Sun, a cell facing straight down sees the whole visible Earth lit from overhead, and receives $a_E(R_\oplus/r)^2$ of full sunlight. Here $R_\oplus$ ("R earth") is Earth's radius, $6378\,\mathrm{km}$, and $r$ is the distance from Earth's centre. At $500\,\mathrm{km}$ altitude that is $0.30 \times (6378/6878)^2 = 0.258$. A quarter of a Sun, shining from exactly the wrong direction.
+One number checks the model. Directly under the Sun, a cell facing straight down sees the whole visible Earth lit from overhead, and receives $a_E(R_\oplus/r)^2$ of full sunlight. Here $R_\oplus$ ("R earth") is Earth's radius, $6378\,\mathrm{km}$, and $r$ is the distance from Earth's center. At $500\,\mathrm{km}$ altitude that is $0.30 \times (6378/6878)^2 = 0.258$. A quarter of a Sun, shining from exactly the wrong direction.
 
 ::: key Albedo error
 Earth reflects roughly $30\%$ of incident sunlight, so a nadir-facing coarse sun sensor sees a large false signal. It peaks over bright terrain and cloud near the terminator and can cost several degrees of sun-vector accuracy.
@@ -136,7 +136,7 @@ Earth reflects roughly $30\%$ of incident sunlight, so a nadir-facing coarse sun
 
 Two pieces of orbit geometry decide how this plays out. The **[[beta angle|beta-angle]]** $\beta$ is the angle between the Sun direction and the orbit's plane. At $\beta = 0$ the Sun lies in the plane; at $\beta = 90^\circ$ it shines straight along the orbit's axis. The **terminator** is the line on Earth between day and night.
 
-Beta decides how long each orbit spends in Earth's shadow. Write $\hat{\mathbf{r}}$ for the spacecraft's direction from Earth's centre, so $-\hat{\mathbf{r}}$ points straight down (**nadir**). The simplest shadow test treats Earth's shadow as a **[[cylinder|shadow-shape]]** of radius $R_\oplus$ stretching away from the Sun. The spacecraft is in **eclipse** when it is on the night side, $\hat{\mathbf{r}}\cdot\hat{\mathbf{s}}<0$, and its distance from the Sun–Earth line is less than $R_\oplus$:
+Beta decides how long each orbit spends in Earth's shadow. Write $\hat{\mathbf{r}}$ for the spacecraft's direction from Earth's center, so $-\hat{\mathbf{r}}$ points straight down (**nadir**). The simplest shadow test treats Earth's shadow as a **[[cylinder|shadow-shape]]** of radius $R_\oplus$ stretching away from the Sun. The spacecraft is in **eclipse** when it is on the night side, $\hat{\mathbf{r}}\cdot\hat{\mathbf{s}}<0$, and its distance from the Sun–Earth line is less than $R_\oplus$:
 
 $$
 \lVert\mathbf{r}\rVert\sqrt{1-(\hat{\mathbf{r}}\cdot\hat{\mathbf{s}})^2} < R_\oplus .
@@ -366,7 +366,7 @@ A beam of sunlight has a fixed width. Face it squarely and it covers the least a
 :::
 
 ::: context gray-code Counting one bit at a time
-In ordinary binary, $3$ is 011 and $4$ is 100: all three bits flip at once. If the Sun sits right on that boundary, a reading caught mid-flip could come out as anything. In a Gray code neighbours differ in exactly one bit, so a boundary reading is off by at most one cell. Here is a 3-bit reticle, one row per bit, dark meaning 1.
+In ordinary binary, $3$ is 011 and $4$ is 100: all three bits flip at once. If the Sun sits right on that boundary, a reading caught mid-flip could come out as anything. In a Gray code neighbors differ in exactly one bit, so a boundary reading is off by at most one cell. Here is a 3-bit reticle, one row per bit, dark meaning 1.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
@@ -413,7 +413,7 @@ Seen edge-on, the orbit plane is a line through Earth. The beta angle is how far
 :::
 
 ::: context shadow-shape Cylinder, cone and fuzzy edge
-The Sun is not a point: from Earth it is about half a degree wide. So Earth's real shadow is a long cone narrowing away from the Sun, with a fuzzy edge, the penumbra, where only part of the Sun is hidden. Earth's atmosphere also bends and reddens light into the shadow. For a satellite a few hundred kilometres up, a cylinder of Earth's radius is within a few percent of the true shadow, which is why the simple test is used so widely.
+The Sun is not a point: from Earth it is about half a degree wide. So Earth's real shadow is a long cone narrowing away from the Sun, with a fuzzy edge, the penumbra, where only part of the Sun is hidden. Earth's atmosphere also bends and reddens light into the shadow. For a satellite a few hundred kilometers up, a cylinder of Earth's radius is within a few percent of the true shadow, which is why the simple test is used so widely.
 :::
 
 ::: context lvlh Local vertical, local horizontal

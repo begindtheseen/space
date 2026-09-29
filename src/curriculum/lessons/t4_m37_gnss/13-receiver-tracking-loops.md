@@ -207,7 +207,7 @@ At $25\,\mathrm{dB\text{-}Hz}$ — a weak signal, the kind a plume-shadowed ante
 So choosing a bandwidth means picking a point on this curve for the worst motion and the weakest signal the receiver must survive *at the same time*. A launch vehicle needs a wide loop for jerk *and* margin for a weak, plume-affected signal, and sometimes no loop gives both. Nor can a loop be widened freely: it updates once per integration time and stays stable only while $B_nT$ is well below $1$.
 
 ::: key
-The trade: widening the bandwidth shrinks dynamic stress error and grows thermal noise, in both loops, always. PLL jitter $\sigma_{\mathrm{PLL}}=\sqrt{(B_n/(C/N_0))(1+1/(2T\,C/N_0))}$ radians; DLL jitter $\sigma_{\mathrm{DLL}}=\sqrt{B_n d/(2\,C/N_0)}$ chips. Rule of thumb for a Costas PLL: $3\sigma_{\mathrm{PLL}} + \theta_e \le 45^\circ$. No bandwidth minimises both errors at once, and on a weak enough signal under hard enough dynamics, none satisfies the rule at all.
+The trade: widening the bandwidth shrinks dynamic stress error and grows thermal noise, in both loops, always. PLL jitter $\sigma_{\mathrm{PLL}}=\sqrt{(B_n/(C/N_0))(1+1/(2T\,C/N_0))}$ radians; DLL jitter $\sigma_{\mathrm{DLL}}=\sqrt{B_n d/(2\,C/N_0)}$ chips. Rule of thumb for a Costas PLL: $3\sigma_{\mathrm{PLL}} + \theta_e \le 45^\circ$. No bandwidth minimizes both errors at once, and on a weak enough signal under hard enough dynamics, none satisfies the rule at all.
 :::
 
 ::: warning Order and bandwidth are two different dials
@@ -360,7 +360,7 @@ A loop's response to noise has soft edges: it passes slow wiggles, weakens faste
 :::
 
 ::: context lock-rule Where the forty-five degrees comes from
-A Costas discriminator reads phase correctly only out to $\pm 90^\circ$. Past that, it wraps and pushes the loop the wrong way, and lock is lost. Engineers keep the *typical worst* error inside half that range: the steady dynamic error plus three standard deviations of noise, at most $45^\circ$. For Gaussian noise, three sigma covers all but about one reading in 370. The picture shows the staging example at $35\,\mathrm{dB\text{-}Hz}$: jerk error in red, $3\sigma$ in blue, their sum in dark ink, crossing the grey $45^\circ$ line near $\omega_n = 19.6\,\mathrm{rad/s}$.
+A Costas discriminator reads phase correctly only out to $\pm 90^\circ$. Past that, it wraps and pushes the loop the wrong way, and lock is lost. Engineers keep the *typical worst* error inside half that range: the steady dynamic error plus three standard deviations of noise, at most $45^\circ$. For Gaussian noise, three sigma covers all but about one reading in 370. The picture shows the staging example at $35\,\mathrm{dB\text{-}Hz}$: jerk error in red, $3\sigma$ in blue, their sum in dark ink, crossing the gray $45^\circ$ line near $\omega_n = 19.6\,\mathrm{rad/s}$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" font-family="Inter, Arial, sans-serif">

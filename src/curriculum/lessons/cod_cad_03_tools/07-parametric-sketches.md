@@ -3,14 +3,14 @@ id: l07-parametric-sketches
 title: Parametric sketches and constraints
 minutes: 21
 covers:
-  - 'Parametric feature-based modelling: sketches, constraints, fully defined sketches'
+  - 'Parametric feature-based modeling: sketches, constraints, fully defined sketches'
 ---
 
 Imagine building a model house out of drinking straws and pipe cleaners. At first the straws flop around. Twist a pipe cleaner around two straw ends and they stay joined. Tape one straw flat to the table and it can no longer tip. Tie a string of exactly the right length from corner to corner and the shape can no longer lean. Every tie takes away one way the model could wobble. When nothing can wobble anymore, the shape is locked.
 
 That is what a sketch in a 3D CAD program is: a flat drawing whose lines start out floppy, and which you lock into place with rules. The first six lessons of this module were about AutoCAD, where you place each line at exact coordinates and it stays there because you put it there. Mechanical CAD for flight hardware works differently. You draw roughly, then you *tell* the program what must be true — this line is horizontal, this circle sits in the middle, this edge is 60 mm long — and it moves the geometry until every rule holds. Change a rule and the shape follows.
 
-This lesson teaches that way of working, which is called **parametric feature-based modelling** — building a solid from a list of steps (features), each driven by numbers and rules you can change later. It is how Siemens NX, CATIA, Creo, SolidWorks and Onshape all work. By the end you will be able to count exactly how much freedom a sketch has left, and say why a sketch with any freedom left is a defect.
+This lesson teaches that way of working, which is called **parametric feature-based modeling** — building a solid from a list of steps (features), each driven by numbers and rules you can change later. It is how Siemens NX, CATIA, Creo, SolidWorks and Onshape all work. By the end you will be able to count exactly how much freedom a sketch has left, and say why a sketch with any freedom left is a defect.
 
 ## From drawing lines to stating rules
 
@@ -18,7 +18,7 @@ In AutoCAD a line from $(0,0)$ to $(60,0)$ is exactly that line and nothing more
 
 A **parametric** model stores the *reasons* instead. A **parameter** is a number the model is built from and that you are allowed to change, like the width of a plate. The software keeps a small list of rules and parameters, and each time something changes it re-solves the whole shape. The part of the program that does the re-solving is called the **[[constraint solver|constraint-solver]]** — the maths engine that finds positions for every point so that all the rules are true at once.
 
-The model is then built up as a series of **features** — single modelling steps like "push this sketch 6 mm up into a solid" or "cut this hole through". The next lesson covers the features themselves. This lesson is about what almost every feature starts from: the sketch.
+The model is then built up as a series of **features** — single modeling steps like "push this sketch 6 mm up into a solid" or "cut this hole through". The next lesson covers the features themselves. This lesson is about what almost every feature starts from: the sketch.
 
 ## Sketches live on planes
 
@@ -159,7 +159,7 @@ Now a tempting extra: dimension the *inside* of the horizontal leg too. Its leng
 
 ## A good sketching routine
 
-Experienced modellers follow the same order every time.
+Experienced modelers follow the same order every time.
 
 1. **Pick the plane on purpose**, usually one of the default planes through the origin.
 2. **Draw the rough shape**, roughly the right size, so the solver does not have to flip anything inside out.
@@ -172,7 +172,7 @@ A small tip that matters: if the part is symmetric — a bracket with two matchi
 
 ## Practising in Onshape
 
-You do not need an expensive licence to learn this. **[[Onshape|onshape]]** is a full parametric CAD program that runs in a web browser, with no install. It has a free plan for hobbyists and students, and its free Learning Center teaches the basics step by step. The one catch on the free plan is that your documents are public, which is fine for practice parts and not fine for anything real. The skills carry straight over to NX, SolidWorks and the rest: the menus differ, the constraint ideas are identical.
+You do not need an expensive license to learn this. **[[Onshape|onshape]]** is a full parametric CAD program that runs in a web browser, with no install. It has a free plan for hobbyists and students, and its free Learning Center teaches the basics step by step. The one catch on the free plan is that your documents are public, which is fine for practice parts and not fine for anything real. The skills carry straight over to NX, SolidWorks and the rest: the menus differ, the constraint ideas are identical.
 
 A first exercise: open a new Part Studio, sketch on the Top plane, draw a rectangle from the origin, add the $60$ by $40$ dimensions, add a circle and dimension it, and watch the geometry go from blue to black. Then change $60$ to $90$ and watch the whole thing obey.
 

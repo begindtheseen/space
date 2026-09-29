@@ -1,16 +1,16 @@
 ---
 id: l04-parameterised-tests
-title: Parameterised tests — one test, many cases
+title: Parameterized tests — one test, many cases
 minutes: 24
 covers:
-  - TEST_P parameterised tests and value generators
+  - TEST_P parameterized tests and value generators
 ---
 
 Imagine you are checking a new calculator. You write ten sums on a card and type them in one after another. The third answer is wrong. If you stop right there and send the calculator back, you learn one thing: sum number three failed. You do not learn whether sums four to ten were fine, or whether they were all wrong in the same way. That second question is often the one that tells you *what* is broken.
 
 Flight software has the same problem at a bigger size. A function that turns altitude and speed into air pressure on the nose has to work across the whole **[[flight envelope|flight-envelope]]** — the range of altitudes and speeds the vehicle will ever fly. A heading function has to work for headings that are positive, negative, and many turns around. You do not want one test per number, written out by hand. You want one test, and a **table** of cases it runs on.
 
-This lesson teaches the GoogleTest tool for that: the **parameterised test**, written with `TEST_P` — a test whose body is written once and run once for every value in a list. You will see why it beats a loop inside a single test, how to give every case a name a human can read, and the **value generators** — `Values`, `ValuesIn`, `Range`, `Bool` and `Combine` — that build the list for you. The last example brings back the tolerance reasoning from the floating-point lesson, so each case in the table carries its own honest tolerance.
+This lesson teaches the GoogleTest tool for that: the **parameterized test**, written with `TEST_P` — a test whose body is written once and run once for every value in a list. You will see why it beats a loop inside a single test, how to give every case a name a human can read, and the **value generators** — `Values`, `ValuesIn`, `Range`, `Bool` and `Combine` — that build the list for you. The last example brings back the tolerance reasoning from the floating-point lesson, so each case in the table carries its own honest tolerance.
 
 ## A table in a loop hides failures
 
@@ -66,10 +66,10 @@ Switching to `EXPECT_DOUBLE_EQ` keeps the loop going, so both failures print. Bu
 
 ## TEST_P: every row becomes its own test
 
-A parameterised test has three parts. Read them in this order.
+A parameterized test has three parts. Read them in this order.
 
 1. **A fixture class that names the parameter type.** You derive from `::testing::TestWithParam<T>`, where `T` is the type of one row. It is an ordinary fixture from lesson 01, so it may also have members and `SetUp`.
-2. **The test body, written with `TEST_P`** (read "test P", for parameterised). Inside, `GetParam()` hands you the current row.
+2. **The test body, written with `TEST_P`** (read "test P", for parameterized). Inside, `GetParam()` hands you the current row.
 3. **An instantiation**, `INSTANTIATE_TEST_SUITE_P`, which says which rows to run. It takes a **prefix** (a label for this batch of rows), the fixture's name, a generator that produces the rows, and, optionally, a function that gives each row a name.
 
 Here is the heading test rebuilt that way. The row type gets a `name` field, and a small `operator<<` so GoogleTest can print a row:
@@ -116,7 +116,7 @@ INSTANTIATE_TEST_SUITE_P(
     });
 ```
 
-::: example Reading the parameterised report
+::: example Reading the parameterized report
 Build and run it exactly as before (`g++ -std=c++20 param.cpp -lgtest -lgtest_main -pthread`). The end of the output:
 
 ```text
@@ -149,7 +149,7 @@ Sanity check: five rows in the table, five tests reported, and $3 + 2 = 5$. Noth
 :::
 
 ::: key
-Why parameterise a test rather than loop inside it? Each parameter becomes its own test case, so all cases run, the failing one is named, and you can filter or mark individual cases. A loop stops at the first failure and hides the rest.
+Why parameterize a test rather than loop inside it? Each parameter becomes its own test case, so all cases run, the failing one is named, and you can filter or mark individual cases. A loop stops at the first failure and hides the rest.
 :::
 
 The fixture here is empty, `{}`. That is common. When the rows share some setup — a filter to build, a table to load — put it in the fixture's constructor or `SetUp` exactly as in lesson 01. Every row gets a fresh fixture, the same way every `TEST_F` does.
@@ -359,7 +359,7 @@ Sanity check the size of the error. At $5000\,\mathrm{m}$ the standard temperatu
 
 ## A tolerance column, derived instead of tuned
 
-Lesson 03 said the tolerance for an integrator comes from its order and its step size, never from tuning until the test goes green. A parameterised test is where that rule pays off, because different rows need different tolerances. A row with a large step deserves a looser tolerance than a row with a small one, and the reasoning should be written down once, in the test body, not typed as a magic number into every row.
+Lesson 03 said the tolerance for an integrator comes from its order and its step size, never from tuning until the test goes green. A parameterized test is where that rule pays off, because different rows need different tolerances. A row with a large step deserves a looser tolerance than a row with a small one, and the reasoning should be written down once, in the test body, not typed as a magic number into every row.
 
 ::: example RK4 on a spring, one tolerance per row
 A mass on a spring obeys $\ddot{x} = -\omega^2 x$ (read "x double-dot equals minus omega squared x"), where $\omega$ is the **[[angular frequency|angular-frequency]]** in $\mathrm{rad/s}$. Started at $x = 1$ and at rest, the exact answer is $x(t) = \cos(\omega t)$. The code under test steps this with the classic fourth-order Runge–Kutta method (RK4) using $n$ equal steps of size $h = t_\text{end}/n$.
@@ -455,7 +455,7 @@ $$
 Finally $x = \cos(\text{angle})$, and the slope of cosine is never steeper than $1$, so a phase slip of $\delta$ moves $x$ by at most about $\delta$.
 :::
 
-This is the pattern the module's parameterised-integrator exercise asks for: a `TestWithParam<Case>` fixture, a `Case` struct with a name, an instantiation with a name generator, and a tolerance whose reasoning sits in a comment. Some teams put the tolerance itself into the table as a column. That is fine too, as long as a comment says how each number was derived. Then anyone can check the column, and a row whose tolerance is tighter than the others is easy to spot when the step size changes.
+This is the pattern the module's parameterized-integrator exercise asks for: a `TestWithParam<Case>` fixture, a `Case` struct with a name, an instantiation with a name generator, and a tolerance whose reasoning sits in a comment. Some teams put the tolerance itself into the table as a column. That is fine too, as long as a comment says how each number was derived. Then anyone can check the column, and a row whose tolerance is tighter than the others is easy to spot when the step size changes.
 
 ## Check yourself
 
@@ -520,7 +520,7 @@ With fixed typed-in tolerances, each row's error would grow by about $16$ while 
 
 | Idea | Meaning | Form |
 |---|---|---|
-| Parameterised fixture | A fixture whose tests get one row at a time | `class F : public ::testing::TestWithParam<T> {};` |
+| Parameterized fixture | A fixture whose tests get one row at a time | `class F : public ::testing::TestWithParam<T> {};` |
 | `TEST_P` | Test body written once, run per row | `TEST_P(F, Name) { GetParam(); }` |
 | Instantiation | Chooses the rows and names them | `INSTANTIATE_TEST_SUITE_P(Prefix, F, gen, namer)` |
 | Full test name | What reports and filters see | `Prefix/F.Name/RowName` |
@@ -530,10 +530,10 @@ With fixed typed-in tolerances, each row's error would grow by about $16$ while 
 | Why not a loop | Loops stop early and hide failures | each row is its own named, filterable test |
 | Tolerance per row | Derived from order and step, in a comment | RK4: about $\omega t_\text{end} (\omega h)^4/120$ |
 
-Parameterised tests vary the *values* a test runs on. The next lesson, "Typed tests and death tests", varies the *types* instead — the same test run for `float`, `double` and a 16-bit integer — and then tests the one outcome ordinary assertions cannot: that the program stops when a contract is broken.
+Parameterized tests vary the *values* a test runs on. The next lesson, "Typed tests and death tests", varies the *types* instead — the same test run for `float`, `double` and a 16-bit integer — and then tests the one outcome ordinary assertions cannot: that the program stops when a contract is broken.
 
 ::: context flight-envelope The box a vehicle lives in
-A flight envelope is usually drawn as a region on a chart with speed along one axis and altitude up the other. Inside the region the vehicle is designed, analyzed and tested to fly. Outside it something gives: the wing stalls, the structure is overloaded, the engine flames out. Test tables for flight software are often built by picking points on the edges and corners of this region, because that is where the equations are pushed hardest. A parameterised test is a natural way to write "the same check, at every one of these points".
+A flight envelope is usually drawn as a region on a chart with speed along one axis and altitude up the other. Inside the region the vehicle is designed, analyzed and tested to fly. Outside it something gives: the wing stalls, the structure is overloaded, the engine flames out. Test tables for flight software are often built by picking points on the edges and corners of this region, because that is where the equations are pushed hardest. A parameterized test is a natural way to write "the same check, at every one of these points".
 :::
 
 ::: context heading-wrap Why -90 and 270 are the same heading

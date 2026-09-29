@@ -250,11 +250,11 @@ ORDER BY sat_id, ts;
 
 A `CASE` with no `ELSE` gives NULL when its condition fails, so the first two rows show an empty cell. (Strictly, CASE can test a window result directly in the same SELECT, since both live in the SELECT stage; the CTE keeps it readable.)
 
-### Trailing and centred
+### Trailing and centered
 
 The frame so far looks only backwards. That is a **trailing** moving average. It is the only kind you can compute live, as data arrives, because it never needs a sample that has not come in yet. Its cost is that it **[[lags behind|trailing-lag]]** real changes: when the charge drops suddenly, the average takes a few samples to follow.
 
-For looking back at old data, you can put the current row in the middle instead. That is a **centred** moving average:
+For looking back at old data, you can put the current row in the middle instead. That is a **centered** moving average:
 
 ```sql
 SELECT sat_id, ts, value,
@@ -276,7 +276,7 @@ ORDER BY sat_id, ts;
 
 **1 FOLLOWING** means "one row after the current one". Now both ends are short: the first row has no row before it, so it averages $(0.90 + 0.85)/2 = 0.875$, and the last has no row after it, so $(0.70 + 0.75)/2 = 0.725$. In the middle, 00:10 averages $(0.90 + 0.85 + 0.70)/3 = 0.817$.
 
-The centred average is lined up with the thing it describes: the dip at 00:20 shows up as the lowest average around 00:20. But it uses a sample from the future, so it is for after-the-fact analysis, not for a live alarm.
+The centered average is lined up with the thing it describes: the dip at 00:20 shows up as the lowest average around 00:20. But it uses a sample from the future, so it is for after-the-fact analysis, not for a live alarm.
 
 ### Any aggregate can move
 
@@ -367,13 +367,13 @@ The 0.650 is wrong: it mixes two satellites' batteries into one average. The par
 :::
 
 ::: check
-Why can a trailing moving average be computed live on a ground station as data arrives, when a centred one cannot? What does the trailing one pay for that?
+Why can a trailing moving average be computed live on a ground station as data arrives, when a centered one cannot? What does the trailing one pay for that?
 :::
 
 ::: answer
 A trailing frame, `n PRECEDING AND CURRENT ROW`, uses only the current sample and older ones. The moment a sample arrives, everything its average needs is already there.
 
-A centred frame, `n PRECEDING AND n FOLLOWING`, needs $n$ samples that have not arrived yet. Its value for "now" can only be computed $n$ samples later.
+A centered frame, `n PRECEDING AND n FOLLOWING`, needs $n$ samples that have not arrived yet. Its value for "now" can only be computed $n$ samples later.
 
 The price of the trailing average is lag: because every sample in its frame is from now or earlier, it follows a sudden change a few samples late. With a three-sample frame, a sudden step in the charge takes three samples to show fully in the average.
 :::
@@ -395,7 +395,7 @@ On the 00:50 row. Its frame is the current row and the two rows before it: 00:10
 | Share so far | running total ÷ `SUM(x) OVER (PARTITION BY k)` | fraction of the partition's total reached by this row |
 | Frame clause | `ROWS BETWEEN a AND b` | which rows of the partition the function uses |
 | Trailing moving average | `ROWS BETWEEN n PRECEDING AND CURRENT ROW` | average of this row and the $n$ before; $N$ samples means $n = N - 1$ |
-| Centred moving average | `ROWS BETWEEN n PRECEDING AND n FOLLOWING` | no lag, but needs future rows |
+| Centered moving average | `ROWS BETWEEN n PRECEDING AND n FOLLOWING` | no lag, but needs future rows |
 | Warm-up | `COUNT(*) OVER` the same window | first rows of a partition have short frames |
 | Named window | `WINDOW w AS (...)` then `OVER w` | one definition shared by several columns |
 | ROWS counts samples | — | not a time span when samples are irregular |

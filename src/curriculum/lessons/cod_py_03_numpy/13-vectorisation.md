@@ -1,16 +1,16 @@
 ---
 id: l13-vectorisation
-title: Vectorisation as the default
+title: Vectorization as the default
 minutes: 18
 covers:
-  - Vectorisation as the default, and when it genuinely does not apply
+  - Vectorization as the default, and when it genuinely does not apply
 ---
 
 Picture a post office clerk stamping a thousand letters. In the first version, a customer walks up with one letter, the clerk asks their name, checks the address, finds the stamp, stamps it, says goodbye — and the next customer walks up. In the second version, someone hands the clerk a tray of a thousand letters already sorted, and the clerk stamps them one after another without looking up. The stamping takes the same time either way. Everything else — the greeting, the checking, the walking up — is what made the first version slow.
 
 A Python loop over array elements is the first version. For every element, the Python [[interpreter|interpreter]] reads the next instruction, looks up what the variables are, checks their types, makes a new Python object for the result and cleans up the old one. The actual multiplication is a tiny part of that. An array expression like `v @ C.T` is the second version: Python does the paperwork *once* for the whole array, and then compiled code stamps through all the numbers in a tight loop.
 
-Writing code as whole-array expressions instead of element loops is called **vectorisation**, and it has been the quiet theme of this whole module: broadcasting, masks, reductions with `axis=`, `@` and `einsum` are all ways of saying "do this to every element" without writing the loop. This last lesson measures how much it is worth — you will see speedups of 50 to nearly 800 times — and then looks honestly at the cases where it does not apply: steps that depend on the step before, searches that should stop early, and expressions whose temporary arrays would not fit in memory.
+Writing code as whole-array expressions instead of element loops is called **vectorization**, and it has been the quiet theme of this whole module: broadcasting, masks, reductions with `axis=`, `@` and `einsum` are all ways of saying "do this to every element" without writing the loop. This last lesson measures how much it is worth — you will see speedups of 50 to nearly 800 times — and then looks honestly at the cases where it does not apply: steps that depend on the step before, searches that should stop early, and expressions whose temporary arrays would not fit in memory.
 
 ## Where the time goes
 
@@ -18,15 +18,15 @@ When NumPy runs `v * 2.0` on a million numbers, one Python-level operation happe
 
 When a Python `for` loop does the same thing, every iteration pays the full interpreter cost. Reading `v[i]` makes a brand-new Python float object to hold one number — a step called **[[boxing|boxing]]** — and multiplying it makes another. Each of those costs tens of nanoseconds, while the multiplication itself takes well under one. The loop spends almost all its time on paperwork.
 
-That is also why vectorised code is not faster because of a GPU (NumPy does not use one) or lower precision (it is the same float64). It is faster because the per-element overhead is gone.
+That is also why vectorized code is not faster because of a GPU (NumPy does not use one) or lower precision (it is the same float64). It is faster because the per-element overhead is gone.
 
-::: key Why vectorised code is faster
+::: key Why vectorized code is faster
 The per-element Python interpreter overhead and boxing are removed, and the inner loop runs in compiled, cache-friendly C. The array version pays the Python cost once per operation, not once per element.
 :::
 
 ## Measuring it: rotate a million vectors
 
-In lesson 8 you rotated a stack of vectors by a direction cosine matrix in one expression. Here is that expression against the loop a newcomer would write, timed with `timeit` (lesson 9 used it too). The loop computes `C @ v[i]` for each row; the vectorised version computes `v @ C.T`, which gives row $i$ equal to $\mathbf{C}\mathbf{v}_i$ because of how a transpose swaps the order of a product.
+In lesson 8 you rotated a stack of vectors by a direction cosine matrix in one expression. Here is that expression against the loop a newcomer would write, timed with `timeit` (lesson 9 used it too). The loop computes `C @ v[i]` for each row; the vectorized version computes `v @ C.T`, which gives row $i$ equal to $\mathbf{C}\mathbf{v}_i$ because of how a transpose swaps the order of a product.
 
 ::: example A fifty-fold speedup, measured
 ```python
@@ -73,16 +73,16 @@ print(f"speedup:    {t_loop/t_vec:8.0f} x")
 
 **Step 4.** The array expression takes about $1.3\,\mathrm{ms}$. The ratio is about 790. On a different computer the milliseconds will differ, but a ratio in the hundreds is typical.
 
-**Sanity check.** Is $1.3\,\mathrm{ms}$ believable for a million vectors? The data is $24\,\mathrm{MB}$ in and $24\,\mathrm{MB}$ out. Moving $48\,\mathrm{MB}$ in $1.3\,\mathrm{ms}$ is about $37\,\mathrm{GB/s}$, around what a modern machine's memory can deliver across its cores; matrix products are handed to the BLAS library from lesson 9, which can use several cores at once (this machine has 4). So the vectorised version is limited by how fast memory can move, not by arithmetic — as fast as this job can go.
+**Sanity check.** Is $1.3\,\mathrm{ms}$ believable for a million vectors? The data is $24\,\mathrm{MB}$ in and $24\,\mathrm{MB}$ out. Moving $48\,\mathrm{MB}$ in $1.3\,\mathrm{ms}$ is about $37\,\mathrm{GB/s}$, around what a modern machine's memory can deliver across its cores; matrix products are handed to the BLAS library from lesson 9, which can use several cores at once (this machine has 4). So the vectorized version is limited by how fast memory can move, not by arithmetic — as fast as this job can go.
 :::
 
 ::: warning Time the right thing
-Build the input *outside* the timed code, or you measure the random-number generator too. Run the vectorised version a few times: the first run can pay one-off costs (memory being handed to the program for the first time). And report the ratio along with the machine, never a bare "it is fast".
+Build the input *outside* the timed code, or you measure the random-number generator too. Run the vectorized version a few times: the first run can pay one-off costs (memory being handed to the program for the first time). And report the ratio along with the machine, never a bare "it is fast".
 :::
 
 ## Not every array expression is equally fast
 
-Vectorising removes the interpreter overhead, but *how* you write the array expression still matters. Here are the lengths of the same million vectors, three ways:
+Vectorizing removes the interpreter overhead, but *how* you write the array expression still matters. Here are the lengths of the same million vectors, three ways:
 
 ::: example Three ways to compute a million lengths
 ```python
@@ -120,7 +120,7 @@ print(f"einsum:           {t_ein*1e3:7.1f} ms  {t_loop/t_ein:5.0f} x")
 
 **Step 3.** `np.einsum("ij,ij->i", v, v)` (lesson 8) says "for each row `i`, multiply and add over `j`" as one operation. It never builds the temporary, and it is about 155 times faster than the loop.
 
-**Sanity check.** All three compute the same thing: lesson 10's `np.allclose` on any pair returns `True`. The lesson is not "always use einsum". It is that the first vectorised version is usually a huge win, and when you need more, look for temporaries and for reductions over tiny axes.
+**Sanity check.** All three compute the same thing: lesson 10's `np.allclose` on any pair returns `True`. The lesson is not "always use einsum". It is that the first vectorized version is usually a huge win, and when you need more, look for temporaries and for reductions over tiny axes.
 :::
 
 ::: key Vectorisation as the default
@@ -129,7 +129,7 @@ Write whole-array expressions first: broadcasting, masks, `axis=` reductions, `@
 
 ## When it genuinely does not apply
 
-Vectorisation needs one thing: the work on each element must not depend on the result for another element. When that is true, the whole array can be done at once. Three situations break it.
+Vectorization needs one thing: the work on each element must not depend on the result for another element. When that is true, the whole array can be done at once. Three situations break it.
 
 ### 1. Each step needs the one before: recurrences
 
@@ -172,7 +172,7 @@ The estimate settles on $5.0$, as it should. The loop is the right code here. Tw
 
 First, inside an unavoidable scalar loop, plain Python floats are faster than NumPy's. `z[k]` on an array returns a NumPy scalar, which carries extra machinery for every arithmetic step; `z.tolist()` turns the array into a list of plain floats, and the same loop ran in less than half the time.
 
-Second, and much bigger: **loop over time, vectorise over everything else.** A Monte Carlo study runs the same filter for a thousand cases. The cases do not depend on each other, so hold them in arrays and let every step move all of them at once:
+Second, and much bigger: **loop over time, vectorize over everything else.** A Monte Carlo study runs the same filter for a thousand cases. The cases do not depend on each other, so hold them in arrays and let every step move all of them at once:
 
 ```python
 import time
@@ -202,12 +202,12 @@ print(f"{time.perf_counter() - t0:.2f} s for {steps} steps x {cases} cases")
 That is ten million filter steps in $0.07\,\mathrm{s}$: about $7\,\mathrm{ns}$ each, against $100$ to $240\,\mathrm{ns}$ for one step in the scalar loop. The Python loop runs $10\,000$ times instead of $10\,000\,000$.
 
 ::: warning Do not fake it with cumsum
-A few recurrences have array shortcuts: a running total is `np.cumsum`, and some linear filters have library routines (SciPy's `lfilter`, in the next module). But most GNC recurrences are nonlinear — gravity depends on position, the Kalman gain depends on the last variance — and no reshuffling of array operations removes the dependence. Code that "vectorises" a recurrence by computing every step from the *initial* state gives a fast, wrong answer. If step $k$ needs step $k-1$, keep the loop.
+A few recurrences have array shortcuts: a running total is `np.cumsum`, and some linear filters have library routines (SciPy's `lfilter`, in the next module). But most GNC recurrences are nonlinear — gravity depends on position, the Kalman gain depends on the last variance — and no reshuffling of array operations removes the dependence. Code that "vectorizes" a recurrence by computing every step from the *initial* state gives a fast, wrong answer. If step $k$ needs step $k-1$, keep the loop.
 :::
 
 ### 2. You can stop early
 
-A vectorised expression always processes the whole array. A loop can quit the moment it has its answer. When the answer is usually near the start, the loop can win.
+A vectorized expression always processes the whole array. A loop can quit the moment it has its answer. When the answer is usually near the start, the loop can win.
 
 ```python
 from timeit import timeit
@@ -237,7 +237,7 @@ print(f"vectorised, all 10M:  {t_vec*1e3:6.2f} ms")
 # vectorised, all 10M:    2.80 ms
 ```
 
-The loop looked at 1501 values and stopped. The vectorised version built a 10-million-element mask (lesson 4) and scanned it: 35 times slower, even though each of its steps is far faster. (`argmax` on a boolean mask returns the first `True`, which is why it finds the first crossing — and why the `mask.any()` check is needed: on an all-`False` mask `argmax` returns 0.) If the spike had been near the end, the vectorised version would win by the usual factor of a hundred or so. The best of both is a middle road: search the array in vectorised **chunks** of, say, $100\,000$ values, and stop at the first chunk that contains a hit.
+The loop looked at 1501 values and stopped. The vectorized version built a 10-million-element mask (lesson 4) and scanned it: 35 times slower, even though each of its steps is far faster. (`argmax` on a boolean mask returns the first `True`, which is why it finds the first crossing — and why the `mask.any()` check is needed: on an all-`False` mask `argmax` returns 0.) If the spike had been near the end, the vectorized version would win by the usual factor of a hundred or so. The best of both is a middle road: search the array in vectorized **chunks** of, say, $100\,000$ values, and stop at the first chunk that contains a hit.
 
 ### 3. The temporaries do not fit
 
@@ -248,7 +248,7 @@ Broadcasting makes it easy to write an expression whose intermediate arrays are 
 | 5,000 | $5000^2 \times 3 \times 8 = 600\,\mathrm{MB}$ |
 | 100,000 | $100\,000^2 \times 3 \times 8 = 240\,\mathrm{GB}$ |
 
-The fix keeps the vectorisation but applies it one **block** of rows at a time: compare 250 objects against all $n$, keep the smallest distance, move on.
+The fix keeps the vectorization but applies it one **block** of rows at a time: compare 250 objects against all $n$, keep the smallest distance, move on.
 
 ```python
 import numpy as np
@@ -274,34 +274,34 @@ print(closest_chunked(pos))
 
 For $5000$ objects, the all-at-once version and this one give the same closest approach, $75\,939\,\mathrm{m}$. Measured on this lesson's machine, the all-at-once version peaked at $1367\,\mathrm{MB}$ of memory and took $4.97\,\mathrm{s}$; the blocked one peaked at $118\,\mathrm{MB}$ and took $0.65\,\mathrm{s}$. Smaller arrays stay in the processor's fast **[[cache|cache]]**, so the blocked version was faster as well as smaller. The Python loop runs only 20 times, so its overhead is nothing. For $100\,000$ objects, only the blocked version can run at all.
 
-::: key When vectorisation genuinely does not apply
-Sequential recurrences (integrators, Kalman filters: step $k$ needs step $k-1$) — loop over time, vectorise over cases. Early exit (answer near the start) — loop, or vectorise in chunks and stop. Memory blow-up (huge broadcast temporaries) — process in blocks. In each case, keep the Python loop count small and the work per iteration large.
+::: key When vectorization genuinely does not apply
+Sequential recurrences (integrators, Kalman filters: step $k$ needs step $k-1$) — loop over time, vectorize over cases. Early exit (answer near the start) — loop, or vectorize in chunks and stop. Memory blow-up (huge broadcast temporaries) — process in blocks. In each case, keep the Python loop count small and the work per iteration large.
 :::
 
 ### When the loop itself must be fast
 
-Sometimes you are left with a long scalar loop that really matters: a propagator with a million steps, run thousands of times. Then the tool is to compile the loop. **[[Numba|numba]]** is a package that compiles a Python function full of loops over NumPy arrays into machine code when you add a decorator; **Cython** lets you write Python-like code with C types and compile it into an extension module. Neither is part of NumPy, and neither may be installed on your machine — this course's performance module covers both, with measurements. The order stays the same: vectorise first, measure, and compile only the loop that is left.
+Sometimes you are left with a long scalar loop that really matters: a propagator with a million steps, run thousands of times. Then the tool is to compile the loop. **[[Numba|numba]]** is a package that compiles a Python function full of loops over NumPy arrays into machine code when you add a decorator; **Cython** lets you write Python-like code with C types and compile it into an extension module. Neither is part of NumPy, and neither may be installed on your machine — this course's performance module covers both, with measurements. The order stays the same: vectorize first, measure, and compile only the loop that is left.
 
 ## Check yourself
 
 ::: check
-A colleague's loop over 2 million telemetry rows takes $1.6\,\mathrm{s}$. After vectorising, it takes $12\,\mathrm{ms}$. What is the speedup, and does it meet a "fifty-fold" goal? What should they check before celebrating?
+A colleague's loop over 2 million telemetry rows takes $1.6\,\mathrm{s}$. After vectorizing, it takes $12\,\mathrm{ms}$. What is the speedup, and does it meet a "fifty-fold" goal? What should they check before celebrating?
 :::
 
 ::: answer
-$1.6\,\mathrm{s} / 0.012\,\mathrm{s} \approx 133$ times, well past fifty. Before celebrating: check that both versions give the same result with `np.allclose` (with tolerances chosen for the units), that the input was built outside the timed code, and that the vectorised time is the best of several runs. Report the ratio with the machine it was measured on.
+$1.6\,\mathrm{s} / 0.012\,\mathrm{s} \approx 133$ times, well past fifty. Before celebrating: check that both versions give the same result with `np.allclose` (with tolerances chosen for the units), that the input was built outside the timed code, and that the vectorized time is the best of several runs. Report the ratio with the machine it was measured on.
 :::
 
 ::: check
-For each task, say whether it can be vectorised over its long axis, and why: (a) converting a million positions from kilometers to meters; (b) propagating one orbit with a fixed-step integrator for a million steps; (c) propagating ten thousand orbits for 100 steps each.
+For each task, say whether it can be vectorized over its long axis, and why: (a) converting a million positions from kilometers to meters; (b) propagating one orbit with a fixed-step integrator for a million steps; (c) propagating ten thousand orbits for 100 steps each.
 :::
 
 ::: answer
-(a) Yes: each element is multiplied by 1000 independently, `pos * 1000.0`. (b) Not over time: each step needs the position from the previous step, so the million-step loop stays; it is the case for a compiled loop if it is too slow. (c) Loop over the 100 time steps, and vectorise over the 10,000 orbits, which are independent: hold them as a `(10000, 3)` position array and a `(10000, 3)` velocity array, and update all of them in each step. The Python loop runs 100 times, not a million.
+(a) Yes: each element is multiplied by 1000 independently, `pos * 1000.0`. (b) Not over time: each step needs the position from the previous step, so the million-step loop stays; it is the case for a compiled loop if it is too slow. (c) Loop over the 100 time steps, and vectorize over the 10,000 orbits, which are independent: hold them as a `(10000, 3)` position array and a `(10000, 3)` velocity array, and update all of them in each step. The Python loop runs 100 times, not a million.
 :::
 
 ::: check
-Explain why `np.sqrt((v * v).sum(axis=1))` was slower than `np.sqrt(np.einsum("ij,ij->i", v, v))` in the lesson, even though both are vectorised.
+Explain why `np.sqrt((v * v).sum(axis=1))` was slower than `np.sqrt(np.einsum("ij,ij->i", v, v))` in the lesson, even though both are vectorized.
 :::
 
 ::: answer
@@ -317,22 +317,22 @@ The full difference array is $20\,000^2 \times 3 \times 8 = 9.6 \times 10^{9}$ b
 :::
 
 ::: check
-A search for the first sample where a battery voltage drops below a limit runs on day-long logs of 8.64 million samples. In most logs the voltage never drops. Would you use the loop with `break` or the vectorised mask? Why?
+A search for the first sample where a battery voltage drops below a limit runs on day-long logs of 8.64 million samples. In most logs the voltage never drops. Would you use the loop with `break` or the vectorized mask? Why?
 :::
 
 ::: answer
-The vectorised mask. The loop only wins when it can stop early; if the voltage usually never drops, the loop has to look at all 8.64 million samples one by one, at around a hundred times the cost of the vectorised scan. If the drops, when they happen, are usually near the start, the chunked search gets both benefits: vectorised speed within each chunk, and stopping at the first chunk with a hit.
+The vectorized mask. The loop only wins when it can stop early; if the voltage usually never drops, the loop has to look at all 8.64 million samples one by one, at around a hundred times the cost of the vectorized scan. If the drops, when they happen, are usually near the start, the chunked search gets both benefits: vectorized speed within each chunk, and stopping at the first chunk with a hit.
 :::
 
 ## Summary
 
 | Idea | What to remember |
 | --- | --- |
-| Why vectorising is fast | interpreter overhead and boxing paid once, not per element; compiled C loop |
+| Why vectorizing is fast | interpreter overhead and boxing paid once, not per element; compiled C loop |
 | Measured | DCM rotation of $10^6$ vectors: about 790 times; lengths: 47 times with a temporary, 155 with `einsum` |
 | Method | check with `np.allclose`, then `timeit`, best of several runs, report the ratio |
 | Temporaries | fewer and smaller is faster; avoid reductions over tiny axes when speed matters |
-| Recurrences | loop over time, vectorise over cases; plain floats in scalar loops |
+| Recurrences | loop over time, vectorize over cases; plain floats in scalar loops |
 | Early exit | loop or chunked search when the answer is near the start |
 | Memory blow-up | process broadcasts in blocks |
 | Compiled loops | Numba or Cython for the loop that is left; not part of NumPy |
@@ -375,7 +375,7 @@ A NumPy array stores bare 8-byte numbers packed side by side. A Python float is 
 :::
 
 ::: context recurrence Recurrences in flight software
-Recurrences are everywhere in GNC because the physics is a recurrence: the state now plus the rate of change gives the state a moment later. Numerical integrators (Euler, Runge-Kutta), discrete-time filters, attitude propagation with quaternions and guidance laws that update every control cycle are all loops over time. On the flight computer they are written in C or C++ and run once per cycle, so the question never comes up there. It comes up in the Python analysis tools around them, where the fix is almost always to vectorise across cases, not across time.
+Recurrences are everywhere in GNC because the physics is a recurrence: the state now plus the rate of change gives the state a moment later. Numerical integrators (Euler, Runge-Kutta), discrete-time filters, attitude propagation with quaternions and guidance laws that update every control cycle are all loops over time. On the flight computer they are written in C or C++ and run once per cycle, so the question never comes up there. It comes up in the Python analysis tools around them, where the fix is almost always to vectorize across cases, not across time.
 :::
 
 ::: context cache Why smaller blocks can be faster

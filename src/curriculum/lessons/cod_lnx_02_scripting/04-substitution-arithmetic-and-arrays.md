@@ -30,7 +30,13 @@ n=[400]
 
 `wc -l` counted the lines, and its answer became the value of `n`. The square brackets in the `echo` are there only so you can see exactly where the value starts and stops.
 
-There is an older spelling with **[[backticks|backtick-history]]**, `` n=`wc -l < logs/run.log` ``, and it gives the same result. Use `$( )` anyway. It nests — one substitution inside another — with no extra escaping:
+There is an older spelling with **[[backticks|backtick-history]]**: the command goes between two backtick characters instead of inside `$( )`.
+
+```bash
+n=`wc -l < logs/run.log`
+```
+
+It gives the same result. Use `$( )` anyway. It nests — one substitution inside another — with no extra escaping:
 
 ```bash
 echo "parent: $(basename "$(dirname "$(readlink -f logs/run.log)")")"
@@ -40,7 +46,7 @@ echo "parent: $(basename "$(dirname "$(readlink -f logs/run.log)")")"
 parent: logs
 ```
 
-Read it from the inside out: `readlink -f` made a full path, `dirname` cut off the file name, `basename` kept the last directory name. Three substitutions, each with its own quotes, and not one backslash. With backticks, every inner level needs escaping as `` \` ``, which is hard to read at two levels and worse at three.
+Read it from the inside out: `readlink -f` made a full path, `dirname` cut off the file name, `basename` kept the last directory name. Three substitutions, each with its own quotes, and not one backslash. With backticks, every inner backtick needs a backslash in front of it, which is hard to read at two levels and worse at three.
 
 Two properties of `$( )` matter every day.
 
@@ -748,7 +754,7 @@ A pipe connects two running programs, so both sides must run at the same time. B
 :::
 
 ::: context macos-bash The old bash on a Mac
-Apple still ships bash 3.2, a version first released in 2006, as `/bin/bash`. Later versions of bash are released under the GPL version 3 licence, which Apple does not ship, and since macOS Catalina (2019) the default login shell has been zsh instead. So `declare -A`, `mapfile` and `${var,,}` fail on a stock Mac. If your ground tools must run on laptops as well as Linux servers, install a newer bash there (with Homebrew, for example) and point the shebang at `/usr/bin/env bash`.
+Apple still ships bash 3.2, a version first released in 2006, as `/bin/bash`. Later versions of bash are released under the GPL version 3 license, which Apple does not ship, and since macOS Catalina (2019) the default login shell has been zsh instead. So `declare -A`, `mapfile` and `${var,,}` fail on a stock Mac. If your ground tools must run on laptops as well as Linux servers, install a newer bash there (with Homebrew, for example) and point the shebang at `/usr/bin/env bash`.
 :::
 
 ::: context hash-order Why the keys come out shuffled

@@ -216,7 +216,7 @@ $$
 
 That is $1.5\,\mathrm{N\,m}$ about $z$ — an axis nobody asked to move. Compare it with the torque a small reaction wheel can produce, typically $0.01$ to $0.1\,\mathrm{N\,m}$. The coupling is 15 to 150 times larger than the authority available to fight it. A controller that does not plan for this term will max out its $z$ actuator during every $y$ turn, and the vehicle will corkscrew.
 
-The fix is not more authority but better bookkeeping. Both $\boldsymbol{\omega}$ and $\mathbf{h}$ are measured, so $\boldsymbol{\omega}\times\mathbf{h}$ can be computed and cancelled in the command — a **[[feed-forward|feed-forward]]**. It is the same argument lesson 5 made for $\boldsymbol{\omega}\times\mathbf{I}\boldsymbol{\omega}$, and lesson 11 builds the wheel dynamics on it.
+The fix is not more authority but better bookkeeping. Both $\boldsymbol{\omega}$ and $\mathbf{h}$ are measured, so $\boldsymbol{\omega}\times\mathbf{h}$ can be computed and canceled in the command — a **[[feed-forward|feed-forward]]**. It is the same argument lesson 5 made for $\boldsymbol{\omega}\times\mathbf{I}\boldsymbol{\omega}$, and lesson 11 builds the wheel dynamics on it.
 :::
 
 ::: note Why a fixed inertial torque does not set off nutation
@@ -315,7 +315,7 @@ Gained: a vehicle that turns like a plain rigid body, and that can still make co
 Gyroscopic stiffness is free pointing, and its price is that the whole vehicle spins, so nothing on it can stare steadily at anything. The next lesson buys the pointing back without giving up the momentum: a rotor spins while a platform does not. That dual-spin design turns out to change the stability rules of lesson 8 as well.
 
 ::: context bicycle-wheel The push, the torque, and the swing
-Seen from above: the wheel's angular momentum $\mathbf{H}$ points along its axle. A sideways torque $\mathbf{M}$ (blue), at right angles to $\mathbf{H}$, adds a small piece $\mathbf{M}\,\Delta t$ to it in each short moment $\Delta t$. The sum (grey) points a little further round. So the axle swings *toward the torque vector*, not toward the force that made it — and the more angular momentum there is, the smaller that turn for the same added piece.
+Seen from above: the wheel's angular momentum $\mathbf{H}$ points along its axle. A sideways torque $\mathbf{M}$ (blue), at right angles to $\mathbf{H}$, adds a small piece $\mathbf{M}\,\Delta t$ to it in each short moment $\Delta t$. The sum (gray) points a little further round. So the axle swings *toward the torque vector*, not toward the force that made it — and the more angular momentum there is, the smaller that turn for the same added piece.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
@@ -379,7 +379,7 @@ Any orientation can be reached by three turns in a set order. The 3-1-3 recipe: 
 :::
 
 ::: context cones Two cones rolling
-For a prolate body, seen with $\mathbf{H}$ straight up (angles exaggerated). The space cone (grey) is fixed around $\mathbf{H}$. The body cone (blue) is fixed around the symmetry axis. They touch along $\boldsymbol{\omega}$ (red), and the body cone rolls around the outside of the space cone without slipping. The angles add: $\theta = \beta + \gamma$. For an oblate body the space cone sits *inside* the body cone instead.
+For a prolate body, seen with $\mathbf{H}$ straight up (angles exaggerated). The space cone (gray) is fixed around $\mathbf{H}$. The body cone (blue) is fixed around the symmetry axis. They touch along $\boldsymbol{\omega}$ (red), and the body cone rolls around the outside of the space cone without slipping. The angles add: $\theta = \beta + \gamma$. For an oblate body the space cone sits *inside* the body cone instead.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">

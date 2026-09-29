@@ -408,7 +408,7 @@ That makes the minimum the most stable estimate of the code's own cost: it is th
 | Comparing versions | Is B really faster than A? | Interleave, check the answers match, count wins, compare min and median |
 | Regression gate | Automated check for slowdowns | Same machine, same job, threshold above measured noise |
 
-This closes the performance module: measure, fix the algorithm, remove repeated work, vectorise, compile, parallelise, and prove each step with a benchmark someone else can trust. The next module, on packaging, turns code like this into something others can install and run the same way you do, which is also what makes a benchmark repeatable on someone else's machine.
+This closes the performance module: measure, fix the algorithm, remove repeated work, vectorize, compile, parallelise, and prove each step with a benchmark someone else can trust. The next module, on packaging, turns code like this into something others can install and run the same way you do, which is also what makes a benchmark repeatable on someone else's machine.
 
 ::: context regression-gate A test that watches the clock
 Most automated tests check that the answers are right. A performance regression gate checks that the code has not got slower: it runs a benchmark on every proposed change and fails the change if the time goes up by more than a set amount. A gate with a threshold smaller than the machine's noise fails at random, and people soon learn to ignore it. A gate with a threshold that is too large lets slow creep through, a few percent at a time.
@@ -499,5 +499,5 @@ A processor's rated speed, its base clock, is the speed it can hold with every c
 :::
 
 ::: context governor Who sets the clock
-On Linux, a small policy in the kernel called the frequency governor chooses the clock speed from moment to moment. Common ones are `performance`, which holds the clock high; `powersave`, which favours low power; and `schedutil`, which follows how busy the scheduler says the processor is. Laptops, desktops and servers ship with different defaults, which is one reason the same code benchmarks differently on them. Changing the governor needs administrator rights, and inside a cloud virtual machine it is usually not possible at all.
+On Linux, a small policy in the kernel called the frequency governor chooses the clock speed from moment to moment. Common ones are `performance`, which holds the clock high; `powersave`, which favors low power; and `schedutil`, which follows how busy the scheduler says the processor is. Laptops, desktops and servers ship with different defaults, which is one reason the same code benchmarks differently on them. Changing the governor needs administrator rights, and inside a cloud virtual machine it is usually not possible at all.
 :::

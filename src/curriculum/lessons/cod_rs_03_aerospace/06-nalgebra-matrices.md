@@ -420,7 +420,7 @@ Same: both have their dimensions fixed when compiling, store their nine numbers 
 | no-alloc guarantee | `default-features = false`, `libm`, no allocator | `DMatrix` vanishes or fails to link |
 | vs Eigen | Same fixed-size idea | Traits instead of templates; no expression templates |
 
-The next lesson builds on these fixed-size matrices with nalgebra's geometry types, `UnitQuaternion`, `Rotation3` and `Isometry3`, and meets the neighbouring crates a Rust GNC stack uses.
+The next lesson builds on these fixed-size matrices with nalgebra's geometry types, `UnitQuaternion`, `Rotation3` and `Isometry3`, and meets the neighboring crates a Rust GNC stack uses.
 
 ::: context type-alias A nickname for a long type
 A type alias is declared with `type`, for example `pub type Matrix3<T> = Matrix<T, U3, U3, ArrayStorage<T, 3, 3>>;`, which is how nalgebra defines it. The alias is not a new type; it is the same type under a shorter name, so a `Matrix3<f64>` and a `SMatrix<f64, 3, 3>` are interchangeable. (`U3` is another alias, for `Const<3>`.) Aliases are why nalgebra's documentation pages for `Matrix3` show few methods: almost all of them are defined once, on `Matrix`.

@@ -9,7 +9,7 @@ covers:
 
 Imagine two ways to describe "what I listened to recently": "my last five songs", or "everything I played in the last twenty minutes". On a normal afternoon they are the same songs. But skip through a dozen songs in two minutes and "the last five" covers only a moment. Pause for an hour and "the last five" reaches back more than an hour, while "the last twenty minutes" holds only the song playing now.
 
-A window function faces exactly this choice every time it looks back. The rule that says which neighbouring rows it uses is the **frame**. You have already met two frames: the whole-partition frame that fixed LAST_VALUE in lesson 03, and the sliding `ROWS BETWEEN 2 PRECEDING AND CURRENT ROW` behind lesson 04's moving average. This lesson takes the frame apart completely.
+A window function faces exactly this choice every time it looks back. The rule that says which neighboring rows it uses is the **frame**. You have already met two frames: the whole-partition frame that fixed LAST_VALUE in lesson 03, and the sliding `ROWS BETWEEN 2 PRECEDING AND CURRENT ROW` behind lesson 04's moving average. This lesson takes the frame apart completely.
 
 By the end you will know what the frame is when you write none at all — the **default frame** — and why that default makes LAST_VALUE return the current row. You will also know when to count rows (ROWS) and when to measure a span of time (RANGE), which matters on every telemetry stream whose samples do not arrive on a [[perfectly regular beat|irregular-sampling]].
 
@@ -293,7 +293,7 @@ ORDER BY ts;
 :::
 
 ::: key ROWS frame versus RANGE frame
-ROWS counts a fixed number of neighbouring rows; RANGE spans a value interval of the ORDER BY column, for example five minutes of time. For irregularly sampled telemetry, ROWS gives an inconsistent time window and RANGE gives a consistent one.
+ROWS counts a fixed number of neighboring rows; RANGE spans a value interval of the ORDER BY column, for example five minutes of time. For irregularly sampled telemetry, ROWS gives an inconsistent time window and RANGE gives a consistent one.
 :::
 
 ### Choosing between them
@@ -450,7 +450,7 @@ On paper a channel is "sampled at 1 Hz". In the database it rarely looks like th
 :::
 
 ::: context why-this-default Why the standard picked this default
-The default is easiest to understand from what it buys. Stopping at the current row makes `SUM(x) OVER (ORDER BY t)` a running total with no extra typing. Measuring in RANGE rather than ROWS means the result never depends on an order the query did not give: rows tied on the ORDER BY value are treated as one step, so every run returns the same numbers. The price is the LAST_VALUE surprise, and the tie behaviour you see in the thruster example. Many style guides now say: whenever the frame matters, write it out.
+The default is easiest to understand from what it buys. Stopping at the current row makes `SUM(x) OVER (ORDER BY t)` a running total with no extra typing. Measuring in RANGE rather than ROWS means the result never depends on an order the query did not give: rows tied on the ORDER BY value are treated as one step, so every run returns the same numbers. The price is the LAST_VALUE surprise, and the tie behavior you see in the thruster example. Many style guides now say: whenever the frame matters, write it out.
 :::
 
 ::: context peers-picture Peers share one step
@@ -547,7 +547,7 @@ A RANGE frame decides which samples are in the window. It then averages them lik
 :::
 
 ::: context groups-history A later addition, not everywhere
-ROWS and RANGE came with window functions themselves; GROUPS is a later addition to the SQL standard, in its 2011 revision. The standard also has an `EXCLUDE` option that drops rows from the frame: `EXCLUDE CURRENT ROW`, for example, turns `ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING` into "the average of my two neighbours, without me", handy for spotting a reading that disagrees with the samples around it. PostgreSQL added GROUPS, EXCLUDE and RANGE offsets in version 11 (2018); SQLite in 3.28 (2019). Several popular databases still lack GROUPS, so check before relying on it.
+ROWS and RANGE came with window functions themselves; GROUPS is a later addition to the SQL standard, in its 2011 revision. The standard also has an `EXCLUDE` option that drops rows from the frame: `EXCLUDE CURRENT ROW`, for example, turns `ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING` into "the average of my two neighbors, without me", handy for spotting a reading that disagrees with the samples around it. PostgreSQL added GROUPS, EXCLUDE and RANGE offsets in version 11 (2018); SQLite in 3.28 (2019). Several popular databases still lack GROUPS, so check before relying on it.
 :::
 
 ::: context julianday-float The edge that moves

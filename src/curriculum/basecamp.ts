@@ -128,7 +128,7 @@ export const BASECAMP: Module = {
       q: 'The formula for a rectangle\'s area is A = l × w. What is the area when l = 3.5 m and w = 2 m?',
       choices: ['7 m²', '5.5 m²', '7 m', '11 m²'],
       answer: 0,
-      explain: '3.5 × 2 = 7, and metres times metres is square metres. 5.5 is the sum, not the product; 11 m would be the perimeter, 2 × (3.5 + 2).',
+      explain: '3.5 × 2 = 7, and meters times meters is square meters. 5.5 is the sum, not the product; 11 m would be the perimeter, 2 × (3.5 + 2).',
       b: -1,
     },
     {
@@ -165,7 +165,7 @@ export const BASECAMP: Module = {
     },
     {
       id: 'bc_q_metric',
-      q: 'How many metres is 7.67 km?',
+      q: 'How many meters is 7.67 km?',
       choices: ['7,670 m', '767 m', '0.00767 m', '76,700 m'],
       answer: 0,
       explain: 'Kilo- means 1000, so 7.67 km = 7.67 × 1000 m = 7,670 m: move the decimal point three places to the right.',
@@ -176,7 +176,7 @@ export const BASECAMP: Module = {
       q: 'The International Space Station travels about 7.7 km every second. Roughly how far does it go in a minute?',
       choices: ['460 km', '77 km', '7.7 km', '4,600 km'],
       answer: 0,
-      explain: 'distance = speed × time = 7.7 km/s × 60 s = 462 km, about 460 km. Check the units: kilometres per second times seconds leaves kilometres.',
+      explain: 'distance = speed × time = 7.7 km/s × 60 s = 462 km, about 460 km. Check the units: kilometers per second times seconds leaves kilometers.',
       b: 0.4,
     },
     {

@@ -300,7 +300,7 @@ The horizon is as far as you can see. In planning, it means how far ahead in tim
 :::
 
 ::: context schedules Three terminal weights, three schedules
-Here is the angle gain $k_1$ against time-to-go for the wheel axis, drawn to scale. With $\mathbf{Q}_f = \mathbf{0}$ (blue) the gain starts at zero at the deadline and climbs. With $\mathbf{Q}_f = 10\mathbf{P}_\infty$ (red) it starts far above and falls — it is $9167$ at zero time-to-go, off the top of the chart. With $\mathbf{Q}_f = \mathbf{P}_\infty$ it would be the flat grey line the whole time.
+Here is the angle gain $k_1$ against time-to-go for the wheel axis, drawn to scale. With $\mathbf{Q}_f = \mathbf{0}$ (blue) the gain starts at zero at the deadline and climbs. With $\mathbf{Q}_f = 10\mathbf{P}_\infty$ (red) it starts far above and falls — it is $9167$ at zero time-to-go, off the top of the chart. With $\mathbf{Q}_f = \mathbf{P}_\infty$ it would be the flat gray line the whole time.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 215" font-family="Inter, Arial, sans-serif">

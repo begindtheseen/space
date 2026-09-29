@@ -277,7 +277,7 @@ The **trace** of a matrix is the sum of the numbers on its diagonal. For the pos
 :::
 
 ::: context particle-bridge When one bell is the wrong shape
-Sometimes the truth really has two peaks — say, a bearing that fits a target on either side of a ridge. Any Gaussian filter replaces the two peaks with one wide bell centred between them, right where the target is least likely to be. Lesson 7's particle filter keeps both.
+Sometimes the truth really has two peaks — say, a bearing that fits a target on either side of a ridge. Any Gaussian filter replaces the two peaks with one wide bell centered between them, right where the target is least likely to be. Lesson 7's particle filter keeps both.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">

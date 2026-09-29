@@ -252,7 +252,7 @@ Every measurement is made in its instrument's frame, and no instrument is perfec
 
 Each **sensor frame** $S$ is tied to the body by a fixed rotation $\mathbf{R}_{B \leftarrow S}$, the **mounting** matrix, and for position measurements by a **lever arm** $\mathbf{l}^{B}$, the arrow from the body origin to the sensor.
 
-The star tracker matches stars to a catalogue kept in GCRF, so its natural output is $\mathbf{R}_{I \leftarrow S}$: where its own axes point relative to the stars. The body attitude is then
+The star tracker matches stars to a catalog kept in GCRF, so its natural output is $\mathbf{R}_{I \leftarrow S}$: where its own axes point relative to the stars. The body attitude is then
 
 $$
 \mathbf{R}_{I \leftarrow B} = \mathbf{R}_{I \leftarrow S}\,\mathbf{R}_{S \leftarrow B} = \mathbf{R}_{I \leftarrow S}\,\mathbf{R}_{B \leftarrow S}^{T} ,
@@ -288,7 +288,7 @@ Before using any LVLH quantity, find out which axis is nadir and whether the sec
 :::
 
 ::: warning A star tracker reports its own frame, against the stars
-A star tracker gives its own optical frame's attitude relative to the inertial catalogue, not the body's relative to ECEF. A body-to-ECEF attitude needs the mounting matrix $\mathbf{R}_{B \leftarrow S}$ *and* the full ECI-to-ECEF rotation at the measurement time. Skip the first and the attitude is off by the misalignment. Skip the second and it is off by $\omega_E t$ — $15^\circ$ per hour.
+A star tracker gives its own optical frame's attitude relative to the inertial catalog, not the body's relative to ECEF. A body-to-ECEF attitude needs the mounting matrix $\mathbf{R}_{B \leftarrow S}$ *and* the full ECI-to-ECEF rotation at the measurement time. Skip the first and the attitude is off by the misalignment. Skip the second and it is off by $\omega_E t$ — $15^\circ$ per hour.
 :::
 
 ## Check yourself

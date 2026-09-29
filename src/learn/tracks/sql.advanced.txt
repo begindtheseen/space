@@ -150,7 +150,7 @@ SELECT 100.0 * 7 / 2;  -- 350.0
 **Watch out:** `d.payroll / c.total * 100.0` gives 0.0 for every department. The division runs first, between two integers, and 885000 / 1505000 is 0 in whole numbers. The 100.0 arrives too late. Put `100.0 *` at the front.
 
 ::: context course-map What the rest of this course covers
-**Recursion** means a query that reads its own results to make more rows. It is how SQL counts, fills in missing days, and walks down an org chart without knowing how deep it goes. The next few lessons build it up one small step at a time. **Window functions** work across neighbouring rows without squashing them into groups: rankings, running totals, the change since yesterday. The last part of the course is design: constraints, foreign keys, indexes, transactions, views and triggers, the rules a database enforces on its own.
+**Recursion** means a query that reads its own results to make more rows. It is how SQL counts, fills in missing days, and walks down an org chart without knowing how deep it goes. The next few lessons build it up one small step at a time. **Window functions** work across neighboring rows without squashing them into groups: rankings, running totals, the change since yesterday. The last part of the course is design: constraints, foreign keys, indexes, transactions, views and triggers, the rules a database enforces on its own.
 :::
 
 ::: context pipeline The pipeline, drawn
@@ -727,7 +727,7 @@ A launch vehicle is built as a tree of parts. The vehicle has stages, a stage ha
 :::
 
 ::: context unknown-depth Why not write the joins by hand?
-For this table you could: the deepest chain, Maya to Omar to Raj to Ivan to Leo, is only four steps. But that depth is a fact about today's data, not about the query. Hire an intern under Leo, and a query with a fixed number of joins quietly misses them. A large company's chart can be a dozen levels deep, and different in every department. The recursive CTE keeps going for as many levels as there are, today and after the next reorganisation.
+For this table you could: the deepest chain, Maya to Omar to Raj to Ivan to Leo, is only four steps. But that depth is a fact about today's data, not about the query. Hire an intern under Leo, and a query with a fixed number of joins quietly misses them. A large company's chart can be a dozen levels deep, and different in every department. The recursive CTE keeps going for as many levels as there are, today and after the next reorganization.
 :::
 
 ::: context leaves-stop How the walk under Raj ends
@@ -1323,7 +1323,7 @@ SQLite says `misuse of window function RANK()`. To filter on a rank, work the ra
 **Watch out:** `ROW_NUMBER` without a tie-breaker. With only `ORDER BY salary DESC`, Raj and Tess tie, and which of them gets 4 and which gets 5 is up to the database. It can change when the data changes, and nothing warns you. Add a column that settles every tie, such as `name` or `id`.
 
 ::: context analyst-tool What analysts use them for
-Window functions answer the questions that need a row and its neighbours at once: a leaderboard, each month's growth over the month before, a running bank balance, the latest reading from each sensor. They joined the SQL standard in the early 2000s, and SQLite has had them since version 3.25.0, in 2018. This lesson ranks rows. The next lessons add running totals and comparisons with the row before, and the expert course uses them for top-N-per-group, streaks and removing duplicates.
+Window functions answer the questions that need a row and its neighbors at once: a leaderboard, each month's growth over the month before, a running bank balance, the latest reading from each sensor. They joined the SQL standard in the early 2000s, and SQLite has had them since version 3.25.0, in 2018. This lesson ranks rows. The next lessons add running totals and comparisons with the row before, and the expert course uses them for top-N-per-group, streaks and removing duplicates.
 :::
 
 ::: context window-word Why it is called a window
@@ -1389,7 +1389,7 @@ Picture each row looking out through a window at the rows around it. What it see
 </svg>
 ```
 
-The colours are the three departments: eng, exec and finance.
+The colors are the three departments: eng, exec and finance.
 :::
 
 ::: context partition-picture All three partitions
@@ -1628,7 +1628,7 @@ A bank statement's balance column is a running total of every payment in and out
 :::
 
 ::: context restart-picture Two notebooks, not one
-Each box is one row's running total, and the grey number above it is that day's amount. North adds up to 750. `PARTITION BY region` then starts south from nothing, so south's first box is its own 60, not 750 + 60.
+Each box is one row's running total, and the gray number above it is that day's amount. North adds up to 750. `PARTITION BY region` then starts south from nothing, so south's first box is its own 60, not 750 + 60.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
@@ -1711,13 +1711,13 @@ The percentage is `ROUND(amount * 100.0 / SUM(amount) OVER (PARTITION BY region)
 ordered
 [["north", "2024-07-01", 120.0, 120.0, 16.0], ["north", "2024-07-02", 80.0, 200.0, 10.7], ["north", "2024-07-03", 150.0, 350.0, 20.0], ["north", "2024-07-05", 90.0, 440.0, 12.0], ["north", "2024-07-06", 200.0, 640.0, 26.7], ["north", "2024-07-07", 110.0, 750.0, 14.7], ["south", "2024-07-01", 60.0, 60.0, 17.4], ["south", "2024-07-03", 75.0, 135.0, 21.7], ["south", "2024-07-04", 75.0, 210.0, 21.7], ["south", "2024-07-05", 40.0, 250.0, 11.6], ["south", "2024-07-07", 95.0, 345.0, 27.5]]
 
-=== sql3-07 | LAG and LEAD: comparing with neighbours
+=== sql3-07 | LAG and LEAD: comparing with neighbors
 --- teach
 Last lesson each row's running total looked back at all the rows before it and added them up. This lesson looks back at only **one** row: the one right before. That answers questions like "[[how did today compare with yesterday?|day-over-day]]"
 
 ### The picture
 
-Think of the height marks on a kitchen door frame. Each new mark comes with a question: how much taller than last time? To answer it, you look at the mark right below it. One mark on its own is not enough; you need its neighbour.
+Think of the height marks on a kitchen door frame. Each new mark comes with a question: how much taller than last time? To answer it, you look at the mark right below it. One mark on its own is not enough; you need its neighbor.
 
 In a normal query, each row sees only its own columns. North's 2 July row knows it sold 80. It cannot see that 1 July sold 120.
 
@@ -1929,7 +1929,7 @@ ordered
 
 === sql3-08 | Window frames: moving averages
 --- teach
-In the lesson "LAG and LEAD: comparing with neighbours", each row reached back to one other row. This lesson lets each row look at a small group of rows around it and average them. That smooths out a bumpy series, so you can see the trend underneath.
+In the lesson "LAG and LEAD: comparing with neighbors", each row reached back to one other row. This lesson lets each row look at a small group of rows around it and average them. That smooths out a bumpy series, so you can see the trend underneath.
 
 ### The picture
 
@@ -1980,7 +1980,7 @@ Each end of a frame is one of these five:
 - `n FOLLOWING`: n rows after the current row.
 - `UNBOUNDED FOLLOWING`: to the last row of the partition.
 
-The start goes after `BETWEEN`, the end after `AND`. For example, a frame centred on each row, one row either side:
+The start goes after `BETWEEN`, the end after `AND`. For example, a frame centered on each row, one row either side:
 
 ```sql
 AVG(amount) OVER (ORDER BY day ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING)
@@ -2065,7 +2065,7 @@ The orange box is the current row. The dashed blue box is its frame.
 :::
 
 ::: context smoothing Why engineers smooth data
-Real measurements jump about. A sensor on a rocket engine reads temperature many times a second, and each reading wobbles a little from electrical noise. Plotted raw, the line looks like a saw blade, and a slow, real rise is hard to spot. A moving average replaces each point with the average of its neighbours, so the random wobbles partly cancel out and the trend shows. The price is delay: a smoothed line reacts to a real change a few points late. A wider frame is smoother but slower, so engineers pick the width to suit the job. Shops use 7-day averages for the same reason: they hide the weekly pattern of busy Saturdays.
+Real measurements jump about. A sensor on a rocket engine reads temperature many times a second, and each reading wobbles a little from electrical noise. Plotted raw, the line looks like a saw blade, and a slow, real rise is hard to spot. A moving average replaces each point with the average of its neighbors, so the random wobbles partly cancel out and the trend shows. The price is delay: a smoothed line reacts to a real change a few points late. A wider frame is smoother but slower, so engineers pick the width to suit the job. Shops use 7-day averages for the same reason: they hide the weekly pattern of busy Saturdays.
 :::
 
 ::: context edges The short frames at the start
@@ -2686,7 +2686,7 @@ DELETE FROM teams WHERE id = 1;
 SELECT id FROM members ORDER BY id
 => [[3]]
 
-=== sql3-11 | Design: normalising a flat table
+=== sql3-11 | Design: normalizing a flat table
 --- schema
 CREATE TABLE orders_flat (
   order_id INTEGER NOT NULL,
@@ -2737,7 +2737,7 @@ Copying one fact onto many rows invites **anomalies**: ways the data can end up 
 
 ### One fact, one place
 
-**Normalising** means splitting a table so that [[every fact is stored once|normal-forms]], in the table it describes. For each column, ask: *what is this a fact about?*
+**Normalizing** means splitting a table so that [[every fact is stored once|normal-forms]], in the table it describes. For each column, ask: *what is this a fact about?*
 
 - `customer_name` is a fact about a customer, so it goes in a `customers` table.
 - `product_name` is a fact about a product, so it goes in `products`.
@@ -2816,7 +2816,7 @@ Here is the test of a good split: [[joining the four tables back together|join-b
 SKU is short for **stock keeping unit**: a shop's own code for one thing it sells. A red mug and a blue mug get different SKUs, because the shop counts and restocks them separately. The codes here, `MUG-1`, `PEN-2` and `LMP-3`, were made up by this shop. That makes a SKU different from the number under a barcode, which is shared by every shop that sells the product. In a warehouse app, the SKU is how shelf labels, scanners and order lines all name the same product.
 :::
 
-::: context normal-forms Where "normalising" comes from
+::: context normal-forms Where "normalizing" comes from
 Edgar F. Codd, a researcher at IBM, described the **relational model** in 1970: data kept in tables that are linked by keys. He also set out rules called **normal forms**, numbered first, second and third, each stricter than the last. You do not need the numbers. A saying from 1983, by William Kent, sums up the goal: every column should be a fact about "the key, the whole key, and nothing but the key". `qty` depends on the whole key `(order_id, sku)`. `product_name` depends on `sku` alone, which is why it moved out.
 :::
 
@@ -4147,7 +4147,7 @@ In the lesson Changing data with conditions you learned the safe routine: look w
 
 ### What this course covered
 
-You started with CTEs: long queries as named steps. Recursive CTEs made queries that count, fill gaps and walk trees. Window functions ranked rows, kept running totals and compared each row with its neighbours. Then the course turned to design: constraints, foreign keys, normalising a flat table, indexes, transactions, upserts, views, triggers and now `RETURNING`. A database built this way [[protects its own data|next-course]], whatever program writes to it.
+You started with CTEs: long queries as named steps. Recursive CTEs made queries that count, fill gaps and walk trees. Window functions ranked rows, kept running totals and compared each row with its neighbors. Then the course turned to design: constraints, foreign keys, normalizing a flat table, indexes, transactions, upserts, views, triggers and now `RETURNING`. A database built this way [[protects its own data|next-course]], whatever program writes to it.
 
 ::: context new-id Getting the new row's id
 When you insert without an `id`, SQLite fills in the `INTEGER PRIMARY KEY` itself, usually one more than the largest id so far. The app almost always needs that number next: to show "Ticket 6 created", or to insert rows in another table that point back to it with a foreign key. The older way to ask is `SELECT last_insert_rowid();`, which gives the id from this connection's most recent insert. `RETURNING id` gives it as part of the insert, and it also works when one `INSERT` adds several rows at once.

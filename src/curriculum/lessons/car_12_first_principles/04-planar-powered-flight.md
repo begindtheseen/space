@@ -115,9 +115,9 @@ Say the fourth one slowly. $I_{sp}g_0$ looks as if it should be an acceleration,
 
 **Position.** $\dot h = 500 \times 0.70711 = 353.6\,\mathrm{m/s}$, and $\dot x$ is the same, because the path is at forty-five degrees.
 
-**Mass.** $\dot m = -T/(I_{sp}g_0)$, and $5.00\times 10^6/(300 \times 9.80665) = 1699.5$, so $\dot m = -1699.5\,\mathrm{kg/s}$ — about 1.7 tonnes every second.
+**Mass.** $\dot m = -T/(I_{sp}g_0)$, and $5.00\times 10^6/(300 \times 9.80665) = 1699.5$, so $\dot m = -1699.5\,\mathrm{kg/s}$ — about 1.7 metric tons every second.
 
-**Sanity checks.** Thrust-to-weight is $5.00\times 10^6/(3.00\times 10^5 \times 9.80665) = 1.70$, plausible partway through a first stage. At $0.8$ degrees per second, swinging from forty-five degrees to level would take about $45/0.795 \approx 57$ seconds if the rate held steady — around a minute, the right order for the back half of a first stage. And 1.7 tonnes per second of propellant for 5 MN of thrust is consistent with $I_{sp} = 300\,\mathrm{s}$, because those two numbers are the same statement.
+**Sanity checks.** Thrust-to-weight is $5.00\times 10^6/(3.00\times 10^5 \times 9.80665) = 1.70$, plausible partway through a first stage. At $0.8$ degrees per second, swinging from forty-five degrees to level would take about $45/0.795 \approx 57$ seconds if the rate held steady — around a minute, the right order for the back half of a first stage. And 1.7 metric tons per second of propellant for 5 MN of thrust is consistent with $I_{sp} = 300\,\mathrm{s}$, because those two numbers are the same statement.
 :::
 
 ::: example How much of the turning does gravity do?
@@ -164,7 +164,7 @@ for _ in range(10_000):                       # 10 seconds
 # v = 600.3 m/s, gamma = 37.28 deg, h = 23594 m, x = 4138 m, m = 283005 kg
 ```
 
-**Reading the result.** Speed rose by 100.3 m/s in ten seconds, an average of $10.0\,\mathrm{m/s^2}$. That is a bit more than the $9.066\,\mathrm{m/s^2}$ from the first example, because the vehicle got lighter and its path flattened, which weakens gravity's pull along the path. The flight path angle fell by 7.72 degrees. The mass fell by 17.0 tonnes, which is $1699.5 \times 10 = 16\,995\,\mathrm{kg}$, as the mass equation requires.
+**Reading the result.** Speed rose by 100.3 m/s in ten seconds, an average of $10.0\,\mathrm{m/s^2}$. That is a bit more than the $9.066\,\mathrm{m/s^2}$ from the first example, because the vehicle got lighter and its path flattened, which weakens gravity's pull along the path. The flight path angle fell by 7.72 degrees. The mass fell by 17.0 metric tons, which is $1699.5 \times 10 = 16\,995\,\mathrm{kg}$, as the mass equation requires.
 
 **The check that matters.** Altitude rose 3594 m in ten seconds, an average climb rate of $359\,\mathrm{m/s}$. That is above the starting $353.6\,\mathrm{m/s}$, because the speed grew faster than the path flattened. Nothing is inconsistent, which is what a check is for.
 :::

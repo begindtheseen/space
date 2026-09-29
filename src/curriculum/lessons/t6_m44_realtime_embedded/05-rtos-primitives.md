@@ -291,7 +291,7 @@ A full four-slot queue (oldest on the left) meets message 5. Dropping loses the 
 :::
 
 ::: context queue-fill Four arrivals in one stall
-The consumer is stalled for $18\,\mathrm{ms}$ (dashed grey box). The producer adds one entry every $5\,\mathrm{ms}$, at $0$, $5$, $10$ and $15$. The next would come at $20$, after the stall ends. So four entries pile up, and the queue needs at least four slots.
+The consumer is stalled for $18\,\mathrm{ms}$ (dashed gray box). The producer adds one entry every $5\,\mathrm{ms}$, at $0$, $5$, $10$ and $15$. The next would come at $20$, after the stall ends. So four entries pile up, and the queue needs at least four slots.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">

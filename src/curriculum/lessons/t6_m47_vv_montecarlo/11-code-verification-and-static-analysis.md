@@ -332,7 +332,7 @@ A computer stores an integer in a fixed number of bits. A 16-bit signed integer 
 :::
 
 ::: context spin-story A model checker that flew
-**SPIN** was written by Gerard Holzmann at Bell Labs, starting in the 1980s, to check communication protocols; Holzmann later led a software reliability lab at NASA's Jet Propulsion Laboratory. In the late 1990s, NASA researchers used SPIN on the control software for Deep Space 1's Remote Agent and found concurrency errors. During the 1999 flight experiment the software deadlocked in a part that had not been model-checked, with the same kind of error — a sharp reminder that the proof covers only what was modelled.
+**SPIN** was written by Gerard Holzmann at Bell Labs, starting in the 1980s, to check communication protocols; Holzmann later led a software reliability lab at NASA's Jet Propulsion Laboratory. In the late 1990s, NASA researchers used SPIN on the control software for Deep Space 1's Remote Agent and found concurrency errors. During the 1999 flight experiment the software deadlocked in a part that had not been model-checked, with the same kind of error — a sharp reminder that the proof covers only what was modeled.
 :::
 
 ::: context state-explosion Why the number of states blows up

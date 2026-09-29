@@ -47,7 +47,7 @@ SCHED_DEADLINE min/max priority : 0/0
 ```
 
 ::: key Linux scheduling policies
-`SCHED_OTHER`: default time-sharing, shares weighted by nice ($-20$ most favoured, $19$ least). `SCHED_FIFO`: priority $1$–$99$, higher wins, runs until it blocks, yields or is preempted. `SCHED_RR`: the same plus a time slice among equal priorities. Every runnable real-time thread outranks every `SCHED_OTHER` thread. Raising nice lowers a share; it never makes a thread real time.
+`SCHED_OTHER`: default time-sharing, shares weighted by nice ($-20$ most favored, $19$ least). `SCHED_FIFO`: priority $1$–$99$, higher wins, runs until it blocks, yields or is preempted. `SCHED_RR`: the same plus a time slice among equal priorities. Every runnable real-time thread outranks every `SCHED_OTHER` thread. Raising nice lowers a share; it never makes a thread real time.
 :::
 
 Lesson 11's rate-monotonic rule plugs straight in: the fastest periodic task gets the highest `SCHED_FIFO` priority, and so on down. The kernel has **[[its own FIFO threads|kernel-rt-threads]]** too (`ps -eLo cls,rtprio,comm` lists them), so choose your priority on purpose.
@@ -272,7 +272,7 @@ Sanity check: $4 \times 1024 \times 1024 / 4096 = 1024$ pages, and the counts ar
 `mlockall(MCL_CURRENT | MCL_FUTURE)` pins the process pages in physical memory so a page fault cannot introduce a multi-millisecond stall at the worst moment. Paired with `SCHED_FIFO` and CPU pinning, it is the standard Linux real-time setup.
 :::
 
-Two gaps remain. The **stack** exists only as deep as the program has been, so a function going deeper for the first time mid-flight still faults. At start-up, call a function with a big local array and write to every page of it: **pre-faulting the stack**. And any heap memory the loop needs must be allocated, and touched, during initialisation.
+Two gaps remain. The **stack** exists only as deep as the program has been, so a function going deeper for the first time mid-flight still faults. At start-up, call a function with a big local array and write to every page of it: **pre-faulting the stack**. And any heap memory the loop needs must be allocated, and touched, during initialization.
 
 ::: warning MCL_FUTURE makes large later allocations fail
 With `MCL_FUTURE`, every new mapping must fit the memory-lock limit. Without `CAP_IPC_LOCK`, going past `RLIMIT_MEMLOCK` (8192 KiB here) makes `malloc` return null or `new` throw `std::bad_alloc`. One more reason to allocate everything up front.
@@ -607,7 +607,7 @@ A late wake-up now delays only its own cycle.
 
 | Idea | Meaning | Rule or fact |
 |---|---|---|
-| `SCHED_OTHER` | Default time-sharing policy | Fair shares weighted by nice, $-20$ to $19$; nice 19 is least favoured |
+| `SCHED_OTHER` | Default time-sharing policy | Fair shares weighted by nice, $-20$ to $19$; nice 19 is least favored |
 | `SCHED_FIFO` | Fixed-priority real-time policy | Priorities $1$–$99$, higher wins; runs until it blocks or is preempted |
 | `SCHED_RR` | Real-time with turns | Like FIFO, plus a time slice among equal priorities (100 ms here) |
 | Setting policy | `sched_setscheduler`, `pthread_setschedparam` | Per thread on Linux; needs `CAP_SYS_NICE` or `RLIMIT_RTPRIO`, else `EPERM` |

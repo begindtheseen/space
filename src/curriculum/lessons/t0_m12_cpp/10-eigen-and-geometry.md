@@ -44,7 +44,7 @@ Eigen has both. Every Eigen matrix is really one template, `Eigen::Matrix<Scalar
 The `d` in the names means `double`; `Vector3f` holds `float`s.
 
 ::: key
-Prefer Eigen fixed-size types (`Vector3d`, `Matrix3d`) in flight code: fixed-size objects are stack-allocated with dimensions known at compile time, so there is no heap traffic, loops can be unrolled and vectorised, and the sizes are checked at compile time rather than asserted at run time.
+Prefer Eigen fixed-size types (`Vector3d`, `Matrix3d`) in flight code: fixed-size objects are stack-allocated with dimensions known at compile time, so there is no heap traffic, loops can be unrolled and vectorized, and the sizes are checked at compile time rather than asserted at run time.
 :::
 
 "Unrolled and vectorized" means the compiler, knowing there are exactly three entries, writes out three additions instead of a loop, and may do several with one instruction. And adding a 3-vector to a 6-vector does not build at all, instead of crashing in flight.
@@ -52,7 +52,7 @@ Prefer Eigen fixed-size types (`Vector3d`, `Matrix3d`) in flight code: fixed-siz
 ::: example Fixed-size vectors and matrices
 Here are the operations you will use every day, on a spacecraft 7,000 km from Earth's center.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -139,7 +139,7 @@ It has one consequence you must learn by heart. A recipe card that says "use the
 `auto` asks the compiler to pick the type for you. With Eigen, it picks the recipe card, not the cake.
 
 ::: example Lazy evaluation made visible
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -185,7 +185,7 @@ int main() {
 
 Start with the first three results. `eager` was computed on its line: $1 + 10 = 11$. Then `a(0)` changed to 100. Reading `lazy(0)` redoes the sum from the *current* `a`: $100 + 10 = 110$. `lazy` holds no numbers at all — its 24 bytes are two references and a little padding.
 
-Here both operands were still alive, so the result is only surprising. Imagine a function that makes `lazy` from its own local variables and returns it. The locals are destroyed when the function ends. The caller then reads through a **[[dangling reference|dangling]]** — undefined behaviour, with no warning. The cure is to write a concrete type such as `Eigen::Vector3d` on the left of the `=`, or to add `.eval()` when you must keep `auto`.
+Here both operands were still alive, so the result is only surprising. Imagine a function that makes `lazy` from its own local variables and returns it. The locals are destroyed when the function ends. The caller then reads through a **[[dangling reference|dangling]]** — undefined behavior, with no warning. The cure is to write a concrete type such as `Eigen::Vector3d` on the left of the `=`, or to add `.eval()` when you must keep `auto`.
 
 The transpose shows a second face of laziness, called **aliasing** — the same matrix being read and written in one statement. `m = m.transpose()` writes into `m` while the expression is still reading from `m`. Eigen fills the destination column by column, so entry (1, 0) is written first: it gets the 2 from entry (0, 1). Next, entry (0, 1) copies entry (1, 0) — which now holds that 2, not the old 3. The result is a symmetric matrix that is nobody's transpose.
 
@@ -217,7 +217,7 @@ Eigen's quaternion constructor takes the scalar first, `Eigen::Quaterniond(w, x,
 "Applies `q2` first" works like function notation in math: in $f(g(x))$, $g$ acts first even though $f$ is written first. The factor nearest the vector acts first.
 
 ::: example Quaternion conventions, and the memcpy bug
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include <cstring>
@@ -308,7 +308,7 @@ Sensor drivers hand you plain arrays of doubles, and Python hands you NumPy buff
 - **`Eigen::Map`** is a window: it makes existing memory look like an Eigen object, with no copy.
 - **`Eigen::Ref`** is a parameter type. A function that takes `Ref` accepts a real vector, a block of a bigger vector or a `Map`, without copying and without having to become a template.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -351,7 +351,7 @@ Everything above meets the module's first exercise in one program. It uses the `
 ::: example One orbit of RK4 on a fixed-size state
 The state is $\mathbf{x} = [\mathbf{r}; \mathbf{v}]$, position stacked on velocity. Its rate of change is $\dot{\mathbf{x}} = [\mathbf{v}; -\mu\mathbf{r}/|\mathbf{r}|^3]$, where $\mu = 3.986 \times 10^{14}\,\mathrm{m^3/s^2}$ is Earth's gravitational parameter. We start on a circular orbit 400 km up and step once a second for one full period.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <cstdio>
 #include <cmath>
@@ -572,7 +572,7 @@ Most of the time you never notice. It matters when two programs share the same r
 :::
 
 ::: context dangling A reference to something that is gone
-A reference is a second name for an object that lives somewhere else. When that object is destroyed — a local variable when its function returns, a vector's old buffer when it grows — the reference still points at the same spot in memory, but nothing valid is there any more. Programmers call it **dangling**, like a rope whose far end has come untied. Reading through it is undefined behaviour: it may print the old value, a random value, or crash. Lesson 12 is about exactly this kind of bug and the tools that catch it.
+A reference is a second name for an object that lives somewhere else. When that object is destroyed — a local variable when its function returns, a vector's old buffer when it grows — the reference still points at the same spot in memory, but nothing valid is there any more. Programmers call it **dangling**, like a rope whose far end has come untied. Reading through it is undefined behavior: it may print the old value, a random value, or crash. Lesson 12 is about exactly this kind of bug and the tools that catch it.
 :::
 
 ::: context half-angle Why the angle is halved

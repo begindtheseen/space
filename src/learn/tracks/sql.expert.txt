@@ -246,7 +246,7 @@ This lesson's `orders` table has 3,000 rows and no indexes yet. Its columns are 
 
 ### The picture
 
-Picture a library's card catalogue. Each card names a book and the shelf it sits on. To find a book's page count, you find its card, then walk to the shelf and open the book. That is two trips. Now suppose the card already lists the page count. You read the card and you are done. You never walk to the shelf.
+Picture a library's card catalog. Each card names a book and the shelf it sits on. To find a book's page count, you find its card, then walk to the shelf and open the book. That is two trips. Now suppose the card already lists the page count. You read the card and you are done. You never walk to the shelf.
 
 ### Two lookups per row
 
@@ -627,7 +627,7 @@ User 1 logged in twice on 2 July. User 2 logged in on 1 July, then every day fro
 
 ### The picture
 
-Picture a wall calendar where you cross off each day you practised the piano. Look at July and the crosses form clumps: three days in a row, a blank, two in a row, two blanks, one on its own. Each clump is a streak. Each blank between clumps breaks one.
+Picture a wall calendar where you cross off each day you practiced the piano. Look at July and the crosses form clumps: three days in a row, a blank, two in a row, two blanks, one on its own. Each clump is a streak. Each blank between clumps breaks one.
 
 ### Gaps and islands
 
@@ -818,7 +818,7 @@ Subtract two of these and you get the seconds between them. Thirty minutes is 30
 
 ### Step 1: the gap to the previous event
 
-`LAG(ts)`, from the lesson "LAG and LEAD: comparing with neighbours", fetches the previous row's `ts`. `PARTITION BY user_id` keeps each user's events apart, and `ORDER BY ts` puts them in time order:
+`LAG(ts)`, from the lesson "LAG and LEAD: comparing with neighbors", fetches the previous row's `ts`. `PARTITION BY user_id` keeps each user's events apart, and `ORDER BY ts` puts them in time order:
 
 ```sql
 SELECT user_id, ts,
@@ -1200,6 +1200,12 @@ INSERT OR IGNORE INTO contacts (email, name, updated_at) VALUES (' CY@mail.com',
 --- check query | A new address is still welcome
 INSERT OR IGNORE INTO contacts (id, email, name, updated_at) VALUES (7, 'dee@mail.com', 'Dee', '2024-05-01') RETURNING id
 => [[7]]
+--- check query | Trailing spaces and capitals are refused too
+INSERT OR IGNORE INTO contacts (email, name, updated_at) VALUES ('Bo@Mail.COM  ', 'Bo again', '2024-05-01') RETURNING id
+=> []
+--- check query | The unique index is named contacts_email_key
+SELECT name, "unique" FROM pragma_index_list('contacts') ORDER BY name
+=> [["contacts_email_key", 1]]
 
 === sql4-07 | Pivoting with conditional aggregation
 --- schema
@@ -1240,11 +1246,11 @@ GROUP BY month, status;
 
 | month | status | n |
 | --- | --- | --- |
-| 2024-01 | cancelled | 1 |
+| 2024-01 | canceled | 1 |
 | 2024-01 | paid | 2 |
 | 2024-02 | paid | 3 |
 | 2024-02 | refunded | 1 |
-| 2024-03 | cancelled | 1 |
+| 2024-03 | canceled | 1 |
 | 2024-03 | paid | 2 |
 | 2024-03 | refunded | 1 |
 
@@ -1323,7 +1329,7 @@ A pivot has one column for each status you wrote into the query. If tomorrow's d
 **Watch out:** keep `status` out of the `GROUP BY`. `GROUP BY month, status` goes back to one row per month and status, and each row's `CASE` columns are then mostly zeros. For a pivot, group by the row label only (here, the month), and let the `CASE`s split the columns.
 
 ::: context pivot-picture From a list to a grid
-On the left, part of the long form: one row for each month and status. On the right, the same counts pivoted: one row per month, one column per status. The blue paid counts and the orange cancelled count move from rows into their own columns. The empty cells of the grid, like January's refunds, are filled with 0.
+On the left, part of the long form: one row for each month and status. On the right, the same counts pivoted: one row per month, one column per status. The blue paid counts and the orange canceled count move from rows into their own columns. The empty cells of the grid, like January's refunds, are filled with 0.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
@@ -1597,7 +1603,7 @@ JSON is flexible storage, but it is not a replacement for real columns. When one
 :::
 
 ::: context json-paths-picture A map of event 1's payload
-Each box is one value in event 1's payload, and the grey text under it is the path that reaches it. The whole document is `$`. Its `items` array holds two objects, reached with `[0]` and `[1]`.
+Each box is one value in event 1's payload, and the gray text under it is the path that reaches it. The whole document is `$`. Its `items` array holds two objects, reached with `[0]` and `[1]`.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
@@ -1671,6 +1677,8 @@ ordered
 [["PEN", 4, 2], ["MUG", 3, 2], ["LAMP", 1, 1]]
 --- check source | Uses json_each
 json_each
+--- check source absent | Adds up the items rather than typing the skus in
+'(PEN|MUG|LAMP)'
 
 === sql4-08b | JSON: giving a field its own column
 --- schema
@@ -1928,7 +1936,7 @@ Here is [[how the three tables link up|link-picture]] once the data is in.
 
 ### What the join table's rules do
 
-`PRIMARY KEY (note_id, tag_id)` is a composite primary key, the pair of columns together, like `order_items` in the lesson "Design: normalising a flat table". It makes each link unique: the same tag cannot be attached to the same note twice. It also [[works as an index|key-as-index]] for "which tags does this note have?".
+`PRIMARY KEY (note_id, tag_id)` is a composite primary key, the pair of columns together, like `order_items` in the lesson "Design: normalizing a flat table". It makes each link unique: the same tag cannot be attached to the same note twice. It also [[works as an index|key-as-index]] for "which tags does this note have?".
 
 `ON DELETE CASCADE` on both columns means: delete a note, and its rows in `note_tags` go with it. The tags themselves stay, because other notes share them. Delete a tag, and its links go too.
 
@@ -2032,7 +2040,7 @@ SELECT DISTINCT note_id, lower(piece) AS name FROM split WHERE piece <> '';
 
 ### Filling the two tables
 
-Both inserts use `INSERT … SELECT`, from the lesson "Design: normalising a flat table".
+Both inserts use `INSERT … SELECT`, from the lesson "Design: normalizing a flat table".
 
 ```sql
 INSERT INTO tags (name) SELECT DISTINCT name FROM pieces;
@@ -2074,7 +2082,7 @@ ALTER TABLE notes DROP COLUMN tags;
 **Watch out:** leave out `DISTINCT` and note 6 brings `work` twice. The insert into `note_tags` then stops with `UNIQUE constraint failed: note_tags.note_id, note_tags.tag_id`, and none of its rows go in. The primary key is doing its job. Remove the repeats before you insert (or use `INSERT OR IGNORE`), rather than dropping the key.
 
 ::: context one-value Why one value per box
-In the lesson "Design: normalising a flat table" you met Edgar Codd's rules for tables. The very first of them, called **first normal form**, says each box in a table holds one value, not a list. The reason is that SQL's tools, like `WHERE`, joins, indexes and `UNIQUE`, all work on whole values. They cannot see inside a string. Keep a list as rows, and every one of those tools works on each item. (The JSON columns of last lesson bend this rule on purpose, for data whose shape keeps changing.)
+In the lesson "Design: normalizing a flat table" you met Edgar Codd's rules for tables. The very first of them, called **first normal form**, says each box in a table holds one value, not a list. The reason is that SQL's tools, like `WHERE`, joins, indexes and `UNIQUE`, all work on whole values. They cannot see inside a string. Keep a list as rows, and every one of those tools works on each item. (The JSON columns of last lesson bend this rule on purpose, for data whose shape keeps changing.)
 :::
 
 ::: context link-picture Notes, links and tags
@@ -2199,13 +2207,19 @@ SELECT (SELECT COUNT(*) FROM note_tags), (SELECT COUNT(*) FROM tags)
 --- check query | The old tags column is gone
 SELECT COUNT(*) FROM pragma_table_info('notes') WHERE name = 'tags'
 => [[0]]
+--- check query | note_tags has the primary key (note_id, tag_id)
+SELECT name, pk FROM pragma_table_info('note_tags') ORDER BY cid
+=> [["note_id", 1], ["tag_id", 2]]
+--- check query | Both links cascade on delete
+SELECT "table", "from", on_delete FROM pragma_foreign_key_list('note_tags') ORDER BY "from"
+=> [["notes", "note_id", "CASCADE"], ["tags", "tag_id", "CASCADE"]]
 
 === sql4-10 | Audit trails with triggers
 --- schema
 CREATE TABLE products (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
-  price REAL NOT NULL
+  price REAL
 );
 INSERT INTO products (id, name, price) VALUES (1, 'Mug', 9.0), (2, 'Lamp', 45.0);
 CREATE TABLE audit_log (
@@ -2220,7 +2234,7 @@ Last lesson you changed a database's design and carried its data across. This le
 
 ### The tables
 
-- `products`: `id`, `name`, `price`. It starts with a Mug (id 1, price 9.0) and a Lamp (id 2, price 45.0).
+- `products`: `id`, `name`, `price`. It starts with a Mug (id 1, price 9.0) and a Lamp (id 2, price 45.0). `price` may be NULL, for a product that has no price yet.
 - `audit_log`: `id`, `product_id`, `action`, `old_row`, `new_row`. It starts empty. Your triggers will fill it.
 
 ### The picture
@@ -2296,7 +2310,7 @@ The `WHEN` compares with `IS NOT`, not `<>` ("not equal"). The difference is NUL
 | 5 and NULL | NULL | 1 (true) |
 | NULL and NULL | NULL | 0 (false) |
 
-So with `<>`, a price changing from NULL to 5 would never be logged. Here both columns are `NOT NULL`, but `IS NOT` is the safe habit for every audit trigger.
+So with `<>`, a price changing from NULL to 5 would never be logged. Here `price` may be NULL, so this matters, and `IS NOT` is the safe habit for every audit trigger anyway.
 
 ### Inserts and deletes
 
@@ -2428,6 +2442,11 @@ SELECT product_id, action, old_row, new_row FROM audit_log ORDER BY id
 --- check query | The old price can be read back from the log
 SELECT json_extract(old_row, '$.price') FROM audit_log WHERE action = 'update'
 => [[9.0]]
+--- check query | A price set for the first time, from NULL, is logged
+INSERT INTO products (id, name, price) VALUES (4, 'Cup', NULL);
+UPDATE products SET price = 2.5 WHERE id = 4;
+SELECT action, old_row, new_row FROM audit_log WHERE product_id = 4 ORDER BY id
+=> [["insert", null, "{\"name\":\"Cup\",\"price\":null}"], ["update", "{\"name\":\"Cup\",\"price\":null}", "{\"name\":\"Cup\",\"price\":2.5}"]]
 
 === sql4-11 | Debugging: orphans and duplicates
 --- schema
@@ -2492,7 +2511,7 @@ A doctor does not operate on "my tummy hurts". First come the tests: temperature
 
 ### Step 1: find the duplicates
 
-Two rows are the same customer when their emails match once you ignore capitals and spaces. So group by the normalised email, as in the lesson "Deduplicating: keep the latest row", and keep the groups with more than one row:
+Two rows are the same customer when their emails match once you ignore capitals and spaces. So group by the normalized email, as in the lesson "Deduplicating: keep the latest row", and keep the groups with more than one row:
 
 ```sql
 SELECT lower(trim(email)) AS k, COUNT(*), group_concat(id)
@@ -2549,7 +2568,7 @@ WHERE customer_id IN (SELECT id FROM customers);
 Read the subquery for one order at a time:
 
 - `c1` is this order's current customer: `c1.id = orders.customer_id`.
-- `c2` is every customer with the same normalised email as `c1`, joined to the same table as in the lesson "Self-joins".
+- `c2` is every customer with the same normalized email as `c1`, joined to the same table as in the lesson "Self-joins".
 - `MIN(c2.id)` is the lowest of those ids: the survivor.
 
 | order id | customer_id before | after |
@@ -2588,7 +2607,7 @@ WHERE NOT EXISTS (SELECT 1 FROM customers c WHERE c.id = orders.customer_id);
 
 Run the measurements again. The duplicate query returns no rows, and so does the orphan query. `customers` has 3 rows, and revenue per customer (55.0 for Ana, 22.0 for Bo, 5.0 for Cy) adds up to the total, 82.0.
 
-A clean-up without prevention is a chore you will repeat. A unique index on the normalised email, as in "Deduplicating: keep the latest row", stops duplicates coming back:
+A clean-up without prevention is a chore you will repeat. A unique index on the normalized email, as in "Deduplicating: keep the latest row", stops duplicates coming back:
 
 ```sql
 CREATE UNIQUE INDEX customers_email_key ON customers(lower(trim(email)));
@@ -2706,6 +2725,11 @@ SELECT COUNT(*) FROM orders o WHERE NOT EXISTS (SELECT 1 FROM customers c WHERE 
 --- check query | A new duplicate spelling is refused
 INSERT OR IGNORE INTO customers (email, name) VALUES (' CY@Mail.com', 'Cy') RETURNING id
 => []
+--- check query | The unique index is named customers_email_key
+SELECT name, "unique" FROM pragma_index_list('customers') ORDER BY name
+=> [["customers_email_key", 1]]
+--- check source | The repair runs between BEGIN and COMMIT
+^\s*(BEGIN|begin|Begin)\b[\s\S]*^\s*(COMMIT|commit|Commit|END|end|End)\b
 
 === sql4-12 | Problem solving: cohort retention
 --- schema
@@ -3024,6 +3048,8 @@ Each percentage is `ROUND(100.0 * SUM(EXISTS (…)) / COUNT(*), 1)`, once with `
 --- check result | Jan 50/50, Feb 50/100, Mar 100/0
 ordered
 [["2024-01", 4, 50.0, 50.0], ["2024-02", 2, 50.0, 100.0], ["2024-03", 1, 100.0, 0.0]]
+--- check source absent | Works the rows out rather than typing them in
+'2024-|50\.0
 
 === sql4-13 | Problem solving: a conversion funnel
 --- schema
@@ -3190,7 +3216,7 @@ The column names come from the first `SELECT`, so only it needs the `AS` names.
 
 ### Step 6: the percentage with LAG
 
-Each step's percentage needs the **previous** row's `users`. That is `LAG`, from "LAG and LEAD: comparing with neighbours". `LAG(users) OVER (ORDER BY step)` gives the `users` of the row before, in step order:
+Each step's percentage needs the **previous** row's `users`. That is `LAG`, from "LAG and LEAD: comparing with neighbors". `LAG(users) OVER (ORDER BY step)` gives the `users` of the row before, in step order:
 
 | step | name | users | LAG(users) |
 | --- | --- | --- | --- |
@@ -3296,6 +3322,8 @@ The last `SELECT` reads from `steps`: `ROUND(100.0 * users / LAG(users) OVER (OR
 --- check result | 6 viewed, 4 carted in order, 3 checked out, 2 purchased
 ordered
 [[1, "view", 6, null], [2, "cart", 4, 66.7], [3, "checkout", 3, 75.0], [4, "purchase", 2, 66.7]]
+--- check source absent | Counts the users rather than typing the answer in
+66\.7|75\.0|\b6\b
 
 === sql4-14 | Problem solving: find and fix a slow query
 --- schema
@@ -3505,7 +3533,7 @@ The index on `(customer_id, created)` is sorted by customer, then by time within
 :::
 
 ::: context compare-results Comparing before and after
-With two rows you can compare by eye. With thousands you need the database's help. One way: save the old result in a table first, then use `EXCEPT` both ways, as in "Design: normalising a flat table". "Old rows except new rows" and "new rows except old rows" must both return nothing. Engineers call a change that breaks something that used to work a **regression**, and a check like this a regression test. Teams that tune queries on busy systems run exactly this kind of comparison before any faster version goes live.
+With two rows you can compare by eye. With thousands you need the database's help. One way: save the old result in a table first, then use `EXCEPT` both ways, as in "Design: normalizing a flat table". "Old rows except new rows" and "new rows except old rows" must both return nothing. Engineers call a change that breaks something that used to work a **regression**, and a check like this a regression test. Teams that tune queries on busy systems run exactly this kind of comparison before any faster version goes live.
 :::
 --- task
 Make `customer_month` fast without changing the rows it returns:

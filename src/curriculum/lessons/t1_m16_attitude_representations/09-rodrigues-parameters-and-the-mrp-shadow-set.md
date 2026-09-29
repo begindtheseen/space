@@ -391,7 +391,7 @@ The name fits the projection picture. Every attitude has two quaternions, $q$ an
 :::
 
 ::: context shadow-plot The switched MRP, drawn
-$\sigma_z$ against the angle for a turn about $\hat{\mathbf{z}}$. The grey raw curve heads off to infinity toward $360^\circ$. The blue switched curve climbs to $1$ at $180^\circ$, jumps to $-1$ (dotted), and climbs back to $0$ at $360^\circ$, never leaving the band between $-1$ and $1$.
+$\sigma_z$ against the angle for a turn about $\hat{\mathbf{z}}$. The gray raw curve heads off to infinity toward $360^\circ$. The blue switched curve climbs to $1$ at $180^\circ$, jumps to $-1$ (dotted), and climbs back to $0$ at $360^\circ$, never leaving the band between $-1$ and $1$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210" font-family="Inter, Arial, sans-serif">

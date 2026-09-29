@@ -23,7 +23,7 @@ Engineers split the approach into three distance bands, each with its own sensor
 The bands overlap on purpose. That overlap is where one sensor hands the job to the next.
 
 ::: key Relative navigation sensors, by range
-Far field: relative GPS and ground tracking, kilometres to hundreds of metres. Mid field: lidar and radar against retroreflectors, kilometres to metres. Near field: cameras with pattern recognition on docking targets, tens of metres to contact. Each hand-off is a point of failure that must be tested explicitly, not assumed to work because each sensor works on its own.
+Far field: relative GPS and ground tracking, kilometers to hundreds of meters. Mid field: lidar and radar against retroreflectors, kilometers to meters. Near field: cameras with pattern recognition on docking targets, tens of meters to contact. Each hand-off is a point of failure that must be tested explicitly, not assumed to work because each sensor works on its own.
 :::
 
 ## Far field: relative GPS

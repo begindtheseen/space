@@ -87,7 +87,7 @@ Each of FDIR's three letters is a separate job.
 - **Recovery:** do something that makes the vehicle safe or keeps the mission going. For one failed engine, shut it down and fly on with eight, since the vehicle is designed to tolerate an **[[engine out|engine-out]]**. For two, abort.
 
 ::: key
-FDIR (fault detection, isolation and recovery): recognise an anomaly, determine which component is responsible, and command a safe configuration. It is inherently mode logic with hierarchy and parallelism, which is exactly what a Stateflow chart expresses, so a chart is its usual home.
+FDIR (fault detection, isolation and recovery): recognize an anomaly, determine which component is responsible, and command a safe configuration. It is inherently mode logic with hierarchy and parallelism, which is exactly what a Stateflow chart expresses, so a chart is its usual home.
 :::
 
 ### The engine monitor
@@ -406,7 +406,7 @@ A watchdog timer counts down on its own, and the software it watches must reset 
 </svg>
 ```
 
-The blue line is the timer counting down toward the grey zero line. Each kick sets it back to full. After the last kick nothing resets it, and it hits zero at the red line.
+The blue line is the timer counting down toward the gray zero line. Each kick sets it back to full. After the last kick nothing resets it, and it hits zero at the red line.
 :::
 
 ::: context point-mass How crude is the simulated flight?

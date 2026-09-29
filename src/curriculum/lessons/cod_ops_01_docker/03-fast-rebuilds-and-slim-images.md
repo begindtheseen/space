@@ -219,7 +219,7 @@ no compiler found
 :::
 
 ::: key What a multi-stage build accomplishes
-Compilation happens in a stage with the full toolchain, then only the artefacts are COPYed into a minimal runtime stage. The shipped image contains no compiler, headers or build caches, shrinking size and attack surface.
+Compilation happens in a stage with the full toolchain, then only the artifacts are COPYed into a minimal runtime stage. The shipped image contains no compiler, headers or build caches, shrinking size and attack surface.
 :::
 
 The **[[attack surface|attack-surface]]** is everything in an image that an attacker could try to misuse. A compiler in a production image is a gift to an intruder: they can build new tools right there. Fewer programs also means fewer security fixes to track.

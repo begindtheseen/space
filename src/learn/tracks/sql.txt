@@ -40,7 +40,7 @@ This is the very first lesson on databases, and it starts from nothing. By the e
 
 Picture a class register, or a spreadsheet. Each line across is one pupil. Each line down is one kind of fact about them: a name, a birthday, a homeroom. Every pupil gets the same boxes filled in.
 
-A **[[database|databases-everywhere]]** is a program that keeps data like that for you — lots of it, safe and organised, so you can find what you want fast.
+A **[[database|databases-everywhere]]** is a program that keeps data like that for you — lots of it, safe and organized, so you can find what you want fast.
 
 Inside a database the data sits in **tables**. A **table** is one grid like that register, with a name of its own. The kind of database you are learning is called a **[[relational database|relational-name]]**: a database made of tables.
 
@@ -1837,7 +1837,7 @@ In SQLite the name is optional. PostgreSQL insisted on one until version 16, so 
 :::
 
 ::: context first-row One row expected, three found
-When a value-subquery returns several rows, SQLite does not complain. It takes the first row it happens to find and throws the rest away. PostgreSQL stops instead, with the error "more than one row returned by a subquery used as an expression". The PostgreSQL behaviour is safer: a loud error is better than a quiet wrong answer. If you want "any of these values", that needs `IN`, which the next course teaches.
+When a value-subquery returns several rows, SQLite does not complain. It takes the first row it happens to find and throws the rest away. PostgreSQL stops instead, with the error "more than one row returned by a subquery used as an expression". The PostgreSQL behavior is safer: a loud error is better than a quiet wrong answer. If you want "any of these values", that needs `IN`, which the next course teaches.
 :::
 
 ::: context later-subqueries Where subqueries come back

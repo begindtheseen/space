@@ -21,7 +21,7 @@ Candidates have reported four topics: PD control, orbit determination, the frequ
 PD control, orbit determination, the frequency domain, and aerodynamic drag with real-life examples from a senior GNC engineer. **[[Glassdoor|glassdoor]]** rates the GNC interview difficulty around 2.8 out of 5 with a large majority positive: hard but fair. (These are reported figures from candidate reviews, not official ones.)
 :::
 
-"Hard but fair" is the important part. The interviewer is not hunting for a memorised formula. They want to see you start from physics you trust, build the answer in steps, attach real numbers, and say what the numbers mean for a real vehicle. Each section below is shaped that way.
+"Hard but fair" is the important part. The interviewer is not hunting for a memorized formula. They want to see you start from physics you trust, build the answer in steps, attach real numbers, and say what the numbers mean for a real vehicle. Each section below is shaped that way.
 
 ## PD control: a spring and a shock absorber
 
@@ -32,7 +32,7 @@ A **PD controller** (proportional-derivative) does the same thing with software.
 - $\theta$ (read "theta") is the pointing error, in radians;
 - $\dot{\theta}$ (read "theta dot") is how fast the error is changing, in radians per second;
 - $J$ is the **moment of inertia** — how hard the spacecraft is to spin — in $\mathrm{kg\,m^2}$;
-- $u$ is the torque the controller commands, in newton-metres.
+- $u$ is the torque the controller commands, in newton-meters.
 
 The spacecraft obeys $J\ddot{\theta} = u$: torque equals inertia times angular acceleration ($\ddot{\theta}$, "theta double dot"). The PD law is
 
@@ -93,7 +93,7 @@ There are two families of method:
 
 The fact that makes OD interesting is that errors do not stay put. A small error in orbit height grows into a large error *along* the orbit.
 
-::: example How a 10-metre error becomes 94 metres
+::: example How a 10-meter error becomes 94 meters
 A spacecraft's estimated **semi-major axis** — roughly the orbit's average radius — is off by $\Delta a = 10\,\mathrm{m}$. A higher orbit is a slower orbit, so the estimated spacecraft drifts behind or ahead of the real one.
 
 **The rule.** For a near-circular orbit, the along-track error grows by $3\pi\,\Delta a$ every orbit.
@@ -196,15 +196,15 @@ Decompose out loud into quantities you can bound, state each assumption and its 
 :::
 
 ::: example Fermi 2: the space station's kinetic energy in TNT
-**Decompose.** Kinetic energy $= \tfrac{1}{2}mv^2$, then divide by the energy in one tonne of TNT.
+**Decompose.** Kinetic energy $= \tfrac{1}{2}mv^2$, then divide by the energy in one metric ton of TNT.
 
-**Assumptions.** Mass $m \approx 400\,\mathrm{t} = 4 \times 10^5\,\mathrm{kg}$ (good to about $10\%$). Orbital speed $v \approx 7.7\,\mathrm{km/s} = 7.7 \times 10^3\,\mathrm{m/s}$ (well known). One tonne of TNT releases $4.184 \times 10^9\,\mathrm{J}$ (a defined value).
+**Assumptions.** Mass $m \approx 400\,\mathrm{t} = 4 \times 10^5\,\mathrm{kg}$ (good to about $10\%$). Orbital speed $v \approx 7.7\,\mathrm{km/s} = 7.7 \times 10^3\,\mathrm{m/s}$ (well known). One metric ton of TNT releases $4.184 \times 10^9\,\mathrm{J}$ (a defined value).
 
-**Compute.** $v^2 = (7.7 \times 10^3)^2 \approx 5.9 \times 10^7\,\mathrm{m^2/s^2}$. So $\tfrac{1}{2} \times 4 \times 10^5 \times 5.9 \times 10^7 \approx 1.2 \times 10^{13}\,\mathrm{J}$. Divide: $1.2 \times 10^{13} / 4.184 \times 10^9 \approx 2800$ tonnes of TNT.
+**Compute.** $v^2 = (7.7 \times 10^3)^2 \approx 5.9 \times 10^7\,\mathrm{m^2/s^2}$. So $\tfrac{1}{2} \times 4 \times 10^5 \times 5.9 \times 10^7 \approx 1.2 \times 10^{13}\,\mathrm{J}$. Divide: $1.2 \times 10^{13} / 4.184 \times 10^9 \approx 2800$ metric tons of TNT.
 
-**One significant figure.** About $3000$ tonnes, or $3$ kilotons.
+**One significant figure.** About $3000$ metric tons, or $3$ kilotons.
 
-**Sanity check.** Units: kilograms times metres squared per second squared is joules, as energy should be. And it is a big number for a good reason — this is the energy the atmosphere turns into heat when a spacecraft re-enters, which is why re-entry needs a heat shield.
+**Sanity check.** Units: kilograms times meters squared per second squared is joules, as energy should be. And it is a big number for a good reason — this is the energy the atmosphere turns into heat when a spacecraft re-enters, which is why re-entry needs a heat shield.
 :::
 
 ::: warning Silent arithmetic
@@ -304,7 +304,7 @@ It feels backwards: to catch a spacecraft ahead of you in the same orbit, you sl
 :::
 
 ::: context bending-modes Rockets bend
-A tall, thin rocket is more like a flexible pole than a solid brick. It has natural bending shapes, each with its own frequency; the lowest is often only a few hertz on a large launcher. The navigation sensors sit at one point on the body, so they feel the bending as if it were rotation. If the controller answers that fake rotation by swivelling the engine, it can feed the bending instead of damping it. Where the sensors are mounted, and filters tuned to each mode, are both part of the fix.
+A tall, thin rocket is more like a flexible pole than a solid brick. It has natural bending shapes, each with its own frequency; the lowest is often only a few hertz on a large launcher. The navigation sensors sit at one point on the body, so they feel the bending as if it were rotation. If the controller answers that fake rotation by swiveling the engine, it can feed the bending instead of damping it. Where the sensors are mounted, and filters tuned to each mode, are both part of the fix.
 :::
 
 ::: context max-q Why q rises and then falls

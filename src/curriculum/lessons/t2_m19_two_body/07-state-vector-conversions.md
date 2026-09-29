@@ -18,7 +18,7 @@ Every astrodynamics library has two small translators between these languages. O
 
 This lesson builds both translators step by step, from the definitions of the last lesson. The module's coding exercise asks you to write exactly these.
 
-Throughout, $\mathbf{r}$ and $\mathbf{v}$ have inertial (ECI – Earth-centred inertial) components. $\hat{\mathbf{K}} = (0, 0, 1)$, read "K-hat", is the unit vector toward the North Pole, and $\hat{\mathbf{I}}$ points toward the vernal equinox. Angles are in radians inside the code and degrees when printed.
+Throughout, $\mathbf{r}$ and $\mathbf{v}$ have inertial (ECI – Earth-centered inertial) components. $\hat{\mathbf{K}} = (0, 0, 1)$, read "K-hat", is the unit vector toward the North Pole, and $\hat{\mathbf{I}}$ points toward the vernal equinox. Angles are in radians inside the code and degrees when printed.
 
 ## The tool for angles: atan2
 
@@ -44,7 +44,7 @@ $$
 
 - $\mathbf{h}$ is the specific angular momentum. It sticks straight out of the orbit plane, following the [[right-hand rule|right-hand-rule]].
 - $\mathbf{n}$ is the **node vector**. It lies along the line where the orbit plane cuts the equator, pointing at the ascending node – where the spacecraft crosses the equator heading north.
-- $\mathbf{e}$ is the eccentricity vector. It points from Earth's centre toward periapsis, and its length is the eccentricity.
+- $\mathbf{e}$ is the eccentricity vector. It points from Earth's center toward periapsis, and its length is the eccentricity.
 
 Their lengths are $h$, $n$ and $e$. Keep the dot product $\mathbf{r} \cdot \mathbf{v}$ – its sign is needed later. Also form the unit normal $\hat{\mathbf{h}} = \mathbf{h}/h$, which will give the in-plane angles their sign.
 
@@ -110,7 +110,7 @@ The dot product $\mathbf{r} \cdot \mathbf{v}$ equals $r\dot{r}$, where $\dot{r}$
 
 ### Step 7 – the degenerate cases
 
-Some orbits make an angle meaningless, the way "which way is the front of a ball?" has no answer. Decide with a tolerance $\epsilon_{\text{tol}}$ (around $10^{-8}$ for double precision and kilometre units – smaller and round-off triggers false alarms, larger and you throw away real information):
+Some orbits make an angle meaningless, the way "which way is the front of a ball?" has no answer. Decide with a tolerance $\epsilon_{\text{tol}}$ (around $10^{-8}$ for double precision and kilometer units – smaller and round-off triggers false alarms, larger and you throw away real information):
 
 - **Circular inclined** ($e < \epsilon_{\text{tol}}$, orbit tilted): $\mathbf{e}$ has no direction, so $\omega$ and $\nu$ are meaningless. Set $\omega = 0$ and return the **argument of latitude** – the angle from the node to the spacecraft – in the slot for $\nu$:
 $$
@@ -134,7 +134,7 @@ $$
 \frac{n}{h} = \sin i < \epsilon_{\text{tol}},
 $$
 
-which asks "is the inclination below about $\epsilon_{\text{tol}}$ radians?" – the same question for LEO or GEO, in [[metres or kilometres|units-in-tolerance]]. With $\epsilon_{\text{tol}} = 10^{-8}$ an orbit counts as equatorial only below about $6 \times 10^{-7}$ degrees of inclination. That is tighter than any real orbit determination can resolve, so in practice the branch fires for the synthetic test cases it was written for. Some libraries deliberately use a looser threshold such as $10^{-6}$, so that near-degenerate orbits from noisy data get the stable replacement angles. Either is defensible, as long as it is written down.
+which asks "is the inclination below about $\epsilon_{\text{tol}}$ radians?" – the same question for LEO or GEO, in [[meters or kilometers|units-in-tolerance]]. With $\epsilon_{\text{tol}} = 10^{-8}$ an orbit counts as equatorial only below about $6 \times 10^{-7}$ degrees of inclination. That is tighter than any real orbit determination can resolve, so in practice the branch fires for the synthetic test cases it was written for. Some libraries deliberately use a looser threshold such as $10^{-6}$, so that near-degenerate orbits from noisy data get the stable replacement angles. Either is defensible, as long as it is written down.
 
 ::: key The conversion in one breath
 From $\mathbf{r}, \mathbf{v}$: form $\mathbf{h} = \mathbf{r} \times \mathbf{v}$, $\mathbf{n} = \hat{\mathbf{K}} \times \mathbf{h}$ and $\mathbf{e}$; then $a = 1/(2/r - v^2/\mu)$, $i = \arccos(h_z/h)$, $\Omega = \operatorname{atan2}(n_y, n_x)$, $\omega$ from $\mathbf{n}$ to $\mathbf{e}$ (flip if $e_z < 0$), $\nu$ from $\mathbf{e}$ to $\mathbf{r}$ (flip if $\mathbf{r} \cdot \mathbf{v} < 0$). If $e \approx 0$ return $u = \omega + \nu$; if $\sin i \approx 0$ return $\varpi = \Omega + \omega$; if both, return $l = \Omega + \omega + \nu$. Back: build $\mathbf{r}_{PQW}, \mathbf{v}_{PQW}$ and rotate by $\mathbf{R}_3(-\Omega)\mathbf{R}_1(-i)\mathbf{R}_3(-\omega)$.
@@ -462,7 +462,7 @@ The arccosine only ever answers between $0^\circ$ and $180^\circ$, so on the red
 :::
 
 ::: context units-in-tolerance Why a tolerance needs no units
-The first example has $n = 49\,921\,\mathrm{km^2/s}$. Redo it in metres and the same orbit has $n \approx 5 \times 10^{10}\,\mathrm{m^2/s}$ – a million times bigger, because $\mathrm{km^2}$ to $\mathrm{m^2}$ is a factor of $10^6$. A test like "$n < 10^{-8}$" would therefore mean something different depending on the units somebody picked. Dividing by $h$, which carries the same units, cancels them and leaves $\sin i$ – a pure number that means the same thing everywhere.
+The first example has $n = 49\,921\,\mathrm{km^2/s}$. Redo it in meters and the same orbit has $n \approx 5 \times 10^{10}\,\mathrm{m^2/s}$ – a million times bigger, because $\mathrm{km^2}$ to $\mathrm{m^2}$ is a factor of $10^6$. A test like "$n < 10^{-8}$" would therefore mean something different depending on the units somebody picked. Dividing by $h$, which carries the same units, cancels them and leaves $\sin i$ – a pure number that means the same thing everywhere.
 :::
 
 ::: context round-trip-test Round trips catch what single tests miss

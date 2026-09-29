@@ -3,7 +3,7 @@ id: l01-descent-and-line-search
 title: "Finding the bottom: descent, line search and Newton's method"
 minutes: 24
 covers:
-  - "unconstrained optimisation: gradient descent, Newton, BFGS, line search, trust region"
+  - "unconstrained optimization: gradient descent, Newton, BFGS, line search, trust region"
 ---
 
 Imagine standing on a hillside in thick fog. You want the lowest point in the valley, but you can only see the ground under your boots. So you feel which way the ground slopes, take a step downhill, and feel again. How big a step? Too small and you walk all night. Too big and you stride across the valley floor and up the other side.
@@ -259,7 +259,7 @@ $$
 Far from the answer the model can mislead. Where the Hessian is not positive definite, near a hilltop or saddle, the Newton step need not even go downhill. The standard fixes: backtrack from $\alpha = 1$ (so near the answer the full step is kept), and if $\mathbf{H}_k$ is not positive definite, use $\mathbf{H}_k + \sigma\mathbf{I}$ with $\sigma$ only as big as needed to make it so. With backtracking, Newton's method on Rosenbrock from $(-1.2, 1.0)$ reaches $\|\nabla f\| < 10^{-8}$ in $21$ iterations, against $19{,}435$ for gradient descent.
 
 ::: key Gradient descent vs Newton step
-Gradient descent: $x \leftarrow x - \alpha\nabla f$, linear convergence with rate set by the Hessian condition number $\kappa = \lambda_{\max}/\lambda_{\min}$; the contraction factor per step is about $(\kappa-1)/(\kappa+1)$, so the iteration count grows in proportion to $\kappa$. Each gradient step costs one gradient evaluation and no linear algebra. Newton: $x \leftarrow x - H^{-1}\nabla f$, quadratic local convergence, cost of a factorisation per step.
+Gradient descent: $x \leftarrow x - \alpha\nabla f$, linear convergence with rate set by the Hessian condition number $\kappa = \lambda_{\max}/\lambda_{\min}$; the contraction factor per step is about $(\kappa-1)/(\kappa+1)$, so the iteration count grows in proportion to $\kappa$. Each gradient step costs one gradient evaluation and no linear algebra. Newton: $x \leftarrow x - H^{-1}\nabla f$, quadratic local convergence, cost of a factorization per step.
 :::
 
 ## BFGS and trust regions
@@ -281,7 +281,7 @@ $$
 The change is built from two vectors, so it is a **rank-two update**. The step is $\mathbf{p}_k = -\mathbf{M}_k\nabla f(\mathbf{x}_k)$, a descent direction while $\mathbf{M}_k$ stays positive definite — which it does provided $\mathbf{y}_k^\top\mathbf{s}_k > 0$, exactly what the Wolfe condition guarantees. SciPy's BFGS takes Rosenbrock from $(-1.2, 1.0)$ to $\|\nabla f\| < 10^{-8}$ in $34$ iterations.
 
 ::: key BFGS
-Builds an approximate inverse Hessian from successive gradient differences (a rank-two update), giving near-Newton convergence without ever forming or factorising the true Hessian. It converges superlinearly (faster than any fixed factor, slower than squaring) and costs about $n^2$ operations per step.
+Builds an approximate inverse Hessian from successive gradient differences (a rank-two update), giving near-Newton convergence without ever forming or factorizing the true Hessian. It converges superlinearly (faster than any fixed factor, slower than squaring) and costs about $n^2$ operations per step.
 :::
 
 **A trust region decides the distance first.** A line search picks a direction, then a distance. A **trust region** method picks a radius $\Delta_k$ ("delta") within which it trusts the quadratic model, then minimizes the model inside it:
@@ -417,7 +417,7 @@ Howard Rosenbrock, a British control engineer, published this function in 1960 a
 :::
 
 ::: context armijo-picture The sufficient-decrease line, drawn
-The blue curve is the height of the ground along the search line, $\phi(\alpha)$. The grey dashed line is the starting slope. The red line has a fraction $c_1$ of that slope — drawn here with $c_1 = 0.3$ so you can see it, far larger than the usual $10^{-4}$. A step is accepted when the curve is below the red line.
+The blue curve is the height of the ground along the search line, $\phi(\alpha)$. The gray dashed line is the starting slope. The red line has a fraction $c_1$ of that slope — drawn here with $c_1 = 0.3$ so you can see it, far larger than the usual $10^{-4}$. A step is accepted when the curve is below the red line.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210" font-family="Inter, Arial, sans-serif">

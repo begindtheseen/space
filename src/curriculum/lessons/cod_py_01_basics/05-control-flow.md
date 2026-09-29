@@ -36,7 +36,7 @@ The convention everywhere is **four spaces per level**. Set your editor to inser
 
 Python checks the shape of your code before it runs anything, and its messages are specific. Here is a missing colon:
 
-```python
+```python error
 # no_colon.py
 ax = [0.02, 12.7]
 for a in ax
@@ -53,7 +53,7 @@ python3 no_colon.py
 
 And here is a block that never got indented:
 
-```python
+```python error
 # no_indent.py
 ax = [0.02, 12.7]
 for a in ax:
@@ -322,7 +322,7 @@ print(repr(t))
 Each pass of the loop is one slice of $0.01$ s:
 
 1. Gravity speeds the mass up by $9.81 \times 0.01 = 0.0981$ m/s.
-2. At its new speed, it falls $v \times 0.01$ metres, so the height drops by that much.
+2. At its new speed, it falls $v \times 0.01$ meters, so the height drops by that much.
 3. The clock moves on by $0.01$ s, and the step counter goes up by one.
 
 The loop stops on the first pass that takes the height to zero or below.
@@ -406,7 +406,7 @@ A script pairs timestamps with samples using `zip(times, values)` and reports th
 
 If the mean is computed from the zipped pairs, it is the mean of the 998 values. That number is defensible on its own. But the timestamps are now quietly assumed to line up with values that may not match them, and any later claim of "1,000 samples" is wrong.
 
-Pass `strict=True` to `zip`. Then the mismatch raises `ValueError`, and the damaged file gets handled on purpose — dropped, repaired or reported — instead of analysed as if it were complete.
+Pass `strict=True` to `zip`. Then the mismatch raises `ValueError`, and the damaged file gets handled on purpose — dropped, repaired or reported — instead of analyzed as if it were complete.
 :::
 
 ::: check
@@ -454,7 +454,7 @@ Which one fits depends on what a bad line means.
 - If the file is corrupt from that point on, use `break`: nothing after it can be trusted.
 - If one bad line is an isolated dropout in an otherwise good file, use `continue` and count the skips, so the summary can say how many lines were thrown away.
 
-The only wrong answer is to do neither and quietly analyse the bad line.
+The only wrong answer is to do neither and quietly analyze the bad line.
 :::
 
 ## Summary
@@ -526,7 +526,7 @@ On a 64-bit machine each list slot is an 8-byte pointer, so the slots alone are 
 :::
 
 ::: context fencepost The fencepost problem
-You build a straight fence 10 metres long, with a post every metre. How many posts do you need? Most people say 10. The answer is 11.
+You build a straight fence 10 meters long, with a post every meter. How many posts do you need? Most people say 10. The answer is 11.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 100" font-family="Inter, Arial, sans-serif">

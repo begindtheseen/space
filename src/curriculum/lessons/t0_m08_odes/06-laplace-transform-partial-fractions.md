@@ -266,7 +266,7 @@ Go back to the actuator's step response, $Y(s) = 1600/(s(s^2 + 48s + 1600))$. Mu
 
 The starting value is $\lim_{s \to \infty} 1600/(s^2 + \cdots) = 0$, and the starting slope is $\lim s\cdot sY = \lim 1600s/(s^2 + \cdots) = 0$. The response starts from rest with zero slope, as a second-order system pushed by a finite input must.
 
-Now drive the same actuator with a unit ramp, $U = 1/s^2$, and ask for the following error $e = u - y$. With $G = 1600/(s^2 + 48s + 1600)$, the error is $E(s) = (1 - G(s))/s^2$. Working out $1 - G$ over a common bottom and cancelling one $s$,
+Now drive the same actuator with a unit ramp, $U = 1/s^2$, and ask for the following error $e = u - y$. With $G = 1600/(s^2 + 48s + 1600)$, the error is $E(s) = (1 - G(s))/s^2$. Working out $1 - G$ over a common bottom and canceling one $s$,
 
 $$
 E(s) = \frac{s^2 + 48s}{s^2(s^2 + 48s + 1600)} = \frac{s + 48}{s(s^2 + 48s + 1600)}, \qquad \lim_{s \to 0} sE(s) = \frac{48}{1600} = 0.03.
@@ -448,7 +448,7 @@ It lets you move a derivative from one factor to the other. Choose as $u$ the fa
 :::
 
 ::: context delta-picture Squeezing a pulse into an impulse
-Each rectangle has area $1$: wide and low (grey), narrower and taller (orange), very narrow and very tall (blue). Keep squeezing while holding the area at $1$ and you approach the impulse $\delta(t)$ — all its area packed into the single instant $t = 0$.
+Each rectangle has area $1$: wide and low (gray), narrower and taller (orange), very narrow and very tall (blue). Keep squeezing while holding the area at $1$ and you approach the impulse $\delta(t)$ — all its area packed into the single instant $t = 0$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 205" font-family="Inter, Arial, sans-serif">

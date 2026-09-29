@@ -415,7 +415,7 @@ In the two-body module, $f$ and $g$ let you jump from one point on an orbit to a
 :::
 
 ::: context cancellation Losing digits by subtracting
-Say two numbers are each known to eight digits: $1.2345678$ and $1.2345671$. Their difference is $0.0000007$ — and only its first digit means anything, because the other seven were identical in both numbers and cancelled. You started with eight good digits and kept one.
+Say two numbers are each known to eight digits: $1.2345678$ and $1.2345671$. Their difference is $0.0000007$ — and only its first digit means anything, because the other seven were identical in both numbers and canceled. You started with eight good digits and kept one.
 
 A computer keeps about sixteen digits. When Gibbs crosses two nearly parallel position vectors, most of those digits cancel in the same way, and any noise in the inputs is suddenly huge compared with what survives. Nothing is wrong with the formula; the subtraction ate the information.
 :::

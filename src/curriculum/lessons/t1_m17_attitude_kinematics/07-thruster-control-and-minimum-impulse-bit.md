@@ -100,7 +100,7 @@ $$
 f_{pulse} = \frac{2}{T} = \frac{\Delta\omega}{4\theta_{db}} = \frac{I_{bit}L}{2 I\,\theta_{db}} .
 $$
 
-(The last step put in $\Delta\omega = 2I_{bit}L/I$ and cancelled the $2$.)
+(The last step put in $\Delta\omega = 2I_{bit}L/I$ and canceled the $2$.)
 
 Every pulse burns the same propellant, so fuel per day is proportional to $f_{pulse}$.
 

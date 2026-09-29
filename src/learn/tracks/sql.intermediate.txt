@@ -46,7 +46,7 @@ CREATE TABLE orders (
 INSERT INTO orders (id, customer_id, placed, status, coupon) VALUES
   (1, 1, '2024-03-02 10:15:00', 'shipped',   NULL),
   (2, 1, '2024-03-20 18:40:00', 'shipped',   'SPRING10'),
-  (3, 2, '2024-03-21 09:05:00', 'cancelled', NULL),
+  (3, 2, '2024-03-21 09:05:00', 'canceled', NULL),
   (4, 2, '2024-04-07 14:30:00', 'shipped',   'WELCOME5'),
   (5, 3, '2024-04-07 20:10:00', 'paid',      'SPRING10'),
   (6, 4, '2024-05-15 11:00:00', 'shipped',   NULL),
@@ -516,7 +516,7 @@ Last lesson you joined a table to itself. In the basics you met `GROUP BY` and `
 
 ### The picture
 
-Picture a pile of paper orders on a desk, and a summary to write. First you throw out the cancelled ones. Then you sort the rest into piles, one per customer. Then you count each pile. Then you put away the piles that are too small. Only then do you write the summary sheet, and put its lines in order.
+Picture a pile of paper orders on a desk, and a summary to write. First you throw out the canceled ones. Then you sort the rest into piles, one per customer. Then you count each pile. Then you put away the piles that are too small. Only then do you write the summary sheet, and put its lines in order.
 
 ### The order the database works in
 
@@ -539,7 +539,7 @@ GROUP BY customer_id
 HAVING COUNT(*) >= 2;
 ```
 
-- `WHERE` drops order 3, Ben's cancelled one. Seven orders are left.
+- `WHERE` drops order 3, Ben's canceled one. Seven orders are left.
 - `GROUP BY` makes five buckets: customer 1 has orders 1, 2 and 8; customers 2, 3, 4 and 5 have one order each.
 - `COUNT(*)` counts each bucket: 3, 1, 1, 1, 1.
 - `HAVING` keeps buckets with at least 2.
@@ -1192,7 +1192,7 @@ SELECT id, status,
 FROM orders;
 ```
 
-Orders 5 and 8 are `'open'`, the shipped orders are `'done'`, and the cancelled and refunded ones fall through to `'closed'`. The short form has [[one trap with NULL|case-null]].
+Orders 5 and 8 are `'open'`, the shipped orders are `'done'`, and the canceled and refunded ones fall through to `'closed'`. The short form has [[one trap with NULL|case-null]].
 
 ### CASE on a group
 
@@ -1226,7 +1226,7 @@ The short form compares with `=`, and `NULL = NULL` is not true. So `CASE coupon
 :::
 
 ::: context conditional-sum Counting some rows
-`SUM(CASE WHEN status = 'shipped' THEN 1 ELSE 0 END)` adds 1 for every shipped order and 0 for the rest. On this shop it gives 4. With one such column per status, a single query makes a whole summary row: shipped, paid, cancelled, refunded side by side. Reports and dashboards are full of this pattern; people call it **conditional aggregation**. Engineers use it the same way, for example to count how many telemetry readings in each pass were in the warning range.
+`SUM(CASE WHEN status = 'shipped' THEN 1 ELSE 0 END)` adds 1 for every shipped order and 0 for the rest. On this shop it gives 4. With one such column per status, a single query makes a whole summary row: shipped, paid, canceled, refunded side by side. Reports and dashboards are full of this pattern; people call it **conditional aggregation**. Engineers use it the same way, for example to count how many telemetry readings in each pass were in the warning range.
 :::
 
 ::: context half-open Buckets without gaps
@@ -1371,7 +1371,7 @@ To `GROUP BY`, `'Mail.com'`, `'mail.com'` and `'Work.io '` (with a space) are al
 | post.org | 1 |
 | work.io | 1 |
 
-A report grouped on raw text quietly splits one bucket into several. **Normalise** first, which means making every value follow the same form: wrap it in `lower(trim(...))`.
+A report grouped on raw text quietly splits one bucket into several. **Normalize** first, which means making every value follow the same form: wrap it in `lower(trim(...))`.
 
 ### NULL goes in, NULL comes out
 
@@ -1526,11 +1526,11 @@ The word comes from Latin: *con*, "together", and *catena*, "chain". Concatenati
 :::
 
 ::: context like-case Why LIKE ignores case
-SQLite's `LIKE` ignores the difference between capital and small letters, but only for the 26 plain English letters. So `'x' LIKE 'X'` is true, while `'é' LIKE 'É'` is false. Other databases differ: in PostgreSQL, `LIKE` is case-sensitive, and it has a separate `ILIKE` for ignoring case. Because the behaviour depends on the database, `lower(...)` on both sides is the safe habit. One more pattern symbol: `_` in a `LIKE` pattern means "exactly one character", so `'abc' LIKE 'a_c'` is true.
+SQLite's `LIKE` ignores the difference between capital and small letters, but only for the 26 plain English letters. So `'x' LIKE 'X'` is true, while `'é' LIKE 'É'` is false. Other databases differ: in PostgreSQL, `LIKE` is case-sensitive, and it has a separate `ILIKE` for ignoring case. Because the behavior depends on the database, `lower(...)` on both sides is the safe habit. One more pattern symbol: `_` in a `LIKE` pattern means "exactly one character", so `'abc' LIKE 'a_c'` is true.
 :::
 
 ::: context hide-from-bots A real use for replace
-Web pages sometimes write email addresses as `ada at mail.com` instead of `ada@mail.com`. Programs that crawl the web collecting addresses for spam look for the `@`, so swapping it for `' at '` hides the address from the simplest of them, while a person can still read it. It is a small defence, not a strong one, but it is a neat example of `replace`, and it is exactly what the task builds.
+Web pages sometimes write email addresses as `ada at mail.com` instead of `ada@mail.com`. Programs that crawl the web collecting addresses for spam look for the `@`, so swapping it for `' at '` hides the address from the simplest of them, while a person can still read it. It is a small defense, not a strong one, but it is a neat example of `replace`, and it is exactly what the task builds.
 :::
 --- task
 Build a contact line for every customer who has an email. Return two columns:
@@ -1773,7 +1773,7 @@ A Julian day number counts days from noon on 1 January 4713 BC, a starting point
 :::
 
 ::: context now-is-utc Whose today?
-`date('now')` uses UTC, the world's reference clock (the time in London outside summer time). If you are in California late in the evening, it may already be tomorrow in UTC. Mission control centres and servers usually store every timestamp in UTC for this reason, so that events from different places line up, and only convert to local time when they show a time to a person. SQLite can do that too, with the `'localtime'` modifier.
+`date('now')` uses UTC, the world's reference clock (the time in London outside summer time). If you are in California late in the evening, it may already be tomorrow in UTC. Mission control centers and servers usually store every timestamp in UTC for this reason, so that events from different places line up, and only convert to local time when they show a time to a person. SQLite can do that too, with the `'localtime'` modifier.
 :::
 
 ::: context index-preview A shortcut through a big table
@@ -2485,7 +2485,7 @@ FROM order_items
 GROUP BY order_id;
 ```
 
-It returns 8 rows, one per order: 22.5, 80.1, 32.0, 58.0, 37.8, 107.0, 45.0 and 25.0 for orders 1 to 8. The same step on `payments` returns 7 rows: order 3 was cancelled and never paid, so it has no row, and order 7 nets to 0.0 (45.00 − 45.00).
+It returns 8 rows, one per order: 22.5, 80.1, 32.0, 58.0, 37.8, 107.0, 45.0 and 25.0 for orders 1 to 8. The same step on `payments` returns 7 rows: order 3 was canceled and never paid, so it has no row, and order 7 nets to 0.0 (45.00 − 45.00).
 
 In the basics, `WITH` named one step. It can hold [[several named steps|multi-step-with]], separated by commas:
 
@@ -2628,7 +2628,7 @@ INSERT INTO employees (id, name, dept, salary) VALUES
   (10, 'Jo',  'eng',     NULL),
   (11, 'Kit', 'design',  65000);
 --- teach
-Last lesson you hunted down a bug. This lesson and the next are puzzles: questions where the first answer that comes to mind is wrong. You will practise a way of working through them, one step at a time.
+Last lesson you hunted down a bug. This lesson and the next are puzzles: questions where the first answer that comes to mind is wrong. You will practice a way of working through them, one step at a time.
 
 This lesson has its own database: one table, `employees`, with the columns `id`, `name`, `dept` (the department) and `salary`. The [[contractors|null-salary]] have a NULL salary. Here is every salary, sorted by department:
 
@@ -2820,7 +2820,7 @@ A teacher wants to know who has not handed in their homework. Staring at the pil
 
 ### The problem
 
-The shop wants to [[win back|win-back]] customers who have never bought anything. "Bought" means an order whose status is `paid` or `shipped`. A customer whose only order was refunded or cancelled has not really bought.
+The shop wants to [[win back|win-back]] customers who have never bought anything. "Bought" means an order whose status is `paid` or `shipped`. A customer whose only order was refunded or canceled has not really bought.
 
 Rows in one table with *no* match in another are found with an **[[anti-join|anti-join-picture]]**. An ordinary join cannot do it, because a join only produces rows that match.
 

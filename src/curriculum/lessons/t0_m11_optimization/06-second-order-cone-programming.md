@@ -162,7 +162,7 @@ Which way does its small error lean? That depends on the sign of $z - z_0$. The 
 
 After cutting time into $N$ steps — the state $(\mathbf{r}, \mathbf{v}, z)$ at $N + 1$ points, the control $(\mathbf{u}, \sigma)$ held constant over each step, the linear dynamics integrated exactly into affine update equations — every constraint is a second-order cone or an affine equality, and the objective is linear. The landing problem is an SOCP.
 
-::: example Throttle bounds for a 2-tonne lander
+::: example Throttle bounds for a 2-metric ton lander
 A lander of starting mass $m_0 = 2000\,\mathrm{kg}$ has an engine of $24\,\mathrm{kN}$ maximum thrust that can throttle down to $40\,\%$, with $I_{sp} = 311\,\mathrm{s}$.
 
 **The engine's numbers.** $\rho_1 = 0.40 \times 24 = 9.6\,\mathrm{kN}$ and $\rho_2 = 24\,\mathrm{kN}$. Then $\alpha = 1/(311 \times 9.80665) = 3.28 \times 10^{-4}\,\mathrm{s/m}$, so full throttle burns $\alpha\rho_2 = 3.28 \times 10^{-4} \times 24\,000 = 7.87\,\mathrm{kg/s}$.
@@ -239,7 +239,7 @@ Total: $n + 1$ extra variables, one genuine cone and $2n$ linear inequalities. T
 :::
 
 ::: check
-In the 2-tonne example, suppose the reference $z_0$ is instead taken at $m = 1800\,\mathrm{kg}$, midway through the burn. What happens to the sign of the errors in the two throttle approximations at $m = 2000\,\mathrm{kg}$ and at $m = 1600\,\mathrm{kg}$?
+In the 2-metric ton example, suppose the reference $z_0$ is instead taken at $m = 1800\,\mathrm{kg}$, midway through the burn. What happens to the sign of the errors in the two throttle approximations at $m = 2000\,\mathrm{kg}$ and at $m = 1600\,\mathrm{kg}$?
 :::
 
 ::: answer
@@ -366,7 +366,7 @@ The rocket equation says the speed change from burning propellant is $\Delta v =
 :::
 
 ::: context taylor-exp How good are the approximations?
-The black curve is $e^{-d}$, with $d = z - z_0$. The grey dashed line is the tangent at $d = 0$ — always below the curve, so a limit built on it is always safe. The blue curve adds the $\tfrac{1}{2}d^2$ term: it hugs the exponential near $d = 0$, sits above it for $d > 0$ and below it for $d < 0$.
+The black curve is $e^{-d}$, with $d = z - z_0$. The gray dashed line is the tangent at $d = 0$ — always below the curve, so a limit built on it is always safe. The blue curve adds the $\tfrac{1}{2}d^2$ term: it hugs the exponential near $d = 0$, sits above it for $d > 0$ and below it for $d < 0$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 205" font-family="Inter, Arial, sans-serif">

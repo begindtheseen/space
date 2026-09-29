@@ -140,7 +140,7 @@ $$\mathbf{P}_y = \mathbb{E}\big[\mathbf{A}(\mathbf{x} - \boldsymbol{\mu}_x)(\mat
 The first step uses $(\mathbf{A}\mathbf{d})^\mathsf{T} = \mathbf{d}^\mathsf{T}\mathbf{A}^\mathsf{T}$. The second pulls the fixed matrices outside the average.
 
 ::: key Covariance under a linear map
-If $\mathbf{y} = \mathbf{A}\mathbf{x}$ then $\mathbf{P}_y = \mathbf{A}\mathbf{P}_x\mathbf{A}^\mathsf{T}$. The sandwich form is what keeps the result symmetric and positive semi-definite. With $\mathbf{A}$ replaced by a Jacobian it is the EKF's linearised propagation; with $\mathbf{A} = \boldsymbol{\Phi}$ and additive noise it is the prediction step $\mathbf{P}_{k+1} = \boldsymbol{\Phi}\mathbf{P}_k\boldsymbol{\Phi}^\mathsf{T} + \mathbf{Q}$.
+If $\mathbf{y} = \mathbf{A}\mathbf{x}$ then $\mathbf{P}_y = \mathbf{A}\mathbf{P}_x\mathbf{A}^\mathsf{T}$. The sandwich form is what keeps the result symmetric and positive semi-definite. With $\mathbf{A}$ replaced by a Jacobian it is the EKF's linearized propagation; with $\mathbf{A} = \boldsymbol{\Phi}$ and additive noise it is the prediction step $\mathbf{P}_{k+1} = \boldsymbol{\Phi}\mathbf{P}_k\boldsymbol{\Phi}^\mathsf{T} + \mathbf{Q}$.
 :::
 
 Now apply it to a system that steps forward in time: $\mathbf{x}_{k+1} = \boldsymbol{\Phi}\mathbf{x}_k + \mathbf{w}_k$. Here $\boldsymbol{\Phi} = e^{\mathbf{A}\Delta t}$ is the state transition matrix of Lesson 2, and $\mathbf{w}_k$ is **process noise** — random pushes the model cannot predict — with zero mean and covariance $\mathbf{Q}$, independent of $\mathbf{x}_k$. Write $\mathbf{e}_k = \mathbf{x}_k - \hat{\mathbf{x}}_k$ for the estimation error ($\hat{\mathbf{x}}$, "x hat", is the estimate). Then $\mathbf{e}_{k+1} = \boldsymbol{\Phi}\mathbf{e}_k + \mathbf{w}_k$, and

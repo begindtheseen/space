@@ -39,7 +39,7 @@ Three flight strings, each a dual-core x86 running Linux, where the two cores co
 
 Look at one string on its own. Both cores run the same control code on the same inputs. After each calculation they compare. Match: send. Mismatch: stay silent.
 
-Why silence? Because a string that disagrees with itself cannot know *which* core is right. With two witnesses who disagree, there is no majority. So it takes the one safe action it has: it says nothing. This behaviour has a name: **[[fail-silent|fail-silent]]**. A fail-silent unit either gives a correct output or no output. It never gives a wrong one.
+Why silence? Because a string that disagrees with itself cannot know *which* core is right. With two witnesses who disagree, there is no majority. So it takes the one safe action it has: it says nothing. This behavior has a name: **[[fail-silent|fail-silent]]**. A fail-silent unit either gives a correct output or no output. It never gives a wrong one.
 
 That turns a hard problem into an easy one. A wrong command is dangerous: an actuator cannot easily tell a plausible wrong value from a right one. A *missing* command is easy to notice. By pairing its cores, each string converts "maybe wrong" into "right or absent".
 
@@ -160,7 +160,7 @@ What happens to a silent string afterwards — whether it is reset, reloaded fro
 
 The pair compares **bits**, not "close enough". That only works if a healthy core *always* produces exactly the same bits as its healthy partner. The property is **determinism**: the same program, given the same inputs, produces the same outputs, every time. Look back at the module through that lens, and most of it is a list of ways to lose determinism:
 
-- **Data races** (lesson 2). A racing program has undefined behaviour. Two cores might see a torn value at different moments and disagree though nothing was upset.
+- **Data races** (lesson 2). A racing program has undefined behavior. Two cores might see a torn value at different moments and disagree though nothing was upset.
 - **Uninitialised reads.** A variable never set holds whatever was in that memory before. The two cores' leftovers differ, so their results can differ.
 - **Thread scheduling.** If two threads race to update a result, or a thread pool (lesson 8) hands work out in whatever order threads become free, the order of operations changes from run to run. Flight code runs a fixed schedule: the same tasks, in the same order, every cycle.
 - **Reading time or live data.** Each core reading the clock, or a value another thread is still writing, gets a slightly different input. Inputs must be captured once and given to both cores identically.
@@ -289,10 +289,10 @@ Right: there are three redundant strings, and the final command is the one they 
 | Common-mode failure | A fault shared by all copies | Pairs cannot catch it; the Shuttle used separately written backup software |
 | Space Shuttle | Five AP-101 computers | Four in a voting set, one Backup Flight System |
 
-This was the last lesson of the module. The next module, *Real-Time Constraints and Allocation-Free Flight Code*, turns the habits you practised here into **[[rules you can check|next-module]]**: worst-case execution time, static memory pools, bounded loops and stack depth, watchdogs and fault recovery, radiation effects and their software defences, and bit-exact determinism across compilers — the coding discipline that makes a design like this one flyable.
+This was the last lesson of the module. The next module, *Real-Time Constraints and Allocation-Free Flight Code*, turns the habits you practiced here into **[[rules you can check|next-module]]**: worst-case execution time, static memory pools, bounded loops and stack depth, watchdogs and fault recovery, radiation effects and their software defenses, and bit-exact determinism across compilers — the coding discipline that makes a design like this one flyable.
 
 ::: context seu One particle, one bit
-A single-event upset happens when one energetic particle — a proton or heavy ion from the Sun or from deep space, or a neutron made by cosmic rays hitting the air — leaves a trail of charge through a transistor, and that charge flips a stored bit. "Single event" because one particle does it. The next module's lesson on radiation effects covers upsets alongside latch-up (a particle triggering a short circuit) and total dose (slow damage that builds up over years), with the software defences for each.
+A single-event upset happens when one energetic particle — a proton or heavy ion from the Sun or from deep space, or a neutron made by cosmic rays hitting the air — leaves a trail of charge through a transistor, and that charge flips a stored bit. "Single event" because one particle does it. The next module's lesson on radiation effects covers upsets alongside latch-up (a particle triggering a short circuit) and total dose (slow damage that builds up over years), with the software defenses for each.
 :::
 
 ::: context rad-hard What a hardened processor costs
@@ -350,7 +350,7 @@ The classic example is Ariane 5's first flight in 1996. Its two inertial referen
 :::
 
 ::: context last-place The last bit of a double
-A `double` stores a sign, an 11-bit exponent and a 52-bit fraction. The gap between neighbouring doubles near a value $x$ is one **unit in the last place**, or ulp: $2^{-52}$ times the power of two at or below $x$. Near $8.94$ that power is $2^3 = 8$, so one ulp is $8 \times 2^{-52} = 2^{-49} \approx 1.78 \times 10^{-15}$ — exactly the difference the example printed.
+A `double` stores a sign, an 11-bit exponent and a 52-bit fraction. The gap between neighboring doubles near a value $x$ is one **unit in the last place**, or ulp: $2^{-52}$ times the power of two at or below $x$. Near $8.94$ that power is $2^3 = 8$, so one ulp is $8 \times 2^{-52} = 2^{-49} \approx 1.78 \times 10^{-15}$ — exactly the difference the example printed.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">

@@ -271,7 +271,7 @@ A test can pass while the code under it does something illegal. Reading freed me
 A sanitizer build adds checks around every risky operation, so the tests you already have become bug detectors for everything their paths touch.
 
 ::: key
-Why run the test suite under sanitizers in CI? Tests exercise the code paths, and sanitizers turn latent undefined behaviour on those paths into a deterministic failure. A green suite without sanitizers proves only that the bug did not manifest today.
+Why run the test suite under sanitizers in CI? Tests exercise the code paths, and sanitizers turn latent undefined behavior on those paths into a deterministic failure. A green suite without sanitizers proves only that the bug did not manifest today.
 :::
 
 ::: example A dangling reference that passes the ordinary build

@@ -8,9 +8,9 @@ covers:
 
 Picture a phone battery that should last a day but is flat by lunch. The charge was all there. You spent it on things that did not move you forward.
 
-A rocket's propellant is the same. The rocket equation from lesson 6 says what the propellant is *worth*: the **ideal $\Delta v$** — the speed change $v_e \ln(m_0/m_f)$ it would give in empty space, with nothing pulling or pushing. For a launcher heading to low Earth orbit that is about $9.3$–$9.5\,\mathrm{km/s}$, added up over its stages. Yet a 200 km circular orbit only needs $7.78\,\mathrm{km/s}$. About one and a half kilometres per second of speed goes missing. It is spent holding the rocket up against gravity while it is still slow, pushing air out of the way, and pointing the engines somewhere other than straight along the direction of motion.
+A rocket's propellant is the same. The rocket equation from lesson 6 says what the propellant is *worth*: the **ideal $\Delta v$** — the speed change $v_e \ln(m_0/m_f)$ it would give in empty space, with nothing pulling or pushing. For a launcher heading to low Earth orbit that is about $9.3$–$9.5\,\mathrm{km/s}$, added up over its stages. Yet a 200 km circular orbit only needs $7.78\,\mathrm{km/s}$. About one and a half kilometers per second of speed goes missing. It is spent holding the rocket up against gravity while it is still slow, pushing air out of the way, and pointing the engines somewhere other than straight along the direction of motion.
 
-Knowing where every metre per second goes tells engineers how hard to tip the rocket over, whether bigger engines pay for their weight, and where to put the launch pad. This lesson keeps gravity and drag on for a whole climb and derives the bookkeeping rule every trajectory engineer uses: realised $\Delta v$ equals ideal $\Delta v$ minus gravity loss, minus drag loss, minus steering loss. Then it puts numbers on each term and explains the manoeuvre — the **gravity turn** — that makes two of the three almost free.
+Knowing where every meter per second goes tells engineers how hard to tip the rocket over, whether bigger engines pay for their weight, and where to put the launch pad. This lesson keeps gravity and drag on for a whole climb and derives the bookkeeping rule every trajectory engineer uses: realized $\Delta v$ equals ideal $\Delta v$ minus gravity loss, minus drag loss, minus steering loss. Then it puts numbers on each term and explains the maneuver — the **gravity turn** — that makes two of the three almost free.
 
 ## The equation of motion along the flight path
 
@@ -34,7 +34,7 @@ $$
 
 Add the rates $\dot{h} = v\sin\gamma$ (height), $\dot{x} = v\cos\gamma$ (distance downrange) and the mass flow $\dot{m} = -T/(I_{sp} g_0)$ from lesson 2. Five numbers, $[v, \gamma, h, x, m]$, now describe the flight, and their rates depend only on those five — the system the gravity-turn exercise asks you to integrate.
 
-Over a round Earth, $\dot{\gamma}$ gains a term $+(v/r)\cos\gamma$ ($r$ is the distance from Earth's centre), because the horizon tilts as the rocket travels around the curve. It matters late in the climb; the flat-Earth model leaves it out.
+Over a round Earth, $\dot{\gamma}$ gains a term $+(v/r)\cos\gamma$ ($r$ is the distance from Earth's center), because the horizon tilts as the rocket travels around the curve. It matters late in the climb; the flat-Earth model leaves it out.
 
 ## Integrating: the Δv budget
 
@@ -53,15 +53,15 @@ $$
 It does not care how the rocket flew. The other three terms do, and each has a name.
 
 $$
-\Delta v_{\mathrm{realised}} = v(t_b) - v(0) = \underbrace{v_e \ln\frac{m_0}{m_f}}_{\text{ideal}} - \underbrace{\int_0^{t_b} g\sin\gamma\,dt}_{\text{gravity loss}} - \underbrace{\int_0^{t_b} \frac{D}{m}\,dt}_{\text{drag loss}} - \underbrace{\int_0^{t_b} \frac{T}{m}(1 - \cos\alpha)\,dt}_{\text{steering loss}} .
+\Delta v_{\mathrm{realized}} = v(t_b) - v(0) = \underbrace{v_e \ln\frac{m_0}{m_f}}_{\text{ideal}} - \underbrace{\int_0^{t_b} g\sin\gamma\,dt}_{\text{gravity loss}} - \underbrace{\int_0^{t_b} \frac{D}{m}\,dt}_{\text{drag loss}} - \underbrace{\int_0^{t_b} \frac{T}{m}(1 - \cos\alpha)\,dt}_{\text{steering loss}} .
 $$
 
-This is an **identity**, not an estimate: it holds for every trajectory the equations produce. A simulation that logs the three losses must find that they, plus the realised $\Delta v$, add back to $v_e \ln(m_0/m_f)$ within integration error. That is the [[first check to build|identity-check]]. It is also why ideal $\Delta v$ is the currency of mission design: the rocket equation says what the propellant is worth, and the losses say how much the trajectory spends without adding speed.
+This is an **identity**, not an estimate: it holds for every trajectory the equations produce. A simulation that logs the three losses must find that they, plus the realized $\Delta v$, add back to $v_e \ln(m_0/m_f)$ within integration error. That is the [[first check to build|identity-check]]. It is also why ideal $\Delta v$ is the currency of mission design: the rocket equation says what the propellant is worth, and the losses say how much the trajectory spends without adding speed.
 
-If the ideal $\Delta v$ uses the vacuum $I_{sp}$, add the **[[back-pressure loss|back-pressure]]**, $\int (T_{\mathrm{vac}} - T)/m\,dt$: thrust the air takes away by pressing on the nozzle exit (lesson 6) in the first minute or so. It is a few tens of metres per second, and is often folded into a sea-level $I_{sp}$ instead.
+If the ideal $\Delta v$ uses the vacuum $I_{sp}$, add the **[[back-pressure loss|back-pressure]]**, $\int (T_{\mathrm{vac}} - T)/m\,dt$: thrust the air takes away by pressing on the nozzle exit (lesson 6) in the first minute or so. It is a few tens of meters per second, and is often folded into a sea-level $I_{sp}$ instead.
 
 ::: key The Δv budget
-Ideal $\Delta v$ decomposes as $\Delta v_{\mathrm{ideal}} = \Delta v_{\mathrm{realised}} + \text{gravity loss} + \text{drag loss} + \text{steering loss}$ (plus a back-pressure loss if the ideal figure uses vacuum $I_{sp}$). For a LEO ascent the ideal is about $9.3$–$9.5\,\mathrm{km/s}$ against an orbital speed of about $7.8\,\mathrm{km/s}$.
+Ideal $\Delta v$ decomposes as $\Delta v_{\mathrm{ideal}} = \Delta v_{\mathrm{realized}} + \text{gravity loss} + \text{drag loss} + \text{steering loss}$ (plus a back-pressure loss if the ideal figure uses vacuum $I_{sp}$). For a LEO ascent the ideal is about $9.3$–$9.5\,\mathrm{km/s}$ against an orbital speed of about $7.8\,\mathrm{km/s}$.
 :::
 
 ## Gravity loss
@@ -116,16 +116,16 @@ where $\rho$ ("rho") is the air density, $C_D$ the **drag coefficient** (a numbe
 
 Density falls off roughly exponentially with height, $\rho \approx \rho_0 e^{-h/H}$, with sea-level density $\rho_0 = 1.225\,\mathrm{kg/m^3}$ and **[[scale height|scale-height]]** $H \approx 8.5\,\mathrm{km}$. Meanwhile $v^2$ grows. So $\bar{q}$ rises, peaks and then collapses. The peak is called **max-Q**. It comes at roughly $10$–$15\,\mathrm{km}$ altitude and $400$–$500\,\mathrm{m/s}$, about a minute into a typical climb, and is around $30\,\mathrm{kPa}$. Only the $60$–$100\,\mathrm{s}$ around it add much to the integral.
 
-Drag loss is the one term that favours *big* rockets. Drag grows with area (size squared), mass with volume (size cubed), so $D/m$ shrinks as a rocket grows. For a medium launcher the drag loss is typically $0.1$–$0.2\,\mathrm{km/s}$; for a large, dense one it can be well under $0.1\,\mathrm{km/s}$; for a small sounding rocket it can beat the gravity loss. Drag is also why the climb is not flown as flat as gravity loss alone would like: stay low and fast, and the air takes back everything a steeper path would have lost to gravity.
+Drag loss is the one term that favors *big* rockets. Drag grows with area (size squared), mass with volume (size cubed), so $D/m$ shrinks as a rocket grows. For a medium launcher the drag loss is typically $0.1$–$0.2\,\mathrm{km/s}$; for a large, dense one it can be well under $0.1\,\mathrm{km/s}$; for a small sounding rocket it can beat the gravity loss. Drag is also why the climb is not flown as flat as gravity loss alone would like: stay low and fast, and the air takes back everything a steeper path would have lost to gravity.
 
 ::: example An order-of-magnitude drag loss
-Model a Falcon-class climb's dynamic pressure as a smooth bump centred at $70\,\mathrm{s}$: $\bar{q}(t) = 30\,\mathrm{kPa} \times \exp[-((t - 70)/35)^2]$. Take $C_D A = 4.2\,\mathrm{m^2}$ ($C_D \approx 0.4$ on a $3.66\,\mathrm{m}$ diameter) and mass $m(t) = 549{,}000 - 2750\,t$ kg. Estimate the drag loss.
+Model a Falcon-class climb's dynamic pressure as a smooth bump centered at $70\,\mathrm{s}$: $\bar{q}(t) = 30\,\mathrm{kPa} \times \exp[-((t - 70)/35)^2]$. Take $C_D A = 4.2\,\mathrm{m^2}$ ($C_D \approx 0.4$ on a $3.66\,\mathrm{m}$ diameter) and mass $m(t) = 549{,}000 - 2750\,t$ kg. Estimate the drag loss.
 
 **At the peak.** Drag is $D = 30{,}000 \times 4.2 = 1.26 \times 10^{5}\,\mathrm{N}$. The mass then is $549{,}000 - 2750 \times 70 \approx 356{,}500\,\mathrm{kg}$. So $D/m \approx 0.35\,\mathrm{m/s^2}$ — a few percent of $g$.
 
 **Area under the bump.** A bell curve of height $a$ and width parameter $w$ has area $a\,w\sqrt{\pi}$. Here that is $0.35 \times 35 \times \sqrt{\pi} \approx 22\,\mathrm{m/s}$. Integrating on a computer with the mass changing along the way gives $23\,\mathrm{m/s}$.
 
-**Does it make sense?** Even allowing for a broader real pulse and the rise in $C_D$ near the speed of sound, this rocket's drag loss is a few tens of metres per second — ten times smaller than its gravity loss. Now halve the diameter while keeping the same density of construction. Area over mass doubles, so $D/m$ doubles at every instant: a $1.8\,\mathrm{m}$ rocket on the same path would lose about twice as much, and a still smaller one more again.
+**Does it make sense?** Even allowing for a broader real pulse and the rise in $C_D$ near the speed of sound, this rocket's drag loss is a few tens of meters per second — ten times smaller than its gravity loss. Now halve the diameter while keeping the same density of construction. Area over mass doubles, so $D/m$ doubles at every instant: a $1.8\,\mathrm{m}$ rocket on the same path would lose about twice as much, and a still smaller one more again.
 :::
 
 ## Steering loss
@@ -140,7 +140,7 @@ For small angles, $1 - \cos\alpha \approx \alpha^2/2$ (with $\alpha$ in radians)
 The steering-loss integral is $\int (T/m)(1 - \cos\alpha)\,dt$, where $\alpha$ is the angle between the thrust vector and the velocity vector. Small $\alpha$ is cheap because $1 - \cos\alpha \approx \alpha^2/2$.
 :::
 
-On a well-flown climb, steering loss is a few tens of metres per second. Two quick numbers:
+On a well-flown climb, steering loss is a few tens of meters per second. Two quick numbers:
 
 - Hold $\alpha = 3°$ for a whole $300\,\mathrm{s}$ second-stage burn at an average $T/m = 20\,\mathrm{m/s^2}$: $20 \times 0.00137 \times 300 \approx 8\,\mathrm{m/s}$.
 - Hold $15°$ for $20\,\mathrm{s}$ near liftoff at $T/m = 13.6\,\mathrm{m/s^2}$: $1 - \cos 15° = 0.0341$, so $13.6 \times 0.0341 \times 20 \approx 9\,\mathrm{m/s}$.
@@ -159,7 +159,7 @@ $$
 
 Gravity's across-track part, $g\cos\gamma$, bends the path downward. The bend is quick when the rocket is slow ($v$ small, so $g/v$ big). It is zero when the rocket is exactly vertical, because then $\cos\gamma = 0$. This way of flying is the **gravity turn**.
 
-A rocket that is exactly vertical never turns. So the manoeuvre starts with a small, brief **[[pitch-over|pitch-over]]**: a few degrees of $\alpha$ for a few seconds shortly after liftoff, at perhaps $50\,\mathrm{m/s}$. Then the thrust goes back along the velocity and gravity does the rest.
+A rocket that is exactly vertical never turns. So the maneuver starts with a small, brief **[[pitch-over|pitch-over]]**: a few degrees of $\alpha$ for a few seconds shortly after liftoff, at perhaps $50\,\mathrm{m/s}$. Then the thrust goes back along the velocity and gravity does the rest.
 
 At $\gamma = 85°$ and $v = 100\,\mathrm{m/s}$, the rate is $(9.8/100) \times \cos 85° \approx 0.0085\,\mathrm{rad/s}$, about half a degree per second. At $\gamma = 45°$ and $v = 1000\,\mathrm{m/s}$ it is $0.4°/\mathrm{s}$. Near orbital speed it is tiny; guidance does the last flattening with a small $\alpha$, once the air is gone.
 
@@ -214,15 +214,15 @@ Gravity loss is the biggest, because the rocket spends its first minute or two n
 
 **Getting the rotation credit's sign wrong.** It is not a loss. It *reduces* what the rocket must supply.
 
-**Mixing up gravity loss with work done against gravity.** A rocket coasting upward gains potential energy with zero gravity loss, because it is not thrusting at all. Gravity loss is specifically thrust spent cancelling the along-track part of the weight.
+**Mixing up gravity loss with work done against gravity.** A rocket coasting upward gains potential energy with zero gravity loss, because it is not thrusting at all. Gravity loss is specifically thrust spent canceling the along-track part of the weight.
 :::
 
 ## Conservation laws as a check on the simulation
 
 Three conservation checks for an ascent simulation fall straight out of this module.
 
-1. **The $\Delta v$ identity.** Log the three loss integrals. Realised $\Delta v$ plus losses must equal $v_e \ln(m_0/m_f)$ at every instant, not only at burnout. A gap that grows with time is an integration error. A constant offset is a bookkeeping error — usually a stray factor of $m$.
-2. **Empty-space limit.** Set $g = 0$ and $\rho = 0$. The realised $\Delta v$ must equal the rocket equation exactly, whatever the thrust level. If it depends on thrust, the mass is being differentiated somewhere it should not be (lesson 6).
+1. **The $\Delta v$ identity.** Log the three loss integrals. Realized $\Delta v$ plus losses must equal $v_e \ln(m_0/m_f)$ at every instant, not only at burnout. A gap that grows with time is an integration error. A constant offset is a bookkeeping error — usually a stray factor of $m$.
+2. **Empty-space limit.** Set $g = 0$ and $\rho = 0$. The realized $\Delta v$ must equal the rocket equation exactly, whatever the thrust level. If it depends on thrust, the mass is being differentiated somewhere it should not be (lesson 6).
 3. **Energy rate.** The mechanical energy per kilogram, $\varepsilon = v^2/2 + g h$ ("epsilon"), must change at the rate $(T\cos\alpha - D)\,v/m$. That is the power of the non-conservative forces from lesson 4; gravity is already inside $\varepsilon$. Any other rate means a force is missing or has the wrong sign.
 
 ::: note Why the energy rate has to be that
@@ -280,7 +280,7 @@ A launch provider says its rocket can deliver an ideal $\Delta v$ of $9.6\,\math
 :::
 
 ::: answer
-The orbit needs $7.78\,\mathrm{km/s}$ in the non-spinning frame. The pad at Kourou already supplies $0.46\,\mathrm{km/s}$ eastward, so the rocket must add $7.78 - 0.46 = 7.32\,\mathrm{km/s}$ of realised $\Delta v$.
+The orbit needs $7.78\,\mathrm{km/s}$ in the non-spinning frame. The pad at Kourou already supplies $0.46\,\mathrm{km/s}$ eastward, so the rocket must add $7.78 - 0.46 = 7.32\,\mathrm{km/s}$ of realized $\Delta v$.
 
 Add the losses to get the ideal $\Delta v$ needed: $7.32 + 1.35 + 0.12 + 0.05 = 8.84\,\mathrm{km/s}$.
 
@@ -288,13 +288,13 @@ Against $9.6\,\mathrm{km/s}$ available, the margin is $9.6 - 8.84 = 0.76\,\mathr
 :::
 
 ::: check
-An ascent simulation reports realised $\Delta v = 8.05\,\mathrm{km/s}$, gravity loss $1.30\,\mathrm{km/s}$, drag loss $0.10\,\mathrm{km/s}$ and steering loss $0.04\,\mathrm{km/s}$. The rocket has two stages with mass ratios $3.98$ and $6.84$ and exhaust speeds $3050$ and $3413\,\mathrm{m/s}$. Is the simulation consistent?
+An ascent simulation reports realized $\Delta v = 8.05\,\mathrm{km/s}$, gravity loss $1.30\,\mathrm{km/s}$, drag loss $0.10\,\mathrm{km/s}$ and steering loss $0.04\,\mathrm{km/s}$. The rocket has two stages with mass ratios $3.98$ and $6.84$ and exhaust speeds $3050$ and $3413\,\mathrm{m/s}$. Is the simulation consistent?
 :::
 
 ::: answer
 Ideal $\Delta v$, stage by stage: $3050 \ln 3.98 \approx 3050 \times 1.381 \approx 4213\,\mathrm{m/s}$ and $3413 \ln 6.84 \approx 3413 \times 1.923 \approx 6562\,\mathrm{m/s}$. Together that is about $10.78\,\mathrm{km/s}$.
 
-The simulation's realised value plus losses is $8.05 + 1.30 + 0.10 + 0.04 = 9.49\,\mathrm{km/s}$.
+The simulation's realized value plus losses is $8.05 + 1.30 + 0.10 + 0.04 = 9.49\,\mathrm{km/s}$.
 
 They differ by about $1.3\,\mathrm{km/s}$ — far more than integration error — so the simulation is *not* consistent. A loss is under-logged, or the thrust or mass flow does not match the stated $v_e$, or the mass is handled wrongly. The identity must close before any number from the run is trusted.
 :::
@@ -306,7 +306,7 @@ They differ by about $1.3\,\mathrm{km/s}$ — far more than integration error �
 | $\gamma$, $\alpha$ | flight-path angle above the local horizon; angle between thrust and velocity |
 | $m\dot{v} = T\cos\alpha - D - mg\sin\gamma$ | along-track equation of motion, flat Earth |
 | $m v\dot{\gamma} = T\sin\alpha - mg\cos\gamma$ | across-track equation; $\dot{\gamma} = -(g/v)\cos\gamma$ for a gravity turn ($\alpha = 0$) |
-| $\Delta v_{\mathrm{realised}} = v_e\ln(m_0/m_f) - \int g\sin\gamma\,dt - \int D/m\,dt - \int (T/m)(1-\cos\alpha)\,dt$ | the $\Delta v$ identity; exact for every trajectory |
+| $\Delta v_{\mathrm{realized}} = v_e\ln(m_0/m_f) - \int g\sin\gamma\,dt - \int D/m\,dt - \int (T/m)(1-\cos\alpha)\,dt$ | the $\Delta v$ identity; exact for every trajectory |
 | gravity loss $\int g\sin\gamma\,dt$ | full $g$ vertical, zero horizontal; $1.2$–$1.5\,\mathrm{km/s}$ for LEO; shrinks with thrust-to-weight |
 | drag loss $\int D/m\,dt$, $D = \bar{q}C_D A$ | bunched around max-Q ($\sim 30\,\mathrm{kPa}$, $10$–$15\,\mathrm{km}$); $0.05$–$0.2\,\mathrm{km/s}$; smaller for bigger rockets |
 | steering loss $\int (T/m)(1-\cos\alpha)\,dt$ | $1 - \cos\alpha \approx \alpha^2/2$; nearly zero on a gravity turn |
@@ -314,7 +314,7 @@ They differ by about $1.3\,\mathrm{km/s}$ — far more than integration error �
 | Earth rotation | $\omega_E R_E\cos\phi$: $465\,\mathrm{m/s}$ at the equator, $409\,\mathrm{m/s}$ at $28.5°$; a credit for an eastward launch |
 | LEO budget | $7.8\,\mathrm{km/s}$ orbital $+$ losses $\approx 9.3$–$9.5\,\mathrm{km/s}$ ideal |
 
-The last two lessons change method rather than subject. For a single body under gravity, thrust and drag, Newton's second law is the natural tool. For a gimballed engine on a flexing stage with sloshing tanks, writing out every hidden joint force is not. Lesson 8 introduces constraints and generalised coordinates, and lesson 9 the Lagrangian machinery that turns them into equations of motion without a single free-body diagram.
+The last two lessons change method rather than subject. For a single body under gravity, thrust and drag, Newton's second law is the natural tool. For a gimballed engine on a flexing stage with sloshing tanks, writing out every hidden joint force is not. Lesson 8 introduces constraints and generalized coordinates, and lesson 9 the Lagrangian machinery that turns them into equations of motion without a single free-body diagram.
 
 ::: context flight-path-angle Two angles that are easy to mix up
 The **flight-path angle** $\gamma$ is measured from the horizon to the *velocity* — where the rocket is actually going. The **angle** $\alpha$ is measured from the velocity to the *thrust* — where the engine is pushing. The rocket's nose usually lines up with the thrust, so $\alpha$ is close to the angle of attack the air feels.

@@ -365,7 +365,7 @@ Two shorter spellings are common. A **`requires` clause** can come after the par
 
 A template is only a recipe until it is instantiated, and the compiler can only fill in a recipe it can see. So the full definition — the whole body, not only a declaration — must be visible in every **[[translation unit|translation-unit]]** that uses it. In practice, templates live in header files. Move a template's body into a `.cpp` file and every other file that uses it fails to **link** (the last build step, which joins compiled files together) with "undefined reference": nobody ever built the version for their types.
 
-Templates give **static polymorphism**: the behaviour is chosen at compile time, from types. Virtual functions (lesson 4) give **dynamic polymorphism**: the behaviour is chosen at run time, from an object's real type. Neither is better. They answer different questions.
+Templates give **static polymorphism**: the behavior is chosen at compile time, from types. Virtual functions (lesson 4) give **dynamic polymorphism**: the behavior is chosen at run time, from an object's real type. Neither is better. They answer different questions.
 
 | | Templates (static) | Virtual functions (dynamic) |
 | --- | --- | --- |

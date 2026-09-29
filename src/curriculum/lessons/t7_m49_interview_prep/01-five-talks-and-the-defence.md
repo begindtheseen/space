@@ -3,7 +3,7 @@ id: l01-five-talks-and-the-defence
 title: The five-talk system, and rehearsing the defense
 minutes: 22
 covers:
-  - The project presentation: choosing five topics, building a 10 to 20 minute talk for each, and rehearsing the defence rather than the delivery
+  - The project presentation: choosing five topics, building a 10 to 20 minute talk for each, and rehearsing the defense rather than the delivery
 ---
 
 Picture a science fair. You stand beside your poster. A judge walks up and listens to your first minute. Then the judge stops you and asks, "How do you know the plants grew because of the music and not the sunlight?" From that moment on, the poster matters much less. What matters is whether you have an answer.

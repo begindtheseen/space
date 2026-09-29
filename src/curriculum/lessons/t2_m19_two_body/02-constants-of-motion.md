@@ -326,7 +326,7 @@ Earth's equatorial bulge adds a small force that is not inverse-square. Under it
 The bulge does something similar to $\mathbf{h}$: its direction drifts, so the orbit plane slowly swings around Earth's pole. The energy $\varepsilon$, on the other hand, stays conserved under any extra force that is steady and conservative, like the bulge. So: **which constant an extra force breaks tells you what it does to the orbit.**
 
 ::: warning e is not a unit vector, and h is per unit mass
-The eccentricity vector has length $e$, which is $0.0006$ for the ISS and $0.73$ for a GTO. Only a parabola has $\lVert \mathbf{e} \rVert = 1$. If you normalize it to get its direction, do not forget that its length carried information. Likewise, $\mathbf{h}$ and $\varepsilon$ are *specific* quantities — per kilogram — with units $\mathrm{km^2/s}$ and $\mathrm{km^2/s^2}$. The spacecraft mass never appears, because it cancelled out of the equation of motion in the first place.
+The eccentricity vector has length $e$, which is $0.0006$ for the ISS and $0.73$ for a GTO. Only a parabola has $\lVert \mathbf{e} \rVert = 1$. If you normalize it to get its direction, do not forget that its length carried information. Likewise, $\mathbf{h}$ and $\varepsilon$ are *specific* quantities — per kilogram — with units $\mathrm{km^2/s}$ and $\mathrm{km^2/s^2}$. The spacecraft mass never appears, because it canceled out of the equation of motion in the first place.
 :::
 
 ::: warning Sign of r·v

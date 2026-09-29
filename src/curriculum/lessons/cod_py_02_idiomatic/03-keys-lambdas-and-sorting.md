@@ -255,7 +255,7 @@ Both put the `1`s before the `0`. They differ only in which of the two tied rows
 Two rows tie at 0.61, and `min` returned the one that came first. `min(results, key=...)` is the natural way to find the worst case. It beats `sorted(results, key=...)[0]` for the same reason `islice` beat slicing a list in the last lesson: sorting the whole table to find one row does **[[work that grows faster than the table|n-log-n]]**.
 
 ::: example Worst case per configuration, and the groupby trap
-`itertools.groupby` collects **[[neighbouring items with equal keys|groupby-runs]]** into groups. It does *not* gather scattered ones, and when you forget that, it fails silently:
+`itertools.groupby` collects **[[neighboring items with equal keys|groupby-runs]]** into groups. It does *not* gather scattered ones, and when you forget that, it fails silently:
 
 ```python
 # worst_per_config.py
@@ -382,7 +382,7 @@ Prefer `min` when you want one case. It makes a single pass and calls `margin` o
 
 Prefer `sorted(...)[0]` when you are about to want the second and third worst as well, or the whole ranking for a report. Then the sort is not waste; it is what you needed, and taking `[0]` costs nothing extra.
 
-One behaviour to know: on a tie, both give the first such item in the original order, so they agree. But on an empty input, `min` raises `ValueError`, while `sorted(...)[0]` raises `IndexError`.
+One behavior to know: on a tie, both give the first such item in the original order, so they agree. But on an empty input, `min` raises `ValueError`, while `sorted(...)[0]` raises `IndexError`.
 :::
 
 ::: check
@@ -400,7 +400,7 @@ A script groups 2,000 dispersion results by configuration with `itertools.groupb
 :::
 
 ::: answer
-The input was not sorted by the grouping key. `groupby` starts a new group every time the key changes between neighbouring items. A table in case-number order starts a new group each time a row's configuration differs from the row before — here, 47 runs of neighbouring equal configurations.
+The input was not sorted by the grouping key. `groupby` starts a new group every time the key changes between neighboring items. A table in case-number order starts a new group each time a row's configuration differs from the row before — here, 47 runs of neighboring equal configurations.
 
 You know it is not a data problem because the configuration *names* repeat across those 47 lines. Forty-seven genuinely different configurations would show 47 different names. The fix is one line before the `groupby`: `results.sort(key=itemgetter(0))`, using the same key function for both.
 :::
@@ -419,7 +419,7 @@ You know it is not a data problem because the configuration *names* repeat acros
 | `operator.itemgetter(k)` | `x[k]` as a function; several keys give a tuple; works on dicts too |
 | `map(f, it)` | Lazy; worth it when `f` is an existing named function, as in `map(float, parts)` |
 | `filter(p, it)` | Lazy; usually clearer as `(x for x in it if ...)` |
-| `itertools.groupby` | Groups *neighbouring* equal keys; sort by the same key first or the groups are wrong |
+| `itertools.groupby` | Groups *neighboring* equal keys; sort by the same key first or the groups are wrong |
 | Measured here | Lambda key about 32 ms, `itemgetter` about 27 ms per 100,000-row sort, `python3 -m timeit` |
 
 The next lesson moves from functions to objects. A results row has been a tuple or a dict so far, and both make you remember what index 2 means. A class gives the row a name, and gives the operations that belong to it somewhere to live.
@@ -468,7 +468,7 @@ A sort is **stable** if items with equal keys come out in the same order they we
 </svg>
 ```
 
-The lines never cross within a colour: tied rows keep their earlier order. Python's sort, **Timsort**, written by Tim Peters for Python in 2002, guarantees this.
+The lines never cross within a color: tied rows keep their earlier order. Python's sort, **Timsort**, written by Tim Peters for Python in 2002, guarantees this.
 :::
 
 ::: context lambda-name Why "lambda"
@@ -509,7 +509,7 @@ Each lambda remembers *where* to find `i`, not what `i` was. All three point at 
 </svg>
 ```
 
-This behaviour has a name, **late binding**: a name inside a function is looked up when the function runs. You met it in the closures lesson of the Python basics module; here it is again, inside a sort key.
+This behavior has a name, **late binding**: a name inside a function is looked up when the function runs. You met it in the closures lesson of the Python basics module; here it is again, inside a sort key.
 :::
 
 ::: context n-log-n How fast sorting grows
@@ -518,7 +518,7 @@ Sorting $n$ items with comparisons takes on the order of $n \log_2 n$ comparison
 Finding the minimum takes exactly $n - 1$ comparisons: look at each item once, keep the smallest so far. So for one worst case, `min` wins by a factor of about $\log_2 n$ — around 20 for a million rows — and uses no extra memory for a sorted copy.
 :::
 
-::: context groupby-runs Groups are runs of neighbours
+::: context groupby-runs Groups are runs of neighbors
 `groupby` walks the list once and starts a new group whenever the key differs from the previous item's key. It never looks back.
 
 ```svg
@@ -549,7 +549,7 @@ Finding the minimum takes exactly $n - 1$ comparisons: look at each item once, k
 </svg>
 ```
 
-It behaves like the shell's `uniq`, which also only merges neighbouring duplicate lines — and is also used after `sort` for the same reason.
+It behaves like the shell's `uniq`, which also only merges neighboring duplicate lines — and is also used after `sort` for the same reason.
 :::
 
 ::: context map-filter-history The tools Python nearly dropped

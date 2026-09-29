@@ -22,7 +22,7 @@ $$
 \mathbf v_{\text{antenna}} = \mathbf v_{\text{IMU}} + \mathbf C_b^n\big(\boldsymbol\omega_{ib}^b\times\mathbf r\big).
 $$
 
-Read $\boldsymbol\omega_{ib}^b$ as "omega i b in b": the body's rate against inertial space, as the gyros measure it, in body axes. The matrix $\mathbf C_b^n$ turns the result from body axes into north-east-down. (Strictly, the Earth's own turning should be taken out of $\boldsymbol\omega_{ib}^b$ here; over a lever arm of a few metres it changes the answer by well under a millimetre per second.)
+Read $\boldsymbol\omega_{ib}^b$ as "omega i b in b": the body's rate against inertial space, as the gyros measure it, in body axes. The matrix $\mathbf C_b^n$ turns the result from body axes into north-east-down. (Strictly, the Earth's own turning should be taken out of $\boldsymbol\omega_{ib}^b$ here; over a lever arm of a few meters it changes the answer by well under a millimeter per second.)
 
 Position has a lever arm too, and it needs no turning at all: $\mathbf p_{\text{antenna}}=\mathbf p_{\text{IMU}}+\mathbf C_b^n\mathbf r$. The GNSS receiver really measures the antenna's **[[phase center|phase-center]]**, not the IMU. Leave that out and every fix is off by the length of the arm.
 
@@ -190,7 +190,7 @@ A lever arm correction uses the vehicle's *current* turn rate. Why can it not be
 :::
 
 ::: answer
-The error $\mathbf C_b^n(\boldsymbol\omega_{ib}^b\times\mathbf r)$ is proportional to the turn rate right now, and the turn rate keeps changing. It is zero in straight flight and over a metre per second in a moderate turn, as the worked example showed. Its direction also changes as $\mathbf C_b^n$ changes. A fixed offset tuned at one turn rate would be wrong at every other rate, including zero. So the term is recomputed every cycle from the current $\boldsymbol\omega_{ib}^b$ and $\mathbf C_b^n$, which the mechanization already has. Only $\mathbf r$ is a constant.
+The error $\mathbf C_b^n(\boldsymbol\omega_{ib}^b\times\mathbf r)$ is proportional to the turn rate right now, and the turn rate keeps changing. It is zero in straight flight and over a meter per second in a moderate turn, as the worked example showed. Its direction also changes as $\mathbf C_b^n$ changes. A fixed offset tuned at one turn rate would be wrong at every other rate, including zero. So the term is recomputed every cycle from the current $\boldsymbol\omega_{ib}^b$ and $\mathbf C_b^n$, which the mechanization already has. Only $\mathbf r$ is a constant.
 :::
 
 ::: check
@@ -264,7 +264,7 @@ The arrows point along the direction of travel, at right angles to the arm — t
 :::
 
 ::: context phase-center Where an antenna "is"
-A GNSS antenna is a flat patch or a small dome, several centimetres across. The point whose position the receiver actually computes is the antenna's electrical **phase center**, which sits somewhere inside it and shifts slightly with the direction of each satellite. Survey-grade antennas come with calibration tables for this shift. For a vehicle navigator, the phase center printed on the antenna's drawing is the end point of the lever arm.
+A GNSS antenna is a flat patch or a small dome, several centimeters across. The point whose position the receiver actually computes is the antenna's electrical **phase center**, which sits somewhere inside it and shifts slightly with the direction of each satellite. Survey-grade antennas come with calibration tables for this shift. For a vehicle navigator, the phase center printed on the antenna's drawing is the end point of the lever arm.
 :::
 
 ::: context foot-mounted One stop per step

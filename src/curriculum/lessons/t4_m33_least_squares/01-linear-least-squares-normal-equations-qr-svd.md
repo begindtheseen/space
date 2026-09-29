@@ -24,7 +24,7 @@ $$
 
 Row $i$ of $\mathbf{H}$ is written $\mathbf{h}_i^\mathsf{T}$ (read "h sub i transpose"), so measurement $i$ says $y_i = \mathbf{h}_i^\mathsf{T}\mathbf{x} + v_i$. Three real rows:
 
-- A receiver clock modelled as bias plus drift: $\mathbf{h}_i^\mathsf{T} = (1,\ t_i)$.
+- A receiver clock modeled as bias plus drift: $\mathbf{h}_i^\mathsf{T} = (1,\ t_i)$.
 - A range to a beacon, linearized about a guessed position: $\mathbf{h}_i^\mathsf{T}$ is the unit vector along the line of sight.
 - A gyro on a rate table spinning at $\omega_i$, with unknowns scale factor and bias: $\mathbf{h}_i^\mathsf{T} = (\omega_i,\ 1)$.
 
@@ -71,7 +71,7 @@ The error $\hat{\mathbf{x}} - \mathbf{x} = \mathbf{K}\mathbf{v}$ is the noise pa
 Look at what that formula contains: the geometry $\mathbf{H}$ and the noise level $\sigma$. It contains no measured value. You can compute how good the fit will be before taking a single measurement.
 
 ::: key Normal equations
-$\hat{\mathbf{x}} = (\mathbf{H}^\mathsf{T}\mathbf{H})^{-1}\mathbf{H}^\mathsf{T}\mathbf{y}$ minimises $\lVert\mathbf{y} - \mathbf{H}\mathbf{x}\rVert^2$. It is correct in exact arithmetic; numerically, forming $\mathbf{H}^\mathsf{T}\mathbf{H}$ squares the condition number, so prefer QR or the SVD. Under noise of covariance $\sigma^2\mathbf{I}$ the estimate is unbiased with covariance $\sigma^2(\mathbf{H}^\mathsf{T}\mathbf{H})^{-1}$.
+$\hat{\mathbf{x}} = (\mathbf{H}^\mathsf{T}\mathbf{H})^{-1}\mathbf{H}^\mathsf{T}\mathbf{y}$ minimizes $\lVert\mathbf{y} - \mathbf{H}\mathbf{x}\rVert^2$. It is correct in exact arithmetic; numerically, forming $\mathbf{H}^\mathsf{T}\mathbf{H}$ squares the condition number, so prefer QR or the SVD. Under noise of covariance $\sigma^2\mathbf{I}$ the estimate is unbiased with covariance $\sigma^2(\mathbf{H}^\mathsf{T}\mathbf{H})^{-1}$.
 :::
 
 ## The residual and the hat matrix

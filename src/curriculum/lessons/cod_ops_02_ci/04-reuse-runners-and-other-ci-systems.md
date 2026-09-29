@@ -5,7 +5,7 @@ minutes: 24
 covers:
   - Reusable workflows and composite actions
   - Self-hosted runners for licensed tools and special hardware
-  - GitLab CI and Jenkins, still common in defence and aerospace
+  - GitLab CI and Jenkins, still common in defense and aerospace
 ---
 
 Think of a kitchen that cooks for five schools. Every dish starts the same way: wash hands, preheat the oven, set out the trays. If each recipe card repeats those steps, a new health rule means fixing fifty cards. So the kitchen keeps a binder: the "getting started" page is written once, and every recipe says "do that page first". Sometimes the whole week's menu is shared too, and each school only changes the dessert.
@@ -198,7 +198,7 @@ Every job so far ran on a **GitHub-hosted runner**: a fresh virtual machine made
 
 But some jobs need something that virtual machine cannot have. These are the real reasons:
 
-- **A license on a private network.** MATLAB and Simulink, many commercial solvers, and some compilers for flight processors check out a license from a **license server** inside the company. A machine in GitHub's data centre cannot reach it.
+- **A license on a private network.** MATLAB and Simulink, many commercial solvers, and some compilers for flight processors check out a license from a **license server** inside the company. A machine in GitHub's data center cannot reach it.
 - **Special hardware.** A **[[hardware-in-the-loop|hil-rig]]** rig connects the real flight computer to a simulator that pretends to be the rest of the vehicle. The flight computer is on a bench in a lab. Tests that need it must run on the computer wired to it.
 - **GPUs**, or other hardware the hosted machines do not offer for your plan.
 - **Controlled data.** Some data may not leave managed company infrastructure at all, for example technical data covered by **[[export control|export-control]]** rules.
@@ -206,7 +206,7 @@ But some jobs need something that virtual machine cannot have. These are the rea
 For these, you install GitHub's runner program on your own machine and register it with your repository or organization. It is then a **self-hosted runner**.
 
 ::: key When do you need a self-hosted CI runner?
-When the job needs something the hosted runner cannot have: a MATLAB or Simulink licence reachable on a private network, specialised hardware for hardware-in-the-loop, GPUs, or data under export control.
+When the job needs something the hosted runner cannot have: a MATLAB or Simulink license reachable on a private network, specialized hardware for hardware-in-the-loop, GPUs, or data under export control.
 :::
 
 Notice what is not on that list: convenience, or getting around the rules. Who may merge, and which checks must pass first, is set by **branch protection** (this module's last lesson). The runner only decides *where* a job runs; it has no say in review.

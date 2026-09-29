@@ -362,7 +362,7 @@ An **impulse train** is one spike every $T$ seconds. Multiplying $x(t)$ by it ke
 :::
 
 ::: context names Who the theorem is named after
-Harry Nyquist, an engineer at Bell Labs, showed in a 1928 paper on telegraph signalling that a channel of bandwidth $B$ can carry at most $2B$ independent pulses per second. Claude Shannon gave the sampling theorem its clean modern form, with the sinc reconstruction, in a 1949 paper on communication in the presence of noise.
+Harry Nyquist, an engineer at Bell Labs, showed in a 1928 paper on telegraph signaling that a channel of bandwidth $B$ can carry at most $2B$ independent pulses per second. Claude Shannon gave the sampling theorem its clean modern form, with the sinc reconstruction, in a 1949 paper on communication in the presence of noise.
 
 Others found the same result independently: the mathematician E. T. Whittaker in 1915 and the Soviet engineer Vladimir Kotelnikov in 1933. That is why some books call it the Whittaker-Kotelnikov-Shannon theorem.
 :::

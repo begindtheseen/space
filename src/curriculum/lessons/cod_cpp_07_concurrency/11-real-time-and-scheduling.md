@@ -4,14 +4,14 @@ title: "Real time: deadlines, worst cases and rate-monotonic scheduling"
 minutes: 24
 covers:
   - Hard, firm and soft real time; WCET and why average latency is irrelevant
-  - Rate-monotonic scheduling and utilisation bounds
+  - Rate-monotonic scheduling and utilization bounds
 ---
 
 Think about a drummer in a band. Nobody cares how fast the drummer can hit the drum. What matters is that each beat lands exactly when the song needs it. A drummer who is "fast on average" but misses one beat in a thousand has still ruined the song.
 
 Now think about a mail carrier. If your letter arrives an hour late, you are a little annoyed, and the letter is still useful.
 
-Computers that control machines are drummers. The phrase **real time** does not mean "fast". It means **on time**: a result counts only if it arrives before its **deadline**, the latest moment it is still any good. A thrust-vector control loop running at 1 kHz has a deadline every millisecond. This lesson sorts real-time work into three kinds, shows why a task's average time says almost nothing about its deadlines, and gives you a paper test of whether periodic tasks will *always* make them: rate-monotonic scheduling and its utilisation bound.
+Computers that control machines are drummers. The phrase **real time** does not mean "fast". It means **on time**: a result counts only if it arrives before its **deadline**, the latest moment it is still any good. A thrust-vector control loop running at 1 kHz has a deadline every millisecond. This lesson sorts real-time work into three kinds, shows why a task's average time says almost nothing about its deadlines, and gives you a paper test of whether periodic tasks will *always* make them: rate-monotonic scheduling and its utilization bound.
 
 ## Hard, firm and soft real time
 
@@ -40,7 +40,7 @@ $C$ is not one number: a branch goes the other way, data misses in the cache, an
 There are two ways to get a WCET, and serious projects use both.
 
 1. **Measure.** Run the task millions of times under the worst load you can create and record the longest run, the **[[high-water mark|high-water-mark]]**. It is easy, but it only tells you the worst case *you saw*; the true one is at least that large.
-2. **Analyse.** Tools read the compiled machine code, find its longest path, and model the processor's timing to put a proven upper bound on it. That is hard on processors with caches and deep pipelines, one reason flight processors are often simpler than desktop ones.
+2. **Analyze.** Tools read the compiled machine code, find its longest path, and model the processor's timing to put a proven upper bound on it. That is hard on processors with caches and deep pipelines, one reason flight processors are often simpler than desktop ones.
 
 In practice teams add a margin to the measured high-water mark and make the schedule fit with it.
 
@@ -174,9 +174,9 @@ Think of a kitchen with one stove. The cook who needs it every minute should go 
 In 1973, **[[Liu and Layland|liu-layland]]** proved two results about this rule, under a set of assumptions: the tasks are periodic, independent (no shared locks), each deadline equals its period, the scheduler is preemptive, there is one processor, and switching between tasks costs nothing.
 
 1. Among all fixed-priority assignments, rate-monotonic is the best: if any fixed priority order meets every deadline, rate-monotonic does too.
-2. A simple test on **utilisation** is enough to guarantee it.
+2. A simple test on **utilization** is enough to guarantee it.
 
-The **utilisation** of a task is the fraction of the processor it uses: $U_i = C_i / T_i$, read "C sub i over T sub i". A task that needs 0.3 ms every 1 ms uses $0.3$, or 30 percent. The total utilisation is the sum over all $n$ tasks:
+The **utilization** of a task is the fraction of the processor it uses: $U_i = C_i / T_i$, read "C sub i over T sub i". A task that needs 0.3 ms every 1 ms uses $0.3$, or 30 percent. The total utilization is the sum over all $n$ tasks:
 
 $$
 U = \sum_{i=1}^{n} \frac{C_i}{T_i}
@@ -201,10 +201,10 @@ Read $2^{1/n}$ as "two to the power one over n", the $n$-th root of 2. Computed 
 | 100 | 0.696 |
 | very many | $\ln 2 \approx 0.693$ |
 
-Each task you add lowers the bound a little, down toward $\ln 2$, the natural logarithm of 2, about 0.693, and never below it. So a rule of thumb: **if the total utilisation is under about 69 percent, rate-monotonic priorities meet every deadline, however many tasks there are.**
+Each task you add lowers the bound a little, down toward $\ln 2$, the natural logarithm of 2, about 0.693, and never below it. So a rule of thumb: **if the total utilization is under about 69 percent, rate-monotonic priorities meet every deadline, however many tasks there are.**
 
-::: key Rate-monotonic scheduling: the utilisation bound
-For $n$ independent periodic tasks with deadlines equal to periods, fixed priorities assigned by rate are schedulable if total utilisation $U = \sum C_i/T_i \le n\left(2^{1/n} - 1\right)$, which tends to $\ln 2 \approx 0.693$, about 69 percent. Above that you need an exact response-time analysis.
+::: key Rate-monotonic scheduling: the utilization bound
+For $n$ independent periodic tasks with deadlines equal to periods, fixed priorities assigned by rate are schedulable if total utilization $U = \sum C_i/T_i \le n\left(2^{1/n} - 1\right)$, which tends to $\ln 2 \approx 0.693$, about 69 percent. Above that you need an exact response-time analysis.
 :::
 
 ::: note Why the bound tends to ln 2
@@ -222,7 +222,7 @@ A small flight computer runs three periodic tasks. Their WCETs come from measure
 
 Step 1, priorities by rate: control highest, navigation middle, telemetry lowest.
 
-Step 2, total utilisation: $U = 0.3/1 + 2/10 + 15/100 = 0.30 + 0.20 + 0.15 = 0.65$. The processor is busy 65 percent of the time.
+Step 2, total utilization: $U = 0.3/1 + 2/10 + 15/100 = 0.30 + 0.20 + 0.15 = 0.65$. The processor is busy 65 percent of the time.
 
 Step 3, the bound for $n = 3$: $3\left(2^{1/3} - 1\right)$. The cube root of 2 is 1.2599, so this is $3 \times 0.2599 = 0.780$.
 
@@ -247,8 +247,8 @@ $$
 
 Here $hp(i)$, read "h p of i", is the set of tasks with higher priority than $i$. $R_i$ appears on both sides, so you solve it by repeating: start with $R_i = C_i + \sum C_j$, put that into the right-hand side, get a new $R_i$, and repeat until the number stops changing (the answer) or grows past the deadline (a miss).
 
-::: example Response times when utilisation is above the bound
-The navigation filter grows: its WCET is now 4 ms. New utilisation: $0.30 + 4/10 + 0.15 = 0.85$. That is above the three-task bound of 0.780, so the simple test says nothing. Work out each response time (all times in ms).
+::: example Response times when utilization is above the bound
+The navigation filter grows: its WCET is now 4 ms. New utilization: $0.30 + 4/10 + 0.15 = 0.85$. That is above the three-task bound of 0.780, so the simple test says nothing. Work out each response time (all times in ms).
 
 **Control** (highest priority, nothing above it): $R_1 = C_1 = 0.3 \le 1$. Meets its deadline.
 
@@ -276,7 +276,7 @@ $R_2 = 5.8 \le 10$. Meets its deadline.
 
 $R_3 = 50 \le 100$. Meets its deadline.
 
-All three pass, though the utilisation test could not promise it. Sanity check: in 50 ms, control runs 50 times ($50 \times 0.3 = 15$ ms), navigation 5 times ($5 \times 4 = 20$ ms) and telemetry once (15 ms), and $15 + 20 + 15 = 50$: the processor was busy the whole window, as a worst case should be. A python3 run of the iteration gives the same sequences.
+All three pass, though the utilization test could not promise it. Sanity check: in 50 ms, control runs 50 times ($50 \times 0.3 = 15$ ms), navigation 5 times ($5 \times 4 = 20$ ms) and telemetry once (15 ms), and $15 + 20 + 15 = 50$: the processor was busy the whole window, as a worst case should be. A python3 run of the iteration gives the same sequences.
 
 Now push telemetry to $C = 40$ ms ($U = 1.10$). The iteration goes 44.3, 73.5, 94.2, 108.5: past the 100 ms deadline, so telemetry misses, as it must with $U > 1$.
 :::
@@ -306,7 +306,7 @@ A 500 Hz loop has a period of $1/500\,\mathrm{s} = 2\,\mathrm{ms}$, so its deadl
 :::
 
 ::: check
-Four independent periodic tasks have utilisations 0.20, 0.15, 0.25 and 0.10, deadlines equal to periods. Are they guaranteed schedulable under rate-monotonic priorities?
+Four independent periodic tasks have utilizations 0.20, 0.15, 0.25 and 0.10, deadlines equal to periods. Are they guaranteed schedulable under rate-monotonic priorities?
 :::
 
 ::: answer
@@ -326,7 +326,7 @@ Why is a measured high-water mark not a proven WCET, and what do teams do about 
 :::
 
 ::: answer
-A measurement covers only the runs you made, with the inputs, cache states and interrupts that happened to occur; the true worst case can be a combination you never hit. So the real WCET is at least the measured max. Teams test long under stress, add margin, keep utilisation well below the limit, and for the most critical code use static analysis that bounds the longest path through the machine code.
+A measurement covers only the runs you made, with the inputs, cache states and interrupts that happened to occur; the true worst case can be a combination you never hit. So the real WCET is at least the measured max. Teams test long under stress, add margin, keep utilization well below the limit, and for the most critical code use static analysis that bounds the longest path through the machine code.
 :::
 
 ## Summary
@@ -340,7 +340,7 @@ A measurement covers only the runs you made, with the inputs, cache states and i
 | Measured jitter, 1 kHz loop | Ordinary Linux, 4-core VM | Mean 91.5 µs, p99.9 346 µs, max 2,899 µs |
 | Hot-path hygiene | Remove unbounded-time operations | Allocation, exceptions, RTTI, unbounded loops, I/O |
 | Rate-monotonic | Fixed priority by rate | Shorter period, higher priority |
-| Utilisation | Fraction of the processor used | $U = \sum C_i / T_i$ |
+| Utilization | Fraction of the processor used | $U = \sum C_i / T_i$ |
 | Liu and Layland bound | Sufficient schedulability test | $U \le n(2^{1/n} - 1) \to \ln 2 \approx 0.693$ |
 | Response-time analysis | Exact test | $R_i = C_i + \sum_{hp(i)} \lceil R_i/T_j \rceil C_j$, need $R_i \le D_i$ |
 
@@ -388,7 +388,7 @@ Preemptive means the scheduler can stop a running task at almost any instruction
 :::
 
 ::: context liu-layland The paper behind the bound
-Chung Laung Liu and James Layland published "Scheduling Algorithms for Multiprogramming in a Hard-Real-Time Environment" in the Journal of the ACM in 1973. It introduced both the rate-monotonic priority rule with its utilisation bound and the deadline-driven scheduler now called earliest deadline first. It remains one of the most cited papers in real-time computing, and nearly every real-time scheduling course starts from it.
+Chung Laung Liu and James Layland published "Scheduling Algorithms for Multiprogramming in a Hard-Real-Time Environment" in the Journal of the ACM in 1973. It introduced both the rate-monotonic priority rule with its utilization bound and the deadline-driven scheduler now called earliest deadline first. It remains one of the most cited papers in real-time computing, and nearly every real-time scheduling course starts from it.
 :::
 
 ::: context rm-timeline The first 4 ms, drawn

@@ -1,23 +1,23 @@
 ---
 id: l10-modernising-legacy-code
-title: Modernising old C++ code safely
+title: Modernizing old C++ code safely
 minutes: 19
 covers:
-  - Modernising legacy code: what to change first and how to justify each change
+  - Modernizing legacy code: what to change first and how to justify each change
 ---
 
 Imagine renovating an old house while a family still lives in it. You would not start by knocking down walls. First you put smoke detectors in every room, so that if something starts to burn, you hear about it. Then you photograph every room exactly as it is, so that later you can prove what you changed and what you did not. Then you work one room at a time, and you never mix "fix the leaking pipe" with "repaint the kitchen" in the same afternoon, because if the floor gets wet you want to know which job did it.
 
 Old flight and ground code is that house. It works. It has flown, or it has run in the simulator for fifteen years. It is also written the C++98 way: `NULL`, raw `new` and `delete`, C arrays with a separate length, macros, plain `enum`. You have spent this module learning what replaced each of those. This lesson is about the harder question: in what order do you change them, and how do you convince a reviewer — or a certification board — that each change made the code safer without changing what it does?
 
-**Modernising** here means changing the *form* of working code to use newer, safer language features, while keeping its *behaviour* identical. It is a kind of **[[refactoring|refactoring]]**: improving the structure of code without changing what it does from the outside.
+**Modernizing** here means changing the *form* of working code to use newer, safer language features, while keeping its *behavior* identical. It is a kind of **[[refactoring|refactoring]]**: improving the structure of code without changing what it does from the outside.
 
-## The one rule: change the form, not the behaviour
+## The one rule: change the form, not the behavior
 
-Every change in a modernisation falls into one of two kinds.
+Every change in a modernization falls into one of two kinds.
 
 - A **refactoring** changes how the code is written and nothing it does. Same inputs, same outputs, same timing class.
-- A **behaviour change** makes the program do something different. A bug fix is a behaviour change, even a good one.
+- A **behavior change** makes the program do something different. A bug fix is a behavior change, even a good one.
 
 The whole method rests on keeping these apart. If a diff is a pure refactoring, the review question is narrow: "is this really equivalent?" If a diff mixes the two, the reviewer must untangle which lines are the fix and which are the tidy-up, and one wrong line hides among fifty right ones.
 
@@ -29,7 +29,7 @@ The order of work follows from the risk of each step and what it buys:
 4. **Bug fixes**, each in its own change, each with a test that shows the difference.
 
 ::: key What to change first
-Order by risk and benefit: warnings and sanitizers on first, then tests around the code, then small mechanical changes (`nullptr`, `override`, `enum class`, smart pointers for ownership, `std::array` for C arrays, range-for, `const`/`constexpr`, macros), and only then behaviour changes, each on its own.
+Order by risk and benefit: warnings and sanitizers on first, then tests around the code, then small mechanical changes (`nullptr`, `override`, `enum class`, smart pointers for ownership, `std::array` for C arrays, range-for, `const`/`constexpr`, macros), and only then behavior changes, each on its own.
 :::
 
 ## Step 1: smoke detectors
@@ -136,12 +136,12 @@ Sanity check: two real bugs, and not one line of the program changed. That is wh
 :::
 
 ::: warning Leak detection is conservative
-Built with `-O1` instead of `-O0`, the same program reported no leak on this machine. The leak checker looks through memory for anything that still looks like a pointer to each block, and an optimised build can leave a stale copy of `name` lying around. So run sanitizer builds without heavy optimisation, and treat "no report" as "nothing found", not "nothing there".
+Built with `-O1` instead of `-O0`, the same program reported no leak on this machine. The leak checker looks through memory for anything that still looks like a pointer to each block, and an optimized build can leave a stale copy of `name` lying around. So run sanitizer builds without heavy optimization, and treat "no report" as "nothing found", not "nothing there".
 :::
 
 ## Step 2: photograph the house
 
-Before changing a line, write down what the code does now. A **[[characterization test|characterization-test]]** records a program's current behaviour — right or wrong — so that any change to it is noticed. The simplest kind is a **golden file**: run the program once, save its output, and compare every later run against it.
+Before changing a line, write down what the code does now. A **[[characterization test|characterization-test]]** records a program's current behavior — right or wrong — so that any change to it is noticed. The simplest kind is a **golden file**: run the program once, save its output, and compare every later run against it.
 
 ```text
 $ ./legacy > golden.txt           # once, before any change
@@ -151,7 +151,7 @@ $ ./legacy | diff golden.txt -    # after every change: silence means identical
 Notice what this test pins down: the *wrong* filtered values and the *wrong* energy. That is deliberate. During refactoring, the test's job is to prove nothing changed. Fixing the bugs is a separate job, later, with its own test.
 
 ::: warning Tests before changes, not after
-Writing tests after modernising only proves the new code does what the new code does. The comparison that matters is old against new, and the old behaviour is gone once you have edited it. Keep the original build, or its saved output, until the refactoring is finished.
+Writing tests after modernizing only proves the new code does what the new code does. The comparison that matters is old against new, and the old behavior is gone once you have edited it. Keep the original build, or its saved output, until the refactoring is finished.
 :::
 
 ## Step 3: the mechanical changes
@@ -169,7 +169,7 @@ Each change below replaces a C++98 pattern with the feature this module traced b
 | add `const`, `constexpr` | accidental writes; values computed at run time | compiles |
 | macros to `constexpr` and functions | precedence and double-evaluation surprises | golden file — and see below |
 
-The order in the table is the order of risk. `override` never changes the machine code at all. `nullptr` changes it only where `NULL` was quietly choosing an integer overload — the very bug it exists to catch. Smart pointers change who deletes an object, so they need the sanitizer run. Macros come last, because replacing a macro with a function can change behaviour when the macro was broken, as this one is.
+The order in the table is the order of risk. `override` never changes the machine code at all. `nullptr` changes it only where `NULL` was quietly choosing an integer overload — the very bug it exists to catch. Smart pointers change who deletes an object, so they need the sanitizer run. Macros come last, because replacing a macro with a function can change behavior when the macro was broken, as this one is.
 
 The same thinking applies to function signatures. A C++98 parser often looks like `bool parse(const std::uint8_t* p, int n, int* out_id, double* out_value)`. Taking a `std::span<const std::uint8_t>` removes the mismatched pointer-and-length and the null-argument cases; returning a `std::optional` removes the ignored `bool` and the half-written output on failure. Lesson 04's C++17 tools finish the job at the call site:
 
@@ -245,7 +245,7 @@ Now let the tool apply its own fixes to a copy, with `-fix` and the modernize ch
 
 It also turned `#define MAX_THRUSTERS 4` into an unnamed `enum`. Now the evidence. The fixed copy printed exactly the five golden lines, so `diff` was silent. Better still, compiled with `g++ -O2 -c`, the two object files were both 1,020 bytes, and their disassembly was **identical**, instruction for instruction.
 
-Sanity check: identical machine code is the strongest "no behaviour change" evidence there is — and it also means the tool fixed neither bug. The filter still does not filter, and the energy is still 3.00. No `modernize` check reported `LowPass::update(float)`, because it overrides nothing, so `modernize-use-override` had nothing to act on. The tool changes form. Finding bugs was step 1's job.
+Sanity check: identical machine code is the strongest "no behavior change" evidence there is — and it also means the tool fixed neither bug. The filter still does not filter, and the energy is still 3.00. No `modernize` check reported `LowPass::update(float)`, because it overrides nothing, so `modernize-use-override` had nothing to act on. The tool changes form. Finding bugs was step 1's job.
 :::
 
 ::: warning Automatic fixes still need a review
@@ -280,14 +280,14 @@ A reviewer, and even more a certification board, will ask of every diff: why thi
 
 - **Name a measurable benefit.** "Removes the mismatched-length defect class from 12 call sites." "Warning count 31 to 0." "clang-tidy modernize findings 9 to 0." "Sanitizer run: 1 leak to none." Numbers can be checked; "more modern" cannot.
 - **Keep diffs small and single-purpose.** One kind of change per commit: all the `nullptr` changes, then all the `override` changes. A reviewer can check a 40-line diff of one pattern properly; a 2,000-line mix gets skimmed.
-- **Show there was no behaviour change.** The golden file is unchanged. For the strongest claim, the object code is unchanged, as it was for the clang-tidy fixes.
+- **Show there was no behavior change.** The golden file is unchanged. For the strongest claim, the object code is unchanged, as it was for the clang-tidy fixes.
 - **Leave regression tests behind.** Each bug fix adds a test that failed before and passes after, so the bug cannot quietly come back.
 
 ::: key How to justify each change
-Each change names a measurable benefit (a defect class removed, a count that falls), comes as a small single-purpose diff, carries evidence of no behaviour change (golden output, ideally identical object code), and leaves regression tests behind.
+Each change names a measurable benefit (a defect class removed, a count that falls), comes as a small single-purpose diff, carries evidence of no behavior change (golden output, ideally identical object code), and leaves regression tests behind.
 :::
 
-For flight code under a formal standard such as **[[DO-178C|do-178c]]**, add one more question: what does the change cost to re-verify? Changing certified code can mean repeating reviews, tests and coverage analysis for everything it touches. So teams often modernise a file when they must change it anyway, and leave stable, verified code alone. "Modern" is not a reason. A defect class removed, at a verification cost the project accepts, is.
+For flight code under a formal standard such as **[[DO-178C|do-178c]]**, add one more question: what does the change cost to re-verify? Changing certified code can mean repeating reviews, tests and coverage analysis for everything it touches. So teams often modernize a file when they must change it anyway, and leave stable, verified code alone. "Modern" is not a reason. A defect class removed, at a verification cost the project accepts, is.
 
 ## Check yourself
 
@@ -296,7 +296,7 @@ A colleague proposes one pull request that converts 300 files from `NULL` to `nu
 :::
 
 ::: answer
-Split it. The `nullptr` change and the `override` change are pure refactorings, each one pattern, each checkable by "compiles, golden output unchanged, ideally object code unchanged". The three bug fixes change behaviour, so each needs its own change, its own test that fails before and passes after, and a deliberate update to the golden output. Mixed together, a reviewer cannot tell which lines are meant to change behaviour, and a mistake in one fix hides among hundreds of mechanical edits.
+Split it. The `nullptr` change and the `override` change are pure refactorings, each one pattern, each checkable by "compiles, golden output unchanged, ideally object code unchanged". The three bug fixes change behavior, so each needs its own change, its own test that fails before and passes after, and a deliberate update to the golden output. Mixed together, a reviewer cannot tell which lines are meant to change behavior, and a mistake in one fix hides among hundreds of mechanical edits.
 :::
 
 ::: check
@@ -304,7 +304,7 @@ Why do warnings and sanitizers come before any code change, and before the tests
 :::
 
 ::: answer
-They change no source code, so they cannot break anything, and they often find real bugs at once — in the example, a filter that never filtered and a leak, with zero edits. They also tell you which "current behaviour" is actually a bug before you pin it down in a characterization test, so you know which lines of the golden file you expect to change later.
+They change no source code, so they cannot break anything, and they often find real bugs at once — in the example, a filter that never filtered and a leak, with zero edits. They also tell you which "current behavior" is actually a bug before you pin it down in a characterization test, so you know which lines of the golden file you expect to change later.
 :::
 
 ::: check
@@ -312,7 +312,7 @@ They change no source code, so they cannot break anything, and they often find r
 :::
 
 ::: answer
-The text becomes `a + 1 * a + 1`, and multiplication goes first: $3 + 1 \times 3 + 1 = 3 + 3 + 1 = 7$. The intended value is $(3 + 1)^2 = 16$. A `constexpr` function computes 16, so the program's output changes. That makes the replacement a bug fix — a behaviour change — which needs its own change and test, not a place in a batch of mechanical edits.
+The text becomes `a + 1 * a + 1`, and multiplication goes first: $3 + 1 \times 3 + 1 = 3 + 3 + 1 = 7$. The intended value is $(3 + 1)^2 = 16$. A `constexpr` function computes 16, so the program's output changes. That makes the replacement a bug fix — a behavior change — which needs its own change and test, not a place in a batch of mechanical edits.
 :::
 
 ::: check
@@ -335,18 +335,18 @@ Turn `bool read_gyro(const double* buf, int n, double* rate)` into a signature a
 
 | Idea | Meaning | Rule or fact |
 | --- | --- | --- |
-| Refactoring | change form, keep behaviour | never mix with a bug fix in one change |
+| Refactoring | change form, keep behavior | never mix with a bug fix in one change |
 | Order of work | cheapest and safest first | warnings and sanitizers, tests, mechanical changes, then bug fixes |
-| Characterization test | pins down current behaviour, bugs included | golden file: save output once, `diff` after every change |
+| Characterization test | pins down current behavior, bugs included | golden file: save output once, `diff` after every change |
 | Defect class | a family of bugs a change makes impossible | each change names the one it removes |
 | clang-tidy `modernize-*` | finds and rewrites C++98 patterns | choose checks; review `-fix` diffs; it changes form, not bugs |
 | Strongest evidence | identical object code | the clang-tidy fixes here gave identical disassembly |
-| Justification | measurable benefit, small diffs, no behaviour change, regression tests | in certified code, weigh the cost of re-verification |
+| Justification | measurable benefit, small diffs, no behavior change, regression tests | in certified code, weigh the cost of re-verification |
 
 That finishes the module: you know what each standard added, which subset flies, and how to move old code toward it safely. The next module, **Concurrency, memory ordering and determinism**, adds the thing every real flight computer has and none of these examples did — [[several threads running at once|next-module]] — and the rules that keep them from corrupting each other's data.
 
 ::: context refactoring A word with a book behind it
-Martin Fowler's book *Refactoring* (1999) made the word common. Its idea is that structure improves in many small steps, each one a behaviour-preserving change you can check, rather than one big rewrite. Renaming a variable, extracting a function and replacing a loop with range-for are all refactorings. Fixing a bug is not, however small, because afterwards the program does something different.
+Martin Fowler's book *Refactoring* (1999) made the word common. Its idea is that structure improves in many small steps, each one a behavior-preserving change you can check, rather than one big rewrite. Renaming a variable, extracting a function and replacing a loop with range-for are all refactorings. Fixing a bug is not, however small, because afterwards the program does something different.
 :::
 
 ::: context sanitizer-cost Sanitizers are for test builds
@@ -377,11 +377,11 @@ A derived class overrides a virtual function only if the name and the parameter 
 :::
 
 ::: context characterization-test Pinning down what is, not what should be
-The name comes from Michael Feathers' book *Working Effectively with Legacy Code* (2004), which defines legacy code as code without tests. A characterization test describes what the code actually does, so you can change its structure and notice at once if its behaviour moved. It is not a statement that the behaviour is right. Once the refactoring is done, the characterization tests are often replaced by ordinary tests of the intended behaviour.
+The name comes from Michael Feathers' book *Working Effectively with Legacy Code* (2004), which defines legacy code as code without tests. A characterization test describes what the code actually does, so you can change its structure and notice at once if its behavior moved. It is not a statement that the behavior is right. Once the refactoring is done, the characterization tests are often replaced by ordinary tests of the intended behavior.
 :::
 
 ::: context clang-tidy-name A linter with fixes built in
-clang-tidy is built on the Clang compiler's own parser, so it sees the code exactly as the compiler does: types, overloads, templates. That is what lets it rewrite code safely, such as turning an index loop into range-for only when the index is used for nothing else. Its checks come in families: `modernize-*`, `bugprone-*`, `cppcoreguidelines-*`, `readability-*` and more. The real-time module returns to it alongside the commercial analysers used on flight code.
+clang-tidy is built on the Clang compiler's own parser, so it sees the code exactly as the compiler does: types, overloads, templates. That is what lets it rewrite code safely, such as turning an index loop into range-for only when the index is used for nothing else. Its checks come in families: `modernize-*`, `bugprone-*`, `cppcoreguidelines-*`, `readability-*` and more. The real-time module returns to it alongside the commercial analyzers used on flight code.
 :::
 
 ::: context macro-expansion Why the macro multiplied the wrong things
@@ -403,7 +403,7 @@ Wrapping every use in brackets, `((x) * (x))`, fixes precedence but still evalua
 :::
 
 ::: context do-178c The rulebook for aircraft software
-DO-178C, published by RTCA in 2011, is the standard certification authorities use to approve software in civil aircraft. It sorts software into levels A to E by how bad a failure could be, and at the highest level demands the most evidence: requirements traced to code, reviews, and detailed structural coverage from tests. NASA uses its own requirements, NPR 7150.2, for spacecraft software. Under any of these, a change to verified code needs its evidence redone, which is why modernisation is planned, not casual.
+DO-178C, published by RTCA in 2011, is the standard certification authorities use to approve software in civil aircraft. It sorts software into levels A to E by how bad a failure could be, and at the highest level demands the most evidence: requirements traced to code, reviews, and detailed structural coverage from tests. NASA uses its own requirements, NPR 7150.2, for spacecraft software. Under any of these, a change to verified code needs its evidence redone, which is why modernization is planned, not casual.
 :::
 
 ::: context next-module Where the next module starts

@@ -279,7 +279,7 @@ It is lesson 05's `std::optional` with a reason attached, and it too lives **[[i
 `std::expected` is C++23. On g++ 13, compile with `-std=c++23`; under `-std=c++20` the header exists but is empty, and the compiler says `'expected' in namespace 'std' does not name a template type`.
 
 ::: example A throttle command parsed in three checked steps
-```cpp
+```cpp fragment
 #include <charconv>
 #include <cstdio>
 #include <expected>
@@ -428,7 +428,7 @@ It only removes one way of reporting them. Every `at()`, `value()` and throwing 
 ## Why flight code turns exceptions off
 
 ::: key
-Many flight-software teams build with `-fno-exceptions` because throwing has unbounded, hard-to-analyse worst-case time; it needs unwinding tables and a runtime (and allocates on the heap); and a missed `catch` terminates the process. Deterministic error returns — error codes, `std::expected`-style types — are auditable and bounded.
+Many flight-software teams build with `-fno-exceptions` because throwing has unbounded, hard-to-analyze worst-case time; it needs unwinding tables and a runtime (and allocates on the heap); and a missed `catch` terminates the process. Deterministic error returns — error codes, `std::expected`-style types — are auditable and bounded.
 :::
 
 You saw three of the reasons above: timing with no defensible worst case, a heap allocation per throw, and tables and cleanup code in the image. Two more matter as much. Any call might throw, so any line might be a hidden exit from the function, which a reviewer or a static-analysis tool must consider; with error returns, every path is on the page. And one forgotten handler turns a recoverable fault into `std::terminate` and a dead process — on a vehicle, possibly the flight software itself.

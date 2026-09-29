@@ -1,9 +1,9 @@
 ---
 id: l12-ilqr-shooting-flavoured
-title: iLQR and DDP as the shooting-flavoured alternative
+title: iLQR and DDP as the shooting-flavored alternative
 minutes: 22
 covers:
-  - Differential dynamic programming and iLQR as the shooting-flavoured alternative
+  - Differential dynamic programming and iLQR as the shooting-flavored alternative
 ---
 
 Think about learning a bike route by riding it. The first ride goes badly. At the finish you think *backward*: "At the last corner I should have leaned more. At the corner before, I should have come in slower — and if I had drifted wide there, I should have steered back this much." Then you ride again, following the improved plan but steering back whenever you drift off it. Ride, review backward, ride again with corrections. After a few rounds the route is smooth.

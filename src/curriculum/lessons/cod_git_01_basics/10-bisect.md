@@ -315,7 +315,7 @@ A colleague's bisect named a commit that only changed the README as "the first b
 :::
 
 ::: answer
-(1) A wrong mark: they answered `bad` at a commit that was really good (a typing slip, or a test that failed for an unrelated reason), so the search was steered to the wrong half and ended beside the real break. (2) A flaky or non-deterministic test: it failed at random on a good commit, with the same effect. Other possibilities: the bad behaviour comes and goes, or the test script changed between commits because it was tracked in the repository. `git bisect log` shows every mark, which is the place to start looking.
+(1) A wrong mark: they answered `bad` at a commit that was really good (a typing slip, or a test that failed for an unrelated reason), so the search was steered to the wrong half and ended beside the real break. (2) A flaky or non-deterministic test: it failed at random on a good commit, with the same effect. Other possibilities: the bad behavior comes and goes, or the test script changed between commits because it was tracked in the repository. `git bisect log` shows every mark, which is the place to start looking.
 :::
 
 ::: check Read the halving

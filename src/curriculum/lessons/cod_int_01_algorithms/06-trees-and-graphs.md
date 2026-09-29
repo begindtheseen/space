@@ -317,7 +317,7 @@ A cycle in a dependency graph is a real defect: a **[[circular dependency|circul
 
 **Directed graph, method 1: Kahn.** Run Kahn's algorithm. If the order is shorter than $V$, there is a cycle. You already have the code.
 
-**Directed graph, method 2: DFS with three colors.** Give every vertex a color. **White** means not visited yet. **Grey** means "on the path I am exploring right now". **Black** means "finished, and everything below it too". If DFS ever follows an arrow to a *grey* vertex, it has walked back into its own path: a cycle.
+**Directed graph, method 2: DFS with three colors.** Give every vertex a color. **White** means not visited yet. **Gray** means "on the path I am exploring right now". **Black** means "finished, and everything below it too". If DFS ever follows an arrow to a *gray* vertex, it has walked back into its own path: a cycle.
 
 ```python
 WHITE, GREY, BLACK = 0, 1, 2   # not visited, on the current path, finished
@@ -347,12 +347,12 @@ print(has_cycle(build))
 # True
 ```
 
-Here each software module lists the modules it needs to be built first. At first, `app` needs `msg` and `util`, and `util` is reached twice — once through `msg` and `io`, once directly. Reaching a *black* vertex again is fine: it is a shared dependency, not a loop. After the edit, following `msg` → `io` → `util` leads back to `msg`, which is still grey, so it reports a cycle. Time $O(V + E)$; space $O(V)$ for the colors and the recursion.
+Here each software module lists the modules it needs to be built first. At first, `app` needs `msg` and `util`, and `util` is reached twice — once through `msg` and `io`, once directly. Reaching a *black* vertex again is fine: it is a shared dependency, not a loop. After the edit, following `msg` → `io` → `util` leads back to `msg`, which is still gray, so it reports a cycle. Time $O(V + E)$; space $O(V)$ for the colors and the recursion.
 
 **Undirected graph: DFS with a parent.** In an undirected graph every edge goes both ways, so stepping back to the vertex you just came from is not a loop. Run DFS remembering each vertex's parent. Meeting an already-visited vertex that is *not* your parent means a cycle.
 
 ::: warning Visited is not the same as on the path
-In a directed graph, "I have seen this vertex before" does not mean a cycle. In the build example, `util` is seen twice and there is no loop. Only an arrow back to a grey vertex — one still on the current path — proves a cycle. Using a plain visited set here gives false alarms.
+In a directed graph, "I have seen this vertex before" does not mean a cycle. In the build example, `util` is seen twice and there is no loop. Only an arrow back to a gray vertex — one still on the current path — proves a cycle. Using a plain visited set here gives false alarms.
 :::
 
 ## Check yourself
@@ -400,7 +400,7 @@ In a directed graph, a DFS reaches a vertex that it has already visited. Is that
 :::
 
 ::: answer
-Not necessarily. If the vertex is **black**, it was fully finished earlier by another route — a shared dependency, like `util` being needed by both `io` and `app`. That is not a loop. Only if the vertex is **grey**, meaning it is still on the path currently being explored, has DFS followed an arrow back into its own path, which is a cycle. The check costs $O(V + E)$ time and $O(V)$ space.
+Not necessarily. If the vertex is **black**, it was fully finished earlier by another route — a shared dependency, like `util` being needed by both `io` and `app`. That is not a loop. Only if the vertex is **gray**, meaning it is still on the path currently being explored, has DFS followed an arrow back into its own path, which is a cycle. The check costs $O(V + E)$ time and $O(V)$ space.
 :::
 
 ## Summary
@@ -414,7 +414,7 @@ Not necessarily. If the vertex is **black**, it was fully finished earlier by an
 | BFS | queue, visited set, rings of distance | $O(V + E)$ time; fewest-edge paths |
 | DFS | stack or recursion, go deep then back up | $O(V + E)$ time; connectivity, cycles |
 | Kahn's topological sort | take in-degree 0, lower neighbors | $O(V + E)$; short order means a cycle |
-| Directed cycle by DFS | an arrow to a grey vertex | $O(V + E)$ time, $O(V)$ space |
+| Directed cycle by DFS | an arrow to a gray vertex | $O(V + E)$ time, $O(V)$ space |
 
 Next lesson finishes the high-yield list: heaps for "the $k$ largest" and the running median, prefix sums for fast range totals, light dynamic programming, and bit manipulation.
 

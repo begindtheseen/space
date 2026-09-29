@@ -8,7 +8,7 @@ covers:
 
 Two friends go hiking with copies of the same old paper map. The map was printed slightly wrong: everything on it sits $200\,\mathrm m$ east of where it really is. Each friend marks her position from the map, and each mark is $200\,\mathrm m$ off. But ask them how far apart they are, and the map's mistake vanishes. Both marks moved the same way, by the same amount, so the gap between the marks is exactly the real gap. Each friend knows her own position badly, and the distance between them perfectly.
 
-Every estimator in this module has so far treated one object at a time: one epoch state, one covariance, tracked from the ground. This closing lesson looks at two situations that break that pattern. The first is the hiking map. A **[[constellation|constellation]]** or a formation of spacecraft often cares less about where each member is than about where each one is *relative to its neighbours*, and that relative state can be known far better than either member's absolute state. The second is a spacecraft that has to know its own orbit without waiting for a ground team — in deep space, or when things change faster than a ground loop can keep up. Then orbit determination runs **onboard**, with its own limits.
+Every estimator in this module has so far treated one object at a time: one epoch state, one covariance, tracked from the ground. This closing lesson looks at two situations that break that pattern. The first is the hiking map. A **[[constellation|constellation]]** or a formation of spacecraft often cares less about where each member is than about where each one is *relative to its neighbors*, and that relative state can be known far better than either member's absolute state. The second is a spacecraft that has to know its own orbit without waiting for a ground team — in deep space, or when things change faster than a ground loop can keep up. Then orbit determination runs **onboard**, with its own limits.
 
 Neither needs a new estimator. Both reuse the whole module.
 
@@ -26,7 +26,7 @@ $$
 
 The first two terms are what you would get if the errors were unrelated. The last term is the reward for them being related. When $\rho$ is close to $1$ and the two sigmas are similar, it cancels almost all of the first two.
 
-::: example Two satellites, each known to four metres
+::: example Two satellites, each known to four meters
 Two satellites are each known to $\sigma_A = \sigma_B = 4\,\mathrm m$ in some direction. Most of that error comes from a shared station bias, so the correlation between the two errors is $\rho = 0.99$.
 
 **Step 1: the variance of the difference.**
@@ -39,7 +39,7 @@ $$
 
 **Step 3: the naive answer.** Treat the two fits as unrelated ($\rho = 0$) and you would get $\sqrt{32} \approx 5.66\,\mathrm m$ — ten times worse, and bigger than either satellite's own error.
 
-**Sanity check.** The separation is known to about half a metre while each position is known only to four. That is the hiking map in numbers.
+**Sanity check.** The separation is known to about half a meter while each position is known only to four. That is the hiking map in numbers.
 :::
 
 ::: note Why it has to be true
@@ -65,7 +65,7 @@ $$
 That is the matrix version of $\rho\,\sigma_A\sigma_B$.
 
 ::: example A shared station bias, and what it does to relative accuracy
-Two satellites in similar orbits, $237\,\mathrm{km}$ apart along-track, are each fitted from the module's three-pass ground-tracking arc. Both fits are hit by the same unestimated station range bias, whose size is varied. The table gives position sigmas (radial, in-track, cross-track, in metres), from a full simulation:
+Two satellites in similar orbits, $237\,\mathrm{km}$ apart along-track, are each fitted from the module's three-pass ground-tracking arc. Both fits are hit by the same unestimated station range bias, whose size is varied. The table gives position sigmas (radial, in-track, cross-track, in meters), from a full simulation:
 
 ```python
 # sigma_bias    absolute sigma (A, m)         relative sigma, correct     relative sigma, naive
@@ -74,9 +74,9 @@ Two satellites in similar orbits, $237\,\mathrm{km}$ apart along-track, are each
 #  100 m        (3.74, 2.15, 1.62)             (0.34, 0.52, 0.14)          (5.15, 2.71, 2.32)
 ```
 
-**Read down the absolute column.** As the bias grows from $5$ to $100\,\mathrm m$, satellite $A$'s own uncertainty grows with it, to nearly four metres radially.
+**Read down the absolute column.** As the bias grows from $5$ to $100\,\mathrm m$, satellite $A$'s own uncertainty grows with it, to nearly four meters radially.
 
-**Read down the correct relative column.** It barely moves, staying under about half a metre. The shared bias cancels almost exactly in $\hat{\mathbf x}_A - \hat{\mathbf x}_B$.
+**Read down the correct relative column.** It barely moves, staying under about half a meter. The shared bias cancels almost exactly in $\hat{\mathbf x}_A - \hat{\mathbf x}_B$.
 
 **Read the naive column.** It treats the fits as independent and throws away the cross-covariance. It grows with the bias, just like the absolute column, and at the largest bias it overstates the true relative uncertainty by up to about $16$ times: $2.32 / 0.14 \approx 16.6$ in cross-track.
 :::
@@ -136,7 +136,7 @@ print(round(np.linalg.norm(shift), 3))                 # 2.625    size of the sh
 The same trick runs through the GNSS module. **[[Differential and RTK positioning|differencing]]** subtract two receivers' measurements of the same signal, so every error that hits both receivers nearly equally cancels, and the baseline between them comes out far better than either receiver's own fix. A crosslink does in one measurement what differencing does with two.
 
 ::: key Relative accuracy is not bounded by absolute accuracy
-Two objects can each be known to metres in an absolute sense while their *separation* is known to centimetres, whenever the dominant errors act on both nearly equally. Crosslinks exploit this directly. Two separate absolute fits with a shared error do the same thing more quietly — but only if their cross-covariance is kept, not thrown away by treating the fits as independent.
+Two objects can each be known to meters in an absolute sense while their *separation* is known to centimeters, whenever the dominant errors act on both nearly equally. Crosslinks exploit this directly. Two separate absolute fits with a shared error do the same thing more quietly — but only if their cross-covariance is kept, not thrown away by treating the fits as independent.
 :::
 
 For spacecraft flying close together, the relative motion itself is often worth modeling directly, instead of as the difference of two full orbits. The **[[Clohessy-Wiltshire equations|hill-cw]]**, from the earlier relative-motion module, do exactly that: a linearized model of one spacecraft's motion seen from another in a circular orbit. This lesson adds the reason to bother — relative tracking can see what absolute tracking cannot.
@@ -221,11 +221,11 @@ The sequential filter keeps running: predict with $\boldsymbol\Phi$ and the proc
 :::
 
 ::: check
-A mission designer argues that because relative orbit determination can reach centimetre accuracy, the constellation's absolute orbit determination effort can be cut back. Is that right?
+A mission designer argues that because relative orbit determination can reach centimeter accuracy, the constellation's absolute orbit determination effort can be cut back. Is that right?
 :::
 
 ::: answer
-Not in general. The great relative accuracy came from a *shared* error cancelling between two satellites tracked the same way. It says nothing about absolute accuracy, which still depends on the tracking geometry, arc length and data quality of every earlier lesson. Some jobs need absolute accuracy directly — conjunction assessment against a third object tracked independently, for instance. That object does not share the constellation's errors, so nothing cancels. Relative and absolute orbit determination answer different questions, and doing one well does not replace the other.
+Not in general. The great relative accuracy came from a *shared* error canceling between two satellites tracked the same way. It says nothing about absolute accuracy, which still depends on the tracking geometry, arc length and data quality of every earlier lesson. Some jobs need absolute accuracy directly — conjunction assessment against a third object tracked independently, for instance. That object does not share the constellation's errors, so nothing cancels. Relative and absolute orbit determination answer different questions, and doing one well does not replace the other.
 :::
 
 ## Summary
@@ -241,10 +241,10 @@ Not in general. The great relative accuracy came from a *shared* error cancellin
 | Onboard OD | Sequential filter on GNSS, crosslinks or optical data; less supervision, same discipline |
 | $3\pi\,\delta a$ per orbit | Along-track drift of an unrefreshed onboard estimate |
 
-This module set out to recover an orbit from a handful of noisy measurements, and to be honest about what that orbit and its covariance really mean. Each lesson added one more piece of that honesty — in the estimator, the dynamics, the frame the answer is read in, and the judgement of a team that checks its own work instead of trusting a fit because it converged.
+This module set out to recover an orbit from a handful of noisy measurements, and to be honest about what that orbit and its covariance really mean. Each lesson added one more piece of that honesty — in the estimator, the dynamics, the frame the answer is read in, and the judgment of a team that checks its own work instead of trusting a fit because it converged.
 
 ::: context constellation Many satellites doing one job
-A **constellation** is a group of satellites spread around the Earth so that together they cover it: GPS keeps about thirty satellites in six orbit planes so that any spot on Earth sees several at once, and communication constellations such as Starlink fly thousands. A **formation** is tighter — a few spacecraft flying close together on purpose, often to act as one bigger instrument. For both, the operators constantly ask "where is each satellite compared with its neighbours?" as well as "where is each one?"
+A **constellation** is a group of satellites spread around the Earth so that together they cover it: GPS keeps about thirty satellites in six orbit planes so that any spot on Earth sees several at once, and communication constellations such as Starlink fly thousands. A **formation** is tighter — a few spacecraft flying close together on purpose, often to act as one bigger instrument. For both, the operators constantly ask "where is each satellite compared with its neighbors?" as well as "where is each one?"
 :::
 
 ::: context common-mode The same error in both places
@@ -334,7 +334,7 @@ Near $+1$, the dots hug a rising line: when $A$ is off one way, $B$ is off the s
 :::
 
 ::: context differencing Subtracting away the errors
-In the GNSS module, a receiver's error budget included satellite clock errors, orbit errors and delays through the upper and lower atmosphere. Two receivers a few kilometres apart see nearly the same values of all of these. Subtract their measurements of the same satellite — **differencing** — and those errors cancel. Real-time kinematic (**RTK**) positioning pushes this further with the phase of the radio carrier wave and reaches centimetre-level baselines. Surveyors and self-steering farm tractors rely on it; so do spacecraft pairs such as GRACE, which used differenced GPS to help measure their relative positions.
+In the GNSS module, a receiver's error budget included satellite clock errors, orbit errors and delays through the upper and lower atmosphere. Two receivers a few kilometers apart see nearly the same values of all of these. Subtract their measurements of the same satellite — **differencing** — and those errors cancel. Real-time kinematic (**RTK**) positioning pushes this further with the phase of the radio carrier wave and reaches centimeter-level baselines. Surveyors and self-steering farm tractors rely on it; so do spacecraft pairs such as GRACE, which used differenced GPS to help measure their relative positions.
 :::
 
 ::: context hill-cw Relative motion, from the Moon to rendezvous

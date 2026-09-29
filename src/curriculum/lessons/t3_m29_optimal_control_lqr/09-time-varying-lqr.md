@@ -402,5 +402,5 @@ The gain at burnout, $1.87$, is below the liftoff value, $2.09$. Two things push
 :::
 
 ::: context slosh-word What slosh is
-Slosh is the propellant swinging back and forth inside a partly empty tank, like water in a carried bucket. A liquid mass of many tonnes sloshing at about one cycle per second pushes on the vehicle in rhythm, and if the attitude controller keeps jerking the gimbal near that rhythm, it can pump the motion up. Tanks carry baffles to damp it, and control designers try not to move the gimbal more than they must — which is why doubling gimbal activity early in the flight is a real cost, not a cosmetic one.
+Slosh is the propellant swinging back and forth inside a partly empty tank, like water in a carried bucket. A liquid mass of many metric tons sloshing at about one cycle per second pushes on the vehicle in rhythm, and if the attitude controller keeps jerking the gimbal near that rhythm, it can pump the motion up. Tanks carry baffles to damp it, and control designers try not to move the gimbal more than they must — which is why doubling gimbal activity early in the flight is a real cost, not a cosmetic one.
 :::

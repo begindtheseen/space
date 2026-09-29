@@ -3,7 +3,7 @@ id: l10-stability-margins-across-the-envelope
 title: Stability margins across the envelope
 minutes: 20
 covers:
-  - 'Stability margin verification across the envelope: frozen-time linearisation, gain, phase and delay margin against flight time'
+  - 'Stability margin verification across the envelope: frozen-time linearization, gain, phase and delay margin against flight time'
 ---
 
 Push a full shopping cart and it rolls off gently. Push an empty one exactly as hard and it shoots away, maybe into a shelf. You did not change; the cart did. The same shove that was perfect for a heavy cart is too much for a light one.
@@ -210,7 +210,7 @@ Margins across the envelope are an analysis result. The next two lessons turn to
 :::
 
 ::: context inertia-word How hard something is to spin
-Mass says how hard something is to push in a straight line. **Moment of inertia** says how hard it is to spin, and it depends on where the mass sits: mass far from the turning point counts much more. That is why a figure skater spins faster when she pulls her arms in. A rocket full of propellant has tonnes of liquid far from its center, so its inertia is huge at liftoff and shrinks a lot as the tanks drain — from $48{,}000$ to $9{,}000\,\mathrm{kg\,m^2}$ in this lesson's example.
+Mass says how hard something is to push in a straight line. **Moment of inertia** says how hard it is to spin, and it depends on where the mass sits: mass far from the turning point counts much more. That is why a figure skater spins faster when she pulls her arms in. A rocket full of propellant has metric tons of liquid far from its center, so its inertia is huge at liftoff and shrinks a lot as the tanks drain — from $48{,}000$ to $9{,}000\,\mathrm{kg\,m^2}$ in this lesson's example.
 :::
 
 ::: context decibels Why margins are quoted in decibels

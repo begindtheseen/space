@@ -25,7 +25,7 @@ print(hello("ada"))     # hello, ada
 
 By the time `hello("ada")` runs, `make_greeter` has already finished. Yet `greet` still knows `greeting`. Two rules about *how* it remembers cause most closure bugs.
 
-**Rule 1: a closure keeps the variable, not the value.** Think of a variable as a labelled box. A closure does not take a photo of what is in the box when the function is made. It keeps the box itself, and opens it to look inside *each time the function runs*. Looking a name up when the function runs, instead of when it was made, is called **[[late binding|late-binding-name]]**.
+**Rule 1: a closure keeps the variable, not the value.** Think of a variable as a labeled box. A closure does not take a photo of what is in the box when the function is made. It keeps the box itself, and opens it to look inside *each time the function runs*. Looking a name up when the function runs, instead of when it was made, is called **[[late binding|late-binding-name]]**.
 
 ```python
 def make():
@@ -141,13 +141,13 @@ Lambdas follow exactly the same closure rules as `def` functions. They only look
 ::: context defaults-once The mutable-default lesson, turned into a tool
 In the intermediate course, a list used as a default argument surprised you: it was created once, when the `def` ran, and then shared by every call.
 
-That same fact, "defaults are worked out once, at definition time", is exactly what fixes late binding. `lambda i=i: i` copies the value of `i` into the default at the moment the lambda is made. The behaviour that caused one bug is the cure for another. Knowing *when* Python evaluates each thing is most of expert debugging.
+That same fact, "defaults are worked out once, at definition time", is exactly what fixes late binding. `lambda i=i: i` copies the value of `i` into the default at the moment the lambda is made. The behavior that caused one bug is the cure for another. Knowing *when* Python evaluates each thing is most of expert debugging.
 :::
 
 ::: context event-handlers Buttons, handlers and ground stations
 An **event** is something that happens while a program runs: a click, a key press, a message arriving. An **event handler** is the function the program calls when that event happens.
 
-A mission-control screen might make one button per command from a list: "open valve", "arm", "abort". If each button's handler is a lambda made in the loop, every button can end up sending the last command in the list. A button labelled "open valve" that sends "abort" is a serious bug, and it is exactly this one. The task's `make_handlers` is a small model of it.
+A mission-control screen might make one button per command from a list: "open valve", "arm", "abort". If each button's handler is a lambda made in the loop, every button can end up sending the last command in the list. A button labeled "open valve" that sends "abort" is a serious bug, and it is exactly this one. The task's `make_handlers` is a small model of it.
 :::
 
 ::: context unbound-local Why Python decides "local" in advance
@@ -438,7 +438,7 @@ That means a check like "is it an `int` or `float` greater than 0?" would accept
 :::
 
 ::: context cached-property Compute once, then remember
-Some values take real work to compute: parsing a large file, loading a star catalogue, fitting a curve to thousands of sensor readings. If the answer never changes for that object, there is no point computing it every time it is read.
+Some values take real work to compute: parsing a large file, loading a star catalog, fitting a curve to thousands of sensor readings. If the answer never changes for that object, there is no point computing it every time it is read.
 
 `cached_property` computes on the first read and stores the result in the object's `__dict__`. Later reads are ordinary dictionary look-ups. Deleting it (`del r.summary`) removes the stored value, so the next read computes it again.
 
@@ -799,7 +799,7 @@ The last two lessons were about how classes are built. Now back to generators, f
 
 **Step 1: `yield` gives back a value.** `yield` is an **[[expression|expression-word]]**, so it can sit on the right of an `=`. The line
 
-```python
+```python fragment
 x = yield value
 ```
 
@@ -1537,7 +1537,7 @@ Operating systems use them to decide which job runs next. Simulations use them t
 :::
 
 ::: context what-a-median-is Why the middle, not the average
-The median is the value in the middle once everything is sorted. Unlike the average, one wild value barely moves it: for 1, 3, 5, 1000 the average is 252.25, but the median is 4.0. That makes it a favourite for noisy sensor readings, where one glitch should not drag the answer far off.
+The median is the value in the middle once everything is sorted. Unlike the average, one wild value barely moves it: for 1, 3, 5, 1000 the average is 252.25, but the median is 4.0. That makes it a favorite for noisy sensor readings, where one glitch should not drag the answer far off.
 :::
 
 ::: context binary-search-again The same search, built in
@@ -1686,7 +1686,7 @@ last("xyz")                       # 'z'   a string is a sequence of strings
 
 Ask for [[the least you need|ask-for-the-least]]: if a function only loops, `Iterable` lets callers pass a generator too.
 
-## Step 3: Protocols, typing by behaviour
+## Step 3: Protocols, typing by behavior
 
 Python has always worked by **[[duck typing|where-duck-typing-comes-from]]**: if an object has an `area()` method, you can ask for its area. You never ask what class it is.
 
@@ -1909,7 +1909,7 @@ first([7, 8], 0) == 7 and first([], "none") == "none" and first("xyz", "?") == "
 
 === py4-08 | Testing: write the test that catches the bug
 --- teach
-Last lesson you labelled code so a checker could catch type mistakes. But a checker cannot tell you whether the *answer* is right: `2 + 2` returning `5` is a perfectly good `int`. For that you need tests.
+Last lesson you labeled code so a checker could catch type mistakes. But a checker cannot tell you whether the *answer* is right: `2 + 2` returning `5` is a perfectly good `int`. For that you need tests.
 
 A **test** is a small program that checks another program. Picture a smoke alarm. Its whole job is to go off when there is a fire. An alarm that stays quiet during a fire is worse than no alarm at all, because you trust it and go back to sleep.
 
@@ -1993,7 +1993,7 @@ Called with Python's own `abs`, it passes. Called with `lambda x: -x` or `lambda
 - Tests that depend on each other's order or share changing data. Each test should work on its own.
 
 ::: context assert-in-real-code A statement that can be switched off
-`assert` is a statement, not a function, so do not put brackets round the whole thing: `assert (x, "msg")` asserts a tuple, which is always truthy, and never fails. Running Python with the `-O` flag ("optimise") removes every `assert`. That is why real programs never use `assert` to check user input, and use `if` plus `raise` instead. In tests, `assert` is exactly right.
+`assert` is a statement, not a function, so do not put brackets round the whole thing: `assert (x, "msg")` asserts a tuple, which is always truthy, and never fails. Running Python with the `-O` flag ("optimize") removes every `assert`. That is why real programs never use `assert` to check user input, and use `if` plus `raise` instead. In tests, `assert` is exactly right.
 :::
 
 ::: context how-pytest-finds-tests How a test runner works
@@ -2001,7 +2001,7 @@ pytest is the most widely used test runner for Python. Run `pytest` in a folder 
 :::
 
 ::: context off-by-one-bugs The fence-post mistake
-How many posts does a 10-metre fence need with one every metre? Eleven, not ten. Off-by-one bugs are that mistake in code: `<` where it should be `<=`, `range(n)` where it should be `range(n + 1)`. The code is right almost everywhere and wrong exactly at the edge, which is why a random example rarely catches it and a boundary case does.
+How many posts does a 10-meter fence need with one every meter? Eleven, not ten. Off-by-one bugs are that mistake in code: `<` where it should be `<=`, `range(n)` where it should be `range(n + 1)`. The code is right almost everywhere and wrong exactly at the edge, which is why a random example rarely catches it and a boundary case does.
 :::
 
 ::: context why-leap-years-are-odd Why the leap-year rule has exceptions
@@ -2199,7 +2199,7 @@ Read it as "if this file is being run as a program". Python gives every file a [
 :::
 
 ::: context core-and-shell A core you test, a shell you can see through
-"Imperative" means giving commands, like "print this" or "read that". "Functional" here means built from pure functions. The name was popularised by programmer Gary Bernhardt in a 2012 screencast. The shape is the calculator from the start of the lesson: data goes in through the shell, the core does all the deciding, and the shell sends the answer out.
+"Imperative" means giving commands, like "print this" or "read that". "Functional" here means built from pure functions. The name was popularized by programmer Gary Bernhardt in a 2012 screencast. The shape is the calculator from the start of the lesson: data goes in through the shell, the core does all the deciding, and the shell sends the answer out.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
@@ -2470,11 +2470,11 @@ A Python float uses 64 bits, and 53 of them hold the digits, which gives about 1
 :::
 
 ::: context patriot-clock A tenth of a second that mattered
-In 1991, during the Gulf War, a Patriot missile battery at Dhahran, Saudi Arabia, failed to stop an incoming Scud missile, and 28 American soldiers were killed. Its computer counted time in tenths of a second and multiplied by 0.1 to get seconds, but 0.1 was stored in 24 binary digits, so every tick was off by about 0.000000095 seconds. After about 100 hours of running, the clock was off by about 0.34 seconds. A Scud travels more than half a kilometre in that time, so the system looked in the wrong place.
+In 1991, during the Gulf War, a Patriot missile battery at Dhahran, Saudi Arabia, failed to stop an incoming Scud missile, and 28 American soldiers were killed. Its computer counted time in tenths of a second and multiplied by 0.1 to get seconds, but 0.1 was stored in 24 binary digits, so every tick was off by about 0.000000095 seconds. After about 100 hours of running, the clock was off by about 0.34 seconds. A Scud travels more than half a kilometer in that time, so the system looked in the wrong place.
 :::
 
 ::: context tolerance Engineers never ask for exactly
-No machined part is exactly 50 mm long. A drawing says "50 mm ± 0.05 mm", and any part inside that range passes. That range is the tolerance. Comparing floats works the same way: you decide how close counts as the same. A relative tolerance scales with the numbers, like "within 1 percent", which suits values from millimetres to kilometres. An absolute tolerance is a fixed amount, like "within 0.05 mm", which is what you need near zero.
+No machined part is exactly 50 mm long. A drawing says "50 mm ± 0.05 mm", and any part inside that range passes. That range is the tolerance. Comparing floats works the same way: you decide how close counts as the same. A relative tolerance scales with the numbers, like "within 1 percent", which suits values from millimeters to kilometers. An absolute tolerance is a fixed amount, like "within 0.05 mm", which is what you need near zero.
 :::
 
 ::: context decimal-module A calculator that counts in tens
@@ -2616,7 +2616,7 @@ Take one cell to see the rule work. Row `i`, column `s` (is `"ki"` → `"s"`): `
 
 ### Keep only one row
 
-Each cell needs only [[three neighbours|three-neighbours]]: the cell to its left, the one above, and the one diagonally above-left. So you do not need the whole table. Keep only **the previous row**, and build the current row from it. That cuts memory from `len(a) × len(b)` to `len(b)`.
+Each cell needs only [[three neighbors|three-neighbours]]: the cell to its left, the one above, and the one diagonally above-left. So you do not need the whole table. Keep only **the previous row**, and build the current row from it. That cuts memory from `len(a) × len(b)` to `len(b)`.
 
 The time is still one step per cell: `len(a) × len(b)` cells, which is O(n·m) time, where n and m are the two lengths. That is fine for strings of a thousand or so characters each, about a million cells.
 
@@ -2627,7 +2627,7 @@ The `git diff` you met in the Git courses finds the fewest line insertions and d
 :::
 
 ::: context levenshtein Named after a Soviet mathematician
-Vladimir Levenshtein described this distance in 1965, while working on codes that correct errors in messages sent as strings of 0s and 1s. If noise can drop, add or flip a symbol, you want to know how many of those slips separate two messages. The same count turned out to be useful for words, DNA and files, so the name stuck everywhere. You will also see plain "edit distance", which is a family name: some versions allow only insertions and deletions, or also count swapping two neighbouring letters as one edit.
+Vladimir Levenshtein described this distance in 1965, while working on codes that correct errors in messages sent as strings of 0s and 1s. If noise can drop, add or flip a symbol, you want to know how many of those slips separate two messages. The same count turned out to be useful for words, DNA and files, so the name stuck everywhere. You will also see plain "edit distance", which is a family name: some versions allow only insertions and deletions, or also count swapping two neighboring letters as one edit.
 :::
 
 ::: context prefix Prefixes, and why the empty one counts
@@ -2643,7 +2643,7 @@ Every function call that has not returned yet takes a slot on Python's **call st
 :::
 
 ::: context three-neighbours Where each cell gets its answer
-Each arrow is one kind of last edit. Coming from above means a character of `a` was deleted. Coming from the left means a character of `b` was inserted. Coming along the diagonal means the last two characters were matched (free) or substituted (cost 1). All three neighbours are in the current row or the one before it.
+Each arrow is one kind of last edit. Coming from above means a character of `a` was deleted. Coming from the left means a character of `b` was inserted. Coming along the diagonal means the last two characters were matched (free) or substituted (cost 1). All three neighbors are in the current row or the one before it.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">
@@ -2753,7 +2753,7 @@ Think of water poured in at the start and spreading along pipes of different len
 
 1. Pick the place with the lowest cost so far that is not yet settled.
 2. **Settle** it: its cost is now final.
-3. For each road out of it, check whether going through this place makes the neighbour cheaper. If it does, write down the new, lower cost.
+3. For each road out of it, check whether going through this place makes the neighbor cheaper. If it does, write down the new, lower cost.
 
 Step 3 has a name: **relaxing** an edge, which means checking whether that road gives a cheaper way to reach its end.
 
@@ -2787,9 +2787,9 @@ What each part does:
 
 - `best` holds the cheapest cost found so far for each place. The start costs 0.
 - `heapq.heappop(heap)` takes out the cheapest entry. That is steps 1 and 2.
-- The `for` loop is step 3. `new` is the cost of reaching the neighbour through this node.
-- `best.get(neighbour, float("inf"))` is the neighbour's cost so far, or [[infinity|infinity]] if it has not been reached yet, so any real cost beats it.
-- If `new` is lower, it goes into `best`, and the neighbour goes onto the heap.
+- The `for` loop is step 3. `new` is the cost of reaching the neighbor through this node.
+- `best.get(neighbour, float("inf"))` is the neighbor's cost so far, or [[infinity|infinity]] if it has not been reached yet, so any real cost beats it.
+- If `new` is lower, it goes into `best`, and the neighbor goes onto the heap.
 
 On the four towns:
 
@@ -2813,7 +2813,7 @@ A heap cannot easily find and change an entry in its middle. So instead of updat
 
 ## Getting the route, not only the cost
 
-To know the route, also remember where you came from. Each time you lower a neighbour's cost, write `previous[neighbour] = node`, which means "the cheapest way into this neighbour, so far, comes from this node".
+To know the route, also remember where you came from. Each time you lower a neighbor's cost, write `previous[neighbour] = node`, which means "the cheapest way into this neighbor, so far, comes from this node".
 
 For the four towns, `previous` ends up as `{'B': 'D', 'C': 'A', 'D': 'C'}`. (B was first reached from A, then its entry was overwritten when D found a cheaper way.)
 
@@ -2898,7 +2898,7 @@ The big-O lessons measured work in terms of one size, n. A graph has two sizes: 
 Write `cheapest(graph, start, goal)`.
 
 - `graph` maps each node to a list of `(neighbour, cost)` pairs, like the four towns in the lesson. Costs are 0 or more.
-- A node may appear only as a neighbour and not as a key, so read the roads with `graph.get(node, [])`.
+- A node may appear only as a neighbor and not as a key, so read the roads with `graph.get(node, [])`.
 - Return `(total_cost, path)`, where `path` is the list of nodes from `start` to `goal`, with both ends included.
 - If the goal cannot be reached, return `None`.
 - `cheapest(g, x, x)` is `(0, [x])`.
@@ -2935,7 +2935,7 @@ def cheapest(graph, start, goal):
 --- hint
 Keep three things: `best` (the cheapest known cost for each node), `previous` (where you came from) and a heap of `(cost, node)` entries, starting with `(0, start)`.
 --- hint
-Pop the cheapest entry. Skip it if its cost is more than `best[node]`. Otherwise, for each neighbour in `graph.get(node, [])`, work out the new cost; if it beats the neighbour's best so far, store it in `best`, set `previous[neighbour] = node` and push `(new, neighbour)`.
+Pop the cheapest entry. Skip it if its cost is more than `best[node]`. Otherwise, for each neighbor in `graph.get(node, [])`, work out the new cost; if it beats the neighbor's best so far, store it in `best`, set `previous[neighbour] = node` and push `(new, neighbour)`.
 --- hint
 When the goal is popped, follow `previous` back to the start, reverse the list with `[::-1]`, and return it together with the cost. If the heap runs empty first, return `None`.
 --- check case | The cheaper route has more steps
@@ -3243,7 +3243,7 @@ class Parser:
 
 Here is the `expr` rule as a method. Compare it with the grammar line: a term, then "`+` or `-`, then a term" as many times as they appear:
 
-```python
+```python fragment
     def expr(self):
         value = self.term()
         while self.peek() in ("+", "-"):

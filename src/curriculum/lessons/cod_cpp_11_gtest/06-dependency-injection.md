@@ -101,7 +101,7 @@ private:
 
 The logic did not change. What changed is who decides. On the flight computer, the real driver class inherits from `IBarometer`, and `main` connects the two:
 
-```cpp
+```cpp fragment
 int main() {
     BaroDriver baro("/dev/i2c-1", 0x76);   // the real chip
     ApogeeDetector det(baro);              // handed in, not built inside

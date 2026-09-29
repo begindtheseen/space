@@ -10,7 +10,7 @@ A distribution is a whole function, and you rarely get to carry a whole function
 
 This lesson defines the numbers that sum up a distribution, shows which of them survive the things you actually do to random quantities (scale them, add them, average them), and explains how to estimate them from a finite batch of data.
 
-The two summaries that matter most are the **expectation**, the centre of the distribution, and the **variance**, its spread. The variance is the single most important quantity in estimation: a Kalman filter is, at heart, a machine for pushing variances forward in time and shrinking them with measurements. The lessons on the Gaussian and on linear transformations build directly on the algebra here, so it pays to be thorough now, even where it feels easy.
+The two summaries that matter most are the **expectation**, the center of the distribution, and the **variance**, its spread. The variance is the single most important quantity in estimation: a Kalman filter is, at heart, a machine for pushing variances forward in time and shrinking them with measurements. The lessons on the Gaussian and on linear transformations build directly on the algebra here, so it pays to be thorough now, even where it feels easy.
 
 ## Expectation
 
@@ -24,7 +24,7 @@ $$
 
 Read $\mathbb{E}[X]$ as "E of X" or "the expected value of X". The usual symbol for it is $\mu$ ("mu") or $\mu_X$. In the continuous formula, the integral plays the role of the sum and $f_X(x)\,dx$ plays the role of "how often".
 
-There is a physical picture too. Cut the density out of cardboard and it **[[balances|balance-point]]** on a finger placed at $\mu$: the expectation is the centre of mass of the distribution. It is a fixed number, not a random one. And it need not be a value $X$ can actually take — the expected number of failed thrusters can be $0.03$.
+There is a physical picture too. Cut the density out of cardboard and it **[[balances|balance-point]]** on a finger placed at $\mu$: the expectation is the center of mass of the distribution. It is a fixed number, not a random one. And it need not be a value $X$ can actually take — the expected number of failed thrusters can be $0.03$.
 
 ### The expectation of a function
 
@@ -52,7 +52,7 @@ This second statement is the one people doubt. It is true with no independence a
 
 ## Variance and standard deviation
 
-Two archers each hit the centre of the target *on average*. One groups every arrow within a hand's width. The other scatters arrows across the whole board. Same mean, very different archers. The variance is the number that tells them apart.
+Two archers each hit the center of the target *on average*. One groups every arrow within a hand's width. The other scatters arrows across the whole board. Same mean, very different archers. The variance is the number that tells them apart.
 
 The **variance** measures how far $X$ typically sits from its mean, in squared units:
 
@@ -93,10 +93,10 @@ $$
 
 Step by step: the integral of $e^2$ is $e^3/3$; evaluating from $-\Delta/2$ to $\Delta/2$ gives $\frac{1}{3}\left(\frac{\Delta^3}{8} + \frac{\Delta^3}{8}\right) = \frac{2}{3}\cdot\frac{\Delta^3}{8}$; dividing by $\Delta$ leaves $\Delta^2/12$.
 
-The standard deviation is $\sigma_q = \Delta/\sqrt{12} = 0.289\,\Delta$. For the 12-bit converter of the last lesson, $\Delta = 4.88\,\mathrm{mV}$, so $\sigma_q = 0.289 \times 4.88 = 1.41\,\mathrm{mV}$. Sanity check: the error never exceeds $\Delta/2 = 2.44\,\mathrm{mV}$, and a typical size of $1.41\,\mathrm{mV}$ sits comfortably inside that. This is the number you enter into a noise budget for a quantised sensor. The same calculation gives the variance of any uniform distribution on $[a, b]$ as $(b - a)^2/12$.
+The standard deviation is $\sigma_q = \Delta/\sqrt{12} = 0.289\,\Delta$. For the 12-bit converter of the last lesson, $\Delta = 4.88\,\mathrm{mV}$, so $\sigma_q = 0.289 \times 4.88 = 1.41\,\mathrm{mV}$. Sanity check: the error never exceeds $\Delta/2 = 2.44\,\mathrm{mV}$, and a typical size of $1.41\,\mathrm{mV}$ sits comfortably inside that. This is the number you enter into a noise budget for a quantized sensor. The same calculation gives the variance of any uniform distribution on $[a, b]$ as $(b - a)^2/12$.
 :::
 
-### A table worth memorising
+### A table worth memorizing
 
 The means and variances of the distributions from the last lesson come up constantly:
 
@@ -118,7 +118,7 @@ Where they come from:
 
 Mean and variance say where a distribution sits and how wide it is. They do not say whether it is lopsided, or whether it hides rare huge values. For that you need higher powers.
 
-The **$k$-th moment** of $X$ is $\mathbb{E}[X^k]$, and the **$k$-th central moment** is $\mathbb{E}[(X - \mu)^k]$ ("central" because it is measured from the centre, $\mu$). The first moment is the mean. The second central moment is the variance. The third and fourth, divided by the right power of $\sigma$ so they have no units, describe shape:
+The **$k$-th moment** of $X$ is $\mathbb{E}[X^k]$, and the **$k$-th central moment** is $\mathbb{E}[(X - \mu)^k]$ ("central" because it is measured from the center, $\mu$). The first moment is the mean. The second central moment is the variance. The third and fourth, divided by the right power of $\sigma$ so they have no units, describe shape:
 
 $$
 \gamma_1 = \frac{\mathbb{E}[(X - \mu)^3]}{\sigma^3} \quad\text{(skewness)}, \qquad
@@ -169,7 +169,7 @@ $$
 \rho_{XY} = \frac{\operatorname{Cov}(X, Y)}{\sigma_X\,\sigma_Y}, \qquad -1 \leq \rho_{XY} \leq 1.
 $$
 
-Here $\rho$ is "rho". The bounds come from the **Cauchy–Schwarz inequality**, $|\mathbb{E}[UV]| \leq \sqrt{\mathbb{E}[U^2]\,\mathbb{E}[V^2]}$, applied to the centred variables $U = X - \mu_X$ and $V = Y - \mu_Y$. The extremes $\rho = \pm 1$ happen exactly when $Y$ is an exact straight-line function of $X$. Variables with $\rho = 0$ are called **uncorrelated**. The **[[scatter plots|scatter-pictures]]** in the note show what different values look like.
+Here $\rho$ is "rho". The bounds come from the **Cauchy–Schwarz inequality**, $|\mathbb{E}[UV]| \leq \sqrt{\mathbb{E}[U^2]\,\mathbb{E}[V^2]}$, applied to the centered variables $U = X - \mu_X$ and $V = Y - \mu_Y$. The extremes $\rho = \pm 1$ happen exactly when $Y$ is an exact straight-line function of $X$. Variables with $\rho = 0$ are called **uncorrelated**. The **[[scatter plots|scatter-pictures]]** in the note show what different values look like.
 
 ### The variance of a sum
 
@@ -272,11 +272,11 @@ So $\operatorname{Var}(X) = 60.1 - 7.7^2 = 60.1 - 59.29 = 0.81$ and $\sigma = \s
 :::
 
 ::: check
-A barometric altimeter reports altitude in counts, with noise of standard deviation $2$ counts, and the scale factor is $0.25\,\mathrm{m}$ per count. What is the noise standard deviation in metres? If a constant offset of $40\,\mathrm{m}$ is subtracted from the output, what happens to it?
+A barometric altimeter reports altitude in counts, with noise of standard deviation $2$ counts, and the scale factor is $0.25\,\mathrm{m}$ per count. What is the noise standard deviation in meters? If a constant offset of $40\,\mathrm{m}$ is subtracted from the output, what happens to it?
 :::
 
 ::: answer
-Altitude in metres is $Y = 0.25\,X$, so $\sigma_Y = 0.25 \times 2 = 0.5\,\mathrm{m}$, and $\operatorname{Var}(Y) = 0.25^2 \times 2^2 = 0.0625 \times 4 = 0.25\,\mathrm{m^2}$.
+Altitude in meters is $Y = 0.25\,X$, so $\sigma_Y = 0.25 \times 2 = 0.5\,\mathrm{m}$, and $\operatorname{Var}(Y) = 0.25^2 \times 2^2 = 0.0625 \times 4 = 0.25\,\mathrm{m^2}$.
 
 Subtracting a constant does nothing to the spread: $\operatorname{Var}(Y - 40) = \operatorname{Var}(Y)$, so $\sigma$ stays $0.5\,\mathrm{m}$. Only the mean moves.
 :::
@@ -327,7 +327,7 @@ Improving the estimate ten times costs a hundred times the samples. And if the s
 | $\mathbb{E}[\mathbf{1}_A] = P(A)$ | Every probability is the mean of an indicator |
 | $\operatorname{Var}(X) = \mathbb{E}[(X-\mu)^2] = \mathbb{E}[X^2] - \mu^2$ | Variance; $\sigma = \sqrt{\operatorname{Var}}$ has the units of $X$ |
 | $\operatorname{Var}(aX + b) = a^2 \operatorname{Var}(X)$ | Scaling squares, shifting does nothing |
-| $\Delta^2/12$ | Variance of a uniform of width $\Delta$: quantisation noise |
+| $\Delta^2/12$ | Variance of a uniform of width $\Delta$: quantization noise |
 | $\gamma_1$, $\kappa$ | Skewness and kurtosis; the Gaussian has $\kappa = 3$ |
 | $P(\lvert X - \mu\rvert \geq k\sigma) \leq 1/k^2$ | Chebyshev's inequality, true for any distribution |
 | $\operatorname{Cov}(X,Y) = \mathbb{E}[XY] - \mu_X \mu_Y$, $\rho = \operatorname{Cov}/(\sigma_X\sigma_Y)$ | Covariance and correlation coefficient, $\lvert\rho\rvert \leq 1$ |
@@ -359,7 +359,7 @@ Try it in your head: the moments about $7.7$ are $0.1 \times (-1.7) + 0.3 \times
 :::
 
 ::: context unconscious-statistician A rule with a funny name
-The rule $\mathbb{E}[g(X)] = \int g(x) f_X(x)\,dx$ is nicknamed the "law of the unconscious statistician". The joke is that people apply it without realising it is a theorem at all — it feels like the definition of expectation, but the definition is $\int y\,f_Y(y)\,dy$, which needs the density of $Y$.
+The rule $\mathbb{E}[g(X)] = \int g(x) f_X(x)\,dx$ is nicknamed the "law of the unconscious statistician". The joke is that people apply it without realizing it is a theorem at all — it feels like the definition of expectation, but the definition is $\int y\,f_Y(y)\,dy$, which needs the density of $Y$.
 
 It saves real work. To find the average kinetic energy $\frac{1}{2}mv^2$ of a noisy speed $v$, you do not need the distribution of the energy. Weight $\frac{1}{2}mv^2$ by the density of $v$ and integrate.
 :::
@@ -373,13 +373,13 @@ Squares win because of what they let you do. They have smooth derivatives, so th
 ::: context cancellation When a computer gets variance wrong
 Take four readings: $1\,000\,000\,004$, $\ldots007$, $\ldots013$, $\ldots016$. The mean is $1\,000\,000\,010$, and the true variance (dividing by $4$) is $(36 + 9 + 9 + 36)/4 = 22.5$.
 
-Now compute $\mathbb{E}[X^2] - \mu^2$ in ordinary double-precision arithmetic, which keeps about 16 significant digits. Both terms are about $10^{18}$, where the gap between neighbouring numbers the computer can store is $128$. NumPy gives $-128$: a *negative* variance, which is impossible. Subtracting from the mean first, $\mathbb{E}[(X - \mu)^2]$, gives the right $22.5$.
+Now compute $\mathbb{E}[X^2] - \mu^2$ in ordinary double-precision arithmetic, which keeps about 16 significant digits. Both terms are about $10^{18}$, where the gap between neighboring numbers the computer can store is $128$. NumPy gives $-128$: a *negative* variance, which is impossible. Subtracting from the mean first, $\mathbb{E}[(X - \mu)^2]$, gives the right $22.5$.
 
 This is called catastrophic cancellation. Careful software subtracts the mean first, or uses a running method such as Welford's that never forms the two huge terms. The numerical methods module returns to cancellation in general.
 :::
 
 ::: context heavy-tails Heavy tails in real sensors
-A **heavy-tailed** distribution has more of its probability far from the centre than a Gaussian with the same $\sigma$. The word kurtosis comes from a Greek word for "curved" or "bulging".
+A **heavy-tailed** distribution has more of its probability far from the center than a Gaussian with the same $\sigma$. The word kurtosis comes from a Greek word for "curved" or "bulging".
 
 Heavy tails show up whenever an error sometimes has a different cause from its usual one: a GNSS signal that bounces off a building before reaching the receiver, a star tracker that occasionally mistakes a planet for a star, a radar return from a bird. Filters defend themselves by rejecting measurements that are too far from the prediction — the chi-square tests of lesson 13 are one way to decide "too far".
 :::

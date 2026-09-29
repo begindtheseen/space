@@ -313,7 +313,7 @@ In 1984 Narendra Karmarkar, a young researcher at Bell Labs, published a method 
 :::
 
 ::: context barrier-picture The cliff and the ramps
-The grey cliff is the true indicator: zero cost inside, infinite cost past the wall at $u = 0$. The blue curves are the log barrier $-\frac{1}{t}\log(-u)$ for $t = 1$ and $t = 4$. Bigger $t$ hugs the cliff more closely: flatter inside, steeper at the wall.
+The gray cliff is the true indicator: zero cost inside, infinite cost past the wall at $u = 0$. The blue curves are the log barrier $-\frac{1}{t}\log(-u)$ for $t = 1$ and $t = 4$. Bigger $t$ hugs the cliff more closely: flatter inside, steeper at the wall.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">

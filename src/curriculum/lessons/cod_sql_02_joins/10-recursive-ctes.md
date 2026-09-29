@@ -628,11 +628,11 @@ Each line is one row's `parent_id` pointing up. Ten boxes, ten rows.
 :::
 
 ::: context adcs-parts What these parts do
-A **reaction wheel** is a heavy disc spun by an electric motor. Speed it up one way and the spacecraft turns the other way, because the total spin must stay the same; three or four wheels let a satellite point anywhere without burning propellant. A **star tracker** is a small camera that photographs the stars and matches the pattern against a catalogue, telling the spacecraft which way it faces to within a few arcseconds. Together they are the heart of the attitude determination and control system.
+A **reaction wheel** is a heavy disc spun by an electric motor. Speed it up one way and the spacecraft turns the other way, because the total spin must stay the same; three or four wheels let a satellite point anywhere without burning propellant. A **star tracker** is a small camera that photographs the stars and matches the pattern against a catalog, telling the spacecraft which way it faces to within a few arcseconds. Together they are the heart of the attitude determination and control system.
 :::
 
 ::: context statement-timeout A time limit on every query
-`statement_timeout` is a PostgreSQL setting: any single statement that runs longer than the limit is cancelled with an error. `SET statement_timeout = '30s'` sets it for your session; a database administrator can set it for a user or a whole database. Operations teams set it on shared databases so that one runaway query — a missing join condition, a loop in a hierarchy — cannot tie up the server that the live telemetry dashboards also depend on.
+`statement_timeout` is a PostgreSQL setting: any single statement that runs longer than the limit is canceled with an error. `SET statement_timeout = '30s'` sets it for your session; a database administrator can set it for a user or a whole database. Operations teams set it on shared databases so that one runaway query — a missing join condition, a loop in a hierarchy — cannot tie up the server that the live telemetry dashboards also depend on.
 :::
 
 ::: context charts-lie Why a line chart hides a gap

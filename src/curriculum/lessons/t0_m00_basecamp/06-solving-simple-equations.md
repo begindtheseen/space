@@ -90,7 +90,7 @@ Say you want to divide $2x + 6 = 10$ by $2$. You must divide **every** term: $x 
 :::
 
 ::: example How long until the rocket reaches 300 m/s?
-A rocket is climbing at $v_0 = 100\,\mathrm{m/s}$ and speeds up by $a = 4\,\mathrm{m/s^2}$ — it gains $4$ metres per second of speed every second. Its speed after $t$ seconds is $v = v_0 + a \cdot t$. When will it reach $300\,\mathrm{m/s}$?
+A rocket is climbing at $v_0 = 100\,\mathrm{m/s}$ and speeds up by $a = 4\,\mathrm{m/s^2}$ — it gains $4$ meters per second of speed every second. Its speed after $t$ seconds is $v = v_0 + a \cdot t$. When will it reach $300\,\mathrm{m/s}$?
 
 **Substitute what you know.** Put in $v = 300$, $v_0 = 100$ and $a = 4$:
 
@@ -165,7 +165,7 @@ $$
 
 Check both sides separately: the left is $5 \times 4 + 2 = 22$ and the right is $3 \times 4 + 10 = 22$. Equal, so $x = 4$ is right.
 
-Here is a real question of this kind. On a test stand, tank A holds $500$ litres of water and drains at $12$ litres a minute. Tank B holds $200$ litres and is being filled at $8$ litres a minute. After how many minutes do they hold the same amount?
+Here is a real question of this kind. On a test stand, tank A holds $500$ liters of water and drains at $12$ liters a minute. Tank B holds $200$ liters and is being filled at $8$ liters a minute. After how many minutes do they hold the same amount?
 
 After $t$ minutes, tank A holds $500 - 12t$ and tank B holds $200 + 8t$. "The same amount" is an equals sign:
 
@@ -173,7 +173,7 @@ $$
 500 - 12t = 200 + 8t.
 $$
 
-Add $12t$ to both sides to get $500 = 200 + 20t$. Subtract $200$ to get $300 = 20t$. Divide by $20$: $t = 15$ minutes. Check: tank A holds $500 - 12 \times 15 = 320$ litres and tank B holds $200 + 8 \times 15 = 320$ litres. The same. If you drew both tanks on a graph, the two lines would [[cross at exactly that moment|tanks-crossing]].
+Add $12t$ to both sides to get $500 = 200 + 20t$. Subtract $200$ to get $300 = 20t$. Divide by $20$: $t = 15$ minutes. Check: tank A holds $500 - 12 \times 15 = 320$ liters and tank B holds $200 + 8 \times 15 = 320$ liters. The same. If you drew both tanks on a graph, the two lines would [[cross at exactly that moment|tanks-crossing]].
 
 ::: warning "Move it across and change the sign" is a shortcut, not a rule
 People often say "move the $3x$ to the other side and flip its sign". That works, but only because it is short for "subtract $3x$ from both sides". If you forget where the shortcut comes from, it is easy to flip a sign that should not flip, or to "move" something that was multiplying. Say the real step to yourself: *what am I doing to both sides?*
@@ -194,7 +194,7 @@ $$
 One formula has become three, and each answers a different question:
 
 ::: key One formula, three ways round
-$d = v \cdot t$ (distance), $v = \dfrac{d}{t}$ (speed) and $t = \dfrac{d}{v}$ (time) are the same fact rearranged. Keep the units matched: metres and seconds give metres per second.
+$d = v \cdot t$ (distance), $v = \dfrac{d}{t}$ (speed) and $t = \dfrac{d}{v}$ (time) are the same fact rearranged. Keep the units matched: meters and seconds give meters per second.
 :::
 
 A handy picture for three-letter formulas like this is the [[formula triangle|formula-triangle]]. But the balance rule is what makes it work, and the balance rule works on any formula, not only the triangle kind.
@@ -216,7 +216,7 @@ $$
 t = \frac{d}{v}.
 $$
 
-**Substitute, with units.** Kilometres over kilometres per second leaves seconds:
+**Substitute, with units.** Kilometers over kilometers per second leaves seconds:
 
 $$
 t = \frac{42600\,\mathrm{km}}{7.67\,\mathrm{km/s}} \approx 5554\,\mathrm{s}.
@@ -270,7 +270,7 @@ Rearrange $A = l \cdot w$ to give $w$ on its own. A solar panel has area $6\,\ma
 :::
 
 ::: answer
-$w$ is multiplied by $l$, so divide both sides by $l$: $w = \dfrac{A}{l}$. Then $w = \dfrac{6\,\mathrm{m^2}}{4\,\mathrm{m}} = 1.5\,\mathrm{m}$. Square metres divided by metres leaves metres, as a width should. Check: $4 \times 1.5 = 6$.
+$w$ is multiplied by $l$, so divide both sides by $l$: $w = \dfrac{A}{l}$. Then $w = \dfrac{6\,\mathrm{m^2}}{4\,\mathrm{m}} = 1.5\,\mathrm{m}$. Square meters divided by meters leaves meters, as a width should. Check: $4 \times 1.5 = 6$.
 :::
 
 ::: check
@@ -342,7 +342,7 @@ That is why dividing both sides by zero is forbidden: it does not produce a new,
 :::
 
 ::: context tanks-crossing Where the two tanks meet
-Draw each tank's water against time. Tank A starts high and slopes down; tank B starts low and slopes up. The equation $500 - 12t = 200 + 8t$ asks where the two lines meet — and they cross at $t = 15$ minutes, $320$ litres.
+Draw each tank's water against time. Tank A starts high and slopes down; tank B starts low and slopes up. The equation $500 - 12t = 200 + 8t$ asks where the two lines meet — and they cross at $t = 15$ minutes, $320$ liters.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">

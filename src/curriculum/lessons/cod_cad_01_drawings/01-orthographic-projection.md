@@ -247,7 +247,7 @@ Stand a vertical plane up and lay a horizontal plane across it. Seen edge-on, th
 :::
 
 ::: context third-angle-layout A stepped block in third angle
-The block is tall on its left half and stepped down on its right half. The top view sits above the front view and shows the step as a line. The right-side view sits to the right and shows the step edge as a horizontal line halfway up. Thin grey lines show how corners project straight across from view to view. The small symbol, bottom right, tapers toward its circles: third angle.
+The block is tall on its left half and stepped down on its right half. The top view sits above the front view and shows the step as a line. The right-side view sits to the right and shows the step edge as a horizontal line halfway up. Thin gray lines show how corners project straight across from view to view. The small symbol, bottom right, tapers toward its circles: third angle.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210" font-family="Inter, Arial, sans-serif">

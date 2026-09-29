@@ -27,7 +27,7 @@ The word `public` means that everything public in `Sensor` stays public in `Imu`
 
 Public inheritance makes a promise: an `Imu` **is a** `Sensor`. Anywhere the program needs a `Sensor`, an `Imu` must be able to stand in and behave sensibly. That promise is the **[[is-a test|is-a-test]]**, and it is how you decide whether inheritance fits at all. An IMU is a sensor. A thruster is not a valve, even though it has one.
 
-Construction and destruction follow the order you learned in lessons 1 to 3. The base subobject is built first, then the derived class's members, then the derived constructor's body runs. Destruction goes in reverse: derived first, base last. The derived class passes arguments to its base in the member initialiser list, as `Imu(int id, double a) : Sensor(id), accel_(a) {}`.
+Construction and destruction follow the order you learned in lessons 1 to 3. The base subobject is built first, then the derived class's members, then the derived constructor's body runs. Destruction goes in reverse: derived first, base last. The derived class passes arguments to its base in the member initializer list, as `Imu(int id, double a) : Sensor(id), accel_(a) {}`.
 
 A third access level appears here. A **protected** member is hidden from outside code, like `private`, but visible to derived classes. You will use it below to let derived classes copy a base while forbidding everyone else.
 
@@ -228,7 +228,7 @@ Do not call a virtual function from a constructor or destructor and expect the d
 
 ## The virtual destructor, revisited
 
-Lesson 3 met this rule. Now you can see why it has to hold. `delete p` where `p` is a `Sensor*` runs a destructor. If `~Sensor` is not virtual, the compiler picks it by the static type — `Sensor` — and `~Imu` never runs. Anything the `Imu` owns, such as a `std::vector` of history, is never freed. The standard calls it **undefined behaviour**.
+Lesson 3 met this rule. Now you can see why it has to hold. `delete p` where `p` is a `Sensor*` runs a destructor. If `~Sensor` is not virtual, the compiler picks it by the static type — `Sensor` — and `~Imu` never runs. Anything the `Imu` owns, such as a `std::vector` of history, is never freed. The standard calls it **undefined behavior**.
 
 g++ warns about it under `-Wall`:
 
@@ -241,7 +241,7 @@ and the program printed only `~Sensor`. The `~Imu` line never appeared.
 There are two correct fixes, and the [[C++ Core Guidelines|core-guidelines]] give both. Make the base destructor public and virtual, so `delete` through a base pointer works. Or make it protected and non-virtual, so `delete` through a base pointer does not compile at all.
 
 ::: key
-Deleting a derived object through a base pointer with a non-virtual destructor is undefined behaviour: only the base destructor runs, so derived members leak. Either make the destructor virtual, or make it protected and non-virtual to forbid that deletion.
+Deleting a derived object through a base pointer with a non-virtual destructor is undefined behavior: only the base destructor runs, so derived members leak. Either make the destructor virtual, or make it protected and non-virtual to forbid that deletion.
 :::
 
 Where does this bite in flight software? Anywhere an object is deleted through a base pointer — typically a `std::unique_ptr<Sensor>` holding an `Imu`. That is one reason many flight teams avoid owning polymorphic objects through pointers at all. They create every component once at start-up, as a named object with a fixed lifetime, and hand out references. No base-pointer delete ever happens. The rule still applies; the design just never tests it. The [[F Prime framework|fprime-components]] is a real example of this style.
@@ -259,7 +259,7 @@ and you pass it an `Imu`. The parameter `s` is a brand-new `Sensor` object, `Sen
 That is **object slicing**: copying a derived object into a base-typed object keeps only the base part. The derived data is gone, and so is the dynamic type — the new object really is a `Sensor`, so virtual calls on it go to `Sensor`'s versions. Nothing is wrong with dispatch. The `Imu` is simply [[no longer there|slicing-picture]].
 
 ::: example Four ways to call, three of them sliced
-```cpp
+```cpp fragment
 void log_by_value(Sensor s) {
     std::printf("  by value:     %s reads %.2f\n", s.kind(), s.read());
 }
@@ -306,13 +306,13 @@ Assignment slices too, and this one damages an existing object. With `Imu a(1, 9
 
 ### Preventing slicing
 
-Three defences, from lightest to strongest.
+Three defenses, from lightest to strongest.
 
 1. **Pass polymorphic objects by reference or pointer.** `const Sensor&` for looking, `Sensor&` for changing, `Sensor*` when "no sensor" is allowed. This fixes each call site, but it relies on everyone remembering.
 2. **Make the base abstract.** A by-value `Sensor` parameter becomes a compile error, because no `Sensor` object can ever be created. The compiler says "cannot declare parameter 's' to be of abstract type 'Sensor'". That blocks copies into a `Sensor`, but not the assignment in the warning above.
 3. **Make the base's copy operations protected, or delete them.** This closes every door at once.
 
-Here is defence 3, with the copy operations `protected`:
+Here is defense 3, with the copy operations `protected`:
 
 ```cpp
 class Sensor {
@@ -374,7 +374,7 @@ Why does `std::vector<Sensor>` slice, but `std::vector<std::unique_ptr<Sensor>>`
 :::
 
 ::: answer
-A `std::vector<Sensor>` stores actual `Sensor` objects, each exactly `sizeof(Sensor)` bytes, in one row of memory. Pushing an `Imu` copies it into one of those `Sensor`-sized slots, so only the base part fits. A `std::vector<std::unique_ptr<Sensor>>` stores pointers, each 8 bytes. The `Imu` itself lives on the heap at its full size, and the vector only holds its address, so nothing is copied or cut. For this to be safe, `Sensor` needs a public virtual destructor. When the `unique_ptr` is destroyed it runs `delete` on a `Sensor*`, and without a virtual destructor that is undefined behaviour and `~Imu` never runs.
+A `std::vector<Sensor>` stores actual `Sensor` objects, each exactly `sizeof(Sensor)` bytes, in one row of memory. Pushing an `Imu` copies it into one of those `Sensor`-sized slots, so only the base part fits. A `std::vector<std::unique_ptr<Sensor>>` stores pointers, each 8 bytes. The `Imu` itself lives on the heap at its full size, and the vector only holds its address, so nothing is copied or cut. For this to be safe, `Sensor` needs a public virtual destructor. When the `unique_ptr` is destroyed it runs `delete` on a `Sensor*`, and without a virtual destructor that is undefined behavior and `~Imu` never runs.
 :::
 
 ::: check
@@ -396,7 +396,7 @@ It stops anyone from deriving from the class: `class Special : public Imu` becom
 | `override` | "this replaces a base virtual" | compile error if it does not, e.g. a missing `const` |
 | `final` | no more overriding or deriving | also lets the compiler call directly |
 | pure virtual, `= 0` | declared, no default | a class with one is abstract and cannot be created |
-| virtual destructor | base-pointer `delete` runs the derived destructor | otherwise undefined behaviour; or make it protected and non-virtual |
+| virtual destructor | base-pointer `delete` runs the derived destructor | otherwise undefined behavior; or make it protected and non-virtual |
 | object slicing | copying a derived object into a base object | keeps the base part only; the dynamic type is lost |
 | preventing slicing | references or pointers; abstract or non-copyable base | protected copy lets derived classes still copy whole objects |
 
@@ -469,7 +469,7 @@ Building an `Imu` happens in stages: first the `Sensor` part, then the `Imu` mem
 :::
 
 ::: context core-guidelines The rules, as the guidelines state them
-The C++ Core Guidelines, edited by Bjarne Stroustrup and Herb Sutter, say this in several numbered rules. C.35: a base class destructor should be either public and virtual, or protected and non-virtual. C.67: a polymorphic class should suppress public copy and move, which is the slicing defence in this lesson. C.128: virtual functions should specify exactly one of `virtual`, `override` or `final`. Many flight-software coding standards cite or adapt these rules.
+The C++ Core Guidelines, edited by Bjarne Stroustrup and Herb Sutter, say this in several numbered rules. C.35: a base class destructor should be either public and virtual, or protected and non-virtual. C.67: a polymorphic class should suppress public copy and move, which is the slicing defense in this lesson. C.128: virtual functions should specify exactly one of `virtual`, `override` or `final`. Many flight-software coding standards cite or adapt these rules.
 :::
 
 ::: context fprime-components Inheritance in a real flight framework

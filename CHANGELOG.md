@@ -8,13 +8,30 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.1.8
+
+**Run only appears on code that can run.** A lesson that builds a program up line by line used to
+put a Run button on a piece like `int main() {`, which could only fail to compile. Pieces of a
+program are now shown as plain code, and every code block that does have a Run button is compiled
+when the app is built, so none of them can fail on you. Where a lesson shows a compiler error on
+purpose, Run is still there so you can see it.
+
+**American spelling throughout.** Lessons, flashcards and coding courses now use American spelling
+(behavior, center, meter, optimize) to match everything else in the app.
+
+**Exercises that were broken are rebuilt.** The rocket-ascent guidance exercise now has a rocket
+that can actually lift off and a target it can reach; the MATLAB control exercise starts from a
+loop you first find to be unstable and then fix; a new exercise decodes a real two-line element set
+and draws its ground track; and a dozen SQL lessons now check that your query is really right, not
+just that it runs. About forty more cards and questions are clarified.
+
 ## 1.1.7
 
 **Every coding course and nearly every module is now in plain words.** The last courses, C++
 expert and C++ projects, are rewritten one idea at a time with notes in every lesson, and their
 examples never hand you the answer. The career modules (recruiter screens, the project
-presentation, the domain round, first-principles questions and behavioural stories), the rest of
-guidance and trajectory optimisation, the capstone, interview prep and the Simulink modules are
+presentation, the domain round, first-principles questions and behavioral stories), the rest of
+guidance and trajectory optimization, the capstone, interview prep and the Simulink modules are
 rewritten too, with context notes throughout. Four lessons on proportional navigation keep their
 original text for now.
 

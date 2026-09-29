@@ -4,7 +4,7 @@ title: Eigen and NumPy side by side, and the neighbors
 minutes: 21
 covers:
   - Eigen to NumPy mental mapping
-  - 'Neighbours: Sophus for Lie groups, Ceres and GTSAM for least squares and factor graphs, SymForce for generated C++'
+  - 'Neighbors: Sophus for Lie groups, Ceres and GTSAM for least squares and factor graphs, SymForce for generated C++'
 ---
 
 If you learn Spanish after English, most words are friendly. *Televisión* is television, *importante* is important. But a few words look familiar and mean something else. *Actual* means "current", not "actual". *Embarazada* means "pregnant", not "embarrassed". Language teachers call these **[[false friends|false-friends]]**, and they cause more mistakes than the words you have never seen, because you do not think to look them up.
@@ -54,7 +54,7 @@ print(A @ B)            # matrix product
 #  [43. 50.]]
 ```
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -110,7 +110,7 @@ A matrix is a grid, but memory is one long line of numbers, so a library must ch
 
 Inside one library you rarely notice. It matters the moment raw memory crosses between them: a NumPy buffer handed to C++, a C array from a message, a file of numbers. If six numbers written row by row are read column by column, the matrix comes out scrambled, and nothing warns you. The fix is to tell Eigen the layout when you wrap the buffer with `Map`:
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -182,7 +182,7 @@ print(float(P2[0, 1]), float(w[1]), float(np.trace(P2)))
 
 The Eigen port translates by meaning: `@` becomes `*`, `.T` becomes `.transpose()`, `np.diag` becomes `asDiagonal()`.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <cmath>
 #include <cstdio>
@@ -242,7 +242,7 @@ Eigen ships a small, unofficial version of the same idea in its `unsupported` fo
 ::: example A range Jacobian, computed automatically
 A ground station sits at the origin. A spacecraft is at $\mathbf{p} = (3000, 4000, 12\,000)\,\mathrm{m}$. We want the range $r = \lVert \mathbf{p} - \mathbf{s} \rVert$ and its derivative with respect to $\mathbf{p}$.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <unsupported/Eigen/AutoDiff>
 #include <cstdio>
@@ -299,7 +299,7 @@ Where a Kalman filter keeps only the current state and forgets the past, a facto
 The last neighbor attacks the slowest, most error-prone step of all: turning math into flight code by hand. In Python you may have used SymPy to write a model with symbols, differentiate it, and turn it into a fast function with `lambdify`. **SymForce**, from the drone company Skydio, is the production version of that idea. You write the measurement model symbolically in Python, SymForce computes the Jacobians symbolically, simplifies the expressions, and **generates** plain, optimized C++ that uses Eigen types. It also includes Lie group types and an optimizer, so it overlaps with all three neighbors above.
 
 ::: key What SymForce is and why it matters here
-SymForce is a Skydio toolchain that writes the mathematics symbolically in Python and generates optimised C++, including analytic Jacobians. It is the production version of the SymPy-plus-`lambdify` pattern, and it removes the hand-differentiation bug class.
+SymForce is a Skydio toolchain that writes the mathematics symbolically in Python and generates optimized C++, including analytic Jacobians. It is the production version of the SymPy-plus-`lambdify` pattern, and it removes the hand-differentiation bug class.
 :::
 
 | Library | The job | The idea to remember |

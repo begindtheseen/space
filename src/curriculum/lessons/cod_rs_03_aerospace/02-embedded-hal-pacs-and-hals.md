@@ -165,7 +165,7 @@ The main traits in 1.0 are:
 Every method returns a `Result`, and each implementation names its own `Error` type, so a bus fault on a real board is reported, not ignored. Three companion crates carry the rest: `embedded-hal-async` has `async` versions of the same traits (the next lesson uses them), `embedded-hal-nb` keeps the older polling style for serial ports, and `embedded-hal-bus` lets several drivers share one bus.
 
 ::: key What embedded-hal is
-A set of traits defining what a digital pin, an SPI bus, an I2C bus or a delay does. Drivers are written against the traits, so one sensor driver works on every microcontroller whose HAL implements them; version 1.0 stabilised that contract.
+A set of traits defining what a digital pin, an SPI bus, an I2C bus or a delay does. Drivers are written against the traits, so one sensor driver works on every microcontroller whose HAL implements them; version 1.0 stabilized that contract.
 :::
 
 ::: key The layers, bottom to top

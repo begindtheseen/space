@@ -1,9 +1,9 @@
 ---
 id: l05-numpy-arrays
-title: "NumPy: arrays, broadcasting and vectorised thinking"
+title: "NumPy: arrays, broadcasting and vectorized thinking"
 minutes: 23
 covers:
-  - NumPy arrays, broadcasting, vectorisation, dtypes, float64 semantics
+  - NumPy arrays, broadcasting, vectorization, dtypes, float64 semantics
 ---
 
 Imagine a cashier who walks to the back room to look up the price of every single item. Now imagine a conveyor belt that scans the whole cart in one pass. Same groceries, same prices, very different wait. That is the difference between a Python `for` loop and NumPy.
@@ -130,9 +130,9 @@ The tools:
 - compare computed floats with `np.isclose(a, b, rtol, atol)` or `np.allclose`, never `==`;
 - when a NaN would mean a bug, wrap the code in `with np.errstate(invalid="raise", divide="raise"):`. The warnings become errors, and the error points at the line that made the NaN.
 
-## Vectorisation: arithmetic on whole arrays
+## Vectorization: arithmetic on whole arrays
 
-Arithmetic signs and the functions in `np` — `np.sin`, `np.sqrt`, `np.exp`, `np.abs` and the rest, called **ufuncs** ("universal functions") — act on every element of an array at once. **Reductions** — `np.sum`, `np.mean`, `np.std`, `np.min`, `np.max`, `np.percentile`, `np.cumsum` — boil an array down. Both run in compiled C. Writing code this way is called **vectorising** it.
+Arithmetic signs and the functions in `np` — `np.sin`, `np.sqrt`, `np.exp`, `np.abs` and the rest, called **ufuncs** ("universal functions") — act on every element of an array at once. **Reductions** — `np.sum`, `np.mean`, `np.std`, `np.min`, `np.max`, `np.percentile`, `np.cumsum` — boil an array down. Both run in compiled C. Writing code this way is called **vectorizing** it.
 
 The circular-orbit speed $v = \sqrt{\mu/r}$ at three altitudes becomes one line. Here $\mu$ ("mu") is Earth's gravity constant and $r$ the distance from Earth's center:
 
@@ -147,7 +147,7 @@ print(v.mean(), v.max())  # 7634.883752486317 7784.2617485656265
 
 Sanity check: about $7.7\,\mathrm{km/s}$ at $400\,\mathrm{km}$, and slower higher up, as orbits should be.
 
-Now compare a loop with the vectorised version. Both compute the flat-ground range $R = v_0^2\sin(2\theta)/g$ for many launch angles:
+Now compare a loop with the vectorized version. Both compute the flat-ground range $R = v_0^2\sin(2\theta)/g$ for many launch angles:
 
 ```python
 def ranges_loop(v0, angles_rad, g=9.80665):
@@ -160,7 +160,7 @@ def ranges_vec(v0, angles_rad, g=9.80665):
     return v0**2 * np.sin(2 * angles_rad) / g   # one expression: fast
 ```
 
-Both return the same array. The second is many times faster for $10^5$ samples, and the reason is worth understanding, not memorising:
+Both return the same array. The second is many times faster for $10^5$ samples, and the reason is worth understanding, not memorizing:
 
 ::: key
 A per-sample Python loop is slow in a 100k-run Monte Carlo because the CPython interpreter pays type dispatch and object overhead on every iteration — each `th` is a **[[boxed|boxed-objects]]** Python object, each `*` looks up what multiplication means for that object, each result is allocated. NumPy pushes the loop into compiled C over a contiguous buffer, typically tens to hundreds of times faster.
@@ -261,7 +261,7 @@ theta = rng.normal(loc=30.0, scale=2.0, size=100_000)   # degrees; mean, 1-sigma
 u = rng.uniform(0.0, 1.0, size=5)
 ```
 
-`rng.normal(mean, sigma, size)` draws the whole sample from a **normal distribution** (the bell curve) in one call — the vectorised way. Here $\sigma$ ("sigma") is the **standard deviation**, the typical spread. Statistics come from reductions: `theta.mean()`, `theta.std()`, and `np.percentile(theta, 99.87)`, the value that 99.87 % of samples lie below. For a normal distribution that sits at the mean plus $3\sigma$ — the **[[three-sigma|three-sigma]]** point (the probability module derives the 0.13 % tail). Use the same generator for every draw in a run, so no stream of numbers accidentally repeats.
+`rng.normal(mean, sigma, size)` draws the whole sample from a **normal distribution** (the bell curve) in one call — the vectorized way. Here $\sigma$ ("sigma") is the **standard deviation**, the typical spread. Statistics come from reductions: `theta.mean()`, `theta.std()`, and `np.percentile(theta, 99.87)`, the value that 99.87 % of samples lie below. For a normal distribution that sits at the mean plus $3\sigma$ — the **[[three-sigma|three-sigma]]** point (the probability module derives the 0.13 % tail). Use the same generator for every draw in a run, so no stream of numbers accidentally repeats.
 
 ::: example Vectorised Monte Carlo range
 A ball fired at $v_0 = 100\,\mathrm{m/s}$ on flat ground travels $R = v_0^2 \sin(2\theta)/g$. Draw $10^5$ launch angles around $30^\circ$ with a $2^\circ$ spread, and get the statistics of the range with no loop over samples:
@@ -293,7 +293,7 @@ $$
 \sigma_R \approx \left|\frac{dR}{d\theta}\right|\sigma_\theta = \frac{2 \times 10^4 \times \cos 60^\circ}{9.80665} \times 0.03491 = \frac{2 \times 10^4 \times 0.5}{9.80665} \times 0.03491 \approx 35.6\,\mathrm{m}.
 $$
 
-If your `R.std()` comes out near $35.6\,\mathrm{m}$ (this seed gives $35.66$), the vectorised line is doing what the mathematics says.
+If your `R.std()` comes out near $35.6\,\mathrm{m}$ (this seed gives $35.66$), the vectorized line is doing what the mathematics says.
 :::
 
 ::: example Centring and covariance of a sample cloud
@@ -395,7 +395,7 @@ But the estimator then forms differences, sums of squares and matrix inverses. I
 | dtypes | `float64` (53 bits, about 16 digits), `float32` (24 bits, about 7 digits), `int64` wraps | `np.finfo(np.float64).eps` $= 2.22 \times 10^{-16}$ |
 | float32 vs float64 | float32 ulp at Earth radius $= 0.5\,\mathrm{m}$; float64 ulp $\approx 9.3 \times 10^{-10}\,\mathrm{m}$ | GNC works in float64 |
 | NaN / inf | `np.isnan`, `np.nanmean`, `np.isclose`, `np.errstate(invalid="raise")` | `nan != nan` |
-| Vectorise | ufuncs `np.sin(a)`, reductions `a.mean(axis=0)`, `np.percentile(a, 99.87)` | tens to hundreds of times over a Python loop |
+| Vectorize | ufuncs `np.sin(a)`, reductions `a.mean(axis=0)`, `np.percentile(a, 99.87)` | tens to hundreds of times over a Python loop |
 | Broadcasting | compare shapes right to left; equal or 1; stretch 1s | `(3,1)` with `(1,5)` → `(3,5)` |
 | New axis | `a[:, None]`, `a[None, :]` | outer product `s[:, None] * s[None, :]` |
 | Products | `*` elementwise; `a @ b` matrix / dot; `np.cross`, `np.linalg.norm(V, axis=1)` | `(3,) @ (3,)` is a scalar |

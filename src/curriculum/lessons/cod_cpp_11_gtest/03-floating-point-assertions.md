@@ -361,14 +361,14 @@ Why does `EXPECT_DOUBLE_EQ(residual, 0.0)` fail even when `residual` is $10^{-17
 | Choosing tol | from order and step size, a small factor above the bound, reasoning in a comment |
 | Test the test | a derived tolerance fails on a typo and on a doubled step; a tuned one does not |
 
-You now have tests, fixtures, fatal and nonfatal checks, and tolerances with reasons behind them. The next lesson, *TEST_P parameterised tests*, runs one test body over a whole table of cases — six flight conditions, each with its own tolerance — so every case is reported by name.
+You now have tests, fixtures, fatal and nonfatal checks, and tolerances with reasons behind them. The next lesson, *TEST_P parameterized tests*, runs one test body over a whole table of cases — six flight conditions, each with its own tolerance — so every case is reported by name.
 
 ::: context binary-fractions Why one tenth cannot be stored exactly
 In decimal, a fraction ends only if its bottom number is built from 2s and 5s: $\frac{1}{4} = 0.25$ ends, $\frac{1}{3} = 0.333\ldots$ does not. In binary, a fraction ends only if its bottom number is a power of 2. One tenth has a 5 in its bottom, so in binary it repeats forever: $0.000110011001100\ldots$. A double keeps 53 significant bits and rounds the rest, so `0.1` is stored as $0.1000000000000000055511151231257827\ldots$. Close, but not equal.
 :::
 
 ::: context ulp A ruler whose marks spread out
-Doubles are packed tightly near zero and spread out as numbers grow. Every time the value doubles, the gap between neighbours doubles too. So a ULP is a relative ruler: always about $2.2 \times 10^{-16}$ of the value, within a factor of two.
+Doubles are packed tightly near zero and spread out as numbers grow. Every time the value doubles, the gap between neighbors doubles too. So a ULP is a relative ruler: always about $2.2 \times 10^{-16}$ of the value, within a factor of two.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
@@ -397,7 +397,7 @@ The picture shows four marks per band to keep it readable; a real double has $2^
 :::
 
 ::: context rk4-history Two German mathematicians
-The family of methods is named after Carl Runge, who published the idea in 1895, and Martin Kutta, who extended it in 1901. The version in this lesson, with four stages weighted $1, 2, 2, 1$ and divided by $6$, is so common that people call it "the" Runge–Kutta method or "classic RK4". It is a favourite for simulations and many onboard propagators because it is accurate for its cost, needs only the current state, and is easy to write correctly — and, as the typo example shows, easy to write almost correctly.
+The family of methods is named after Carl Runge, who published the idea in 1895, and Martin Kutta, who extended it in 1901. The version in this lesson, with four stages weighted $1, 2, 2, 1$ and divided by $6$, is so common that people call it "the" Runge–Kutta method or "classic RK4". It is a favorite for simulations and many onboard propagators because it is accurate for its cost, needs only the current state, and is easy to write correctly — and, as the typo example shows, easy to write almost correctly.
 :::
 
 ::: context error-vs-step Two errors pulling in opposite directions

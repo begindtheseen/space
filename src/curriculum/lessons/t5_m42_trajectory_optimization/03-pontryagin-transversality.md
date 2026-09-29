@@ -1,6 +1,6 @@
 ---
 id: l03-pontryagin-transversality
-title: "Pontryagin's Minimum Principle: why minimise, and transversality in full"
+title: "Pontryagin's Minimum Principle: why minimize, and transversality in full"
 minutes: 24
 covers:
   - "Pontryagin's Minimum Principle, the stationarity condition, and transversality conditions"

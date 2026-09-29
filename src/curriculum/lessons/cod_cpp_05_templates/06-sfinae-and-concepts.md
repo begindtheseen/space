@@ -423,11 +423,11 @@ The failure must happen in the declaration: the return type, the parameter types
 :::
 
 ::: check
-Given `template <bool B, typename T = void> struct enable_if {};` and the specialisation for `true`, what is `std::enable_if_t<(sizeof(long) == 8), int>` on a typical 64-bit Linux machine, and what is `std::enable_if_t<false>`?
+Given `template <bool B, typename T = void> struct enable_if {};` and the specialization for `true`, what is `std::enable_if_t<(sizeof(long) == 8), int>` on a typical 64-bit Linux machine, and what is `std::enable_if_t<false>`?
 :::
 
 ::: answer
-On 64-bit Linux `long` is 8 bytes, so the condition is true, the `true` specialisation is used, and its `type` is `int`. So the first is `int`.
+On 64-bit Linux `long` is 8 bytes, so the condition is true, the `true` specialization is used, and its `type` is `int`. So the first is `int`.
 
 `std::enable_if_t<false>` uses the default `T = void`, but with `false` the general template is chosen, and it has no member `type`. Naming it is invalid: inside a function template's declaration that is a substitution failure that removes the candidate; anywhere else it is an ordinary compile error.
 :::
@@ -486,7 +486,7 @@ What it buys is at build time: a misuse like `Matrix<std::string, 2, 2>` or `Mat
 | Subsumption | More constrained wins | Works through named concepts |
 | Benefit | Readable diagnosis at the call site | Same runtime code |
 
-Next lesson moves from checking types at compile time to *computing* at compile time: `constexpr` and `consteval` functions, `constinit`, and `if constexpr`, which chooses behavior on a type property like `std::is_floating_point_v<T>` **[[without writing a single specialisation|if-constexpr-bridge]]**.
+Next lesson moves from checking types at compile time to *computing* at compile time: `constexpr` and `consteval` functions, `constinit`, and `if constexpr`, which chooses behavior on a type property like `std::is_floating_point_v<T>` **[[without writing a single specialization|if-constexpr-bridge]]**.
 
 ::: context overload-resolution How the compiler picks one function
 Overload resolution runs in three steps. Collect every function with the right name that lookup can see. Keep only the **viable** ones, those that can accept these arguments at all; this is where SFINAE and constraints remove candidates. Then rank the survivors: an exact match beats a promotion (such as `float` to `double`), which beats a conversion (such as `int` to `double`). If one candidate is best, it is called; if two tie, the call is ambiguous.
@@ -512,7 +512,7 @@ Overload resolution runs in three steps. Collect every function with the right n
 :::
 
 ::: context sfinae-name An acronym that stuck
-The phrase comes from the standard's own rule, and the acronym was popularised by David Vandevoorde and Nicolai Josuttis in their book *C++ Templates*, which this module lists as a resource. For many years SFINAE was the main way to put conditions on templates, and whole libraries of tricks were built on it. Most of those tricks have a one-line concept equivalent today, but you will read SFINAE code for years, in older libraries and in any codebase still built as C++14 or C++17.
+The phrase comes from the standard's own rule, and the acronym was popularized by David Vandevoorde and Nicolai Josuttis in their book *C++ Templates*, which this module lists as a resource. For many years SFINAE was the main way to put conditions on templates, and whole libraries of tricks were built on it. Most of those tricks have a one-line concept equivalent today, but you will read SFINAE code for years, in older libraries and in any codebase still built as C++14 or C++17.
 :::
 
 ::: context adc-count What a raw count is

@@ -205,7 +205,7 @@ So a real project rarely uses the standard `assert` in flight code. It defines i
 
 Read `!(cond)` as "not cond". `__FILE__` and `__LINE__` are filled in by the compiler with the current file name and line number. Here it is guarding a time step, in a program compiled *with* `-DNDEBUG`:
 
-```cpp
+```cpp fragment
 void step(double dt) {
     GNC_ASSERT(dt < 0.1, 42);   // fault 42: time step too large
     std::printf("step ok\n");
@@ -300,7 +300,7 @@ A colleague writes `assert(fd = open_port());`, meaning `==`. Describe both bugs
 ::: answer
 Bug one: `=` assigns instead of comparing. The assertion then tests whether the returned value is non-zero. It passes for any non-zero file descriptor and fails for zero — and zero is a *valid* descriptor.
 
-Bug two, worse: the call is inside the assertion. Under `-DNDEBUG` the whole expression vanishes. The port is never opened and `fd` is never assigned. If `fd` was declared without a value, reading it later is undefined behaviour.
+Bug two, worse: the call is inside the assertion. Under `-DNDEBUG` the whole expression vanishes. The port is never opened and `fd` is never assigned. If `fd` was declared without a value, reading it later is undefined behavior.
 
 So the debug build seems to work, and the release build fails somewhere with no obvious link to this line. g++'s `-Wall` flags the first bug (`-Wparentheses`: "suggest parentheses around assignment used as truth value"). In a tiny program, the release build's `-Wuninitialized` may also notice `fd` is never set — but nothing flags the vanished call itself except knowing the rule.
 
@@ -345,7 +345,7 @@ Neither: that a star tracker (a camera that works out the vehicle's orientation 
 | Assertion vs handling | an assertion states what is true unless there is a bug; anything the world can cause needs real code |
 | Flight practice | a project macro that is always present, records a fault code and takes a defined action |
 
-That is the end of the module. You can now build a multi-file program by hand and with a Makefile and explain every flag; read an undefined-reference or multiple-definition error and name its cause; say what undefined behaviour is and name several instances; choose a fixed-width type for a telemetry field and justify it; and read a program and say where every object lives and when it dies. The next module, *Memory, Pointers, References and Ownership*, takes the lifetime rules from lesson 11 and builds the whole ownership vocabulary on them.
+That is the end of the module. You can now build a multi-file program by hand and with a Makefile and explain every flag; read an undefined-reference or multiple-definition error and name its cause; say what undefined behavior is and name several instances; choose a fixed-width type for a telemetry field and justify it; and read a program and say where every object lives and when it dies. The next module, *Memory, Pointers, References and Ownership*, takes the lifetime rules from lesson 11 and builds the whole ownership vocabulary on them.
 
 ::: context constant-expression Known before the program exists
 A constant expression is one the compiler can finish working out by itself, with nothing left to learn at run time. `sizeof(TelemetryHeader) == 12` qualifies: the compiler laid out the struct, so it knows the size. `n > 0` inside `mean_az` does not, because `n` arrives only when someone calls the function. That is the whole split in this lesson: facts known while compiling go to `static_assert`, facts known only while running go to `assert` or real code.

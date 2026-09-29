@@ -113,14 +113,14 @@ Engineers sort flight into four **regimes** by Mach number. The boundaries are f
 
 **Subsonic, $M < 0.8$.** No shocks anywhere on the body. Pressure ripples run ahead and the flow adjusts smoothly. The coefficients hardly change with Mach, rising gently as the air starts to squash, and the point where the air's push acts stays put. Drag is **skin friction** — air rubbing along the surface — plus the pressure drag where the flow breaks away from the body, mostly at the blunt base.
 
-**Transonic, $0.8 < M < 1.2$.** Air speeds up as it flows over the body's shoulders, so near the body it moves faster than the free stream. Somewhere above Mach 0.8, small pockets of supersonic flow appear on the nose cover and shoulders while the rocket itself is still subsonic, and each pocket ends in a shock. Those shocks thicken the thin layer of slow air hugging the skin, the **[[boundary layer|boundary-layer]]**, and can make it peel away. The drag coefficient climbs steeply: the **drag rise**. As $M$ passes 1, a **bow shock** forms ahead of the nose and the whole pressure pattern rearranges. The **[[centre of pressure|centre-of-pressure]]** — the point where the air's total push effectively acts — moves, often by a sizeable fraction of the body length, and the coefficients change fast with $M$. This is the hardest regime to predict, in wind tunnels and in computer models alike, and it coincides with max-Q.
+**Transonic, $0.8 < M < 1.2$.** Air speeds up as it flows over the body's shoulders, so near the body it moves faster than the free stream. Somewhere above Mach 0.8, small pockets of supersonic flow appear on the nose cover and shoulders while the rocket itself is still subsonic, and each pocket ends in a shock. Those shocks thicken the thin layer of slow air hugging the skin, the **[[boundary layer|boundary-layer]]**, and can make it peel away. The drag coefficient climbs steeply: the **drag rise**. As $M$ passes 1, a **bow shock** forms ahead of the nose and the whole pressure pattern rearranges. The **[[center of pressure|centre-of-pressure]]** — the point where the air's total push effectively acts — moves, often by a sizeable fraction of the body length, and the coefficients change fast with $M$. This is the hardest regime to predict, in wind tunnels and in computer models alike, and it coincides with max-Q.
 
-**Supersonic, $1.2 < M < 5$.** Shocks sit attached to sharp tips, and a bow shock stands just ahead of blunt ones. The flow between them is fully supersonic and well described by theory. **Wave drag** — the energy the shock system carries away — is the main pressure drag, but its coefficient falls as $M$ rises, because the shocks lean back more and more. Coefficients change smoothly and predictably, and the centre of pressure drifts slowly rearward on most slender bodies.
+**Supersonic, $1.2 < M < 5$.** Shocks sit attached to sharp tips, and a bow shock stands just ahead of blunt ones. The flow between them is fully supersonic and well described by theory. **Wave drag** — the energy the shock system carries away — is the main pressure drag, but its coefficient falls as $M$ rises, because the shocks lean back more and more. Coefficients change smoothly and predictably, and the center of pressure drifts slowly rearward on most slender bodies.
 
 **Hypersonic, $M > 5$.** The shock hugs the body in a thin layer, and stopping the air heats it so much that the air itself changes: **[[real-gas effects|real-gas]]** appear. Oxygen molecules start to break apart around 2000–2500 K and nitrogen above about 4000 K, the molecules' vibrations soak up energy, and $\gamma$ is no longer 1.4. Pressure coefficients approach the **[[Newtonian|newtonian]]** limit, $C_p \approx 2\sin^2\theta$, where $\theta$ ("theta") is the local angle between the surface and the oncoming flow. That limit does not depend on Mach — the **Mach-independence principle** — so $C_D$ is nearly constant above about Mach 5. Here heating, not force, drives the design.
 
 ::: key
-Flow regimes by Mach number: subsonic $M < 0.8$ · transonic $0.8$–$1.2$ (drag rise, shifting centre of pressure) · supersonic $1.2$–$5$ · hypersonic $M > 5$ (real-gas effects, strong shock layer).
+Flow regimes by Mach number: subsonic $M < 0.8$ · transonic $0.8$–$1.2$ (drag rise, shifting center of pressure) · supersonic $1.2$–$5$ · hypersonic $M > 5$ (real-gas effects, strong shock layer).
 :::
 
 ## The drag coefficient of a booster
@@ -142,9 +142,9 @@ Here $S$ is the reference area — the core cross-section, $10.52\ \mathrm{m^2}$
 
 Blunt nose covers pay for their extra room in drag.
 
-**Skin friction** over the long cylinder is small per square metre, but there are a lot of square metres. It adds roughly 0.05–0.10 to $C_D$ (measured on the cross-section) and falls slowly with Mach.
+**Skin friction** over the long cylinder is small per square meter, but there are a lot of square meters. It adds roughly 0.05–0.10 to $C_D$ (measured on the cross-section) and falls slowly with Mach.
 
-**[[Base drag|base-drag]]** is the suction on the flat back end, where the flow breaks away. With the engines off, a blunt base near Mach 1 can add 0.15–0.25 by itself. With the engines running, the exhaust plumes fill much of that region and cut base drag a lot. That is why a rocket's drag tables are always labelled **power-on** or **power-off**.
+**[[Base drag|base-drag]]** is the suction on the flat back end, where the flow breaks away. With the engines off, a blunt base near Mach 1 can add 0.15–0.25 by itself. With the engines running, the exhaust plumes fill much of that region and cut base drag a lot. That is why a rocket's drag tables are always labeled **power-on** or **power-off**.
 
 **Wave drag** is the pressure drag from the shock system. It appears in the transonic rise, dominates in the supersonic range, then fades as the shocks weaken compared with $\bar{q}$.
 
@@ -184,7 +184,7 @@ Dynamic pressure grew by $36.4/35 = 1.04$, about 4 %. But $C_D$ fell by $0.55/0.
 
 ## What changes with Mach besides drag
 
-The drag coefficient is the part you see. Two other Mach effects matter more to the control engineer, and the next lessons develop them. The **normal-force slope** $C_{N\alpha}$ ("C N alpha"), which turns angle of attack into sideways force, rises through the transonic band and then falls. And the centre of pressure moves — forward through the transonic range on many slender bodies, then rearward when supersonic — which changes the turning push of the air on the rocket and so the instability the controller fights. All of these shift fast across $0.8 < M < 1.2$, the same window where $\bar{q}$ is largest. That is why the flight-control gains are **scheduled** — set differently — by Mach number or by time, and why wind-tunnel data are densest there.
+The drag coefficient is the part you see. Two other Mach effects matter more to the control engineer, and the next lessons develop them. The **normal-force slope** $C_{N\alpha}$ ("C N alpha"), which turns angle of attack into sideways force, rises through the transonic band and then falls. And the center of pressure moves — forward through the transonic range on many slender bodies, then rearward when supersonic — which changes the turning push of the air on the rocket and so the instability the controller fights. All of these shift fast across $0.8 < M < 1.2$, the same window where $\bar{q}$ is largest. That is why the flight-control gains are **scheduled** — set differently — by Mach number or by time, and why wind-tunnel data are densest there.
 
 ::: warning A C_D needs its area
 A drag coefficient without its reference area means nothing. Launch vehicles use the core cross-section, $\pi d^2/4$. Airplanes use the wing area. Some missile data use the diameter squared, $d^2$. The same body with $C_D = 0.3$ on a $d^2$ reference has $C_D = 0.3 \times 4/\pi = 0.38$ on a $\pi d^2/4$ reference. Always carry $C_D S$ as the real physical quantity, and check which $S$ a table assumes before you use it.
@@ -269,7 +269,7 @@ Estimate the ideal stagnation temperature on a vehicle at Mach 8 in air at 216.6
 The next lesson leaves the nose-first world of the gravity turn. Once the relative wind is not lined up with the rocket's body, the air's force gets a sideways part, and describing it needs the body and wind frames and the angles of attack and sideslip.
 
 ::: context ernst-mach Whose name is on the number
-Ernst Mach was an Austrian physicist. In 1887 he and Peter Salcher took the first photographs of a bullet flying faster than sound, showing the shock waves around it. Decades later, engineers named the speed ratio after him. So "Mach 2" is not a unit like metres; it is "two times the local speed of sound", and it can mean different speeds at different heights.
+Ernst Mach was an Austrian physicist. In 1887 he and Peter Salcher took the first photographs of a bullet flying faster than sound, showing the shock waves around it. Decades later, engineers named the speed ratio after him. So "Mach 2" is not a unit like meters; it is "two times the local speed of sound", and it can mean different speeds at different heights.
 :::
 
 ::: context shock-wave Outrunning your own sound
@@ -304,11 +304,11 @@ No gas is truly incompressible. But if the density changes by only a few percent
 :::
 
 ::: context boundary-layer The thin layer that clings
-Air right against the skin sticks to it and does not move. A little further out it moves a little; further still it reaches the full stream speed. That thin zone of slowed air is the boundary layer — on a rocket, a few centimetres thick near the nose and a few tens of centimetres near the tail. Skin friction comes from it. When a shock or a sharp corner pushes against it, it can lift off the surface entirely, called **separation**, and the swirling wake left behind adds a lot of drag.
+Air right against the skin sticks to it and does not move. A little further out it moves a little; further still it reaches the full stream speed. That thin zone of slowed air is the boundary layer — on a rocket, a few centimeters thick near the nose and a few tens of centimeters near the tail. Skin friction comes from it. When a shock or a sharp corner pushes against it, it can lift off the surface entirely, called **separation**, and the swirling wake left behind adds a lot of drag.
 :::
 
 ::: context centre-of-pressure Where the push effectively acts
-The air pushes on every bit of the rocket's skin. For balance, you can replace all those pushes with one total force acting at one point: the centre of pressure. Whether that point sits ahead of or behind the centre of mass decides whether the rocket weathervanes back into the wind or flips away from it. Two lessons from now, that comparison — the static margin — explains why a launcher is unstable and needs its engines steered constantly.
+The air pushes on every bit of the rocket's skin. For balance, you can replace all those pushes with one total force acting at one point: the center of pressure. Whether that point sits ahead of or behind the center of mass decides whether the rocket weathervanes back into the wind or flips away from it. Two lessons from now, that comparison — the static margin — explains why a launcher is unstable and needs its engines steered constantly.
 :::
 
 ::: context real-gas When air stops acting like simple air

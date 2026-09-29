@@ -443,7 +443,7 @@ The Allan variance was invented by David Allan at the US National Bureau of Stan
 :::
 
 ::: context allan-plot Reading an Allan plot
-This is a sketch of the example's gyro. The dashed grey lines are the three pieces: white noise falling at slope $-\tfrac{1}{2}$, the flat bias-instability floor at $5.5 \times 10^{-4}\,^\circ/\mathrm{s}$, and a rate random walk rising at slope $+\tfrac{1}{2}$. The blue curve is their combination — independent noises add in variance.
+This is a sketch of the example's gyro. The dashed gray lines are the three pieces: white noise falling at slope $-\tfrac{1}{2}$, the flat bias-instability floor at $5.5 \times 10^{-4}\,^\circ/\mathrm{s}$, and a rate random walk rising at slope $+\tfrac{1}{2}$. The blue curve is their combination — independent noises add in variance.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 205" font-family="Inter, Arial, sans-serif">

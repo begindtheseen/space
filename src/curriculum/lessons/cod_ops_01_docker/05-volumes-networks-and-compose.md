@@ -375,7 +375,7 @@ Without `condition: service_healthy`, the `sim` service in this lesson sometimes
 :::
 
 ::: answer
-A plain `depends_on` only waits until the `db` container has *started*, not until PostgreSQL inside it is ready. PostgreSQL needs a moment after start-up to initialise, especially on the first run when it creates the database. If the simulation connects during that moment, it is refused; if it happens to connect a little later, it works. The timing varies from run to run, so the failure looks random. The health check makes compose wait until `pg_isready` succeeds.
+A plain `depends_on` only waits until the `db` container has *started*, not until PostgreSQL inside it is ready. PostgreSQL needs a moment after start-up to initialize, especially on the first run when it creates the database. If the simulation connects during that moment, it is refused; if it happens to connect a little later, it works. The timing varies from run to run, so the failure looks random. The health check makes compose wait until `pg_isready` succeeds.
 :::
 
 ::: check

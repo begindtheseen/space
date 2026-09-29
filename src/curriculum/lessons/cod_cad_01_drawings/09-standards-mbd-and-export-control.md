@@ -30,7 +30,7 @@ ASME Y14.100 sets engineering drawing practices (the umbrella US drawing standar
 
 ## Drawing types: the right document for the job
 
-Y14.24 exists because not every drawing does the same job. You would not describe a bolt you buy from a catalogue the same way you describe a bracket your own shop machines. Here are the types a GNC engineer is most likely to meet.
+Y14.24 exists because not every drawing does the same job. You would not describe a bolt you buy from a catalog the same way you describe a bracket your own shop machines. Here are the types a GNC engineer is most likely to meet.
 
 - **Detail drawing** — defines one part completely: every dimension, tolerance, material and finish needed to make it. The star-tracker bracket is a detail drawing.
 - **Assembly drawing** — shows how parts go together, with item balloons and a bill of material. It does not repeat the detail of each part; it points to each part's own drawing.
@@ -43,7 +43,7 @@ Y14.24 exists because not every drawing does the same job. You would not describ
 ::: example Which drawing type?
 A spacecraft team buys a star tracker from an outside company and mounts it on a bracket its own shop machines. Which drawings are involved?
 
-**The tracker's mounting interface.** Two organisations share one boundary: the tracker's base and the bracket's face. That is an **interface control drawing**. Suppose it fixes four M5 holes on an $80\,\mathrm{mm}$ square and a mounting-face flatness of $0.01\,\mathrm{mm}$. By the small-angle rule from the stack-up lesson, $0.01\,\mathrm{mm}$ across $80\,\mathrm{mm}$ is at most about $0.01/80 = 0.000125\,\mathrm{rad}$, roughly $26\,\mathrm{arcsec}$ of possible rock, so the ICD is where that alignment term gets pinned down.
+**The tracker's mounting interface.** Two organizations share one boundary: the tracker's base and the bracket's face. That is an **interface control drawing**. Suppose it fixes four M5 holes on an $80\,\mathrm{mm}$ square and a mounting-face flatness of $0.01\,\mathrm{mm}$. By the small-angle rule from the stack-up lesson, $0.01\,\mathrm{mm}$ across $80\,\mathrm{mm}$ is at most about $0.01/80 = 0.000125\,\mathrm{rad}$, roughly $26\,\mathrm{arcsec}$ of possible rock, so the ICD is where that alignment term gets pinned down.
 
 **The tracker itself.** The team does not design its insides. If any qualified supplier would do, it is a **specification control drawing**; if only this one company's tested unit is allowed, a **source control drawing**.
 
@@ -77,7 +77,7 @@ MBD removes the copy. The machining software reads the geometry and the toleranc
 Two things become more important, not less. The model must be under the same **revision control** as a drawing — a released, lettered revision, stored where it cannot be changed quietly. And every feature needs a tolerance. On a 2D drawing, a dimension nobody wrote down simply is not there. In a model, every surface has an exact position, so MBD models usually carry a **general tolerance note** that covers every surface not otherwise toleranced.
 
 ::: example Reading a surface the drawing never dimensioned
-An MBD bracket model carries the general note "all surfaces not otherwise toleranced: profile $0.2$ relative to datums A, B, C". Profile $0.2$ means the real surface must lie inside a band $0.2\,\mathrm{mm}$ wide, centred on the model's surface: up to $0.1\,\mathrm{mm}$ on either side. A CMM probes one point on a pocket floor that has no dimension of its own.
+An MBD bracket model carries the general note "all surfaces not otherwise toleranced: profile $0.2$ relative to datums A, B, C". Profile $0.2$ means the real surface must lie inside a band $0.2\,\mathrm{mm}$ wide, centered on the model's surface: up to $0.1\,\mathrm{mm}$ on either side. A CMM probes one point on a pocket floor that has no dimension of its own.
 
 **The measurement.** At that point the model's surface is $12.000\,\mathrm{mm}$ above datum A. The probe finds the real surface at $12.070\,\mathrm{mm}$.
 
@@ -232,7 +232,7 @@ STEP is an international standard file format for 3D product data, and AP242 is 
 :::
 
 ::: context usml A list of controlled things
-The US Munitions List is a list of categories of defence items — from firearms to spacecraft — that ITAR controls. Launch vehicles have their own category, and so do spacecraft and related items. Over the years, many commercial satellite items were moved off this list to the EAR's Commerce Control List, which is generally easier to license. Deciding which list an item falls under is called **classification**, and it is done by trained specialists, not by the engineer who drew the part.
+The US Munitions List is a list of categories of defense items — from firearms to spacecraft — that ITAR controls. Launch vehicles have their own category, and so do spacecraft and related items. Over the years, many commercial satellite items were moved off this list to the EAR's Commerce Control List, which is generally easier to license. Deciding which list an item falls under is called **classification**, and it is done by trained specialists, not by the engineer who drew the part.
 :::
 
 ::: context us-person Who counts as a US person

@@ -21,7 +21,7 @@ This lesson defines the three anomalies, derives how they relate, derives Kepler
 
 In orbit mechanics an **[[anomaly|anomaly-word]]** is an angle that says where the spacecraft is along its orbit, counted from periapsis. There are three, and each has a job.
 
-The **true anomaly** $\nu$ (read "nu") is the real, physical angle at the focus – Earth's centre – from periapsis to the spacecraft. It is what the orbit equation uses, and it gives the position directly. But its rate, $\dot{\nu} = h/r^2$ (read "nu-dot"), changes around the orbit: large when $r$ is small, small when $r$ is large.
+The **true anomaly** $\nu$ (read "nu") is the real, physical angle at the focus – Earth's center – from periapsis to the spacecraft. It is what the orbit equation uses, and it gives the position directly. But its rate, $\dot{\nu} = h/r^2$ (read "nu-dot"), changes around the orbit: large when $r$ is small, small when $r$ is large.
 
 The **mean anomaly** $M$ is the angle of an imaginary companion. Picture a [[fictitious body|mean-sun]] going around a circle at a perfectly steady rate $n = \sqrt{\mu/a^3}$, called the **mean motion**, and passing periapsis at the same instant $t_p$ as the real spacecraft. Its angle is
 
@@ -35,13 +35,13 @@ The **eccentric anomaly** $E$ is the bridge between the two. It is a real geomet
 
 ## The eccentric anomaly
 
-Draw the ellipse, with semi-major axis $a$. Around it, draw a circle of radius $a$ with the same centre – the **[[auxiliary circle|auxiliary-circle]]**. It touches the ellipse at both ends of the long axis.
+Draw the ellipse, with semi-major axis $a$. Around it, draw a circle of radius $a$ with the same center – the **[[auxiliary circle|auxiliary-circle]]**. It touches the ellipse at both ends of the long axis.
 
-Now take the spacecraft's position on the ellipse. Draw a line from it straight across, perpendicular to the major axis, until it meets the circle. The **eccentric anomaly** $E$ is the angle at the *centre* of the ellipse, from periapsis to that point on the circle.
+Now take the spacecraft's position on the ellipse. Draw a line from it straight across, perpendicular to the major axis, until it meets the circle. The **eccentric anomaly** $E$ is the angle at the *center* of the ellipse, from periapsis to that point on the circle.
 
-Why does this help? Because an ellipse is a [[circle squashed flat|squashed-circle]] by the factor $b/a$, perpendicular to the major axis ($b$ is the semi-minor axis). A point on the circle at angle $E$ sits at $(a\cos E,\; a\sin E)$ from the centre. The matching point on the ellipse has the same $x$ and a squashed $y$: $(a\cos E,\; b\sin E)$.
+Why does this help? Because an ellipse is a [[circle squashed flat|squashed-circle]] by the factor $b/a$, perpendicular to the major axis ($b$ is the semi-minor axis). A point on the circle at angle $E$ sits at $(a\cos E,\; a\sin E)$ from the center. The matching point on the ellipse has the same $x$ and a squashed $y$: $(a\cos E,\; b\sin E)$.
 
-The focus is a distance $ae$ from the centre, toward periapsis. Move the origin there. In perifocal coordinates, measured from the focus, the spacecraft is at
+The focus is a distance $ae$ from the center, toward periapsis. Move the origin there. In perifocal coordinates, measured from the focus, the spacecraft is at
 
 $$
 x = a\cos E - ae = a(\cos E - e), \qquad y = b\sin E = a\sqrt{1 - e^2}\,\sin E .
@@ -63,7 +63,7 @@ $$
 
 Check the ends. $E = 0$ gives $r = a(1 - e) = r_p$, the periapsis radius. $E = \pi$ gives $a(1 + e) = r_a$, the apoapsis radius. Both right.
 
-Compare this with the orbit equation $r = p/(1 + e\cos\nu)$. The new form has no division at all. That is one reason $E$ is the favourite variable inside propagators.
+Compare this with the orbit equation $r = p/(1 + e\cos\nu)$. The new form has no division at all. That is one reason $E$ is the favorite variable inside propagators.
 
 ## Relating true and eccentric anomaly
 
@@ -164,7 +164,7 @@ This is **Kepler's equation**. Given $E$, it hands you the time in one line. Giv
 The equation also confirms the swing picture. $M$ and $E$ agree at periapsis and apoapsis. On the outbound half, $E - M = e\sin E > 0$, so the eccentric anomaly runs *ahead* of the mean anomaly after periapsis, and behind it after apoapsis. The true anomaly runs further ahead still.
 
 ::: note Kepler's own route: area
-Kepler got there with his second law – equal areas in equal times. The area swept from periapsis by the line from the focus is $(b/a)$ times the matching area on the auxiliary circle. That circle area is the pie slice $\tfrac{1}{2}a^2 E$ minus the triangle between the centre, the focus and the circle point, $\tfrac{1}{2}(ae)(a\sin E)$. So the swept area is $\tfrac{1}{2}ab\,(E - e\sin E)$. Area builds up at the steady rate $\pi ab/T$, so dividing gives $2\pi(t - t_p)/T = E - e\sin E$ – the same equation.
+Kepler got there with his second law – equal areas in equal times. The area swept from periapsis by the line from the focus is $(b/a)$ times the matching area on the auxiliary circle. That circle area is the pie slice $\tfrac{1}{2}a^2 E$ minus the triangle between the center, the focus and the circle point, $\tfrac{1}{2}(ae)(a\sin E)$. So the swept area is $\tfrac{1}{2}ab\,(E - e\sin E)$. Area builds up at the steady rate $\pi ab/T$, so dividing gives $2\pi(t - t_p)/T = E - e\sin E$ – the same equation.
 :::
 
 ### How far apart the three anomalies get
@@ -177,7 +177,7 @@ $$
 \nu - M \approx 2e\sin M + \tfrac{5}{4}e^2\sin 2M + \cdots ,
 $$
 
-the classical **[[equation of the centre|equation-of-centre]]**.
+the classical **[[equation of the center|equation-of-centre]]**.
 
 For the ISS, with $e$ about $0.0006$, $2e = 0.0012\,\mathrm{rad} = 0.069^\circ$. The true position leads or lags the steady companion by at most about a fifteenth of a degree – about $8\,\mathrm{km}$ along the orbit. That is why circular approximations serve the ISS so well.
 
@@ -219,7 +219,7 @@ So the spacecraft covers the first quarter-turn of true anomaly in $25.7$ minute
 
 For $e > 1$ the orbit is a hyperbola and never comes back. The helper circle becomes a helper hyperbola, and the ordinary trig functions become **[[hyperbolic functions|hyperbolic-functions]]** – $\sinh$ and $\cosh$, read "shine" and "cosh".
 
-For a hyperbola, $a$ is negative, so we write $\lvert a \rvert$ for its size. Mark points on the branch with $\lvert a \rvert\cosh H$ and $b\sinh H$ from the centre, where $b = \lvert a \rvert\sqrt{e^2 - 1}$. The number $H$ is the **hyperbolic anomaly**. The occupied focus is $\lvert a \rvert e$ from the centre, on the same side as the branch. Measured from the focus toward periapsis,
+For a hyperbola, $a$ is negative, so we write $\lvert a \rvert$ for its size. Mark points on the branch with $\lvert a \rvert\cosh H$ and $b\sinh H$ from the center, where $b = \lvert a \rvert\sqrt{e^2 - 1}$. The number $H$ is the **hyperbolic anomaly**. The occupied focus is $\lvert a \rvert e$ from the center, on the same side as the branch. Measured from the focus toward periapsis,
 
 $$
 x = \lvert a \rvert\,(e - \cosh H), \qquad y = \lvert a \rvert\sqrt{e^2 - 1}\,\sinh H,
@@ -386,7 +386,7 @@ The spacecraft takes forever to reach the direction $\nu = 180^\circ$, which is 
 | Symbol or fact | Meaning |
 | --- | --- |
 | $\nu$ | True anomaly, the physical angle at the focus from periapsis |
-| $E$ | Eccentric anomaly, angle at the centre of the auxiliary circle |
+| $E$ | Eccentric anomaly, angle at the center of the auxiliary circle |
 | $M = n(t - t_p)$, $n = \sqrt{\mu/a^3}$ | Mean anomaly: time, in radians |
 | $x = a(\cos E - e)$, $y = a\sqrt{1 - e^2}\sin E$ | Perifocal coordinates in terms of $E$ |
 | $r = a(1 - e\cos E)$ | Radius from eccentric anomaly |
@@ -411,7 +411,7 @@ You have met this trick before, on your wrist. Earth's orbit is slightly ellipti
 :::
 
 ::: context auxiliary-circle Drawing the eccentric anomaly
-Here is the construction for $e = 0.6$ and $E = 60^\circ$. The spacecraft $P$ sits on the ellipse. Go straight up to the auxiliary circle to get $Q$. $E$ is measured at the centre $C$; $\nu$ is measured at the focus $F$, where Earth is.
+Here is the construction for $e = 0.6$ and $E = 60^\circ$. The spacecraft $P$ sits on the ellipse. Go straight up to the auxiliary circle to get $Q$. $E$ is measured at the center $C$; $\nu$ is measured at the focus $F$, where Earth is.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210" font-family="Inter, Arial, sans-serif">
@@ -452,7 +452,7 @@ An equation is **transcendental** when no finite recipe of adding, multiplying a
 :::
 
 ::: context equation-of-centre A name from astronomy's past
-The "equation of the centre" is how far a body's real position is ahead of or behind its average position. For Earth's own orbit, with $e \approx 0.0167$, the leading term $2e$ is about $0.033\,\mathrm{rad}$, or about $1.9^\circ$. That is why the Sun, seen from Earth, runs up to about two degrees ahead of or behind a steady pace – one of the two reasons sundials and clocks disagree.
+The "equation of the center" is how far a body's real position is ahead of or behind its average position. For Earth's own orbit, with $e \approx 0.0167$, the leading term $2e$ is about $0.033\,\mathrm{rad}$, or about $1.9^\circ$. That is why the Sun, seen from Earth, runs up to about two degrees ahead of or behind a steady pace – one of the two reasons sundials and clocks disagree.
 :::
 
 ::: context equal-time-dots Where a spacecraft spends its time

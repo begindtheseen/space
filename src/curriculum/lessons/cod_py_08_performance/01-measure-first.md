@@ -24,10 +24,10 @@ Before you change one line, you want two things:
 The baseline lets you say "it went from 0.95 seconds to 0.06 seconds" instead of "it feels faster". It also catches a change that made things worse, which happens more often than you would think.
 
 ::: key
-First rule of optimisation: measure. Profile the real workload, find where the time actually is, and record a baseline number. Engineers guess wrong about hotspots most of the time, and without a baseline you cannot prove the change helped.
+First rule of optimization: measure. Profile the real workload, find where the time actually is, and record a baseline number. Engineers guess wrong about hotspots most of the time, and without a baseline you cannot prove the change helped.
 :::
 
-## A small simulator to practise on
+## A small simulator to practice on
 
 Here is a toy model of a sounding rocket's coast phase. It launches straight up at some speed, gravity and air drag slow it down, and it falls back. The function `run_case` steps it forward in time until it hits the ground and returns the flight time. `run_all` runs twenty cases with random launch speeds, like a tiny dispersion. Save it as `sim.py`.
 
@@ -354,7 +354,7 @@ Line #    Mem usage    Increment  Occurrences   Line Contents
 
 **Mem usage** is the memory the whole process holds after the line runs. **Increment** is how much that line added. The unit **[[MiB|mib]]** is a mebibyte, 1,048,576 bytes. Each of those lines builds a 500-by-20,000 grid of 8-byte numbers: $500 \times 20{,}000 \times 8 = 80{,}000{,}000$ bytes, which is 76.3 MiB. The report agrees. The exact starting number (the "Mem usage" before your code runs) depends on your machine, but the increments are the arrays themselves and come out the same.
 
-For a single number, the highest memory the function ever reached, `memory_usage` from the same package runs a function and samples memory while it runs; pass `max_usage=True` to get the peak. The lesson after next uses these tools to catch vectorised code that is quietly using far more memory than its result needs.
+For a single number, the highest memory the function ever reached, `memory_usage` from the same package runs a function and samples memory while it runs; pass `max_usage=True` to get the peak. The lesson after next uses these tools to catch vectorized code that is quietly using far more memory than its result needs.
 
 ## The order of attack
 
@@ -363,14 +363,14 @@ Profiling is step one of a longer plan, and the rest of this module follows that
 1. **Profile** it, and record a baseline.
 2. **Fix the algorithm.** If the work grows too fast as the problem grows, no amount of tuning will save it. That is the next lesson.
 3. **Remove redundant work**: things computed again and again that could be computed once, like the atmosphere table above.
-4. **Vectorise**: hand whole arrays to NumPy instead of looping in Python.
+4. **Vectorize**: hand whole arrays to NumPy instead of looping in Python.
 5. **Compile** the scalar hotspot that is left, with Numba or C++.
 6. **Parallelise** across cases, running many at once on many cores.
 
 The order matters because the wins multiply. A 15-fold win from a fixed hotspot, then a 4-fold win from four cores, gives 60-fold. Parallelising first gives 4-fold, and spreads the same waste over more cores.
 
 ::: key
-Order of attack when a simulation is too slow: profile, fix the algorithm, remove redundant work and recomputation, vectorise, then compile the remaining scalar hotspot with Numba or C++, then parallelise across cases. Parallelising a bad algorithm just buys you the same waste on more cores.
+Order of attack when a simulation is too slow: profile, fix the algorithm, remove redundant work and recomputation, vectorize, then compile the remaining scalar hotspot with Numba or C++, then parallelise across cases. Parallelising a bad algorithm just buys you the same waste on more cores.
 :::
 
 ::: warning Profile the real workload
@@ -437,7 +437,7 @@ Convert to bytes: $152.6 \times 1{,}048{,}576 \approx 1.60 \times 10^8$ bytes. E
 | line_profiler | Time per line inside chosen functions | `@profile` then `kernprof -l -v`, or `LineProfiler` |
 | memory_profiler | Memory added per line, or the peak | `python -m memory_profiler f.py`, `memory_usage(..., max_usage=True)` |
 | Amdahl's law | The most one fix can buy | $S = 1/((1-p) + p/s) \le 1/(1-p)$ |
-| Order of attack | What to try first | Profile, algorithm, redundancy, vectorise, compile, parallelise |
+| Order of attack | What to try first | Profile, algorithm, redundancy, vectorize, compile, parallelise |
 
 The next lesson takes step two of the order of attack: before tuning anything, check how the work grows as the input grows, because an algorithm that does $n^2$ work cannot be rescued by making each step faster.
 

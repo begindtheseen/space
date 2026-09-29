@@ -474,7 +474,7 @@ The `String` is three words that live wherever the variable lives. The text itse
 </svg>
 ```
 
-Grey boxes are spare capacity: room to grow without moving.
+Gray boxes are spare capacity: room to grow without moving.
 :::
 
 ::: context deref-coercion Why a &String fits where a &str is asked for

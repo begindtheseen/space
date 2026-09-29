@@ -73,7 +73,7 @@ A lightly damped mode draws a **[[circle in that plane|nyquist-circle]]** as fre
 - If the peak gain is above one, the circle *can* reach $-1$. Point it away from $-1$ and the mode is **phase-stabilized**. Get the direction wrong by $180^\circ$ and the same mode is unstable.
 
 ::: key
-Gain stabilisation: attenuate the mode below 0 dB with a notch or roll-off — the right answer when the mode sits well above crossover. Phase stabilisation: let it exceed 0 dB but shape the phase so the loop still encircles correctly — necessary when the mode is too close to crossover to attenuate without destroying the phase margin.
+Gain stabilization: attenuate the mode below 0 dB with a notch or roll-off — the right answer when the mode sits well above crossover. Phase stabilization: let it exceed 0 dB but shape the phase so the loop still encircles correctly — necessary when the mode is too close to crossover to attenuate without destroying the phase margin.
 :::
 
 What decides it is the ratio of the mode's frequency to the rigid-body crossover.

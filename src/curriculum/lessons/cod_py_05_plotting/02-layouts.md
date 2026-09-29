@@ -140,7 +140,7 @@ print(ax_m.get_shared_x_axes().joined(ax_h, ax_m))       # True
 
 After $120\,\mathrm{s}$ the toy is at $72.0\,\mathrm{km}$ and Mach $4.07$. At the end, the $1200\,\mathrm{m/s}$ speed divided by about $295\,\mathrm{m/s}$ in the cold upper air gives about $4.07$, so the number makes sense.
 
-Three details matter. The twin is a separate Axes, so each curve is plotted on the Axes whose scale it uses. Each Axes gets its own y-label with its own unit. And each Axes keeps its own legend, so to get one legend with both entries, pass both line handles to one `legend` call. The two curves also differ in line style, not only color, so they stay apart when printed in grey.
+Three details matter. The twin is a separate Axes, so each curve is plotted on the Axes whose scale it uses. Each Axes gets its own y-label with its own unit. And each Axes keeps its own legend, so to get one legend with both entries, pass both line handles to one `legend` call. The two curves also differ in line style, not only color, so they stay apart when printed in gray.
 :::
 
 Twin axes are powerful and easy to abuse. On a twin-axis panel, **[[where two curves cross|twin-crossing]]** is decided entirely by the two sets of y-limits you picked. Nothing physical happens at that point.

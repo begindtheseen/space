@@ -33,7 +33,7 @@ template <typename Op>
 void apply_to_samples(double* data, int n, Op op);
 ```
 
-Read it as "for any type `Op`, a function taking an `Op` called `op`". The compiler writes a separate version of `apply_to_samples` for each callable type it is given. Inside each version, it knows the exact type of `op`. For a lambda, that means it can see the body and **inline** it: paste the body into the loop and optimise the two together. This is how the standard algorithms take their callables, and why `std::sort` with a lambda can be faster than C's `qsort`, which receives a function pointer.
+Read it as "for any type `Op`, a function taking an `Op` called `op`". The compiler writes a separate version of `apply_to_samples` for each callable type it is given. Inside each version, it knows the exact type of `op`. For a lambda, that means it can see the body and **inline** it: paste the body into the loop and optimize the two together. This is how the standard algorithms take their callables, and why `std::sort` with a lambda can be faster than C's `qsort`, which receives a function pointer.
 
 The price is that the callable's type is part of the function's type. You cannot write one member variable that holds "any `Op`", and you cannot put a lambda that captures a gain and one that captures a table into the same `std::vector`. The code must also be visible where it is used, so templates live in headers, and each distinct type adds another copy of the machine code.
 
@@ -63,11 +63,11 @@ In g++'s library (libstdc++), a `std::function` is 32 bytes on a 64-bit machine,
 - a pointer to an **invoker**, a small function the library generated for this exact callable type, which knows how to call it;
 - a pointer to a **manager**, another generated function, which knows how to copy it, move it and destroy it.
 
-When you store a lambda, the library fills in those two function pointers with versions written for that lambda's type. When you call the `std::function`, it jumps through the invoker pointer. That is the same idea as the **[[vtable|vtable-bridge]]** of the last module's lesson 11: behaviour chosen at run time by following a pointer the object carries. The difference is that you did not have to write a base class; the library made one up for you.
+When you store a lambda, the library fills in those two function pointers with versions written for that lambda's type. When you call the `std::function`, it jumps through the invoker pointer. That is the same idea as the **[[vtable|vtable-bridge]]** of the last module's lesson 11: behavior chosen at run time by following a pointer the object carries. The difference is that you did not have to write a base class; the library made one up for you.
 
 ### The small buffer, and when it overflows
 
-Keeping small callables inside the object itself, instead of on the heap, is called the **small-buffer optimisation**. In libstdc++ (g++ 13) a callable is stored inside the 16-byte buffer only if all three are true:
+Keeping small callables inside the object itself, instead of on the heap, is called the **small-buffer optimization**. In libstdc++ (g++ 13) a callable is stored inside the 16-byte buffer only if all three are true:
 
 1. it is at most 16 bytes;
 2. its alignment fits the buffer (anything up to 8-byte alignment on x86-64);
@@ -169,7 +169,7 @@ Sanity check: every call returned the sum of what it captured ($1 + 2 + 3 = 6$ f
 
 ## What it costs to call
 
-Allocation happens when you store a callable. The other cost is paid on every call. Calling through a `std::function` means loading the invoker pointer and jumping to wherever it points: an **[[indirect call|indirect-call]]**. The jump itself is cheap on a modern processor. What it really costs is what the compiler can no longer do: it cannot see the body, so it cannot inline it, and a loop around the call cannot be optimised as one piece.
+Allocation happens when you store a callable. The other cost is paid on every call. Calling through a `std::function` means loading the invoker pointer and jumping to wherever it points: an **[[indirect call|indirect-call]]**. The jump itself is cheap on a modern processor. What it really costs is what the compiler can no longer do: it cannot see the body, so it cannot inline it, and a loop around the call cannot be optimized as one piece.
 
 A function pointer has exactly the same problem. A template parameter does not.
 
@@ -232,7 +232,7 @@ int main() {
 }
 ```
 
-Two lines need explaining. `[[gnu::noipa]]` tells g++ not to optimise across the call boundary of that function; without it, g++ noticed that the function pointer only ever pointed at `calibrate` and quietly turned the "pointer" version into the template version. The `volatile` on `chosen` makes the same point from the other side. Real code picks its callback at run time, and the benchmark has to as well.
+Two lines need explaining. `[[gnu::noipa]]` tells g++ not to optimize across the call boundary of that function; without it, g++ noticed that the function pointer only ever pointed at `calibrate` and quietly turned the "pointer" version into the template version. The `volatile` on `chosen` makes the same point from the other side. Real code picks its callback at run time, and the benchmark has to as well.
 
 On one machine, built with `-O2`, three runs gave:
 
@@ -255,7 +255,7 @@ What it shows:
 3. The function pointer and the `std::function` both took about 1.3 ns: roughly four times slower. Each element pays for a real call and return.
 4. `std::function` was no slower than the plain function pointer here. Its call path is one extra hop, which this processor hid. The expensive part is the same for both: the body is out of sight.
 
-Rebuilt with `-O3`, the template version dropped to about 0.22 ns per element, because the optimiser could now see the whole loop and rewrote it with **[[vector instructions|simd]]** that handle four elements at once. The other two stayed at about 1.2 ns: they cannot be rewritten that way while the body is out of sight.
+Rebuilt with `-O3`, the template version dropped to about 0.22 ns per element, because the optimizer could now see the whole loop and rewrote it with **[[vector instructions|simd]]** that handle four elements at once. The other two stayed at about 1.2 ns: they cannot be rewritten that way while the body is out of sight.
 
 Your numbers will differ with the processor and compiler. The shape — template fastest by a wide margin when the body is tiny, pointer and `std::function` close together — is typical. When the body is large (a whole Kalman filter update), the call overhead is a rounding error and the choice is about design, not speed.
 :::
@@ -269,7 +269,7 @@ Your numbers will differ with the processor and compiler. The shape — template
 | to talk to C code or an interrupt vector table | a function pointer | the only form C understands |
 | a stored callback in code that must not allocate after start-up | a function pointer plus a context pointer, or a fixed-capacity wrapper | bounded size, no heap |
 
-In flight software the last row matters. A common rule, stated plainly in [[JPL's coding rules|jpl-rules]], is no dynamic memory allocation after initialisation. `std::function` fits that rule only if every callable stored in it is known to fit the small buffer, or every assignment happens during start-up. Neither is visible at the line where you write the lambda. Some teams therefore write, or borrow, a fixed-capacity wrapper that keeps the callable in an inline buffer of a size they choose and refuses, at compile time, any callable too big for it.
+In flight software the last row matters. A common rule, stated plainly in [[JPL's coding rules|jpl-rules]], is no dynamic memory allocation after initialization. `std::function` fits that rule only if every callable stored in it is known to fit the small buffer, or every assignment happens during start-up. Neither is visible at the line where you write the lambda. Some teams therefore write, or borrow, a fixed-capacity wrapper that keeps the callable in an inline buffer of a size they choose and refuses, at compile time, any callable too big for it.
 
 ## The newer relatives, honestly
 
@@ -289,7 +289,7 @@ std::move_only_function<double()> task = [b = std::move(buf)] { return *b; };
 // task() returns 9.81
 ```
 
-It also respects `const` properly, and calling an empty one is undefined behaviour instead of a thrown exception. It still type-erases, may still allocate for large callables, and still resists inlining.
+It also respects `const` properly, and calling an empty one is undefined behavior instead of a thrown exception. It still type-erases, may still allocate for large callables, and still resists inlining.
 
 **`std::function_ref`** is in C++26, and g++ 13 does not provide it. It does not own the callable at all. It is a reference — in practice, a pointer to the callable plus a pointer to an invoker — so it never allocates and is cheap to pass. It is to callables what `std::span` and `std::string_view` (lesson 4) are to buffers and text. And it has the same hazard: if the callable dies first, the `function_ref` dangles. Use it as a function parameter for a callback used during that call, never as a stored member. C++26 also adds `std::copyable_function`, a tidier version of `std::function`.
 
@@ -320,7 +320,7 @@ A command dispatcher stores `std::vector<std::function<void()>> handlers` and fi
 :::
 
 ::: answer
-Calling a `std::function` never allocates; allocation happens only when a callable is stored, copied or assigned into it. So a loop that only calls the handlers does not allocate, and any allocations during start-up are acceptable under a "no heap after initialisation" rule. It would change if the loop assigned a new lambda to a handler, copied a `std::function` holding a heap-stored callable, or grew the vector — each of those can call `operator new`.
+Calling a `std::function` never allocates; allocation happens only when a callable is stored, copied or assigned into it. So a loop that only calls the handlers does not allocate, and any allocations during start-up are acceptable under a "no heap after initialization" rule. It would change if the loop assigned a new lambda to a handler, copied a `std::function` holding a heap-stored callable, or grew the vector — each of those can call `operator new`.
 :::
 
 ::: check
@@ -347,7 +347,7 @@ Plain function pointers and `std::reference_wrapper` objects (made with `std::re
 | template parameter `Op op` | callable of an exact type | inlinable; type baked into the function |
 | `std::function<R(Args...)>` | holds any copyable callable of that signature | one type; empty call throws `std::bad_function_call` |
 | type erasure | hide the real type behind generated functions | invoker and manager pointers, like a vtable |
-| small-buffer optimisation | small callables stored inside the object | libstdc++: 32-byte object, 16-byte buffer, trivially copyable only |
+| small-buffer optimization | small callables stored inside the object | libstdc++: 32-byte object, 16-byte buffer, trivially copyable only |
 | allocation | callable too big or not trivially copyable | copying allocates again; moving does not |
 | call cost | indirect call, no inlining | on one machine about 1.3 ns vs 0.35 ns per element at `-O2` |
 | `std::move_only_function` | C++23, move-only callables | still type-erased |
@@ -394,7 +394,7 @@ The global `operator new` and `operator delete` are "replaceable": the standard 
 :::
 
 ::: context indirect-call A jump to an address in a register
-A direct call names its target in the instruction itself, so the processor knows where it is going before it gets there. An indirect call reads the target from memory or a register. Modern processors guess the target from history and are usually right for a callback that always points to the same function, so the jump itself costs little. The larger cost is the lost optimisation around it.
+A direct call names its target in the instruction itself, so the processor knows where it is going before it gets there. An indirect call reads the target from memory or a register. Modern processors guess the target from history and are usually right for a callback that always points to the same function, so the jump itself costs little. The larger cost is the lost optimization around it.
 :::
 
 ::: context simd One instruction, several numbers
@@ -428,5 +428,5 @@ SIMD, "single instruction, multiple data", means one machine instruction that wo
 :::
 
 ::: context jpl-rules The Power of Ten
-In 2006 Gerard Holzmann of NASA's Jet Propulsion Laboratory published "The Power of Ten: Rules for Developing Safety-Critical Code", ten short rules for C. Rule 3 forbids dynamic memory allocation after initialisation, because allocators have unpredictable timing and can fail. JPL's later institutional C coding standard kept the rule, and many C++ flight projects apply the same principle, which is why a hidden `new` inside a library type is a review question.
+In 2006 Gerard Holzmann of NASA's Jet Propulsion Laboratory published "The Power of Ten: Rules for Developing Safety-Critical Code", ten short rules for C. Rule 3 forbids dynamic memory allocation after initialization, because allocators have unpredictable timing and can fail. JPL's later institutional C coding standard kept the rule, and many C++ flight projects apply the same principle, which is why a hidden `new` inside a library type is a review question.
 :::

@@ -37,7 +37,7 @@ cmake -S . -B build-m4 -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi.cmake
 Read `-D` as "define": it sets the variable `CMAKE_TOOLCHAIN_FILE` to the path of the file. CMake runs the toolchain file first, before its compiler detection, and then carries on with your project as usual. It also runs it again inside each of its own small test builds, so everything CMake tests is tested with the target's compiler.
 
 ::: key
-A toolchain file tells CMake about a different target platform before the first compiler test: the cross compiler, the sysroot, the target processor and search behaviour. It is how you build for arm-none-eabi from an x86 host. You pass it once, with `-DCMAKE_TOOLCHAIN_FILE=`, when a build folder is first configured.
+A toolchain file tells CMake about a different target platform before the first compiler test: the cross compiler, the sysroot, the target processor and search behavior. It is how you build for arm-none-eabi from an x86 host. You pass it once, with `-DCMAKE_TOOLCHAIN_FILE=`, when a build folder is first configured.
 :::
 
 ::: warning The choice is frozen into the build folder
@@ -241,7 +241,7 @@ float Pid::update(float error, float dt_s) {
 
 The fin program, `apps/fin_controller.cpp`:
 
-```cpp
+```cpp fragment
 #include "gnc/pid.hpp"
 
 // Commands a fin from a pitch error. On the flight computer the error

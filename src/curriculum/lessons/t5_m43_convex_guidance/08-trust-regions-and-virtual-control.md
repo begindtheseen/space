@@ -77,7 +77,7 @@ Its two-norm is $\sqrt{0.006^2+0.020^2} = 0.0209$, and its one-norm (the one the
 The same trick works on other constraints, not only the dynamics. A non-convex path constraint — say a keep-out zone — is linearized about the reference too, and a bad linearization can make it impossible to satisfy. Add a penalized slack to that linearized inequality, so it reads "constraint $\le$ slack", with the slack pushed toward zero by the cost. That slack is called a **[[virtual buffer|virtual-buffer]]**. Virtual control is the version for equalities (the dynamics); virtual buffers are the version for inequalities. Both turn "no solution" into "a solution with a measured, penalized violation".
 
 ::: key What virtual control buys, and what it costs
-Virtual control makes every SCvx subproblem feasible regardless of how bad the current reference is, converting a hard failure (infeasible, nothing returned) into a soft, penalised, checkable signal. It buys nothing about optimality or correctness: a converged iterate is only trustworthy once $\|\boldsymbol{\nu}_k\|$ has fallen to numerical noise at every node, and a flight implementation checks that directly rather than inferring it from the subproblem's duality gap, which — as the previous lesson stressed — certifies the linear subproblem, not the physical trajectory.
+Virtual control makes every SCvx subproblem feasible regardless of how bad the current reference is, converting a hard failure (infeasible, nothing returned) into a soft, penalized, checkable signal. It buys nothing about optimality or correctness: a converged iterate is only trustworthy once $\|\boldsymbol{\nu}_k\|$ has fallen to numerical noise at every node, and a flight implementation checks that directly rather than inferring it from the subproblem's duality gap, which — as the previous lesson stressed — certifies the linear subproblem, not the physical trajectory.
 :::
 
 ## Artificial unboundedness, and the region that prevents it
@@ -116,7 +116,7 @@ and the same for the controls. Read $\Delta$ ("delta") as the trust-region **rad
 In the toy example, a trust region of $\Delta=6$ around $x=0$ caps the answer at $x=6$. There the true cost is $-3.84$, almost exactly the true best of $-3.85$. Not precisely at the optimum, but nowhere near the disaster at $x=80$.
 
 ::: key Virtual control vs trust region
-Virtual control: an unconstrained, heavily penalised slack in the linearised dynamics that prevents artificial INFEASIBILITY. Trust region: a bound on deviation from the reference that prevents artificial UNBOUNDEDNESS. Different failures, different fixes.
+Virtual control: an unconstrained, heavily penalized slack in the linearized dynamics that prevents artificial INFEASIBILITY. Trust region: a bound on deviation from the reference that prevents artificial UNBOUNDEDNESS. Different failures, different fixes.
 :::
 
 ::: warning Do not swap the fixes
@@ -215,7 +215,7 @@ First pass: $\rho = 0.72 \ge 0.7$, so accept and grow: $6.0\times2 = 12.0$, whic
 | Object | Statement |
 | --- | --- |
 | Artificial infeasibility | A poor reference's linear model can make the subproblem's feasible set empty even though the true nonlinear problem has a solution |
-| Virtual control | $\mathbf{x}_{k+1}=\mathbf{A}_k\mathbf{x}_k+\mathbf{B}_k\mathbf{u}_k+\mathbf{c}_k+\boldsymbol{\nu}_k$, $\boldsymbol{\nu}_k$ unconstrained, penalised by $w\sum_k\|\boldsymbol{\nu}_k\|_1$ |
+| Virtual control | $\mathbf{x}_{k+1}=\mathbf{A}_k\mathbf{x}_k+\mathbf{B}_k\mathbf{u}_k+\mathbf{c}_k+\boldsymbol{\nu}_k$, $\boldsymbol{\nu}_k$ unconstrained, penalized by $w\sum_k\|\boldsymbol{\nu}_k\|_1$ |
 | Virtual buffer | The same penalized slack on a linearized inequality constraint |
 | What $\boldsymbol{\nu}_k\to\mathbf{0}$ means | The linearized dynamics reproduce the accepted trajectory almost exactly — necessary, not sufficient, for trusting it |
 | Artificial unboundedness | A linear cost model can predict endless improvement where the true cost actually turns around and grows |

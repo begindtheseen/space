@@ -22,7 +22,7 @@ $$
 
 where the **base** $a$ is a fixed positive number, not equal to $1$, and the input $x$ sits up in the exponent.
 
-Everything the exponents lesson proved still holds — $a^{x+y} = a^x a^y$, $a^{-x} = 1/a^x$, $a^0 = 1$ — but now read it as a fact about the function. The first rule says: *move the input on by $y$, and the output gets multiplied by $a^y$, wherever you started.* That fixed-factor-per-step behaviour is what makes a function exponential.
+Everything the exponents lesson proved still holds — $a^{x+y} = a^x a^y$, $a^{-x} = 1/a^x$, $a^0 = 1$ — but now read it as a fact about the function. The first rule says: *move the input on by $y$, and the output gets multiplied by $a^y$, wherever you started.* That fixed-factor-per-step behavior is what makes a function exponential.
 
 Take savings that grow by $5\%$ a year. Each year the balance is multiplied by $1.05$, so after $t$ years it is $1.05^t$ times what you started with. Year 30 adds the same $5\%$ as year 1 — but $5\%$ of a bigger balance, so more dollars. After $10$ years the factor is $1.05^{10} = 1.63$. After $20$ it is $1.05^{20} = 2.65$ — more than twice $1.63$, because the growth itself grows. That is **compounding**.
 
@@ -410,11 +410,11 @@ In engineering, **specific** means "per unit of mass" (or of weight). Specific h
 :::
 
 ::: context tsiolkovsky The schoolteacher who wrote it down
-Konstantin Tsiolkovsky (1857–1935) was a schoolteacher in the small Russian town of Kaluga. Left nearly deaf by scarlet fever as a boy, he taught himself mathematics and physics from library books. In 1903 he published this equation in a paper about reaching space with rockets — months before the Wright brothers first flew an aeroplane. He also saw the consequence you are about to meet: one rocket cannot reach orbit on its own. His answer was "rocket trains", which we now call multi-stage rockets.
+Konstantin Tsiolkovsky (1857–1935) was a schoolteacher in the small Russian town of Kaluga. Left nearly deaf by scarlet fever as a boy, he taught himself mathematics and physics from library books. In 1903 he published this equation in a paper about reaching space with rockets — months before the Wright brothers first flew an airplane. He also saw the consequence you are about to meet: one rocket cannot reach orbit on its own. His answer was "rocket trains", which we now call multi-stage rockets.
 :::
 
 ::: context thin-tanks Thinner than a soda can
-A real soda can is about $96\%$ drink by mass: roughly $370\,\mathrm{g}$ of soda in about $14\,\mathrm{g}$ of aluminium. So a single-stage rocket would have to be built about as flimsily as a soda can, with engines and a satellite inside too. Engineers have come close. The American Atlas rocket of the 1950s and 60s had steel tanks so thin that it had to stay pressurised, like a balloon, or it would crumple under its own weight. Even so, Atlas dropped part of its engines on the way up.
+A real soda can is about $96\%$ drink by mass: roughly $370\,\mathrm{g}$ of soda in about $14\,\mathrm{g}$ of aluminum. So a single-stage rocket would have to be built about as flimsily as a soda can, with engines and a satellite inside too. Engineers have come close. The American Atlas rocket of the 1950s and 60s had steel tanks so thin that it had to stay pressurized, like a balloon, or it would crumple under its own weight. Even so, Atlas dropped part of its engines on the way up.
 :::
 
 ::: context tyranny The tyranny of the rocket equation

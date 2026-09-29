@@ -201,7 +201,7 @@ ulimit -c unlimited (and a writable core_pattern), reproduce the crash, then `gd
 ::: example From a core file to the root-cause line
 A small program converts raw sensor counts into engineering units by looking the sensor up in a table. It works for `baro` and `imu_x`, but a user reports that it dies on `gps`. Here is the code, with line numbers counted from the `#include` lines:
 
-```cpp
+```cpp fragment
 Sensor* find_sensor(const char* name) {                  // line 15
     for (Sensor& s : table) {
         if (std::strcmp(s.name, name) == 0) return &s;
@@ -317,7 +317,7 @@ The words `<optimized out>` are there because this build used `-O2`: the compile
 This is why a flight software team archives the unstripped binaries or debug files for every release it ships. A core that comes back from a vehicle months later is only readable against the exact build that produced it.
 
 ::: key
-To debug a process on a flight computer you cannot rebuild: attach with gdbserver over the network, or capture a core dump and analyse it offline against the same build artefacts (unstripped binary and symbol files, archived per release).
+To debug a process on a flight computer you cannot rebuild: attach with gdbserver over the network, or capture a core dump and analyze it offline against the same build artifacts (unstripped binary and symbol files, archived per release).
 :::
 
 ## Taking a core without a crash

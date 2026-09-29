@@ -273,7 +273,7 @@ The **mean** of a random number is its average value. The **variance** measures 
 :::
 
 ::: context darts-bias Aim versus scatter
-Think of darts. An **unbiased** thrower's darts centre on the bullseye, even if they scatter. A **biased** thrower's darts cluster around the wrong spot, however tight the group. Variance measures the scatter; bias measures the aim.
+Think of darts. An **unbiased** thrower's darts center on the bullseye, even if they scatter. A **biased** thrower's darts cluster around the wrong spot, however tight the group. Variance measures the scatter; bias measures the aim.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
@@ -302,7 +302,7 @@ Think of darts. An **unbiased** thrower's darts centre on the bullseye, even if 
 </svg>
 ```
 
-The six blue darts average exactly to the centre. Gauss-Markov only enters throwers of the first kind.
+The six blue darts average exactly to the center. Gauss-Markov only enters throwers of the first kind.
 :::
 
 ::: context left-null-space Directions no signal can reach
@@ -310,7 +310,7 @@ Every possible noise-free data vector has the form $\mathbf{H}\mathbf{x}$; toget
 :::
 
 ::: context psd-ellipses One ellipse inside the other
-Draw each covariance as an ellipse whose half-widths are the standard deviations. These are the real ellipses from this lesson's Doppler example: bias on the horizontal axis, drift on the vertical. "$\succeq$" means the plain least-squares ellipse (grey) wraps completely around the WLS ellipse (blue) — bigger in every direction, not only on average.
+Draw each covariance as an ellipse whose half-widths are the standard deviations. These are the real ellipses from this lesson's Doppler example: bias on the horizontal axis, drift on the vertical. "$\succeq$" means the plain least-squares ellipse (gray) wraps completely around the WLS ellipse (blue) — bigger in every direction, not only on average.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
@@ -348,7 +348,7 @@ Both curves below have mean $0$ and standard deviation $1$. The Laplace (red) ha
 :::
 
 ::: context mse-bridge Trading aim for steadiness
-Mean squared error is the average of (estimate − truth)², and it splits exactly into bias² + variance. Picture a gun sight bolted slightly off-centre but on a very steady mount: its shots miss by a little, every time, yet they often land closer on average than a perfectly aimed but shaky rifle. The MAP lesson shows that adding a prior does this on purpose.
+Mean squared error is the average of (estimate − truth)², and it splits exactly into bias² + variance. Picture a gun sight bolted slightly off-center but on a very steady mount: its shots miss by a little, every time, yet they often land closer on average than a perfectly aimed but shaky rifle. The MAP lesson shows that adding a prior does this on purpose.
 :::
 
 ::: context robust-bridge Where this comes back

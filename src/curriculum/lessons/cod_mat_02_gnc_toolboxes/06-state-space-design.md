@@ -256,7 +256,7 @@ Why might an LQG controller that looks perfect in simulation still need its marg
 :::
 
 ::: answer
-The optimal gains assume the model and the noise levels are exactly right. LQR with full state feedback has guaranteed margins, but adding the Kalman filter removes those guarantees, so the combined controller can be fragile against modelling errors such as a shifted bending mode or an extra delay. Checking gain and phase margins at the plant input shows how much error it can really tolerate.
+The optimal gains assume the model and the noise levels are exactly right. LQR with full state feedback has guaranteed margins, but adding the Kalman filter removes those guarantees, so the combined controller can be fragile against modeling errors such as a shifted bending mode or an extra delay. Checking gain and phase margins at the plant input shows how much error it can really tolerate.
 :::
 
 ## Summary

@@ -516,7 +516,7 @@ Svalbard is a Norwegian archipelago at about 78 degrees north. A satellite in a 
 :::
 
 ::: context correlation-word What the correlation number measures
-PostgreSQL's `ANALYZE` samples the table, sorts the sampled values, and compares that sorted order with the order the rows sit on disk. If they agree perfectly, the correlation is +1; if the disk order is the exact reverse, −1; if there is no relation, about 0. It is the same correlation coefficient you meet in statistics, applied to "position on disk" against "position in sorted order". The planner also uses it to price B-tree index scans: a high correlation means neighbouring index entries point to neighbouring pages, so reading them is cheap.
+PostgreSQL's `ANALYZE` samples the table, sorts the sampled values, and compares that sorted order with the order the rows sit on disk. If they agree perfectly, the correlation is +1; if the disk order is the exact reverse, −1; if there is no relation, about 0. It is the same correlation coefficient you meet in statistics, applied to "position on disk" against "position in sorted order". The planner also uses it to price B-tree index scans: a high correlation means neighboring index entries point to neighboring pages, so reading them is cheap.
 :::
 
 ::: context brin-picture Block ranges in time order and shuffled

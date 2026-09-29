@@ -1,9 +1,9 @@
 ---
 id: l07-phasing-rendezvous
-title: Phasing manoeuvres and rendezvous phasing
+title: Phasing maneuvers and rendezvous phasing
 minutes: 18
 covers:
-  - phasing manoeuvres and rendezvous phasing
+  - phasing maneuvers and rendezvous phasing
 ---
 
 Picture two runners on a round track, jogging at exactly the same pace. One is a quarter lap behind the other. However long they run, the gap stays a quarter lap. To close it, the runner behind has to change something — run faster for a while, or cut to a shorter lane — and then go back to the old pace at the moment she draws level.

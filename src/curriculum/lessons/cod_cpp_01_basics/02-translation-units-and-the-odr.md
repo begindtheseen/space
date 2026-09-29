@@ -110,7 +110,7 @@ std::uint8_t checksum(const std::uint8_t* p, std::size_t n) {
 
 And a second source uses it:
 
-```cpp
+```cpp fragment
 // main.cpp
 #include "telem.hpp"
 
@@ -286,7 +286,7 @@ static int calls = 0;
 
 Include it from `drive.cpp` and from `main.cpp`, and each translation unit gets its own `calls`:
 
-```cpp
+```cpp fragment
 // main.cpp
 #include "counter.hpp"
 #include <cstdio>

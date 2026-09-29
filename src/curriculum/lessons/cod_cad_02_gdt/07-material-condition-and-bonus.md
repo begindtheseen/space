@@ -236,7 +236,7 @@ Older drawings, made to editions of the standard before 1994, sometimes showed a
 :::
 
 ::: context bonus-picture The zone grows with the hole
-The same hole from the flashcards, drawn at its smallest and largest sizes (grey). The blue circle at the center is the zone the hole's axis must stay inside, drawn much larger than the holes so you can see it.
+The same hole from the flashcards, drawn at its smallest and largest sizes (gray). The blue circle at the center is the zone the hole's axis must stay inside, drawn much larger than the holes so you can see it.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">

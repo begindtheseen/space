@@ -1,10 +1,10 @@
 ---
 id: l06-real-time-linux
-title: Real-time Linux, and why a flight programme can run it
+title: Real-time Linux, and why a flight program can run it
 minutes: 22
 covers:
   - "Real-time Linux: PREEMPT_RT, SCHED_FIFO and SCHED_DEADLINE, CPU isolation, IRQ affinity, mlockall"
-  - Why a flight programme can fly Linux at all, and what it has to switch off to do so
+  - Why a flight program can fly Linux at all, and what it has to switch off to do so
 ---
 
 Think of a family kitchen at dinnertime. Everyone shares the stove, the sink and the counter. Things mostly get done, and everyone gets a fair turn. But if you need to take a pan off the heat at *exactly* the right second, a shared kitchen is a gamble. Someone is at the sink. Someone left the good pan in the dishwasher. Nobody is doing anything wrong — the kitchen is built for fairness, not for your one critical second.
@@ -180,7 +180,7 @@ These figures were not measured for this lesson. They are the kind of result the
 **Sanity check against a period.** A $200\,\mathrm{Hz}$ loop has a $5\,\mathrm{ms}$ period. A few milliseconds of wake-up delay is a large fraction of that — far too much. A hundred microseconds is $0.1 / 5 = 2\%$ of the period. Tens of microseconds is well under $1\%$. So the checklist items are not optional polish on top of PREEMPT_RT: for a tight hard deadline, much of the achievable improvement lives in isolation and locked memory, not in the patch alone.
 :::
 
-## Why a flight programme can fly Linux at all
+## Why a flight program can fly Linux at all
 
 The honest answer is narrow. The setup above turns "usually fast, sometimes very slow" into "bounded, and the bound is small enough".
 

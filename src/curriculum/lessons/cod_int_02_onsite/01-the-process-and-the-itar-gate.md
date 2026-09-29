@@ -3,7 +3,7 @@ id: l01-the-process-and-the-itar-gate
 title: The process end to end, and the ITAR gate
 minutes: 19
 covers:
-  - 'The reported process: recruiter screen, a two to four hour take-home or timed challenge, technical rounds, a day-long onsite of four to six rounds, behavioural throughout'
+  - 'The reported process: recruiter screen, a two to four hour take-home or timed challenge, technical rounds, a day-long onsite of four to six rounds, behavioral throughout'
   - US person status under ITAR as a hard gate for essentially all roles
 ---
 
@@ -146,7 +146,7 @@ List the four reported stages in order, and say what the fourth one includes tha
 :::
 
 ::: answer
-Recruiter screen, then a take-home or timed challenge of roughly two to four hours, then technical rounds with the hiring team, then a day-long onsite of four to six rounds. The onsite includes a presentation to the team. Behavioural questions are not a separate stage: they run through all four.
+Recruiter screen, then a take-home or timed challenge of roughly two to four hours, then technical rounds with the hiring team, then a day-long onsite of four to six rounds. The onsite includes a presentation to the team. Behavioral questions are not a separate stage: they run through all four.
 :::
 
 ::: check
@@ -187,7 +187,7 @@ No. The requirement is US person status (citizen or lawful permanent resident, i
 | --- | --- |
 | Reported | from candidates' accounts, not an official rulebook |
 | The stages | recruiter screen, two to four hour take-home or timed challenge, technical rounds, day-long onsite of four to six rounds |
-| Behavioural | runs through every stage, not a single round |
+| Behavioral | runs through every stage, not a single round |
 | Touchpoints | commonly five to eight over four to six weeks; it can stop at any stage |
 | Gap between touchpoints | about 4 to 10.5 days on average |
 | Weekly prep load | 40 h over 4 to 6 weeks is 10 to 6.7 h per week, so prepare before applying |

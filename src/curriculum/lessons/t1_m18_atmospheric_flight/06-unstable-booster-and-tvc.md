@@ -181,7 +181,7 @@ $$
 K_p = \frac{\omega_n^2 + \mu_\alpha}{\mu_\delta}, \qquad K_d = \frac{2\zeta\omega_n}{\mu_\delta} .
 $$
 
-Look at $K_p$. The aerodynamic term *adds* to $\omega_n^2$. Part of the proportional gain is spent cancelling the instability before any of it buys stiffness.
+Look at $K_p$. The aerodynamic term *adds* to $\omega_n^2$. Part of the proportional gain is spent canceling the instability before any of it buys stiffness.
 
 ::: example PD gains and margins for the booster
 Choose a closed-loop natural frequency $\omega_n = 1.5\ \mathrm{rad/s}$ (about three times the unstable pole of 0.478) and damping $\zeta = 0.7$. Use $\mu_\alpha = 0.228$ and $\mu_\delta = 1.317$.
@@ -445,7 +445,7 @@ Rate is exactly the signal the $K_d\dot\theta$ term needs, so it comes straight 
 :::
 
 ::: context nyquist Going once around −1
-The blue curve is this lesson's loop gain for rising positive frequency; the grey dashed curve is its mirror image, for negative frequency. Together they start far left at $-10.9$, swing around the red point $-1$ once counter-clockwise, and shrink into the origin. One right-half-plane pole needs exactly that one loop.
+The blue curve is this lesson's loop gain for rising positive frequency; the gray dashed curve is its mirror image, for negative frequency. Together they start far left at $-10.9$, swing around the red point $-1$ once counter-clockwise, and shrink into the origin. One right-half-plane pole needs exactly that one loop.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">

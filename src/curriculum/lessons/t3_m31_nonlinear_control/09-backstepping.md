@@ -139,7 +139,7 @@ where $z_1$ is $x_1$ itself.
 
 Two practical points. First, each $\dot{\alpha}_i$ must be worked out analytically, and $\alpha_i$ depends on all earlier states, so the expressions grow fast with every step. This is the "explosion of terms", and it motivates variants such as **[[dynamic surface control|dynamic-surface]]**, which passes $\alpha_i$ through a filter instead of differentiating it.
 
-Second, at every step you are free to keep any term that is already helping. If $f_1(x_1) = -x_1^3$, choose $\alpha = -k_1x_1$ and leave the cubic alone. Then $\dot{V}_1 = x_1(-x_1^3 - k_1x_1) = -x_1^4 - k_1x_1^2$, which is *better* than cancelling it, and cheaper in effort. Feedback linearization would have cancelled it out of obligation.
+Second, at every step you are free to keep any term that is already helping. If $f_1(x_1) = -x_1^3$, choose $\alpha = -k_1x_1$ and leave the cubic alone. Then $\dot{V}_1 = x_1(-x_1^3 - k_1x_1) = -x_1^4 - k_1x_1^2$, which is *better* than canceling it, and cheaper in effort. Feedback linearization would have canceled it out of obligation.
 
 ## Backstepping the attitude law
 
@@ -217,14 +217,14 @@ This is zero only when $\mathbf{q}_v = \mathbf{0}$ and $\mathbf{z} = \mathbf{0}$
 
 The mismatch $\mathbf{z} = \boldsymbol{\omega} + c\,\mathbf{q}_v$ *is* the sliding surface, and $\boldsymbol{\alpha} = -c\mathbf{q}_v$ is the rate that sliding mode drives you toward. The difference is what happens off the surface. Sliding mode switches hard, reaches the surface in finite time and rejects matched disturbances completely. Backstepping applies a smooth law, reaches the surface only asymptotically, and gives a Lyapunov function for the whole state rather than for the surface alone. They are the switching and smooth versions of the same geometry, and hybrids — smooth backstepping with a switching term added — are common.
 
-Compared with feedback linearization, backstepping cancels the terms it must and keeps the rest. In the attitude law it cancelled the gyroscopic term $\boldsymbol{\omega}\times\mathbf{J}\boldsymbol{\omega}$, but it did not have to. That term **[[does no work|gyro-no-work]]**, so leaving it in changes $\dot{V}_2$ only by $-\mathbf{z}^\mathsf{T}(\boldsymbol{\omega}\times\mathbf{J}\boldsymbol{\omega})$, which a larger $\mathbf{K}_z$ can dominate over any bounded range of rates. A design that does not depend on cancelling an inertia matrix is a design that survives a mass-property update.
+Compared with feedback linearization, backstepping cancels the terms it must and keeps the rest. In the attitude law it canceled the gyroscopic term $\boldsymbol{\omega}\times\mathbf{J}\boldsymbol{\omega}$, but it did not have to. That term **[[does no work|gyro-no-work]]**, so leaving it in changes $\dot{V}_2$ only by $-\mathbf{z}^\mathsf{T}(\boldsymbol{\omega}\times\mathbf{J}\boldsymbol{\omega})$, which a larger $\mathbf{K}_z$ can dominate over any bounded range of rates. A design that does not depend on canceling an inertia matrix is a design that survives a mass-property update.
 
 ::: warning The virtual control is not a command
 The virtual control is not something you send anywhere. $\boldsymbol{\alpha} = -c\mathbf{q}_v$ is a rate the vehicle *should* have; the only thing sent to the actuators is $\mathbf{u}$ from the last step. Building $\boldsymbol{\alpha}$ into an inner-loop rate command with its own separate controller is a different (cascaded) design. Its stability does not follow from this proof, and it usually needs the inner loop to be much faster than the outer one.
 :::
 
 ::: warning Watch the derivatives grow
-Each step differentiates the previous virtual control, so a quadratic $\alpha$ produces a cubic term in $u$, and a chain of four states can produce expressions pages long and numerically delicate. If the terms are exploding, the usual remedies are simpler virtual controls, a filtered derivative (dynamic surface control), or no longer cancelling nonlinearities that are helping.
+Each step differentiates the previous virtual control, so a quadratic $\alpha$ produces a cubic term in $u$, and a chain of four states can produce expressions pages long and numerically delicate. If the terms are exploding, the usual remedies are simpler virtual controls, a filtered derivative (dynamic surface control), or no longer canceling nonlinearities that are helping.
 :::
 
 ## Check yourself
@@ -244,7 +244,7 @@ $$
 \dot{V}_2 = -x_1^4 - k_1x_1^2 - k_2z^2 .
 $$
 
-Cancelling the cubic instead would have needed a $+x_1^3$ term in $\alpha$, a $3x_1^2$ factor in $\dot{\alpha}$, and more control effort — for a weaker bound.
+Canceling the cubic instead would have needed a $+x_1^3$ term in $\alpha$, a $3x_1^2$ factor in $\dot{\alpha}$, and more control effort — for a weaker bound.
 :::
 
 ::: check
@@ -303,7 +303,7 @@ It matters because the strengths combine. Use the backstepping construction to g
 | Virtual control $\alpha_i$ | The value the next state should take; a target, not a command |
 | $z_{i+1} = x_{i+1} - \alpha_i$ | Mismatch; the new state of the enlarged system |
 | $V_{i+1} = V_i + \tfrac{1}{2}z_{i+1}^2$ | Enlarged candidate |
-| Cross term | Created by the mismatch; cancelled by the next control |
+| Cross term | Created by the mismatch; canceled by the next control |
 | $u = \dot{\alpha} - x_1 - k_2z$ | Two-state law; gives $\dot{V}_2 = -k_1x_1^2 - k_2z^2$ |
 | $\dot{x}_1 = x_1^2 + x_2$, $k_1 = k_2 = 2$ | Global; linear pole placement diverges beyond $x_1 = 0.4020$ |
 | $V_1 = 2(1-q_0)$, $\boldsymbol{\alpha} = -c\mathbf{q}_v$ | Attitude step 1: $\dot{V}_1 = -c\lVert\mathbf{q}_v\rVert^2$ |

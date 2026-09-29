@@ -129,13 +129,13 @@ Write what you mean. `[this]` captures the pointer, out loud. `[*this]` (C++17) 
 
 ## Init-capture: moving something in
 
-Sometimes the thing a lambda needs is not a local variable yet, or it cannot be copied. An **init-capture** makes a brand-new member of the closure and says how to initialise it:
+Sometimes the thing a lambda needs is not a local variable yet, or it cannot be copied. An **init-capture** makes a brand-new member of the closure and says how to initialize it:
 
 ```cpp
 auto sum = [b = std::move(buf)]() { /* use b */ };
 ```
 
-Read `[b = std::move(buf)]` as "capture a new member `b`, initialised by moving from `buf`". The name on the left is the member. The expression on the right is evaluated once, when the lambda is created. It was added in C++14.
+Read `[b = std::move(buf)]` as "capture a new member `b`, initialized by moving from `buf`". The name on the left is the member. The expression on the right is evaluated once, when the lambda is created. It was added in C++14.
 
 This is the tool for **move-only** objects, like the `std::unique_ptr` from the memory module. A `unique_ptr` cannot be copied, so `[buf]` will not compile. But it can be moved, and an init-capture can move it. Ownership then passes into the closure: when the closure is destroyed, its `b` member is destroyed, and the buffer is freed. That is RAII carried inside a lambda.
 
@@ -274,7 +274,7 @@ Follow the lifetimes.
 
 1. `arm_heater_check` creates `limit_c` in its **[[stack frame|stack-frame]]** and hands the timer a closure holding a reference to it.
 2. The function returns. Its frame is gone, and `limit_c` with it. The closure, stored inside `t`, lives on.
-3. `t.fire()` calls the closure, which reads through its reference into memory that no longer belongs to `limit_c`. That is undefined behaviour: a use-after-return.
+3. `t.fire()` calls the closure, which reads through its reference into memory that no longer belongs to `limit_c`. That is undefined behavior: a use-after-return.
 
 What does it print? It depends on luck. With `-O2`, this build printed `heater limit 45.0 C` — the right-looking answer, because the old bytes happened not to have been overwritten yet. With `-O0`, the same source printed `heater limit 0.0 C`. A heater check that silently compares against zero is worse than a crash.
 
@@ -312,12 +312,12 @@ The general rule for a callback that will be stored, queued or handed to another
 Many [[flight-software coding standards|coding-standards]] turn this into a rule of their own, because the bug does not show up in a quick test.
 
 ::: warning The code that "works" is the dangerous version
-The dangling capture above printed the right answer at `-O2`. Tests pass, and the bug waits for a different compiler, optimisation level or call stack that reuses those bytes. Run the tests under AddressSanitizer, and treat every `[&]` on a stored lambda as a finding to justify.
+The dangling capture above printed the right answer at `-O2`. Tests pass, and the bug waits for a different compiler, optimization level or call stack that reuses those bytes. Run the tests under AddressSanitizer, and treat every `[&]` on a stored lambda as a finding to justify.
 :::
 
 ## Where lambdas live in flight software
 
-Lambdas turn up wherever a small piece of behaviour is handed to someone else:
+Lambdas turn up wherever a small piece of behavior is handed to someone else:
 
 - **Algorithm arguments**: the comparison for `std::sort` on a table of channel ids, the operation for `std::transform` on a block of samples. Used once, so `[&]` is fine.
 - **Callbacks**: "when the timer expires", "when the command is acknowledged". Stored, so capture by value or by owner.
@@ -356,7 +356,7 @@ Inside a member function of `class Heater`, a lambda written `[=] { return limit
 :::
 
 ::: answer
-No. Inside a member function, `limit_c` means `this->limit_c`, so `[=]` captured the pointer `this`, not a copy of `limit_c` and not a copy of the object. When the timer fires, the lambda reads through a pointer to a destroyed `Heater` — undefined behaviour, and a use-after-free if the `Heater` was on the heap. C++20 deprecates this implicit capture of `this` and g++ warns about it. Safe versions: `[limit = limit_c]` copies the one value; `[*this]` copies the whole object.
+No. Inside a member function, `limit_c` means `this->limit_c`, so `[=]` captured the pointer `this`, not a copy of `limit_c` and not a copy of the object. When the timer fires, the lambda reads through a pointer to a destroyed `Heater` — undefined behavior, and a use-after-free if the `Heater` was on the heap. C++20 deprecates this implicit capture of `this` and g++ warns about it. Safe versions: `[limit = limit_c]` copies the one value; `[*this]` copies the whole object.
 :::
 
 ::: check
@@ -376,7 +376,7 @@ Two: one for `(int, int)` and one for `(double, double)`. A generic lambda's `op
 | capture by value `[x]` | the closure gets a copy | taken once, at creation |
 | capture by reference `[&x]` | the closure refers to the original | dangles if the lambda outlives `x` |
 | `[=]`, `[&]` | default captures | `[=]` in a member function captures `this`, not the object |
-| init-capture `[y = expr]` | a new member, initialised once | `[p = std::move(ptr)]` moves ownership in |
+| init-capture `[y = expr]` | a new member, initialized once | `[p = std::move(ptr)]` moves ownership in |
 | `mutable` | removes the `const` from `operator()` | changes the closure's own copies only |
 | generic lambda `[](auto x)` | works for any argument type | `operator()` is a template |
 | stored or posted lambda | runs after its creator returned | capture by value or by owner, never bare `[&]` |
@@ -445,5 +445,5 @@ The AUTOSAR C++14 guidelines, written for automotive software and often borrowed
 :::
 
 ::: context inlining Why knowing the exact type matters
-Inlining means the compiler pastes a called function's body into the caller instead of emitting a jump to it. That removes the call itself, and, more important, lets the optimiser treat the loop and the body as one piece of code: it can keep values in registers and process several elements per instruction. It can only inline what it can see. A lambda passed as its own type is fully visible; the same lambda behind a function pointer or a `std::function` usually is not, as the next lesson measures.
+Inlining means the compiler pastes a called function's body into the caller instead of emitting a jump to it. That removes the call itself, and, more important, lets the optimizer treat the loop and the body as one piece of code: it can keep values in registers and process several elements per instruction. It can only inline what it can see. A lambda passed as its own type is fully visible; the same lambda behind a function pointer or a `std::function` usually is not, as the next lesson measures.
 :::

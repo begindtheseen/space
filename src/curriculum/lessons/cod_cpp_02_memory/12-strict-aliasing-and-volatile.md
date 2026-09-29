@@ -35,6 +35,9 @@ If `a` and `b` could point at the same bytes, every write through `b` would forc
 
 ::: example Same source, two flags, two answers
 ```cpp
+#include <cstdint>
+#include <cstdio>
+
 float scale_then_read(float* f, std::uint32_t* u) {
     *f = 1.0f;
     *u = 0x7F800000;        // the bit pattern of +infinity
@@ -98,7 +101,7 @@ UBSan did not catch it either: the sanitized build printed the same wrong answer
 :::
 
 ::: key
-Why does strict aliasing matter? The compiler assumes objects of unrelated types do not overlap, so a reinterpret_cast read of a float through an int* is undefined and can be optimised into nonsense. Use std::memcpy or, in C++20, std::bit_cast.
+Why does strict aliasing matter? The compiler assumes objects of unrelated types do not overlap, so a reinterpret_cast read of a float through an int* is undefined and can be optimized into nonsense. Use std::memcpy or, in C++20, std::bit_cast.
 :::
 
 ::: warning

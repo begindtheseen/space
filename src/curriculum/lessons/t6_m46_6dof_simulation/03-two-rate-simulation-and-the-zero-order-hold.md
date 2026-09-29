@@ -263,7 +263,7 @@ A rocket is long and thin, and it is not perfectly stiff. Tap it and it bends ba
 :::
 
 ::: context two-clocks The two clocks, drawn
-One controller period with $n = 5$: the flight software speaks at the tall blue ticks, and the plant takes five fine steps (short grey ticks) between them. Every blue tick sits exactly on a grey one. That is what the whole-number rule buys.
+One controller period with $n = 5$: the flight software speaks at the tall blue ticks, and the plant takes five fine steps (short gray ticks) between them. Every blue tick sits exactly on a gray one. That is what the whole-number rule buys.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">

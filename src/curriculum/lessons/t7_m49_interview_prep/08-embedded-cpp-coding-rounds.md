@@ -3,7 +3,7 @@ id: l08-embedded-cpp-coding-rounds
 title: The embedded-flavored C++ coding round
 minutes: 23
 covers:
-  - "C++ coding rounds: the standard algorithmic problems plus embedded-flavoured ones — ring buffers, fixed-point arithmetic, bit manipulation, memory-constrained algorithms, no allocation in the hot path"
+  - "C++ coding rounds: the standard algorithmic problems plus embedded-flavored ones — ring buffers, fixed-point arithmetic, bit manipulation, memory-constrained algorithms, no allocation in the hot path"
 ---
 
 Think about a school bus. Getting the kids to school is the minimum. A parent wants to know whether it arrives on time *every* day, not on average. A bus that is usually early but an hour late once a month is a bad bus.

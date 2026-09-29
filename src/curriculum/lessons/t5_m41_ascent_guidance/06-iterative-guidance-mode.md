@@ -46,7 +46,7 @@ $$
 J \equiv \int_0^{t_f} a(t)\, t\, dt = \frac{v_e}{\dot m}\left[m_0\ln\!\frac{m_0}{m_f} - (m_0 - m_f)\right].
 $$
 
-This is the **[[first moment|first-moment]]** of the acceleration in time — "moment" in the seesaw sense, where weight times distance from the pivot is what counts. $J$ has units of metres, since it is metres per second times seconds.
+This is the **[[first moment|first-moment]]** of the acceleration in time — "moment" in the seesaw sense, where weight times distance from the pivot is what counts. $J$ has units of meters, since it is meters per second times seconds.
 
 Here is a friendly way to see what $J$ says. Divide it by $L$:
 
@@ -65,7 +65,7 @@ $$
 L = \int_{m_0}^{m_f} \frac{v_e\,\dot m}{u}\cdot\frac{-du}{\dot m} = v_e\int_{m_f}^{m_0}\frac{du}{u} = v_e\ln\frac{m_0}{m_f}.
 $$
 
-The minus sign flipped the limits, and the $\dot m$'s cancelled.
+The minus sign flipped the limits, and the $\dot m$'s canceled.
 
 **For $J$.** Use the same substitution. Now we also need $t$ in terms of $u$: from $u = m_0 - \dot m\,t$, we get $t = (m_0 - u)/\dot m$. So
 
@@ -180,7 +180,7 @@ Look at where the unknowns sit now: $c_0$ and $c_1$ appear only multiplied by kn
 There is a neat consequence. Choose the correction to cross zero at the balance point, $\delta(t) = c_1(t - \bar t)$, so $c_0 = -c_1\bar t$. Then $c_0 L + c_1 J = c_1(J - \bar t L) = 0$, because $\bar t = J/L$. To first order, *that* kind of tilt leaves the final velocity alone. It is a separate knob that reshapes the path, and so the altitude, without spending velocity.
 
 ::: example A tilt the velocity barely notices
-Go back to the constant $8.021^\circ$ burn. Now add a steady pitch-down of $0.2^\circ$ per second, centred on the balance point $\bar t = 20.93\ \mathrm{s}$: $\delta(t) = -0.2^\circ/\mathrm{s} \times (t - 20.93\ \mathrm{s})$.
+Go back to the constant $8.021^\circ$ burn. Now add a steady pitch-down of $0.2^\circ$ per second, centered on the balance point $\bar t = 20.93\ \mathrm{s}$: $\delta(t) = -0.2^\circ/\mathrm{s} \times (t - 20.93\ \mathrm{s})$.
 
 **The pitch history.** At ignition, $\delta = -0.2 \times (0 - 20.93) = +4.19^\circ$, so $\beta = 12.21^\circ$. At cutoff, $\delta = -0.2 \times (37.429 - 20.93) = -3.30^\circ$, so $\beta = 4.72^\circ$. The rocket starts nose-higher and ends nose-lower.
 
@@ -190,7 +190,7 @@ Go back to the constant $8.021^\circ$ burn. Now add a steady pitch-down of $0.2^
 
 **What did change.** The altitude at cutoff. With constant pitch the stage ends $622\ \mathrm{m}$ below where it started (flat-model gravity again). With the tilt it ends $353\ \mathrm{m}$ above. That is a shift of $975\ \mathrm{m}$.
 
-**Sanity check.** A tilt of a few degrees moved the altitude by nearly a kilometre, yet cost under $2\ \mathrm{m/s}$ of speed. That $1.71\ \mathrm{m/s}$ is the second-order piece the tangent-line swap threw away — the price of a few degrees off the reference, about the size of $L$ times the average of $\delta^2/2$. The next guidance cycle, starting from the true state, picks it up.
+**Sanity check.** A tilt of a few degrees moved the altitude by nearly a kilometer, yet cost under $2\ \mathrm{m/s}$ of speed. That $1.71\ \mathrm{m/s}$ is the second-order piece the tangent-line swap threw away — the price of a few degrees off the reference, about the size of $L$ times the average of $\delta^2/2$. The next guidance cycle, starting from the true state, picks it up.
 :::
 
 ::: key
@@ -313,7 +313,7 @@ The Saturn V stacked three stages under the Apollo spacecraft. The S-IC first st
 :::
 
 ::: context lvdc The Saturn V's brain
-IBM built the Launch Vehicle Digital Computer. It lived in the Instrument Unit, a ring about 6.6 m across and under a metre tall, together with the gyroscope platform that measured the rocket's motion. Everything the rocket did on its own — reading the platform, running IGM, commanding the engines to swivel, timing each stage — ran on this one machine. It checked its own work, too: key circuits were built three times over, and a majority vote decided each result, so one failed part could not steer the rocket wrong.
+IBM built the Launch Vehicle Digital Computer. It lived in the Instrument Unit, a ring about 6.6 m across and under a meter tall, together with the gyroscope platform that measured the rocket's motion. Everything the rocket did on its own — reading the platform, running IGM, commanding the engines to swivel, timing each stage — ran on this one machine. It checked its own work, too: key circuits were built three times over, and a majority vote decided each result, so one failed part could not steer the rocket wrong.
 :::
 
 ::: context closed-form What "closed form" means

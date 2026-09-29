@@ -545,7 +545,7 @@ The upper stage in the example, drawn to scale by mass (the full bar is 111,000 
 </svg>
 ```
 
-A tonne (t) is 1,000 kg. Most of the stage is propellant, which is why the ratio is almost 6.
+A metric ton (t) is 1,000 kg. Most of the stage is propellant, which is why the ratio is almost 6.
 :::
 
 ::: context lookup-order Instance first, then class

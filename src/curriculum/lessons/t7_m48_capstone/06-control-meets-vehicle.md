@@ -266,7 +266,7 @@ The classical tools — Bode plots, phase margin — assume a system that does n
 :::
 
 ::: context bending-mode Why a lighter tube rings faster
-A mass on a spring bounces at $\omega = \sqrt{k/m}$: stiffer spring, faster; heavier mass, slower. A bending tube is many little masses joined by springy walls, but the same rule holds. Empty the tanks and the mass drops while the walls stay as stiff, so the frequency rises. That is why the landing-burn mode, at $4\,\mathrm{Hz}$, rings faster than the fully fuelled ascent example at $2.9\,\mathrm{Hz}$.
+A mass on a spring bounces at $\omega = \sqrt{k/m}$: stiffer spring, faster; heavier mass, slower. A bending tube is many little masses joined by springy walls, but the same rule holds. Empty the tanks and the mass drops while the walls stay as stiff, so the frequency rises. That is why the landing-burn mode, at $4\,\mathrm{Hz}$, rings faster than the fully fueled ascent example at $2.9\,\mathrm{Hz}$.
 :::
 
 ::: context notch What a notch does to the loop

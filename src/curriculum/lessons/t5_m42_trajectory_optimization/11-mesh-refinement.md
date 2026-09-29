@@ -191,7 +191,7 @@ If the segment holds a switch, the residual shrinks only about in proportion to 
 | Rates | Smooth: residual $\propto h^3$; at a switch only about $\propto h$ |
 | Limit and cure | Refinement narrows a jump but never removes it; break the mesh (or add a phase) at the switch |
 
-Mesh refinement makes a direct method trustworthy after the fact. The next lesson steps sideways to a method with no mesh and no defects at all: iLQR, the shooting-flavoured alternative, which simulates every trajectory exactly and improves it with a backward sweep instead.
+Mesh refinement makes a direct method trustworthy after the fact. The next lesson steps sideways to a method with no mesh and no defects at all: iLQR, the shooting-flavored alternative, which simulates every trajectory exactly and improves it with a backward sweep instead.
 
 ::: context real-tools Who refines meshes for a living
 **GPOPS-II**, by Michael Patterson and Anil Rao, is a MATLAB tool that solves optimal control problems with Radau pseudospectral collocation and refines its own mesh: it estimates the error on each mesh interval and then either raises the polynomial degree or splits the interval. **SOCS**, John Betts's Sparse Optimal Control Software developed at Boeing, uses low-order collocation and refines by estimating the local error on each segment. NASA's **Dymos** library also offers automatic grid refinement. None of them asks you for the right number of nodes; they compute it.

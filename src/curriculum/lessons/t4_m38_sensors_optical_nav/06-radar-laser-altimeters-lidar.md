@@ -132,7 +132,7 @@ So a radar altimeter reports something real and useful: the vehicle's height abo
 :::
 
 ::: key Radar versus laser altimeter
-Radar: long range, works through dust and in daylight, wide beam so it averages terrain. Lidar: narrow beam, centimetre precision, gives slant range and can build a hazard map — but it is scattered by dust and plume.
+Radar: long range, works through dust and in daylight, wide beam so it averages terrain. Lidar: narrow beam, centimeter precision, gives slant range and can build a hazard map — but it is scattered by dust and plume.
 :::
 
 The reasons behind each word of that card: the radar's centimeter wavelength puts dust in the Rayleigh regime, and sunlight is not noise to it. Its wide beam catches plenty of ground even from high up and even when the vehicle tilts, which is part of why radar altimeters lock on from many kilometers up. The lidar's micrometer wavelength gives a narrow beam and very fine timing, but puts dust in the Mie regime.

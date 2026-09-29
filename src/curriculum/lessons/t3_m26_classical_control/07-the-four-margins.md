@@ -27,7 +27,7 @@ To reach $-1$, the curve needs *both* a size of one *and* an angle of $-180^\cir
 
 ## Gain margin
 
-Suppose the loop gain were multiplied by a real number $k$ bigger than one. The actuator might be stronger than modelled, the vehicle lighter, the control surfaces more effective. On the Nyquist plot, multiplying by $k$ stretches every point straight away from the origin by the factor $k$. No angle changes.
+Suppose the loop gain were multiplied by a real number $k$ bigger than one. The actuator might be stronger than modeled, the vehicle lighter, the control surfaces more effective. On the Nyquist plot, multiplying by $k$ stretches every point straight away from the origin by the factor $k$. No angle changes.
 
 Now look at where the curve crosses the negative real axis — that is the phase crossover. Say it crosses at $-0.25$. Stretch by $k = 4$ and that point lands on $-1$. So the gain you can afford is the flip of the size at that crossing: $1/0.25 = 4$.
 
@@ -45,7 +45,7 @@ Three practical points.
 
 ## Phase margin
 
-Now suppose the loop picks up extra phase lag but no change in size. An actuator responds a little slower than modelled, or somebody adds a filter. Extra lag rotates every point of the Nyquist curve clockwise around the origin. No distance from the origin changes.
+Now suppose the loop picks up extra phase lag but no change in size. An actuator responds a little slower than modeled, or somebody adds a filter. Extra lag rotates every point of the Nyquist curve clockwise around the origin. No distance from the origin changes.
 
 Only points on the **unit circle** — the circle of radius one — can be rotated onto $-1$, because $-1$ is at distance one from the origin. The curve meets the unit circle at the gain crossover. The rotation you can afford is the angle between that meeting point and the negative real axis.
 
@@ -157,11 +157,11 @@ $$
 
 with $J = 1200\ \mathrm{kg\,m^2}$, $\tau = 0.02\ \mathrm{s}$, a mode at $\omega_m = 18\ \mathrm{rad/s}$ with damping $\zeta_m = 0.005$, and a modal gain $R = -8\times10^{-6}$ in SI units. $R$ is negative because of [[where the gyro sits along the bending shape|mode-shape]] relative to the engine. Keep the same PI controller. To keep the arithmetic clean, this example leaves out the $8\ \mathrm{ms}$ delay.
 
-How strong is the mode? At resonance the modal term has size $|R|/(2\zeta_m\omega_m) = 8\times10^{-6}/0.18 = 4.44\times10^{-5}$ rad/s per newton-metre. The rigid body at $18\ \mathrm{rad/s}$ gives $4.36\times10^{-5}$. So at that one frequency the wobble is as loud as the whole rigid vehicle.
+How strong is the mode? At resonance the modal term has size $|R|/(2\zeta_m\omega_m) = 8\times10^{-6}/0.18 = 4.44\times10^{-5}$ rad/s per newton-meter. The rigid body at $18\ \mathrm{rad/s}$ gives $4.36\times10^{-5}$. So at that one frequency the wobble is as loud as the whole rigid vehicle.
 
 The classical margins look superb. Gain crossover is still at $10.04\ \mathrm{rad/s}$, with a phase margin of $67.4^\circ$. The angle reaches $-180^\circ$ only far above, at $497\ \mathrm{rad/s}$, where $|L| = 0.002$: a gain margin of $54\ \mathrm{dB}$. On a margin table this loop looks *better* than the rigid one.
 
-The modulus margin tells the truth. At $\omega = 18.03\ \mathrm{rad/s}$ the curve reaches $L = -0.699 - 0.264j$. Its distance from $-1$ is $|0.301 - 0.264j| = 0.400$, so $\lVert S\rVert_\infty = 1/0.400 = 2.50$. That fails the usual $\le 2$ requirement. The size there is $0.747$, which is $-2.5\ \mathrm{dB}$, and the angle is $-159^\circ$. The mode is kept below a size of one — [[gain-stabilised|gain-stabilised]] — but by only $2.5\ \mathrm{dB}$, and its angle points the curve almost straight at the cliff edge.
+The modulus margin tells the truth. At $\omega = 18.03\ \mathrm{rad/s}$ the curve reaches $L = -0.699 - 0.264j$. Its distance from $-1$ is $|0.301 - 0.264j| = 0.400$, so $\lVert S\rVert_\infty = 1/0.400 = 2.50$. That fails the usual $\le 2$ requirement. The size there is $0.747$, which is $-2.5\ \mathrm{dB}$, and the angle is $-159^\circ$. The mode is kept below a size of one — [[gain-stabilized|gain-stabilised]] — but by only $2.5\ \mathrm{dB}$, and its angle points the curve almost straight at the cliff edge.
 
 The result is physical. Work out the closed-loop poles and the modal pair moves from $-0.09 \pm 18.0j$ (open loop) to $-0.0415 \pm 18.02j$ (closed loop). The real part, which sets how fast a wobble dies, has halved: the feedback has **halved the mode's damping**, from $\zeta_m = 0.005$ to $0.0415/18.02 = 0.0023$. A wobble now takes [[about 96 seconds|four-over-sigma]], $4/0.0415$, to die away. The loop is stable, its gain margin is $54\ \mathrm{dB}$, and it will shake the vehicle for a minute and a half after every gust. Only the distance to $-1$ saw it coming.
 :::
@@ -181,7 +181,7 @@ print(round(w[i], 2), np.round(L[i], 4), round(abs(1 + L[i]), 4), round(1 / abs(
 # 18.03 (-0.6992-0.264j) 0.4002 2.499
 ```
 
-That example explains a rule found in every structural-stability specification: keep the loop gain at least $6\ \mathrm{dB}$ below one across a gain-stabilised mode. At $-6\ \mathrm{dB}$ (a size of $0.5$) and the same $-159^\circ$, the distance to $-1$ would be $0.56$ instead of $0.40$. That clears the $M_s \le 2$ requirement. The 6 dB rule is the modulus-margin requirement in disguise.
+That example explains a rule found in every structural-stability specification: keep the loop gain at least $6\ \mathrm{dB}$ below one across a gain-stabilized mode. At $-6\ \mathrm{dB}$ (a size of $0.5$) and the same $-159^\circ$, the distance to $-1$ would be $0.56$ instead of $0.40$. That clears the $M_s \le 2$ requirement. The 6 dB rule is the modulus-margin requirement in disguise.
 
 ::: warning
 Several crossings, several margins. A loop with a resonance can cross the unit circle three times and the $-180^\circ$ line twice. "The" phase margin then depends on which crossing your software picked, and many tools report the highest-frequency one, which is not always the one that matters. Report every crossing — or report the modulus margin, which has no such doubt because it is a minimum over all frequencies.
@@ -256,7 +256,7 @@ Any measure of distance sees it plainly. How close the curve passes to $-1$ near
 | $\mathrm{PM} \ge 2\arcsin\bigl(1/(2M_s)\bigr)$ | phase margin guaranteed by it; $M_s = 2$ gives 6.0 dB and 29.0° |
 | Rate loop (8 ms delay) | $\omega_{gc} = 10.0$, PM $62.8^\circ$, GM 22.1 dB, DM 110 ms, $\lVert S\rVert_\infty = 1.247$ |
 | Flexible loop | PM $67.4^\circ$, GM 54 dB, but MM $= 0.400$; modal damping halved to $\zeta = 0.0023$ |
-| The 6 dB rule for modes | gain-stabilise a mode 6 dB below one, and the distance to $-1$ clears $M_s \le 2$ |
+| The 6 dB rule for modes | gain-stabilize a mode 6 dB below one, and the distance to $-1$ clears $M_s \le 2$ |
 
 Every margin here tests one kind of error on a single-input, single-output linear model. The next lesson asks what happens when errors arrive together, when the loop is one of several sharing a vehicle, and when the vehicle stops behaving linearly.
 
@@ -304,7 +304,7 @@ Each link might be only a few milliseconds, but they add up. That is why the del
 ::: context infinity-norm Reading ‖S‖∞ aloud
 The double bars with a small infinity, $\lVert S\rVert_\infty$, are read "the infinity norm of S", or often "the H-infinity norm". For a single-loop system it means one plain thing: sweep every frequency, compute $|S(j\omega)|$, and keep the biggest value.
 
-The name comes from mathematics, where a family of "norms" measures the size of a function in different ways, and the one labelled infinity picks out the worst case. It returns in the robust-control part of the course, where whole design methods — "$H_\infty$ control" — are built around keeping this peak small.
+The name comes from mathematics, where a family of "norms" measures the size of a function in different ways, and the one labeled infinity picks out the worst case. It returns in the robust-control part of the course, where whole design methods — "$H_\infty$ control" — are built around keeping this peak small.
 :::
 
 ::: context chord-picture The chord that sets the phase margin
@@ -354,8 +354,8 @@ When a long rocket bends in its first mode, it curves like a drawn bow. The two 
 A rate gyro feels the *tilt* of the structure where it is bolted, which is the slope of this curve. The slope in the aft half has one sign and in the forward half the other. So whether the modal term adds to or fights the rigid-body rate depends on where the gyro sits relative to the engine that excites the mode. Designers pick the gyro location with this in mind.
 :::
 
-::: context gain-stabilised Gain-stabilised, and the other way
-A mode is **gain-stabilised** when the loop's size across the mode is kept below one, so however its phase swings the curve cannot circle $-1$. The other option, **phase-stabilisation**, keeps the size up but arranges the phase so the feedback damps the mode instead of pumping it.
+::: context gain-stabilised Gain-stabilized, and the other way
+A mode is **gain-stabilized** when the loop's size across the mode is kept below one, so however its phase swings the curve cannot circle $-1$. The other option, **phase-stabilization**, keeps the size up but arranges the phase so the feedback damps the mode instead of pumping it.
 
 Lesson 10 builds both, with a notch filter to push the gain down, and shows why the "6 dB below one" rule is what engineers write into specifications.
 :::

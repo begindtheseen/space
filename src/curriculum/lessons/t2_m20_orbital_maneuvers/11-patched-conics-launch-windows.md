@@ -113,7 +113,7 @@ $C_3 = 3.0^2 = 9.0\,\mathrm{km^2/s^2}$, and $a = -398\,600.4418 / 9.0 = -44\,288
 **Sanity check.** Both $a$ values are negative, as a hyperbola's must be. The faster departure has the smaller $|a|$: a sharper, straighter hyperbola. Both are realistic for leaving Earth toward Mars.
 :::
 
-The burn that puts a spacecraft on that hyperbola is fired low, at the bottom of a parking orbit, where the spacecraft is already moving fast. That is the **[[Oberth effect|oberth-departure]]** from lesson 3 at work: the same Δv added at high speed buys more energy. It is why raising $C_3$ from $9$ to $16\,\mathrm{km^2/s^2}$ — a whole extra kilometre per second of $v_\infty$ — costs only about $0.30\,\mathrm{km/s}$ more at a $300\,\mathrm{km}$ perigee.
+The burn that puts a spacecraft on that hyperbola is fired low, at the bottom of a parking orbit, where the spacecraft is already moving fast. That is the **[[Oberth effect|oberth-departure]]** from lesson 3 at work: the same Δv added at high speed buys more energy. It is why raising $C_3$ from $9$ to $16\,\mathrm{km^2/s^2}$ — a whole extra kilometer per second of $v_\infty$ — costs only about $0.30\,\mathrm{km/s}$ more at a $300\,\mathrm{km}$ perigee.
 
 ## Gravity assists
 
@@ -360,13 +360,13 @@ A launch provider publishes a curve of payload mass against $C_3$. It falls stee
 :::
 
 ::: context oberth-departure The Oberth effect pays for departure
-Lesson 3 showed that a burn changes energy per kilogram by $\Delta\varepsilon = v\,\Delta v + \Delta v^2/2$, so the same Δv is worth more where you are moving fast. From a $300\,\mathrm{km}$ parking orbit, perigee speed on the departure hyperbola is $\sqrt{C_3 + 2\mu/r}$: $11.330\,\mathrm{km/s}$ for $C_3 = 9$ and $11.635\,\mathrm{km/s}$ for $C_3 = 16$. So going from $v_\infty = 3$ to $4\,\mathrm{km/s}$ — a full kilometre per second far from Earth — takes only $0.305\,\mathrm{km/s}$ more at perigee. That is why departure burns are fired low and fast.
+Lesson 3 showed that a burn changes energy per kilogram by $\Delta\varepsilon = v\,\Delta v + \Delta v^2/2$, so the same Δv is worth more where you are moving fast. From a $300\,\mathrm{km}$ parking orbit, perigee speed on the departure hyperbola is $\sqrt{C_3 + 2\mu/r}$: $11.330\,\mathrm{km/s}$ for $C_3 = 9$ and $11.635\,\mathrm{km/s}$ for $C_3 = 16$. So going from $v_\infty = 3$ to $4\,\mathrm{km/s}$ — a full kilometer per second far from Earth — takes only $0.305\,\mathrm{km/s}$ more at perigee. That is why departure burns are fired low and fast.
 :::
 
 ::: context voyager The Voyager grand tour
 In the late 1970s, Jupiter, Saturn, Uranus and Neptune were lined up so that one spacecraft could visit all four, each flyby bending it on to the next. That arrangement comes around only about once every 175 years. Voyager 2, launched in 1977, used it to become the only spacecraft to fly past Uranus and Neptune. Both Voyagers left the solar system fast enough, thanks largely to gravity assists, that the Sun will never pull them back.
 
-This picture is the Jupiter example drawn to scale. The black arrow is Jupiter's velocity. The blue arrows are $\mathbf{v}_\infty$ in and out, both $8.0\,\mathrm{km/s}$ long. The grey and red arrows are the spacecraft's speed around the Sun before ($15.3$) and after ($18.5\,\mathrm{km/s}$).
+This picture is the Jupiter example drawn to scale. The black arrow is Jupiter's velocity. The blue arrows are $\mathbf{v}_\infty$ in and out, both $8.0\,\mathrm{km/s}$ long. The gray and red arrows are the spacecraft's speed around the Sun before ($15.3$) and after ($18.5\,\mathrm{km/s}$).
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">

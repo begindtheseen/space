@@ -6,7 +6,7 @@ covers:
   - 'Feedback linearization (input-state and input-output), relative degree, internal and zero dynamics'
 ---
 
-Picture a shopping cart with one bad wheel. It always pulls to the left, and it pulls harder the faster you go. After a few aisles you stop noticing, because your hands have learned to push a little to the right — exactly as much as the wheel pulls, at every speed. The cart now feels like a perfect cart. You have *cancelled* the fault with your own push.
+Picture a shopping cart with one bad wheel. It always pulls to the left, and it pulls harder the faster you go. After a few aisles you stop noticing, because your hands have learned to push a little to the right — exactly as much as the wheel pulls, at every speed. The cart now feels like a perfect cart. You have *canceled* the fault with your own push.
 
 That is the whole idea of **feedback linearization**: if you know the nonlinear part of a plant, choose the control so that it subtracts that part out exactly. What is left behaves like the simplest linear system there is — a chain of integrators — and any linear method from earlier in the course can finish the job. On a rigid body this is not a classroom trick. The **[[computed-torque|computed-torque-in-practice]]** law used on robot arms and in large spacecraft slews is exactly this.
 
@@ -70,7 +70,7 @@ $$
 y^{(r)} = L_{\mathbf{f}}^{r}h(\mathbf{x}) + L_{\mathbf{g}}L_{\mathbf{f}}^{r-1}h(\mathbf{x})\,u .
 $$
 
-The first term is everything the plant does on its own. The second is the input times a gain that depends on the state. The cancelling choice follows the shopping-cart recipe: undo the first term, divide out the gain, and put in your new input $v$.
+The first term is everything the plant does on its own. The second is the input times a gain that depends on the state. The canceling choice follows the shopping-cart recipe: undo the first term, divide out the gain, and put in your new input $v$.
 
 $$
 u = \frac{1}{L_{\mathbf{g}}L_{\mathbf{f}}^{r-1}h(\mathbf{x})}\left(-L_{\mathbf{f}}^{r}h(\mathbf{x}) + v\right)
@@ -115,7 +115,7 @@ $$
 the **zero dynamics**. If they settle down (asymptotically stable), the system is **[[minimum phase|minimum-phase-name]]**. If they run away, it is **non-minimum phase**, and input–output feedback linearization cannot be used on it.
 
 ::: key Zero dynamics
-The zero dynamics are the internal dynamics with the output held identically at zero. When the relative degree $r$ is less than the state dimension $n$, input–output linearization leaves $n - r$ states unaffected by the control and unobservable from the output. Unstable zero dynamics means the plant is non-minimum phase, and input–output feedback linearization is then unusable — the nonlinear version of cancelling an unstable (right-half-plane) zero. For a linear plant, the zero-dynamics eigenvalues are exactly the transmission zeros.
+The zero dynamics are the internal dynamics with the output held identically at zero. When the relative degree $r$ is less than the state dimension $n$, input–output linearization leaves $n - r$ states unaffected by the control and unobservable from the output. Unstable zero dynamics means the plant is non-minimum phase, and input–output feedback linearization is then unusable — the nonlinear version of canceling an unstable (right-half-plane) zero. For a linear plant, the zero-dynamics eigenvalues are exactly the transmission zeros.
 :::
 
 When $r = n$ there are no leftover states. The change of coordinates $\mathbf{z} = \mathbf{T}(\mathbf{x})$ covers the whole state, and the whole state — not only the output — obeys a linear equation. That is **input-state linearization**, and it is the case you want. When $r \lt n$ and you linearize only the path from input to output, it is **input–output linearization**, and the zero dynamics decide whether it is safe.
@@ -197,7 +197,7 @@ There are three honest responses, and no fourth.
 **Use a method that does not invert the plant.** Lyapunov-based design, backstepping and sliding mode do not need to cancel the plant's own dynamics, so they are never forced to cancel an unstable zero. The price is that you give up an exactly linear closed loop.
 
 ::: warning The divisor can go to zero
-Relative degree is a local property, and it can collapse. The cancelling law divides by $L_{\mathbf{g}}L_{\mathbf{f}}^{r-1}h$. Wherever that function passes through zero, the control demand is unbounded and the design is undefined. On a real vehicle this is loss of control effectiveness — a stalled elevator, a gimbal at its stop, a wheel at its speed limit — and it arrives at the exact moment you most need authority. Check the sign and size of that term over the whole flight envelope, not only at the design point.
+Relative degree is a local property, and it can collapse. The canceling law divides by $L_{\mathbf{g}}L_{\mathbf{f}}^{r-1}h$. Wherever that function passes through zero, the control demand is unbounded and the design is undefined. On a real vehicle this is loss of control effectiveness — a stalled elevator, a gimbal at its stop, a wheel at its speed limit — and it arrives at the exact moment you most need authority. Check the sign and size of that term over the whole flight envelope, not only at the design point.
 :::
 
 ::: warning A tiny tracking error is not proof
@@ -205,7 +205,7 @@ Do not read "the tracking error is tiny" as "the design is working". In the exam
 :::
 
 ::: note Several inputs and outputs
-The same construction works with $m$ inputs and $m$ outputs. Each output $i$ gets its own relative degree $r_i$, so the system has a **vector relative degree** $(r_1, \ldots, r_m)$. In place of the single number $L_{\mathbf{g}}L_{\mathbf{f}}^{r-1}h$ there is an $m \times m$ **decoupling matrix**, and the law inverts it, cancelling and decoupling at once. The leftover dimension is $n - \sum_i r_i$. The rigid-body example is this case with $(1,1,1)$ and $\mathbf{J}^{-1}$ as the decoupling matrix. Its total is $3 = n$, which is why computed torque has no internal dynamics to worry about.
+The same construction works with $m$ inputs and $m$ outputs. Each output $i$ gets its own relative degree $r_i$, so the system has a **vector relative degree** $(r_1, \ldots, r_m)$. In place of the single number $L_{\mathbf{g}}L_{\mathbf{f}}^{r-1}h$ there is an $m \times m$ **decoupling matrix**, and the law inverts it, canceling and decoupling at once. The leftover dimension is $n - \sum_i r_i$. The rigid-body example is this case with $(1,1,1)$ and $\mathbf{J}^{-1}$ as the decoupling matrix. Its total is $3 = n$, which is why computed torque has no internal dynamics to worry about.
 :::
 
 ## Check yourself
@@ -251,11 +251,11 @@ In the computed-torque example, a $10$ percent inertia error produced a $3.2$ pe
 ::: answer
 It is mild because the part that failed to cancel — the mismatch $\mathbf{J} - \hat{\mathbf{J}}$ acting through the gyroscopic and gain terms — is small next to the damping $\mathbf{v} = -0.5\boldsymbol{\omega}$ that the feedback still provides. The design has stability margin left over after the cancellation is spoiled.
 
-It would not be mild if the feedback part were weak compared with the cancelled term. That happens at high rates. The gyroscopic term $\boldsymbol{\omega}\times\mathbf{J}\boldsymbol{\omega}$ grows with the *square* of the rate, while linear damping grows only in proportion. Doubling the rate quadruples the uncancelled residual and only doubles the restoring term. Fast slews are where cancellation error hurts.
+It would not be mild if the feedback part were weak compared with the canceled term. That happens at high rates. The gyroscopic term $\boldsymbol{\omega}\times\mathbf{J}\boldsymbol{\omega}$ grows with the *square* of the rate, while linear damping grows only in proportion. Doubling the rate quadruples the uncancelled residual and only doubles the restoring term. Fast slews are where cancellation error hurts.
 :::
 
 ::: check
-An engineer proposes feedback-linearizing the altitude of an aircraft by cancelling the dynamics from elevator to altitude. What should you ask first?
+An engineer proposes feedback-linearizing the altitude of an aircraft by canceling the dynamics from elevator to altitude. What should you ask first?
 :::
 
 ::: answer

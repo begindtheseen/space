@@ -51,7 +51,7 @@ $ ./orbit
 
 - `g++` is the GNU C++ compiler; `-std=c++20` picks the language version.
 - `-Wall -Wextra` turn on the warnings every professional build uses. Flight projects add `-Werror`, which makes every warning stop the build — **[[a rule from NASA's Power of Ten|power-of-ten]]** you will meet in lesson 9.
-- `-O2` asks for optimisation (use `-O0 -g` while debugging).
+- `-O2` asks for optimization (use `-O0 -g` while debugging).
 - `-o orbit` names the output file.
 
 ::: example Circular orbital speed, compiled
@@ -122,7 +122,7 @@ The C++ standard guarantees only *minimum* sizes for `int` and `long` — not go
 - **Division truncates toward zero.** `-7 / 2` is `-3` in C++. Python's `//` rounds down: `-7 // 2` is `-4`.
 - **The remainder `%` takes the sign of the left number.** `-7 % 2` is `-1`.
 - **Unsigned arithmetic wraps around** modulo $2^N$, where $N$ is the number of bits. It counts like a car's **[[odometer|odometer-wrap]]**: after 255, an 8-bit counter reads 0. This is fully defined — exactly what a telemetry sequence counter wants.
-- **Signed overflow is undefined behaviour.** Going past the largest value of a signed type is **[[undefined behaviour|undefined-behaviour]]**: the standard says nothing about what happens, and the compiler may assume it never does, which lets it delete checks that look like safety code (lesson 12). A signed counter that can reach its limit is a bug.
+- **Signed overflow is undefined behavior.** Going past the largest value of a signed type is **[[undefined behavior|undefined-behaviour]]**: the standard says nothing about what happens, and the compiler may assume it never does, which lets it delete checks that look like safety code (lesson 12). A signed counter that can reach its limit is a bug.
 
 ::: example Integers behaving like integers
 ```cpp
@@ -179,15 +179,15 @@ Line by line:
 
 `double` is the default for GNC mathematics. It is the same IEEE 754 number as NumPy's `float64`, so everything you learned about machine epsilon and cancellation carries over.
 
-`float` uses half the memory and on many flight processors runs faster, but carries only about seven significant digits. Store an Earth-centred position of size $6.4 \times 10^6\,\mathrm{m}$ as a `float`, and the smallest step it can show is about $0.5\,\mathrm{m}$. As a `double`, the step is about $10^{-9}\,\mathrm{m}$. Choosing `float` for a state vector is a design decision, never a default.
+`float` uses half the memory and on many flight processors runs faster, but carries only about seven significant digits. Store an Earth-centered position of size $6.4 \times 10^6\,\mathrm{m}$ as a `float`, and the smallest step it can show is about $0.5\,\mathrm{m}$. As a `double`, the step is about $10^{-9}\,\mathrm{m}$. Choosing `float` for a state vector is a design decision, never a default.
 
 Literals carry their type: `1.0` is a `double`, `1.0f` a `float`, `1` an `int`. Mixing them promotes toward the wider floating type.
 
 There is a third option, older than both. **Fixed point** stores a real number as an integer with an agreed scale. A gyro register that reports turn rate in counts of $0.01^\circ/\mathrm{s}$ holds $12.34^\circ/\mathrm{s}$ as the integer 1234. **[[Flight computers without floating-point hardware|fixed-point-history]]** did all their control mathematics this way, and fixed point survives at sensor interfaces, in programmable chips and in some actuator commands. A modern flight codebase converts register values into engineering units in `double` once, at the boundary, and never mixes the two inside an algorithm. Lesson 7 builds a fixed-point type whose scale the compiler tracks.
 
-### Initialisation and conversions
+### Initialization and conversions
 
-A local variable declared without a starting value holds garbage — an **indeterminate** value — and reading it is undefined behaviour. So initialise everything where you declare it: `double bias = 0.0;` or the **brace form** `double bias{};`, which sets it to zero. Braces also reject **narrowing** conversions — ones that lose information. `std::int8_t small{300};` is a compile error, since 300 does not fit in 8 signed bits; `std::int8_t small = 300;` compiles with a warning, and `small` quietly becomes 44:
+A local variable declared without a starting value holds garbage — an **indeterminate** value — and reading it is undefined behavior. So initialize everything where you declare it: `double bias = 0.0;` or the **brace form** `double bias{};`, which sets it to zero. Braces also reject **narrowing** conversions — ones that lose information. `std::int8_t small{300};` is a compile error, since 300 does not fit in 8 signed bits; `std::int8_t small = 300;` compiles with a warning, and `small` quietly becomes 44:
 
 ```text
 narrow.cpp:5:21: error: narrowing conversion of '300' from 'int' to 'int8_t'
@@ -235,7 +235,7 @@ A function's **declaration** — name, parameter types, return type — goes in 
 
 ## Structs, enums and namespaces
 
-A **`struct`** groups named members into one value. C++20 **designated initialisers** let you name the members as you fill them, like keyword arguments in Python.
+A **`struct`** groups named members into one value. C++20 **designated initializers** let you name the members as you fill them, like keyword arguments in Python.
 
 An **`enum class`** is a strongly typed set of named constants: a `FlightMode` will not silently turn into an `int`, unlike C's old `enum`. You may pick its underlying type — `std::uint8_t` below — so it packs into one byte of telemetry.
 
@@ -309,8 +309,8 @@ Follow the samples. At 125 km the booster still climbs: `ASCENT`. At 130 km its 
 
 "Modern C++" means the language since 2011, as opposed to the "C with classes" style of the 1990s. A new **standard** — an official revision — arrives every three years. The features this module leans on:
 
-- **C++17**: `if` with an initialiser, structured bindings, `if constexpr` (lesson 7), `std::optional` (lesson 8), `std::string_view`, `std::variant`, `[[nodiscard]]` and `[[fallthrough]]`, and guaranteed copy elision when returning a temporary (lesson 3).
-- **C++20**: concepts and `requires` clauses (lesson 5), ranges, `std::span` (lesson 6), designated initialisers, `consteval` and `constinit` (lesson 7), `std::format`, the three-way comparison `<=>`, and `constexpr` versions of much more of the standard library. (Coroutines and modules also arrived; embedded toolchains support them unevenly, so this module skips them.)
+- **C++17**: `if` with an initializer, structured bindings, `if constexpr` (lesson 7), `std::optional` (lesson 8), `std::string_view`, `std::variant`, `[[nodiscard]]` and `[[fallthrough]]`, and guaranteed copy elision when returning a temporary (lesson 3).
+- **C++20**: concepts and `requires` clauses (lesson 5), ranges, `std::span` (lesson 6), designated initializers, `consteval` and `constinit` (lesson 7), `std::format`, the three-way comparison `<=>`, and `constexpr` versions of much more of the standard library. (Coroutines and modules also arrived; embedded toolchains support them unevenly, so this module skips them.)
 
 Many flight projects use C++17 plus a few approved C++20 features, because the **[[compiler qualified for the flight processor|qualified-compiler]]** lags desktop compilers by a few years. Everything here compiles with `-std=c++20` on GCC 13 and Clang 18.
 
@@ -319,7 +319,7 @@ A C++ program is preprocessed, compiled one translation unit at a time into obje
 :::
 
 ::: key
-Every variable has one static type with a known `sizeof`; initialise it at its declaration, and use brace initialisation `T x{value};` to reject narrowing at compile time. Use the fixed-width types `std::int32_t`, `std::uint8_t` and friends for anything that crosses a wire or a register. Integer division truncates toward zero, unsigned arithmetic wraps modulo $2^N$ by definition, signed overflow is undefined behaviour, and `static_cast` is the only cast you write by hand.
+Every variable has one static type with a known `sizeof`; initialize it at its declaration, and use brace initialization `T x{value};` to reject narrowing at compile time. Use the fixed-width types `std::int32_t`, `std::uint8_t` and friends for anything that crosses a wire or a register. Integer division truncates toward zero, unsigned arithmetic wraps modulo $2^N$ by definition, signed overflow is undefined behavior, and `static_cast` is the only cast you write by hand.
 :::
 
 ## Check yourself
@@ -349,7 +349,7 @@ What value does `n` hold after `int n = 7 / 2 * 2.0;`, and why?
 :::
 
 ::: check
-`std::uint8_t c = 250; c += 10;` and `std::int8_t s = 120; s += 10;` — what does each variable hold afterwards, and is either statement undefined behaviour?
+`std::uint8_t c = 250; c += 10;` and `std::int8_t s = 120; s += 10;` — what does each variable hold afterwards, and is either statement undefined behavior?
 :::
 
 ::: answer
@@ -376,7 +376,7 @@ With every mode listed and no `default`, `-Wswitch` (part of `-Wall`) warns when
 | `std::int32_t`, `std::uint8_t`, … | fixed-width integers for wire and register layouts |
 | `float` / `double` | 4 bytes, about 7 digits / 8 bytes, about 16 digits |
 | fixed point | integer with an agreed scale; convert to `double` once, at the boundary |
-| `T x{v};` | brace initialisation; rejects narrowing |
+| `T x{v};` | brace initialization; rejects narrowing |
 | `static_cast` | the explicit conversion; no C-style casts |
 | `enum class Mode : std::uint8_t` | strongly typed enumeration with a chosen size |
 | `switch` without `default` | lets `-Wswitch` catch a forgotten enumerator |
@@ -462,7 +462,7 @@ Because the rule is written into the standard, a ground station can always tell 
 :::
 
 ::: context undefined-behaviour Why "undefined" is worse than "wrong"
-You might expect signed overflow to wrap like an unsigned counter. On most chips the hardware would. But the C++ standard does not promise that, so the optimiser is allowed to assume overflow never happens. Given `if (x + 1 > x)`, it may decide the test is always true and delete it. The program then does something that matches no line you wrote, and it may change with the optimisation level. Lesson 12 shows real cases and the tools — the sanitizers — that catch them.
+You might expect signed overflow to wrap like an unsigned counter. On most chips the hardware would. But the C++ standard does not promise that, so the optimizer is allowed to assume overflow never happens. Given `if (x + 1 > x)`, it may decide the test is always true and delete it. The program then does something that matches no line you wrote, and it may change with the optimization level. Lesson 12 shows real cases and the tools — the sanitizers — that catch them.
 :::
 
 ::: context fixed-point-history Mathematics without decimals

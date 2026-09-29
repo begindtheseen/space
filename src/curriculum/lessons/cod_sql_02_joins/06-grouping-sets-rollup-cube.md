@@ -211,7 +211,7 @@ Without the GROUPING columns, a report reader would see a duplicated line and co
 
 Given several columns, `GROUPING(a, b)` packs the answers into one whole number, one **[[bit per column|grouping-bits]]**, with the first column worth 2 and the second worth 1. A detail row gives 0, a row with only `b` rolled up gives 1, only `a` rolled up gives 2, and the grand total gives 3. That is why the CUBE example could sort by it.
 
-The most common use is labelling. A CASE on GROUPING turns the NULLs into words a reader cannot misread:
+The most common use is labeling. A CASE on GROUPING turns the NULLs into words a reader cannot misread:
 
 ```sql
 SELECT CASE WHEN GROUPING(s.plane) = 1 THEN 'all planes'
@@ -348,7 +348,7 @@ With the module's data this gives `2026-03-01 | 4 | 0`, `2026-03-02 | 2 | 0` and
 Every query so far has been a single SELECT with its FROM, WHERE and GROUP BY. Next lesson puts one query inside another: a subquery can stand in for a single value, a row, or a whole table, and it can even be re-run for each row of the query around it.
 
 ::: context plane-word What an orbital plane is
-Every orbit lies in a flat sheet through the centre of the Earth, like a hula hoop around a ball. That sheet is the orbit's **plane**. Satellites in the same plane follow each other around the same hoop, spaced out along it.
+Every orbit lies in a flat sheet through the center of the Earth, like a hula hoop around a ball. That sheet is the orbit's **plane**. Satellites in the same plane follow each other around the same hoop, spaced out along it.
 
 Big constellations are built plane by plane. Starlink's first shell, for example, was designed as 72 planes of 22 satellites each, at about 550 km altitude. Grouping by plane is natural because satellites in one plane share launch batches, lighting conditions and ground-track timing.
 :::

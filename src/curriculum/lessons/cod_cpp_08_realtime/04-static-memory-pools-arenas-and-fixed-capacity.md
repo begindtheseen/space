@@ -39,12 +39,12 @@ Giving up the heap has a bonus. Freeing memory twice, using it after it was free
 That is the reason behind the third of the NASA/JPL **[[Power of Ten|power-of-ten]]** rules, a famous list of ten rules for safety-critical code. Lesson 11 covers all ten; here is the one about memory.
 
 ::: key Power of Ten rule 3
-Do not use dynamic memory allocation after initialisation. This removes allocator non-determinism, fragmentation and the whole class of use-after-free and leak defects in one stroke.
+Do not use dynamic memory allocation after initialization. This removes allocator non-determinism, fragmentation and the whole class of use-after-free and leak defects in one stroke.
 :::
 
 ## Two phases: start-up and steady state
 
-The rule has an escape hatch built in. It says *after initialisation*. So a flight program lives in two phases.
+The rule has an escape hatch built in. It says *after initialization*. So a flight program lives in two phases.
 
 - **Initialization** (start-up) runs once, on the ground or right after power-on. It may allocate. It reads the configuration, sizes every buffer, builds every object and connects them together. If something fails here, the computer is not flying yet, so the failure can be reported and fixed.
 - **Steady state** is the loop that runs for the rest of the flight: read sensors, estimate, steer, send telemetry, repeat. It allocates nothing. It only reuses what start-up built.
@@ -376,7 +376,7 @@ Releasing message 2 pushes slot 2 onto the empty free list, so the list is: slot
 | --- | --- |
 | Heap problems in flight | unbounded worst-case time, fragmentation, and no good answer to failure |
 | Fragmentation | free memory split into holes; a request can fail with plenty free in total |
-| Power of Ten rule 3 | no dynamic memory allocation after initialisation |
+| Power of Ten rule 3 | no dynamic memory allocation after initialization |
 | Two phases | start-up may allocate; steady state only reuses |
 | Placement new | `::new (addr) T(args)` builds in owned storage and allocates nothing |
 | Fixed-capacity container | capacity fixed at compile time; `push_back` on full reports failure |

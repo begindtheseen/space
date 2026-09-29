@@ -3,7 +3,7 @@ id: l09-the-feature-tree-and-design-intent
 title: The feature tree and design intent
 minutes: 21
 covers:
-  - The feature tree, parent-child relationships, design intent, robust versus fragile modelling
+  - The feature tree, parent-child relationships, design intent, robust versus fragile modeling
 ---
 
 Think about a recipe for a layer cake. Bake the sponge. Cut it in half. Spread jam on one half. Put the other half on top. Ice the whole thing. Each step works on whatever the step before it produced. Now suppose you decide, after it is iced, that the sponge should have been baked in a bigger pan. In a kitchen that means starting over. In a CAD program it does not: you go back, change the pan size, and the program re-runs every step after it, by itself, in order.
@@ -70,7 +70,7 @@ Then capture the answers with the tools from the last two lessons:
 - a **named variable or equation** when one number depends on another, such as the plate width being hole spacing plus $20\,\mathrm{mm}$;
 - the right **end condition**: Through all for a hole that must go through, "up to" a plane when a face must line up with something else.
 
-## Robust and fragile modelling
+## Robust and fragile modeling
 
 A **robust** model rebuilds correctly, and still means what it meant, when a dimension changes. A **fragile** model either fails to rebuild, or — worse — rebuilds without complaint into the wrong shape.
 
@@ -89,7 +89,7 @@ Then test it. Change the key dimensions to their likely extremes, rebuild, and l
 ::: example Widening the bracket: a silent break
 Here is the story of a real kind of mistake. A bracket base plate is $80\,\mathrm{mm}$ wide. It carries two holes for a reaction wheel whose bolt holes are $60\,\mathrm{mm}$ apart.
 
-**The fragile version.** The modeller put each hole $10\,\mathrm{mm}$ from the nearest end edge. On the $80\,\mathrm{mm}$ plate the spacing comes out as $80 - 2 \times 10 = 60\,\mathrm{mm}$. It fits. It passes review, because the drawing shows the right numbers.
+**The fragile version.** The modeler put each hole $10\,\mathrm{mm}$ from the nearest end edge. On the $80\,\mathrm{mm}$ plate the spacing comes out as $80 - 2 \times 10 = 60\,\mathrm{mm}$. It fits. It passes review, because the drawing shows the right numbers.
 
 Months later, a harness needs more room and the plate is widened to $100\,\mathrm{mm}$. The model rebuilds with no error. The holes are still $10\,\mathrm{mm}$ from each edge, so their spacing is now $100 - 2 \times 10 = 80\,\mathrm{mm}$. The wheel's holes are $60\,\mathrm{mm}$ apart. They miss by $80 - 60 = 20\,\mathrm{mm}$ — $10\,\mathrm{mm}$ at each hole. Nothing turned red. The error is only found when a technician tries to bolt the wheel on.
 
@@ -99,7 +99,7 @@ Both models were "correct" at $80\,\mathrm{mm}$. Only one of them knew *why* it 
 :::
 
 ::: warning Silent breaks are worse than loud ones
-A rebuild error is annoying but safe: you see it and fix it. A model that rebuilds into the wrong shape is dangerous, because the drawing, the mass properties and the part all come out wrong and look right. Robust modelling is mostly about turning silent breaks into either correct updates or loud errors.
+A rebuild error is annoying but safe: you see it and fix it. A model that rebuilds into the wrong shape is dangerous, because the drawing, the mass properties and the part all come out wrong and look right. Robust modeling is mostly about turning silent breaks into either correct updates or loud errors.
 :::
 
 ## The topological naming problem
@@ -110,7 +110,7 @@ When a feature says "round *this* edge" or "sketch on *that* face", the program 
 
 Usually it can. But if the change [[splits a face in two|topology-split]], *merges* two faces into one, or makes an edge vanish, the old name may point to nothing, or to the wrong face. This is the **topological naming problem**: references to faces and edges can be lost or re-attached to the wrong geometry when an upstream change alters the solid's topology.
 
-Commercial systems — NX, CATIA, Creo, SolidWorks, Onshape — have spent decades on clever matching, and they get it right most of the time. None of them can be right every time, because sometimes there is no single right answer: if one face became two, which one did you mean? The open-source program [[FreeCAD|freecad]] was long known for how often it tripped on this, and its developers worked on it for years. The defence is the same everywhere, and it is the list above: reference planes and the origin, which never change, instead of faces and edges, which can.
+Commercial systems — NX, CATIA, Creo, SolidWorks, Onshape — have spent decades on clever matching, and they get it right most of the time. None of them can be right every time, because sometimes there is no single right answer: if one face became two, which one did you mean? The open-source program [[FreeCAD|freecad]] was long known for how often it tripped on this, and its developers worked on it for years. The defense is the same everywhere, and it is the list above: reference planes and the origin, which never change, instead of faces and edges, which can.
 
 ::: example Thickening the plate: two loud breaks and one quiet one
 Take the robust bracket from the last example, but with three shortcuts in it. The plate is $6\,\mathrm{mm}$ thick. The wheel holes were cut **blind, $6\,\mathrm{mm}$ deep**, which went exactly through. Sketch 3, which places a small cable-tie hole, was dimensioned $8\,\mathrm{mm}$ from the edge of **Fillet 1** where the upright meets the plate. And the upright was sketched on the plate's top face.
@@ -167,7 +167,7 @@ The fillet's edge is topology made by the fillet feature. If the fillet's radius
 :::
 
 ::: check
-A plate is $120\,\mathrm{mm}$ wide with two holes placed $15\,\mathrm{mm}$ from each end. The part it bolts to has holes $90\,\mathrm{mm}$ apart. Does it fit now? What happens if the plate is shortened to $110\,\mathrm{mm}$, and how should it have been modelled?
+A plate is $120\,\mathrm{mm}$ wide with two holes placed $15\,\mathrm{mm}$ from each end. The part it bolts to has holes $90\,\mathrm{mm}$ apart. Does it fit now? What happens if the plate is shortened to $110\,\mathrm{mm}$, and how should it have been modeled?
 :::
 
 ::: answer
@@ -179,7 +179,7 @@ Why is a model that fails to rebuild after a change often *better* than one that
 :::
 
 ::: answer
-A failed rebuild is visible: features turn red and someone has to fix them before the model can be used. A wrong-but-successful rebuild is invisible: the drawing, the mass properties and the parts made from them all carry the error, and it may only be found at assembly, in test, or later. Robust modelling aims for correct updates, and where that is impossible, for loud failures rather than silent ones.
+A failed rebuild is visible: features turn red and someone has to fix them before the model can be used. A wrong-but-successful rebuild is invisible: the drawing, the mass properties and the parts made from them all carry the error, and it may only be found at assembly, in test, or later. Robust modeling aims for correct updates, and where that is impossible, for loud failures rather than silent ones.
 :::
 
 ## Summary
@@ -201,7 +201,7 @@ The feature tree exists only in the CAD program's own file format. Export the pa
 :::
 
 ::: context nx-navigator The tool you would meet at SpaceX
-SpaceX designs its vehicles in Siemens NX, with Teamcenter managing the data. In NX the feature list is shown in the Part Navigator, and NX calls sketch-and-feature modelling with a history "history mode". The ideas in this lesson carry over directly; only the button names change.
+SpaceX designs its vehicles in Siemens NX, with Teamcenter managing the data. In NX the feature list is shown in the Part Navigator, and NX calls sketch-and-feature modeling with a history "history mode". The ideas in this lesson carry over directly; only the button names change.
 :::
 
 ::: context reaction-wheel Why a GNC engineer cares about this bracket
@@ -257,7 +257,7 @@ The software has to guess. It usually picks sensibly, but no rule works for ever
 :::
 
 ::: context freecad A free program and a famous problem
-FreeCAD is a free, open-source parametric modeller. For years, users met the topological naming problem there more often than in commercial tools: change an early sketch and a later feature might jump to the wrong face or fail. Reducing it was a major part of the work toward FreeCAD's 1.0 release in 2024. The lesson it teaches applies in every program: the fewer references to faces and edges, the fewer chances to go wrong.
+FreeCAD is a free, open-source parametric modeler. For years, users met the topological naming problem there more often than in commercial tools: change an early sketch and a later feature might jump to the wrong face or fail. Reducing it was a major part of the work toward FreeCAD's 1.0 release in 2024. The lesson it teaches applies in every program: the fewer references to faces and edges, the fewer chances to go wrong.
 :::
 
 ::: context design-review What a model review looks at

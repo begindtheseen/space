@@ -104,7 +104,7 @@ Same company, two roles, two different gates. Sanity check: this is the lesson-t
 
 ## Australia: its own version of ITAR, with the same shape of exception
 
-Australia's Defence Trade Controls Act 2012 is widely described, including by Australian legal commentators, as the country's own version of ITAR. Controlled goods and technology sit on the **Defence and Strategic Goods List** (DSGL), and supplying or transferring them generally needs a permit.
+Australia's Defense Trade Controls Act 2012 is widely described, including by Australian legal commentators, as the country's own version of ITAR. Controlled goods and technology sit on the **Defense and Strategic Goods List** (DSGL), and supplying or transferring them generally needs a permit.
 
 Australia's space sector has grown a lot since the Australian Space Agency was set up in 2018. Companies such as Gilmour Space Technologies, Fleet Space Technologies and Southern Launch make up a real, if still young, local launch and space industry. They are named as evidence the sector exists, not as a promise of open roles at any given time. As in the UK and most of European industry, ordinary engineering hiring is generally organized around the right to work in Australia, gained through its skilled-visa system, for roles that do not directly touch DSGL-controlled technology.
 
@@ -171,7 +171,7 @@ The pattern: for most engineering roles, eligibility in these places depends on 
 | European industry | EU Dual-Use Regulation, national lists | Generally the right to work in the relevant country |
 | United Kingdom | Export Control Act 2002 / Order 2008 (ECJU) | Generally the right to work (e.g. skilled-worker visa) |
 | Canada | Controlled Goods Program | Citizenship/PR for controlled-goods roles; open otherwise |
-| Australia | Defence Trade Controls Act 2012 (DSGL) | Generally the right to work; permits for DSGL items |
+| Australia | Defense Trade Controls Act 2012 (DSGL) | Generally the right to work; permits for DSGL items |
 
 The next lesson finishes this pair: Japan's space sector, the quite different door that university research opens, the long, slow immigration path back into the US system, and why everything technical in this course is worth learning whichever of these doors you walk through.
 
@@ -244,7 +244,7 @@ The thresholds change over time, so the UK government's own pages are the place 
 :::
 
 ::: context controlled-goods-program Canada's Controlled Goods Program
-The program was set up under Canada's Defence Production Act and is run by a federal department, Public Services and Procurement Canada. It registers businesses and people who handle "controlled goods" — a list that closely tracks military and some space items, many of them also on the US Munitions List.
+The program was set up under Canada's Defense Production Act and is run by a federal department, Public Services and Procurement Canada. It registers businesses and people who handle "controlled goods" — a list that closely tracks military and some space items, many of them also on the US Munitions List.
 
 The close match is deliberate. Canada and the US have long traded defense goods across their shared border with fewer barriers than most countries, and Canada's program is one way it shows the US that controlled items stay protected once they arrive.
 

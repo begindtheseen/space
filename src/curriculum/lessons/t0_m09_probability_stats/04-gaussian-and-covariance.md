@@ -6,7 +6,7 @@ covers:
   - the Gaussian and multivariate Gaussian, covariance matrices, correlation
 ---
 
-Throw a hundred darts at a target, aiming at the bullseye every time. Most land close. A few land farther out. Almost none land at the very edge. If you piled the darts up by how far left or right of centre they landed, the pile would have a hump in the middle and thin tails on each side. That hump is the **bell curve**, and it is the most important shape in navigation.
+Throw a hundred darts at a target, aiming at the bullseye every time. Most land close. A few land farther out. Almost none land at the very edge. If you piled the darts up by how far left or right of center they landed, the pile would have a hump in the middle and thin tails on each side. That hump is the **bell curve**, and it is the most important shape in navigation.
 
 Open the memory of any navigation filter and you find two things. One is a vector $\hat{\mathbf{x}}$ (read "x hat"), the best guess of position, velocity and attitude. The other is a matrix $\mathbf{P}$, the **covariance** of the error in that guess — a table that says how big the errors are and how they go together. Those two objects describe a bell curve in many dimensions at once. The filter needs nothing else, because for this one shape the mean and the covariance *are* the whole distribution.
 
@@ -22,7 +22,7 @@ $$
 
 We write this $X \sim \mathcal{N}(\mu, \sigma^2)$, read "X is normal with mean mu and variance sigma squared". The shape carries the name of **[[Gauss|gauss-name]]**.
 
-Read the formula from the inside out. The piece $(x - \mu)^2$ is the squared distance from the centre. Dividing by $2\sigma^2$ measures that distance in units of the spread. The minus sign and the $\exp$ (the exponential, $e$ raised to that power) turn "far away" into "very unlikely": the density is largest at $x = \mu$ and falls off fast on both sides. The result is the bell, symmetric about $\mu$. Its sides are steepest — they change from curving down to curving up — at $\mu \pm \sigma$.
+Read the formula from the inside out. The piece $(x - \mu)^2$ is the squared distance from the center. Dividing by $2\sigma^2$ measures that distance in units of the spread. The minus sign and the $\exp$ (the exponential, $e$ raised to that power) turn "far away" into "very unlikely": the density is largest at $x = \mu$ and falls off fast on both sides. The result is the bell, symmetric about $\mu$. Its sides are steepest — they change from curving down to curving up — at $\mu \pm \sigma$.
 
 The fraction in front, $1/(\sigma\sqrt{2\pi})$, is there only to make the total area under the curve equal to one, as every density's must be.
 
@@ -38,7 +38,7 @@ The inner integral is $1$ because the derivative of $-e^{-r^2/2}$ is $r e^{-r^2/
 
 The two numbers in the formula are exactly the mean and the variance. $\mathbb{E}[X] = \mu$ because the bell is symmetric about $\mu$. $\operatorname{Var}(X) = \sigma^2$ comes out of an integration by parts, shown below.
 
-The peak height is $1/(\sigma\sqrt{2\pi}) = 0.399/\sigma$. For a position error with $\sigma = 3\,\mathrm{m}$, that is $0.133\,\mathrm{m^{-1}}$ — "per metre". A density carries units, because it is probability per unit of $x$.
+The peak height is $1/(\sigma\sqrt{2\pi}) = 0.399/\sigma$. For a position error with $\sigma = 3\,\mathrm{m}$, that is $0.133\,\mathrm{m^{-1}}$ — "per meter". A density carries units, because it is probability per unit of $x$.
 
 ## Counting in sigmas
 
@@ -69,7 +69,7 @@ The chance of landing within $k$ standard deviations of the mean is $P(|Z| \leq 
 | 1.960 | $95\%$ | $5\%$ |
 | 2.576 | $99\%$ | $1\%$ |
 
-**[[Memorise the first three rows|sigma-bands]]**. The last three are the multipliers behind $90\%$, $95\%$ and $99\%$ bands, which come back when we build confidence intervals.
+**[[Memorize the first three rows|sigma-bands]]**. The last three are the multipliers behind $90\%$, $95\%$ and $99\%$ bands, which come back when we build confidence intervals.
 
 ::: key
 For a scalar Gaussian, the containment probabilities of $\pm 1\sigma$, $\pm 2\sigma$ and $\pm 3\sigma$ are $68.27\%$, $95.45\%$ and $99.73\%$. So a $3\sigma$ bound is broken about $0.27\%$ of the time — roughly once in 370 tries.
@@ -92,7 +92,7 @@ The bracket is zero, because $\phi$ dies off faster than any power grows. Start 
 :::
 
 ::: example A GNSS position error budget
-A receiver's cross-track error is modelled as $\mathcal{N}(0, (3\,\mathrm{m})^2)$. How often is the error bigger than $5\,\mathrm{m}$ either way?
+A receiver's cross-track error is modeled as $\mathcal{N}(0, (3\,\mathrm{m})^2)$. How often is the error bigger than $5\,\mathrm{m}$ either way?
 
 First, turn $5\,\mathrm{m}$ into sigmas: $5/3 = 1.667$. Then use symmetry — the two tails are equal, so double one of them:
 
@@ -123,7 +123,7 @@ A column times a row is a square table. So $\mathbf{P}$ is an $n \times n$ table
 - The **off-diagonal** entries are the covariances between pairs.
 - Because $\operatorname{Cov}(x_i, x_j) = \operatorname{Cov}(x_j, x_i)$, the table is a mirror image across its diagonal: it is **symmetric**.
 
-It has one more property, and it is worth understanding rather than memorising. Mix the parts of $\mathbf{x}$ in any fixed recipe $\mathbf{a}$ — say "twice the north error minus the east error" — to get one number $y = \mathbf{a}^{\mathsf{T}}\mathbf{x}$. Its variance is
+It has one more property, and it is worth understanding rather than memorizing. Mix the parts of $\mathbf{x}$ in any fixed recipe $\mathbf{a}$ — say "twice the north error minus the east error" — to get one number $y = \mathbf{a}^{\mathsf{T}}\mathbf{x}$. Its variance is
 
 $$
 \operatorname{Var}(y) = \mathbb{E}\big[(\mathbf{a}^{\mathsf{T}}(\mathbf{x} - \boldsymbol{\mu}))^2\big]
@@ -193,7 +193,7 @@ $$
 d^2 = \mathbf{y}^{\mathsf{T}}\boldsymbol{\Lambda}^{-1}\mathbf{y} = \sum_{i=1}^{n} \frac{y_i^2}{\lambda_i}.
 $$
 
-Set that equal to $k^2$ and you have the equation of an ellipsoid centred on $\boldsymbol{\mu}$. Its axes point along the eigenvectors of $\mathbf{P}$. Its semi-axis lengths (centre to edge) are $k\sqrt{\lambda_i}$. Along each axis the spread is an independent one-number bell with standard deviation $\sqrt{\lambda_i}$. So the eigenvalues are the variances in the principal directions, and the eigenvectors say which directions those are. This is the **$k$-sigma ellipsoid**. Drawing it over a scatter of samples is the standard way to picture a covariance.
+Set that equal to $k^2$ and you have the equation of an ellipsoid centered on $\boldsymbol{\mu}$. Its axes point along the eigenvectors of $\mathbf{P}$. Its semi-axis lengths (center to edge) are $k\sqrt{\lambda_i}$. Along each axis the spread is an independent one-number bell with standard deviation $\sqrt{\lambda_i}$. So the eigenvalues are the variances in the principal directions, and the eigenvectors say which directions those are. This is the **$k$-sigma ellipsoid**. Drawing it over a scatter of samples is the standard way to picture a covariance.
 
 In two dimensions the tilt has a formula. With $\mathbf{P} = \begin{bmatrix} P_{11} & P_{12} \\ P_{12} & P_{22} \end{bmatrix}$, the angle $\theta$ of the long axis from the first coordinate axis is
 
@@ -220,7 +220,7 @@ A horizontal position error has covariance $\mathbf{P} = \begin{bmatrix} 4 & 1 \
 
 **The $3\sigma$ ellipse** has semi-axes $3 \times 2.10 = 6.30\,\mathrm{m}$ and $3 \times 1.26 = 3.78\,\mathrm{m}$, turned $22.5^\circ$ from the first axis. Notice that the biggest principal sigma, $2.10\,\mathrm{m}$, is larger than the biggest single-axis sigma, $2\,\mathrm{m}$. Correlation stretches the ellipse along the diagonal, **[[beyond the box|ellipse-in-box]]** the single-axis sigmas suggest.
 
-**The density.** $|\mathbf{P}| = 4 \times 2 - 1 \times 1 = 7\,\mathrm{m^4}$, so the constant in front is $1/(2\pi\sqrt{7}) = 0.0602\,\mathrm{m^{-2}}$. At the point one metre from the mean along the first axis, $d^2 = P_{22}/|\mathbf{P}| = 2/7 = 0.286$, and the density is $0.0602\,e^{-0.143} = 0.0521\,\mathrm{m^{-2}}$ — a little below the peak, as a nearby point should be.
+**The density.** $|\mathbf{P}| = 4 \times 2 - 1 \times 1 = 7\,\mathrm{m^4}$, so the constant in front is $1/(2\pi\sqrt{7}) = 0.0602\,\mathrm{m^{-2}}$. At the point one meter from the mean along the first axis, $d^2 = P_{22}/|\mathbf{P}| = 2/7 = 0.286$, and the density is $0.0602\,e^{-0.143} = 0.0521\,\mathrm{m^{-2}}$ — a little below the peak, as a nearby point should be.
 :::
 
 ## How much does a $k$-sigma ellipsoid hold?
@@ -244,7 +244,7 @@ At $k = 1$ that is $0.3935$. At $k = 2$ it is $0.8647$. At $k = 3$ it is $0.9889
 | 3 | $99.73\%$ | $98.89\%$ | $97.07\%$ |
 
 ::: note Why it has to be true
-In two dimensions, the pair $(y_1/\sqrt{\lambda_1},\ y_2/\sqrt{\lambda_2})$ has the round density $e^{-r^2/2}/(2\pi)$, where $r$ is distance from the centre. Add up the probability inside the circle of radius $k$ using polar coordinates:
+In two dimensions, the pair $(y_1/\sqrt{\lambda_1},\ y_2/\sqrt{\lambda_2})$ has the round density $e^{-r^2/2}/(2\pi)$, where $r$ is distance from the center. Add up the probability inside the circle of radius $k$ using polar coordinates:
 
 $$
 P(d \leq k) = \int_0^{2\pi}\!\!\int_0^{k} \frac{e^{-r^2/2}}{2\pi}\,r\,dr\,d\theta = \Big[-e^{-r^2/2}\Big]_0^k = 1 - e^{-k^2/2}.
@@ -257,7 +257,7 @@ The $\theta$ integral gives $2\pi$, which cancels the $2\pi$ below.
 The fraction of a 3-D Gaussian inside its $3\sigma$ ellipsoid is about $97.07\%$, not $99.73\%$. The containment probability of a $k$-sigma ellipsoid comes from the chi-square CDF with $n$ degrees of freedom evaluated at $k^2$. In 2-D the $3\sigma$ ellipse holds $98.89\%$, and the $1\sigma$ ellipse only $39.35\%$.
 :::
 
-Why do more dimensions mean less inside? In one dimension, "inside $3\sigma$" means one number is small. In three dimensions a sample must be close in *every* direction at once. There are more ways to be **[[far from the centre|dimension-bars]]** when there are more directions to be far in.
+Why do more dimensions mean less inside? In one dimension, "inside $3\sigma$" means one number is small. In three dimensions a sample must be close in *every* direction at once. There are more ways to be **[[far from the center|dimension-bars]]** when there are more directions to be far in.
 
 A box is different again. The chance of each part being within its own $\pm 3\sigma$ — in the principal frame, where they are independent — is $0.9973^3 = 99.19\%$. The box is a bigger region than the ellipsoid tucked inside it, and neither holds $99.73\%$.
 
@@ -291,7 +291,7 @@ The bar $\mid$ reads "given". You get this by writing the joint density as (dens
 
 Two things happen. The best guess for $x_2$ moves in a straight line with the observed value, by the **gain** $P_{12}/P_{11}$ per unit of surprise. And the variance shrinks by the factor $1 - \rho^2$, whatever value was observed.
 
-For the covariance of the tilted-ellipse example, $\rho^2 = 1/8 = 0.125$. Learning $x_1$ exactly cuts the variance of $x_2$ from $2$ to $2 \times 0.875 = 1.75\,\mathrm{m^2}$. And every metre by which $x_1$ beats its mean raises the guess for $x_2$ by $P_{12}/P_{11} = 1/4 = 0.25\,\mathrm{m}$.
+For the covariance of the tilted-ellipse example, $\rho^2 = 1/8 = 0.125$. Learning $x_1$ exactly cuts the variance of $x_2$ from $2$ to $2 \times 0.875 = 1.75\,\mathrm{m^2}$. And every meter by which $x_1$ beats its mean raises the guess for $x_2$ by $P_{12}/P_{11} = 1/4 = 0.25\,\mathrm{m}$.
 
 Now read that again with filter names. Call $x_1$ a measurement and $x_2$ a state. "New estimate = old estimate + gain × (measurement − predicted measurement)" and "new variance = old variance × a factor below one" is the **[[Kalman update|kalman-seed]]** in its simplest form, and $P_{12}/P_{11}$ is the Kalman gain. The covariance between state and measurement is what makes the measurement useful. The next lesson shows where that covariance comes from.
 
@@ -302,7 +302,7 @@ Three different things get called "sigma" here, and mixing them up causes real e
 ## Check yourself
 
 ::: check
-A range error is $\mathcal{N}(0, (2\,\mathrm{m})^2)$. What is the probability that its size is below $3\,\mathrm{m}$? What multiple of $\sigma$ gives a $95\%$ two-sided bound, and how many metres is that?
+A range error is $\mathcal{N}(0, (2\,\mathrm{m})^2)$. What is the probability that its size is below $3\,\mathrm{m}$? What multiple of $\sigma$ gives a $95\%$ two-sided bound, and how many meters is that?
 :::
 
 ::: answer
@@ -344,7 +344,7 @@ A scatter plot of a two-dimensional Gaussian shows its $1\sigma$ ellipse. Roughl
 ::: answer
 About $39\%$, since $1 - e^{-1/2} = 0.3935$.
 
-The $68.27\%$ figure is the chance that *one* standardised part is within one sigma. Being inside the ellipse needs the squared Mahalanobis distance — a sum of two squared standard normals — to be at most one. That is stricter: both parts, in the principal frame, must be small at the same time. More dimensions give more ways to fall outside, so the fraction inside at a fixed $k$ drops as $n$ grows.
+The $68.27\%$ figure is the chance that *one* standardized part is within one sigma. Being inside the ellipse needs the squared Mahalanobis distance — a sum of two squared standard normals — to be at most one. That is stricter: both parts, in the principal frame, must be small at the same time. More dimensions give more ways to fall outside, so the fraction inside at a fixed $k$ drops as $n$ grows.
 :::
 
 ::: check
@@ -386,7 +386,7 @@ Some integrals have no answer built from powers, roots, sines and logarithms. Th
 :::
 
 ::: context sigma-bands The 68–95–99.7 picture
-The bell with its bands shaded. The dark middle band, within one sigma of the centre, holds $68.27\%$ of the area. Adding the light blue bands takes you out to two sigmas and $95.45\%$; adding the orange ones takes you to three sigmas and $99.73\%$. The thin tails beyond hold the last $0.27\%$.
+The bell with its bands shaded. The dark middle band, within one sigma of the center, holds $68.27\%$ of the area. Adding the light blue bands takes you out to two sigmas and $95.45\%$; adding the orange ones takes you to three sigmas and $99.73\%$. The thin tails beyond hold the last $0.27\%$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
@@ -416,7 +416,7 @@ Prasanta Chandra Mahalanobis was an Indian statistician who founded the Indian S
 :::
 
 ::: context ellipse-in-box The ellipse inside the sigma box
-The $1\sigma$, $2\sigma$ and $3\sigma$ ellipses of $\mathbf{P} = \begin{bmatrix} 4 & 1 \\ 1 & 2 \end{bmatrix}\,\mathrm{m^2}$, drawn to scale (the first axis points right, the second up). The dashed box marks $\pm 3$ single-axis sigmas: $\pm 6\,\mathrm{m}$ across and $\pm 4.24\,\mathrm{m}$ up. The $3\sigma$ ellipse touches all four sides, but its long axis, tilted $22.5^\circ$, reaches $6.30\,\mathrm{m}$ from the centre.
+The $1\sigma$, $2\sigma$ and $3\sigma$ ellipses of $\mathbf{P} = \begin{bmatrix} 4 & 1 \\ 1 & 2 \end{bmatrix}\,\mathrm{m^2}$, drawn to scale (the first axis points right, the second up). The dashed box marks $\pm 3$ single-axis sigmas: $\pm 6\,\mathrm{m}$ across and $\pm 4.24\,\mathrm{m}$ up. The $3\sigma$ ellipse touches all four sides, but its long axis, tilted $22.5^\circ$, reaches $6.30\,\mathrm{m}$ from the center.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">

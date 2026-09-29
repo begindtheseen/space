@@ -484,7 +484,7 @@ A column is called `alt` and is `DOUBLE PRECISION`. Its profile shows `MIN = 540
 :::
 
 ::: answer
-For a satellite in low Earth orbit, altitudes of about 540 to 562 km are typical. The numbers are about 540,000 to 562,000, so the most likely unit is **metres**. But that is an inference, not a fact: it could be a radius, a distance from a ground station, or something else. Check a lookup table or data dictionary, ask the owner, and add a comment once you know (`COMMENT ON COLUMN … IS 'altitude above WGS-84 ellipsoid, m'`), so the next person does not have to guess.
+For a satellite in low Earth orbit, altitudes of about 540 to 562 km are typical. The numbers are about 540,000 to 562,000, so the most likely unit is **meters**. But that is an inference, not a fact: it could be a radius, a distance from a ground station, or something else. Check a lookup table or data dictionary, ask the owner, and add a comment once you know (`COMMENT ON COLUMN … IS 'altitude above WGS-84 ellipsoid, m'`), so the next person does not have to guess.
 :::
 
 ::: check
@@ -577,13 +577,13 @@ Get the grain wrong and every count is wrong. If you think a table is one row pe
 :::
 
 ::: context ground-fill Values filled in on the ground
-When a satellite's data does not arrive — a pass is missed, a frame is corrupted — some pipelines fill the hole so that charts have no gaps: repeating the last value, interpolating between neighbours, or inserting a default. That can be useful for a display.
+When a satellite's data does not arrive — a pass is missed, a frame is corrupted — some pipelines fill the hole so that charts have no gaps: repeating the last value, interpolating between neighbors, or inserting a default. That can be useful for a display.
 
 It is dangerous for analysis, because a filled value looks exactly like a real one. A good pipeline marks filled rows, as the `quality` column does here, so that anyone computing a maximum, an average or an alarm can leave them out. If a table you inherit has no such flag, ask whether filling happens upstream.
 :::
 
 ::: context adc-count Raw counts and calibrated values
-A temperature sensor on a spacecraft is often a **thermistor**, a resistor whose resistance changes with temperature. An **analogue-to-digital converter** (ADC) measures the resulting voltage and outputs a whole number — a **count**. A 12-bit ADC gives counts from 0 to 4095.
+A temperature sensor on a spacecraft is often a **thermistor**, a resistor whose resistance changes with temperature. An **analog-to-digital converter** (ADC) measures the resulting voltage and outputs a whole number — a **count**. A 12-bit ADC gives counts from 0 to 4095.
 
 Turning counts into degrees needs a **calibration curve** measured on the ground before launch. Telemetry systems often keep both: the raw count, which never changes, and the converted value, which can be recomputed if the calibration is improved. In this lesson's made-up database, the raw count is $2048 + 25 \times T$, so 45 °C would be a count of 3173.
 :::

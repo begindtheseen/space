@@ -50,7 +50,7 @@ The gyro measures $\boldsymbol\omega_{ib}^b$; the attitude update integrates $\b
 
 Turn the accelerometer's specific force into NED with the freshly updated attitude: $\mathbf f^n = \mathbf C_b^n\mathbf f^b$. The previous lesson's velocity equation then needs one last piece, the gravity $\mathbf g^n$. The first lesson of this module insisted it be supplied from a model, because no accelerometer can feel it.
 
-Gravity is not the same everywhere. It is stronger at the poles than at the equator, for two reasons: the poles are closer to Earth's center (the planet is squashed), and at the equator Earth's spin flings you outward a little, cancelling part of the pull. WGS84 packs both effects into **normal gravity**: the gravitation plus centrifugal acceleration of a smooth reference ellipsoid with Earth's mass and spin. At the ellipsoid's surface it is given by the closed-form **[[Somigliana|somigliana]]** formula:
+Gravity is not the same everywhere. It is stronger at the poles than at the equator, for two reasons: the poles are closer to Earth's center (the planet is squashed), and at the equator Earth's spin flings you outward a little, canceling part of the pull. WGS84 packs both effects into **normal gravity**: the gravitation plus centrifugal acceleration of a smooth reference ellipsoid with Earth's mass and spin. At the ellipsoid's surface it is given by the closed-form **[[Somigliana|somigliana]]** formula:
 
 $$
 g_0(\varphi) = g_e\,\frac{1+k\sin^2\varphi}{\sqrt{1-e^2\sin^2\varphi}}, \qquad g_e = 9.780\,325\,3359\,\mathrm{m/s^2},\ \ k=0.001\,931\,853.
@@ -78,7 +78,7 @@ The $2$ comes from the inverse-square law: if gravity goes as $1/r^2$, a small f
 
 From equator to pole, gravity rises by $(9.8322-9.7803)/9.7803 = 0.53\%$.
 
-**Height.** The height gradient is $2g_0/a$. Near $45^\circ$ that is $2\times9.8062/6\,378\,137 = 3.075\times10^{-6}\,\mathrm{s^{-2}}$ — gravity drops by about $3.075\times10^{-6}\,\mathrm{m/s^2}$ for every metre you climb. Geodesists quote about $3.086\times10^{-6}$, once the flattening terms this first-order formula dropped are put back; the difference does not matter anywhere in this module.
+**Height.** The height gradient is $2g_0/a$. Near $45^\circ$ that is $2\times9.8062/6\,378\,137 = 3.075\times10^{-6}\,\mathrm{s^{-2}}$ — gravity drops by about $3.075\times10^{-6}\,\mathrm{m/s^2}$ for every meter you climb. Geodesists quote about $3.086\times10^{-6}$, once the flattening terms this first-order formula dropped are put back; the difference does not matter anywhere in this module.
 
 **The cost.** Fly at $10\,\mathrm{km}$ without the height correction and the model overstates gravity by $3.075\times10^{-6}\times10\,000 \approx 0.031\,\mathrm{m/s^2}$. Divide by $9.81$: about $3.1$ **[[milli-g|milli-g]]**. The first lesson's table puts a navigation-grade accelerometer's whole bias at $50$ to $100$ micro-$g$, so this one omission is more than thirty times larger. The INS reads it as vertical acceleration, and through the coupling between the **[[vertical channel|vertical-channel]]** and the horizontal ones, it eventually leaks into horizontal error too.
 
@@ -226,7 +226,7 @@ The position update uses $R_M$ and $R_N$ at the *previous* latitude rather than 
 ::: answer
 The new latitude is not known until the position update has run, so using it would mean solving for latitude and its own input at the same time.
 
-Using the previous latitude is acceptable because the radii change slowly. $R_M$ changes by only about $64\,\mathrm{km}$ between equator and pole. In one step of $0.05\,\mathrm s$, even an airliner at $250\,\mathrm{m/s}$ moves only $12.5\,\mathrm m$ — about a ten-thousandth of a degree of latitude — so the radii change by well under a metre out of six thousand kilometres. That error is far smaller than the error from stepping to first order in $\Delta t$ in the first place.
+Using the previous latitude is acceptable because the radii change slowly. $R_M$ changes by only about $64\,\mathrm{km}$ between equator and pole. In one step of $0.05\,\mathrm s$, even an airliner at $250\,\mathrm{m/s}$ moves only $12.5\,\mathrm m$ — about a ten-thousandth of a degree of latitude — so the radii change by well under a meter out of six thousand kilometers. That error is far smaller than the error from stepping to first order in $\Delta t$ in the first place.
 :::
 
 ::: check
@@ -246,7 +246,7 @@ So the tilt leaks gravity into the east direction, and $v_E$ grows. $v_N$ stays 
 | $\boldsymbol\omega_{nb}^b=\boldsymbol\omega_{ib}^b-\mathbf C_n^b(\boldsymbol\omega_{ie}^n+\boldsymbol\omega_{en}^n)$ | What the attitude update integrates: gyro output minus Earth rate and transport rate |
 | $\mathbf C_b^n(t+\Delta t)\approx\mathbf C_b^n(t)(\mathbf I+[\Delta\boldsymbol\theta\times])$ | First-order attitude update; renormalize after |
 | $g_0(\varphi)=g_e(1+k\sin^2\varphi)/\sqrt{1-e^2\sin^2\varphi}$ | Somigliana normal gravity, $g_e=9.7803253359\,\mathrm{m/s^2}$ |
-| $g(\varphi,h)\approx g_0(\varphi)(1-2h/a)$ | Free-air height correction; gradient about $3.08\times10^{-6}\,\mathrm{s^{-2}}$ per metre |
+| $g(\varphi,h)\approx g_0(\varphi)(1-2h/a)$ | Free-air height correction; gradient about $3.08\times10^{-6}\,\mathrm{s^{-2}}$ per meter |
 | $\dot{\mathbf v}^n=\mathbf C_b^n\mathbf f^b-(2\boldsymbol\omega_{ie}^n+\boldsymbol\omega_{en}^n)\times\mathbf v^n+\mathbf g^n$ | Velocity update, fully assembled |
 | $\dot\varphi=v_N/(R_M+h)$, $\dot\lambda=v_E/[(R_N+h)\cos\varphi]$, $\dot h=-v_D$ | Position update |
 

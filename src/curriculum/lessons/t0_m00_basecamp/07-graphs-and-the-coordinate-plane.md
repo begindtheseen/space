@@ -52,20 +52,20 @@ The two axes cut the plane into four regions called **quadrants**. They are numb
 
 So the signs alone tell you the quadrant, without drawing anything. A point with a negative $x$ and a positive $y$ must be up and to the left, in quadrant II. The [[picture of the four quadrants|quadrant-picture]] shows all four example points.
 
-This is more than a naming game. Later in the course, a direction is worked out from a pair of numbers like these, and getting the quadrant wrong makes a spacecraft point exactly the opposite way. Knowing the signs cold now is the first defence.
+This is more than a naming game. Later in the course, a direction is worked out from a pair of numbers like these, and getting the quadrant wrong makes a spacecraft point exactly the opposite way. Knowing the signs cold now is the first defense.
 
 ## From table to graph and back
 
 A graph is usually made from a **table**: pairs of numbers that go together. Each row becomes one point. The first column gives the $x$ of the point and the second gives the $y$.
 
-On real graphs the axes are rarely labelled plain "$x$" and "$y$". Time usually runs along the bottom, because time is what we count forward, and the quantity that changes with time goes up the side. The axes are labelled with what they measure and its units: "time $t$ (s)", "altitude (m)".
+On real graphs the axes are rarely labeled plain "$x$" and "$y$". Time usually runs along the bottom, because time is what we count forward, and the quantity that changes with time goes up the side. The axes are labeled with what they measure and its units: "time $t$ (s)", "altitude (m)".
 
 ::: warning Check the scale on each axis
-On graph paper, one square does not have to mean $1$. On a time axis each square might be $10$ seconds; on an altitude axis, $20$ metres. The two axes can use different scales. Before reading anything off a graph, find out how much one square is worth on each axis — this is the most common way people misread a perfectly good graph.
+On graph paper, one square does not have to mean $1$. On a time axis each square might be $10$ seconds; on an altitude axis, $20$ meters. The two axes can use different scales. Before reading anything off a graph, find out how much one square is worth on each axis — this is the most common way people misread a perfectly good graph.
 :::
 
 ::: example Drawing and reading a ball's flight
-A ball is thrown straight up from the top of a $100\,\mathrm{m}$ tower. Its height $h$, in metres, after $t$ seconds is given by the table below. (The numbers come from the formula $h = 100 + 20t - 4.903t^2$, which you will meet again in the Algebra module. Here we only need the table.)
+A ball is thrown straight up from the top of a $100\,\mathrm{m}$ tower. Its height $h$, in meters, after $t$ seconds is given by the table below. (The numbers come from the formula $h = 100 + 20t - 4.903t^2$, which you will meet again in the Algebra module. Here we only need the table.)
 
 | $t$ (s) | $0$ | $1$ | $2$ | $3$ | $4$ | $5$ | $6$ |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -165,7 +165,7 @@ Engineers test landing rockets with short "hops": the vehicle lifts off, rises, 
 
 Plotted and joined, this makes a [[flat-topped hill|hop-graph]]: a straight climb, a flat top, a straight descent.
 
-**Climb.** From $(0, 0)$ to $(20, 100)$, the slope is $\dfrac{100 - 0}{20 - 0} = 5\,\mathrm{m/s}$. The units are metres per second — a speed. The vehicle climbs at $5\,\mathrm{m/s}$.
+**Climb.** From $(0, 0)$ to $(20, 100)$, the slope is $\dfrac{100 - 0}{20 - 0} = 5\,\mathrm{m/s}$. The units are meters per second — a speed. The vehicle climbs at $5\,\mathrm{m/s}$.
 
 **Hover.** From $(20, 100)$ to $(40, 100)$, the rise is $0$, so the slope is $0\,\mathrm{m/s}$. It holds $100\,\mathrm{m}$ for $20$ seconds.
 
@@ -209,15 +209,15 @@ A car's distance from the start is recorded: at $0\,\mathrm{s}$ it is $0\,\mathr
 :::
 
 ::: answer
-Every $2$ seconds the distance grows by the same $30\,\mathrm{m}$, so the points lie on a straight line. Slope $= \dfrac{30\,\mathrm{m}}{2\,\mathrm{s}} = 15\,\mathrm{m/s}$. The units are metres per second, so the slope is the car's speed: a steady $15\,\mathrm{m/s}$. It passes through the origin, $(0, 0)$, because the car started at distance zero.
+Every $2$ seconds the distance grows by the same $30\,\mathrm{m}$, so the points lie on a straight line. Slope $= \dfrac{30\,\mathrm{m}}{2\,\mathrm{s}} = 15\,\mathrm{m/s}$. The units are meters per second, so the slope is the car's speed: a steady $15\,\mathrm{m/s}$. It passes through the origin, $(0, 0)$, because the car started at distance zero.
 :::
 
 ::: check
-In the last lesson, tank A held $500$ litres at $t = 0$ and $320$ litres at $t = 15$ minutes, draining steadily. What is the slope of its graph? Is it uphill or downhill?
+In the last lesson, tank A held $500$ liters at $t = 0$ and $320$ liters at $t = 15$ minutes, draining steadily. What is the slope of its graph? Is it uphill or downhill?
 :::
 
 ::: answer
-Take the points in order, $(0, 500)$ then $(15, 320)$. Slope $= \dfrac{320 - 500}{15 - 0} = \dfrac{-180}{15} = -12$ litres per minute. It is negative, so the line runs downhill: the tank loses $12$ litres every minute, just as the problem said.
+Take the points in order, $(0, 500)$ then $(15, 320)$. Slope $= \dfrac{320 - 500}{15 - 0} = \dfrac{-180}{15} = -12$ liters per minute. It is negative, so the line runs downhill: the tank loses $12$ liters every minute, just as the problem said.
 :::
 
 ::: check
@@ -358,7 +358,7 @@ Draw the triangle anywhere on the line, big or small, and the rise divided by th
 :::
 
 ::: context slope-meaning Slope is a rate
-Slope always means "how much of the up-the-side quantity, per one of the along-the-bottom quantity". On a distance–time graph that is metres per second: speed. On a speed–time graph it is metres per second, per second: acceleration, $\mathrm{m/s^2}$. On a propellant-mass graph it is kilograms per second: burn rate.
+Slope always means "how much of the up-the-side quantity, per one of the along-the-bottom quantity". On a distance–time graph that is meters per second: speed. On a speed–time graph it is meters per second, per second: acceleration, $\mathrm{m/s^2}$. On a propellant-mass graph it is kilograms per second: burn rate.
 
 Calculus, later in the course, is largely the study of slope when the graph is curved rather than straight — finding the slope at a single instant. It is how a navigation computer turns a list of positions into a speed.
 :::

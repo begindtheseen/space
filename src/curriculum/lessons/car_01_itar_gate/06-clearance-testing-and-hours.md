@@ -58,7 +58,7 @@ A lawful permanent resident, a refugee or an asylee can be completely eligible u
 
 ## Drug and alcohol testing: the employer's condition of employment
 
-Postings state **pre-employment** testing (a test before you start, usually after an offer) and **random** testing (unannounced tests while you work there) for drugs and alcohol. This is a condition of employment, independent of state law where the facility sits.
+Postings state **pre-employment** testing (a test before you start, usually after an offer) and **random** testing (unannounced tests while you work there) for drugs and alcohol. This is a condition of employment wherever the facility sits; state laws that limit testing usually exempt federal-contract and clearance roles like these.
 
 It is not an ITAR requirement. Nothing in the Arms Export Control Act or in 22 CFR Parts 120 through 130 mentions it. It is the kind of requirement lesson three called the employer's own condition. It is common across **[[safety-sensitive|safety-sensitive]]** manufacturing and aerospace work generally, and stated plainly in the posting.
 
@@ -81,7 +81,7 @@ Treat this line as a real description of a real working condition, not a formali
 Like drug testing, this is the employer's own stated expectation, not a legal requirement. Unlike drug testing, whether it is a dealbreaker for you is a personal judgment this module cannot make for you.
 
 ::: key
-Postings state pre-employment and random drug and alcohol testing. This is a condition of employment, independent of state law where the facility sits.
+Postings state pre-employment and random drug and alcohol testing. This is a condition of employment wherever the facility sits; state laws that limit testing usually exempt federal-contract and clearance roles like these.
 
 Verbatim from postings: willing to work extended hours and weekends when needed to meet critical deadlines. Treat it as a real description of the job, not boilerplate.
 
@@ -172,7 +172,7 @@ Yes. Drug and alcohol testing is the employer's own condition of employment, ind
 | --- | --- | --- |
 | ITAR / US-person status | Federal law (22 CFR § 120.62) | Every export-controlled role |
 | Top Secret clearance | Separate federal process (sponsorship, SF-86, background investigation, adjudication, continuous evaluation) | Specific roles (e.g. SRE, Starshield); generally US citizens only |
-| Drug and alcohol testing | Employer policy, sometimes shaped by contract terms | Pre-employment and random; stated per posting, independent of state law |
+| Drug and alcohol testing | Employer policy, sometimes shaped by contract terms | Pre-employment and random; stated per posting; state limits usually exempt these roles |
 | Extended hours / weekends | Employer's stated expectation | Stated per posting; a real working condition, not boilerplate |
 
 Everything up to here assumed the gate is passed, or explained exactly what happens when it is not. The next two lessons are for the second case: what a real set of alternatives looks like, treated with the same seriousness as everything before.

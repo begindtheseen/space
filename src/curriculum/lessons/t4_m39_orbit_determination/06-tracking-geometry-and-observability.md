@@ -6,11 +6,11 @@ covers:
   - Station and tracking geometry and its effect on observability
 ---
 
-Close one eye and try to touch two pencil tips together at arm's length. It is surprisingly hard. With one eye you still see *which way* each tip is, very sharply, but you have almost no sense of *how far*. Open the other eye and it becomes easy. Nothing about your eyesight got sharper. What changed is the **[[viewpoint|two-viewpoints]]**: two eyes a few centimetres apart see the scene from two slightly different places, and that difference is what reveals depth.
+Close one eye and try to touch two pencil tips together at arm's length. It is surprisingly hard. With one eye you still see *which way* each tip is, very sharply, but you have almost no sense of *how far*. Open the other eye and it becomes easy. Nothing about your eyesight got sharper. What changed is the **[[viewpoint|two-viewpoints]]**: two eyes a few centimeters apart see the scene from two slightly different places, and that difference is what reveals depth.
 
 Orbit determination has exactly this problem. Tracking data can be extremely precise and still leave some combination of position and velocity almost untouched, because every measurement looked at the spacecraft from nearly the same angle. Whether the data can pin down every part of the state is called **observability**. This lesson is about how the geometry of the tracking — how long a pass, how many passes, which stations — decides it.
 
-The batch lesson already met one kind of badly conditioned normal matrix $\boldsymbol\Lambda$: in kilometres and seconds it looked terrible, and switching to canonical units fixed it completely. That was a problem of *units*. This lesson is about a deeper kind of ill-conditioning that no change of units touches: the case where the tracking data itself, however precise and however carefully scaled, does not constrain some direction of the state. It is the same condition-number idea the least-squares module built for a fixed measurement geometry, now applied to geometry that moves.
+The batch lesson already met one kind of badly conditioned normal matrix $\boldsymbol\Lambda$: in kilometers and seconds it looked terrible, and switching to canonical units fixed it completely. That was a problem of *units*. This lesson is about a deeper kind of ill-conditioning that no change of units touches: the case where the tracking data itself, however precise and however carefully scaled, does not constrain some direction of the state. It is the same condition-number idea the least-squares module built for a fixed measurement geometry, now applied to geometry that moves.
 
 ## Observability is a property of the geometry, not the noise
 
@@ -40,7 +40,7 @@ $$
 
 A condition number of $1$ means every direction is seen equally well. A condition number of $10^{11}$ means one direction is seen a hundred billion times more weakly than another.
 
-To make the numbers mean something, $\widetilde{\mathbf H}$ is taken in two careful forms. Its rows are divided by each measurement's noise $\sigma$, so every row counts in units of "how many sigmas". Its columns are in the **[[canonical units|canonical-units]]** of the batch lesson, so position and velocity are on the same footing and the kilometres-and-seconds problem is gone. Whatever lopsidedness is left is real.
+To make the numbers mean something, $\widetilde{\mathbf H}$ is taken in two careful forms. Its rows are divided by each measurement's noise $\sigma$, so every row counts in units of "how many sigmas". Its columns are in the **[[canonical units|canonical-units]]** of the batch lesson, so position and velocity are on the same footing and the kilometers-and-seconds problem is gone. Whatever lopsidedness is left is real.
 
 ::: example Where the conditioning actually comes from
 Use the same $420\,\mathrm{km}$ orbit as the last two lessons, a station at $40^\circ$ N, range and range-rate every $10\,\mathrm s$ above $10^\circ$ elevation, and the noise levels $5\,\mathrm m$ and $1\,\mathrm{mm/s}$. Build the weighted, non-dimensional $\widetilde{\mathbf H}$ for several different arcs and take its singular values directly with an SVD:
@@ -103,7 +103,7 @@ $$
 \sigma_{\text{worst}} = \frac{1}{0.00624} \approx 160
 $$
 
-canonical units — a hundred and sixty Earth radii. That direction is, for every practical purpose, not measured at all. The largest singular value is $s_{\max} = 1.41\times10^9$, so the best direction has $\sigma_{\text{best}} \approx 7.1\times10^{-10}$ units, a few millimetres' worth. The ratio of worst to best is the condition number, $2.27\times10^{11}$: from the same seven looks, one combination of the state is known exquisitely and another not at all.
+canonical units — a hundred and sixty Earth radii. That direction is, for every practical purpose, not measured at all. The largest singular value is $s_{\max} = 1.41\times10^9$, so the best direction has $\sigma_{\text{best}} \approx 7.1\times10^{-10}$ units, a few millimeters' worth. The ratio of worst to best is the condition number, $2.27\times10^{11}$: from the same seven looks, one combination of the state is known exquisitely and another not at all.
 
 **The 12-hour, three-pass arc.** Now $s_{\min} = 3.99\times10^6$ and $s_{\max} = 5.11\times10^{10}$, so
 
@@ -144,7 +144,7 @@ Adding a loose **[[a priori|a-priori]]**, or carrying on because the normal equa
 ## Check yourself
 
 ::: check
-For one tracking arc, the smallest singular value of the weighted, non-dimensional $\widetilde{\mathbf H}$ is $2.0\times10^{5}$. What is the $1\sigma$ uncertainty along the worst-observed direction, in canonical units and, treating it as a position, in metres?
+For one tracking arc, the smallest singular value of the weighted, non-dimensional $\widetilde{\mathbf H}$ is $2.0\times10^{5}$. What is the $1\sigma$ uncertainty along the worst-observed direction, in canonical units and, treating it as a position, in meters?
 :::
 
 ::: answer
@@ -207,7 +207,7 @@ What could spoil it is a poor pass from the second station. A short, low pass se
 The covariance ellipsoid in this lesson came from trusting the dynamics completely between observations. The next lesson asks what changes when that trust is not fully deserved — when a real, unmodelled force is quietly acting on the spacecraft between the measurements that are supposed to be pinning its state down.
 
 ::: context two-viewpoints Depth from two places
-Each eye sees a nearby pencil against a slightly different background. The brain measures that shift, called **parallax**, and turns it into distance. The farther apart the two viewpoints, the bigger the shift and the better the depth. Astronomers do the same with Earth's orbit: looking at a nearby star in January and again in July, from points $300$ million kilometres apart, makes it shift against the distant stars. In orbit determination, the "second eye" is a second pass or a second station.
+Each eye sees a nearby pencil against a slightly different background. The brain measures that shift, called **parallax**, and turns it into distance. The farther apart the two viewpoints, the bigger the shift and the better the depth. Astronomers do the same with Earth's orbit: looking at a nearby star in January and again in July, from points $300$ million kilometers apart, makes it shift against the distant stars. In orbit determination, the "second eye" is a second pass or a second station.
 :::
 
 ::: context nearly-parallel Two lines that cross at a shallow angle
@@ -258,7 +258,7 @@ A condition number of $10^{11}$ would squash the ellipse so flat that no drawing
 :::
 
 ::: context canonical-units Measuring in Earths
-Canonical units measure distance in Earth radii ($1\,\mathrm{DU} = 6378.137\,\mathrm{km}$) and time in a unit chosen so that $\mu = 1$ ($1\,\mathrm{TU} \approx 806.8\,\mathrm s$). Then a low orbit has position about $1$ and speed about $1$, and a matrix built from them has columns of similar size. It is like measuring a room in metres and a pencil in centimetres so that both come out as sensible numbers.
+Canonical units measure distance in Earth radii ($1\,\mathrm{DU} = 6378.137\,\mathrm{km}$) and time in a unit chosen so that $\mu = 1$ ($1\,\mathrm{TU} \approx 806.8\,\mathrm s$). Then a low orbit has position about $1$ and speed about $1$, and a matrix built from them has columns of similar size. It is like measuring a room in meters and a pencil in centimeters so that both come out as sensible numbers.
 :::
 
 ::: context antipode The point straight through the Earth

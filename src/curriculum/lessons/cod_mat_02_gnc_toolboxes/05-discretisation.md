@@ -1,6 +1,6 @@
 ---
 id: l05-discretisation
-title: 'Discretisation: c2d, d2c, zoh and tustin'
+title: 'Discretization: c2d, d2c, zoh and tustin'
 minutes: 16
 covers:
   - c2d and d2c with zoh, tustin and prewarp; c2dOptions
@@ -10,7 +10,7 @@ Picture a sailor steering at night who can only glance at the compass once a min
 
 A flight computer steers exactly like that. It does not watch the rocket continuously. It wakes up on a fixed **[[tick|rate-groups]]**, reads the gyros, runs the control law, sends one number to each actuator, and holds that number until the next tick. Flight computers commonly run attitude control at 50 to a few hundred ticks per second. Everything between the ticks is invisible to the software.
 
-The last lesson designed controllers with $s$, as if the computer were watching all the time. This lesson turns those designs into the step-by-step form a computer runs, and turns plants into the form a digital controller sees. That step is called **discretisation** — rewriting a continuous-time model as a discrete-time one that updates in steps. MATLAB does it with `c2d` ("continuous to discrete") and undoes it with `d2c`. The method you choose matters, and picking the wrong one can quietly move a notch filter off the mode it was meant to kill.
+The last lesson designed controllers with $s$, as if the computer were watching all the time. This lesson turns those designs into the step-by-step form a computer runs, and turns plants into the form a digital controller sees. That step is called **discretization** — rewriting a continuous-time model as a discrete-time one that updates in steps. MATLAB does it with `c2d` ("continuous to discrete") and undoes it with `d2c`. The method you choose matters, and picking the wrong one can quietly move a notch filter off the mode it was meant to kill.
 
 ## Samples, holds and the sample time
 
@@ -82,7 +82,7 @@ With $T_s = 0.01$ that is $0.7408\,y[k] + 0.2592\,u[k]$, the same recipe `c2d` p
 :::
 
 ::: example Discretising a pitch plant and checking it
-A rigid rocket's pitch angle responds to a torque like a double integrator, $P(s) = 1/s^2$. Discretise it for a 50 Hz controller.
+A rigid rocket's pitch angle responds to a torque like a double integrator, $P(s) = 1/s^2$. Discretize it for a 50 Hz controller.
 
 **Step 1, run c2d.** `Pd = c2d(1/s^2, 0.02, 'zoh')` gives
 
@@ -182,10 +182,10 @@ Ac = d2c(Ad, 'zoh')
 %   s + 30
 ```
 
-The round trip gives back the actuator exactly. You use `d2c` when a model arrives in discrete form — for instance, one fitted to flight-test data sampled at 100 Hz — and you want to compare it with a continuous design, or re-discretise it at a different rate. It works by taking a logarithm of the poles, $s = \ln(z)/T_s$, so a discrete pole at $z = 0$ (a pure one-step delay) has no finite continuous twin and will not convert cleanly.
+The round trip gives back the actuator exactly. You use `d2c` when a model arrives in discrete form — for instance, one fitted to flight-test data sampled at 100 Hz — and you want to compare it with a continuous design, or re-discretize it at a different rate. It works by taking a logarithm of the poles, $s = \ln(z)/T_s$, so a discrete pole at $z = 0$ (a pure one-step delay) has no finite continuous twin and will not convert cleanly.
 
 ::: warning Use the same Ts everywhere, and the right method for the right block
-Connecting models with different sample times, or a continuous model to a discrete one, makes MATLAB stop with an error; convert first with `c2d`, or change rates with `d2d`. And do not zoh-discretise a notch or a lead filter because zoh is the default of `c2d`: zoh adds the hold's lag and bends the filter's shape. Tustin for your filters, zoh for the plant they will control.
+Connecting models with different sample times, or a continuous model to a discrete one, makes MATLAB stop with an error; convert first with `c2d`, or change rates with `d2d`. And do not zoh-discretize a notch or a lead filter because zoh is the default of `c2d`: zoh adds the hold's lag and bends the filter's shape. Tustin for your filters, zoh for the plant they will control.
 :::
 
 ## Check yourself
@@ -215,7 +215,7 @@ $T_s = 1/25 = 0.04\,\mathrm{s}$, so the hold acts like a delay of about $T_s/2 =
 :::
 
 ::: check
-A teammate discretises a continuous lead compensator with `c2d(C, Ts, 'zoh')` and discretises the plant with `c2d(P, Ts, 'tustin')`. What would you change, and why?
+A teammate discretizes a continuous lead compensator with `c2d(C, Ts, 'zoh')` and discretizes the plant with `c2d(P, Ts, 'tustin')`. What would you change, and why?
 :::
 
 ::: answer

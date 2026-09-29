@@ -223,7 +223,7 @@ Why is the feedback term $\mathbf{K}_k(\hat{\mathbf{x}}_k-\bar{\mathbf{x}}_k)$ n
 :::
 
 ::: answer
-Because it has a different job from the feedforward term. $\mathbf{k}_k$ is the proposed *improvement*, and $\alpha$ exists to take less of it when the quadratic model overreaches. $\mathbf{K}_k$ keeps the new run close to the nominal the model was built around: as soon as the nonlinear rollout drifts from $\bar{\mathbf{x}}_k$, the feedback pulls it back toward where the linearization is valid. The first iteration of the worked example shows it doing exactly that, cancelling a feedforward of $2.63\times10^{5}\,\mathrm{N}$.
+Because it has a different job from the feedforward term. $\mathbf{k}_k$ is the proposed *improvement*, and $\alpha$ exists to take less of it when the quadratic model overreaches. $\mathbf{K}_k$ keeps the new run close to the nominal the model was built around: as soon as the nonlinear rollout drifts from $\bar{\mathbf{x}}_k$, the feedback pulls it back toward where the linearization is valid. The first iteration of the worked example shows it doing exactly that, canceling a feedforward of $2.63\times10^{5}\,\mathrm{N}$.
 
 Scaling the feedback down would let the rollout wander exactly when the step is being cut because the model is already in trouble. The line search would then fail for both reasons at once. Implementations that damp the feedback term are a known way to make iLQR converge badly on stiff or unstable systems.
 :::

@@ -171,7 +171,7 @@ The wheels get the opposite torque, $\mathbf{u} = -\mathbf{T}_c$.
 
 **Where the momentum goes.** The peak wheel momentum on any one axis is $2.07\,\mathrm{N\,m\,s}$. At $J_w = 0.02\,\mathrm{kg\,m^2}$ that is $2.07/0.02 = 103\,\mathrm{rad/s}$, or $103 \times 60/2\pi = 987\,\mathrm{rpm}$. Every newton-meter-second the body picks up comes out of a wheel and goes back in. The total $\mathbf{H}_N$ starts at zero and stays at zero, to $8.8\times 10^{-15}\,\mathrm{N\,m\,s}$ over the whole run. Nothing external acted, so nothing could change, and the simulation agrees.
 
-Notice how little it takes: a $2\,\mathrm{N\,m\,s}$ swing and a $0.045\,\mathrm{N\,m}$ motor turn half a tonne through $30^\circ$.
+Notice how little it takes: a $2\,\mathrm{N\,m\,s}$ swing and a $0.045\,\mathrm{N\,m}$ motor turn half a metric ton through $30^\circ$.
 :::
 
 ::: example Two bugs, and which check finds them

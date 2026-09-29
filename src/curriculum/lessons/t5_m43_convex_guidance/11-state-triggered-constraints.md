@@ -156,7 +156,7 @@ The formula works because $\max(0, -g)$ is zero exactly when the trigger is mean
 
 With the flipped convention, the trigger is on for $g > 0$. But $\max(0, -g)$ is zero for every $g \ge 0$ — precisely the region that is now supposed to be on. So $\psi$ would report "no constraint" everywhere the rule should apply, and would enforce $c \le 0$ only where the rule is supposed to be off. It is backwards.
 
-The fix for that convention is $\psi = \max(0, g)\cdot c \le 0$, found by running the same two-case derivation with $g > 0$ in place of $g < 0$. The lesson: derive the sign from the convention in use every time; do not memorise one formula and paste it.
+The fix for that convention is $\psi = \max(0, g)\cdot c \le 0$, found by running the same two-case derivation with $g > 0$ in place of $g < 0$. The lesson: derive the sign from the convention in use every time; do not memorize one formula and paste it.
 :::
 
 ::: check

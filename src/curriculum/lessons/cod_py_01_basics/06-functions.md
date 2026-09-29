@@ -191,7 +191,7 @@ Follow the numbers. `dynamic_pressure` returns $38{,}281.25$ Pa, as we worked ou
 Four choices here are doing real work.
 
 1. The density is a **named constant**, written in capitals at the top of the file, where anyone can find and change it — not a `1.225` buried inside a call.
-2. `dynamic_pressure` always returns SI units — metres, kilograms, seconds, and so pascals. The change to kilopascals happens only at the moment of display. **Convert at the edge, never in the middle.**
+2. `dynamic_pressure` always returns SI units — meters, kilograms, seconds, and so pascals. The change to kilopascals happens only at the moment of display. **Convert at the edge, never in the middle.**
 3. `unit` has a default, so the common case is a short call and the unusual case is spelled out.
 4. The column widths live inside `report_line`, not at each call. Changing the layout means changing one line, and every report line follows.
 

@@ -77,7 +77,7 @@ int main() {
 // integral = 0.025
 ```
 
-The line after the constructor's parameters, starting with a colon, is the **member initialiser list**: `gains_(gains)` sets the member `gains_` from the parameter `gains`. The last two members get **default member initialisers** instead — the `= 0.0` where they are declared — so every constructor starts them at zero. The trailing underscore marks private data and keeps the member `integral_` from clashing with the function `integral()`.
+The line after the constructor's parameters, starting with a colon, is the **member initializer list**: `gains_(gains)` sets the member `gains_` from the parameter `gains`. The last two members get **default member initializers** instead — the `= 0.0` where they are declared — so every constructor starts them at zero. The trailing underscore marks private data and keeps the member `integral_` from clashing with the function `integral()`.
 
 `update` is not `const`: it changes the controller's memory. `integral()` *is* `const` — it only reads — so telemetry holding a read-only reference can call it.
 
@@ -205,7 +205,7 @@ The `sizeof` lines (an object's size in bytes) hint at a cost. `PlainGyro` has n
 :::
 
 ::: warning A class with virtual functions needs a virtual destructor
-Without one, deleting a derived object through a base pointer — which is exactly what a `std::unique_ptr` to the base does — destroys only the base part. The C++ standard calls that **[[undefined behaviour|ub-bridge]]**: anything may happen. `virtual ~Base() = default;` costs nothing and is part of writing any interface.
+Without one, deleting a derived object through a base pointer — which is exactly what a `std::unique_ptr` to the base does — destroys only the base part. The C++ standard calls that **[[undefined behavior|ub-bridge]]**: anything may happen. `virtual ~Base() = default;` costs nothing and is part of writing any interface.
 :::
 
 ::: warning Polymorphic objects never travel by value
@@ -433,7 +433,7 @@ Why does a `std::unique_ptr` to a base class need the base to have a virtual des
 :::
 
 ::: answer
-The `unique_ptr` destroys its object with `delete` on a `RateSensor*`. Without a virtual destructor, that runs only `RateSensor`'s destructor, chosen from the pointer's static type: the derived part is never destroyed, and the behaviour is undefined. A `virtual` destructor makes the delete use the dynamic type, so the derived destructor runs first, then the base one.
+The `unique_ptr` destroys its object with `delete` on a `RateSensor*`. Without a virtual destructor, that runs only `RateSensor`'s destructor, chosen from the pointer's static type: the derived part is never destroyed, and the behavior is undefined. A `virtual` destructor makes the delete use the dynamic type, so the derived destructor runs first, then the base one.
 
 `= default` asks the compiler to write the ordinary destructor body — the class has nothing special to clean up — while still making it virtual.
 :::
@@ -444,7 +444,7 @@ The `unique_ptr` destroys its object with `delete` on a `RateSensor*`. Without a
 | --- | --- |
 | `class` vs `struct` | identical except that class members are private by default |
 | invariant | a promise about the data that the constructor makes true and every public member keeps true |
-| member initialiser list, default member initialisers | `: a_(a)` after the constructor; `= 0.0` at the declaration |
+| member initializer list, default member initializers | `: a_(a)` after the constructor; `= 0.0` at the declaration |
 | `class D : public B` | D is-a B; base built first; `D&` converts to `B&` |
 | `virtual`, `= 0`, `override`, `final` | run-time dispatch; pure virtual; checked override; no further deriving |
 | interface | pure virtual functions plus `virtual ~T() = default;` |
@@ -468,8 +468,8 @@ A hardware-in-the-loop rig, or HIL rig, is a lab bench where the real flight com
 Every actuator has a limit. An engine gimbal might swing only about $5^\circ$ either way, a reaction wheel has a top torque, a valve is either fully open or fully shut. A command beyond the limit cannot be carried out, so the software cuts it to the limit on purpose. Engineers call this **saturation**, and `std::clamp(x, lo, hi)` does it in one line: it returns `lo` if `x` is below it, `hi` if `x` is above it, and `x` otherwise. Real controllers also stop their integral from growing while the output is saturated, a fix called anti-windup.
 :::
 
-::: context ub-bridge Undefined behaviour, briefly
-The C++ standard lists some mistakes as "undefined behaviour": once one happens, the standard makes no promise at all about what the program does next. It might crash, give a wrong number, or appear to work today and fail after a compiler upgrade. Deleting a derived object through a base pointer with no virtual destructor is one. Reading past the end of an array is another. Lesson 12 is devoted to undefined behaviour and to the sanitizer tools that catch it while tests run.
+::: context ub-bridge Undefined behavior, briefly
+The C++ standard lists some mistakes as "undefined behavior": once one happens, the standard makes no promise at all about what the program does next. It might crash, give a wrong number, or appear to work today and fail after a compiler upgrade. Deleting a derived object through a base pointer with no virtual destructor is one. Reading past the end of an array is another. Lesson 12 is devoted to undefined behavior and to the sanitizer tools that catch it while tests run.
 :::
 
 ::: context vtable-picture What the hidden pointer points at

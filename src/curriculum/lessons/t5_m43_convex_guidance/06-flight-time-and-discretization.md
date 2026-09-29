@@ -4,7 +4,7 @@ title: Flight time and what discretization preserves
 minutes: 18
 covers:
   - Flight time as the one non-convex parameter, and solving it by a line search over an inner SOCP
-  - Discrete-time lossless convexification and what survives discretisation
+  - Discrete-time lossless convexification and what survives discretization
 ---
 
 Carry a heavy bag of groceries up three flights of stairs. If you try to do it in five seconds, you cannot: your legs are not strong enough, however hard you push. If you take five minutes, stopping on every step, your arms ache from holding the bag the whole time. Somewhere in between is the least tiring pace — quick enough that you are not holding the bag forever, slow enough that you are not straining.

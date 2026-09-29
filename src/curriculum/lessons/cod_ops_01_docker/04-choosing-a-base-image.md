@@ -167,7 +167,7 @@ So does the trap still bite in 2026, now that NumPy and SciPy publish musllinux 
 | netCDF4 1.7.4 | manylinux | none |
 | casadi 3.8.1 | manylinux | none |
 
-The core is covered. The edges are not. Numba, which many teams use to speed up their dynamics loops, has no Alpine wheel. Neither does CasADi, a popular optimisation toolkit for trajectory and control problems. Neither does netCDF4, the reader for a common atmosphere and weather data format. A requirements file with thirty packages only needs one of these to send the whole build down the from-source road. And an older pinned version — exactly what a reproducibility lockfile contains — may predate a project's first musllinux wheel, as NumPy 1.24.4 did.
+The core is covered. The edges are not. Numba, which many teams use to speed up their dynamics loops, has no Alpine wheel. Neither does CasADi, a popular optimization toolkit for trajectory and control problems. Neither does netCDF4, the reader for a common atmosphere and weather data format. A requirements file with thirty packages only needs one of these to send the whole build down the from-source road. And an older pinned version — exactly what a reproducibility lockfile contains — may predate a project's first musllinux wheel, as NumPy 1.24.4 did.
 
 ::: warning A table like this goes out of date
 Which packages ship musllinux wheels changes with every release. Do not trust this table, or any blog post, for your own project. Run `pip download --only-binary=:all: -r requirements.txt` inside the base image you are considering. If it fails, you have found your from-source packages before they cost you a build.
@@ -337,7 +337,7 @@ A source distribution, or sdist, is a package's source code packed as a `.tar.gz
 :::
 
 ::: context blas-lapack The math engine under NumPy
-BLAS (Basic Linear Algebra Subprograms) is a standard set of routines for vector and matrix arithmetic, such as a dot product or a matrix multiply. LAPACK sits on top and solves linear systems, finds eigenvalues and does matrix factorisations. Both started as Fortran libraries decades ago; today several fast implementations exist, such as OpenBLAS and Intel's MKL. When you call `numpy.linalg.solve` or multiply matrices with `@`, NumPy hands the work to whichever BLAS and LAPACK it was linked with. Swap the library and you can change both speed and the last digits of the answer.
+BLAS (Basic Linear Algebra Subprograms) is a standard set of routines for vector and matrix arithmetic, such as a dot product or a matrix multiply. LAPACK sits on top and solves linear systems, finds eigenvalues and does matrix factorizations. Both started as Fortran libraries decades ago; today several fast implementations exist, such as OpenBLAS and Intel's MKL. When you call `numpy.linalg.solve` or multiply matrices with `@`, NumPy hands the work to whichever BLAS and LAPACK it was linked with. Swap the library and you can change both speed and the last digits of the answer.
 :::
 
 ::: context last-bit-math Two correct answers that differ

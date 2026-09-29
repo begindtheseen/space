@@ -60,7 +60,7 @@ To compare the letters, use `std::strcmp` from `<cstring>`. It returns 0 when th
 There is a twist. Comparing two *identical literals* may well give `true`, because the compiler is allowed to **[[store one copy|literal-merging]]** and point both names at it. So the bug comes and goes between compilers and builds, which is worse than failing every time.
 
 ::: warning A `const char*` owns nothing
-A `const char*` carries no length and owns nothing. If the bytes it points at were on the stack of a function that has returned, or inside a `std::string` that has since changed, the pointer **dangles** — it points at memory that no longer holds your text — and reading it is undefined behaviour.
+A `const char*` carries no length and owns nothing. If the bytes it points at were on the stack of a function that has returned, or inside a `std::string` that has since changed, the pointer **dangles** — it points at memory that no longer holds your text — and reading it is undefined behavior.
 
 The classic C functions `strcpy`, `strcat` and `sprintf` will also write straight past the end of a buffer if the text is too long. That **[[buffer overflow|buffer-overflow]]** is one of the most exploited kinds of defect in the history of software. If you must use the C functions, use the forms that take a size, such as `snprintf` and `strncmp`.
 :::

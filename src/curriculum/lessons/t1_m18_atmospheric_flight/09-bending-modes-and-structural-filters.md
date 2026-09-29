@@ -8,7 +8,7 @@ covers:
 
 Hold a ruler flat on a desk with a long piece hanging over the edge, and flick the free end. It buzzes at its own note. Flick harder and the note stays the same. Now tap the end gently, again and again, in exactly the rhythm of that buzz: each tap adds to the swing, and soon the ruler flaps wildly. That is **[[resonance|resonance]]**: a small push, repeated at an object's own natural rhythm, builds a huge motion.
 
-A launch vehicle is a thin-walled tube tens of metres long, with a few millimetres of aluminium between its propellant and the air. Tap it and it rings too. Its lowest note — the **first bending mode** — is somewhere between 1 and 10 Hz, depending on its size. And it is damped so lightly that a push at that rhythm makes it swing about a hundred times harder than the same push held steady.
+A launch vehicle is a thin-walled tube tens of meters long, with a few millimeters of aluminum between its propellant and the air. Tap it and it rings too. Its lowest note — the **first bending mode** — is somewhere between 1 and 10 Hz, depending on its size. And it is damped so lightly that a push at that rhythm makes it swing about a hundred times harder than the same push held steady.
 
 Here is the danger. The **rate gyros** that feed the attitude controller (sensors that measure how fast the vehicle is turning) are bolted to this tube, and they cannot tell the whole vehicle turning from the skin under them tilting as it bends. So the controller sees the bending, swings the engine to correct it, and the engine's push excites the bending further. A loop designed for a rigid rocket can go unstable at a frequency nobody looked at.
 
@@ -18,8 +18,8 @@ This lesson builds the flexible-body dynamics from beam theory, shows how a bend
 
 Model the airframe as a long, thin beam of length $L$. Two numbers describe it:
 
-- its **bending stiffness** $EI$ — how hard it is to bend. $E$ is the stiffness of the material (its elastic modulus) and $I$ is the **[[second moment of area|tube-stiffness]]** of the cross-section, which measures how far the material sits from the centre line;
-- its **mass per unit length** $\mu$ ("mu"), in kilograms per metre.
+- its **bending stiffness** $EI$ — how hard it is to bend. $E$ is the stiffness of the material (its elastic modulus) and $I$ is the **[[second moment of area|tube-stiffness]]** of the cross-section, which measures how far the material sits from the center line;
+- its **mass per unit length** $\mu$ ("mu"), in kilograms per meter.
 
 Let $w(x, t)$ be the small sideways bend at position $x$ along the body and time $t$. It obeys the **Euler–Bernoulli beam equation**:
 
@@ -66,15 +66,15 @@ A gyro senses not the bend but the **slope** $\phi'(x)$ — how much the local s
 ::: example First bending mode of a mid-size launcher
 A 45 m vehicle has a mass of 130 t.
 
-**Mass per metre.** $\mu = 130000/45 = 2889\ \mathrm{kg/m}$.
+**Mass per meter.** $\mu = 130000/45 = 2889\ \mathrm{kg/m}$.
 
-**Stiffness.** The core is an aluminium-alloy tube of radius 1.5 m. Spreading its stiffeners out into the skin gives an effective thickness of 10 mm. For a thin tube, $I = \pi r^3 t$:
+**Stiffness.** The core is an aluminum-alloy tube of radius 1.5 m. Spreading its stiffeners out into the skin gives an effective thickness of 10 mm. For a thin tube, $I = \pi r^3 t$:
 
 $$
 I = \pi \times 1.5^3 \times 0.010 = 0.106\ \mathrm{m^4}.
 $$
 
-With $E = 72\ \mathrm{GPa}$ for aluminium, $EI = 72 \times 10^9 \times 0.106 = 7.63 \times 10^9\ \mathrm{N\cdot m^2}$.
+With $E = 72\ \mathrm{GPa}$ for aluminum, $EI = 72 \times 10^9 \times 0.106 = 7.63 \times 10^9\ \mathrm{N\cdot m^2}$.
 
 **Frequency.** First the square root: $\sqrt{7.63 \times 10^9 / (2889 \times 45^4)} = 0.803$ per second. Then
 
@@ -109,7 +109,7 @@ $$
 \ddot\eta_n + 2\zeta_n\omega_n\dot\eta_n + \omega_n^2\eta_n = \frac{\phi_n(x_T)\,T\,\delta}{M_n}, \qquad M_n = \int_0^L \mu\,\phi_n^2\,dx .
 $$
 
-$M_n$ is the **generalized mass** — the mass taking part in the mode, weighted by its shape; for the first free-free mode, scaled to move one unit at the ends, $M_1 = m/4$. And $\zeta_n$ ("zeta sub n") is the **structural damping ratio** — how fast the ringing dies out. For welded aluminium structure full of propellant it is tiny: 0.005 is the usual value, with 0.002 to 0.02 measured.
+$M_n$ is the **generalized mass** — the mass taking part in the mode, weighted by its shape; for the first free-free mode, scaled to move one unit at the ends, $M_1 = m/4$. And $\zeta_n$ ("zeta sub n") is the **structural damping ratio** — how fast the ringing dies out. For welded aluminum structure full of propellant it is tiny: 0.005 is the usual value, with 0.002 to 0.02 measured.
 
 ### What the sensors see
 
@@ -131,7 +131,7 @@ $$
 
 The **modal gain** $k_n$ has no units: radians of measured attitude per radian of gimbal, for a very slow push. And it has a sign — the slope of the mode at the gyro times the bend of the mode at the engine. Move the gyro across a point of zero slope and the sign flips.
 
-For the 20 m, 40 t vehicle of the example, with its 6.3 Hz first mode ($\omega_1 = 39.3\ \mathrm{rad/s}$), 0.6 MN of thrust, the engine at an end (where $\phi = 1$) and the gyro at $0.85L$ (slope $+0.221$ per metre per unit end movement), and $M_1 = 40000/4 = 10^4\ \mathrm{kg}$:
+For the 20 m, 40 t vehicle of the example, with its 6.3 Hz first mode ($\omega_1 = 39.3\ \mathrm{rad/s}$), 0.6 MN of thrust, the engine at an end (where $\phi = 1$) and the gyro at $0.85L$ (slope $+0.221$ per meter per unit end movement), and $M_1 = 40000/4 = 10^4\ \mathrm{kg}$:
 
 $$
 k_1 = \frac{0.221 \times 1 \times 6 \times 10^5}{10^4 \times 39.3^2} = 8.6 \times 10^{-3}.
@@ -178,13 +178,13 @@ $$
 N(s) = \frac{s^2 + 2\zeta_z\omega_q s + \omega_q^2}{s^2 + 2\zeta_p\omega_q s + \omega_q^2}, \qquad \zeta_z < \zeta_p .
 $$
 
-Here $\omega_q$ is the notch centre, and $\zeta_z$ and $\zeta_p$ are two dampings you choose. Far from $\omega_q$ the top and bottom are nearly equal, so $N$ is about 1. At the centre, $s = j\omega_q$, the $s^2$ and $\omega_q^2$ terms cancel, and what remains is $\zeta_z/\zeta_p$. So:
+Here $\omega_q$ is the notch center, and $\zeta_z$ and $\zeta_p$ are two dampings you choose. Far from $\omega_q$ the top and bottom are nearly equal, so $N$ is about 1. At the center, $s = j\omega_q$, the $s^2$ and $\omega_q^2$ terms cancel, and what remains is $\zeta_z/\zeta_p$. So:
 
 - the **depth** of the notch is $20\log_{10}(\zeta_z/\zeta_p)$ decibels;
 - the pole damping $\zeta_p$ sets the **width**: the attenuation stays within a few dB of its deepest over roughly $\pm\zeta_p\omega_q$;
 - the zero damping $\zeta_z$ then sets the depth for that width.
 
-The notch is not free. Well below its centre it adds a small **phase lag** (a delay in the signal's timing):
+The notch is not free. Well below its center it adds a small **phase lag** (a delay in the signal's timing):
 
 $$
 \angle N(j\omega) \approx -2(\zeta_p - \zeta_z)\,\frac{\omega}{\omega_q} \quad\text{(radians)} .
@@ -203,7 +203,7 @@ using $1/(1 + a) \approx 1 - a$ for small $a$ and dropping the product of two sm
 :::
 
 ::: example Sizing the notch
-Centre a notch at 12 Hz in the loop above, with $\zeta_z = 0.05$ and $\zeta_p = 0.5$.
+Center a notch at 12 Hz in the loop above, with $\zeta_z = 0.05$ and $\zeta_p = 0.5$.
 
 **Depth.** $\zeta_z/\zeta_p = 0.1$, and $20\log_{10}(0.1) = -20\ \mathrm{dB}$. The mode's peak falls from $+8.8$ to $-11.2\ \mathrm{dB}$. It is now **gain-stabilized** with 11 dB of margin, and the closed loop is stable.
 
@@ -222,7 +222,7 @@ So the phase margin drops from $56^\circ$ to $47^\circ$, and the crossover moves
 **Sanity check.** Wider notches cost more phase, as $2(\zeta_p - \zeta_z)\,\omega/\omega_q$ predicts. Size the notch on the *uncertain* mode; the phase budget at crossover limits how wide it can go.
 :::
 
-Why not a low-pass filter, cutting everything above some frequency? A second-order low-pass at 4 Hz would give 19 dB at 12 Hz — but $43^\circ$ of phase lag at 2 Hz, which wrecks the rigid-body margin. At 6 Hz it gives 12 dB for $28^\circ$. The notch spends its phase only near its own centre, so for a mode well above crossover it is far cheaper per decibel.
+Why not a low-pass filter, cutting everything above some frequency? A second-order low-pass at 4 Hz would give 19 dB at 12 Hz — but $43^\circ$ of phase lag at 2 Hz, which wrecks the rigid-body margin. At 6 Hz it gives 12 dB for $28^\circ$. The notch spends its phase only near its own center, so for a mode well above crossover it is far cheaper per decibel.
 
 In practice a **bending filter** is a chain: one notch per mode that needs it, plus a gentle low-pass for the higher modes. Since mode frequencies rise as propellant drains, the notches are either wide enough for the whole burn or scheduled with time.
 
@@ -261,7 +261,7 @@ A vehicle's first bending mode is measured at 4.0 Hz on the pad with full tanks.
 :::
 
 ::: answer
-The formula says $\omega_1 \propto \sqrt{EI/(\mu L^4)}$. With $EI$ and $L$ fixed, the frequency goes as $1/\sqrt{\mu}$. The mass per metre is down to 25 % of its starting value, so
+The formula says $\omega_1 \propto \sqrt{EI/(\mu L^4)}$. With $EI$ and $L$ fixed, the frequency goes as $1/\sqrt{\mu}$. The mass per meter is down to 25 % of its starting value, so
 
 $f_1 = 4.0/\sqrt{0.25} = 8.0\ \mathrm{Hz}$.
 
@@ -289,7 +289,7 @@ Move the gyro slightly aft and it sees a little first-mode slope of one sign; sl
 :::
 
 ::: check
-A notch with $\zeta_z = 0.04$ and $\zeta_p = 0.4$ is centred on a 9 Hz mode. What is its depth, and what phase lag does it add at a 1.5 Hz rigid-body crossover?
+A notch with $\zeta_z = 0.04$ and $\zeta_p = 0.4$ is centered on a 9 Hz mode. What is its depth, and what phase lag does it add at a 1.5 Hz rigid-body crossover?
 :::
 
 ::: answer
@@ -334,7 +334,7 @@ How high it finally gets depends on the **damping** — the friction that drains
 :::
 
 ::: context tube-stiffness Why a tube is stiff
-Bend a sheet of paper and it flops. Roll it into a tube and it becomes surprisingly stiff. Stiffness against bending depends on how far the material sits from the centre line, and it grows with the *square* of that distance. So material far out on the rim counts for much more than material near the middle.
+Bend a sheet of paper and it flops. Roll it into a tube and it becomes surprisingly stiff. Stiffness against bending depends on how far the material sits from the center line, and it grows with the *square* of that distance. So material far out on the rim counts for much more than material near the middle.
 
 For a thin tube of radius $r$ and wall thickness $t$, the second moment of area is $I = \pi r^3 t$. That is why rockets, bicycle frames and bones are all hollow tubes: the most stiffness for the least mass.
 :::
@@ -390,7 +390,7 @@ The loop gain of the worked example, computed from its transfer function, from 0
 :::
 
 ::: context notch-shape What a notch looks like
-The magnitude of the 12 Hz notch with $\zeta_z = 0.05$ and $\zeta_p = 0.5$, drawn from its formula. It is flat at 0 dB far from the centre and dips to $-20\ \mathrm{dB}$ at 12 Hz. At the 2 Hz crossover it barely touches the gain — its cost there is phase, about $9^\circ$, which a magnitude plot does not show.
+The magnitude of the 12 Hz notch with $\zeta_z = 0.05$ and $\zeta_p = 0.5$, drawn from its formula. It is flat at 0 dB far from the center and dips to $-20\ \mathrm{dB}$ at 12 Hz. At the 2 Hz crossover it barely touches the gain — its cost there is phase, about $9^\circ$, which a magnitude plot does not show.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">

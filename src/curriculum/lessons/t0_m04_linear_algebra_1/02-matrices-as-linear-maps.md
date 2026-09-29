@@ -412,7 +412,7 @@ Check: $2(-2) + 5(1) = 1$ and $1(-2) + 3(1) = 1$.
 | $\begin{pmatrix} a & b \\ c & d \end{pmatrix}^{-1} = \frac{1}{ad - bc}\begin{pmatrix} d & -b \\ -c & a \end{pmatrix}$ | Two-by-two inverse |
 | $\mathbf{R}(\theta)^{-1} = \mathbf{R}(\theta)^T$ | Undoing a rotation is free |
 
-The next lesson takes up the job the inverse only pretends to do — finding $\mathbf{x}$ with $\mathbf{A}\mathbf{x} = \mathbf{b}$ — and builds the method that really does it: Gaussian elimination with partial pivoting, packaged as the LU factorisation.
+The next lesson takes up the job the inverse only pretends to do — finding $\mathbf{x}$ with $\mathbf{A}\mathbf{x} = \mathbf{b}$ — and builds the method that really does it: Gaussian elimination with partial pivoting, packaged as the LU factorization.
 
 ::: context matrix-word Where the word comes from
 "Matrix" is Latin, from the word for "mother", and came to mean a mold or source from which other things are made. The English mathematician James Joseph Sylvester borrowed it in 1850 for a rectangular array of numbers, because smaller determinants could be carved out of it — it was the source they came from.

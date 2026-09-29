@@ -393,7 +393,7 @@ Earth turns $\theta = 7.2921159 \times 10^{-5} \times 1800 \approx 0.1313\,\math
 | ECI vs ECEF | Earth turns about $15.04^\circ$ per hour; mixing them grows to ~1,670 km per hour at the equator |
 | NaN | contagious; every comparison with it is false |
 | Checklist | units, frame, sign; divide by zero and NaN; overflow; bounds; hot-path allocation; magic numbers; would a test catch it? |
-| Good comment | labelled, on a line, with evidence, with a fix or test |
+| Good comment | labeled, on a line, with evidence, with a fix or test |
 | `git range-diff` | compare two versions of a branch when re-reviewing |
 
 Reviewed, approved changes pile up on `main`. Next lesson is about turning them into releases people can depend on: release branches for stabilizing a version, tags on the release line, version numbers that follow the rules from basics lesson 09, and a changelog that tells users what changed.
@@ -424,7 +424,7 @@ A new file shows `-0,0`, because nothing existed before. The counts include unch
 :::
 
 ::: context dcm-subscripts Subscripts that cancel
-Reading $\mathbf{C}_{bi}$ as "to b, from i" makes chains easy to check, like cancelling units. To go from inertial to Earth-fixed to body, $\mathbf{C}_{bi} = \mathbf{C}_{be}\,\mathbf{C}_{ei}$: each neighbouring pair of subscripts matches ($e$ next to $e$), and the outer ones name the result. If you ever write $\mathbf{C}_{be}\,\mathbf{C}_{ie}$, the mismatch ($e$ next to $i$) tells you a transpose is missing before you run anything. Some books write the same matrix as $\mathbf{C}^{b}_{i}$ or $\mathbf{R}_{b \leftarrow i}$; the habit of matching neighbours works in every notation, so find out which one your team's code uses.
+Reading $\mathbf{C}_{bi}$ as "to b, from i" makes chains easy to check, like canceling units. To go from inertial to Earth-fixed to body, $\mathbf{C}_{bi} = \mathbf{C}_{be}\,\mathbf{C}_{ei}$: each neighboring pair of subscripts matches ($e$ next to $e$), and the outer ones name the result. If you ever write $\mathbf{C}_{be}\,\mathbf{C}_{ie}$, the mismatch ($e$ next to $i$) tells you a transpose is missing before you run anything. Some books write the same matrix as $\mathbf{C}^{b}_{i}$ or $\mathbf{R}_{b \leftarrow i}$; the habit of matching neighbors works in every notation, so find out which one your team's code uses.
 :::
 
 ::: context quaternion-order Same four numbers, different rotation

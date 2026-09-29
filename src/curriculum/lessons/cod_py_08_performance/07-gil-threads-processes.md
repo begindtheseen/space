@@ -223,7 +223,7 @@ Processes can. Each process is a separate copy of Python with its own interprete
 How the worker processes get started is set by a **[[start method|start-methods]]**. On Linux, Python up to 3.13 uses `fork`, which clones the running program almost instantly; macOS and Windows use `spawn`, which starts a fresh Python and imports your file. On the test machine a pool of four took about $0.01\,\mathrm{s}$ to start with `fork` and $0.09\,\mathrm{s}$ with `spawn`. Both are tiny next to a Monte Carlo case that runs for seconds, but they add up if you create a new pool for every small job. Create the pool once and reuse it.
 
 ::: key
-Threads or processes for a 500-case Monte Carlo in pure Python? Processes. Each case is CPU-bound Python, so threads serialise on the GIL. joblib or ProcessPoolExecutor gives near-linear scaling until memory bandwidth or per-case startup cost dominates.
+Threads or processes for a 500-case Monte Carlo in pure Python? Processes. Each case is CPU-bound Python, so threads serialize on the GIL. joblib or ProcessPoolExecutor gives near-linear scaling until memory bandwidth or per-case startup cost dominates.
 :::
 
 **Near-linear scaling** means the speedup grows almost in step with the number of cores: about $2\times$ on $2$ cores, about $4\times$ on $4$. It stops growing once something shared runs out. **[[Memory bandwidth|memory-bandwidth]]** — how fast the chip can move data between memory and the cores — is shared by every core, so if every worker streams big arrays, adding cores stops helping. And if each case is so short that starting it costs as much as running it, the start-up cost wins.
@@ -237,7 +237,7 @@ A team's landing Monte Carlo has $500$ cases. A single case is pure-Python physi
 
 **Eight processes.** With perfect scaling, $2400 / 8 = 300\,\mathrm{s} = 5\,\mathrm{min}$. The test machine reached about $3$ of a possible $4$, so expect somewhat more than $5$ minutes — perhaps $6$ or $7$.
 
-Sanity check: the process answer is between the perfect $5$ minutes and the serial $40$, as it must be. And notice the size of the prize. Making each case itself faster — say, $10\times$ by vectorising or compiling the hot loop, as earlier lessons showed — would multiply with the $8\times$ from processes, not replace it.
+Sanity check: the process answer is between the perfect $5$ minutes and the serial $40$, as it must be. And notice the size of the prize. Making each case itself faster — say, $10\times$ by vectorizing or compiling the hot loop, as earlier lessons showed — would multiply with the $8\times$ from processes, not replace it.
 :::
 
 ## Choosing the tool

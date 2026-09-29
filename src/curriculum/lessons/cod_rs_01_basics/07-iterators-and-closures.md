@@ -195,7 +195,7 @@ Now the rates fall steadily — 70, 68, 65.5, 63 — the way a lander braking wi
 :::
 
 ::: warning Floats have no plain `max`
-`rates.iter().max()` does not compile when the items are `f64`. The error is ``the trait `Ord` is not implemented for `f64` ``. `Ord` means "any two values can be put in order", and floats break that promise because of NaN ("not a number"), which is neither bigger nor smaller than anything. Use `fold(f64::MIN, f64::max)`, as the example did, or `max_by(|a, b| a.total_cmp(b))`, which uses a fixed ordering that even places NaN.
+`rates.iter().max()` does not compile when the items are `f64`. The error says the trait `Ord` is not implemented for `f64`. `Ord` means "any two values can be put in order", and floats break that promise because of NaN ("not a number"), which is neither bigger nor smaller than anything. Use `fold(f64::MIN, f64::max)`, as the example did, or `max_by(|a, b| a.total_cmp(b))`, which uses a fixed ordering that even places NaN.
 :::
 
 ### Collecting results that can fail

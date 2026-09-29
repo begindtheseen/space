@@ -494,7 +494,7 @@ Lesson 02 showed that `git add` writes a blob into `.git/objects` straight away.
 :::
 
 ::: context bank-ledger Append-only records in engineering
-The bank-statement picture is a real principle, not only a metaphor. Accountants call it an **append-only ledger**: mistakes are fixed by new correcting entries, never by erasing old ones, so anyone can check how the balance was reached. Flight software records work the same way. Standards for safety-critical software ask teams to show the full change history of what was tested and flown, and a reverted commit stays in the record, beside the commit that cancelled it and the message explaining why.
+The bank-statement picture is a real principle, not only a metaphor. Accountants call it an **append-only ledger**: mistakes are fixed by new correcting entries, never by erasing old ones, so anyone can check how the balance was reached. Flight software records work the same way. Standards for safety-critical software ask teams to show the full change history of what was tested and flown, and a reverted commit stays in the record, beside the commit that canceled it and the message explaining why.
 :::
 
 ::: context revert-picture Reset goes back; revert goes forward
