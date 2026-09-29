@@ -291,9 +291,17 @@ std::lock(l1, l2);                                         // lock both now
 ```cpp
 #include <cstdio>
 #include <mutex>
-std::mutex a, b;
+// std::try_lock works on anything with lock, try_lock and unlock. Busy stands in for a
+// mutex another thread holds: its try_lock always fails. (Locking a std::mutex you already
+// hold yourself and then trying it again is undefined behavior, so a real one cannot play this part here.)
+struct Busy {
+    bool try_lock() { return false; }
+    void lock() {}
+    void unlock() {}
+};
+std::mutex a;
+Busy b;
 int main() {
-    b.lock();                          // someone else holds b
     int failed = std::try_lock(a, b);  // -1 means "got them all"
     std::printf("try_lock returned %d; a is free again: %s\n",
                 failed, a.try_lock() ? "yes" : "no");

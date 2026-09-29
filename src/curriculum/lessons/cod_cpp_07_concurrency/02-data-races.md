@@ -89,7 +89,7 @@ Where did they go? At `-O0`, g++ compiles `++g_frames` into three machine instru
 
 `++` looks like one step and is three: a load, an add, a store. If thread `a` loads 41, and thread `b` loads 41 before `a` has stored, both store 42. That is the **[[lost update|lost-update]]**, the whiteboard exactly. Two threads running truly at the same time on two cores do this hundreds of thousands of times a second.
 
-Sanity check: the totals are all between 1,000,000 and 2,000,000, which fits — each thread's own additions can be overwritten by the other's, but a thread never erases its own.
+Sanity check: these runs all landed between 1,000,000 and 2,000,000, but nothing guarantees that floor. One stale store can wipe out many increments at once: thread `a` loads 0 and is paused, `b` adds 999,999 in the meantime, then `a` stores 1 and all of `b`'s work vanishes. With a sufficiently unlucky interleaving the total can end as low as 2.
 :::
 
 Now build the same file with `-O2`, the setting you would ship. Five runs:

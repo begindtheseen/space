@@ -205,7 +205,7 @@ Take last lesson's first task set: control ($C = 0.3$ ms, $T = 1$ ms), navigatio
 
 $R_2 = 3.4 \le 10$. Meets its deadline.
 
-**Telemetry** is the lowest priority, so nothing below it can block it: $B_3 = 0$, and its response time is last lesson's 30 ms.
+**Telemetry** is the lowest priority, so nothing below it can block it: $B_3 = 0$, and its response time, worked out with last lesson's recurrence, is 30 ms.
 
 Sanity check: without inheritance there is no finite $B_1$ at all. Navigation's 2 ms could slip in while telemetry holds the lock and control waits, giving at least $0.3 + 0.2 + 2 = 2.5$ ms, and control would miss its 1 ms deadline: the inversion from the first example. These iterations were checked with python3.
 :::
