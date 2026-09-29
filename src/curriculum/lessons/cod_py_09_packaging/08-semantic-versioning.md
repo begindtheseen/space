@@ -10,7 +10,7 @@ Think about the updates your phone offers you. Some say "bug fixes and performan
 
 A version number can tell you. **Semantic versioning** — "semver" for short — is a rule for writing version numbers so that the number itself says what kind of change happened. `2.4.1` to `2.4.2` is a fix. `2.4.2` to `2.5.0` adds something. `2.5.0` to `3.0.0` warns you that something you rely on may have changed.
 
-In the last lesson, a library wrote ranges like `numpy>=1.26` and an application wrote `>=1.24,<2`. Those ranges only make sense if the numbers carry meaning. This lesson gives them that meaning, shows you how to read a diff and decide which number to bump, and pays special attention to a case that ordinary software rarely faces but a simulation library faces all the time: a change that alters the numbers your users get out.
+In the last lesson, libraries wrote ranges like `numpy>=1.24` and `numpy>=1.26,<3`, and an application pinned exact versions like `numpy==2.4.6`. Those ranges only make sense if the numbers carry meaning. This lesson gives them that meaning, shows you how to read a diff and decide which number to bump, and pays special attention to a case that ordinary software rarely faces but a simulation library faces all the time: a change that alters the numbers your users get out.
 
 ## Three numbers, three promises
 

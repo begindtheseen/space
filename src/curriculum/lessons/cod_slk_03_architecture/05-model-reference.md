@@ -54,7 +54,7 @@ With model reference, each referenced model is compiled on its own. That is **se
 
 Reuse is the payoff. Before each run, Simulink checks each referenced model: has it, or anything it depends on, changed since its saved build? It keeps a **[[checksum|checksum]]** of each model's structure to answer that. If nothing changed, the saved build is used as is. Only the models that changed are compiled again. That is an **incremental build**.
 
-You control this on the **Model Referencing** pane of the Configuration Parameters, with the **Rebuild** option. The default, **If any changes detected**, is the one to leave on day to day. **Always** forces a full rebuild, useful when you suspect a stale build. **Never** trusts every saved build, which is fast and risky.
+You control this on the **Model Referencing** pane of the Configuration Parameters, with the **Rebuild** option. The default, **If any changes detected**, is the one to leave on day to day. **Always** forces a full rebuild, useful when you suspect a stale build. **Never** skips the rebuild. Simulink still checks each saved build, and by default the **Never rebuild diagnostic** stops the run with an error if one is out of date; only if you set that diagnostic to a warning or to none does it run on a stale build, which is fast and risky.
 
 ::: example How much faster is an incremental build?
 A team splits its flat vehicle model into six referenced models. It measures how long each takes to compile, in seconds: environment 40, aerodynamics 55, propulsion 45, dynamics 60, sensors 35, GNC 65. Compiling the thin top model that wires them together takes another 20 s. The flat model took about the same total to compile, since the same blocks must be compiled either way.

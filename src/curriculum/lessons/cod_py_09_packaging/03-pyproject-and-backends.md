@@ -146,9 +146,9 @@ Requires-Dist: matplotlib>=3.7; extra == 'plot'
 
 **Step 2: count the conditional ones.** Three `Requires-Dist` lines end in `extra == ...`: two for `dev`, one for `plot`. Extras are stored as ordinary requirements guarded by an environment marker, and `Provides-Extra` lists the extra names.
 
-**Step 3: ask pip what it would install.** In an empty virtual environment, `pip install --dry-run` resolves without installing. For the plain wheel pip reported 3 distributions: `gnc-toolkit`, `numpy` and `scipy`. With `[plot]` it reported 12, because the extra adds nine: matplotlib itself and the eight packages it needs, `contourpy`, `cycler`, `fonttools`, `kiwisolver`, `pillow`, `pyparsing`, `python-dateutil` and `six`. (The exact versions pip picked depend on the day you run it.)
+**Step 3: ask pip what it would install.** In an empty virtual environment, `pip install --dry-run` resolves without installing. For the plain wheel pip reported 3 distributions: `gnc-toolkit`, `numpy` and `scipy`. With `[plot]` it reported 13, because the extra adds ten: matplotlib itself and the nine packages it needs, `contourpy`, `cycler`, `fonttools`, `kiwisolver`, `packaging`, `pillow`, `pyparsing`, `python-dateutil` and `six`. (The exact versions pip picked depend on the day you run it.)
 
-**Sanity check.** $12 - 3 = 9$ extra distributions for one word in square brackets. That is why plotting is an extra and not a dependency: nine packages the flight computer never needs.
+**Sanity check.** $13 - 3 = 10$ extra distributions for one word in square brackets. That is why plotting is an extra and not a dependency: ten packages the flight computer never needs.
 :::
 
 ## The recipe card: the [build-system] table

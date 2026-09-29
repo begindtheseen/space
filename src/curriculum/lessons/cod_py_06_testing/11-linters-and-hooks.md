@@ -107,7 +107,7 @@ Every linter lets you silence one line with a comment, `# noqa: B006` for ruff. 
 
 Two engineers can write the same line many ways: `vx**2+vy**2` or `vx**2 + vy**2`, single quotes or double, one blank line between functions or two. None of it changes what the code does, and all of it can fill a code review with comments that are not about the code.
 
-**black** ends the argument by taking the choice away. It is an **opinionated** formatter: it has one style and almost no settings. You give it a file and it rewrites the layout. `black --diff` shows what it would change without changing anything:
+**black** ends the argument by taking the choice away. It is an **opinionated** formatter: it has one style and almost no settings. You give it a file and it rewrites the layout. `black --diff` shows what it would change without changing anything. Here it runs on `nav.py` after the `ruff check --fix` above, which is why `import os` is already gone and the imports are followed by two blank lines:
 
 ```text
 $ black --diff nav.py

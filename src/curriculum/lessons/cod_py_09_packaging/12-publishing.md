@@ -118,7 +118,8 @@ Collecting numpy>=1.24 (from gnc-toolkit)
 Installing collected packages: numpy, gnc-toolkit
 Successfully installed gnc-toolkit-0.1.0 numpy-2.3.3
 $ user/bin/gnc-orbit 400
-7672.6 m/s
+speed    7668.6 m/s
+period     92.6 min
 ```
 
 The web server's log shows exactly what pip asked for:
@@ -136,7 +137,7 @@ The web server's log shows exactly what pip asked for:
 
 **Step 3.** The wheel's metadata said `numpy>=1.24`, so pip asked the same index for NumPy's page and took the one wheel it found.
 
-**Sanity check.** No request went to PyPI at all, and the entry point from the entry-points lesson works: $7672.6\,\mathrm{m/s}$ at $400\,\mathrm{km}$, as before. With no network, `pip install --no-index --find-links internal/simple/gnc-toolkit --find-links internal/simple/numpy gnc-toolkit` does the same from the folders directly — the way a machine in a closed lab installs packages.
+**Sanity check.** No request went to PyPI at all, and the entry point from the entry-points lesson works: $7668.6\,\mathrm{m/s}$ and $92.6$ minutes at $400\,\mathrm{km}$, as before. With no network, `pip install --no-index --find-links internal/simple/gnc-toolkit --find-links internal/simple/numpy gnc-toolkit` does the same from the folders directly — the way a machine in a closed lab installs packages.
 :::
 
 A folder behind a web server is fine for a lab. A team needs more: uploads with passwords, many users, and a copy of PyPI kept up to date. The common choices:
