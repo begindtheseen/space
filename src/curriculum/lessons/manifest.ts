@@ -1146,7 +1146,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-six-dof-and-the-gimbal-moment",
       "title": "Six degrees of freedom and the gimbal moment",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "extending to 6-DOF: Euler’s rotational equation and the moment from a gimballed thrust offset"
       ],
@@ -1173,7 +1173,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-worked-space-estimates",
       "title": "Worked space estimates, and how to bound them",
-      "minutes": 24,
+      "minutes": 26,
       "covers": [
         "worked space Fermi examples and how to bound them"
       ],
@@ -1182,7 +1182,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-when-the-number-is-absurd",
       "title": "When the number comes out absurd",
-      "minutes": 23,
+      "minutes": 24,
       "covers": [
         "Fermi estimation method: decompose, bound each factor, multiply, sanity check, state uncertainty",
         "worked space Fermi examples and how to bound them"
@@ -1192,7 +1192,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-physics-puzzles",
       "title": "Attacking an unfamiliar physics puzzle",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "physics puzzles and how to attack an unfamiliar one"
       ],
@@ -1201,7 +1201,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-the-coding-rounds",
       "title": "The coding rounds, narrated",
-      "minutes": 23,
+      "minutes": 24,
       "covers": [
         "the coding rounds: 2 to 3 problems at medium to hard difficulty, C++ for avionics and embedded",
         "coding round discipline: clarify, state the approach and complexity, write it, test the edges",
@@ -1222,8 +1222,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
   "car_13_behavioral_star": [
     {
       "id": "l01-the-round-and-star",
-      "title": "What the behavioural round is asking for",
-      "minutes": 23,
+      "title": "What the behavioral round is asking for",
+      "minutes": 22,
       "covers": [
         "STAR structure: Situation, Task, Action, Result, and the common failure of spending most of the answer on Situation"
       ],
@@ -1250,7 +1250,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-story-bank",
       "title": "The story bank and the themes it has to cover",
-      "minutes": 25,
+      "minutes": 22,
       "covers": [
         "building a bank of ten to twelve stories, each roughly 90 seconds",
         "the themes actually probed: a failure and what changed, conflict with a colleague, a decision with incomplete information, a missed deadline, a time you were wrong, ownership beyond your scope, teaching someone, working extended hours"
@@ -1260,7 +1260,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-the-failure-story",
       "title": "The failure story, owned without performance",
-      "minutes": 23,
+      "minutes": 22,
       "covers": [
         "the themes actually probed: a failure and what changed, conflict with a colleague, a decision with incomplete information, a missed deadline, a time you were wrong, ownership beyond your scope, teaching someone, working extended hours"
       ],
@@ -1269,7 +1269,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-disagreement-without-a-villain",
       "title": "Disagreement without a villain",
-      "minutes": 23,
+      "minutes": 22,
       "covers": [
         "the themes actually probed: a failure and what changed, conflict with a colleague, a decision with incomplete information, a missed deadline, a time you were wrong, ownership beyond your scope, teaching someone, working extended hours"
       ],
@@ -1278,7 +1278,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-reported-red-flags",
       "title": "The four reported red flags",
-      "minutes": 24,
+      "minutes": 22,
       "covers": [
         "reported red flags: blaming others, vagueness, inflated contribution, inability to name a real failure"
       ],
