@@ -116,10 +116,16 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
   const custom = render?.(lang, code)
   if (custom) return <>{custom}</>
   return (
-    <pre className="md__pre" data-lang={lang.split(/\s+/)[0] || undefined}>
-      {lang ? <span className="md__lang">{lang.split(/\s+/)[0]}</span> : null}
-      <code>{code}</code>
-    </pre>
+    <>
+      <pre className="md__pre" data-lang={lang.split(/\s+/)[0] || undefined}>
+        {lang ? <span className="md__lang">{lang.split(/\s+/)[0]}</span> : null}
+        <code>{code}</code>
+      </pre>
+      {/* ```cpp laptop: a whole program that needs what the in-browser compiler leaves out. */}
+      {lang.split(/\s+/).includes('laptop') ? (
+        <p className="md__laptop">Build this one on a laptop compiler: it uses C++ exceptions, which ORBIT's in-browser C++ turns off.</p>
+      ) : null}
+    </>
   )
 }
 

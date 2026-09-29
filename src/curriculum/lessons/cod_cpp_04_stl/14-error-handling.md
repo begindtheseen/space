@@ -65,7 +65,7 @@ So the happy path is free and the throw is not. By how much?
 ::: example Timing success and failure, both ways
 Two functions report a sensor timeout, one by throwing and one by returning `-1`. Each is called a million times succeeding, then a million times failing.
 
-```cpp
+```cpp laptop
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
@@ -143,7 +143,7 @@ So a throw's cost depends on who called whom at run time, and its worst case sit
 The exception object cannot live in the throwing function's frame, which is about to disappear. g++'s runtime allocates it on the heap with `malloc`. The next program counts that.
 
 ::: example Counting the allocations inside one throw
-```cpp
+```cpp laptop
 #include <cstdio>
 #include <cstdlib>
 #include <stdexcept>

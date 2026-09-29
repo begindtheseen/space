@@ -135,6 +135,12 @@
   white-space: pre;
 }
 
+.md__laptop {
+  margin: -6px 0 14px;
+  font-size: 12px;
+  color: var(--ink-4);
+}
+
 .md__lang {
   position: absolute;
   top: 8px;

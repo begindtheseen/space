@@ -88,7 +88,7 @@ An **arena** (also called a bump allocator or monotonic buffer) is a slab of byt
 Picture a notepad where you only write on the next blank line, and tear off the page when it is done. Arenas suit data built together and thrown away together, such as the scratch space one control cycle needs and then forgets.
 
 ::: example A 256-byte arena, by hand and from the library
-```cpp
+```cpp laptop
 #include <cstddef>
 #include <cstdio>
 #include <memory_resource>
@@ -264,7 +264,7 @@ Saying "we don't allocate in the loop" is a promise. Flight software wants a pro
 Then run the full test suite with the flag set during the loop. Any hidden allocation — a vector growing, a long string, a `std::function` — stops the run and prints its size. Because it is a program, not a person reading code, it can run on every change in **[[CI|ci-name]]**.
 
 ::: example An allocation guard around a control loop
-```cpp
+```cpp laptop
 #include <atomic>
 #include <cstdio>
 #include <cstdlib>

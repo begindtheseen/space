@@ -70,7 +70,7 @@ So an exception is just another way out of a scope, and the destructors run on t
 ::: example Watching the order, with and without an exception
 `Tracer` prints when it is built and when it is destroyed. `Stage` holds two `Tracer` members, given their names by default member initializers.
 
-```cpp
+```cpp laptop
 #include <cstdio>
 #include <stdexcept>
 
@@ -178,7 +178,7 @@ The exercise for this module asks for three RAII types. Here they are in outline
 About the lines ending in `= delete`: they forbid copying. Two `FileHandle`s both believing they own one `FILE*` would close it twice; two `MutexLock`s would unlock one mutex twice. Lesson 04 explains copying and why the compiler's default copy is wrong here, and lesson 06 explains `= delete` itself. `FileHandle` should also be *movable* — handing ownership from one handle to another, the way `unique_ptr` does — and that is lesson 05. For now, copying is switched off, and that is enough to be safe.
 
 ::: example Three resources, one exception, everything released
-```cpp
+```cpp laptop
 #include <chrono>
 #include <cstdio>
 #include <mutex>

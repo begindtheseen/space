@@ -55,7 +55,7 @@ describe('runnable lesson code', () => {
     const cpp = blocks.map((b, i) => (b.lang === 'cpp' ? name(b, i) : '')).filter(Boolean)
     const failed = execFileSync(
       'bash',
-      ['-c', 'printf "%s\\n" "$@" | xargs -P "$(nproc)" -I{} sh -c \'g++ -std=c++20 -fsyntax-only -w "{}" 2>/dev/null || echo "{}"\'', '_', ...cpp],
+      ['-c', 'printf "%s\\n" "$@" | xargs -P "$(nproc)" -I{} sh -c \'g++ -std=c++20 -fno-exceptions -fsyntax-only -w "{}" 2>/dev/null || echo "{}"\'', '_', ...cpp],
       { encoding: 'utf8', maxBuffer: 1 << 24 },
     )
       .split('\n')

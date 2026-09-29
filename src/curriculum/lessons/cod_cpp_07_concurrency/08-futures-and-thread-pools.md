@@ -37,7 +37,7 @@ A **`std::promise<T>`** is the writing end. You create it, take its future with 
 
 Here is a sensor thread using a promise to hand back a reading, then a failure, then a `packaged_task`, which the next section explains.
 
-```cpp
+```cpp laptop
 #include <cstdio>
 #include <future>
 #include <stdexcept>
@@ -116,7 +116,7 @@ The last future referring to a result started by `std::async(std::launch::async,
 ::: example Timing async, deferred and a discarded future
 This program times four uses of `std::async` with a function that sleeps 200 ms, a stand-in for real work.
 
-```cpp
+```cpp laptop
 #include <chrono>
 #include <cstdio>
 #include <future>
@@ -213,7 +213,7 @@ The alternative would be a thread still running after nothing refers to it, poss
 A **thread pool** fixes all three. Create a fixed number of worker threads once. Give them a shared **task queue**, protected by a mutex, and a condition variable (lesson 05) to sleep on when the queue is empty. To submit work, wrap it in a `packaged_task`, keep its future, and push the task onto the queue. Each worker loops forever: wait for a task, take it, run it outside the lock, repeat.
 
 ::: example A four-thread pool with futures and an exception
-```cpp
+```cpp laptop
 #include <chrono>
 #include <condition_variable>
 #include <cstddef>

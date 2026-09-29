@@ -286,7 +286,7 @@ struct DynMatrix {
 ::: example Measuring it, honestly
 The benchmark multiplies a batch of 1000 different 3-by-3 matrices by one fixed 3-by-3 matrix, 2000 times over — two million products per timing — and keeps the best of five runs. It times three versions: the template; a dynamic multiply that returns a freshly allocated result; and the same dynamic loops writing into a result the caller already owns, so there is no allocation.
 
-```cpp
+```cpp laptop
 #include <algorithm>
 #include <array>
 #include <chrono>
