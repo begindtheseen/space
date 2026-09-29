@@ -11395,7 +11395,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-monte-carlo-campaign-and-vv-report",
       "title": "The Monte Carlo campaign and the V&V report",
-      "minutes": 28,
+      "minutes": 26,
       "covers": [
         "Ten thousand dispersed cases in CI, with per-case seeding and bit-exact replay",
         "The written V&V report: requirements, evidence, margin plots, failure analysis and known limitations"
@@ -11415,8 +11415,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l02-star-stories-and-hard-questions",
-      "title": "Behavioural rounds: STAR stories, and the two questions that sting",
-      "minutes": 20,
+      "title": "Behavioral rounds: STAR stories, and the two questions that sting",
+      "minutes": 21,
       "covers": [
         "Behavioural and STAR stories emphasising ownership, speed, and recovery from failure",
         "Answering \"what would you do differently\" and \"what was the hardest bug\" without either arrogance or apology"
@@ -11426,7 +11426,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-fermi-estimation-drills",
       "title": "Fermi estimation, worked at interview pace",
-      "minutes": 25,
+      "minutes": 26,
       "covers": [
         "Fermi estimation drills with vehicle numbers you should already know"
       ],
@@ -11435,7 +11435,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-rocket-equation-and-variable-mass",
       "title": "The rocket equation and the variable-mass equations of motion, derived cold",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "Whiteboard derivations under time pressure: the rocket equation, rigid-body equations of motion under thrust, the Kalman filter update, proportional navigation, Euler equations, the Clohessy-Wiltshire equations"
       ],
@@ -11453,7 +11453,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-euler-equations-and-clohessy-wiltshire",
       "title": "Euler's equations and the Clohessy-Wiltshire equations, derived cold",
-      "minutes": 16,
+      "minutes": 24,
       "covers": [
         "Whiteboard derivations under time pressure: the rocket equation, rigid-body equations of motion under thrust, the Kalman filter update, proportional navigation, Euler equations, the Clohessy-Wiltshire equations"
       ],
@@ -11462,7 +11462,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-deriving-out-loud-and-being-wrong-well",
       "title": "Deriving out loud, and how to be wrong well",
-      "minutes": 25,
+      "minutes": 29,
       "covers": [
         "Deriving out loud: narrating assumptions, stating what you are about to do before doing it, and recovering visibly from an error"
       ],
@@ -11470,8 +11470,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l08-embedded-cpp-coding-rounds",
-      "title": "The embedded-flavoured C++ coding round",
-      "minutes": 20,
+      "title": "The embedded-flavored C++ coding round",
+      "minutes": 23,
       "covers": [
         "C++ coding rounds: the standard algorithmic problems plus embedded-flavoured ones — ring buffers, fixed-point arithmetic, bit manipulation, memory-constrained algorithms, no allocation in the hot path"
       ],
@@ -11480,7 +11480,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-systems-rounds-and-arguing-from-a-trade",
       "title": "Systems and architecture rounds, and arguing from a trade",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "Systems and architecture rounds: design a GNC flight software stack, a Monte Carlo pipeline, an FDIR scheme, a sensor suite for a given mission",
         "Explaining a design decision in terms of a trade rather than a preference"
@@ -11490,7 +11490,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-controls-estimation-dynamics-questions",
       "title": "Controls, estimation and dynamics rounds: the questions that recur",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "Controls, estimation and dynamics rounds: the questions that recur, and the follow-ups that separate memorisation from understanding"
       ],
@@ -11499,7 +11499,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-numbers-resume-and-portfolio",
       "title": "Framing your work with numbers: talks, resume and portfolio",
-      "minutes": 15,
+      "minutes": 18,
       "covers": [
         "Framing self-taught projects as engineering results with numbers: RMSE, margins, run counts, solve times, not adjectives",
         "Resume and portfolio construction around artefacts that can be read: repositories, reports, plots"
