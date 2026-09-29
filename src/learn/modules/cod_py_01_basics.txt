@@ -1,0 +1,3669 @@
+@track python
+@course mod-cod_py_01_basics
+@module cod_py_01_basics
+@title Python basics: practice and test
+
+=== py01-l01 | Practice: The interpreter, the REPL and your first script
+--- for
+l01-interpreter-repl-and-scripts
+
++++ practice | One frame at 25 Hz
+--- task
+A descent vehicle is falling at 62 m/s, and its guidance loop runs at 25 Hz. The starter sets both numbers and works out the two answers, but it is a script, so it shows nothing.
+
+Change it so that it prints exactly these two lines:
+
+```
+frame: 0.04 s
+drop per frame: 2.48 m
+```
+
+- The first number is how long one frame lasts: 1 divided by the rate.
+- The second is how far the vehicle falls in one frame: the speed divided by the rate.
+- Work both numbers out from `speed` and `rate`. Do not type 0.04 or 2.48 into the program.
+--- starter
+speed = 62.0   # m/s, falling
+rate = 25.0    # Hz, the guidance loop
+
+1 / rate
+speed / rate
+--- solution
+speed = 62.0   # m/s, falling
+rate = 25.0    # Hz, the guidance loop
+
+print("frame:", 1 / rate, "s")
+print("drop per frame:", speed / rate, "m")
+--- hint
+In a script, a value you do not print is worked out and then thrown away.
+--- hint
+`print` takes several values and writes them with one space between each: text, then the number, then the unit.
+--- check output | Prints both lines
+frame: 0.04 s
+drop per frame: 2.48 m
+--- check source absent | Works the numbers out instead of typing them
+2\.48|0\.04
+--- check source | Divides by the rate
+/\s*rate
+
++++ practice | What print shows, and what the prompt would show
+--- task
+A label read from a file has stray spaces around it, and a count arrived once as a number and once as text. Printed plainly, you cannot see the spaces, and you cannot tell the number 7 from the text "7".
+
+The starter sets `label`, `count` and `text`, and prints `label` the way `print` shows it. Add three more lines, so that the script prints exactly:
+
+```
+  LOX vent
+'  LOX vent '
+7
+'7'
+```
+
+- Line 2 is `label` the way the REPL would echo it.
+- Line 3 is `count` the way the REPL would echo it, and line 4 is `text` the same way.
+--- starter
+label = "  LOX vent "
+count = 7
+text = "7"
+
+print(label)
+--- solution
+label = "  LOX vent "
+count = 7
+text = "7"
+
+print(label)
+print(repr(label))
+print(repr(count))
+print(repr(text))
+--- hint
+The REPL echoes the programmer's form of a value. The built-in function that gives you that form is `repr`.
+--- hint
+Pass the result of `repr(...)` to `print`. For a number the two forms are the same; for a string, the programmer's form has quotes.
+--- check output | Prints the plain form, then the REPL form of each value
+  LOX vent
+'  LOX vent '
+7
+'7'
+--- check source | Uses repr
+repr\(
+--- check source absent | Does not type the quotes in by hand
+"'|'"
+
++++ practice | From a REPL session to a script
+--- task
+During a review you worked out, at the prompt, how far a vehicle moves in one 20 ms frame at 7700 m/s, and then in three frames:
+
+```
+>>> 7700 * 0.02
+154.0
+>>> _ * 3
+462.0
+```
+
+The starter is those two lines pasted into a file. As a script it crashes. Make it print exactly:
+
+```
+154.0
+462.0
+```
+
+- Keep the arithmetic: 7700 times 0.02, then that result times 3.
+- Do not type 154 or 462 into the program.
+--- starter
+7700 * 0.02
+_ * 3
+--- solution
+frame_m = 7700 * 0.02
+print(frame_m)
+print(frame_m * 3)
+--- hint
+Two things the prompt did for you do not happen in a script. One is echoing values. The other is the underscore.
+--- hint
+Give the first result a name with `=`, then print it and print it times 3.
+--- check output | Prints both distances
+154.0
+462.0
+--- check source absent | Does not rely on the underscore
+(^|[^\w])_([^\w]|$)
+--- check source absent | Works the numbers out instead of typing them
+154|462
+
++++ practice | The report that stops halfway
+--- task
+This script should print a four-line summary of a guidance frame:
+
+```
+speed: 7700.0 m/s
+rate: 40.0 Hz
+per frame: 192.5 m
+per second: 7700.0 m
+```
+
+Instead it prints the first two lines and then stops with a traceback. Read the traceback from the bottom, find the line it names, and fix it.
+--- starter
+speed = 7700.0
+rate = 40.0
+print("speed:", speed, "m/s")
+print("rate:", rate, "Hz")
+print("per frame:", speed / rat, "m")
+print("per second:", speed, "m")
+--- solution
+speed = 7700.0
+rate = 40.0
+print("speed:", speed, "m/s")
+print("rate:", rate, "Hz")
+print("per frame:", speed / rate, "m")
+print("per second:", speed, "m")
+--- hint
+The last line of the traceback names the kind of error and the name Python has never heard of.
+--- hint
+The two lines before it printed because the file's shape was fine. Only the misspelled name on the third print stopped it.
+--- check output | Prints all four lines
+speed: 7700.0 m/s
+rate: 40.0 Hz
+per frame: 192.5 m
+per second: 7700.0 m
+
++++ question | How much prints before the error
+--- ask
+How many lines does this script print before Python stops it?
+
+```python
+# limits.py
+print("checking limits")
+print("peak:", peek)
+print("done"
+```
+
+Type the number.
+--- answer
+0
+zero
+none
+0 lines
+no lines
+--- why
+None at all. The whole file is compiled before any line runs, and the unclosed bracket on the last line is a SyntaxError found at that stage. So the first `print` never runs, and the misspelled `peek` on line 3 is never reached. A NameError is found only when its line runs, but a SyntaxError anywhere in the file stops everything, even when it comes after the NameError.
+
++++ question | Permission denied
+--- ask
+You write `tool.py`, whose first line is `#!/usr/bin/env python3`. `python3 tool.py` works. But `./tool.py` answers `Permission denied`. What fixes it?
+--- choice
+Rename the file to `tool`, because the shell will not run a file ending in `.py`.
+--- choice correct
+Run `chmod +x tool.py`, so the file is allowed to be executed.
+--- choice
+Move the shebang to the second line, under a comment that names the file.
+--- choice
+Change the shebang to `#!python3`, so the shell does not need `env`.
+--- why
+Running a file by name needs two things: a shebang on the very first line, so the system knows which program should read it, and permission to execute, which `chmod +x` gives. The shebang is already right, so the missing permission is the problem. The `.py` ending does not matter to the shell. A shebang on the second line is only a comment, and `env` is what finds `python3` on the path.
+
+=== py01-l02 | Practice: Numbers, text and f-strings
+--- for
+l02-numbers-text-and-f-strings
+
++++ practice | Wrap four headings
+--- task
+A controller reports headings in degrees that can be negative or bigger than 360. The starter sets four of them. Print each one wrapped into the range 0 to 360, one per line, in this form:
+
+```
+-30.0 -> 330.0
+370.0 -> 10.0
+725.0 -> 5.0
+-725.0 -> 355.0
+```
+
+- Use one operator that works for negative and positive headings alike, with no special case.
+- Work each wrapped value out from the variable. Do not type the answers.
+--- starter
+h1 = -30.0
+h2 = 370.0
+h3 = 725.0
+h4 = -725.0
+--- solution
+h1 = -30.0
+h2 = 370.0
+h3 = 725.0
+h4 = -725.0
+
+print(h1, "->", h1 % 360)
+print(h2, "->", h2 % 360)
+print(h3, "->", h3 % 360)
+print(h4, "->", h4 % 360)
+--- hint
+The remainder operator takes the sign of the number you divide by.
+--- hint
+`h % 360` is between 0 and 360 whatever the sign of `h`.
+--- check output | Prints each heading and its wrapped value
+-30.0 -> 330.0
+370.0 -> 10.0
+725.0 -> 5.0
+-725.0 -> 355.0
+--- check source absent | Works the answers out instead of typing them
+330|355|\b10\.0
+--- check source | Uses the remainder operator
+%\s*360
+
++++ practice | One line from the pressure table
+--- task
+A test stand writes one channel per line, with the fields separated by semicolons and spaced carelessly. The starter holds one such line in `raw`, newline included.
+
+Take it apart and print exactly these three lines:
+
+```
+pc_main = 2,071.9 kPa
+in bar: +20.72
+name length: 7
+```
+
+- Line 1: the channel name in lower case, the value with a thousands separator and one decimal, then the unit.
+- Line 2: the value in bar (1 bar is 100 kPa), always with a sign, two decimals.
+- Line 3: how many characters the channel name has, once its spaces are gone.
+- Use string methods, `float` and f-strings. Do not type the numbers.
+--- starter
+raw = "  PC_MAIN ;2071.88; kPa\n"
+parts = raw.split(";")
+print(parts)
+--- solution
+raw = "  PC_MAIN ;2071.88; kPa\n"
+parts = raw.strip().split(";")
+name = parts[0].strip().lower()
+value = float(parts[1])
+unit = parts[2].strip()
+
+print(f"{name} = {value:,.1f} {unit}")
+print(f"in bar: {value / 100:+.2f}")
+print(f"name length: {len(name)}")
+--- hint
+Strip the whole line first, then split at the semicolons, then strip each piece you keep.
+--- hint
+The specs you need are `:,.1f` for the thousands separator and `:+.2f` for the sign. Convert to bar inside the braces.
+--- check output | Prints the three lines
+pc_main = 2,071.9 kPa
+in bar: +20.72
+name length: 7
+--- check source absent | Does not type the numbers
+2,071|20\.72
+--- check source | Takes the line apart with split
+\.split\(
+
++++ practice | Mission elapsed time
+--- task
+Mission elapsed time is kept in seconds. The starter holds it twice: `met`, a whole number of seconds, and `met_f`, the same moment with a fraction.
+
+Print exactly:
+
+```
+T+2 h 3 min 4 s
+T+2 h 3 min 4.75 s
+```
+
+- Split each time into hours, minutes and seconds with `//` and `%`.
+- The hours and minutes are whole numbers on both lines. On the second line they must print as `2` and `3`, not `2.0` and `3.0`.
+- On the second line, print the seconds with two decimals.
+--- starter
+met = 7384
+met_f = 7384.75
+
+print("T+", met)
+--- solution
+met = 7384
+met_f = 7384.75
+
+hours = met // 3600
+minutes = met % 3600 // 60
+seconds = met % 60
+print(f"T+{hours} h {minutes} min {seconds} s")
+
+hours_f = int(met_f // 3600)
+minutes_f = int(met_f % 3600 // 60)
+seconds_f = met_f % 60
+print(f"T+{hours_f} h {minutes_f} min {seconds_f:.2f} s")
+--- hint
+One hour is 3600 s. `met // 3600` is the whole hours, and `met % 3600` is what is left over.
+--- hint
+`//` on a float gives a float such as `2.0`. `int(...)` turns a whole-valued float into an int.
+--- check output | Prints both times
+T+2 h 3 min 4 s
+T+2 h 3 min 4.75 s
+
++++ practice | Three ways to drop the fraction
+--- task
+Truncating, flooring and rounding agree for many positive numbers and disagree for negative ones and for exact halves. Show it.
+
+The starter sets three values. For each one, print a line with the value, then `int` of it, then the value floor-divided by 1, then `round` of it, like this:
+
+```
+-2.5: -2 -3.0 -2
+3.5: 3 3.0 4
+-0.4: 0 -1.0 0
+```
+--- starter
+a = -2.5
+b = 3.5
+c = -0.4
+--- solution
+a = -2.5
+b = 3.5
+c = -0.4
+
+print(f"{a}: {int(a)} {a // 1} {round(a)}")
+print(f"{b}: {int(b)} {b // 1} {round(b)}")
+print(f"{c}: {int(c)} {c // 1} {round(c)}")
+--- hint
+`int` chops toward zero, `//` rounds down toward minus infinity, and `round` goes to the nearest whole number with halves going to the even one.
+--- hint
+An f-string with four fields per line does it: `f"{a}: {int(a)} {a // 1} {round(a)}"`.
+--- check output | Prints the three results for each value
+-2.5: -2 -3.0 -2
+3.5: 3 3.0 4
+-0.4: 0 -1.0 0
+
++++ practice | The limit check that believes text
+--- task
+A reading comes out of a file as text. The script should say whether it is over a limit of 10.5 and print the margin. It should print:
+
+```
+over limit: False
+margin: 0.70
+```
+
+It prints `over limit: True` instead: 9.8 has been reported as over 10.5. Find the line that makes the wrong comparison and fix it.
+--- starter
+reading_text = " 9.8\n"
+limit = 10.5
+
+reading = reading_text.strip()
+print("over limit:", reading > str(limit))
+print(f"margin: {limit - float(reading):.2f}")
+--- solution
+reading_text = " 9.8\n"
+limit = 10.5
+
+reading = reading_text.strip()
+print("over limit:", float(reading) > limit)
+print(f"margin: {limit - float(reading):.2f}")
+--- hint
+Look at the types on each side of the `>`. Two strings are compared character by character.
+--- hint
+Compare numbers with numbers: convert the reading with `float`, and leave `limit` alone.
+--- check output | Reports the reading under the limit
+over limit: False
+margin: 0.70
+
++++ question | Remainder and floor with a negative number
+--- ask
+What does this print?
+
+```python
+print(-17 % 5, -17 // 5)
+```
+--- answer
+3 -4
+3, -4
+--- why
+`-17 / 5` is -3.4, and `//` rounds down, toward minus infinity, so `-17 // 5` is -4. The remainder has the sign of the divisor, 5, and makes the two agree: 5 × (-4) + 3 = -17, so `-17 % 5` is 3. Expecting `-2 -3` is expecting Python to chop toward zero, which is what `int` does, not `//`.
+
+=== py01-l03 | Practice: Lists, tuples and slicing
+--- for
+l03-lists-and-tuples
+
++++ practice | Half a second of gyro data
+--- task
+The starter holds ten samples of a roll rate in rad/s, taken at 20 Hz, so they are `dt = 0.05` s apart. Print exactly:
+
+```
+samples: 10
+duration: 0.50 s
+peak: 0.902 rad/s at sample 4
+mean of samples 2 to 6: 0.710 rad/s
+```
+
+- The duration is the number of samples times `dt`.
+- The sample number of the peak is its index in the list.
+- "Samples 2 to 6" includes both sample 2 and sample 6.
+- Work everything out from `rates` and `dt` with built-in functions and a slice. No loops.
+--- starter
+rates = [0.012, 0.015, 0.431, 0.887, 0.902, 0.874, 0.455, 0.019, 0.011, 0.014]
+dt = 0.05
+--- solution
+rates = [0.012, 0.015, 0.431, 0.887, 0.902, 0.874, 0.455, 0.019, 0.011, 0.014]
+dt = 0.05
+
+window = rates[2:7]
+print(f"samples: {len(rates)}")
+print(f"duration: {len(rates) * dt:.2f} s")
+print(f"peak: {max(rates):.3f} rad/s at sample {rates.index(max(rates))}")
+print(f"mean of samples 2 to 6: {sum(window) / len(window):.3f} rad/s")
+--- hint
+A slice leaves out its end index, so samples 2 to 6 is `rates[2:7]`.
+--- hint
+`max` gives the peak and `.index(value)` gives where it first appears. The mean is `sum` divided by `len`.
+--- check output | Prints the four lines
+samples: 10
+duration: 0.50 s
+peak: 0.902 rad/s at sample 4
+mean of samples 2 to 6: 0.710 rad/s
+--- check source absent | Uses no loop
+\bfor\b|\bwhile\b
+--- check source | Slices out samples 2 to 6
+\[\s*2\s*:\s*7\s*\]
+
++++ practice | A track of position fixes
+--- task
+A tracking station logs position fixes as tuples `(t, lat, lon, alt)`: seconds, degrees, degrees and meters. The starter holds four of them in a list. Print exactly:
+
+```
+last fix at t=3.0: lat 28.5735, lon -80.6497, alt 16.8 m
+every other fix: [(0.0, 28.5721, -80.648, 3.1), (2.0, 28.5731, -80.649, 12.4)]
+climb: 13.7 m
+```
+
+- Line 1: unpack the last fix into four names and print them.
+- Line 2: every second fix, starting with the first, as a list.
+- Line 3: the altitude of the last fix minus the altitude of the first, with one decimal.
+--- starter
+fixes = [
+    (0.0, 28.5721, -80.6480, 3.1),
+    (1.0, 28.5726, -80.6484, 7.9),
+    (2.0, 28.5731, -80.6490, 12.4),
+    (3.0, 28.5735, -80.6497, 16.8),
+]
+--- solution
+fixes = [
+    (0.0, 28.5721, -80.6480, 3.1),
+    (1.0, 28.5726, -80.6484, 7.9),
+    (2.0, 28.5731, -80.6490, 12.4),
+    (3.0, 28.5735, -80.6497, 16.8),
+]
+
+t, lat, lon, alt = fixes[-1]
+print(f"last fix at t={t}: lat {lat}, lon {lon}, alt {alt} m")
+print("every other fix:", fixes[::2])
+print(f"climb: {fixes[-1][3] - fixes[0][3]:.1f} m")
+--- hint
+`fixes[-1]` is the last tuple. Four names on the left of `=` unpack it.
+--- hint
+A step of 2 in a slice takes every second item. `fixes[0][3]` is the altitude of the first fix.
+--- check output | Prints the three lines
+last fix at t=3.0: lat 28.5735, lon -80.6497, alt 16.8 m
+every other fix: [(0.0, 28.5721, -80.648, 3.1), (2.0, 28.5731, -80.649, 12.4)]
+climb: 13.7 m
+
++++ practice | The header of a data file
+--- task
+The first line of a telemetry file names its columns. The starter holds it in `header`, newline included. Print exactly:
+
+```
+data channels: 4
+az is column 3
+pitch_rate present: False
+t | ax | ay | az | pitch_rate | roll_rate
+```
+
+- Line 1: how many column names there are, not counting the time column `t`.
+- Line 2: the position of `az` in the list of names, counting from 0.
+- Line 3: whether `pitch_rate` is one of the names.
+- Line 4: put `pitch_rate` into the list just before `roll_rate`, then print all the names joined with ` | ` (a space, a bar, a space).
+--- starter
+header = "t,ax,ay,az,roll_rate\n"
+--- solution
+header = "t,ax,ay,az,roll_rate\n"
+
+names = header.strip().split(",")
+print(f"data channels: {len(names) - 1}")
+print(f"az is column {names.index('az')}")
+print(f"pitch_rate present: {'pitch_rate' in names}")
+names.insert(names.index("roll_rate"), "pitch_rate")
+print(" | ".join(names))
+--- hint
+Strip the newline, then `split(",")` gives a list of names. `.index` and `in` answer lines 2 and 3.
+--- hint
+`insert(i, value)` puts the value just before index `i`. `" | ".join(names)` glues the list back into one string.
+--- check output | Prints the four lines
+data channels: 4
+az is column 3
+pitch_rate present: False
+t | ax | ay | az | pitch_rate | roll_rate
+
++++ practice | A backup that stays a backup
+--- task
+`runs` holds two runs of samples, each a list. The script keeps a `backup` before it changes `runs`, then prints both. It should print:
+
+```
+[[9.79, 9.81, -99.0], [0.02, 0.11], [1.5]]
+[[9.79, 9.81], [0.02, 0.11]]
+False
+```
+
+The backup changes too: its first run ends up with the `-99.0` in it. Change only the line that makes `backup`, so that nothing done to `runs` afterwards shows up in it. Use only what lesson 3 teaches (no `copy` module).
+--- starter
+runs = [[9.79, 9.81], [0.02, 0.11]]
+backup = list(runs)
+
+runs[0].append(-99.0)
+runs.append([1.5])
+
+print(runs)
+print(backup)
+print(backup[0] is runs[0])
+--- solution
+runs = [[9.79, 9.81], [0.02, 0.11]]
+backup = [list(runs[0]), list(runs[1])]
+
+runs[0].append(-99.0)
+runs.append([1.5])
+
+print(runs)
+print(backup)
+print(backup[0] is runs[0])
+--- hint
+`list(runs)` makes a new outer list, but its two items are the same inner lists that `runs` holds.
+--- hint
+Build the outer list yourself, from a copy of each inner list: `list(runs[0])` is a new list with the same numbers.
+--- check output | The backup keeps the original samples
+[[9.79, 9.81, -99.0], [0.02, 0.11], [1.5]]
+[[9.79, 9.81], [0.02, 0.11]]
+False
+
++++ practice | Sorted, and then gone
+--- task
+The script should print the largest peak and then the peaks in the order they were recorded:
+
+```
+largest: 18.2
+original order: [18.2, 12.06, 3.94, 15.5]
+```
+
+Instead it stops with `TypeError: 'NoneType' object is not subscriptable`. And even if that were fixed, the way `top` is made would reorder `peaks` too. Fix it with one line in place of the two that make `top`.
+--- starter
+peaks = [18.2, 12.06, 3.94, 15.5]
+top = peaks
+top = top.sort(reverse=True)
+
+print("largest:", top[0])
+print("original order:", peaks)
+--- solution
+peaks = [18.2, 12.06, 3.94, 15.5]
+top = sorted(peaks, reverse=True)
+
+print("largest:", top[0])
+print("original order:", peaks)
+--- hint
+A method that changes a list in place gives back `None`. And `top = peaks` makes a second name for the same list, not a copy.
+--- hint
+`sorted(...)` builds a new list and leaves its argument alone. It takes `reverse=True` too.
+--- check output | Prints the largest and the untouched order
+largest: 18.2
+original order: [18.2, 12.06, 3.94, 15.5]
+
++++ practice | The three biggest peaks
+--- task
+The starter holds the peak acceleration of each of eight vibration test runs, in m/s², in the order the runs were made. Run `i` started at `i * 15` minutes into the test day.
+
+Print the three biggest peaks, biggest first, each with its run number and start time, then the spread between the biggest and the third biggest:
+
+```
+1st: 41.7 m/s^2 in run 5, started at 75 min
+2nd: 38.2 m/s^2 in run 2, started at 30 min
+3rd: 35.9 m/s^2 in run 7, started at 105 min
+spread: 5.8 m/s^2
+```
+
+- Do not reorder `peaks` itself: the run number of a peak is its index in the original list.
+- No loops: `sorted`, a slice and `.index` are enough.
+--- starter
+peaks = [22.4, 30.1, 38.2, 12.9, 27.5, 41.7, 19.3, 35.9]
+--- solution
+peaks = [22.4, 30.1, 38.2, 12.9, 27.5, 41.7, 19.3, 35.9]
+
+first, second, third = sorted(peaks, reverse=True)[:3]
+run1 = peaks.index(first)
+run2 = peaks.index(second)
+run3 = peaks.index(third)
+
+print(f"1st: {first} m/s^2 in run {run1}, started at {run1 * 15} min")
+print(f"2nd: {second} m/s^2 in run {run2}, started at {run2 * 15} min")
+print(f"3rd: {third} m/s^2 in run {run3}, started at {run3 * 15} min")
+print(f"spread: {first - third:.1f} m/s^2")
+--- hint
+Sort a copy from biggest to smallest and slice off the first three. Three names on the left unpack them.
+--- hint
+`peaks.index(value)` searches the original list, which still has the recording order.
+--- check output | Prints the top three and the spread
+1st: 41.7 m/s^2 in run 5, started at 75 min
+2nd: 38.2 m/s^2 in run 2, started at 30 min
+3rd: 35.9 m/s^2 in run 7, started at 105 min
+spread: 5.8 m/s^2
+--- check source absent | Uses no loop
+\bfor\b|\bwhile\b
+--- check source | Sorts a copy with sorted
+sorted\(
+
+=== py01-l04 | Practice: Dictionaries, sets and truthiness
+--- for
+l04-dicts-sets-and-truthiness
+
++++ practice | A table of units
+--- task
+The starter holds a dictionary from channel names to their units. Change it and ask it questions, printing exactly:
+
+```
+pc is in kPa
+channels: ['pc', 'roll_rate', 'tc']
+count: 3
+ax: unknown
+roll_rate: rad/s
+```
+
+In order:
+
+1. Print the unit of `pc` (line 1).
+2. Add the channel `tc`, whose unit is `K`.
+3. Change the unit of `roll_rate` to `rad/s`.
+4. Remove the channel `ax`.
+5. Print the channel names in alphabetical order, and how many there are (lines 2 and 3).
+6. Print the unit of `ax` with a lookup that gives `unknown` for a missing channel instead of raising, and then the unit of `roll_rate` (lines 4 and 5).
+--- starter
+units = {"ax": "m/s^2", "pc": "kPa", "roll_rate": "deg/s"}
+--- solution
+units = {"ax": "m/s^2", "pc": "kPa", "roll_rate": "deg/s"}
+
+print(f"pc is in {units['pc']}")
+units["tc"] = "K"
+units["roll_rate"] = "rad/s"
+del units["ax"]
+print("channels:", sorted(units.keys()))
+print("count:", len(units))
+print("ax:", units.get("ax", "unknown"))
+print("roll_rate:", units["roll_rate"])
+--- hint
+Assigning to a key adds it or replaces its value, and `del units[key]` removes a pair.
+--- hint
+`sorted(units.keys())` gives the keys in order. `.get(key, default)` gives the default when the key is missing.
+--- check output | Prints the five lines
+pc is in kPa
+channels: ['pc', 'roll_rate', 'tc']
+count: 3
+ax: unknown
+roll_rate: rad/s
+--- check source | Uses get for the missing channel
+\.get\(
+--- check source | Removes ax with del
+\bdel\b
+
++++ practice | Two runs, one channel list
+--- task
+Two hot-fire runs recorded different sets of channels. The starter holds them as sets. Print exactly:
+
+```
+in both: ['ax', 'pc', 'tc']
+only run A: ['az', 'gps_lat']
+only run B: ['ay', 'vib_1']
+in exactly one: ['ay', 'az', 'gps_lat', 'vib_1']
+distinct channels: 7
+```
+
+Use the set operators, and print every set through `sorted`, so the output is the same on every run.
+--- starter
+run_a = {"ax", "az", "pc", "tc", "gps_lat"}
+run_b = {"ax", "ay", "pc", "tc", "vib_1"}
+
+print(run_a & run_b)
+--- solution
+run_a = {"ax", "az", "pc", "tc", "gps_lat"}
+run_b = {"ax", "ay", "pc", "tc", "vib_1"}
+
+print("in both:", sorted(run_a & run_b))
+print("only run A:", sorted(run_a - run_b))
+print("only run B:", sorted(run_b - run_a))
+print("in exactly one:", sorted(run_a ^ run_b))
+print("distinct channels:", len(run_a | run_b))
+--- hint
+`&` is in both, `-` is in the first but not the second, `^` is in exactly one, and `|` is in either.
+--- hint
+A set's printed order can change between runs. `sorted(s)` gives a list in a fixed order.
+--- check output | Prints the five comparisons
+in both: ['ax', 'pc', 'tc']
+only run A: ['az', 'gps_lat']
+only run B: ['ay', 'vib_1']
+in exactly one: ['ay', 'az', 'gps_lat', 'vib_1']
+distinct channels: 7
+
++++ practice | Margins from a table of results
+--- task
+After a hot fire, `results` maps each channel to a small dictionary with its peak and its limit, and `units` maps each channel to its unit. Print the margin (limit minus peak) of each channel, always with a sign and one decimal, and then whether each passed:
+
+```
+pc margin +128.1 kPa
+tc margin -10.2 K
+pc passed: True
+tc passed: False
+```
+
+A channel passes when its peak is at most its limit. Work every number out from the two dictionaries.
+--- starter
+results = {
+    "pc": {"peak": 2071.9, "limit": 2200.0},
+    "tc": {"peak": 3310.2, "limit": 3300.0},
+}
+units = {"pc": "kPa", "tc": "K"}
+--- solution
+results = {
+    "pc": {"peak": 2071.9, "limit": 2200.0},
+    "tc": {"peak": 3310.2, "limit": 3300.0},
+}
+units = {"pc": "kPa", "tc": "K"}
+
+pc = results["pc"]
+tc = results["tc"]
+print(f"pc margin {pc['limit'] - pc['peak']:+.1f} {units['pc']}")
+print(f"tc margin {tc['limit'] - tc['peak']:+.1f} {units['tc']}")
+print("pc passed:", pc["peak"] <= pc["limit"])
+print("tc passed:", tc["peak"] <= tc["limit"])
+--- hint
+`results["pc"]["peak"]` is two lookups: first the channel, then the statistic.
+--- hint
+Inside a double-quoted f-string, write the keys with single quotes. `:+.1f` gives the sign and one decimal.
+--- check output | Prints the margins and the verdicts
+pc margin +128.1 kPa
+tc margin -10.2 K
+pc passed: True
+tc passed: False
+--- check source absent | Works the margins out
+128\.1|-10\.2
+--- check source | Looks the limits up in the table
+\[\s*["']limit["']\s*\]
+
++++ practice | Zero is a reading
+--- task
+`readings` maps each rate channel to its latest value, or to `None` when the sensor did not report. A roll rate of exactly `0.0` is a real reading: the vehicle is not rolling.
+
+For each of the four names in the starter, print whether a value was reported, exactly like this:
+
+```
+roll_rate reported: True
+pitch_rate reported: False
+yaw_rate reported: True
+gps_lat reported: False
+```
+
+`gps_lat` is not in the dictionary at all; that counts as not reported, and must not raise. The starter tests truthiness, and gets `roll_rate` wrong.
+--- starter
+readings = {"roll_rate": 0.0, "pitch_rate": None, "yaw_rate": 0.013}
+
+print("roll_rate reported:", bool(readings.get("roll_rate")))
+print("pitch_rate reported:", bool(readings.get("pitch_rate")))
+print("yaw_rate reported:", bool(readings.get("yaw_rate")))
+print("gps_lat reported:", bool(readings.get("gps_lat")))
+--- solution
+readings = {"roll_rate": 0.0, "pitch_rate": None, "yaw_rate": 0.013}
+
+print("roll_rate reported:", readings.get("roll_rate") is not None)
+print("pitch_rate reported:", readings.get("pitch_rate") is not None)
+print("yaw_rate reported:", readings.get("yaw_rate") is not None)
+print("gps_lat reported:", readings.get("gps_lat") is not None)
+--- hint
+`0.0` is falsy, so `bool(0.0)` is `False` even though a value was reported.
+--- hint
+`.get` gives `None` both for a missing key and for a stored `None`. Ask `is not None` instead of asking for truthiness.
+--- check output | Tells a zero reading from a missing one
+roll_rate reported: True
+pitch_rate reported: False
+yaw_rate reported: True
+gps_lat reported: False
+
++++ practice | An empty set that was not
+--- task
+The script collects the channel names that appeared in a log, without duplicates, and should print:
+
+```
+['ax', 'pc', 'tc']
+3
+```
+
+It stops at its second line with `AttributeError: 'dict' object has no attribute 'add'`. Fix the one line that is wrong.
+--- starter
+seen = {}
+seen.add("pc")
+seen.add("ax")
+seen.add("pc")
+seen.add("tc")
+seen.add("ax")
+
+print(sorted(seen))
+print(len(seen))
+--- solution
+seen = set()
+seen.add("pc")
+seen.add("ax")
+seen.add("pc")
+seen.add("tc")
+seen.add("ax")
+
+print(sorted(seen))
+print(len(seen))
+--- hint
+Look at what `{}` builds. Dictionaries had the curly braces first.
+--- hint
+The empty set is written `set()`.
+--- check output | Prints the distinct names and their count
+['ax', 'pc', 'tc']
+3
+
++++ practice | Limits with no channel, channels with no limit
+--- task
+Before a report is trusted, the channels in the limits table and the channels in the results must agree. The starter holds both as dictionaries. Print exactly:
+
+```
+checked: ['ax', 'pc', 'tc']
+no limit: ['gps_lat', 'vib_1']
+not recorded: ['pitch_rate']
+peaks by name: [('ax', 12.06), ('gps_lat', 28.57), ('pc', 2071.9), ('tc', 3310.2), ('vib_1', 4.4)]
+table order: ['pc', 'tc', 'ax', 'pitch_rate']
+```
+
+- Line 1: channels in both. Line 2: channels with a peak but no limit. Line 3: channels with a limit but no peak. All sorted.
+- Line 4: every `(name, peak)` pair, sorted by name.
+- Line 5: the limit table's keys in the order they were put in.
+- No loops.
+--- starter
+limits = {"pc": 2200.0, "tc": 3300.0, "ax": 12.5, "pitch_rate": 15.0}
+peaks = {"tc": 3310.2, "vib_1": 4.4, "ax": 12.06, "gps_lat": 28.57, "pc": 2071.9}
+--- solution
+limits = {"pc": 2200.0, "tc": 3300.0, "ax": 12.5, "pitch_rate": 15.0}
+peaks = {"tc": 3310.2, "vib_1": 4.4, "ax": 12.06, "gps_lat": 28.57, "pc": 2071.9}
+
+limited = set(limits.keys())
+recorded = set(peaks.keys())
+print("checked:", sorted(limited & recorded))
+print("no limit:", sorted(recorded - limited))
+print("not recorded:", sorted(limited - recorded))
+print("peaks by name:", sorted(peaks.items()))
+print("table order:", list(limits.keys()))
+--- hint
+Make a set of each dictionary's keys, and the three questions are set operators.
+--- hint
+`.items()` gives `(key, value)` tuples, and `sorted` orders tuples by their first item. A dictionary keeps the order its keys were added.
+--- check output | Prints the audit
+checked: ['ax', 'pc', 'tc']
+no limit: ['gps_lat', 'vib_1']
+not recorded: ['pitch_rate']
+peaks by name: [('ax', 12.06), ('gps_lat', 28.57), ('pc', 2071.9), ('tc', 3310.2), ('vib_1', 4.4)]
+table order: ['pc', 'tc', 'ax', 'pitch_rate']
+--- check source absent | Uses no loop
+\bfor\b|\bwhile\b
+--- check source | Uses set operators
+\w\s*&\s*\w
+
+=== py01-l05 | Practice: Choosing and repeating: if, for, while
+--- for
+l05-control-flow
+
++++ practice | Every temperature over the limit
+--- task
+`temps` holds six turbine inlet temperatures in kelvin, one per second, and `limit` is 300.0 K. Print every sample over the limit with its sample number, then a count:
+
+```
+sample 2: 301.7 K
+sample 3: 312.9 K
+sample 4: 309.2 K
+3 samples over 300.0 K
+```
+
+- Get the sample number from `enumerate`, not from a counter you keep by hand.
+- "Over" means strictly greater than the limit.
+--- starter
+temps = [288.1, 290.4, 301.7, 312.9, 309.2, 296.0]
+limit = 300.0
+
+for t in temps:
+    print(t)
+--- solution
+temps = [288.1, 290.4, 301.7, 312.9, 309.2, 296.0]
+limit = 300.0
+
+over = 0
+for i, t in enumerate(temps):
+    if t > limit:
+        print(f"sample {i}: {t} K")
+        over += 1
+print(f"{over} samples over {limit} K")
+--- hint
+`for i, t in enumerate(temps):` gives each sample with its index.
+--- hint
+Keep a running count that starts at 0 and goes up by one inside the `if`. Print it after the loop, not inside it.
+--- check output | Lists the exceedances and counts them
+sample 2: 301.7 K
+sample 3: 312.9 K
+sample 4: 309.2 K
+3 samples over 300.0 K
+--- check source | Uses enumerate
+enumerate\(
+--- check source absent | Does not count positions by hand
+\bi\s*\+=\s*1
+
++++ practice | Venting down to a safe pressure
+--- task
+A tank is safe to approach once its pressure is below 100 kPa. Each second, the vent valve lets out 15% of whatever pressure is left, so the pressure is multiplied by 0.85.
+
+`starts` holds three starting pressures. For each one, print how many whole seconds of venting it takes to get below 100 kPa, and the pressure then, with one decimal:
+
+```
+480.0 kPa: safe after 10 s at 94.5 kPa
+80.0 kPa: safe after 0 s at 80.0 kPa
+1000.0 kPa: safe after 15 s at 87.4 kPa
+```
+
+A tank that starts below 100 kPa needs no venting at all.
+--- starter
+starts = [480.0, 80.0, 1000.0]
+--- solution
+starts = [480.0, 80.0, 1000.0]
+
+for start in starts:
+    p = start
+    seconds = 0
+    while p >= 100.0:
+        p *= 0.85
+        seconds += 1
+    print(f"{start} kPa: safe after {seconds} s at {p:.1f} kPa")
+--- hint
+You do not know in advance how many seconds it takes, so use a `while` loop inside a `for` loop over the starting pressures.
+--- hint
+Loop while the pressure is still at or above 100. The condition is tested before the first pass, so a tank that starts safe runs the body zero times.
+--- check output | Prints the venting time for each tank
+480.0 kPa: safe after 10 s at 94.5 kPa
+80.0 kPa: safe after 0 s at 80.0 kPa
+1000.0 kPa: safe after 15 s at 87.4 kPa
+--- check source | Uses a while loop
+\bwhile\b
+--- check source absent | Works the pressures out
+94\.5|87\.4
+
++++ practice | PASS, MARGINAL or FAIL
+--- task
+`peaks` maps each channel to its peak after a hot fire, and `limits` maps channels to their limits. For each channel in `peaks`, in alphabetical order, print a status line:
+
+```
+ax: MARGINAL
+pc: PASS
+tc: FAIL
+vib_1: NO LIMIT
+```
+
+- `FAIL` when the peak is over the limit.
+- `MARGINAL` when it is not over, but is over 90% of the limit.
+- `PASS` otherwise.
+- `NO LIMIT` when the channel has no entry in `limits`. It must not raise.
+--- starter
+peaks = {"pc": 1840.2, "tc": 3310.2, "ax": 11.8, "vib_1": 4.4}
+limits = {"pc": 2200.0, "tc": 3300.0, "ax": 12.5}
+
+for name in peaks:
+    print(f"{name}: {peaks[name] <= limits[name]}")
+--- solution
+peaks = {"pc": 1840.2, "tc": 3310.2, "ax": 11.8, "vib_1": 4.4}
+limits = {"pc": 2200.0, "tc": 3300.0, "ax": 12.5}
+
+for name in sorted(peaks):
+    peak = peaks[name]
+    if name not in limits:
+        status = "NO LIMIT"
+    elif peak > limits[name]:
+        status = "FAIL"
+    elif peak > 0.9 * limits[name]:
+        status = "MARGINAL"
+    else:
+        status = "PASS"
+    print(f"{name}: {status}")
+--- hint
+Test for the missing limit first, so no later test looks it up. Then test the strictest condition, over the limit, before the looser one.
+--- hint
+The first true condition in an `if`/`elif` chain wins. `sorted(peaks)` gives the keys in alphabetical order.
+--- check output | Prints the status of each channel
+ax: MARGINAL
+pc: PASS
+tc: FAIL
+vib_1: NO LIMIT
+
++++ practice | First exceedance in each run
+--- task
+`runs` maps the name of each hot fire to its axial acceleration samples, taken at 10 Hz from t = 0. For each run, in the order they are stored, print one line:
+
+```
+hot fire 1: first over at t=0.3 s (12.9 m/s^2)
+hot fire 2: never over
+hot fire 3: no data
+```
+
+- The time of sample `i` is `i * dt`, printed with one decimal.
+- "Over" means strictly above `limit`. A sample exactly at the limit is not over.
+- Stop looking at a run as soon as you find its first exceedance.
+- A run with no samples prints `no data`.
+- Report "never over" without a flag variable.
+--- starter
+runs = {
+    "hot fire 1": [11.2, 12.1, 12.4, 12.9, 13.3, 12.2],
+    "hot fire 2": [10.9, 11.4, 12.5, 11.9],
+    "hot fire 3": [],
+}
+limit = 12.5
+dt = 0.1
+--- solution
+runs = {
+    "hot fire 1": [11.2, 12.1, 12.4, 12.9, 13.3, 12.2],
+    "hot fire 2": [10.9, 11.4, 12.5, 11.9],
+    "hot fire 3": [],
+}
+limit = 12.5
+dt = 0.1
+
+for name, samples in runs.items():
+    if not samples:
+        print(f"{name}: no data")
+        continue
+    for i, a in enumerate(samples):
+        if a > limit:
+            print(f"{name}: first over at t={i * dt:.1f} s ({a} m/s^2)")
+            break
+    else:
+        print(f"{name}: never over")
+--- hint
+Loop over `runs.items()`. An empty list is falsy, so `if not samples:` catches the run with no data; `continue` then moves on to the next run.
+--- hint
+`break` at the first exceedance, and put an `else` under the inner `for` (lined up with it): it runs only when the loop ended without a `break`.
+--- check output | Reports each run
+hot fire 1: first over at t=0.3 s (12.9 m/s^2)
+hot fire 2: never over
+hot fire 3: no data
+--- check source absent | Uses no found-it flag
+\b(found|flag)\s*=
+--- check source | Stops at the first exceedance
+\bbreak\b
+
++++ practice | Dropouts that survived
+--- task
+The script should remove every dropout marker, `-999.0`, and print the clean samples and their mean:
+
+```
+[9.79, 9.81, 9.8]
+mean 9.800
+```
+
+It prints a list that still holds a `-999.0`, and a mean far below zero. Find out why, and fix it so the clean samples end up in a list named `raw` as before.
+--- starter
+raw = [9.79, -999.0, -999.0, 9.81, 9.8, -999.0]
+
+for s in raw:
+    if s == -999.0:
+        raw.remove(s)
+
+print(raw)
+print(f"mean {sum(raw) / len(raw):.3f}")
+--- solution
+raw = [9.79, -999.0, -999.0, 9.81, 9.8, -999.0]
+
+good = []
+for s in raw:
+    if s != -999.0:
+        good.append(s)
+raw = good
+
+print(raw)
+print(f"mean {sum(raw) / len(raw):.3f}")
+--- hint
+The loop walks the list by position. When an item is removed, everything after it moves down one place, and the loop steps over the item that moved into the gap.
+--- hint
+Never change a list while looping over it. Build a new list of the good samples, then give it the name `raw`.
+--- check output | Prints the clean samples and their mean
+[9.79, 9.81, 9.8]
+mean 9.800
+--- check source absent | Does not remove items during the loop
+\.remove\(
+--- check source | Builds a new list
+\.append\(
+
++++ practice | The longest dropout
+--- task
+A dropout of one sample is noise, but a long run of dropouts means the sensor was lost for a while. `records` maps each run to its samples, taken at 10 Hz from t = 0, with `-999.0` marking a dropout.
+
+For each run, print the total number of dropouts, and the length and start time of the longest unbroken run of them:
+
+```
+run 1: 8 dropouts, longest 3 from t=0.4 s
+run 2: no dropouts
+run 3: 3 dropouts, longest 2 from t=0.3 s
+```
+
+- If two runs of dropouts are equally long, report the first.
+- A run of dropouts can be at the very start or the very end of the samples, and it still counts.
+- A run with no dropouts prints `no dropouts`.
+--- starter
+records = {
+    "run 1": [9.8, -999.0, -999.0, 9.7, -999.0, -999.0, -999.0, 9.8, -999.0, -999.0, -999.0],
+    "run 2": [9.8, 9.79, 9.81],
+    "run 3": [-999.0, 9.8, 9.81, -999.0, -999.0],
+}
+dt = 0.1
+--- solution
+records = {
+    "run 1": [9.8, -999.0, -999.0, 9.7, -999.0, -999.0, -999.0, 9.8, -999.0, -999.0, -999.0],
+    "run 2": [9.8, 9.79, 9.81],
+    "run 3": [-999.0, 9.8, 9.81, -999.0, -999.0],
+}
+dt = 0.1
+
+for name, samples in records.items():
+    total = 0
+    current = 0
+    longest = 0
+    longest_start = 0
+    for i, s in enumerate(samples):
+        if s == -999.0:
+            total += 1
+            current += 1
+            if current > longest:
+                longest = current
+                longest_start = i - current + 1
+        else:
+            current = 0
+    if total == 0:
+        print(f"{name}: no dropouts")
+    else:
+        print(f"{name}: {total} dropouts, longest {longest} from t={longest_start * dt:.1f} s")
+--- hint
+Keep the length of the current run of dropouts: add one on a dropout, go back to 0 on a good sample.
+--- hint
+Compare with the longest so far every time the current run grows, not only when it ends, or a run at the very end is never counted. Use `>`, not `>=`, so a tie keeps the first. The run started `current - 1` samples before the one you are on.
+--- check output | Reports each run
+run 1: 8 dropouts, longest 3 from t=0.4 s
+run 2: no dropouts
+run 3: 3 dropouts, longest 2 from t=0.3 s
+
+=== py01-l06 | Practice: Functions, arguments and return values
+--- for
+l06-functions
+
++++ practice | Thrust to weight
+--- task
+Write a function `thrust_to_weight(thrust_n, mass_kg, g=9.80665)` that returns the thrust-to-weight ratio: the thrust in newtons divided by the weight, which is the mass in kilograms times `g` in m/s².
+
+- `g` defaults to standard gravity, 9.80665 m/s². A caller on the Moon passes `g=1.62`.
+- Give it a docstring that says what it returns and in what units its arguments are.
+- It must work when called by keyword, in any order.
+
+For example, a 549,054 kg vehicle with 7,607,000 N of thrust has a ratio of about 1.4128.
+--- starter
+def thrust_to_weight(thrust_n, mass_kg, g=9.80665):
+    pass
+--- solution
+def thrust_to_weight(thrust_n, mass_kg, g=9.80665):
+    """Thrust-to-weight ratio, from thrust in N, mass in kg and gravity in m/s^2."""
+    return thrust_n / (mass_kg * g)
+--- hint
+The weight is `mass_kg * g`. Divide the thrust by it and `return` the result.
+--- hint
+A docstring is a string written as the first line of the body, in triple quotes.
+--- check test | A launch vehicle at standard gravity
+abs(thrust_to_weight(7607000.0, 549054.0) - 1.4127902232) < 1e-9
+--- check case | A different g, given by keyword
+thrust_to_weight(1000.0, 100.0, g=10.0)
+=> 1.0
+--- check test | Every argument by keyword, in another order
+abs(thrust_to_weight(g=1.62, mass_kg=1000.0, thrust_n=3240.0) - 2.0) < 1e-12
+--- check test | Has a docstring
+bool(thrust_to_weight.__doc__)
+
++++ practice | One log line for any event
+--- task
+Write a function `event_text(kind, *tags, **fields)` that returns one line of a structured log as a string:
+
+- It starts with `kind`.
+- If any tags were passed, then a space and the tags joined with commas inside square brackets: ` [manual,pad_b]`.
+- Then, for each field, a space and `name=value`, with the fields in alphabetical order of their names.
+
+So:
+
+- `event_text("burn_end", dv=4.95, duration=0.5)` returns `"burn_end duration=0.5 dv=4.95"`.
+- `event_text("abort", "manual", "pad_b", reason="valve")` returns `"abort [manual,pad_b] reason=valve"`.
+- `event_text("run_start")` returns `"run_start"`.
+--- starter
+def event_text(kind, *tags, **fields):
+    pass
+--- solution
+def event_text(kind, *tags, **fields):
+    """One log line: the kind, any tags in brackets, then name=value fields by name."""
+    line = kind
+    if tags:
+        line += " [" + ",".join(tags) + "]"
+    for name in sorted(fields):
+        line += f" {name}={fields[name]}"
+    return line
+--- hint
+`tags` is a tuple of the extra positional arguments and `fields` is a dictionary of the extra keyword arguments. Both are empty when none were passed.
+--- hint
+`",".join(tags)` glues the tags together. `sorted(fields)` gives the field names in alphabetical order.
+--- check case | Fields come out in alphabetical order
+event_text("burn_end", dv=4.95, duration=0.5)
+=> "burn_end duration=0.5 dv=4.95"
+--- check case | Tags go in brackets before the fields
+event_text("abort", "manual", "pad_b", reason="valve")
+=> "abort [manual,pad_b] reason=valve"
+--- check case | Only a kind
+event_text("run_start")
+=> "run_start"
+--- check case | Fields spread from a dictionary with **
+event_text("limit", **{"value": 12.71, "channel": "ax"})
+=> "limit channel=ax value=12.71"
+--- check case | Tags spread from a list with *
+event_text("hold", *["wind", "range"])
+=> "hold [wind,range]"
+
++++ practice | Scale to the biggest magnitude
+--- task
+Write a function `normalize(values)` that returns a **new** list: every value divided by the largest magnitude in the list (the largest value once minus signs are ignored), so the biggest swing becomes 1.0 or -1.0.
+
+- `normalize([2.0, -4.0, 1.0])` returns `[0.5, -1.0, 0.25]`.
+- An empty list gives `[]`.
+- If every value is zero, return a new list of the same zeros instead of dividing by zero.
+- Never change the list you were given.
+--- starter
+def normalize(values):
+    pass
+--- solution
+def normalize(values):
+    """Return a new list scaled so the largest magnitude is 1.0; zeros stay zeros."""
+    if not values:
+        return []
+    biggest = max(max(values), -min(values))
+    if biggest == 0:
+        return list(values)
+    result = []
+    for v in values:
+        result.append(v / biggest)
+    return result
+--- hint
+The largest magnitude is whichever is bigger: the largest value, or minus the smallest value.
+--- hint
+Two guard clauses come first: the empty list, and a largest magnitude of zero. Then build the result with `append`, so the argument is never touched.
+--- check case | The negative value has the biggest magnitude
+normalize([2.0, -4.0, 1.0])
+=> [0.5, -1.0, 0.25]
+--- check case | An empty list
+normalize([])
+=> []
+--- check case | All zeros do not divide by zero
+normalize([0.0, 0.0])
+=> [0.0, 0.0]
+--- check case | The argument is left alone
+(lambda xs: (normalize(xs), xs)[1])([3.0, 6.0])
+=> [3.0, 6.0]
+--- check test | The result is a new list, even for zeros
+(lambda xs: normalize(xs) is not xs)([0.0])
+
++++ practice | A detrend that changes its input
+--- task
+`detrend(samples)` should return a **new** list holding each sample minus the mean of the samples, and leave the caller's list alone. It is only ever called with a non-empty list.
+
+It returns the right numbers, but the caller's list comes back changed too, so a later report on the raw data shows the detrended values. Fix it.
+--- starter
+def detrend(samples):
+    """Return a new list: each sample minus the mean. The argument is left alone."""
+    mean = sum(samples) / len(samples)
+    result = samples
+    for i, s in enumerate(samples):
+        result[i] = s - mean
+    return result
+--- solution
+def detrend(samples):
+    """Return a new list: each sample minus the mean. The argument is left alone."""
+    mean = sum(samples) / len(samples)
+    result = list(samples)
+    for i, s in enumerate(samples):
+        result[i] = s - mean
+    return result
+--- hint
+A parameter is bound to the caller's own list. `result = samples` gives that same list a second name; it copies nothing.
+--- hint
+Make `result` a new list with the same numbers, and the loop changes only the copy.
+--- check case | Subtracts the mean
+detrend([1.0, 2.0, 3.0])
+=> [-1.0, 0.0, 1.0]
+--- check case | The caller's list is unchanged
+(lambda xs: (detrend(xs), xs)[1])([4.0, 6.0])
+=> [4.0, 6.0]
+--- check test | Returns a different list
+(lambda xs: detrend(xs) is not xs)([1.0, 1.0])
+
++++ practice | Average in blocks
+--- task
+A record sampled at 100 Hz can be turned into a 10 Hz one by averaging each block of ten samples. Write a function `block_means(samples, n)` that returns a new list of the means of consecutive blocks of `n` samples.
+
+- The first block is samples 0 to n-1, the next is n to 2n-1, and so on.
+- A last block with fewer than `n` samples is left out.
+- `n` is at least 1. If there are fewer than `n` samples, the result is `[]`.
+
+So `block_means([1.0, 3.0, 5.0, 7.0, 9.0], 2)` returns `[2.0, 6.0]`: the 9.0 is a partial block.
+--- starter
+def block_means(samples, n):
+    pass
+--- solution
+def block_means(samples, n):
+    """Means of consecutive blocks of n samples; a partial last block is dropped."""
+    means = []
+    for start in range(0, len(samples) - n + 1, n):
+        block = samples[start:start + n]
+        means.append(sum(block) / n)
+    return means
+--- hint
+`range(start, stop, step)` with a step of `n` gives the index where each block begins. A slice `samples[start:start + n]` is one block.
+--- hint
+The last block that fits begins at `len(samples) - n`, so stop the range one past that. When that is negative, the range is empty.
+--- check case | Drops the partial block
+block_means([1.0, 3.0, 5.0, 7.0, 9.0], 2)
+=> [2.0, 6.0]
+--- check case | Blocks of three
+block_means([2.0, 4.0, 6.0, 1.0, 1.0, 4.0], 3)
+=> [4.0, 2.0]
+--- check case | Blocks of one are the samples
+block_means([5.0, -1.0], 1)
+=> [5.0, -1.0]
+--- check case | Fewer samples than one block
+block_means([1.0, 2.0], 3)
+=> []
+--- check case | No samples
+block_means([], 4)
+=> []
+
++++ question | Which call fails
+--- ask
+Given
+
+```python
+def report(name, value, unit="Pa"):
+    return f"{name} {value} {unit}"
+```
+
+which call raises a `TypeError`?
+--- choice
+`report("q", 3.0, "kPa")`
+--- choice
+`report(value=3.0, name="q")`
+--- choice correct
+`report("q", unit="kPa")`
+--- choice
+`report("q", 3.0)`
+--- why
+`value` has no default, so every call must supply it, by position or by keyword. `report("q", unit="kPa")` gives only `name` and `unit`, and Python raises `TypeError: report() missing 1 required positional argument: 'value'`. Keywords may come in any order, as in the second call, and `unit` may be left out, as in the last.
+
+=== py01-l07 | Practice: Scope, the LEGB rule and closures
+--- for
+l07-scope-legb-and-closures
+
++++ practice | A calibration factory
+--- task
+A sensor reports raw volts, and each sensor has its own calibration: physical value = raw × scale + offset. Write a function `make_calibration(scale, offset)` that returns a function. The returned function takes one raw reading and returns the calibrated value.
+
+```python
+pc_cal = make_calibration(500.0, -250.0)
+pc_cal(4.0)     # 1750.0
+```
+
+Two calibrations made by the factory must not affect each other.
+--- starter
+def make_calibration(scale, offset):
+    pass
+--- solution
+def make_calibration(scale, offset):
+    """Return a function that turns a raw reading into raw * scale + offset."""
+    def convert(raw):
+        return raw * scale + offset
+    return convert
+--- hint
+Define a function inside `make_calibration` that uses `scale` and `offset`, and return that inner function without calling it.
+--- hint
+The inner function can read the outer function's parameters after the outer one has returned: it is a closure.
+--- check case | Calibrates a reading
+make_calibration(500.0, -250.0)(4.0)
+=> 1750.0
+--- check case | Zero volts gives the offset
+make_calibration(3.0, 1.5)(0.0)
+=> 1.5
+--- check case | Two calibrations stay independent
+(lambda a, b: (a(10.0), b(10.0), a(1.0)))(make_calibration(2.0, 0.0), make_calibration(1.0, 5.0))
+=> (20.0, 15.0, 2.0)
+
++++ practice | A running mean
+--- task
+Write a function `make_running_mean()` that returns a function `add(x)`. Each call of `add` takes one new sample and returns the mean of every sample it has been given so far.
+
+```python
+m = make_running_mean()
+m(2.0)   # 2.0
+m(4.0)   # 3.0
+m(9.0)   # 5.0
+```
+
+- Each running mean made by the factory has its own samples.
+- Keep the state in the closure: no `global`.
+--- starter
+def make_running_mean():
+    pass
+--- solution
+def make_running_mean():
+    """Return add(x), which returns the mean of every sample given to it so far."""
+    count = 0
+    total = 0.0
+
+    def add(x):
+        nonlocal count, total
+        count += 1
+        total += x
+        return total / count
+
+    return add
+--- hint
+You only need two numbers to keep: how many samples, and their total.
+--- hint
+The inner function assigns to those names, so it needs `nonlocal count, total`, or Python makes them local and raises `UnboundLocalError`.
+--- check case | The mean after each sample
+(lambda m: (m(2.0), m(4.0), m(9.0)))(make_running_mean())
+=> (2.0, 3.0, 5.0)
+--- check case | Two running means do not share samples
+(lambda a, b: (a(1.0), a(3.0), b(10.0), a(5.0)))(make_running_mean(), make_running_mean())
+=> (1.0, 2.0, 10.0, 3.0)
+--- check source absent | Keeps its state without global
+\bglobal\b
+
++++ practice | One checker per channel
+--- task
+Write a function `make_checkers(limits)`. It takes a dictionary from channel names to limits and returns a new dictionary from the same names to functions. Each function takes a value and returns `True` if it is over that channel's own limit, and `False` otherwise.
+
+```python
+checks = make_checkers({"ax": 12.5, "ay": 3.0})
+checks["ax"](5.0)   # False
+checks["ay"](5.0)   # True
+```
+
+An empty dictionary of limits gives an empty dictionary of checkers.
+--- starter
+def make_checkers(limits):
+    pass
+--- solution
+def make_limit_checker(limit):
+    """Return a function that reports whether a value is over `limit`."""
+    def exceeds(value):
+        return value > limit
+    return exceeds
+
+def make_checkers(limits):
+    """Map each channel name to a checker for its own limit."""
+    checkers = {}
+    for name, limit in limits.items():
+        checkers[name] = make_limit_checker(limit)
+    return checkers
+--- hint
+If you define the checker function directly inside the loop, every checker sees the loop variable's last value when it is called.
+--- hint
+Write a small factory that takes one limit and returns a checker, and call it once per channel. Each call gets its own `limit`.
+--- check case | Each checker uses its own limit
+(lambda c: (c["ax"](5.0), c["ay"](5.0)))(make_checkers({"ax": 12.5, "ay": 3.0}))
+=> (False, True)
+--- check case | A value exactly at the limit is not over
+(lambda c: (c["pc"](2200.0), c["pc"](2200.1), c["tc"](2200.1)))(make_checkers({"pc": 2200.0, "tc": 3300.0}))
+=> (False, True, False)
+--- check case | The keys are the channel names
+sorted(make_checkers({"tc": 1.0, "ax": 2.0}))
+=> ["ax", "tc"]
+--- check case | No limits, no checkers
+make_checkers({})
+=> {}
+
++++ practice | The dropout counter that will not start
+--- task
+`count_dropouts(samples)` should return how many samples in the list it is given are the dropout marker `-999.0`. Called twice on the same list, it must give the same answer twice.
+
+It stops with `UnboundLocalError` the first time a list holds a dropout. Fix it so the count belongs to each call.
+--- starter
+dropouts = 0
+
+def count_dropouts(samples):
+    """Return how many samples in this list are the dropout marker -999.0."""
+    for s in samples:
+        if s == -999.0:
+            dropouts += 1
+    return dropouts
+--- solution
+def count_dropouts(samples):
+    """Return how many samples in this list are the dropout marker -999.0."""
+    dropouts = 0
+    for s in samples:
+        if s == -999.0:
+            dropouts += 1
+    return dropouts
+--- hint
+`dropouts += 1` assigns to `dropouts`, so it is a local name for the whole function, and the local has no value yet when it is first read.
+--- hint
+Declaring it `global` would stop the error but make the count grow from call to call. Start a local count at 0 inside the function.
+--- check case | Counts the dropouts
+count_dropouts([9.8, -999.0, -999.0, 9.7])
+=> 2
+--- check case | The same list twice gives the same answer
+(count_dropouts([-999.0, 9.8]), count_dropouts([-999.0, 9.8]))
+=> (1, 1)
+--- check case | No samples
+count_dropouts([])
+=> 0
+
++++ practice | A limit that must persist
+--- task
+One sample over a limit can be a noise spike. A monitor should raise the alarm only when the value stays over the limit for several samples in a row.
+
+Write a function `make_persistence_monitor(limit, n)` that returns a function `check(value)`. `check` returns `True` when this value and the `n - 1` values before it were all over `limit`, and `False` otherwise.
+
+- "Over" means strictly greater than `limit`. A value at or below the limit resets the count.
+- `n` is at least 1. With `n = 1`, any value over the limit returns `True` at once.
+- Each monitor made by the factory keeps its own count.
+--- starter
+def make_persistence_monitor(limit, n):
+    pass
+--- solution
+def make_persistence_monitor(limit, n):
+    """Return check(value): True once n values in a row have been over limit."""
+    streak = 0
+
+    def check(value):
+        nonlocal streak
+        if value > limit:
+            streak += 1
+        else:
+            streak = 0
+        return streak >= n
+
+    return check
+--- hint
+Keep one number in the closure: how many values in a row have been over the limit, including this one.
+--- hint
+Add one when the value is over, go back to 0 when it is not, and return whether the count has reached `n`.
+--- check case | Alarms on the third value over in a row
+(lambda m: (m(13.0), m(13.0), m(12.0), m(13.0), m(13.0), m(13.0), m(13.1)))(make_persistence_monitor(12.5, 3))
+=> (False, False, False, False, False, True, True)
+--- check case | A value at the limit resets the count
+(lambda m: (m(13.0), m(12.5), m(13.0), m(13.0)))(make_persistence_monitor(12.5, 2))
+=> (False, False, False, True)
+--- check case | n = 1 alarms at once
+(lambda m: (m(5.0), m(2.0)))(make_persistence_monitor(3.0, 1))
+=> (True, False)
+--- check case | Two monitors keep separate counts
+(lambda a, b: (a(9.0), b(9.0), a(9.0), b(1.0), b(9.0)))(make_persistence_monitor(5.0, 2), make_persistence_monitor(5.0, 2))
+=> (False, False, True, False, False)
+
++++ question | Where the function looks
+--- ask
+What does this print?
+
+```python
+x = 1
+
+def show():
+    print(x)
+
+def run():
+    x = 2
+    show()
+
+run()
+```
+--- answer
+1
+--- why
+Scope is decided by where a function is written, not by where it is called from. `show` is written at the top level of the file, so when it looks up `x` it searches its own locals, then the module's globals, and finds `x = 1`. The `x = 2` inside `run` is local to `run`, and `show` cannot see it just because `run` called it. Expecting `2` is expecting dynamic scoping, which is how bash treats `local` variables but not how Python works.
+
+=== py01-l08 | Practice: The mutable default argument, identity and copying
+--- for
+l08-mutable-default-arguments
+
++++ practice | A table of readings
+--- task
+Write a function `add_reading(channel, value, table=None)`. `table` is a dictionary from channel names to lists of readings. The function appends `value` to the list for `channel`, starting a new list if the channel is not in the table yet, and returns the table.
+
+- With no table given, each call starts a brand-new empty dictionary.
+- With a table given, it adds to that very dictionary, even when that dictionary is empty.
+
+So `add_reading("ax", 0.02)` returns `{"ax": [0.02]}`, and a second call `add_reading("ay", 0.5)` returns `{"ay": [0.5]}`, with no trace of `ax`.
+--- starter
+def add_reading(channel, value, table={}):
+    pass
+--- solution
+def add_reading(channel, value, table=None):
+    """Append value to table[channel] (a new dict if none is given) and return the table."""
+    if table is None:
+        table = {}
+    if channel not in table:
+        table[channel] = []
+    table[channel].append(value)
+    return table
+--- hint
+A default is made once, when the `def` runs. Default to `None` and make the dictionary inside the body.
+--- hint
+Test `table is None`, not `not table`: an empty dictionary the caller passed in is falsy, and must still be the one you fill.
+--- check case | One reading, no table given
+add_reading("ax", 0.02)
+=> {"ax": [0.02]}
+--- check case | Calls without a table do not share one
+(add_reading("ax", 1.0), add_reading("ay", 2.0))[1]
+=> {"ay": [2.0]}
+--- check case | Adds to the caller's empty table
+(lambda t: (add_reading("ax", 1.0, t), add_reading("ax", 2.0, t), t)[2])({})
+=> {"ax": [1.0, 2.0]}
+--- check test | Returns the very table it was given
+(lambda t: add_reading("pc", 1.0, t) is t)({"pc": [0.5]})
+
++++ practice | Settings on top of the defaults
+--- task
+`DEFAULTS` holds the settings every run starts from. Write a function `merged_config(overrides, base=None)` that returns a **new** dictionary: the settings of `base`, with every key in `overrides` set to its value from `overrides`.
+
+- When no `base` is given, use `DEFAULTS`.
+- Never change `DEFAULTS`, `base` or `overrides`.
+
+So `merged_config({"rate_hz": 10})` returns `{"rate_hz": 10, "units": "SI", "log": True}`, and `DEFAULTS` still says 40 afterwards.
+--- starter
+DEFAULTS = {"rate_hz": 40, "units": "SI", "log": True}
+
+def merged_config(overrides, base=DEFAULTS):
+    for key, value in overrides.items():
+        base[key] = value
+    return base
+--- solution
+DEFAULTS = {"rate_hz": 40, "units": "SI", "log": True}
+
+def merged_config(overrides, base=None):
+    """Return a new dict: base (DEFAULTS if none is given) with overrides applied."""
+    if base is None:
+        base = DEFAULTS
+    result = dict(base)
+    for key, value in overrides.items():
+        result[key] = value
+    return result
+--- hint
+The starter changes the one `DEFAULTS` dictionary that every later call starts from.
+--- hint
+Copy `base` into a new dictionary with `dict(base)`, and change only the copy.
+--- check case | Overrides one setting
+merged_config({"rate_hz": 10})
+=> {"rate_hz": 10, "units": "SI", "log": True}
+--- check case | DEFAULTS is unchanged afterwards
+(merged_config({"log": False}), DEFAULTS)[1]
+=> {"rate_hz": 40, "units": "SI", "log": True}
+--- check case | A base of your own is used and left alone
+(lambda b: (merged_config({"a": 2}, b), b))({"a": 1, "b": 1})
+=> ({"a": 2, "b": 1}, {"a": 1, "b": 1})
+--- check test | The result is a new dictionary
+merged_config({}) is not DEFAULTS
+
++++ practice | A snapshot that stays put
+--- task
+Write two functions.
+
+1. `snapshot(runs)` returns a fully independent copy of `runs`, a dictionary from channel names to lists of samples. Nothing done to `runs` afterwards, including appending to one of its lists, may show up in the snapshot.
+2. `changed_channels(before, after)` takes two such dictionaries and returns a sorted list of the channel names whose samples differ between them, including names that are in only one of the two.
+
+So after `s = snapshot(runs)` and `runs["ax"].append(3.94)`, `changed_channels(s, runs)` returns `["ax"]`.
+--- starter
+def snapshot(runs):
+    return dict(runs)
+
+def changed_channels(before, after):
+    pass
+--- solution
+import copy
+
+def snapshot(runs):
+    """Return a deep copy of runs: new dict, new lists."""
+    return copy.deepcopy(runs)
+
+def changed_channels(before, after):
+    """Sorted names whose samples differ, or that appear in only one of the two."""
+    changed = []
+    for name in set(before) | set(after):
+        if before.get(name) != after.get(name):
+            changed.append(name)
+    return sorted(changed)
+--- hint
+`dict(runs)` copies the outer dictionary only; its lists are still shared. `copy.deepcopy` copies the lists too.
+--- hint
+Loop over every name in either dictionary (a set union of the keys) and compare the two lists with `==`. `.get` gives `None` for a name that is missing.
+--- check case | Appending to the original does not reach the snapshot
+(lambda r: (lambda s: (r["ax"].append(3.94), s)[1])(snapshot(r)))({"ax": [0.02, 0.11]})
+=> {"ax": [0.02, 0.11]}
+--- check test | The snapshot is equal but not the same lists
+(lambda r: snapshot(r) == r and snapshot(r)["ay"] is not r["ay"])({"ay": [-0.41]})
+--- check case | Finds the changed channel
+(lambda r: (lambda s: (r["ax"].append(3.94), changed_channels(s, r))[1])(snapshot(r)))({"ax": [0.02], "ay": [0.5]})
+=> ["ax"]
+--- check case | Names in only one of the two count as changed
+changed_channels({"ax": [1.0], "pc": [2.0]}, {"ax": [1.0], "tc": [3.0]})
+=> ["pc", "tc"]
+--- check case | Nothing changed
+changed_channels({"ax": [1.0]}, {"ax": [1.0]})
+=> []
+
++++ practice | The first missing reading
+--- task
+A list of readings uses `None` where a sensor did not report. Write a function `first_missing(readings)` that returns the index of the first `None`, or `-1` if there is none.
+
+`0.0`, `False`, an empty string and an empty list are real values here, not missing ones. So `first_missing([0.0, False, "", [], None, 3.0])` returns `4`.
+--- starter
+def first_missing(readings):
+    for i, r in enumerate(readings):
+        if not r:
+            return i
+    return -1
+--- solution
+def first_missing(readings):
+    """Index of the first None in readings, or -1 if there is none."""
+    for i, r in enumerate(readings):
+        if r is None:
+            return i
+    return -1
+--- hint
+Truthiness lumps every falsy value together. You want exactly one of them.
+--- hint
+`r is None` is true only for `None`, the one object that means "missing".
+--- check case | Skips every value that is only falsy
+first_missing([0.0, False, "", [], None, 3.0])
+=> 4
+--- check case | Missing at the start
+first_missing([None, None])
+=> 0
+--- check case | Nothing missing
+first_missing([9.8, 0.0])
+=> -1
+--- check case | No readings at all
+first_missing([])
+=> -1
+
++++ practice | The command queue that remembers
+--- task
+`queue_command(command, queue=[])` should add a command to a queue and return the queue. With no queue given, it should start a new one, so:
+
+```python
+queue_command("arm")    # ["arm"]
+queue_command("fire")   # ["fire"]
+```
+
+The second call returns `["arm", "fire"]` instead, and on a real pad that means a stale command goes out again. With a queue given, even an empty one, it must add to that very list. Fix it.
+--- starter
+def queue_command(command, queue=[]):
+    """Add a command to the queue and return it; start a new queue if none is given."""
+    queue.append(command)
+    return queue
+--- solution
+def queue_command(command, queue=None):
+    """Add a command to the queue and return it; start a new queue if none is given."""
+    if queue is None:
+        queue = []
+    queue.append(command)
+    return queue
+--- hint
+The `[]` in the `def` line is one list, made when the function was defined, and every call without a queue appends to it.
+--- hint
+Default to `None`, and make the new list inside the body when `queue is None`.
+--- check case | A call with no queue
+queue_command("arm")
+=> ["arm"]
+--- check case | The next call without a queue starts fresh
+(queue_command("arm"), queue_command("fire"))[1]
+=> ["fire"]
+--- check case | Adds to a given empty queue
+(lambda q: (queue_command("vent", q), q)[1])([])
+=> ["vent"]
+--- check test | Returns the very queue it was given
+(lambda q: queue_command("vent", q) is q)(["arm"])
+
++++ practice | Histogram bins, added up across files
+--- task
+Write a function `bin_counts(values, width, counts=None)` that counts values into bins of the given width and returns a dictionary from bin number to count.
+
+- The bin number of a value `v` is `v` divided by `width`, rounded **down** to a whole number, as an `int`. With a width of 1.0, `0.7` is in bin 0 and `-0.5` is in bin -1.
+- With no `counts` given, start a new dictionary on every call.
+- With a `counts` dictionary given, add to it and return it, so the counts from several files can be added up.
+- Bins that get no values do not appear.
+
+So `bin_counts([0.2, 0.7, 1.1, -0.5], 1.0)` returns `{0: 2, 1: 1, -1: 1}`.
+--- starter
+def bin_counts(values, width, counts={}):
+    pass
+--- solution
+def bin_counts(values, width, counts=None):
+    """Count values into bins of `width`; bin number is floor(v / width). Adds to counts if given."""
+    if counts is None:
+        counts = {}
+    for v in values:
+        b = int(v // width)
+        counts[b] = counts.get(b, 0) + 1
+    return counts
+--- hint
+`v // width` rounds down, toward minus infinity, which is what makes `-0.5` land in bin -1. `int(...)` turns the float result into a whole number.
+--- hint
+`counts.get(b, 0) + 1` adds one to a bin whether or not it is there yet. And default `counts` to `None`, never to `{}`.
+--- check case | Negative values go to negative bins
+bin_counts([0.2, 0.7, 1.1, -0.5], 1.0)
+=> {0: 2, 1: 1, -1: 1}
+--- check case | Half-width bins
+bin_counts([0.25, 0.75, 1.0, 1.2], 0.5)
+=> {0: 1, 1: 1, 2: 2}
+--- check case | Adds up across two files
+(lambda c: (bin_counts([1.5], 1.0, c), bin_counts([1.2, 3.0], 1.0, c))[1])({})
+=> {1: 2, 3: 1}
+--- check case | Calls without counts do not share them
+(bin_counts([0.5], 1.0), bin_counts([2.5], 1.0))[1]
+=> {2: 1}
+--- check case | No values
+bin_counts([], 2.0)
+=> {}
+
+=== py01-l09 | Practice: Modules, imports, packages and the main guard
+--- for
+l09-modules-packages-and-the-main-guard
+
++++ practice | A script that can be imported
+--- task
+The starter is a script that prints the thrust-to-weight ratio of two vehicles. A colleague wants to import it for the calculation alone, but importing it would print the report.
+
+Restructure it so it defines things at the top level and does things only when run:
+
+- `twr(thrust_n, mass_kg)` returns the thrust divided by the weight, `mass_kg * G0`.
+- `main()` prints the same two lines the script prints now, using `twr`.
+- `main()` is called only under the main guard. Nothing but the constants and the two functions sits at the top level above it.
+
+Run directly, it must still print:
+
+```
+549054 kg: T/W 1.41
+1420000 kg: T/W 0.55
+```
+--- starter
+G0 = 9.80665
+thrust = 7607000.0
+masses = [549054.0, 1420000.0]
+
+for m in masses:
+    print(f"{m:.0f} kg: T/W {thrust / (m * G0):.2f}")
+--- solution
+G0 = 9.80665
+THRUST = 7607000.0
+MASSES = [549054.0, 1420000.0]
+
+def twr(thrust_n, mass_kg):
+    """Thrust-to-weight ratio, from thrust in N and mass in kg, at standard gravity."""
+    return thrust_n / (mass_kg * G0)
+
+def main():
+    """Print the ratio for each vehicle."""
+    for m in MASSES:
+        print(f"{m:.0f} kg: T/W {twr(THRUST, m):.2f}")
+
+if __name__ == "__main__":
+    main()
+--- hint
+Everything that does something goes into `main()`. The file then ends with `if __name__ == "__main__":` and a call to `main()` under it.
+--- hint
+When the file is run directly, `__name__` is `"__main__"`, so the report still prints. When it is imported, the guard is false and only the definitions run.
+--- check output | Run directly, it prints the report
+549054 kg: T/W 1.41
+1420000 kg: T/W 0.55
+--- check test | twr computes the ratio
+abs(twr(7607000.0, 549054.0) - 1.4127902232) < 1e-9
+--- check source | Has a main function
+def\s+main\(\s*\)
+--- check source | Calls it under the main guard
+if\s+__name__\s*==\s*["']__main__["']\s*:\s*\n\s+main\(\)
+
++++ practice | Which file did the import find?
+--- task
+When an import behaves strangely, the first question is which file it really loaded. Write a function `where_from(module)` that takes a module object and returns:
+
+- `"compiled in"` if the module has no `__file__` attribute, because it is built into the interpreter;
+- otherwise the last part of the path in its `__file__`, such as `"csv.py"`.
+
+`sys` is always compiled in. The standard `csv` module is a file called `csv.py`. And `json` is a package, so the file it was loaded from is its `__init__.py`.
+--- starter
+def where_from(module):
+    return module.__file__
+--- solution
+from pathlib import Path
+
+def where_from(module):
+    """The file name a module was loaded from, or "compiled in" if it has no file."""
+    path = getattr(module, "__file__", None)
+    if path is None:
+        return "compiled in"
+    return Path(path).name
+--- hint
+`getattr(obj, "name", None)` gives the attribute, or `None` when the object has no such attribute, instead of raising `AttributeError`.
+--- hint
+`Path(text).name` is the last part of a path.
+--- check case | sys is compiled into the interpreter
+where_from(__import__("sys"))
+=> "compiled in"
+--- check case | csv is an ordinary file
+where_from(__import__("csv"))
+=> "csv.py"
+--- check case | A package is loaded from its __init__.py
+where_from(__import__("json"))
+=> "__init__.py"
+
++++ practice | What is already loaded
+--- task
+Python keeps every module it has imported in `sys.modules`, a dictionary from module names to module objects. Write a function `loaded(names)` that takes a list of module names and returns, sorted, the ones that are already in that cache.
+
+So right after `import json`, `loaded(["json", "no_such_module"])` returns `["json"]`. Do not import anything to find out: only look in the cache.
+--- starter
+def loaded(names):
+    pass
+--- solution
+import sys
+
+def loaded(names):
+    """The given module names that are already imported, sorted."""
+    found = []
+    for name in names:
+        if name in sys.modules:
+            found.append(name)
+    return sorted(found)
+--- hint
+`import sys` at the top, then `name in sys.modules` asks the cache without importing anything.
+--- hint
+Collect the names that are there in a list, and return it through `sorted`.
+--- check case | An imported module is in the cache, a missing one is not
+(__import__("json"), loaded(["json", "no_such_module_zz"]))[1]
+=> ["json"]
+--- check case | The result is sorted
+loaded(["sys", "builtins"])
+=> ["builtins", "sys"]
+--- check case | No names
+loaded([])
+=> []
+
++++ practice | The self-test that never runs
+--- task
+This module cleans dropout markers out of a list. Run directly, it should print its self-test:
+
+```
+self-test: [9.79, 9.81]
+```
+
+Imported, it should print nothing. It never prints anything, run or imported. Find the line that is wrong and fix it.
+--- starter
+DROPOUT = -999.0
+
+def clean(samples):
+    """Return the samples with dropout markers removed."""
+    good = []
+    for s in samples:
+        if s != DROPOUT:
+            good.append(s)
+    return good
+
+def main():
+    demo = [9.79, DROPOUT, 9.81]
+    print("self-test:", clean(demo))
+
+if __name__ == "main":
+    main()
+--- solution
+DROPOUT = -999.0
+
+def clean(samples):
+    """Return the samples with dropout markers removed."""
+    good = []
+    for s in samples:
+        if s != DROPOUT:
+            good.append(s)
+    return good
+
+def main():
+    demo = [9.79, DROPOUT, 9.81]
+    print("self-test:", clean(demo))
+
+if __name__ == "__main__":
+    main()
+--- hint
+Ask what `__name__` holds when the file is run directly. It is an ordinary string, compared with `==`.
+--- hint
+The name of the file you run is `"__main__"`, with two underscores on each side.
+--- check output | Run directly, it prints the self-test
+self-test: [9.79, 9.81]
+--- check case | clean still works
+clean([-999.0, 1.0, -999.0])
+=> [1.0]
+--- check source | Compares __name__ with "__main__"
+__name__\s*==\s*["']__main__["']
+
++++ question | Importing a name from a package
+--- ask
+A folder `flight` holds an empty `__init__.py` and a module `units.py` that defines `nmi_to_m`. A script beside the folder wants to call it by its bare name, as `nmi_to_m(100.0)`. Which import does that?
+--- choice
+`import flight`
+--- choice
+`import flight.units`
+--- choice correct
+`from flight.units import nmi_to_m`
+--- choice
+`from flight import *`
+--- why
+`from flight.units import nmi_to_m` imports the submodule and binds the function's own name in your file. `import flight` runs only the empty `__init__.py`, so not even `flight.units` exists afterwards. `import flight.units` loads the submodule, but you must then write `flight.units.nmi_to_m`. `from flight import *` takes the public names defined in `__init__.py`, and an empty one defines none. It would also hide where every name came from.
+
++++ question | Editing a module you already imported
+--- ask
+In a REPL you run `import telemetry`, where `telemetry.py` says `DROPOUT = -999.0`. You then edit the file to say `DROPOUT = -9999.0`, save it, and type `import telemetry` again. What is `telemetry.DROPOUT` now?
+--- choice correct
+`-999.0`: the second import finds the module in `sys.modules` and does not run the file again.
+--- choice
+`-9999.0`: every import statement reads the file from disk again.
+--- choice
+It raises `ImportError`, because the file changed after it was imported.
+--- choice
+`-9999.0`, but only because the REPL notices saved files.
+--- why
+The first import runs the file and stores the module object in `sys.modules`. Every later import of the same name reuses that object without running anything, so your edit is invisible to this session. Restart the interpreter to pick up the change. This is also why a module's body runs exactly once per process.
+
+=== py01-l10 | Practice: Exceptions: raising, catching and designing failure
+--- for
+l10-exceptions
+
++++ practice | A reading, or nothing
+--- task
+Write a function `to_float(text)` that returns `text` converted to a float, or `None` when it cannot be converted.
+
+- Text that is not a number, such as `"9.81 m/s"` or `""`, gives `None`.
+- `None` itself, which a missing field arrives as, gives `None` too.
+- Catch only the exceptions that those cases raise. Do not use a bare `except:` or `except Exception`.
+--- starter
+def to_float(text):
+    return float(text)
+--- solution
+def to_float(text):
+    """text as a float, or None when it is not a number (or is None)."""
+    try:
+        return float(text)
+    except (ValueError, TypeError):
+        return None
+--- hint
+Try the conversion and see what each bad case raises: text that is not a number raises one type, and `float(None)` raises another.
+--- hint
+One `except` clause can catch several types given as a tuple: `except (ValueError, TypeError):`.
+--- check case | A number with spaces around it
+to_float(" 9.81 ")
+=> 9.81
+--- check case | A number with a unit is not a number
+to_float("9.81 m/s")
+=> None
+--- check case | An empty field
+to_float("")
+=> None
+--- check case | A missing field
+to_float(None)
+=> None
+--- check source absent | Catches named types only
+except\s*:|except\s+Exception
+
++++ practice | Durations with units
+--- task
+Write a function `parse_duration(text)` that reads a duration written as a number, blank space, then a unit, and returns it in seconds as a float.
+
+- The units are `s` (seconds), `min` (60 s) and `h` (3600 s). Blank space around the whole text is allowed.
+- Raise `ValueError` for anything else: a missing unit, an unknown unit, extra words, a number that is not a number, or a negative duration. Put the text you were given in the message.
+
+So `parse_duration("3 min")` returns `180.0`, and `parse_duration("12.5")` raises `ValueError`.
+--- starter
+def parse_duration(text):
+    number, unit = text.split()
+    return float(number)
+--- solution
+def parse_duration(text):
+    """Seconds in a duration like "12.5 s", "3 min" or "2 h"; ValueError otherwise."""
+    parts = text.split()
+    if len(parts) != 2:
+        raise ValueError(f"expected a number and a unit, got {text!r}")
+    number, unit = parts
+    try:
+        value = float(number)
+    except ValueError:
+        raise ValueError(f"not a number in {text!r}")
+    if value < 0:
+        raise ValueError(f"negative duration {text!r}")
+    if unit == "s":
+        return value
+    elif unit == "min":
+        return value * 60
+    elif unit == "h":
+        return value * 3600
+    else:
+        raise ValueError(f"unknown unit in {text!r}")
+--- hint
+`text.split()` cuts on any blank space and ignores it at the ends. Check that you got exactly two pieces before you unpack them.
+--- hint
+`raise ValueError(f"... {text!r}")` stops the function and hands the problem to the caller. An `if`/`elif` chain picks the factor for each unit.
+--- check case | Seconds
+parse_duration("12.5 s")
+=> 12.5
+--- check case | Minutes and hours, with spaces around
+(parse_duration("3 min"), parse_duration(" 2 h "))
+=> (180.0, 7200.0)
+--- check test | A missing unit raises ValueError
+raises(ValueError, lambda: parse_duration("12.5"))
+--- check test | An unknown unit or extra words raise ValueError
+raises(ValueError, lambda: parse_duration("12.5 days")) and raises(ValueError, lambda: parse_duration("1 h 5 min"))
+--- check test | A bad number, a negative one and an empty text raise ValueError
+raises(ValueError, lambda: parse_duration("fast s")) and raises(ValueError, lambda: parse_duration("-3 s")) and raises(ValueError, lambda: parse_duration(""))
+
++++ practice | Errors a caller can tell apart
+--- task
+Define an exception family and use it:
+
+- `TelemetryError`, derived from `Exception`: the base for this module's errors.
+- `MissingLimitError` and `LimitExceededError`, both derived from `TelemetryError`.
+
+Then write `margin(peaks, limits, name)`, which returns `limits[name] - peaks[name]`, except that:
+
+1. if `name` has no limit, it raises `MissingLimitError`;
+2. otherwise, if `name` has no peak, it raises a plain `TelemetryError`;
+3. otherwise, if the peak is over the limit, it raises `LimitExceededError`.
+
+A peak exactly at its limit is not over: its margin is `0.0`. Give each exception a message naming the channel.
+--- starter
+def margin(peaks, limits, name):
+    return limits[name] - peaks[name]
+--- solution
+class TelemetryError(Exception):
+    """Base class for problems with telemetry."""
+
+class MissingLimitError(TelemetryError):
+    """A channel has no limit in the table."""
+
+class LimitExceededError(TelemetryError):
+    """A channel's peak is over its limit."""
+
+def margin(peaks, limits, name):
+    """Limit minus peak for one channel; raises a TelemetryError when that makes no sense."""
+    if name not in limits:
+        raise MissingLimitError(f"no limit for {name}")
+    if name not in peaks:
+        raise TelemetryError(f"no peak recorded for {name}")
+    if peaks[name] > limits[name]:
+        raise LimitExceededError(f"{name}: peak {peaks[name]} is over its limit {limits[name]}")
+    return limits[name] - peaks[name]
+--- hint
+An exception type is `class Name(Base):` with a docstring as its body. Derive the two specific ones from `TelemetryError`, not from `Exception`.
+--- hint
+Test the three cases in the order given, with `in` for the missing keys, and `raise` each error with an f-string message.
+--- check case | The margin of a channel under its limit
+margin({"ax": 12.0}, {"ax": 12.5}, "ax")
+=> 0.5
+--- check case | Exactly at the limit is not over
+margin({"ax": 12.5}, {"ax": 12.5}, "ax")
+=> 0.0
+--- check test | The family tree
+issubclass(MissingLimitError, TelemetryError) and issubclass(LimitExceededError, TelemetryError) and issubclass(TelemetryError, Exception) and not issubclass(LimitExceededError, MissingLimitError)
+--- check test | No limit raises MissingLimitError, even with no peak either
+raises(MissingLimitError, lambda: margin({"ax": 1.0}, {"ax": 2.0}, "ay"))
+--- check test | No peak raises a TelemetryError
+raises(TelemetryError, lambda: margin({"ax": 1.0}, {"ax": 2.0, "ay": 1.0}, "ay"))
+--- check test | Over the limit raises LimitExceededError
+raises(LimitExceededError, lambda: margin({"tc": 3310.2}, {"tc": 3300.0}, "tc"))
+
++++ practice | A step that always cleans up
+--- task
+Write a function `attempt(values, log)` that works out the mean of `values` and records what happened by appending words to the list `log`:
+
+1. First it appends `"start"`.
+2. It computes `sum(values) / len(values)`.
+3. If that raised `ZeroDivisionError` (no values), it appends `"empty"` and returns `None`.
+4. If it raised nothing, it appends `"ok"` and returns the mean.
+5. Whatever happened, even an exception it does not handle, the very last thing appended is `"end"`.
+
+Any other exception, such as the `TypeError` from a string in `values`, must not be caught: it goes up to the caller, after `"end"` has been appended.
+
+Keep only step 2 inside the `try`.
+--- starter
+def attempt(values, log):
+    log.append("start")
+    mean = sum(values) / len(values)
+    log.append("ok")
+    log.append("end")
+    return mean
+--- solution
+def attempt(values, log):
+    """Mean of values, logging start, then ok or empty, then end; other errors pass up."""
+    log.append("start")
+    try:
+        mean = sum(values) / len(values)
+    except ZeroDivisionError:
+        log.append("empty")
+        return None
+    else:
+        log.append("ok")
+        return mean
+    finally:
+        log.append("end")
+--- hint
+A `try` statement can have all four parts: `try`, `except`, `else` and `finally`.
+--- hint
+`else` runs only when the `try` raised nothing. `finally` runs on every way out, including a `return` and an exception passing through.
+--- check case | Success
+(lambda log: (attempt([2.0, 4.0], log), log))([])
+=> (3.0, ["start", "ok", "end"])
+--- check case | No values
+(lambda log: (attempt([], log), log))([])
+=> (None, ["start", "empty", "end"])
+--- check case | Another error passes up, after the cleanup
+(lambda log: (raises(TypeError, lambda: attempt([1.0, "x"], log)), log))([])
+=> (True, ["start", "end"])
+
++++ practice | The handler that is never reached
+--- task
+`classify(samples)` should return `"unusable"` when `check_record` raises `DropoutError` (more than a quarter of the samples are dropouts), `"bad"` for any other `TelemetryError` (an empty record), and `"good"` when nothing is raised.
+
+It returns `"bad"` for a record full of dropouts. Fix it without changing `check_record` or the exception classes.
+--- starter
+class TelemetryError(Exception):
+    """Base class for problems with a telemetry record."""
+
+class DropoutError(TelemetryError):
+    """Too many samples were dropouts to trust the record."""
+
+DROPOUT = -999.0
+
+def check_record(samples):
+    if not samples:
+        raise TelemetryError("record is empty")
+    if samples.count(DROPOUT) * 4 > len(samples):
+        raise DropoutError(f"{samples.count(DROPOUT)} of {len(samples)} samples are dropouts")
+
+def classify(samples):
+    try:
+        check_record(samples)
+    except TelemetryError:
+        return "bad"
+    except DropoutError:
+        return "unusable"
+    return "good"
+--- solution
+class TelemetryError(Exception):
+    """Base class for problems with a telemetry record."""
+
+class DropoutError(TelemetryError):
+    """Too many samples were dropouts to trust the record."""
+
+DROPOUT = -999.0
+
+def check_record(samples):
+    if not samples:
+        raise TelemetryError("record is empty")
+    if samples.count(DROPOUT) * 4 > len(samples):
+        raise DropoutError(f"{samples.count(DROPOUT)} of {len(samples)} samples are dropouts")
+
+def classify(samples):
+    try:
+        check_record(samples)
+    except DropoutError:
+        return "unusable"
+    except TelemetryError:
+        return "bad"
+    return "good"
+--- hint
+The `except` clauses are tried from the top, and the first one that matches wins. Does `except TelemetryError` match a `DropoutError`?
+--- hint
+Catching a type also catches every type derived from it. Put the more specific handler first.
+--- check case | Too many dropouts
+classify([-999.0, -999.0, 9.8])
+=> "unusable"
+--- check case | An empty record
+classify([])
+=> "bad"
+--- check case | A good record
+classify([9.8, 9.7, -999.0, 9.81])
+=> "good"
+
++++ practice | A batch that survives one bad record
+--- task
+Write a function `process_all(items, work)`. `work` is a function. Call it on each item in turn and return a tuple of two lists:
+
+- the results of the calls that worked, in order;
+- for each call that raised an exception, a tuple `(index, name of the exception type)`, in order.
+
+One bad item must not stop the batch. But the interpreter's own signals, such as the `SystemExit` that `sys.exit` raises, must still get through, so do not use a bare `except:`.
+
+So `process_all(["9.8", "x", "1e3"], float)` returns `([9.8, 1000.0], [(1, "ValueError")])`.
+--- starter
+def process_all(items, work):
+    results = []
+    for item in items:
+        results.append(work(item))
+    return results
+--- solution
+def process_all(items, work):
+    """Apply work to each item; return (results, [(index, exception type name), ...])."""
+    results = []
+    failures = []
+    for i, item in enumerate(items):
+        try:
+            result = work(item)
+        except Exception as e:
+            failures.append((i, type(e).__name__))
+        else:
+            results.append(result)
+    return results, failures
+--- hint
+Put a `try` around the one call, inside the loop, and catch `Exception` as `e`. `type(e).__name__` is the name of its type.
+--- hint
+`SystemExit` and `KeyboardInterrupt` are not derived from `Exception`, so `except Exception` lets them through while a bare `except:` would swallow them.
+--- check case | One bad item among good ones
+process_all(["9.8", "x", "1e3"], float)
+=> ([9.8, 1000.0], [(1, "ValueError")])
+--- check case | Different failures are named by type
+process_all([[2.0, 4.0], [], ["a"]], lambda xs: sum(xs) / len(xs))
+=> ([3.0], [(1, "ZeroDivisionError"), (2, "TypeError")])
+--- check case | Nothing to do
+process_all([], float)
+=> ([], [])
+--- check test | sys.exit still stops the batch
+raises(SystemExit, lambda: process_all([3], __import__("sys").exit))
+
+=== py01-l11 | Practice: Files, paths, CSV and JSON
+--- for
+l11-files-pathlib-csv-and-json
+
++++ practice | Count the data lines
+--- task
+Write a function `count_data_lines(path)` that returns how many lines of a text file hold data. A line does not count if it is blank (nothing but spaces) or if its first character that is not a space is `#` (a comment). The last line may or may not end with a newline.
+
+- `path` is a `pathlib.Path`. The checks write their test files into a new temporary folder.
+- Open the file with `with`, give `encoding="utf-8"`, and read it one line at a time.
+- A missing file raises `FileNotFoundError`; let it.
+--- starter
+def count_data_lines(path):
+    pass
+--- solution
+def count_data_lines(path):
+    """Lines of the file that are neither blank nor comments starting with #."""
+    count = 0
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            text = line.strip()
+            if text and not text.startswith("#"):
+                count += 1
+    return count
+--- hint
+Looping over an open file gives one line at a time, newline included. `line.strip()` removes the newline and the spaces around it.
+--- hint
+After stripping, a blank line is the empty string, which is falsy, and a comment starts with `#`.
+--- check case | Skips blank lines and comments, counts the last line without a newline
+(lambda p: (p.write_text("# run 7\nt,ax\n0.0,1.5\n\n   \n  # note\n0.1,1.6", encoding="utf-8"), count_data_lines(p))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()) / "run.txt")
+=> 3
+--- check case | An empty file
+(lambda p: (p.write_text("", encoding="utf-8"), count_data_lines(p))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()) / "empty.txt")
+=> 0
+--- check test | A missing file raises FileNotFoundError
+raises(FileNotFoundError, lambda: count_data_lines(__import__("pathlib").Path(__import__("tempfile").mkdtemp()) / "missing.txt"))
+--- check source | Says the encoding
+encoding\s*=\s*["']utf-8["']
+
++++ practice | A summary that round-trips
+--- task
+Write two functions that keep a run summary in a JSON file:
+
+- `save_summary(path, summary)` writes the dictionary `summary` to the file at `path` as JSON, indented by 2 spaces, in UTF-8. It returns nothing.
+- `load_summary(path)` reads that file back and returns the dictionary.
+
+`path` is a `pathlib.Path`, in a temporary folder the checks make. Remember what JSON does to a tuple: it comes back as a list.
+--- starter
+def save_summary(path, summary):
+    path.write_text(str(summary), encoding="utf-8")
+
+def load_summary(path):
+    return path.read_text(encoding="utf-8")
+--- solution
+import json
+
+def save_summary(path, summary):
+    """Write summary to path as JSON, indented by 2."""
+    path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+
+def load_summary(path):
+    """Read a JSON summary back from path."""
+    return json.loads(path.read_text(encoding="utf-8"))
+--- hint
+`json.dumps(value, indent=2)` turns a Python value into JSON text, and `json.loads(text)` turns it back.
+--- hint
+`str(summary)` is Python's own syntax, with single quotes and `True`, and JSON cannot read it.
+--- check case | Values come back as they went out
+(lambda p: (save_summary(p, {"run": "run_07", "rate_hz": 10, "passed": True, "notes": None}), load_summary(p))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()) / "summary.json")
+=> {"run": "run_07", "rate_hz": 10, "passed": True, "notes": None}
+--- check case | A tuple comes back as a list
+(lambda p: (save_summary(p, {"window": (0.0, 0.2)}), load_summary(p)["window"])[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()) / "window.json")
+=> [0.0, 0.2]
+--- check test | The file is real JSON, indented by 2
+(lambda p: (save_summary(p, {"run": "r1", "passed": False}), '\n  "passed": false' in p.read_text(encoding="utf-8"))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()) / "s.json")
+--- check case | Returns nothing
+save_summary(__import__("pathlib").Path(__import__("tempfile").mkdtemp()) / "n.json", {})
+=> None
+
++++ practice | One column from a CSV file
+--- task
+Write a function `read_column(path, name)` that reads a CSV file with a header row and returns a tuple of two things:
+
+- a list of the values in the column called `name`, converted to floats, in file order;
+- how many rows were skipped because that field was empty or was not a number.
+
+Find the column by its name, not its position: the same function must work when someone adds or reorders columns. `path` is a `pathlib.Path` in a temporary folder. Open it with `newline=""` and `encoding="utf-8"`.
+
+So for a file whose `ax` column holds `1.5`, nothing, `bad` and `2.5`, `read_column(p, "ax")` returns `([1.5, 2.5], 2)`.
+--- starter
+def read_column(path, name):
+    values = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            values.append(line.split(",")[1])
+    return values, 0
+--- solution
+import csv
+
+def read_column(path, name):
+    """(floats in column `name`, number of rows skipped because the field was not a number)."""
+    values = []
+    skipped = 0
+    with open(path, newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            try:
+                values.append(float(row[name]))
+            except ValueError:
+                skipped += 1
+    return values, skipped
+--- hint
+`csv.DictReader` reads the header for you and gives each row as a dictionary keyed by column name.
+--- hint
+`float("")` and `float("bad")` both raise `ValueError`. Catch it around the conversion only, and count it.
+--- check case | Skips the empty and the bad field
+(lambda p: (p.write_text("t,ax,ay\n0.0,1.5,-0.2\n0.1,,0.1\n0.2,bad,0.3\n0.3,2.5,0.0\n", encoding="utf-8"), read_column(p, "ax"))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()) / "run.csv")
+=> ([1.5, 2.5], 2)
+--- check case | Another column of the same file
+(lambda p: (p.write_text("t,ax,ay\n0.0,1.5,-0.2\n0.1,,0.1\n0.2,bad,0.3\n0.3,2.5,0.0\n", encoding="utf-8"), read_column(p, "ay"))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()) / "run.csv")
+=> ([-0.2, 0.1, 0.3, 0.0], 0)
+--- check case | Columns in a different order
+(lambda p: (p.write_text("ax,t\n4.5,0.0\n5.5,0.1\n", encoding="utf-8"), read_column(p, "ax"))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()) / "swapped.csv")
+=> ([4.5, 5.5], 0)
+--- check case | A header and no rows
+(lambda p: (p.write_text("t,ax\n", encoding="utf-8"), read_column(p, "ax"))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()) / "header.csv")
+=> ([], 0)
+
++++ practice | Notes with commas in them
+--- task
+An operator's log is a CSV file with a header `t,note`: a time in seconds, then a free-text note. Notes may contain commas and quote marks, so the program that wrote the file put such notes in double quotes, as the CSV rules say.
+
+Write a function `read_notes(path)` that returns a list of `(t, note)` tuples, with `t` as a float and the note exactly as the operator typed it. A file with only the header gives `[]`. `path` is a `pathlib.Path` in a temporary folder.
+--- starter
+def read_notes(path):
+    notes = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            t, note = line.strip().split(",")
+            notes.append((float(t), note))
+    return notes
+--- solution
+import csv
+
+def read_notes(path):
+    """(time, note) pairs from a t,note CSV file; quoted notes may hold commas."""
+    notes = []
+    with open(path, newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            notes.append((float(row["t"]), row["note"]))
+    return notes
+--- hint
+Splitting on commas cuts a quoted note in pieces and keeps its quote marks. The `csv` module knows the quoting rules.
+--- hint
+`csv.DictReader` skips the header and gives `row["t"]` and `row["note"]` with the quotes already removed.
+--- check case | Commas and doubled quotes inside quoted notes
+(lambda p: (p.write_text('t,note\n0.0,"valve A, then B"\n1.5,ok\n2.0,"said ""hold"" twice"\n', encoding="utf-8"), read_notes(p))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()) / "log.csv")
+=> [(0.0, "valve A, then B"), (1.5, "ok"), (2.0, 'said "hold" twice')]
+--- check case | Only the header
+(lambda p: (p.write_text("t,note\n", encoding="utf-8"), read_notes(p))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()) / "empty.csv")
+=> []
+--- check case | Spaces inside the quotes are kept
+(lambda p: (p.write_text('t,note\n3.25,"  indent kept  "\n', encoding="utf-8"), read_notes(p))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()) / "spaces.csv")
+=> [(3.25, "  indent kept  ")]
+
++++ practice | The peak that sorted like a word
+--- task
+`peak_value(path, column)` should return the largest value in a numeric column of a CSV file. On a file whose `az` column holds 9.8, 12.06 and -3.5, it returns `'9.8'` instead of `12.06`: a string, and the wrong one. Fix it.
+--- starter
+import csv
+
+def peak_value(path, column):
+    """Largest value in a numeric column of a CSV file."""
+    values = []
+    with open(path, newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            values.append(row[column])
+    return max(values)
+--- solution
+import csv
+
+def peak_value(path, column):
+    """Largest value in a numeric column of a CSV file."""
+    values = []
+    with open(path, newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            values.append(float(row[column]))
+    return max(values)
+--- hint
+Every field `csv` gives you is text. `max` of strings compares them character by character, and `'9'` comes after `'1'`.
+--- hint
+Convert each field with `float` as you read it.
+--- check case | Finds the numerically largest value
+(lambda p: (p.write_text("t,az\n0.0,9.8\n0.1,12.06\n0.2,-3.5\n", encoding="utf-8"), peak_value(p, "az"))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()) / "az.csv")
+=> 12.06
+--- check case | All negative
+(lambda p: (p.write_text("t,az\n0.0,-10.5\n0.1,-2.25\n", encoding="utf-8"), peak_value(p, "az"))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()) / "neg.csv")
+=> -2.25
+--- check case | Hundreds beat nines
+(lambda p: (p.write_text("t,pc\n0.0,99.5\n0.1,100.25\n", encoding="utf-8"), peak_value(p, "pc"))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()) / "pc.csv")
+=> 100.25
+
++++ practice | From a CSV file to a JSON summary
+--- task
+Write a function `summarize(csv_path, json_path)` that summarizes a CSV file of samples and saves the summary as JSON.
+
+- The CSV file has a header row. Its first column is the time `t`; every other column is a channel of numbers.
+- For each channel, work out `{"min": ..., "max": ..., "mean": ...}` over all rows. A channel with no rows at all gets `None`.
+- Write the summary, a dictionary from channel name to its statistics, to `json_path`, indented by 2. The folder it goes in may not exist yet: create it, and any folders above it.
+- Return the same dictionary.
+
+Both paths are `pathlib.Path` objects in a temporary folder. Every field in these files is a number.
+--- starter
+def summarize(csv_path, json_path):
+    pass
+--- solution
+import csv
+import json
+
+def summarize(csv_path, json_path):
+    """Per-channel min, max and mean of a CSV file (first column is t), also saved as JSON."""
+    with open(csv_path, newline="", encoding="utf-8") as f:
+        rows = list(csv.reader(f))
+    header = rows[0]
+    data = rows[1:]
+    summary = {}
+    for col, name in enumerate(header):
+        if col == 0:
+            continue
+        values = []
+        for row in data:
+            values.append(float(row[col]))
+        if values:
+            summary[name] = {"min": min(values), "max": max(values), "mean": sum(values) / len(values)}
+        else:
+            summary[name] = None
+    json_path.parent.mkdir(parents=True, exist_ok=True)
+    json_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    return summary
+--- hint
+`list(csv.reader(f))` gives every row as a list of strings. The first is the header, which also tells you the channel names when there are no data rows.
+--- hint
+`json_path.parent.mkdir(parents=True, exist_ok=True)` makes the folder and any missing ones above it, and does nothing if it is already there.
+--- check case | Summarizes each channel
+(lambda d: (d.joinpath("run.csv").write_text("t,ax,az\n0.0,1.5,9.75\n0.1,2.5,9.25\n0.2,3.5,9.5\n", encoding="utf-8"), summarize(d / "run.csv", d / "out" / "summary.json"))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()))
+=> {"ax": {"min": 1.5, "max": 3.5, "mean": 2.5}, "az": {"min": 9.25, "max": 9.75, "mean": 9.5}}
+--- check case | The JSON file holds the same summary, in a folder made for it
+(lambda d: (d.joinpath("run.csv").write_text("t,ax\n0.0,-1.0\n0.1,3.0\n", encoding="utf-8"), summarize(d / "run.csv", d / "a" / "b" / "s.json"), __import__("json").loads((d / "a" / "b" / "s.json").read_text(encoding="utf-8")))[2])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()))
+=> {"ax": {"min": -1.0, "max": 3.0, "mean": 1.0}}
+--- check case | A file with only a header
+(lambda d: (d.joinpath("run.csv").write_text("t,pc,tc\n", encoding="utf-8"), summarize(d / "run.csv", d / "s.json"))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()))
+=> {"pc": None, "tc": None}
+--- check test | Running it twice into the same folder works
+(lambda d: (d.joinpath("run.csv").write_text("t,ax\n0.0,1.0\n", encoding="utf-8"), summarize(d / "run.csv", d / "out" / "s.json"), summarize(d / "run.csv", d / "out" / "s.json"))[2] == {"ax": {"min": 1.0, "max": 1.0, "mean": 1.0}})(__import__("pathlib").Path(__import__("tempfile").mkdtemp()))
+
+=== py01-l12 | Practice: Floating point, and why 0.1 + 0.2 is not 0.3
+--- for
+l12-floating-point
+
++++ practice | How many residuals are zero?
+--- task
+A solver's residuals should be zero, but a float that should be zero is rarely exactly zero. Write a function `near_zero(residuals, abs_tol)` that returns how many residuals are within `abs_tol` of zero, using `math.isclose`.
+
+- A residual exactly `abs_tol` away from zero counts.
+- With `abs_tol` of `0.0`, only an exact zero counts.
+--- starter
+def near_zero(residuals, abs_tol):
+    count = 0
+    for r in residuals:
+        if r == 0.0:
+            count += 1
+    return count
+--- solution
+import math
+
+def near_zero(residuals, abs_tol):
+    """How many residuals are within abs_tol of zero."""
+    count = 0
+    for r in residuals:
+        if math.isclose(r, 0.0, abs_tol=abs_tol):
+            count += 1
+    return count
+--- hint
+A relative tolerance is a fraction of the numbers' size, and next to zero that is nothing. Comparisons with zero need `abs_tol`.
+--- hint
+`math.isclose(r, 0.0, abs_tol=abs_tol)` is true when `r` is no further than `abs_tol` from zero.
+--- check case | Small residuals count, a large one does not
+near_zero([3e-13, -2e-10, 1e-6, 0.0], 1e-9)
+=> 3
+--- check case | Exactly at the tolerance counts
+near_zero([-1e-9, 1e-9], 1e-9)
+=> 2
+--- check case | With no tolerance, only an exact zero counts
+near_zero([1e-20, 0.0], 0.0)
+=> 1
+--- check case | No residuals
+near_zero([], 1.0)
+=> 0
+
++++ practice | The largest real value
+--- task
+A channel can hold `nan` or infinity where a calculation failed. Write a function `finite_peak(samples)` that returns the largest value in `samples` that is finite, ignoring every `nan` and every infinity. If there is no finite value at all (or no values), raise `ValueError`.
+--- starter
+def finite_peak(samples):
+    return max(samples)
+--- solution
+import math
+
+def finite_peak(samples):
+    """Largest finite value in samples; ValueError if there is none."""
+    good = []
+    for s in samples:
+        if math.isfinite(s):
+            good.append(s)
+    if not good:
+        raise ValueError("no finite samples")
+    return max(good)
+--- hint
+Every comparison with `nan` is false, so `max` gives an answer that depends on where the `nan` sits in the list.
+--- hint
+`math.isfinite(x)` is false for `nan` and for both infinities. Keep the finite values, then take their `max`.
+--- check case | Skips nan and infinity
+finite_peak([9.8, float("nan"), 12.1, float("inf")])
+=> 12.1
+--- check case | A nan first does not hide the rest
+finite_peak([float("nan"), 3.0, 7.5])
+=> 7.5
+--- check case | Minus infinity is skipped too
+finite_peak([float("-inf"), -3.0, -4.5])
+=> -3.0
+--- check test | No finite value raises ValueError
+raises(ValueError, lambda: finite_peak([float("nan"), float("inf")])) and raises(ValueError, lambda: finite_peak([]))
+
++++ practice | A limit check that fails safe
+--- task
+Write a function `classify(value, lo, hi)` for a reading that must lie between `lo` and `hi`. Return:
+
+- `"invalid"` if the value is `nan` or infinite;
+- `"low"` if it is below `lo`;
+- `"high"` if it is above `hi`;
+- `"ok"` otherwise. `lo` and `hi` themselves are ok.
+
+A `nan` must never come back as `"ok"`.
+--- starter
+def classify(value, lo, hi):
+    if value < lo:
+        return "low"
+    if value > hi:
+        return "high"
+    return "ok"
+--- solution
+import math
+
+def classify(value, lo, hi):
+    """"invalid" for nan or infinity, else "low", "high" or "ok" against [lo, hi]."""
+    if not math.isfinite(value):
+        return "invalid"
+    if value < lo:
+        return "low"
+    if value > hi:
+        return "high"
+    return "ok"
+--- hint
+`nan < lo` and `nan > hi` are both false, so the starter lets a `nan` fall through to `"ok"`.
+--- hint
+Test validity first, with `math.isfinite`, and compare only after that.
+--- check case | nan is invalid, not ok
+classify(float("nan"), 0.0, 10.0)
+=> "invalid"
+--- check case | Infinity is invalid, not high
+(classify(float("inf"), 0.0, 10.0), classify(float("-inf"), 0.0, 10.0))
+=> ("invalid", "invalid")
+--- check case | The ends of the range are ok
+(classify(0.0, 0.0, 10.0), classify(10.0, 0.0, 10.0))
+=> ("ok", "ok")
+--- check case | Below and above
+(classify(-0.5, 0.0, 10.0), classify(10.5, 0.0, 10.0))
+=> ("low", "high")
+
++++ practice | One sample too many
+--- task
+`sample_times(duration, dt)` should return the sample times `0`, `dt`, `2*dt`, … that come strictly before `duration`. The caller promises that `duration` is a whole number of steps of `dt`, so `sample_times(1.0, 0.1)` must return 10 times, the last of them `9 * 0.1`.
+
+It returns 11 times instead, ending with 0.9999999999999999. Fix it so the number of samples is decided by whole numbers.
+--- starter
+def sample_times(duration, dt):
+    """Times 0, dt, 2*dt, ... strictly before duration (a whole number of steps of dt)."""
+    result = []
+    t = 0.0
+    while t < duration:
+        result.append(t)
+        t += dt
+    return result
+--- solution
+def sample_times(duration, dt):
+    """Times 0, dt, 2*dt, ... strictly before duration (a whole number of steps of dt)."""
+    result = []
+    for step in range(round(duration / dt)):
+        result.append(step * dt)
+    return result
+--- hint
+After ten additions of 0.1, `t` is 0.9999999999999999, which is still less than 1.0, so the loop takes one more sample.
+--- hint
+Work out the number of steps once, as a whole number: `round(duration / dt)`. Then loop over that many integer steps and compute each time as `step * dt`.
+--- check case | Ten samples in one second at 10 Hz
+len(sample_times(1.0, 0.1))
+=> 10
+--- check case | The last sample
+sample_times(1.0, 0.1)[-1]
+=> 9 * 0.1
+--- check case | Quarter-second steps
+sample_times(0.5, 0.25)
+=> [0.0, 0.25]
+--- check case | A longer record
+len(sample_times(3.0, 0.1))
+=> 30
+
++++ practice | Did the rewrite change the answers?
+--- task
+A rewritten simulation must give the same answers as the old one, up to rounding. Write a function `compare_runs(old, new, rel_tol=1e-9, abs_tol=1e-12)` that returns the list of indices where `old[i]` and `new[i]` do not agree.
+
+- Two values agree when `math.isclose` says so with the given tolerances.
+- A `nan` in both runs at the same index agrees: both runs failed in the same place. A `nan` in only one run does not agree.
+- If the two runs have different lengths, raise `ValueError`.
+--- starter
+def compare_runs(old, new, rel_tol=1e-9, abs_tol=1e-12):
+    bad = []
+    for i, a in enumerate(old):
+        if a != new[i]:
+            bad.append(i)
+    return bad
+--- solution
+import math
+
+def compare_runs(old, new, rel_tol=1e-9, abs_tol=1e-12):
+    """Indices where old and new disagree beyond the tolerances; nan agrees only with nan."""
+    if len(old) != len(new):
+        raise ValueError(f"runs differ in length: {len(old)} and {len(new)}")
+    bad = []
+    for i, a in enumerate(old):
+        b = new[i]
+        if math.isnan(a) or math.isnan(b):
+            if not (math.isnan(a) and math.isnan(b)):
+                bad.append(i)
+        elif not math.isclose(a, b, rel_tol=rel_tol, abs_tol=abs_tol):
+            bad.append(i)
+    return bad
+--- hint
+Handle the `nan` cases first: `math.isclose` says `nan` is never close to anything, not even another `nan`.
+--- hint
+Check the lengths before the loop, so a run that was cut short is an error rather than a quiet partial comparison.
+--- check case | A one-ulp difference agrees, a real one does not
+compare_runs([7676.543210987654, 1.0, 2.0], [7676.543210987655, 1.0, 2.001])
+=> [2]
+--- check case | Values near zero use the absolute tolerance
+compare_runs([0.0, 0.0], [3e-13, 1e-6])
+=> [1]
+--- check case | nan agrees only with nan
+compare_runs([float("nan"), float("nan"), 1.0], [float("nan"), 1.0, float("nan")])
+=> [1, 2]
+--- check case | Looser tolerances by keyword
+compare_runs([100.0], [100.5], rel_tol=0.01)
+=> []
+--- check test | Different lengths raise ValueError
+raises(ValueError, lambda: compare_runs([1.0, 2.0], [1.0]))
+
++++ question | Adding two to a big number
+--- ask
+What does this print?
+
+```python
+print(1e16 + 2 - 1e16)
+```
+--- answer
+2.0
+--- why
+Near 10¹⁶ the gap between neighboring floats is 2. So 10¹⁶ + 2 is itself a float that exists, stored exactly, and subtracting 10¹⁶ leaves exactly 2.0. Adding 1 instead would have been lost, because 10¹⁶ + 1 falls halfway between two floats and rounds back to 10¹⁶. Whether a small addition survives depends on the ulp of the big number, not on the small number's own precision.
+
+=== py01-l13 | Practice: Virtual environments, pip and pyproject.toml
+--- for
+l13-virtual-environments-and-packaging
+
++++ question | The environment's python, called directly
+--- ask
+In a fresh terminal where nothing has been activated, you are in a project folder with a working `.venv`. You run:
+
+```bash
+.venv/bin/python -c "import sys; print(sys.prefix != sys.base_prefix)"
+```
+
+What does it print?
+--- answer
+True
+--- why
+Activation only changes which `python` the shell finds first on `PATH`. Naming the environment's own interpreter by its path runs that interpreter directly, and it is still inside the environment, so `sys.prefix` differs from `sys.base_prefix`. That is how a scheduled job or an editor's run button can use an environment without ever activating it.
+
++++ question | A line to take out of requirements.txt
+--- ask
+You run `python -m pip freeze > requirements.txt` after installing your own project with `pip install -e .`. Which line is useless on a colleague's machine?
+--- choice
+`numpy==2.4.6`
+--- choice correct
+`-e /home/you/descent-analysis`
+--- choice
+`scipy==1.14.1`
+--- choice
+`matplotlib==3.9.2`
+--- why
+An editable install is frozen as `-e` followed by the full path of the folder on your machine. Your colleague has no such folder, so that line fails for them. Freeze before the editable install, or delete that line, and let colleagues run `pip install -e .` in their own copy. The pinned packages are exactly what the file is for.
+
++++ question | The environment folder in git
+--- ask
+A teammate committed the project's `.venv` folder to git so that "nobody has to install anything". What should the project do?
+--- choice
+Keep it: a committed environment is the most reproducible choice.
+--- choice correct
+Remove `.venv` from the repository, add `.venv/` to `.gitignore`, and commit a `requirements.txt` instead.
+--- choice
+Keep it, but zip it first so the repository stays small.
+--- choice
+Rename it to `venv` without the dot, so that it is visible.
+--- why
+An environment is built for one machine: its `python` points at the interpreter that created it, and compiled packages match one operating system and processor. It is also large, and it changes with every install. A pinned `requirements.txt` rebuilds it anywhere in a minute, which is the reproducible part. The environment folder itself is disposable.
+
++++ question | Pins or ranges
+--- ask
+An analysis must give exactly the same figure when it is rerun next year. Which line belongs in its `requirements.txt`?
+--- choice
+`numpy>=2.0`
+--- choice
+`numpy`
+--- choice correct
+`numpy==2.4.6`
+--- choice
+`numpy<3`
+--- why
+Only an exact pin names one version, so a rebuild next year installs the same NumPy that made the figure. Each of the others allows whatever newer version exists on the day you install, which is how a result silently changes. Ranges belong in the `dependencies` of a `pyproject.toml`, which says what a project can work with; pins record what one environment actually had.
+
++++ question | Why activate needs source
+--- ask
+Why must you type `source .venv/bin/activate` rather than run `.venv/bin/activate` like a program?
+--- choice
+The activate script is not marked executable, and `source` ignores permissions.
+--- choice correct
+A program runs as a child process, and a child cannot change its parent shell's `PATH`; `source` runs the lines in your current shell instead.
+--- choice
+The shell refuses to run programs from folders whose names start with a dot.
+--- choice
+`source` also installs the packages listed in `requirements.txt`.
+--- why
+Activation works by changing your shell's `PATH`. Run as an ordinary program, the script would change the `PATH` of a separate child process, which then exits, and your shell would be untouched: settings pass down from a process to the programs it starts, never back up. `source` reads the script into the shell you are typing in, so the change stays.
+
++++ question | requires-python and the version you get
+--- ask
+Your `pyproject.toml` says `requires-python = ">=3.11"`. You built your `.venv` with Python 3.11. A colleague builds theirs with Python 3.13 from the same files. What happens?
+--- choice
+pip refuses to install the project for your colleague, because the versions differ.
+--- choice correct
+It installs: 3.13 meets the minimum. The two environments now run different Python versions.
+--- choice
+pip downloads Python 3.11 into your colleague's environment to match yours.
+--- choice
+`.venv` converts itself to Python 3.11 on first activation.
+--- why
+`requires-python` states the oldest Python the project supports; it does not pin one. A `.venv` always uses whichever `python3` created it. So both installs succeed, and if results differ in the last digits, the Python version is one of the things to check. A virtual environment isolates `site-packages`, not the interpreter version.
+
+=== py01-test | Python basics: module test
+--- teach
+The test covers the whole module: numbers and text, the four containers, control flow, functions and closures, the mutable default, modules, exceptions, files, CSV and JSON, floating point and virtual environments. Its ten problems are new, most combine several lessons, and there are no hints; twelve questions after them check that you know why the code behaves as it does. To get ready, redo the practice problems of the lessons that felt hardest, without the hints, and reread the check-yourself questions of lessons 3, 7, 8 and 12.
+--- gate
+pass 7
+questions 10
+minutes 112
+
++++ problem | Parse a telemetry packet
+--- task
+A telemetry packet arrives as one line of text: fields separated by semicolons, each field a name, an equals sign and a number, spaced carelessly. Write a function `parse_packet(line)` that returns a dictionary from each name to its value as a float, in the order the fields appear.
+
+- Names have the blank space around them removed and are made lower case: ` AX ` becomes `ax`.
+- A field that is empty or only blank space is ignored, so `"t=1.0;;az=9.8;"` is fine.
+- Raise `ValueError` if a field does not have exactly one `=`, if its name is empty, if its value is not a number, or if the same name appears twice (after making it lower case).
+- An empty line gives `{}`.
+
+So `parse_packet("t=12.5; AX = 0.02 ;ay=-0.41")` returns `{"t": 12.5, "ax": 0.02, "ay": -0.41}`.
+--- starter
+def parse_packet(line):
+    pass
+--- solution
+def parse_packet(line):
+    """{name: float} from "name=value; name=value" text; ValueError on a malformed field."""
+    packet = {}
+    for field in line.split(";"):
+        field = field.strip()
+        if not field:
+            continue
+        pieces = field.split("=")
+        if len(pieces) != 2:
+            raise ValueError(f"expected one '=' in field {field!r}")
+        name = pieces[0].strip().lower()
+        if not name:
+            raise ValueError(f"no name in field {field!r}")
+        if name in packet:
+            raise ValueError(f"field {name!r} appears twice")
+        try:
+            packet[name] = float(pieces[1])
+        except ValueError:
+            raise ValueError(f"not a number in field {field!r}")
+    return packet
+--- check case | Careless spacing and capitals
+parse_packet("t=12.5; AX = 0.02 ;ay=-0.41")
+=> {"t": 12.5, "ax": 0.02, "ay": -0.41}
+--- check case | Keeps the order of the fields
+list(parse_packet("z=1;a=2;m=3"))
+=> ["z", "a", "m"]
+--- check case | Empty fields are ignored
+parse_packet(" t=1.0 ;; az=9.8; ")
+=> {"t": 1.0, "az": 9.8}
+--- check case | An empty line, and a line of empty fields
+(parse_packet(""), parse_packet("  ;  "))
+=> ({}, {})
+--- check test | A field without exactly one = raises ValueError
+raises(ValueError, lambda: parse_packet("t=1.0; ax")) and raises(ValueError, lambda: parse_packet("a=1=2"))
+--- check test | An empty name or a value that is not a number raises ValueError
+raises(ValueError, lambda: parse_packet("=5")) and raises(ValueError, lambda: parse_packet("t=1.0; ax=fast"))
+--- check test | The same name twice, in any case, raises ValueError
+raises(ValueError, lambda: parse_packet("t=1; T=2"))
+
++++ problem | A per-axis report from a CSV file
+--- task
+Write a function `axis_report(path)` that reads a CSV file of accelerometer samples and reports statistics for each axis.
+
+- The file has a header row naming its columns. It holds at least `t`, `ax`, `ay` and `az`, in any order, and possibly other columns, which you ignore.
+- If any of a row's three axis fields cannot be converted to a float (it is empty, or text), skip the whole row and count it as skipped.
+- A value of `-999.0` is a dropout marker. Leave it out of that axis's statistics only; the row still counts as used.
+- Return a dictionary with these keys:
+  - `"rows"`: how many rows were used; `"skipped"`: how many were skipped;
+  - `"ax"`, `"ay"` and `"az"`: each a dictionary `{"min": ..., "max": ..., "mean": ..., "rms": ...}` over that axis's values, or `None` if the axis has no values at all.
+- The RMS is the square root of the mean of the squares.
+
+`path` is a `pathlib.Path` in a temporary folder.
+--- starter
+def axis_report(path):
+    pass
+--- solution
+import csv
+import math
+
+AXES = ("ax", "ay", "az")
+DROPOUT = -999.0
+
+def stats(values):
+    """min, max, mean and rms of a list, or None when it is empty."""
+    if not values:
+        return None
+    squares = 0.0
+    for v in values:
+        squares += v * v
+    return {
+        "min": min(values),
+        "max": max(values),
+        "mean": sum(values) / len(values),
+        "rms": math.sqrt(squares / len(values)),
+    }
+
+def axis_report(path):
+    """Per-axis statistics of a CSV of t, ax, ay, az; bad rows skipped, dropouts left out."""
+    values = {"ax": [], "ay": [], "az": []}
+    used = 0
+    skipped = 0
+    with open(path, newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            try:
+                reading = (float(row["ax"]), float(row["ay"]), float(row["az"]))
+            except ValueError:
+                skipped += 1
+                continue
+            used += 1
+            for axis, v in zip(AXES, reading):
+                if v != DROPOUT:
+                    values[axis].append(v)
+    report = {"rows": used, "skipped": skipped}
+    for axis in AXES:
+        report[axis] = stats(values[axis])
+    return report
+--- check case | Counts used and skipped rows, and leaves out dropouts
+(lambda r: (r["rows"], r["skipped"], r["ax"]["min"], r["ax"]["max"], r["ax"]["mean"], r["ay"]["mean"]))((lambda d: (d.joinpath("acc.csv").write_text("t,ax,ay,az,pc\n0.0,3.0,-1.0,9.5,1\n0.1,4.0,-999.0,9.5,2\n0.2,bad,0.0,9.5,3\n0.3,-999.0,1.0,10.5,4\n0.4,1.0,,9.5,5\n", encoding="utf-8"), axis_report(d / "acc.csv"))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp())))
+=> (3, 2, 3.0, 4.0, 3.5, 0.0)
+--- check test | The RMS and mean of each axis
+(lambda r: abs(r["ax"]["rms"] - 3.5355339059327378) < 1e-12 and r["ay"]["rms"] == 1.0 and abs(r["az"]["mean"] - 9.833333333333334) < 1e-12 and abs(r["az"]["rms"] - 9.844626283748239) < 1e-12)((lambda d: (d.joinpath("acc.csv").write_text("t,ax,ay,az,pc\n0.0,3.0,-1.0,9.5,1\n0.1,4.0,-999.0,9.5,2\n0.2,bad,0.0,9.5,3\n0.3,-999.0,1.0,10.5,4\n0.4,1.0,,9.5,5\n", encoding="utf-8"), axis_report(d / "acc.csv"))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp())))
+--- check case | Columns in another order, and an axis that is all dropouts
+(lambda r: (r["ax"], r["rows"], r["skipped"], r["ay"]["min"], r["az"]["max"]))((lambda d: (d.joinpath("acc.csv").write_text("az,ay,t,ax\n9.5,0.5,0.0,-999.0\n9.5,-0.5,0.1,-999.0\n", encoding="utf-8"), axis_report(d / "acc.csv"))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp())))
+=> (None, 2, 0, -0.5, 9.5)
+--- check case | A file with only a header
+(lambda d: (d.joinpath("acc.csv").write_text("t,ax,ay,az\n", encoding="utf-8"), axis_report(d / "acc.csv"))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()))
+=> {"rows": 0, "skipped": 0, "ax": None, "ay": None, "az": None}
+
++++ problem | A sliding-window mean
+--- task
+Write a function `make_window_mean(n)` that returns a function `add(x)`. Each call of `add` takes a new sample and returns the mean of the last `n` samples given to it, or of all of them while there are fewer than `n`.
+
+- `make_window_mean` itself raises `ValueError` if `n` is less than 1.
+- Each window made by the factory keeps its own samples.
+- Keep only what you need: the window will be fed hundreds of thousands of samples.
+
+So with `w = make_window_mean(3)`, the calls `w(1.0)`, `w(2.0)`, `w(3.0)`, `w(10.0)` return `1.0`, `1.5`, `2.0` and `5.0`.
+--- starter
+def make_window_mean(n):
+    pass
+--- solution
+def make_window_mean(n):
+    """Return add(x): the mean of the last n samples given (all of them while fewer)."""
+    if n < 1:
+        raise ValueError(f"window must hold at least one sample, got {n}")
+    window = []
+
+    def add(x):
+        window.append(x)
+        if len(window) > n:
+            window.pop(0)
+        return sum(window) / len(window)
+
+    return add
+--- check case | The window fills, then slides
+(lambda w: (w(1.0), w(2.0), w(3.0), w(10.0)))(make_window_mean(3))
+=> (1.0, 1.5, 2.0, 5.0)
+--- check case | A window of one returns each sample
+(lambda w: (w(4.0), w(-2.0)))(make_window_mean(1))
+=> (4.0, -2.0)
+--- check case | Two windows do not share samples
+(lambda a, b: (a(2.0), b(10.0), a(4.0), b(20.0)))(make_window_mean(2), make_window_mean(2))
+=> (2.0, 10.0, 3.0, 15.0)
+--- check test | A window of less than one sample raises ValueError
+raises(ValueError, lambda: make_window_mean(0)) and raises(ValueError, lambda: make_window_mean(-2))
+--- check case | A long feed stays fast and right
+(lambda w: [w(float(i)) for i in range(200000)][-1])(make_window_mean(4))
+=> 199997.5
+
++++ problem | Overrides without side effects
+--- task
+A configuration is a dictionary of sections, each a dictionary of settings. Write a function `apply_overrides(base, overrides)` that returns a **new** configuration: `base` with some settings replaced.
+
+- `overrides` maps dotted names such as `"imu.rate_hz"` (section `imu`, setting `rate_hz`) to new values.
+- A dotted name that does not have exactly one dot raises `ValueError`. A section or setting that is not in `base` raises `KeyError`.
+- `base` must never change, not even its inner dictionaries or any list inside them, and not even when the call raises partway through. The result must share no dictionary or list with `base`.
+--- starter
+def apply_overrides(base, overrides):
+    result = dict(base)
+    for dotted, value in overrides.items():
+        section, key = dotted.split(".")
+        result[section][key] = value
+    return result
+--- solution
+import copy
+
+def apply_overrides(base, overrides):
+    """A deep copy of base with each "section.key" in overrides set; base is never changed."""
+    result = copy.deepcopy(base)
+    for dotted, value in overrides.items():
+        parts = dotted.split(".")
+        if len(parts) != 2:
+            raise ValueError(f"expected section.key, got {dotted!r}")
+        section, key = parts
+        if section not in result or key not in result[section]:
+            raise KeyError(dotted)
+        result[section][key] = value
+    return result
+--- check case | Replaces one setting
+apply_overrides({"imu": {"rate_hz": 100, "axes": ["x", "y"]}, "log": {"level": "info"}}, {"imu.rate_hz": 200})
+=> {"imu": {"rate_hz": 200, "axes": ["x", "y"]}, "log": {"level": "info"}}
+--- check case | The base is unchanged afterwards
+(lambda b: (apply_overrides(b, {"log.level": "debug"}), b)[1])({"imu": {"rate_hz": 100}, "log": {"level": "info"}})
+=> {"imu": {"rate_hz": 100}, "log": {"level": "info"}}
+--- check test | Shares no inner dictionary or list with the base
+(lambda b: (lambda r: r["imu"] is not b["imu"] and r["imu"]["axes"] is not b["imu"]["axes"])(apply_overrides(b, {})))({"imu": {"rate_hz": 100, "axes": ["x", "y"]}})
+--- check test | An unknown section or setting raises KeyError
+raises(KeyError, lambda: apply_overrides({"imu": {"rate_hz": 100}}, {"gps.rate_hz": 5})) and raises(KeyError, lambda: apply_overrides({"imu": {"rate_hz": 100}}, {"imu.gain": 5}))
+--- check test | A name without exactly one dot raises ValueError
+raises(ValueError, lambda: apply_overrides({"imu": {"rate_hz": 100}}, {"rate_hz": 5})) and raises(ValueError, lambda: apply_overrides({"imu": {"rate_hz": 100}}, {"imu.rate.hz": 5}))
+--- check case | A failed call leaves the base alone
+(lambda b: (raises(KeyError, lambda: apply_overrides(b, {"imu.rate_hz": 5, "imu.nope": 1})), b["imu"]["rate_hz"]))({"imu": {"rate_hz": 100}})
+=> (True, 100)
+
++++ problem | An inclusive time grid
+--- task
+Write a function `grid(start, stop, step)` that returns the list of times `start`, `start + step`, `start + 2*step`, … up to and including `stop`.
+
+- Compute each time as `start + i * step`, with `i` a whole number counting up from 0, never by adding `step` again and again.
+- Rounding can push the last time a hair past `stop`. Include a time that is past `stop` when `math.isclose` says it is close to `stop` with `rel_tol=1e-9` and `abs_tol=1e-12`; stop at the first time that is past `stop` and not close to it.
+- If `step` is zero or negative, raise `ValueError`. If `start` is past `stop` (and not close to it), return `[]`.
+
+So `grid(0.0, 1.0, 0.25)` returns `[0.0, 0.25, 0.5, 0.75, 1.0]`, and `grid(0.0, 1.0, 0.1)` has 11 times, the last exactly `1.0`.
+--- starter
+def grid(start, stop, step):
+    times = []
+    t = start
+    while t <= stop:
+        times.append(t)
+        t += step
+    return times
+--- solution
+import math
+
+def grid(start, stop, step):
+    """start, start + step, ... up to stop inclusive, each as start + i * step."""
+    if step <= 0:
+        raise ValueError(f"step must be positive, got {step}")
+    times = []
+    i = 0
+    t = start
+    while t <= stop or math.isclose(t, stop, rel_tol=1e-9, abs_tol=1e-12):
+        times.append(t)
+        i += 1
+        t = start + i * step
+    return times
+--- check case | Quarter steps, both ends included
+grid(0.0, 1.0, 0.25)
+=> [0.0, 0.25, 0.5, 0.75, 1.0]
+--- check case | Tenths reach exactly one second
+(lambda g: (len(g), g[-1]))(grid(0.0, 1.0, 0.1))
+=> (11, 1.0)
+--- check case | The last time lands a hair past stop and is kept
+len(grid(0.0, 0.3, 0.1))
+=> 4
+--- check case | Past a stop of zero, the absolute tolerance decides
+len(grid(-0.3, 0.0, 0.1))
+=> 4
+--- check case | A long grid does not drift
+(lambda g: (len(g), g[-1]))(grid(0.0, 1000.0, 0.1))
+=> (10001, 1000.0)
+--- check case | Start past stop, and start equal to stop
+(grid(1.0, 0.0, 0.5), grid(2.0, 2.0, 0.5))
+=> ([], [2.0])
+--- check test | A step that is not positive raises ValueError
+raises(ValueError, lambda: grid(0.0, 1.0, 0.0)) and raises(ValueError, lambda: grid(0.0, 1.0, -0.1))
+
++++ problem | Audit a run against its limits
+--- task
+Write a function `audit(limits, data)`. `limits` maps channel names to limits; `data` maps channel names to lists of samples. Return a dictionary with four keys, each a sorted list of channel names:
+
+- `"missing"`: channels that have a limit but no samples: not in `data`, or an empty list.
+- `"extra"`: channels in `data` that have no limit.
+- `"over"`: channels with a limit and samples, where any sample is over the limit, or is `nan` or infinite.
+- `"ok"`: channels with a limit and samples, all of them finite and at or below the limit.
+
+Every channel with a limit ends up in exactly one of `missing`, `over` and `ok`.
+--- starter
+def audit(limits, data):
+    result = {"missing": [], "extra": [], "over": [], "ok": []}
+    for name in limits:
+        if max(data[name]) > limits[name]:
+            result["over"].append(name)
+        else:
+            result["ok"].append(name)
+    return result
+--- solution
+import math
+
+def audit(limits, data):
+    """Sort channels into missing, extra, over and ok against their limits."""
+    result = {"missing": [], "extra": [], "over": [], "ok": []}
+    for name, limit in limits.items():
+        samples = data.get(name)
+        if not samples:
+            result["missing"].append(name)
+            continue
+        for s in samples:
+            if not math.isfinite(s) or s > limit:
+                result["over"].append(name)
+                break
+        else:
+            result["ok"].append(name)
+    for name in data:
+        if name not in limits:
+            result["extra"].append(name)
+    for key in result:
+        result[key] = sorted(result[key])
+    return result
+--- check case | Every kind of channel
+audit({"ax": 12.5, "ay": 3.0, "pc": 2200.0, "tc": 3300.0, "vib": 5.0}, {"tc": [3000.0, 3300.1], "ax": [1.0, 12.5], "ay": [0.5, float("nan")], "pc": [], "gps": [1.0]})
+=> {"missing": ["pc", "vib"], "extra": ["gps"], "over": ["ay", "tc"], "ok": ["ax"]}
+--- check case | Infinity of either sign counts as over
+audit({"ax": 12.5, "ay": 3.0}, {"ax": [float("inf")], "ay": [float("-inf"), 1.0]})
+=> {"missing": [], "extra": [], "over": ["ax", "ay"], "ok": []}
+--- check case | Nothing at all
+audit({}, {})
+=> {"missing": [], "extra": [], "over": [], "ok": []}
+--- check case | Samples with no limit, including an empty list
+audit({}, {"b": [], "a": [1.0]})
+=> {"missing": [], "extra": ["a", "b"], "over": [], "ok": []}
+
++++ problem | Read a rate from a config file
+--- task
+Define an exception family for configuration problems: `ConfigError`, derived from `Exception`, and `MissingSetting` and `BadSetting`, both derived from `ConfigError`.
+
+Then write `read_rate(path)`, which reads a JSON file holding an object such as `{"rate_hz": 40}` and returns the rate as a positive float.
+
+- If the file is not valid JSON, raise `BadSetting`.
+- If there is no `"rate_hz"` key, raise `MissingSetting`.
+- If the value cannot be converted with `float` (it is `null`, or text such as `"fast"`), or it is not a finite number above zero, raise `BadSetting`.
+- A file that does not exist is not a configuration problem: let the `FileNotFoundError` through unchanged.
+
+`path` is a `pathlib.Path` in a temporary folder.
+--- starter
+import json
+
+def read_rate(path):
+    return json.loads(path.read_text(encoding="utf-8"))["rate_hz"]
+--- solution
+import json
+import math
+
+class ConfigError(Exception):
+    """Base class for configuration problems."""
+
+class MissingSetting(ConfigError):
+    """A required setting is not in the file."""
+
+class BadSetting(ConfigError):
+    """The file or one of its settings cannot be used."""
+
+def read_rate(path):
+    """rate_hz from a JSON config file, as a positive float."""
+    text = path.read_text(encoding="utf-8")
+    try:
+        config = json.loads(text)
+    except json.JSONDecodeError as e:
+        raise BadSetting(f"{path.name} is not valid JSON") from e
+    if "rate_hz" not in config:
+        raise MissingSetting(f"{path.name} has no rate_hz")
+    try:
+        rate = float(config["rate_hz"])
+    except (TypeError, ValueError):
+        raise BadSetting(f"rate_hz is not a number: {config['rate_hz']!r}")
+    if not math.isfinite(rate) or rate <= 0:
+        raise BadSetting(f"rate_hz must be a positive number, got {rate}")
+    return rate
+--- check case | A good file
+(lambda p: (p.write_text('{"rate_hz": 40, "units": "SI"}', encoding="utf-8"), read_rate(p))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()) / "cfg.json")
+=> 40.0
+--- check test | The family tree
+issubclass(MissingSetting, ConfigError) and issubclass(BadSetting, ConfigError) and issubclass(ConfigError, Exception) and not issubclass(BadSetting, MissingSetting)
+--- check test | Invalid JSON raises BadSetting
+(lambda p: (p.write_text("{'rate_hz': 40}", encoding="utf-8"), raises(BadSetting, lambda: read_rate(p)))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()) / "cfg.json")
+--- check test | A missing setting raises MissingSetting
+(lambda p: (p.write_text('{"rate": 40}', encoding="utf-8"), raises(MissingSetting, lambda: read_rate(p)))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()) / "cfg.json")
+--- check test | null, text, zero and negative rates raise BadSetting
+(lambda d: all((d.joinpath("c.json").write_text(t, encoding="utf-8"), raises(BadSetting, lambda: read_rate(d / "c.json")))[1] for t in ['{"rate_hz": null}', '{"rate_hz": "fast"}', '{"rate_hz": 0}', '{"rate_hz": -40}']))(__import__("pathlib").Path(__import__("tempfile").mkdtemp()))
+--- check test | A missing file is not a ConfigError
+raises(FileNotFoundError, lambda: read_rate(__import__("pathlib").Path(__import__("tempfile").mkdtemp()) / "none.json"))
+
++++ problem | A report table
+--- task
+Write a function `format_report(rows)` that turns a list of `(name, value, unit)` tuples into a report and returns it as one string.
+
+- One line per row, sorted by name. Names are unique.
+- Each line is the name left-aligned in 12 columns, then the value right-aligned in 12 columns with thousands separators and 3 decimals, then a space and the unit.
+- A value of `None` shows as `---`, right-aligned in the same 12 columns.
+- A name longer than 12 characters is not cut short.
+- The lines are joined with newlines, with no newline after the last. No rows give the empty string.
+
+So `format_report([("pc", 2071.88, "kPa")])` returns `"pc             2,071.880 kPa"`.
+--- starter
+def format_report(rows):
+    lines = []
+    for name, value, unit in rows:
+        lines.append(f"{name} {value} {unit}")
+    return "\n".join(lines)
+--- solution
+def format_report(rows):
+    """Aligned report lines, sorted by name; None shows as ---."""
+    lines = []
+    for name, value, unit in sorted(rows):
+        if value is None:
+            lines.append(f"{name:<12}{'---':>12} {unit}")
+        else:
+            lines.append(f"{name:<12}{value:>12,.3f} {unit}")
+    return "\n".join(lines)
+--- check case | Sorted, aligned, with a missing value
+format_report([("tc", 3310.2, "K"), ("pc", 2071.88, "kPa"), ("vib_1", None, "g"), ("ax", -0.4077, "m/s^2")])
+=> "ax                -0.408 m/s^2\npc             2,071.880 kPa\ntc             3,310.200 K\nvib_1                --- g"
+--- check case | A long name is not cut
+format_report([("thrust_chamber", 5.0, "Pa")])
+=> "thrust_chamber       5.000 Pa"
+--- check case | No rows
+format_report([])
+=> ""
+--- check case | A zero value is a value, not a missing one
+format_report([("roll_rate", 0.0, "rad/s")])
+=> "roll_rate          0.000 rad/s"
+
++++ problem | Fix the alarm builder
+--- task
+`build_alarms(limits, alarms=...)` should build one alarm function per channel and put them in a dictionary, which it returns. Each alarm takes a value and returns `True` if the value is over that channel's own limit.
+
+- With no dictionary given, every call must start a new one.
+- With a dictionary given, even an empty one, it adds the alarms to that very dictionary and returns it.
+
+It has two bugs. Every alarm uses the limit of the last channel in `limits`. And a call without a dictionary returns the alarms of earlier calls too. Fix both. `make_alarm` is correct.
+--- starter
+def make_alarm(limit):
+    def alarm(value):
+        return value > limit
+    return alarm
+
+def build_alarms(limits, alarms={}):
+    for name, limit in limits.items():
+        def check(value):
+            return value > limit
+        alarms[name] = check
+    return alarms
+--- solution
+def make_alarm(limit):
+    def alarm(value):
+        return value > limit
+    return alarm
+
+def build_alarms(limits, alarms=None):
+    if alarms is None:
+        alarms = {}
+    for name, limit in limits.items():
+        alarms[name] = make_alarm(limit)
+    return alarms
+--- check case | Each alarm uses its own limit
+(lambda a: (a["ax"](5.0), a["ay"](5.0), a["ax"](13.0)))(build_alarms({"ax": 12.5, "ay": 3.0}))
+=> (False, True, True)
+--- check case | A call without a dictionary starts fresh
+(build_alarms({"ax": 1.0}), sorted(build_alarms({"tc": 2.0})))[1]
+=> ["tc"]
+--- check case | Adds to a given dictionary
+(lambda d: (build_alarms({"pc": 1.0}, d), sorted(d))[1])({"old": None})
+=> ["old", "pc"]
+--- check test | A given empty dictionary is the one returned
+(lambda d: build_alarms({"pc": 1.0}, d) is d)({})
+
++++ problem | Down to the ground
+--- task
+Write a function `descend(h0, v0, accel, dt, max_steps)` that follows a falling vehicle with Euler steps.
+
+- `h0` is the height above the ground in m, `v0` the downward speed in m/s, `accel` the downward acceleration in m/s² (gravity minus thrust; it may be negative), and `dt` the time step in s.
+- Each step does, in this order: the speed grows by `accel * dt`, then the height drops by `speed * dt`, then the step count goes up by one.
+- Return `(steps, t, v)` at the first step after which the height is zero or below, where `t` is `steps * dt` and `v` the speed then.
+- If the vehicle starts at or below the ground, return `(0, 0.0, v0)` without taking a step.
+- If it has not reached the ground after `max_steps` steps, return `None`.
+- If `dt` is zero or negative, raise `ValueError`.
+--- starter
+def descend(h0, v0, accel, dt, max_steps):
+    h = h0
+    v = v0
+    t = 0.0
+    while h > 0:
+        v += accel * dt
+        h -= v * dt
+        t += dt
+    return round(t / dt), t, v
+--- solution
+def descend(h0, v0, accel, dt, max_steps):
+    """(steps, t, v) at the first Euler step with height <= 0; None if not down in max_steps."""
+    if dt <= 0:
+        raise ValueError(f"dt must be positive, got {dt}")
+    if h0 <= 0:
+        return 0, 0.0, v0
+    h = h0
+    v = v0
+    steps = 0
+    while steps < max_steps:
+        v += accel * dt
+        h -= v * dt
+        steps += 1
+        if h <= 0:
+            return steps, steps * dt, v
+    return None
+--- check test | A 100 m drop in 10 ms steps
+(lambda r: r[0] == 452 and r[1] == 452 * 0.01 and abs(r[2] - 44.3412) < 1e-9)(descend(100.0, 0.0, 9.81, 0.01, 10000))
+--- check case | Landing on the last allowed step counts
+descend(1.0, 10.0, 0.0, 0.1, 1)
+=> (1, 0.1, 10.0)
+--- check case | Hovering never lands
+descend(10.0, 0.0, 0.0, 0.1, 1000)
+=> None
+--- check case | Already on the ground
+(descend(0.0, 3.0, 9.81, 0.1, 10), descend(5.0, 0.0, 9.81, 0.1, 0))
+=> ((0, 0.0, 3.0), None)
+--- check test | A time step that is not positive raises ValueError
+raises(ValueError, lambda: descend(10.0, 0.0, 9.81, 0.0, 10)) and raises(ValueError, lambda: descend(10.0, 0.0, 9.81, -0.1, 10))
+
++++ question | Three ways to divide a negative number
+--- ask
+What does this print?
+
+```python
+print(-7 % 3, int(-7 / 3), -7 // 3)
+```
+--- answer
+2 -2 -3
+2, -2, -3
+--- why
+`-7 / 3` is -2.33…. `int` truncates toward zero, giving -2. `//` floors toward minus infinity, giving -3. The remainder has the sign of the divisor and matches the floor: 3 × (-3) + 2 = -7, so `-7 % 3` is 2. The three agree for positive numbers and split apart for negative ones.
+
++++ question | Text, its repr, and a number
+--- ask
+What does this print?
+
+```python
+x = "9.81"
+print(x, repr(x), repr(float(x)))
+```
+--- answer
+9.81 '9.81' 9.81
+--- why
+`print` writes the plain form of each value, with one space between them. `x` is text, so its plain form is `9.81` and its `repr` has quotes: `'9.81'`. `float(x)` is a number, and for a number `repr` and the plain form are the same: `9.81`, the shortest text that reads back as that float. The quotes are how you tell the string from the number in a log line.
+
++++ question | A copy that shares
+--- ask
+What does this print?
+
+```python
+a = [[0], [1]]
+b = a[:]
+b[0] = [9]
+b[1].append(5)
+print(a)
+```
+--- answer
+[[0], [1, 5]]
+--- why
+`a[:]` is a shallow copy: a new outer list holding the same two inner lists. `b[0] = [9]` replaces an item of the outer list `b` only, so `a[0]` is still `[0]`. `b[1].append(5)` changes the inner list that `a[1]` and `b[1]` both name, so `a` sees it. Replacing an item and changing an item are different operations.
+
++++ question | What the duplicate check costs
+--- ask
+This loop keeps the first appearance of each channel name out of `n` names:
+
+```python
+seen = []
+unique = []
+for name in names:
+    if name not in seen:
+        seen.append(name)
+        unique.append(name)
+```
+
+In big-O, what does the whole loop cost with `seen` as a list, and with `seen` as a set (using `seen.add`)?
+--- choice
+O(n) as a list and O(n) as a set: the loop visits each name once either way.
+--- choice correct
+O(n²) as a list and O(n) as a set.
+--- choice
+O(n log n) as a list and O(1) as a set.
+--- choice
+O(n) as a list and O(n²) as a set, because hashing is slow.
+--- why
+`name not in seen` scans a list item by item, O(n) for each of the n names, so the loop is O(n²) in all. For a set it is one hash, O(1) on average, so the loop is O(n). The loop visits each name once either way; what differs is the cost of each membership test.
+
++++ question | The loop's else
+--- ask
+What does this print?
+
+```python
+for n in [3, 5, 7]:
+    if n % 2 == 0:
+        break
+else:
+    n = 0
+print(n)
+```
+--- answer
+0
+--- why
+None of the numbers is even, so the loop never breaks. A loop's `else` runs exactly when the loop finished without a `break`, so `n = 0` runs and replaces the 7 the loop left behind. Had any number been even, the `break` would have skipped the `else` and `n` would be that number.
+
++++ question | A limit that updates itself
+--- ask
+What happens when this runs? Type what it prints, or the name of the exception it raises.
+
+```python
+limit = 10
+
+def check(v):
+    if v > limit:
+        limit = v
+    return limit
+
+print(check(5))
+```
+--- answer
+UnboundLocalError
+UnboundLocalError: cannot access local variable 'limit' where it is not associated with a value
+UnboundLocalError: local variable 'limit' referenced before assignment
+--- why
+`limit = v` is an assignment somewhere in the body, so `limit` is local for the whole function, from its first line. `check(5)` then reads the local `limit` in `v > limit` before anything has been assigned to it, and raises `UnboundLocalError`, even though the assignment itself would never run for 5. The global `limit = 10` is never consulted.
+
++++ question | The mean that crashes on its first row
+--- ask
+This function should return the mean of the `az` column of a CSV file with the header `t,ax,ay,az`. It raises an exception on every file. Which line is wrong, and why?
+
+```python
+import csv
+
+def mean_az(path):
+    total = 0.0
+    count = 0
+    with open(path, newline="", encoding="utf-8") as f:
+        for row in csv.reader(f):
+            total += float(row[3])
+            count += 1
+    return total / count
+```
+--- choice correct
+`total += float(row[3])`: `csv.reader` also returns the header row, and `float("az")` raises `ValueError`.
+--- choice
+`with open(...)`: the file is closed before the loop can read it.
+--- choice
+`count = 0`: it should start at 1, or the mean is divided by one too few.
+--- choice
+`return total / count`: it always divides by zero, because `count` is reset on every row.
+--- why
+`csv.reader` gives every row, the header included, as a list of strings, and the first one is `["t", "ax", "ay", "az"]`. `float("az")` raises `ValueError` before any data is read. Skip the header, or use `csv.DictReader`, which reads the header for you and gives `row["az"]`: that also keeps working if someone inserts a column.
+
++++ question | What JSON gives back
+--- ask
+What does this print?
+
+```python
+import json
+print(json.loads(json.dumps({1: (2, 3)})))
+```
+--- answer
+{'1': [2, 3]}
+{"1": [2, 3]}
+--- why
+JSON object keys are always strings, so the key `1` is written as `"1"` and comes back as the string `'1'`. JSON has one kind of sequence, the array, so the tuple comes back as a list. JSON keeps values, not Python types; convert at the boundary if the types matter.
+
++++ question | Exact and inexact products
+--- ask
+What does this print?
+
+```python
+print(0.1 * 3 == 0.3, 0.5 * 3 == 1.5)
+```
+--- answer
+False True
+False, True
+--- why
+0.5 and 1.5 are fractions with a power of two at the bottom (1/2 and 3/2), so they are stored exactly, and the product is exact. 0.1 and 0.3 are not: `0.1 * 3` gives `0.30000000000000004`, a different float from the stored 0.3. Whether `==` works on floats depends on the particular numbers, which is why computed floats are compared with a tolerance.
+
++++ question | The name of an imported module
+--- ask
+`b.py` contains one line, `print(__name__)`. `a.py` contains `import b`. In the folder holding both, you run `python3 a.py`. What is printed?
+--- answer
+b
+--- why
+Importing a file runs its body, and inside an imported module `__name__` is the module's own name, `b`. Only the file handed to `python3`, here `a.py`, has `__name__` equal to `"__main__"`. That difference is exactly what the main guard tests.
+
++++ question | Finally and a handled error
+--- ask
+What does this print?
+
+```python
+def load(path):
+    try:
+        with open(path, encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return ""
+    finally:
+        print("closing")
+
+print(repr(load("missing.txt")))
+```
+
+The file does not exist.
+--- choice correct
+`closing` on the first line, then `''`
+--- choice
+`''` on the first line, then `closing`
+--- choice
+Only `''`: `finally` is skipped when a handler returns
+--- choice
+A `FileNotFoundError` traceback, because `finally` re-raises it
+--- why
+`open` raises `FileNotFoundError`, the handler catches it and starts to return `""`. Before the function actually returns, `finally` runs and prints `closing`. Only then does the empty string reach `print(repr(...))`, which shows it as `''`. `finally` runs on every way out, and a handled exception is not re-raised.
+
++++ question | Installed, but not found
+--- ask
+In a terminal you activate `.venv` and run `python -m pip install numpy`, which succeeds. Your script works when you run it from that terminal. Your editor's run button, which is set to `/usr/bin/python3`, fails with `ModuleNotFoundError: No module named 'numpy'`. Why?
+--- choice
+pip installs packages only for the terminal session it ran in, and they vanish when it closes.
+--- choice correct
+NumPy was installed into the environment's own `site-packages`; the editor runs the system Python, which cannot see it.
+--- choice
+The editor needs `pip freeze` to be run before it can see new packages.
+--- choice
+NumPy needs `pip install -e .` before any script can import it.
+--- why
+The environment has its own `site-packages`, and the system Python does not look there: that isolation is the point of the environment. Activation changed only that terminal's `PATH`. Point the editor at `.venv/bin/python`, and it imports NumPy from the same place the terminal does.
