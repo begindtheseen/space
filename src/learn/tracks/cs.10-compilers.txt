@@ -1,7 +1,7 @@
 @track python
 @course cs-plc
 @subject Computer Science
-@requires cs-dsa2 cs-org
+@requires cs-theory cs-org
 @level advanced
 @title Compilers
 @name Programming Languages & Compilers: build a language end to end
