@@ -53,7 +53,7 @@ A general **nonlinear program** (NLP) — an optimization problem with curved co
 Guidance runs every cycle, on whatever off-nominal state the vehicle is in, with nobody watching the log. "It converged on every case we tried" is evidence. It is not a proof, and a vehicle with its engine lit cannot fall back on evidence.
 
 ::: example Five starting guesses, one non-convex solver, five different answers
-Take a small landing problem in two dimensions (downrange and altitude). A Mars lander of mass $1905\,\mathrm{kg}$ starts at $\mathbf{r}_0 = (300, 900)\,\mathrm{m}$ with velocity $\mathbf{v}_0 = (-20, -40)\,\mathrm{m/s}$. Gravity is $g = 3.7114\,\mathrm{m/s^2}$, the engine's specific impulse is $I_{sp}=225\,\mathrm{s}$, and it must land at rest at the origin after $t_f = 24\,\mathrm{s}$. The thrust vector $\mathbf{T}_k$ is held fixed over each of eight $3\,\mathrm{s}$ steps. Its size must stay in the band $\rho_1 = 4972\,\mathrm{N} \le \|\mathbf{T}_k\| \le \rho_2 = 13260\,\mathrm{N}$, written exactly as the non-convex constraint it is — nothing relaxed.
+Take a small landing problem in two dimensions (downrange and altitude). A Mars lander of mass $1905\,\mathrm{kg}$ starts at $\mathbf{r}_0 = (300, 900)\,\mathrm{m}$ with velocity $\mathbf{v}_0 = (-20, -40)\,\mathrm{m/s}$. Gravity is $g = 3.7114\,\mathrm{m/s^2}$, the engine's specific impulse is $I_{sp}=225\,\mathrm{s}$, and it must land at rest at the origin after $t_f = 24\,\mathrm{s}$. The thrust vector $\mathbf{T}_k$ is held fixed over each of eight $3\,\mathrm{s}$ steps. Its size must stay in the band $\rho_{\min} = 4972\,\mathrm{N} \le \|\mathbf{T}_k\| \le \rho_{\max} = 13260\,\mathrm{N}$, written exactly as the non-convex constraint it is — nothing relaxed.
 
 Hand this to SciPy's SLSQP, a standard constrained NLP solver, from five physically sensible starting guesses, each allowed up to $300$ iterations:
 
@@ -94,7 +94,7 @@ The rules of the game:
 
 - start from the known $\mathbf{r}(0)$, $\mathbf{v}(0)$, $m(0)$;
 - touch down on target at rest: $\mathbf{r}(t_f) = \mathbf{r}_{\text{target}}$ and $\mathbf{v}(t_f) = \mathbf{0}$;
-- keep thrust in a band, $\rho_1 \le \|\mathbf{T}\|_2 \le \rho_2$, with $\rho_1 > 0$ (read $\rho$ as "rho");
+- keep thrust in a band, $\rho_{\min} \le \|\mathbf{T}\|_2 \le \rho_{\max}$, with $\rho_{\min} > 0$ (read $\rho_{\min}$ as "rho min");
 - keep the thrust within some angle of a reference direction (a pointing limit).
 
 The goal: land with as much propellant left as possible. That is, maximize $m(t_f)$, which is the same as minimizing $\int_0^{t_f}\|\mathbf{T}\|_2\,dt$, the total thrust used.
@@ -103,7 +103,7 @@ The goal: land with as much propellant left as possible. That is, maximize $m(t_
 
 Read that problem looking for convexity, and four things resist it.
 
-**1. The lower thrust bound.** $\|\mathbf{T}\|_2 \ge \rho_1$ cuts a ball-shaped hole out of the middle of the allowed thrusts. A liquid engine has a minimum stable throttle setting, and on most vehicles it cannot be shut off and relit at will during the landing burn. So $\rho_1$ is strictly positive and unavoidable. The allowed set is a hollow shell — an **annulus**, a ring with the middle removed, like a bagel — and a bagel is not convex. It gets the whole next lesson.
+**1. The lower thrust bound.** $\|\mathbf{T}\|_2 \ge \rho_{\min}$ cuts a ball-shaped hole out of the middle of the allowed thrusts. A liquid engine has a minimum stable throttle setting, and on most vehicles it cannot be shut off and relit at will during the landing burn. So $\rho_{\min}$ is strictly positive and unavoidable. The allowed set is a hollow shell — an **annulus**, a ring with the middle removed, like a bagel — and a bagel is not convex. It gets the whole next lesson.
 
 **2. Mass-depletion dynamics.** $\dot{\mathbf{v}} = \mathbf{T}/m + \mathbf{g}$ divides one unknown by another. Equality constraints that are not straight-line (affine) are never convex, and this one is **[[bilinear|bilinear]]**: fix either $\mathbf{T}$ or $m$ and it is a straight-line relationship in the other, but let both move and it curves. Doubling $m$ at fixed $\mathbf{T}$ halves the acceleration. This is fixed not by a relaxation but by a change of variables, in lesson three.
 
@@ -112,9 +112,9 @@ Read that problem looking for convexity, and four things resist it.
 **4. Logic-triggered constraints.** Some limits apply only sometimes: a plume keep-out only below some altitude, an angle-of-attack cap only above some dynamic pressure. "If this, then that" splits the possible trajectories into a **[[union|union-of-convex]]** — the ones that never trip the condition, plus the ones that trip it and obey the extra limit. A union of convex sets is almost never convex.
 
 ::: example Each non-convexity, in the numbers of one vehicle
-Use the $1905\,\mathrm{kg}$ lander again: $\rho_1 = 4972\,\mathrm{N}$, $\rho_2 = 13260\,\mathrm{N}$, $\alpha = 4.532\times10^{-4}\,\mathrm{s/m}$. These are the classic numbers from the [[2007 paper|acikmese-ploen]] this module grew from.
+Use the $1905\,\mathrm{kg}$ lander again: $\rho_{\min} = 4972\,\mathrm{N}$, $\rho_{\max} = 13260\,\mathrm{N}$, $\alpha = 4.532\times10^{-4}\,\mathrm{s/m}$. These are the classic numbers from the [[2007 paper|acikmese-ploen]] this module grew from.
 
-**The annulus.** Take $\mathbf{T}_1 = (4972, 0, 0)\,\mathrm{N}$ and $\mathbf{T}_2 = (-4972, 0, 0)\,\mathrm{N}$. Both have length exactly $\rho_1$, so both are allowed. Their midpoint is $\tfrac12(\mathbf{T}_1+\mathbf{T}_2) = (0,0,0)$, and $\|\mathbf{0}\| = 0 < \rho_1$: not allowed. A convex set contains the whole segment between two of its points. This one does not, so it is not convex — shown by arithmetic, not by assertion.
+**The annulus.** Take $\mathbf{T}_1 = (4972, 0, 0)\,\mathrm{N}$ and $\mathbf{T}_2 = (-4972, 0, 0)\,\mathrm{N}$. Both have length exactly $\rho_{\min}$, so both are allowed. Their midpoint is $\tfrac12(\mathbf{T}_1+\mathbf{T}_2) = (0,0,0)$, and $\|\mathbf{0}\| = 0 < \rho_{\min}$: not allowed. A convex set contains the whole segment between two of its points. This one does not, so it is not convex — shown by arithmetic, not by assertion.
 
 **Mass depletion.** The same thrust $\mathbf{T} = (0,0,13260)\,\mathrm{N}$ gives $\mathbf{T}/m = (0,0,6.961)\,\mathrm{m/s^2}$ at the full $1905\,\mathrm{kg}$. After $405\,\mathrm{kg}$ has burned, leaving $1500\,\mathrm{kg}$, it gives $(0,0,8.840)\,\mathrm{m/s^2}$. Divide: $8.840/6.961 = 1.27$, a $27\%$ jump in acceleration from the same force, entirely from the division.
 
@@ -161,11 +161,11 @@ Neither. How fast a local method converges reflects the local curvature near wha
 :::
 
 ::: check
-An engine has $\rho_1 = 2200\,\mathrm{N}$ and $\rho_2 = 9000\,\mathrm{N}$. Give two allowed thrust vectors whose midpoint is not allowed, and say which bound the midpoint breaks.
+An engine has $\rho_{\min} = 2200\,\mathrm{N}$ and $\rho_{\max} = 9000\,\mathrm{N}$. Give two allowed thrust vectors whose midpoint is not allowed, and say which bound the midpoint breaks.
 :::
 
 ::: answer
-Any pair of opposite vectors on the lower bound works, for instance $\mathbf{T}_1 = (2200, 0, 0)\,\mathrm{N}$ and $\mathbf{T}_2 = (-2200, 0, 0)\,\mathrm{N}$. Both have length $2200\,\mathrm{N} = \rho_1$, inside $[\rho_1,\rho_2]$. Their midpoint is $(0,0,0)$, with length $0$. That breaks the *lower* bound ($0 < 2200$) while easily meeting the upper one. The upper bound alone, $\|\mathbf{T}\|\le\rho_2$, is a solid ball and is convex. It is the lower bound alone that breaks convexity, which is why lossless convexification targets that one inequality and leaves the upper bound untouched.
+Any pair of opposite vectors on the lower bound works, for instance $\mathbf{T}_1 = (2200, 0, 0)\,\mathrm{N}$ and $\mathbf{T}_2 = (-2200, 0, 0)\,\mathrm{N}$. Both have length $2200\,\mathrm{N} = \rho_{\min}$, inside $[\rho_{\min},\rho_{\max}]$. Their midpoint is $(0,0,0)$, with length $0$. That breaks the *lower* bound ($0 < 2200$) while easily meeting the upper one. The upper bound alone, $\|\mathbf{T}\|\le\rho_{\max}$, is a solid ball and is convex. It is the lower bound alone that breaks convexity, which is why lossless convexification targets that one inequality and leaves the upper bound untouched.
 :::
 
 ::: check
@@ -193,7 +193,7 @@ No. "Point within $\theta_{\max}$ of a direction" keeps $\mathbf{T}$ *inside* a 
 | Five-start example | SLSQP on a $24\,\mathrm{s}$ planar descent: all $5$ report success; propellant $129.6$–$143.4\,\mathrm{kg}$; true best $126.439\,\mathrm{kg}$ |
 | Convex contrast | Same problem convexified, $3$ starts: $126.463\,\mathrm{kg}$ every time, $10$ outer rounds each |
 | Dynamics | $\dot{\mathbf{r}}=\mathbf{v}$, $\dot{\mathbf{v}}=\mathbf{T}/m+\mathbf{g}$, $\dot m = -\alpha\|\mathbf{T}\|$, $\alpha = 1/(I_{sp}g_0)$; $\alpha=4.532\times10^{-4}\,\mathrm{s/m}$ at $I_{sp}=225\,\mathrm{s}$ |
-| Non-convexity 1 | $\|\mathbf{T}\|\ge\rho_1$: an annulus; the midpoint of opposite boundary points is infeasible |
+| Non-convexity 1 | $\|\mathbf{T}\|\ge\rho_{\min}$: an annulus; the midpoint of opposite boundary points is infeasible |
 | Non-convexity 2 | $\mathbf{T}/m$: bilinear in two unknowns, a curved equality |
 | Non-convexity 3 | Thrust pointing: suspicious, but as a keep-in cone $T_z \ge \|\mathbf{T}\|\cos\theta_{\max}$ it is convex; a keep-out cone is not |
 | Non-convexity 4 | Logic-triggered limits: a union of regions, not convex |

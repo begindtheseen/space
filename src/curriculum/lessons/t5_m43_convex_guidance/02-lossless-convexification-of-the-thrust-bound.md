@@ -177,7 +177,7 @@ $H$ is *linear* in $\mathbf{T}$: the only $\mathbf{T}$ term is $\boldsymbol{\lam
 :::
 
 ::: check
-For the basic problem, $\boldsymbol{\lambda}_v(t)$ is a straight line in time. Why would adding a glideslope constraint $\|\mathbf{E}\mathbf{r}\|_2 \le \mathbf{r}\!\cdot\!\hat{\mathbf{e}}\tan\gamma$ (keep the vehicle above an upside-down cone over the pad) change that, and what would you need to re-check?
+For the basic problem, $\boldsymbol{\lambda}_v(t)$ is a straight line in time. Why would adding a glideslope constraint $\hat{\mathbf{e}}_{\text{up}}^\top\mathbf{r} \ge \tan\gamma_{gs}\,\|\mathbf{H}\mathbf{r}\|_2$ (keep the vehicle inside an upside-down cone standing on the pad, where $\mathbf{H}$ picks out the horizontal part of $\mathbf{r}$ and $\gamma_{gs}$ is the cone's angle up from the ground) change that, and what would you need to re-check?
 :::
 
 ::: answer
