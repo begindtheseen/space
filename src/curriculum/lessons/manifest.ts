@@ -940,7 +940,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-why-not-x-and-your-contribution",
       "title": "Why did you not do X, and what did you actually do",
-      "minutes": 26,
+      "minutes": 28,
       "covers": [
         "answering why did you not do X and what was your actual contribution"
       ],
@@ -958,7 +958,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-the-negative-result",
       "title": "The talk about the thing that did not work",
-      "minutes": 17,
+      "minutes": 23,
       "covers": [
         "talk structure: problem, why it was hard, approach, the key decision and the alternatives rejected, verification, result, what you would do differently"
       ],
