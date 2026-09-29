@@ -10,6 +10,10 @@ import { writeFileSync } from 'node:fs'
 import { createInterface } from 'node:readline'
 import { pathToFileURL } from 'node:url'
 
+// Standard output carries only the answers: anything the compiler package logs goes to standard error.
+console.log = (...args) => console.error(...args)
+console.info = console.log
+
 const pkg = process.env.LEARN_CPP_WASM
 if (!pkg) {
   process.stderr.write('LEARN_CPP_WASM is not set\n')

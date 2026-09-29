@@ -33,6 +33,7 @@ function compiler(): Compiler {
     const proc = spawn('node', [join(HERE, 'cppwasm.mjs')], { stdio: ['pipe', 'pipe', 'pipe'], env: process.env })
     const c: Compiler = { proc, waiting: new Map(), busy: 0 }
     createInterface({ input: proc.stdout }).on('line', (line) => {
+      if (!line.startsWith('{')) return // a status line from the compiler package, not an answer
       const { id, ok, diagnostics } = JSON.parse(line) as { id: string; ok: boolean; diagnostics: string }
       c.waiting.get(id)?.({ ok, diagnostics })
       c.waiting.delete(id)
