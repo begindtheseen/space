@@ -200,7 +200,7 @@ Each branch has its own reflog too. `git reflog show main` lists only the moves 
 ```
 
 ::: key What does the reflog record?
-Every local movement of HEAD and of branch tips, with timestamps, for about 90 days by default. It is how you recover commits that are no longer reachable from any branch, including after a hard reset or a botched rebase.
+Every local movement of HEAD and of branch tips, with timestamps, for 90 days by default (30 days for entries no longer reachable from a branch). It is how you recover commits that are no longer reachable from any branch, including after a hard reset or a botched rebase.
 :::
 
 ::: warning The reflog is yours alone

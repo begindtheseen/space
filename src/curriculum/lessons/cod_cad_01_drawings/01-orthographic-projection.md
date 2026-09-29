@@ -86,7 +86,7 @@ So:
 Each view sits on the side you did *not* look from. This is the convention in much of Europe and in the ISO drawing standards. The [[same block in first angle|first-angle-layout]] shows it: the views are the same shapes, swapped across the front view.
 
 ::: key Third-angle versus first-angle projection
-Third angle (US practice) places each view on the side of the object you look from; first angle (ISO/European) places it on the opposite side. The truncated-cone symbol in the title block tells you which, and misreading it mirrors your understanding of the part.
+Third angle (US practice) places each view on the side of the object you look from; first angle (ISO/European) places it on the opposite side. The truncated-cone symbol in or beside the title block tells you which, and misreading it mirrors your understanding of the part.
 :::
 
 ::: note Why the views flip between the two conventions

@@ -99,7 +99,7 @@ Whether that causes trouble depends on which source entries each destination ent
 Matrix products read different entries too, but they are safe by default thanks to the temporary Eigen makes for them.
 
 ::: key
-Why is `a = a * b` hazardous? The product reads `a` while writing it. Eigen inserts a temporary for matrix products by default to be safe, but for coefficient-wise expressions and some in-place ops you must call `.eval()` yourself.
+Why is `a = a * b` hazardous? The product reads `a` while writing it. Eigen inserts a temporary for matrix products by default to be safe, but for expressions that read other positions of the destination (a transpose, overlapping blocks) you must call `.eval()` yourself.
 :::
 
 "Coefficient-wise expressions" here means the ones that pull from other positions of the destination, like the transpose and the blocks above; a plain entry-by-entry sum is fine. **`.eval()`** is the fix: it forces the part of the expression it is attached to into a real temporary matrix before any writing starts. You pay for one copy; you get a correct answer.
@@ -316,7 +316,7 @@ fine.noalias() = A * B;           // promise kept: fine is not on the right
 The correct answer has the columns $(1,4,7), (2,5,8), (3,6,9)$ moved into the order third, first, second. The broken one is column $(3, 6, 9)$ three times: column 0 was filled with old column 2, then column 1 copied "column 0", which already held $(3, 6, 9)$, and column 2 copied "column 1", which by then held the same. This gave the same wrong answer in debug, `-O2` and `-O3 -march=native` builds. No assertion, no crash. And a broken promise does not always show: on the same machine, the same misuse with a different 6-by-6 matrix happened to come out right. A test that passes proves nothing here, so treat every broken `noalias()` promise as a bug.
 
 ::: key
-What does `noalias()` prevent? Eigen creating a temporary for a matrix product assignment. Write `C.noalias() = A * B` only when you know `C` does not appear on the right-hand side; using it when it does gives a silently wrong result.
+What does `noalias()` prevent? Eigen creating a temporary for a matrix product assignment. Write `C.noalias() = A * B` only when you know `C` does not appear on the right-hand side; using it when it does can give a silently wrong result.
 :::
 
 ## eval() and noalias() point in opposite directions

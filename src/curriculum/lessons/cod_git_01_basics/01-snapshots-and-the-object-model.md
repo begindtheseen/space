@@ -356,7 +356,7 @@ ref: refs/heads/main
 HEAD does not hold a hash. It holds the *name of a branch*. To find your current commit, Git reads two files: HEAD says "I am on `main`", and `main` says "I am at `cf192ed`". So when you commit, the branch moves forward and HEAD comes along without being rewritten.
 
 ::: key What a branch is, physically
-A 41-byte file under `.git/refs/heads` containing a commit hash. Creating a branch is free; moving it is a one-line write. HEAD is a ref that usually points at a branch ref.
+A 41-byte file under `.git/refs/heads` (or, once packed, a line in `.git/packed-refs`) containing a commit hash. Creating a branch is free; moving it is a one-line write. HEAD is a ref that usually points at a branch ref.
 :::
 
 ::: warning The branch file can be missing — and the branch still exists

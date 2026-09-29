@@ -33,7 +33,7 @@ Suppose each of 6000 satellites sends one channel at 10 Hz — ten samples a sec
 :::
 
 ::: key How you store 10 Hz data from 6000 satellites for two years
-Roughly 3.8e12 samples, so: narrow rows or columnar storage, range partitioning by time (daily or weekly), compression on older partitions, continuous aggregates for the common queries, a short hot window in a row store and the archive in Parquet on object storage.
+Roughly 3.8e12 samples per channel (6000 × 10 Hz × 2 years), so: narrow rows or columnar storage, range partitioning by time (daily or weekly), compression on older partitions, continuous aggregates for the common queries, a short hot window in a row store and the archive in Parquet on object storage.
 :::
 
 The rest of this lesson and the next explain each piece of that answer.

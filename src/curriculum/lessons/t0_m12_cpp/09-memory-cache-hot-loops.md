@@ -230,7 +230,7 @@ When the loop touches every field of each case — the simulation rather than th
 :::
 
 ::: key
-Struct-of-arrays for a Monte Carlo. Sweeping one field over many cases touches contiguous memory, so every cache line is fully used and the loop vectorises. Array-of-structs strides over unused fields and wastes most of each line.
+Struct-of-arrays for a Monte Carlo. Sweeping one field over many cases touches contiguous memory, so every cache line is fully used and the loop can vectorise (a floating-point sum only if the compiler may reorder it, e.g. -ffast-math). Array-of-structs strides over unused fields and wastes most of each line.
 :::
 
 For the flight loop itself: small data, laid out contiguously — a state vector in a `std::array` or an Eigen fixed-size type, tables in flat arrays, no pointer chasing, a working set that fits in L1 and L2. A `std::map` lookup in a control loop is a chain of cache misses waiting to happen.
