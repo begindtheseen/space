@@ -180,11 +180,11 @@ The shooting lesson's transfer: $r_0 = 7000\,\mathrm{km}$ to $r_1 = 9000\,\mathr
 
 - $N = 20$: $t_f = 12.372081$, which is $11\,476.81\,\mathrm{s}$.
 - $N = 40$: $t_f = 12.370376$, which is $11\,475.23\,\mathrm{s}$.
-- Indirect shooting's exact answer: $t_f = 12.370316$, which is $11\,475.17\,\mathrm{s}$.
+- Indirect shooting's exact answer: $t_f = 12.370307$, which is $11\,475.16\,\mathrm{s}$.
 
 (One nondimensional time unit here is $927.64\,\mathrm{s}$.)
 
-**Sanity check.** The $N = 20$ error is $1.64\,\mathrm{s}$ out of more than three hours. Doubling to $N = 40$ shrinks it to $0.056\,\mathrm{s}$, about $29$ times smaller. That is at least the $16$ the global order promises; the cost is a smooth quantity and often converges a little faster than the trajectory itself.
+**Sanity check.** The $N = 20$ error is $1.65\,\mathrm{s}$ out of more than three hours. Doubling to $N = 40$ shrinks it to $0.064\,\mathrm{s}$, about $26$ times smaller. That is at least the $16$ the global order promises; the cost is a smooth quantity and often converges a little faster than the trajectory itself.
 :::
 
 Notice what never came up: the costate. The optimizer does have **Lagrange multipliers** on the defect constraints — every constrained NLP has them. A later lesson shows how those multipliers rebuild the costate history that the indirect method had to guess its way toward. That turns the costate into a check you can run *after* solving, instead of a prerequisite you need *before* you can start.
@@ -247,7 +247,7 @@ Exactly zero: any motion whose rate $\mathbf{f}$ is a straight-line function of 
 | Hermite-Simpson defect | $\mathbf{d}_k=\mathbf{x}_{k+1}-\mathbf{x}_k-\frac{h}{6}(\mathbf{f}_k+4\mathbf{f}_{\text{mid}}+\mathbf{f}_{k+1})$; local $O(h^5)$, global $O(h^4)$ |
 | Measured local order | Trapezoidal $2.94$, Hermite-Simpson $4.94$ (theory $3$ and $5$) |
 | Per halving of $h$ | Defects: $\times 8$ and $\times 32$ smaller. Trajectory error: $\times 4$ and $\times 16$ smaller |
-| Orbit transfer, direct | From straight lines and $\beta \equiv 0$: $t_f = 12.372081$ ($N=20$), $12.370376$ ($N=40$), against shooting's $12.370316$ |
+| Orbit transfer, direct | From straight lines and $\beta \equiv 0$: $t_f = 12.372081$ ($N=20$), $12.370376$ ($N=40$), against shooting's $12.370307$ |
 | Why the naive guess works | Every node is a locally corrected unknown; errors do not compound across the whole horizon |
 | Mesh caveat | Control structure finer than $h$ (a switch, a thin singular arc) can hide inside a converged, tight-tolerance solve |
 
