@@ -23,10 +23,10 @@ git merge-base main drag-model
 ```
 
 ```text
-65bb5267418df1f4e9be8976d3dc45fbe73a3710
+b1081538f554cffde5f40052f60fa9575bd92e4d
 ```
 
-That is `65bb526`, where Maya created `drag-model` last lesson. The merge base matters because every merge is a question about it: *what has each side changed since the fork?* The [[fork picture|merge-base-picture]] shows it.
+That is `b108153`, where Maya created `drag-model` last lesson. The merge base matters because every merge is a question about it: *what has each side changed since the fork?* The [[fork picture|merge-base-picture]] shows it.
 
 The command that joins branches is **`git merge <branch>`**. Read it as "bring that branch's work into the branch I am on". The branch you are on — the one HEAD names — is the one that moves. The other branch is only read.
 
@@ -39,16 +39,20 @@ git log --oneline --graph --all
 ```
 
 ```text
-* 4fff28f (drag-model) Add exponential-atmosphere drag model
-* 65bb526 (HEAD -> main) Explain how to run the tests
-* 10b6fcf Add vector form of gravity acceleration
+* d9f2ae1 (drag-model) Add exponential-atmosphere drag model
+* b108153 (HEAD -> main) Add circular orbit speed helper
+| * d2e5ed4 (j2-constant) Add J2 oblateness constant
+|/  
+* 1fbe379 Reject non-positive radius in accel
+* 1036755 Explain how to run the tests
+* da6039c Add vector form of gravity acceleration
 * cf192ed Add point-mass gravity model
 * 903724b Add README
 ```
 
-`main` has not moved since the fork. Its tip, `65bb526`, *is* the merge base. Everything `main` has, `drag-model` has too, plus one more commit. In graph words, `main`'s tip is an **ancestor** of `drag-model`'s tip: you can reach it by following parent arrows back from `4fff28f`.
+Leave Leo's `j2-constant` aside for a moment and look at the top two lines. `main` has not moved since the fork. Its tip, `b108153`, *is* the merge base. Everything `main` has, `drag-model` has too, plus one more commit. In graph words, `main`'s tip is an **ancestor** of `drag-model`'s tip: you can reach it by following parent arrows back from `d9f2ae1`.
 
-So there is nothing to combine. `drag-model` is `main` plus more. Git can bring `main` up to date by moving its sticky note forward to `4fff28f`. That is a **fast-forward merge**:
+So there is nothing to combine. `drag-model` is `main` plus more. Git can bring `main` up to date by moving its sticky note forward to `d9f2ae1`. That is a **fast-forward merge**:
 
 ::: example A fast-forward merge
 **Step 1 — be on the branch that should move.** Maya is on `main` (the log shows `HEAD -> main`).
@@ -60,14 +64,14 @@ git merge drag-model
 ```
 
 ```text
-Updating 65bb526..4fff28f
+Updating b108153..d9f2ae1
 Fast-forward
  drag.py | 14 ++++++++++++++
  1 file changed, 14 insertions(+)
  create mode 100644 drag.py
 ```
 
-Read the first line as "moving from `65bb526` to `4fff28f`". The word `Fast-forward` names what happened. The rest is a summary of what changed in the working tree: `drag.py` appeared, 14 lines.
+Read the first line as "moving from `b108153` to `d9f2ae1`". The word `Fast-forward` names what happened. The rest is a summary of what changed in the working tree: `drag.py` appeared, 14 lines.
 
 **Step 3 — check the graph.**
 
@@ -76,37 +80,42 @@ git log --oneline --graph --all
 ```
 
 ```text
-* 4fff28f (HEAD -> main, drag-model) Add exponential-atmosphere drag model
-* 65bb526 Explain how to run the tests
-* 10b6fcf Add vector form of gravity acceleration
+* d9f2ae1 (HEAD -> main, drag-model) Add exponential-atmosphere drag model
+* b108153 Add circular orbit speed helper
+| * d2e5ed4 (j2-constant) Add J2 oblateness constant
+|/  
+* 1fbe379 Reject non-positive radius in accel
+* 1036755 Explain how to run the tests
+* da6039c Add vector form of gravity acceleration
 * cf192ed Add point-mass gravity model
 * 903724b Add README
 ```
 
-Both branches now point at `4fff28f`. The history is still a straight line.
+Both branches now point at `d9f2ae1`. `main`'s own line is still straight.
 
-**Sanity check.** No new commit was made — the newest commit is still Maya's drag commit, with its one parent `65bb526`. Git changed exactly one thing in `.git/refs`: the 41-byte `main` file now holds `4fff28f…`. It also updated the index and working tree to match, which is why `drag.py` appeared.
+**Sanity check.** No new commit was made — the newest commit is still Maya's drag commit, with its one parent `b108153`. Git changed exactly one thing in `.git/refs`: the 41-byte `main` file now holds `d9f2ae1…`. It also updated the index and working tree to match, which is why `drag.py` appeared.
 :::
 
 ## A true merge: when both branches moved
 
-Most of the time, both sides keep working. While Leo, a teammate, adds a constant for Earth's **[[oblateness|j2-oblateness]]** on a branch called `j2-constant`, Maya lists the models in the README on `main`:
+Most of the time, both sides keep working. Leo's `j2-constant` from lesson 03 is exactly that case. He forked it from `1fbe379` to add a constant for Earth's **[[oblateness|j2-oblateness]]**, and since then `main` has gained the circular-speed helper, the drag model and, just now, a commit in which Maya lists the models in the README:
 
 ```text
-* 40885d2 (HEAD -> main) List the models in the README
-| * fc496ae (j2-constant) Add J2 oblateness constant
-|/
-* 4fff28f Add exponential-atmosphere drag model
-* 65bb526 Explain how to run the tests
+* 04074f5 (HEAD -> main) List the models in the README
+* d9f2ae1 (drag-model) Add exponential-atmosphere drag model
+* b108153 Add circular orbit speed helper
+| * d2e5ed4 (j2-constant) Add J2 oblateness constant
+|/  
+* 1fbe379 Reject non-positive radius in accel
 ```
 
-(That is the top of `git log --oneline --graph --all`. The `|/` is where the two lines fork.) Now neither tip is an ancestor of the other. `main` has `40885d2`, which `j2-constant` lacks, and the other way round. You cannot slide `main` forward to `fc496ae` — that would drop Maya's README commit from `main`'s history.
+(That is the top of `git log --oneline --graph --all`. The `|/` is where the two lines fork.) Now neither tip is an ancestor of the other. `main` has three commits that `j2-constant` lacks, and `j2-constant` has one that `main` lacks. You cannot slide `main` forward to `d2e5ed4` — that would drop Maya's three commits from `main`'s history.
 
 So Git does a **three-way merge**. It looks at three snapshots:
 
-- the **base** — the merge base, `4fff28f`;
-- **ours** — the tip of the branch we are on, `40885d2`;
-- **theirs** — the tip of the branch being merged in, `fc496ae`.
+- the **base** — the merge base, `1fbe379` (`git merge-base main j2-constant` prints its full hash);
+- **ours** — the tip of the branch we are on, `04074f5`;
+- **theirs** — the tip of the branch being merged in, `d2e5ed4`.
 
 Then it goes through every file, region by region, with one simple rule set:
 
@@ -118,7 +127,7 @@ Then it goes through every file, region by region, with one simple rule set:
 | changed the same way | changed the same way | take it once |
 | changed | changed differently | **conflict** — ask a human |
 
-Only the last row needs you. Leo touched `gravity.py`; Maya touched `README.md`. No region was changed by both, so Git combines the two snapshots on its own and records the result as a new commit with **two parents**, called a **merge commit**.
+Only the last row needs you. Leo added two lines near the top of `gravity.py`. On `main`'s side, `gravity.py` changed only at the bottom (the circular-speed helper), `drag.py` appeared and the README grew. No region was changed by both, so Git combines the two snapshots on its own and records the result as a new commit with **two parents**, called a **merge commit**.
 
 ::: example A merge commit and its two parents
 **Step 1 — merge.** On `main`:
@@ -130,12 +139,13 @@ git merge j2-constant
 Because this merge makes a new commit, Git opens your editor with a ready-made message, `Merge branch 'j2-constant'`. Save and close it (or add `--no-edit` to accept it without the editor). Then:
 
 ```text
+Auto-merging gravity.py
 Merge made by the 'ort' strategy.
  gravity.py | 2 ++
  1 file changed, 2 insertions(+)
 ```
 
-The summary lists what came in *from the other side*: Leo's two lines in `gravity.py`. (**[['ort'|ort-strategy]]** is the name of Git's merge algorithm.)
+`Auto-merging gravity.py` means both sides had changed that file and Git combined the changes itself. The summary lists what came in *from the other side*: Leo's two lines in `gravity.py`. (**[['ort'|ort-strategy]]** is the name of Git's merge algorithm.)
 
 **Step 2 — the graph.**
 
@@ -144,16 +154,17 @@ git log --oneline --graph --all
 ```
 
 ```text
-*   f00b517 (HEAD -> main) Merge branch 'j2-constant'
-|\
-| * fc496ae (j2-constant) Add J2 oblateness constant
-* | 40885d2 List the models in the README
-|/
-* 4fff28f Add exponential-atmosphere drag model
-* 65bb526 Explain how to run the tests
+*   d0aec65 (HEAD -> main) Merge branch 'j2-constant'
+|\  
+| * d2e5ed4 (j2-constant) Add J2 oblateness constant
+* | 04074f5 List the models in the README
+* | d9f2ae1 (drag-model) Add exponential-atmosphere drag model
+* | b108153 Add circular orbit speed helper
+|/  
+* 1fbe379 Reject non-positive radius in accel
 ```
 
-The lines split at `4fff28f` and join again at `f00b517`. That diamond is the shape of a true merge.
+(Again only the top; the older commits follow below `1fbe379`.) The lines split at `1fbe379` and join again at `d0aec65`. That diamond is the shape of a true merge.
 
 **Step 3 — look inside the merge commit.**
 
@@ -162,18 +173,18 @@ git cat-file -p HEAD
 ```
 
 ```text
-tree a172d4546942875e457d0623340122b95db9d24e
-parent 40885d277f90cdc9e7b7c80ac1a468b003e18d4c
-parent fc496aee14c55608234add23403dfa700fea0e4b
-author Maya Chen <maya@example.com> 1789570800 -0500
-committer Maya Chen <maya@example.com> 1789570800 -0500
+tree 9fc1ad221aab933e8a7ebe04c55d2f37bf09dc70
+parent 04074f5251fb49e5976cb1216f784950c9a613ad
+parent d2e5ed41af76d6595c63b818c45fa546f68ed6d7
+author Maya Chen <maya@example.com> 1790175600 -0500
+committer Maya Chen <maya@example.com> 1790175600 -0500
 
 Merge branch 'j2-constant'
 ```
 
 Two `parent` lines. The first is where `main` was (ours); the second is the branch that came in (theirs). The tree is the combined snapshot, with both the README list and the J2 constant.
 
-**Step 4 — name each parent.** Last lesson, `HEAD^` meant "the parent". For a merge, `HEAD^1` is the first parent and **`HEAD^2`**, read "HEAD caret two", is the second:
+**Step 4 — name each parent.** In lesson 03, `HEAD^` meant "the parent". For a merge, `HEAD^1` is the first parent and **`HEAD^2`**, read "HEAD caret two", is the second:
 
 ```bash
 git log --oneline -1 HEAD^1
@@ -181,11 +192,11 @@ git log --oneline -1 HEAD^2
 ```
 
 ```text
-40885d2 List the models in the README
-fc496ae Add J2 oblateness constant
+04074f5 List the models in the README
+d2e5ed4 (j2-constant) Add J2 oblateness constant
 ```
 
-**Sanity check.** Only `main` moved: it now holds `f00b517`, and `j2-constant` still holds `fc496ae`. Every commit from both lines is reachable from `main` now, so `git branch -d j2-constant` succeeds — the work has a home.
+**Sanity check.** Only `main` moved: it now holds `d0aec65`, and `j2-constant` still holds `d2e5ed4`. Every commit from both lines is reachable from `main` now, so `git branch -d j2-constant` succeeds — the work has a home.
 :::
 
 ::: warning `~` and `^` differ at a merge
@@ -196,7 +207,7 @@ fc496ae Add J2 oblateness constant
 
 A fast-forward leaves no trace that a branch ever existed: the drag commit sits on `main`'s straight line. Some teams want that trace. The graph then shows, forever, "these commits were developed together as the drag feature, and joined here".
 
-The flag **`--no-ff`** ("no fast-forward") tells Git to make a merge commit even when a fast-forward was possible. Here is the drag merge again, done the other way from the same starting point:
+The flag **`--no-ff`** ("no fast-forward") tells Git to make a merge commit even when a fast-forward was possible. Here is the drag merge again, done the other way from the same starting point. Maya tried it in a throwaway copy of the repository folder, made just before the fast-forward (`cp -r orbit-sim orbit-try`), so the real `main` keeps its straight line:
 
 ```bash
 git merge --no-ff drag-model
@@ -208,14 +219,14 @@ Merge made by the 'ort' strategy.
  drag.py | 14 ++++++++++++++
  1 file changed, 14 insertions(+)
  create mode 100644 drag.py
-*   6bdb3c9 (HEAD -> main) Merge branch 'drag-model'
-|\
-| * 4fff28f (drag-model) Add exponential-atmosphere drag model
-|/
-* 65bb526 Explain how to run the tests
+*   9d6d9cc (HEAD -> main) Merge branch 'drag-model'
+|\  
+| * d9f2ae1 (drag-model) Add exponential-atmosphere drag model
+|/  
+* b108153 Add circular orbit speed helper
 ```
 
-The merge commit `6bdb3c9` has parents `65bb526` and `4fff28f`. The snapshot is identical to the fast-forward's; only the shape of history differs. The [[side-by-side picture|ff-picture]] compares the two. Which one a team prefers is a matter of taste and of how their review tools work — the next module comes back to it.
+(Only the top of the graph is shown.) The merge commit `9d6d9cc` has parents `b108153` and `d9f2ae1`. The snapshot is identical to the fast-forward's; only the shape of history differs. The [[side-by-side picture|ff-picture]] compares the two. Which one a team prefers is a matter of taste and of how their review tools work — the next module comes back to it.
 
 One more case: if the branch you merge is *behind* yours (everything it has, you already have), there is nothing to do, and Git says `Already up to date.`
 
@@ -227,7 +238,7 @@ If the target branch tip is an ancestor of the source, Git can just slide the po
 
 Now the last row of the table. Maya and Leo both edit the first line of `gravity.py`, the value of Earth's gravitational parameter $\mu$.
 
-- On a branch `egm96-mu`, Leo switches to the value from a gravity model called **[[EGM96|mu-values]]**: `3.986004415e14`, with the comment `(EGM96)`.
+- On a branch `egm96-mu`, made from the new merge commit `d0aec65`, Leo switches to the value from a gravity model called **[[EGM96|mu-values]]**: `3.986004415e14`, with the comment `(EGM96)`.
 - On `main`, Maya keeps the value `3.986004418e14` but adds the source to the comment: `(WGS 84)`.
 
 Base, ours and theirs all differ on the same line. No rule can pick for them — only a person who knows *why* each change was made can. So Git does all the parts of the merge it can, stops, and hands you the rest.
@@ -281,7 +292,7 @@ cat -n gravity.py | head -7
      4	MU_EARTH = 3.986004415e14  # m^3/s^2, Earth's gravitational parameter (EGM96)
      5	>>>>>>> egm96-mu
      6	G0 = 9.80665               # m/s^2, standard gravity
-     7	
+     7	R_EARTH = 6378137.0        # m, Earth's equatorial radius
 ```
 
 Read the fence top to bottom:
@@ -335,12 +346,12 @@ git commit
 ```
 
 ```text
-[main 84c8d78] Merge branch 'egm96-mu'
+[main 732eb7b] Merge branch 'egm96-mu'
 ```
 
 The editor opened with `Merge branch 'egm96-mu'` already filled in, plus a commented-out list of the conflicted files, which Git drops when you save.
 
-**Sanity check.** `git log --oneline --graph` shows a second diamond, with `84c8d78` on top and parents `d169523` (Maya's WGS 84 commit) and `286467e` (Leo's). `git show HEAD` prints a **[[combined diff|combined-diff]]**, which marks with `++` the one line that is new compared with *both* parents — the line Maya wrote by hand, `MU_EARTH_EGM96 = …`.
+**Sanity check.** `git log --oneline --graph` shows a second diamond, with `732eb7b` on top and parents `a1df3a6` (Maya's commit "Name WGS 84 as the source of mu") and `8e82455` (Leo's "Use the EGM96 value of mu"). `git show HEAD` prints a **[[combined diff|combined-diff]]**, which marks with `++` the one line that is new compared with *both* parents — the line Maya wrote by hand, `MU_EARTH_EGM96 = …`. Every branch is now merged into `main`, so Maya deletes all three with `git branch -d drag-model j2-constant egm96-mu`, and `-d` agrees: Git prints `Deleted branch drag-model (was d9f2ae1).` and a line for each of the others.
 :::
 
 ::: warning Git does not check that the markers are gone
@@ -356,9 +367,9 @@ git ls-files -u
 ```
 
 ```text
-100644 5b19a88d6bd2dd79cd656061734c533933be49a5 1	gravity.py
-100644 fb2a4eef376ea41be51e7f677a7a24d0afce31fb 2	gravity.py
-100644 d47c0f2d044e0e3eae3d79b0e0c9aa6cd1ff529c 3	gravity.py
+100644 d01c05c7958fd6b483a02cea0bb6905778236933 1	gravity.py
+100644 92319b100cef4698474abc720943b017d9b9142e 2	gravity.py
+100644 7a6062c415c9d12b864667e61edc2e8e151c1c2e 3	gravity.py
 ```
 
 That is why `git add` is the "resolved" signal: it replaces the three stages with the one file you give it. And it is why a conflict never loses anything — all three versions are safe blobs until you finish.
@@ -423,11 +434,11 @@ The part between `<<<<<<< HEAD` and `=======` is ours — the branch you are on,
 :::
 
 ::: check Parents
-After the conflict example, HEAD is the merge commit `84c8d78`, whose parents are `d169523` (from `main`) and `286467e` (from `egm96-mu`). What do `HEAD^1`, `HEAD^2` and `HEAD~1` name? What would `HEAD^3` be?
+After the conflict example, HEAD is the merge commit `732eb7b`, whose parents are `a1df3a6` (from `main`) and `8e82455` (from `egm96-mu`). What do `HEAD^1`, `HEAD^2` and `HEAD~1` name? What would `HEAD^3` be?
 :::
 
 ::: answer
-`HEAD^1` is the first parent, `d169523` — where `main` was. `HEAD^2` is the second parent, `286467e` — the branch that was merged in. `HEAD~1` follows the first parent once, so it is also `d169523`. `HEAD^3` does not exist: this commit has only two parents, and Git reports that it cannot resolve the name.
+`HEAD^1` is the first parent, `a1df3a6` — where `main` was. `HEAD^2` is the second parent, `8e82455` — the branch that was merged in. `HEAD~1` follows the first parent once, so it is also `a1df3a6`. `HEAD^3` does not exist: this commit has only two parents, and Git reports that it cannot resolve the name.
 :::
 
 ::: check Abort or resolve?
@@ -456,39 +467,45 @@ You started `git merge egm96-mu`, saw the conflict, edited `gravity.py` halfway,
 Merging only ever adds to history. Next lesson is about going backward: moving a branch to an older commit with `reset`, canceling a commit with a new one using `revert`, and bringing back a file's old contents with `restore` — and exactly what each of them touches.
 
 ::: context merge-base-picture The fork where two branches last agreed
-The merge base is the newest commit you reach by following parent arrows back from *both* tips. Here the tips are `40885d2` (`main`) and `fc496ae` (`j2-constant`), and the merge base is `4fff28f`.
+The merge base is the newest commit you reach by following parent arrows back from *both* tips. Here the tips are `04074f5` (`main`) and `d2e5ed4` (`j2-constant`), and the merge base is `1fbe379`.
 
 ```svg
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
   <defs>
     <marker id="q1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#1f2a44"/>
     </marker>
   </defs>
-  <circle cx="40" cy="85" r="17" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="40" y="89" font-size="11" text-anchor="middle" fill="#1f2a44">65b</text>
-  <circle cx="125" cy="85" r="17" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="125" y="89" font-size="11" text-anchor="middle" fill="#1f2a44">4ff</text>
-  <circle cx="220" cy="45" r="17" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="220" y="49" font-size="11" text-anchor="middle" fill="#1f2a44">408</text>
-  <circle cx="220" cy="125" r="17" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="220" y="129" font-size="11" text-anchor="middle" fill="#1f2a44">fc4</text>
-  <line x1="108" y1="85" x2="59" y2="85" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#q1)"/>
-  <line x1="204" y1="53" x2="142" y2="78" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#q1)"/>
-  <line x1="204" y1="117" x2="142" y2="92" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#q1)"/>
-  <text x="125" y="124" font-size="11" text-anchor="middle" fill="#b4232c">merge base</text>
-  <rect x="265" y="35" width="80" height="20" rx="4" fill="#fff" stroke="#b4232c" stroke-width="1.5"/>
-  <text x="305" y="49" font-size="11" text-anchor="middle" fill="#b4232c">main</text>
-  <line x1="265" y1="45" x2="240" y2="45" stroke="#b4232c" stroke-width="1.5" marker-end="url(#q1)"/>
-  <rect x="265" y="115" width="80" height="20" rx="4" fill="#fff" stroke="#b4232c" stroke-width="1.5"/>
-  <text x="305" y="129" font-size="11" text-anchor="middle" fill="#b4232c">j2-constant</text>
-  <line x1="265" y1="125" x2="240" y2="125" stroke="#b4232c" stroke-width="1.5" marker-end="url(#q1)"/>
-  <text x="220" y="18" font-size="11" text-anchor="middle" fill="#6c7a93">ours</text>
-  <text x="220" y="156" font-size="11" text-anchor="middle" fill="#6c7a93">theirs</text>
+  <circle cx="30" cy="90" r="15" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="30" y="94" font-size="11" text-anchor="middle" fill="#1f2a44">103</text>
+  <circle cx="90" cy="90" r="15" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="90" y="94" font-size="11" text-anchor="middle" fill="#1f2a44">1fb</text>
+  <circle cx="150" cy="50" r="15" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="150" y="54" font-size="11" text-anchor="middle" fill="#1f2a44">b10</text>
+  <circle cx="205" cy="50" r="15" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="205" y="54" font-size="11" text-anchor="middle" fill="#1f2a44">d9f</text>
+  <circle cx="260" cy="50" r="15" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="260" y="54" font-size="11" text-anchor="middle" fill="#1f2a44">040</text>
+  <circle cx="150" cy="130" r="15" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="150" y="134" font-size="11" text-anchor="middle" fill="#1f2a44">d2e</text>
+  <line x1="75" y1="90" x2="47" y2="90" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#q1)"/>
+  <line x1="137" y1="58" x2="104" y2="80" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#q1)"/>
+  <line x1="190" y1="50" x2="167" y2="50" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#q1)"/>
+  <line x1="245" y1="50" x2="222" y2="50" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#q1)"/>
+  <line x1="137" y1="122" x2="104" y2="100" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#q1)"/>
+  <text x="90" y="124" font-size="11" text-anchor="middle" fill="#b4232c">merge base</text>
+  <rect x="290" y="40" width="60" height="20" rx="4" fill="#fff" stroke="#b4232c" stroke-width="1.5"/>
+  <text x="320" y="54" font-size="11" text-anchor="middle" fill="#b4232c">main</text>
+  <line x1="290" y1="50" x2="278" y2="50" stroke="#b4232c" stroke-width="1.5" marker-end="url(#q1)"/>
+  <rect x="185" y="120" width="80" height="20" rx="4" fill="#fff" stroke="#b4232c" stroke-width="1.5"/>
+  <text x="225" y="134" font-size="11" text-anchor="middle" fill="#b4232c">j2-constant</text>
+  <line x1="185" y1="130" x2="168" y2="130" stroke="#b4232c" stroke-width="1.5" marker-end="url(#q1)"/>
+  <text x="260" y="22" font-size="11" text-anchor="middle" fill="#6c7a93">ours</text>
+  <text x="150" y="162" font-size="11" text-anchor="middle" fill="#6c7a93">theirs</text>
 </svg>
 ```
 
-Everything older than the base (`65b` and back) is shared history, and the merge ignores it.
+Everything older than the base (`103` and back) is shared history, and the merge ignores it.
 :::
 
 ::: context j2-oblateness What J2 measures
@@ -513,17 +530,17 @@ Same starting point, same final files. On the left, `main` slid forward onto the
   <text x="270" y="18" font-size="12" font-weight="700" text-anchor="middle" fill="#1f2a44">--no-ff</text>
   <line x1="175" y1="10" x2="175" y2="160" stroke="#6c7a93" stroke-width="1" stroke-dasharray="4 3"/>
   <circle cx="35" cy="110" r="16" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="35" y="114" font-size="11" text-anchor="middle" fill="#1f2a44">65b</text>
+  <text x="35" y="114" font-size="11" text-anchor="middle" fill="#1f2a44">b10</text>
   <circle cx="110" cy="110" r="16" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="110" y="114" font-size="11" text-anchor="middle" fill="#1f2a44">4ff</text>
+  <text x="110" y="114" font-size="11" text-anchor="middle" fill="#1f2a44">d9f</text>
   <line x1="94" y1="110" x2="53" y2="110" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#q2)"/>
   <rect x="83" y="48" width="54" height="20" rx="4" fill="#fff" stroke="#b4232c" stroke-width="1.5"/>
   <text x="110" y="62" font-size="11" text-anchor="middle" fill="#b4232c">main</text>
   <line x1="110" y1="68" x2="110" y2="92" stroke="#b4232c" stroke-width="1.5" marker-end="url(#q2)"/>
   <circle cx="205" cy="110" r="16" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="205" y="114" font-size="11" text-anchor="middle" fill="#1f2a44">65b</text>
+  <text x="205" y="114" font-size="11" text-anchor="middle" fill="#1f2a44">b10</text>
   <circle cx="265" cy="145" r="14" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="265" y="149" font-size="11" text-anchor="middle" fill="#1f2a44">4ff</text>
+  <text x="265" y="149" font-size="11" text-anchor="middle" fill="#1f2a44">d9f</text>
   <circle cx="320" cy="110" r="16" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
   <text x="320" y="114" font-size="11" text-anchor="middle" fill="#1f2a44">M</text>
   <line x1="304" y1="110" x2="223" y2="110" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#q2)"/>
@@ -535,7 +552,7 @@ Same starting point, same final files. On the left, `main` slid forward onto the
 </svg>
 ```
 
-M's first parent is `65b`, the old `main`; its second parent is `4ff`, the drag commit.
+M's first parent is `b10`, the old `main`; its second parent is `d9f`, the drag commit.
 :::
 
 ::: context mu-values Two right answers for one constant
@@ -547,7 +564,7 @@ The two-part markers show ours and theirs but hide the base, so you cannot tell 
 
 `git config --global merge.conflictStyle diff3`
 
-After that, every conflict has a third section, opened by `|||||||` and the merge base's short hash (for this merge, `||||||| f00b517`), holding the original lines. Newer Git also offers `zdiff3`, which does the same but trims lines that are identical on all sides out of the conflict. Many experienced engineers turn one of these on first thing on a new machine.
+After that, every conflict has a third section, opened by `|||||||` and the merge base's short hash (for this merge, `||||||| d0aec65`), holding the original lines. Newer Git also offers `zdiff3`, which does the same but trims lines that are identical on all sides out of the conflict. Many experienced engineers turn one of these on first thing on a new machine.
 :::
 
 ::: context combined-diff Reading a diff with two parents

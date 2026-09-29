@@ -34,20 +34,20 @@ The precise rule: **`git reset <commit>`** moves the branch that HEAD names so t
 
 Each mode does everything the one before it does, plus one more step. The [[picture of the three modes|reset-picture]] shows it as a grid.
 
-To see them side by side, here is orbit-sim with three new commits on `main`. The last one, `1e9f72e`, is a mistake: Maya left a debugging `print` inside `density()`.
+To see them side by side, here is orbit-sim with three new commits on `main` since last lesson's merge. The last one, `c10d5f5`, is a mistake: Maya left a debugging `print` inside `density()`.
 
 ```bash
 git log --oneline -4
 ```
 
 ```text
-1e9f72e Print altitude in density()
-79decf1 Add ballistic coefficient helper
-8e31e8e Add sea-level test for the drag model
-84c8d78 Merge branch 'egm96-mu'
+c10d5f5 (HEAD -> main) Print altitude in density()
+7a4f0d8 Add ballistic coefficient helper
+30b7156 Add sea-level test for the drag model
+732eb7b Merge branch 'egm96-mu'
 ```
 
-Each run below starts from this same state, with nothing uncommitted, and resets to `HEAD~1` — one commit back, `79decf1`.
+Each run below starts from this same state, with nothing uncommitted, and resets to `HEAD~1` — one commit back, `7a4f0d8`. (After each run Maya puts `main` back with `git reset --hard ORIG_HEAD`; the section on `--hard` below explains that command.)
 
 ### `--soft`: the commit is undone, its changes stay staged
 
@@ -58,11 +58,11 @@ git status -s
 ```
 
 ```text
-79decf1 Add ballistic coefficient helper
+7a4f0d8 (HEAD -> main) Add ballistic coefficient helper
 M  drag.py
 ```
 
-`main` points at `79decf1` now. But the index and working tree were not touched, so they still hold the version *with* the `print`. Compared with the new HEAD, that is a staged change — `M` in the left column. It is as if you had staged the change and not committed it yet. `git commit` right now would make the same commit again; edit first, and you can make a better one.
+`main` points at `7a4f0d8` now. But the index and working tree were not touched, so they still hold the version *with* the `print`. Compared with the new HEAD, that is a staged change — `M` in the left column. It is as if you had staged the change and not committed it yet. `git commit` right now would make the same commit again; edit first, and you can make a better one.
 
 ### `--mixed`: the commit is undone, its changes are unstaged
 
@@ -75,7 +75,7 @@ Unstaged changes after reset:
 M	drag.py
 ```
 
-and `git status -s` prints ` M drag.py`. The branch moved, and the index was reset to `79decf1`'s snapshot. The working tree still has the `print`, so it is now an unstaged edit — `M` in the right column. You are back to "edited, not yet added". Because this is the default, plain `git reset HEAD~1` does exactly this.
+and `git status -s` prints ` M drag.py`. The branch moved, and the index was reset to `7a4f0d8`'s snapshot. The working tree still has the `print`, so it is now an unstaged edit — `M` in the right column. You are back to "edited, not yet added". Because this is the default, plain `git reset HEAD~1` does exactly this.
 
 ### `--hard`: the commit is undone, and so are the files
 
@@ -84,10 +84,10 @@ git reset --hard HEAD~1
 ```
 
 ```text
-HEAD is now at 79decf1 Add ballistic coefficient helper
+HEAD is now at 7a4f0d8 Add ballistic coefficient helper
 ```
 
-and `git status -s` prints nothing at all. The branch moved, the index was reset, and the working tree was overwritten with `79decf1`'s files. The `print` line is gone from `drag.py` on disk.
+and `git status -s` prints nothing at all. The branch moved, the index was reset, and the working tree was overwritten with `7a4f0d8`'s files. The `print` line is gone from `drag.py` on disk.
 
 Here is the whole comparison in one table:
 
@@ -102,7 +102,7 @@ Here is the whole comparison in one table:
 :::
 
 ::: example Squashing three commits into one with `--soft`
-**Situation.** The three new commits on `main` have not been shared with anyone. Maya decides they should be one clean commit — the test, the helper, and *no* `print`.
+**Situation.** Suppose the three new commits had not been shared with anyone yet, and Maya wanted them as one clean commit — the test, the helper, and *no* `print`. She tries it in a throwaway copy of the repository folder (`cp -r orbit-sim squash-try`), so her real `main` keeps its three commits for the rest of the lesson.
 
 **Step 1 — move the branch back three commits, keeping everything staged.**
 
@@ -116,7 +116,7 @@ M  drag.py
 A  tests/test_drag.py
 ```
 
-`main` now points at `84c8d78`, the merge from last lesson. The index still holds the snapshot from `1e9f72e`, so all three commits' changes appear as staged: `drag.py` modified, `tests/test_drag.py` added. `git diff --staged --stat` confirms `drag.py | 6 ++++++` (five lines of helper plus the `print`) and `tests/test_drag.py | 5 +++++`.
+`main` now points at `732eb7b`, the merge from last lesson. The index still holds the snapshot from `c10d5f5`, so all three commits' changes appear as staged: `drag.py` modified, `tests/test_drag.py` added. `git diff --staged --stat` confirms `drag.py | 6 ++++++` (five lines of helper plus the `print`) and `tests/test_drag.py | 5 +++++`.
 
 **Step 2 — fix the file.** Delete the `print` line from `drag.py`, then `git add drag.py`. Now `git diff --staged --stat` shows `drag.py | 5 +++++` — one line fewer, as it should be.
 
@@ -127,12 +127,12 @@ git commit -m "Add ballistic coefficient and a sea-level drag test"
 ```
 
 ```text
-[main a188739] Add ballistic coefficient and a sea-level drag test
+[main 6205933] Add ballistic coefficient and a sea-level drag test
  2 files changed, 10 insertions(+)
  create mode 100644 tests/test_drag.py
 ```
 
-**Sanity check.** $5 + 5 = 10$ insertions: five lines of helper in `drag.py`, five lines of test. `git log --oneline -2` shows `a188739` directly on top of `84c8d78`. Three commits became one — a move people call **[[squashing|squash-bridge]]** — and nothing in the working tree was ever at risk: `--soft` touched only the branch pointer.
+**Sanity check.** $5 + 5 = 10$ insertions: five lines of helper in `drag.py`, five lines of test. `git log --oneline -2` shows `6205933` directly on top of `732eb7b`. Three commits became one — a move people call **[[squashing|squash-bridge]]** — and nothing in the working tree was ever at risk: `--soft` touched only the branch pointer.
 :::
 
 ::: warning Plain `git reset` with a file name is "unstage"
@@ -148,7 +148,7 @@ git commit -m "Add ballistic coefficient and a sea-level drag test"
 **Uncommitted work is destroyed.** Edits you had not committed lived only in the working tree (and perhaps the index). `--hard` overwrites both. Git never made a commit of them, so there is no history to go back to. This is the only undo in this lesson that can lose work for good.
 
 ::: example A hard reset of three commits, audited
-**Situation.** `main` is at `1e9f72e`, with the three new commits. Maya has also edited `README.md`, adding a line about the new helper, and not committed it. By mistake she runs:
+**Situation.** Back in the real repository, `main` is at `c10d5f5`, with the three new commits. Maya has also edited `README.md`, adding a line about the new helper, and not committed it. By mistake she runs:
 
 ```bash
 git status -s
@@ -158,25 +158,25 @@ git status -s
 
 ```text
  M README.md
-HEAD is now at 84c8d78 Merge branch 'egm96-mu'
+HEAD is now at 732eb7b Merge branch 'egm96-mu'
 ```
 
 The second `status` prints nothing: the working tree is clean.
 
-**What moved.** `main` now points at `84c8d78`. `git log --oneline --all -3` starts at `84c8d78` — no branch reaches the three commits any more.
+**What moved.** `main` now points at `732eb7b`. `git log --oneline --all -3` starts at `732eb7b` — no branch reaches the three commits any more.
 
 **Are the commits gone?** Ask for the old tip by its hash:
 
 ```bash
-git cat-file -t 1e9f72e
-git log --oneline -3 1e9f72e
+git cat-file -t c10d5f5
+git log --oneline -3 c10d5f5
 ```
 
 ```text
 commit
-1e9f72e Print altitude in density()
-79decf1 Add ballistic coefficient helper
-8e31e8e Add sea-level test for the drag model
+c10d5f5 Print altitude in density()
+7a4f0d8 Add ballistic coefficient helper
+30b7156 Add sea-level test for the drag model
 ```
 
 All three commits, intact, with their parent links. And the old tip was recorded:
@@ -186,7 +186,7 @@ cat .git/ORIG_HEAD
 ```
 
 ```text
-1e9f72ec0adb62e273c52d908c6ade1b0f4f9c5a
+c10d5f5f29d218cb30c5173e8f70b36dd1b3b363
 ```
 
 **Undo the undo.** Reset again, to the old tip:
@@ -196,10 +196,10 @@ git reset --hard ORIG_HEAD
 ```
 
 ```text
-HEAD is now at 1e9f72e Print altitude in density()
+HEAD is now at c10d5f5 Print altitude in density()
 ```
 
-`main` is back at `1e9f72e` with all three commits.
+`main` is back at `c10d5f5` with all three commits.
 
 **What stayed lost.** `tail -2 README.md` still ends with the old models list. The README line Maya had not committed is gone, and no command in this module brings it back.
 
@@ -219,28 +219,28 @@ Picture a [[bank statement|bank-ledger]]. When a bank charges you by mistake, it
 **`git revert <commit>`** does the same. It works out the change that `<commit>` made, and makes a **new commit that applies the opposite change**. Nothing old is moved or removed. The branch moves *forward*, by one ordinary commit, like any other commit. The [[two histories side by side|revert-picture]] show the difference from a reset.
 
 ::: example Reverting a commit that is already shared
-**Situation.** The `print` commit `1e9f72e` is on `main`, and the team has already pulled it. Since then Maya has also committed a README tweak on top, so the bad commit is no longer the tip:
+**Situation.** The `print` commit `c10d5f5` is on `main`, and by now the team has already pulled it. Since then Maya has also committed a README tweak on top, so the bad commit is no longer the tip:
 
 ```bash
 git log --oneline -3
 ```
 
 ```text
-8305457 Mention the ballistic coefficient in the README
-1e9f72e Print altitude in density()
-79decf1 Add ballistic coefficient helper
+6ebb626 (HEAD -> main) Mention the ballistic coefficient in the README
+c10d5f5 Print altitude in density()
+7a4f0d8 Add ballistic coefficient helper
 ```
 
 **Step 1 — revert it by hash.**
 
 ```bash
-git revert 1e9f72e
+git revert c10d5f5
 ```
 
 Git opens the editor with a message it has written for you; save and close it.
 
 ```text
-[main cbccd59] Revert "Print altitude in density()"
+[main fe87285] Revert "Print altitude in density()"
  1 file changed, 1 deletion(-)
 ```
 
@@ -251,16 +251,16 @@ git show HEAD
 ```
 
 ```diff
-commit cbccd59fe882db38bf9645c595cbd1574235f16a
+commit fe87285dcbd1e11f532492e4a6cdd1dba7390dfe (HEAD -> main)
 Author: Maya Chen <maya@example.com>
-Date:   Thu Sep 17 10:15:00 2026 -0500
+Date:   Mon Sep 28 09:15:00 2026 -0500
 
     Revert "Print altitude in density()"
     
-    This reverts commit 1e9f72ec0adb62e273c52d908c6ade1b0f4f9c5a.
+    This reverts commit c10d5f5f29d218cb30c5173e8f70b36dd1b3b363.
 
 diff --git a/drag.py b/drag.py
-index 5919e0a..a9b8342 100644
+index 79a6dce..9f558c5 100644
 --- a/drag.py
 +++ b/drag.py
 @@ -6,7 +6,6 @@ H_SCALE = 8500.0  # m, scale height of the atmosphere
@@ -276,15 +276,15 @@ The new commit removes exactly the line the bad commit added. Its message names 
 **Step 3 — the history.**
 
 ```text
-cbccd59 Revert "Print altitude in density()"
-8305457 Mention the ballistic coefficient in the README
-1e9f72e Print altitude in density()
-79decf1 Add ballistic coefficient helper
+fe87285 (HEAD -> main) Revert "Print altitude in density()"
+6ebb626 Mention the ballistic coefficient in the README
+c10d5f5 Print altitude in density()
+7a4f0d8 Add ballistic coefficient helper
 ```
 
 All four commits are there. The README tweak, made *after* the bad commit, was kept.
 
-**Sanity check.** `git diff 79decf1 HEAD -- drag.py` prints nothing: `drag.py` is back exactly as it was before the `print` went in. And every teammate's copy of `1e9f72e` is still a valid part of history, so their next pull adds `cbccd59` on top.
+**Sanity check.** `git diff 7a4f0d8 HEAD -- drag.py` prints nothing: `drag.py` is back exactly as it was before the `print` went in. And every teammate's copy of `c10d5f5` is still a valid part of history, so their next pull adds `fe87285` on top.
 :::
 
 Why not reset instead? Because on a **shared** branch, other people's clones already contain the commit. If you moved `main` backward and forced the server's copy to match (a **[[force push|force-push]]**, covered in the next module), every teammate's `main` would still include the old commits, and their next push or merge would bring them back or fail in confusing ways. Revert avoids all of that because it only adds.
@@ -294,7 +294,7 @@ reset moves a branch pointer, rewriting what the branch claims its history is. r
 :::
 
 ::: warning Reverting a merge needs a parent number
-A merge commit has two parents, so "the change it made" depends on which parent you compare against. `git revert 84c8d78` on a merge fails with `error: commit 84c8d78… is a merge but no -m option was given.` Use `git revert -m 1 <merge>` to undo everything the merge brought in *relative to the first parent* — the branch you were on when you merged. Think twice before reverting a merge; [[re-merging that branch later|revert-merge-later]] has a surprise in it.
+A merge commit has two parents, so "the change it made" depends on which parent you compare against. `git revert 732eb7b` on a merge fails with `error: commit 732eb7b… is a merge but no -m option was given.` Use `git revert -m 1 <merge>` to undo everything the merge brought in *relative to the first parent* — the branch you were on when you merged. Think twice before reverting a merge; [[re-merging that branch later|revert-merge-later]] has a surprise in it.
 :::
 
 ## `git restore`: fix files, leave history alone
@@ -306,7 +306,7 @@ Sometimes the problem is not a commit at all. You edited `drag.py` to try a diff
 - **`--source=<commit>`** says where to copy from instead: `git restore --source=HEAD~3 drag.py` puts the version from three commits ago into your working tree.
 
 ::: example Three restores on `drag.py`
-All three start from `main` at `1e9f72e`, as at the top of the lesson.
+All three start from `main` at `fe87285`, where the revert left it.
 
 **Throw away an edit.** Maya changes the scale height to 7000 m to try it, then decides against it:
 
@@ -339,19 +339,19 @@ M  drag.py
 
 `notes.txt` is untracked again — out of the index, still on disk. `drag.py` stayed staged.
 
-**Look at an old version.** To see the drag model as it was at the last merge, three commits back:
+**Look at an old version.** To see the drag model as it was at the last merge, five commits back:
 
 ```bash
-git restore --source=HEAD~3 drag.py
+git restore --source=HEAD~5 drag.py
 git diff --stat
 ```
 
 ```text
- drag.py | 6 ------
- 1 file changed, 6 deletions(-)
+ drag.py | 5 -----
+ 1 file changed, 5 deletions(-)
 ```
 
-The working file now lacks the six lines added since then — five of the helper, one `print`. The branch did not move, and `git restore --source=HEAD drag.py` puts the current version back.
+The working file now lacks the five lines of the helper added since then. (The `print` came and went in between, so it does not show.) The branch did not move, and `git restore --source=HEAD drag.py` puts the current version back.
 
 **Sanity check.** In all three cases `git log --oneline -1` printed the same commit before and after. Restore changes files, never history.
 :::

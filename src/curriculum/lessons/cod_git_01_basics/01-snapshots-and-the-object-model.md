@@ -244,19 +244,19 @@ A commit's hash fingerprints *all* of that text. Change any part and the commit 
 
 ### Annotated tags: labels with a story
 
-The fourth kind of object is the **annotated tag**: a label on one commit, with its own author, date and message, used to mark releases like "version 0.1.0". Here is one, made in a copy of the repository:
+The fourth kind of object is the **annotated tag**: a label on one commit, with its own author, date and message, used to mark releases like "version 0.1.0". Our two-commit repository has no tag yet. Here, as a look ahead, is the one Maya makes in lesson 09, when orbit-sim reaches its first release:
 
 ```bash
 git cat-file -p v0.1.0
 ```
 
 ```text
-object cf192edf4f4a9ab887cb65baaceb27e938ee2b6e
+object 8a53b363aaa84dc241d15b2b85b9760e47a856bf
 type commit
 tag v0.1.0
-tagger Maya Chen <maya@example.com> 1789398300 -0500
+tagger Maya Chen <maya@example.com> 1790776800 -0500
 
-First runnable gravity model
+First release: point-mass gravity, circular and escape speed
 ```
 
 Lesson 09 covers tags properly.

@@ -11,7 +11,7 @@ Here is a situation every simulation engineer meets. On Tuesday, a **Monte Carlo
 
 Git can answer the first two questions by itself, because every commit records its snapshot, its author and its time. The third question it can answer only if the person who made the change wrote it down. This lesson covers both halves: the commands for reading history — `log`, `show` and `blame` — and the craft of writing commit messages that make that history worth reading.
 
-We keep using orbit-sim. Since the last lesson it has gained three commits: Ravi Patel added a safety check to `accel` after a bug in the code that loads starting positions (the *initial-state loader*), Maya added a function for circular-orbit speed, and Ravi started some separate work on an atmosphere model on a line of development called `drag`. (Lesson 04 shows how such a separate line, a branch, is made.)
+We keep using orbit-sim. Since the last lesson it has gained three commits: Ravi Patel added a safety check to `accel` after a bug in the code that loads starting positions (the *initial-state loader*), Maya added a function for circular-orbit speed, and Leo Park, who has just joined the team, started adding Earth's oblateness constant on a separate line of development called `j2-constant`. (Lesson 04 shows how such a separate line, a branch, is made, and lesson 05 brings Leo's work back into `main`.)
 
 ## `git log`: history, newest first
 
@@ -87,7 +87,7 @@ Four of the six commits touched `gravity.py`; the other two only changed the REA
 
 ## Seeing the whole graph: `--graph --all`
 
-Notice something missing from that log: Ravi's atmosphere work. It is not there because `git log` starts at HEAD and follows parents, and Ravi's commit is not an ancestor of HEAD — it sits on a different line of development. Two more options fix that:
+Notice something missing from that log: Leo's J2 work. It is not there because `git log` starts at HEAD and follows parents, and Leo's commit is not an ancestor of HEAD — it sits on a different line of development. Two more options fix that:
 
 - **`--all`** starts from *every* ref (every branch and tag), not only HEAD.
 - **`--graph`** draws the parent links as a picture in the left margin, using text characters.
@@ -98,7 +98,7 @@ git log --oneline --graph --all
 
 ```text
 * b108153 (HEAD -> main) Add circular orbit speed helper
-| * 921a084 (drag) Add exponential atmosphere density model
+| * d2e5ed4 (j2-constant) Add J2 oblateness constant
 |/  
 * 1fbe379 Reject non-positive radius in accel
 * 1036755 Explain how to run the tests
@@ -107,7 +107,7 @@ git log --oneline --graph --all
 * 903724b Add README
 ```
 
-Read the **[[text-art graph|ascii-graph]]** like this. Each `*` is a commit. A `|` is a line of history running down the page toward older commits. The `|/` means the right-hand line joins the left-hand one: commit `921a084` has the same parent as `b108153`, namely `1fbe379`. That fork is exactly the "two commits share one parent" shape from lesson 01. The decorations say `main` points at `b108153` and `drag` at `921a084`.
+Read the **[[text-art graph|ascii-graph]]** like this. Each `*` is a commit. A `|` is a line of history running down the page toward older commits. The `|/` means the right-hand line joins the left-hand one: commit `d2e5ed4` has the same parent as `b108153`, namely `1fbe379`. That fork is exactly the "two commits share one parent" shape from lesson 01. The decorations say `main` points at `b108153` and `j2-constant` at `d2e5ed4`.
 
 ::: key The three log flags worth memorizing
 `git log --oneline --graph --all`: one line per commit, the parent links drawn in the margin, starting from every branch and tag rather than only HEAD. It is the fastest way to see the shape of a repository.
@@ -118,9 +118,9 @@ Read the **[[text-art graph|ascii-graph]]** like this. Each `*` is a commit. A `
 
 **Step 1 — the straight part.** The five commits at the bottom are joined by a single `|` column, so each is the parent of the one above: `903724b` ← `cf192ed` ← `da6039c` ← `1036755` ← `1fbe379`. The arrows point to parents, backward in time, as in lesson 01.
 
-**Step 2 — the fork.** The `|/` line joins the right-hand column into the left one right above `1fbe379`. So both `b108153` and `921a084` have `1fbe379` as their parent.
+**Step 2 — the fork.** The `|/` line joins the right-hand column into the left one right above `1fbe379`. So both `b108153` and `d2e5ed4` have `1fbe379` as their parent.
 
-**Step 3 — the refs.** `main` → `b108153`; `drag` → `921a084`; `HEAD` → `main`.
+**Step 3 — the refs.** `main` → `b108153`; `j2-constant` → `d2e5ed4`; `HEAD` → `main`.
 
 **Check.** Count: $5 + 2 = 7$ commits, and the log printed 7 lines with a `*`. Only one commit, the root `903724b`, has no parent. The [[finished drawing|dag-from-log]] is in the note.
 :::
@@ -131,17 +131,17 @@ Typing hashes gets old. Git lets you name a commit by counting back from another
 
 - **`HEAD~1`**, read "HEAD tilde one", is HEAD's parent. **`HEAD~2`** is the grandparent, and so on.
 - **`HEAD^`**, read "HEAD caret", is also the first parent; `HEAD^` and `HEAD~1` mean the same commit.
-- It works from any ref: **`drag~1`** is the parent of `drag`'s tip.
+- It works from any ref: **`j2-constant~1`** is the parent of `j2-constant`'s tip.
 
 `git rev-parse --short` turns any such name into a short hash, which is a good way to check yourself:
 
 ```text
-HEAD     b108153
-HEAD~1   1fbe379
-HEAD^    1fbe379
-HEAD~2   1036755
-HEAD~5   903724b
-drag~1   1fbe379
+HEAD            b108153
+HEAD~1          1fbe379
+HEAD^           1fbe379
+HEAD~2          1036755
+HEAD~5          903724b
+j2-constant~1   1fbe379
 ```
 
 `HEAD~5` walks back five parents from `b108153` and lands on the root commit. You will use this notation constantly in lessons 06 and 07, where commands like `git reset HEAD~3` take a commit as their target.
@@ -319,7 +319,7 @@ A teammate says "I committed my changes, but `git log --oneline` doesn't show th
 :::
 
 ::: answer
-Plain `git log` starts at HEAD and follows parent links backward. The teammate's commit is not an ancestor of HEAD — it is on another branch (another line of development), like `921a084` on `drag`. `--all` starts from every ref, so it finds the commit. Nothing is lost; the commit is not in the history of the branch you are on. Adding `--graph` would show where the lines split.
+Plain `git log` starts at HEAD and follows parent links backward. The teammate's commit is not an ancestor of HEAD — it is on another branch (another line of development), like `d2e5ed4` on `j2-constant`. `--all` starts from every ref, so it finds the commit. Nothing is lost; the commit is not in the history of the branch you are on. Adding `--graph` would show where the lines split.
 :::
 
 ::: check Read the graph
@@ -376,7 +376,7 @@ Blame gives you the commit, author and date, and `git show 5e7c2aa` gives the di
 | Subject line | imperative, about 50 characters or fewer, capitalized, no full stop |
 | Body | after one blank line; why the change was needed and what alternative was rejected |
 
-You can now read any history and leave one worth reading. Next lesson opens up the thing that made `drag` appear beside `main` in the graph: branches, which turn out to be nothing more than the 41-byte pointer files from lesson 01.
+You can now read any history and leave one worth reading. Next lesson opens up the thing that made `j2-constant` appear beside `main` in the graph: branches, which turn out to be nothing more than the 41-byte pointer files from lesson 01.
 
 ::: context pager Why the log opens in `less`
 Git sends long output through a **pager**, a program that shows text one screen at a time, so a history of ten thousand commits does not scroll past faster than you can read. The default is `less`. If you want the output printed straight to the terminal (for example, to pipe it into `grep`), add `--no-pager` right after `git`: `git --no-pager log --oneline`. When Git's output goes into a pipe rather than a screen, it skips the pager automatically.
@@ -388,14 +388,15 @@ Each `*` is a commit; each column of `|` is a line of history. A `/` or `\` show
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
   <text x="10" y="30" font-size="13" fill="#1f2a44" font-family="monospace">* b108153</text>
-  <text x="10" y="54" font-size="13" fill="#1f2a44" font-family="monospace">| * 921a084</text>
+  <text x="10" y="54" font-size="13" fill="#1f2a44" font-family="monospace">| * d2e5ed4</text>
   <text x="10" y="78" font-size="13" fill="#1f2a44" font-family="monospace">|/</text>
   <text x="10" y="102" font-size="13" fill="#1f2a44" font-family="monospace">* 1fbe379</text>
   <line x1="130" y1="10" x2="130" y2="140" stroke="#6c7a93" stroke-width="1" stroke-dasharray="4 3"/>
   <circle cx="190" cy="30" r="12" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
   <text x="210" y="34" font-size="11" fill="#1f2a44">b108153 (main)</text>
   <circle cx="240" cy="70" r="12" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="260" y="74" font-size="11" fill="#1f2a44">921a084 (drag)</text>
+  <text x="260" y="68" font-size="11" fill="#1f2a44">d2e5ed4</text>
+  <text x="260" y="82" font-size="11" fill="#1f2a44">(j2-constant)</text>
   <circle cx="190" cy="115" r="12" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
   <text x="210" y="119" font-size="11" fill="#1f2a44">1fbe379</text>
   <line x1="190" y1="42" x2="190" y2="101" stroke="#1f2a44" stroke-width="1.5"/>
@@ -431,7 +432,7 @@ Seven commits; arrows point to parents. The two branch files point at the two ti
   <text x="175" y="122" font-size="11" text-anchor="middle" fill="#1f2a44">1036755</text>
   <text x="225" y="78" font-size="11" text-anchor="middle" fill="#1f2a44">1fbe379</text>
   <text x="280" y="40" font-size="11" text-anchor="middle" fill="#1f2a44">b108153</text>
-  <text x="235" y="146" font-size="11" text-anchor="middle" fill="#1f2a44">921a084</text>
+  <text x="235" y="146" font-size="11" text-anchor="middle" fill="#1f2a44">d2e5ed4</text>
   <line x1="64" y1="95" x2="38" y2="95" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#c1)"/>
   <line x1="114" y1="95" x2="88" y2="95" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#c1)"/>
   <line x1="164" y1="95" x2="138" y2="95" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#c1)"/>
@@ -441,9 +442,9 @@ Seven commits; arrows point to parents. The two branch files point at the two ti
   <rect x="306" y="48" width="48" height="24" rx="4" fill="#fff" stroke="#b4232c" stroke-width="1.5"/>
   <text x="330" y="64" font-size="11" text-anchor="middle" fill="#b4232c">main</text>
   <line x1="306" y1="60" x2="293" y2="60" stroke="#b4232c" stroke-width="1.5" marker-end="url(#c1)"/>
-  <rect x="306" y="118" width="48" height="24" rx="4" fill="#fff" stroke="#b4232c" stroke-width="1.5"/>
-  <text x="330" y="134" font-size="11" text-anchor="middle" fill="#b4232c">drag</text>
-  <line x1="306" y1="130" x2="293" y2="130" stroke="#b4232c" stroke-width="1.5" marker-end="url(#c1)"/>
+  <rect x="299" y="118" width="58" height="24" rx="4" fill="#fff" stroke="#b4232c" stroke-width="1.5"/>
+  <text x="328" y="134" font-size="10" text-anchor="middle" fill="#b4232c">j2-constant</text>
+  <line x1="299" y1="130" x2="293" y2="130" stroke="#b4232c" stroke-width="1.5" marker-end="url(#c1)"/>
   <rect x="306" y="4" width="48" height="22" rx="4" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
   <text x="330" y="19" font-size="11" text-anchor="middle" fill="#1f2a44">HEAD</text>
   <line x1="330" y1="26" x2="330" y2="46" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#c1)"/>
@@ -460,7 +461,7 @@ Blame only sees lines that still exist. To find the commit that *removed* someth
 :::
 
 ::: context imperative-origin Why commands, not past tense
-Git itself writes subjects in the imperative: when it makes a merge commit it writes `Merge branch 'drag'`, and when it reverts one it writes `Revert "..."`. Using the same mood keeps a log reading like one consistent list of actions. It also reflects how a commit is used: it is something you *apply* to a codebase, so its title says what applying it will do. Many teams, including the Linux kernel and Git's own developers, write their contribution rules this way.
+Git itself writes subjects in the imperative: when it makes a merge commit it writes `Merge branch 'j2-constant'`, and when it reverts one it writes `Revert "..."`. Using the same mood keeps a log reading like one consistent list of actions. It also reflects how a commit is used: it is something you *apply* to a codebase, so its title says what applying it will do. Many teams, including the Linux kernel and Git's own developers, write their contribution rules this way.
 :::
 
 ::: context fifty-seventy-two Where 50 and 72 come from

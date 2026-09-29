@@ -10,7 +10,7 @@ Two things happen to every engineer, usually in the same week. First: you are ha
 
 Git has a tool for each. **`git stash`** puts half-finished work on a shelf so you can come back to it. The **reflog** is Git's private diary of every place your branches and HEAD have pointed, and it is how you find commits that seem to be gone. Together they are the undo net under everything you learned in lesson 06. Once you trust them, you can use the sharp tools without fear.
 
-We keep working in orbit-sim. The hashes below come from one real run; yours will differ, as lesson 01 explained, but every step will look the same.
+We keep working in orbit-sim, where lesson 06 left it: `main` at `fe87285`, the revert of the `print` commit. The hashes below come from one real run; yours will differ, as lesson 01 explained, but every step will look the same.
 
 ## Stash: a shelf for half-finished work
 
@@ -53,7 +53,7 @@ git status -s
 
 The edit to `gravity.py` is gone — the file is back to the committed version. But `notes.txt` is still there: by default, stash saves only changes to **tracked** files, the ones Git already knows about.
 
-If you want untracked files shelved too, add **`-u`** (short for `--include-untracked`):
+If you want untracked files shelved too, add **`-u`** (short for `--include-untracked`). Maya does want `notes.txt` out of the way, so she takes the stash straight back with `git stash pop` (explained below) and shelves everything again:
 
 ```bash
 git stash push -u -m "escape speed, half done"
@@ -81,10 +81,10 @@ git stash show -p
 
 ```text
 diff --git a/gravity.py b/gravity.py
-index 72268a5..391b0d0 100644
+index f2479a4..59a47f1 100644
 --- a/gravity.py
 +++ b/gravity.py
-@@ -12,3 +12,8 @@ def accel(r):
+@@ -22,3 +22,8 @@ def accel_vector(x, y, z):
  def circular_speed(r):
      """Speed (m/s) of a circular orbit of radius r (m)."""
      return (MU_EARTH / r) ** 0.5
@@ -126,14 +126,14 @@ Untracked files:
 	notes.txt
 
 no changes added to commit (use "git add" and/or "git commit -a")
-Dropped refs/stash@{0} (24064ddd719fbea4e721eb43dc29f5ca160ede76)
+Dropped refs/stash@{0} (580f48ade92d70d06f1237587f96ef5c5a6db7ab)
 ```
 
-**Check the result.** The status lists exactly the two things she had before: `gravity.py` modified, `notes.txt` untracked. `git stash list` now prints nothing — pop removed the entry. And `git log --oneline` shows the README commit sitting on top of the first one, with no half-written function inside it:
+**Check the result.** The status lists exactly the two things she had before: `gravity.py` modified, `notes.txt` untracked. `git stash list` now prints nothing — pop removed the entry. And `git log --oneline -2` shows the README commit sitting on top of lesson 06's revert, with no half-written function inside it:
 
 ```text
-0c0c96e State that all units are SI
-56c4c33 Add gravity model with circular orbit speed
+1a4fe1a (HEAD -> main) State that all units are SI
+fe87285 Revert "Print altitude in density()"
 ```
 
 :::
@@ -148,7 +148,7 @@ CONFLICT (content): Merge conflict in gravity.py
 The stash entry is kept in case you need it again.
 ```
 
-The file now has conflict markers labeled `Updated upstream` (what was committed) and `Stashed changes` (her stash). Fix the file as in lesson 05, `git add gravity.py`, and then run `git stash drop` yourself, because Git kept the stash on purpose. Forgetting that last step leaves an old stash on the list that you will not recognize in a month.
+The file now has conflict markers labeled `Updated upstream` (what was committed) and `Stashed changes` (her stash). Fix the file as in lesson 05, `git add gravity.py`, and then run `git stash drop` yourself, because Git kept the stash on purpose. Maya kept both functions, did exactly that, and committed the finished function as `Add escape speed helper`. Forgetting that last step leaves an old stash on the list that you will not recognize in a month.
 :::
 
 ::: key Stash in five commands
@@ -158,7 +158,7 @@ The file now has conflict markers labeled `Updated upstream` (what was committed
 A stash is not stored in some special hidden format. It is made of ordinary **[[commits|stash-commits]]** — one for the working tree, one for the index — and the ref `refs/stash` points at the newest. That is why a stash survives anything a commit survives, and why the reflog, which we meet next, can find even a stash you dropped by mistake.
 
 ::: warning A stash is a shelf, not a filing cabinet
-A stash left for three weeks becomes a mystery: `stash@{4}: WIP on main: 56c4c33 Add gravity...` says almost nothing. If work will sit for more than a day, commit it on a branch (lesson 04) instead.
+A stash left for three weeks becomes a mystery: `stash@{4}: WIP on main: 1a4fe1a State that all...` says almost nothing. If work will sit for more than a day, commit it on a branch (lesson 04) instead.
 :::
 
 ## The reflog: Git's diary of where you have been
@@ -167,36 +167,35 @@ An airliner carries a **[[flight data recorder|flight-recorder]]**, the "black b
 
 The **reflog** (short for "reference log") is a list that Git keeps for HEAD and for each branch. Every time one of them moves — a commit, a reset, a switch, a merge, a stash — Git writes a line saying where it moved to, when, and why. It is stored in plain text files under `.git/logs/`.
 
-Here is the reflog of our orbit-sim repository after a few more commits (the stash work above plus four new commits, the last three of which we are about to lose on purpose):
+Here is the reflog of our orbit-sim repository after the stash work above and four new commits: the orbital period, the finished escape-speed function, a test for it and a README line. We are about to lose the last three on purpose. The full reflog runs all the way back to lesson 01's first commit, so `-9` shows only the newest nine lines:
 
 ```bash
-git reflog
+git reflog -9
 ```
 
 ```text
-419813b HEAD@{0}: commit: Explain how to run the tests
-ac40b8d HEAD@{1}: commit: Test escape speed against circular speed
-4aaccc7 HEAD@{2}: commit: Add escape speed helper
-2659286 HEAD@{3}: commit: Add circular orbit period
-0c0c96e HEAD@{4}: reset: moving to HEAD
-0c0c96e HEAD@{5}: reset: moving to HEAD
-0c0c96e HEAD@{6}: commit: State that all units are SI
-56c4c33 HEAD@{7}: reset: moving to HEAD
-56c4c33 HEAD@{8}: reset: moving to HEAD
-56c4c33 HEAD@{9}: commit (initial): Add gravity model with circular orbit speed
+b9d78e5 (HEAD -> main) HEAD@{0}: commit: Describe the speed helpers in the README
+2d99ef6 HEAD@{1}: commit: Test escape speed against circular speed
+058deb6 HEAD@{2}: commit: Add escape speed helper
+4c56560 HEAD@{3}: commit: Add circular orbit period
+1a4fe1a HEAD@{4}: reset: moving to HEAD
+1a4fe1a HEAD@{5}: commit: State that all units are SI
+fe87285 HEAD@{6}: reset: moving to HEAD
+fe87285 HEAD@{7}: reset: moving to HEAD
+fe87285 HEAD@{8}: revert: Revert "Print altitude in density()"
 ```
 
-Each line gives the commit HEAD pointed at after the move, a name for that moment, and what caused the move. The newest line is on top.
+Each line gives the commit HEAD pointed at after the move, a name for that moment, and what caused the move. The newest line is on top, and the decoration on it shows where HEAD and `main` point now.
 
-The name **`HEAD@{3}`** is read "HEAD at three" and means "where HEAD was three moves ago". It is not `HEAD~3` (lesson 04), "three parents back". `HEAD~3` walks the commit graph; `HEAD@{3}` walks the diary. After a reset they name very different commits, and that difference is the whole trick of this lesson.
+The name **`HEAD@{3}`** is read "HEAD at three" and means "where HEAD was three moves ago". It is not `HEAD~3` (lesson 03), "three parents back". `HEAD~3` walks the commit graph; `HEAD@{3}` walks the diary. After a reset they name very different commits, and that difference is the whole trick of this lesson.
 
-The lines `reset: moving to HEAD` came from `git stash`: to clean your working tree, stash quietly does the equivalent of `git reset --hard HEAD`. The diary records every move, even a move to the same place.
+The lines `reset: moving to HEAD` came from `git stash`, one for each of Maya's three `stash push` commands: to clean your working tree, stash quietly does the equivalent of `git reset --hard HEAD`. The diary records every move, even a move to the same place.
 
 Each branch has its own reflog too. `git reflog show main` lists only the moves of `main`, with names like `main@{1}`, "main at one", meaning where `main` was one move ago. You can also name a moment by time: `main@{yesterday}` or `main@{2.hours.ago}`. And `git reflog --date=iso` swaps the counting names for real timestamps. Here are the top two lines as they look after the accident in the next section:
 
 ```text
-2659286 HEAD@{2026-09-22 11:45:00 -0500}: reset: moving to HEAD~3
-419813b HEAD@{2026-09-22 11:30:00 -0500}: commit: Explain how to run the tests
+4c56560 (HEAD -> main) HEAD@{2026-09-28 12:00:00 -0500}: reset: moving to HEAD~3
+b9d78e5 HEAD@{2026-09-28 11:50:00 -0500}: commit: Describe the speed helpers in the README
 ```
 
 ::: key What does the reflog record?
@@ -224,15 +223,19 @@ So a commit you lose by accident normally survives for about a month, with the r
 
 ## Recovering commits after `reset --hard`
 
-Now the rescue. Maya has three fresh commits on `main`:
+Now the rescue. Maya has three fresh commits on `main`, on top of the orbital period:
+
+```bash
+git log --oneline -6
+```
 
 ```text
-419813b Explain how to run the tests
-ac40b8d Test escape speed against circular speed
-4aaccc7 Add escape speed helper
-2659286 Add circular orbit period
-0c0c96e State that all units are SI
-56c4c33 Add gravity model with circular orbit speed
+b9d78e5 (HEAD -> main) Describe the speed helpers in the README
+2d99ef6 Test escape speed against circular speed
+058deb6 Add escape speed helper
+4c56560 Add circular orbit period
+1a4fe1a State that all units are SI
+fe87285 Revert "Print altitude in density()"
 ```
 
 She means to throw away one experiment, but types:
@@ -242,20 +245,20 @@ git reset --hard HEAD~3
 ```
 
 ```text
-HEAD is now at 2659286 Add circular orbit period
+HEAD is now at 4c56560 Add circular orbit period
 ```
 
 ```bash
-git log --oneline
+git log --oneline -3
 ```
 
 ```text
-2659286 Add circular orbit period
-0c0c96e State that all units are SI
-56c4c33 Add gravity model with circular orbit speed
+4c56560 (HEAD -> main) Add circular orbit period
+1a4fe1a State that all units are SI
+fe87285 Revert "Print altitude in density()"
 ```
 
-Three commits have vanished from the log, and the files in her working tree are back to how they were at `2659286`: no `escape_speed`, no tests.
+Three commits have vanished from the log, and the files in her working tree are back to how they were at `4c56560`: no `escape_speed`, no speed tests.
 
 In lesson 06, `git reset --hard ORIG_HEAD` undid a mistake like this. That works only while `ORIG_HEAD` still holds the old tip — it has one slot, and the next reset or merge overwrites it. The reflog keeps every move, so it works even if Maya notices the loss a day and several commands later.
 
@@ -267,14 +270,14 @@ git reflog -5
 ```
 
 ```text
-2659286 HEAD@{0}: reset: moving to HEAD~3
-419813b HEAD@{1}: commit: Explain how to run the tests
-ac40b8d HEAD@{2}: commit: Test escape speed against circular speed
-4aaccc7 HEAD@{3}: commit: Add escape speed helper
-2659286 HEAD@{4}: commit: Add circular orbit period
+4c56560 (HEAD -> main) HEAD@{0}: reset: moving to HEAD~3
+b9d78e5 HEAD@{1}: commit: Describe the speed helpers in the README
+2d99ef6 HEAD@{2}: commit: Test escape speed against circular speed
+058deb6 HEAD@{3}: commit: Add escape speed helper
+4c56560 (HEAD -> main) HEAD@{4}: commit: Add circular orbit period
 ```
 
-The top line is the mistake. The line below it, `HEAD@{1}`, is where HEAD was *right before* the mistake: `419813b`, the newest of the three lost commits.
+The top line is the mistake. The line below it, `HEAD@{1}`, is where HEAD was *right before* the mistake: `b9d78e5`, the newest of the three lost commits.
 
 **Step 2 — make sure it is the right commit.** Any commit name works with `show`, including a reflog name:
 
@@ -283,7 +286,7 @@ git show --stat --oneline HEAD@{1}
 ```
 
 ```text
-419813b Explain how to run the tests
+b9d78e5 Describe the speed helpers in the README
  README.md | 2 ++
  1 file changed, 2 insertions(+)
 ```
@@ -292,19 +295,19 @@ git show --stat --oneline HEAD@{1}
 
 ```bash
 git branch rescue HEAD@{1}
-git log --oneline --graph --decorate --all
+git log --oneline --graph --all -6
 ```
 
 ```text
-* 419813b (rescue) Explain how to run the tests
-* ac40b8d Test escape speed against circular speed
-* 4aaccc7 Add escape speed helper
-* 2659286 (HEAD -> main) Add circular orbit period
-* 0c0c96e State that all units are SI
-* 56c4c33 Add gravity model with circular orbit speed
+* b9d78e5 (rescue) Describe the speed helpers in the README
+* 2d99ef6 Test escape speed against circular speed
+* 058deb6 Add escape speed helper
+* 4c56560 (HEAD -> main) Add circular orbit period
+* 1a4fe1a State that all units are SI
+* fe87285 Revert "Print altitude in density()"
 ```
 
-All six commits are back in view. `main` is still at `2659286`, and `rescue` points at `419813b`, whose parent chain runs through the two other lost commits.
+The three lost commits are back in view. `main` is still at `4c56560`, and `rescue` points at `b9d78e5`, whose parent chain runs through the two other lost commits.
 
 **Step 4 — move `main` back.** Since Maya wants `main` exactly where it was before the mistake, she resets it to the reflog entry:
 
@@ -313,38 +316,38 @@ git reset --hard main@{1}
 ```
 
 ```text
-HEAD is now at 419813b Explain how to run the tests
+HEAD is now at b9d78e5 Describe the speed helpers in the README
 ```
 
-`main@{1}` means "where `main` was one move ago", which was `419813b`. `git log --oneline` now shows all six commits again, and the working tree has `escape_speed` and the tests back. Then `git branch -d rescue` removes the helper branch.
+`main@{1}` means "where `main` was one move ago", which was `b9d78e5`. `git log --oneline` now shows the three commits again, and the working tree has `escape_speed` and the tests back. Then `git branch -d rescue` removes the helper branch.
 
-**Check.** Same hashes as before the mistake: `419813b`, `ac40b8d`, `4aaccc7`. These are the original commit objects; a pointer was put back.
+**Check.** Same hashes as before the mistake: `b9d78e5`, `2d99ef6`, `058deb6`. These are the original commit objects; a pointer was put back.
 :::
 
 ### A third way: `cherry-pick`
 
 Sometimes `main` has gained new commits since the mistake, and you want the lost work added on top. **`git cherry-pick <commit>`** takes the change a commit made (its diff against its parent) and makes a *new* commit with that same change on top of wherever you are now. It is **[[named|cherry-pick-name]]** after picking single cherries off a tree instead of taking the whole branch.
 
-Starting again from the reset state, with `main` at `2659286`:
+Maya's real `main` is already repaired, so she tries this third way in a throwaway copy of the repository folder (`cp -r orbit-sim pick-try`). There she repeats the mistake, `git reset --hard HEAD~3`, which leaves the copy's `main` at `4c56560`, and then:
 
 ```bash
-git cherry-pick 4aaccc7 ac40b8d 419813b
+git cherry-pick 058deb6 2d99ef6 b9d78e5
 ```
 
 ```text
-[main 3922da8] Add escape speed helper
- Date: Tue Sep 22 10:20:00 2026 -0500
+[main 2d882d8] Add escape speed helper
+ Date: Mon Sep 28 11:05:00 2026 -0500
  1 file changed, 5 insertions(+)
-[main b3fa7df] Test escape speed against circular speed
- Date: Tue Sep 22 11:00:00 2026 -0500
+[main 4e06f80] Test escape speed against circular speed
+ Date: Mon Sep 28 11:30:00 2026 -0500
  1 file changed, 10 insertions(+)
- create mode 100644 tests/test_gravity.py
-[main 9782d93] Explain how to run the tests
- Date: Tue Sep 22 11:30:00 2026 -0500
+ create mode 100644 tests/test_speeds.py
+[main 4f4ad36] Describe the speed helpers in the README
+ Date: Mon Sep 28 11:50:00 2026 -0500
  1 file changed, 2 insertions(+)
 ```
 
-List the commits oldest first, so each change lands on top of the one it depends on. The three commits come back with the same messages, authors and contents, but **new hashes** (`3922da8`, not `4aaccc7`). A cherry-picked commit has a different parent or a different commit time, and lesson 01 showed that any change to a commit's text changes its name.
+List the commits oldest first, so each change lands on top of the one it depends on. The three commits come back with the same messages, authors and contents, but **new hashes** (`2d882d8`, not `058deb6`). A cherry-picked commit has a different parent or a different commit time, and lesson 01 showed that any change to a commit's text changes its name. The copy has served its purpose, and Maya deletes it; the real `main` keeps the original commits.
 
 ::: key Three ways back after a hard reset
 Find the commit in `git reflog`, then either `git branch <name> <hash>` (safest: names it, moves nothing), `git reset --hard <branch>@{1}` (puts the branch back exactly, original hashes), or `git cherry-pick <hash>...` (re-applies the changes as new commits on top of where you are).
@@ -352,7 +355,7 @@ Find the commit in `git reflog`, then either `git branch <name> <hash>` (safest:
 
 ## What `reset --hard` really destroys
 
-Lesson 06 said `--hard` is the one kind of reset that can lose work. Now you can say exactly which work. Maya tries three kinds of uncommitted change at once: a line added to `gravity.py` and staged with `git add`, a line added to `README.md` but not staged, and a new file `draft.txt` never added.
+Lesson 06 said `--hard` is the one kind of reset that can lose work. Now you can say exactly which work. Maya (who has thrown her scratch `notes.txt` away by now) tries three kinds of uncommitted change at once: a line added to `gravity.py` and staged with `git add`, a line added to `README.md` but not staged, and a new file `draft.txt` never added.
 
 ```bash
 git status -s
@@ -370,7 +373,7 @@ git status -s
 ```
 
 ```text
-HEAD is now at 9782d93 Explain how to run the tests
+HEAD is now at b9d78e5 Describe the speed helpers in the README
 ?? draft.txt
 ```
 
@@ -388,14 +391,18 @@ git fsck --lost-found
 ```
 
 ```text
-dangling commit 24064ddd719fbea4e721eb43dc29f5ca160ede76
-dangling commit 419813bf3d0cbab85ac1bc82f983ae86a5b410ea
+dangling commit 0882f85676af1eb5e3480ff3ebe5f50645d9dc14
+dangling blob 1a99c9caf782a52edf0cc751a56f5ab64b29a435
 ...
-dangling blob def10fb78da311ad6ef5775e79aef30fa57d5b82
+dangling commit 580f48ade92d70d06f1237587f96ef5c5a6db7ab
+...
+dangling commit 8d5bf9bf1edebfecb902bb06ba1f04a66cf40be5
+dangling commit 8f296e2600e44a7be99722a400a55b3d0c2166d2
+dangling blob 96f78d14683647c834067b42d51dcfa2445be070
 ...
 ```
 
-A **dangling** object is one that nothing points to. `git cat-file -p def10fb` prints the whole staged `gravity.py`, ending in Maya's line `J2 = 1.08263e-3  # Earth oblateness coefficient`. The dangling commits are old stashes (a popped or dropped stash becomes one) and the original `419813b` that cherry-pick copied. So `git fsck` also finds a stash dropped by accident: its message starts with `On main:` or `WIP on`.
+A **dangling** object is one that no other object, branch or tag points to. `git cat-file -p 96f78d1` prints the whole staged `gravity.py`, ending in Maya's line `OMEGA_EARTH = 7.2921159e-5  # rad/s, Earth rotation rate`. Three of the dangling commits, `0882f85`, `580f48a` and `8f296e2`, are this lesson's stashes (a popped or dropped stash becomes one). The fourth, `8d5bf9b`, is lesson 04's "Try rounded g0", whose branch Maya deleted in lesson 05. Even `1a99c9c` is an old friend: the first version of `gravity.py` Maya staged in lesson 02, before a second `git add` replaced it. So `git fsck` also finds a stash dropped by accident: its message starts with `On main:` or `WIP on`. Having looked, Maya deletes `draft.txt`, and the working tree is clean.
 
 ::: key What `reset --hard` destroys, and what it does not
 It moves the branch and overwrites the index and the tracked files in the working tree. Commits it "removes" survive as unreachable objects, named in the reflog. Untracked files are not touched. Staged changes survive only as dangling blobs (`git fsck --lost-found`). Unstaged edits to tracked files are lost for good.
@@ -447,7 +454,7 @@ You ran `git stash drop` on the wrong stash a few minutes ago. `git stash list` 
 :::
 
 ::: answer
-Not yet. A stash is made of commits, and dropping it removes only the name `stash@{n}`; the objects stay until garbage collection deletes them. `git stash drop` even printed the hash, as in `Dropped refs/stash@{0} (24064dd…)`. If that has scrolled away, `git fsck --lost-found` lists dangling commits; the stash's message begins `On main:` or `WIP on`. Then `git stash apply <hash>` brings the changes back.
+Not yet. A stash is made of commits, and dropping it removes only the name `stash@{n}`; the objects stay until garbage collection deletes them. `git stash drop` even printed the hash, as in `Dropped refs/stash@{0} (8f296e2…)`. If that has scrolled away, `git fsck --lost-found` lists dangling commits; the stash's message begins `On main:` or `WIP on`. Then `git stash apply <hash>` brings the changes back.
 :::
 
 ::: check What the net cannot catch
@@ -488,7 +495,7 @@ A stash is two or three ordinary commits. One records the index, with HEAD as it
   </defs>
   <circle cx="60" cy="100" r="18" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
   <text x="60" y="104" font-size="11" text-anchor="middle" fill="#1f2a44">HEAD</text>
-  <text x="60" y="136" font-size="11" text-anchor="middle" fill="#6c7a93">0c0c96e</text>
+  <text x="60" y="136" font-size="11" text-anchor="middle" fill="#6c7a93">fe87285</text>
   <circle cx="170" cy="55" r="18" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
   <text x="170" y="59" font-size="11" text-anchor="middle" fill="#1f2a44">I</text>
   <text x="170" y="24" font-size="11" text-anchor="middle" fill="#6c7a93">index commit</text>

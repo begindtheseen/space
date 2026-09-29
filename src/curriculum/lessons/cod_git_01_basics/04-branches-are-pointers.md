@@ -26,13 +26,14 @@ A 41-byte file under `.git/refs/heads` (or, once packed, a line in `.git/packed-
 
 ## Making a branch: `git branch`
 
-Here is orbit-sim as lesson 02 left it: four commits on `main`, the last one `65bb526 Explain how to run the tests`. The command **`git branch`** with no name lists the branches; the star marks the one HEAD names:
+Here is orbit-sim as lesson 03 left it: six commits on `main`, the newest `b108153 Add circular orbit speed helper`, and Leo's `j2-constant` branch beside them. The command **`git branch`** with no name lists the branches; the star marks the one HEAD names:
 
 ```bash
 git branch
 ```
 
 ```text
+  j2-constant
 * main
 ```
 
@@ -45,6 +46,7 @@ git branch
 
 ```text
   drag-model
+  j2-constant
 * main
 ```
 
@@ -57,8 +59,8 @@ cat .git/HEAD
 ```
 
 ```text
-65bb5267418df1f4e9be8976d3dc45fbe73a3710
-65bb5267418df1f4e9be8976d3dc45fbe73a3710
+b1081538f554cffde5f40052f60fa9575bd92e4d
+b1081538f554cffde5f40052f60fa9575bd92e4d
 ref: refs/heads/main
 ```
 
@@ -71,7 +73,7 @@ git log --oneline -1
 ```
 
 ```text
-65bb526 (HEAD -> main, drag-model) Explain how to run the tests
+b108153 (HEAD -> main, drag-model) Add circular orbit speed helper
 ```
 
 Read `HEAD -> main` aloud as "HEAD points to main". The arrow is Git telling you about the two hops.
@@ -99,7 +101,7 @@ HEAD's file now names `drag-model`. In general, `git switch <branch>` does three
 Here steps 2 and 3 changed nothing, because both branches point at the same commit. The next example is where they start to matter.
 
 ::: example A commit on a branch moves only that branch
-**Setup.** HEAD names `drag-model`, and both branches point at `65bb526`. Maya creates `drag.py`, with an air-density model and the drag formula:
+**Setup.** HEAD names `drag-model`, and both branches point at `b108153`. Maya creates `drag.py`, with an air-density model and the drag formula:
 
 ```python
 import math
@@ -128,7 +130,7 @@ git commit -m "Add exponential-atmosphere drag model"
 ```
 
 ```text
-[drag-model 4fff28f] Add exponential-atmosphere drag model
+[drag-model d9f2ae1] Add exponential-atmosphere drag model
  1 file changed, 14 insertions(+)
  create mode 100644 drag.py
 ```
@@ -143,8 +145,8 @@ cat .git/refs/heads/main
 ```
 
 ```text
-4fff28f24499543154596fe8ef676199e8965a3c
-65bb5267418df1f4e9be8976d3dc45fbe73a3710
+d9f2ae1a4225d64f7b3d5a3f86bd92062868439c
+b1081538f554cffde5f40052f60fa9575bd92e4d
 ```
 
 When Git made the commit, it wrote the new hash into the file of the branch HEAD names — and only that one. `main` did not move. The **[[before-and-after picture|branch-move-picture]]** shows the two notes pulling apart.
@@ -156,12 +158,18 @@ git log --oneline --graph --all
 ```
 
 ```text
-* 4fff28f (HEAD -> drag-model) Add exponential-atmosphere drag model
-* 65bb526 (main) Explain how to run the tests
-* 10b6fcf Add vector form of gravity acceleration
+* d9f2ae1 (HEAD -> drag-model) Add exponential-atmosphere drag model
+* b108153 (main) Add circular orbit speed helper
+| * d2e5ed4 (j2-constant) Add J2 oblateness constant
+|/  
+* 1fbe379 Reject non-positive radius in accel
+* 1036755 Explain how to run the tests
+* da6039c Add vector form of gravity acceleration
 * cf192ed Add point-mass gravity model
 * 903724b Add README
 ```
+
+The drag commit sits on top of `b108153`, one commit ahead of `main`. Leo's fork from lesson 03 is still there, untouched.
 
 **Step 4 — step back onto `main`.**
 
@@ -177,7 +185,7 @@ README.md  gravity.py  tests
 
 `drag.py` has vanished from the folder. That is step 3 of `switch` at work: the working tree now matches `main`'s snapshot, and that snapshot has no `drag.py`. Nothing is lost — the blob, the tree and the commit are all safe in `.git/objects`, and `git switch drag-model` brings the file straight back.
 
-**Sanity check.** The teammates who run from `main` get exactly the four commits they had this morning. Maya's work sits one commit ahead on her own branch, where it can be half-finished without hurting anyone.
+**Sanity check.** The teammates who run from `main` get exactly the six commits they had this morning. Maya's work sits one commit ahead on her own branch, where it can be half-finished without hurting anyone.
 :::
 
 ::: warning "My file disappeared!"
@@ -209,31 +217,19 @@ Switched to a new branch 'units-cleanup'
 
 This lesson uses `switch`. When you meet `checkout` with a branch name, read it as `switch`.
 
-## Naming commits by where they sit: `~` and `^`
+## Relative names on any branch
 
-Typing hashes gets old. Git lets you name a commit by counting back from another one.
-
-- **`HEAD~1`**, read "HEAD tilde one", is the parent of the commit you are on.
-- **`HEAD~2`** is the parent's parent — the grandparent — and so on. `HEAD~3` is three steps back.
-- **`HEAD^`**, read "HEAD caret", is another way to write `HEAD~1`.
-
-The same suffixes work after any branch name or hash: `main~2`, `4fff28f~1`. Ask Git to translate with `git rev-parse` (on `main`, whose tip is `65bb526`):
+Lesson 03 taught the counting names: `HEAD~1` (or `HEAD^`) is the parent of the commit you are on, `HEAD~2` the grandparent, and so on. With more than one branch, remember that the suffixes work after *any* branch name or hash, not only after HEAD. That gives a quick way to see where a branch started:
 
 ```bash
-git rev-parse HEAD~1 HEAD~2 HEAD^
+git rev-parse --short drag-model~1
 ```
 
 ```text
-10b6fcf1bdf5f2033472f1045ae534af24d49d9a
-cf192edf4f4a9ab887cb65baaceb27e938ee2b6e
-10b6fcf1bdf5f2033472f1045ae534af24d49d9a
+b108153
 ```
 
-Count it on the log: `65bb526` → one back is `10b6fcf` → two back is `cf192ed`. The [[counting picture|tilde-picture]] lines them up. Next lesson, when a commit has *two* parents, you will meet `^2`, which picks the second one.
-
-::: key Relative names
-`HEAD~n` is the commit $n$ parent steps back from HEAD, always following the first parent. `HEAD^` means the same as `HEAD~1`. They work after any ref or hash: `main~2`, `drag-model^`.
-:::
+One step back from the tip of `drag-model` is `b108153`, the tip of `main`: the drag branch is exactly one commit ahead. On `main` itself, the names count back as in lesson 03, and the [[counting picture|tilde-picture]] lines them up. Every command in this lesson that takes a commit accepts these names too, so `git branch old-main main~2` or `git switch --detach HEAD~5` work as you would expect. Next lesson, when a commit has *two* parents, you will meet `^2`, which picks the second one.
 
 ## Detached HEAD: standing on a commit
 
@@ -296,18 +292,22 @@ git log --oneline --graph --all
 ```
 
 ```text
-[detached HEAD 20982c3] Try rounded g0
+[detached HEAD 8d5bf9b] Try rounded g0
  1 file changed, 1 insertion(+), 1 deletion(-)
-* 20982c3 (HEAD) Try rounded g0
-| * 4fff28f (drag-model) Add exponential-atmosphere drag model
-| * 65bb526 (main) Explain how to run the tests
-| * 10b6fcf Add vector form of gravity acceleration
-|/
+* 8d5bf9b (HEAD) Try rounded g0
+| * d9f2ae1 (drag-model) Add exponential-atmosphere drag model
+| * b108153 (units-cleanup, main) Add circular orbit speed helper
+| | * d2e5ed4 (j2-constant) Add J2 oblateness constant
+| |/  
+| * 1fbe379 Reject non-positive radius in accel
+| * 1036755 Explain how to run the tests
+| * da6039c Add vector form of gravity acceleration
+|/  
 * cf192ed Add point-mass gravity model
 * 903724b Add README
 ```
 
-The commit worked: `20982c3` has `cf192ed` as its parent. But no branch file was updated, because HEAD named no branch. Only HEAD itself holds `20982c3`.
+The commit worked: `8d5bf9b` has `cf192ed` as its parent. But no branch file was updated, because HEAD named no branch. Only HEAD itself holds `8d5bf9b`.
 
 **Step 1 — switch away.** Watch what Git says:
 
@@ -319,29 +319,29 @@ git switch main
 Warning: you are leaving 1 commit behind, not connected to
 any of your branches:
 
-  20982c3 Try rounded g0
+  8d5bf9b Try rounded g0
 
 If you want to keep it by creating a new branch, this may be a good time
 to do so with:
 
- git branch <new-branch-name> 20982c3
+ git branch <new-branch-name> 8d5bf9b
 
 Switched to branch 'main'
 ```
 
-HEAD now names `main`, so nothing points at `20982c3` any more. Run the log with `--all` again and the commit is gone from the picture: it is **unreachable** — no ref leads to it.
+HEAD now names `main`, so nothing points at `8d5bf9b` any more. Run the log with `--all` again and the commit is gone from the picture: it is **unreachable** — no ref leads to it.
 
 **Step 2 — rescue it.** Git printed the hash, so give it a sticky note:
 
 ```bash
-git branch g0-experiment 20982c3
+git branch g0-experiment 8d5bf9b
 ```
 
-`git branch <name> <commit>` makes a branch at any commit, not only where you are. The log with `--all` shows `20982c3 (g0-experiment) Try rounded g0` again.
+`git branch <name> <commit>` makes a branch at any commit, not only where you are. The log with `--all` shows `8d5bf9b (g0-experiment) Try rounded g0` again.
 
 **The better habit.** Had Maya run `git switch -c g0-experiment` *while still detached*, before switching away, the commit would never have been in danger. Any time you are about to commit on a detached HEAD, make a branch first.
 
-**Sanity check.** Nothing in `main` or `drag-model` changed at any point: their files still hold `65bb526…` and `4fff28f…`. Detached work can only ever be lost, never leak into a branch by accident.
+**Sanity check.** Nothing in `main` or `drag-model` changed at any point: their files still hold `b108153…` and `d9f2ae1…`. Detached work can only ever be lost, never leak into a branch by accident.
 :::
 
 ::: warning Commits on a detached HEAD are easy to lose
@@ -385,13 +385,14 @@ git branch -v
 ```
 
 ```text
-  drag-model    4fff28f Add exponential-atmosphere drag model
-  g0-experiment 20982c3 Try rounded g0
-* main          65bb526 Explain how to run the tests
-  units-cleanup 65bb526 Explain how to run the tests
+  drag-model    d9f2ae1 Add exponential-atmosphere drag model
+  g0-experiment 8d5bf9b Try rounded g0
+  j2-constant   d2e5ed4 Add J2 oblateness constant
+* main          b108153 Add circular orbit speed helper
+  units-cleanup b108153 Add circular orbit speed helper
 ```
 
-Every branch from this lesson is there: `units-cleanup` from the `switch -c` demonstration still sits on `65bb526`, beside `main`.
+Every branch from this lesson is there, beside Leo's `j2-constant`: `units-cleanup` from the `switch -c` demonstration still sits on `b108153`, with `main`.
 
 **`git branch -d <name>`** deletes a branch — which means deleting the sticky note, one small file. The commits stay. Git protects you with a check: if the branch is not merged into the branch you are on (or into its upstream, when it has one), `-d` refuses:
 
@@ -404,7 +405,7 @@ error: the branch 'drag-model' is not fully merged.
 If you are sure you want to delete it, run 'git branch -D drag-model'
 ```
 
-"Not fully merged" means `4fff28f` is not part of the branch you are on, `main`. Here it is reachable only from `drag-model`, so deleting the note would leave nothing pointing at it. The check looks only at your current branch: a branch merged into some other branch but not into `main` is refused too. The capital `-D` deletes anyway. Use it only when you really want that work gone. Deleting a branch whose commits are already part of `main` is always safe, and `-d` allows it without complaint.
+"Not fully merged" means `d9f2ae1` is not part of the branch you are on, `main`. Here it is reachable only from `drag-model`, so deleting the note would leave nothing pointing at it. The check looks only at your current branch: a branch merged into some other branch but not into `main` is refused too. The capital `-D` deletes anyway. Use it only when you really want that work gone. Deleting a branch whose commits are already part of `main` is always safe, and `-d` allows it without complaint.
 
 ::: key What the branch commands touch
 `git branch <name>` writes one ref file; you stay where you are. `git switch <name>` rewrites `.git/HEAD` and makes the index and working tree match the branch tip. A commit moves only the branch HEAD names. `git branch -d` deletes a ref file, never a commit.
@@ -419,11 +420,11 @@ All of it works because a branch is cheap. Making one writes a 41-byte file; swi
 ## Check yourself
 
 ::: check Three branches, one commit
-You are on `main` at commit `65bb526`. You run `git branch a` and then `git branch b`. How many new objects are in `.git/objects`? How many new files in `.git/refs/heads`? Which branch are you on?
+You are on `main` at commit `b108153`. You run `git branch a` and then `git branch b`. How many new objects are in `.git/objects`? How many new files in `.git/refs/heads`? Which branch are you on?
 :::
 
 ::: answer
-No new objects at all: a branch is not an object. Two new files, `.git/refs/heads/a` and `.git/refs/heads/b`, each holding `65bb526…` and a newline, 41 bytes. You are still on `main` — `git branch <name>` makes a branch but never moves HEAD. `cat .git/HEAD` still prints `ref: refs/heads/main`.
+No new objects at all: a branch is not an object. Two new files, `.git/refs/heads/a` and `.git/refs/heads/b`, each holding `b108153…` and a newline, 41 bytes. You are still on `main` — `git branch <name>` makes a branch but never moves HEAD. `cat .git/HEAD` still prints `ref: refs/heads/main`.
 :::
 
 ::: check Where does the commit go?
@@ -474,7 +475,7 @@ Branch `docs` points at a commit that is also on `main`. Branch `spike` points a
 A branch is a sticky note on a commit, HEAD says which note you are riding, and detached HEAD means you are standing on a commit with no note at all. Next lesson brings two branches back together: sometimes by sliding a note forward, sometimes with a commit that has two parents, and sometimes with a conflict you resolve by hand.
 
 ::: context branch-move-picture Two sticky notes pulling apart
-Before the commit, `main` and `drag-model` both point at `65bb526`, and HEAD names `drag-model`. The commit writes `4fff28f`, whose parent is `65bb526`, and moves only the note HEAD names.
+Before the commit, `main` and `drag-model` both point at `b108153`, and HEAD names `drag-model`. The commit writes `d9f2ae1`, whose parent is `b108153`, and moves only the note HEAD names.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
@@ -485,9 +486,9 @@ Before the commit, `main` and `drag-model` both point at `65bb526`, and HEAD nam
   </defs>
   <text x="10" y="18" font-size="12" font-weight="700" fill="#1f2a44">Before</text>
   <circle cx="60" cy="60" r="16" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="60" y="64" font-size="11" text-anchor="middle" fill="#1f2a44">10b</text>
+  <text x="60" y="64" font-size="11" text-anchor="middle" fill="#1f2a44">1fb</text>
   <circle cx="130" cy="60" r="16" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="130" y="64" font-size="11" text-anchor="middle" fill="#1f2a44">65b</text>
+  <text x="130" y="64" font-size="11" text-anchor="middle" fill="#1f2a44">b10</text>
   <line x1="114" y1="60" x2="78" y2="60" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#p1)"/>
   <rect x="170" y="30" width="54" height="20" rx="4" fill="#fff" stroke="#b4232c" stroke-width="1.5"/>
   <text x="197" y="44" font-size="11" text-anchor="middle" fill="#b4232c">main</text>
@@ -501,11 +502,11 @@ Before the commit, `main` and `drag-model` both point at `65bb526`, and HEAD nam
   <line x1="10" y1="106" x2="350" y2="106" stroke="#6c7a93" stroke-width="1" stroke-dasharray="4 3"/>
   <text x="10" y="126" font-size="12" font-weight="700" fill="#1f2a44">After git commit</text>
   <circle cx="60" cy="165" r="16" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="60" y="169" font-size="11" text-anchor="middle" fill="#1f2a44">10b</text>
+  <text x="60" y="169" font-size="11" text-anchor="middle" fill="#1f2a44">1fb</text>
   <circle cx="130" cy="165" r="16" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="130" y="169" font-size="11" text-anchor="middle" fill="#1f2a44">65b</text>
+  <text x="130" y="169" font-size="11" text-anchor="middle" fill="#1f2a44">b10</text>
   <circle cx="200" cy="165" r="16" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="200" y="169" font-size="11" text-anchor="middle" fill="#1f2a44">4ff</text>
+  <text x="200" y="169" font-size="11" text-anchor="middle" fill="#1f2a44">d9f</text>
   <line x1="114" y1="165" x2="78" y2="165" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#p1)"/>
   <line x1="184" y1="165" x2="148" y2="165" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#p1)"/>
   <rect x="103" y="130" width="54" height="18" rx="4" fill="#fff" stroke="#b4232c" stroke-width="1.5"/>
@@ -519,7 +520,7 @@ Before the commit, `main` and `drag-model` both point at `65bb526`, and HEAD nam
 </svg>
 ```
 
-The `main` label sits directly on `65b`, where it stayed.
+The `main` label sits directly on `b10`, where it stayed.
 :::
 
 ::: context switch-restore-history Why Git has both `switch` and `checkout`
@@ -537,13 +538,13 @@ On `main`, each step of `~` follows one parent arrow. `HEAD^` is a second name f
     </marker>
   </defs>
   <circle cx="40" cy="60" r="18" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="40" y="64" font-size="11" text-anchor="middle" fill="#1f2a44">903</text>
+  <text x="40" y="64" font-size="11" text-anchor="middle" fill="#1f2a44">da6</text>
   <circle cx="130" cy="60" r="18" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="130" y="64" font-size="11" text-anchor="middle" fill="#1f2a44">cf1</text>
+  <text x="130" y="64" font-size="11" text-anchor="middle" fill="#1f2a44">103</text>
   <circle cx="220" cy="60" r="18" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="220" y="64" font-size="11" text-anchor="middle" fill="#1f2a44">10b</text>
+  <text x="220" y="64" font-size="11" text-anchor="middle" fill="#1f2a44">1fb</text>
   <circle cx="310" cy="60" r="18" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="310" y="64" font-size="11" text-anchor="middle" fill="#1f2a44">65b</text>
+  <text x="310" y="64" font-size="11" text-anchor="middle" fill="#1f2a44">b10</text>
   <line x1="292" y1="60" x2="240" y2="60" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#p2)"/>
   <line x1="202" y1="60" x2="150" y2="60" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#p2)"/>
   <line x1="112" y1="60" x2="60" y2="60" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#p2)"/>
@@ -552,11 +553,11 @@ On `main`, each step of `~` follows one parent arrow. `HEAD^` is a second name f
   <text x="130" y="26" font-size="12" text-anchor="middle" fill="#1d6fd1">HEAD~2</text>
   <text x="40" y="26" font-size="12" text-anchor="middle" fill="#1d6fd1">HEAD~3</text>
   <text x="220" y="100" font-size="11" text-anchor="middle" fill="#6c7a93">also HEAD^</text>
-  <text x="40" y="100" font-size="11" text-anchor="middle" fill="#6c7a93">root commit</text>
+  <text x="40" y="100" font-size="11" text-anchor="middle" fill="#6c7a93">then cf1, 903</text>
 </svg>
 ```
 
-`HEAD~4` does not exist here: the root commit has no parent to step to.
+Two more steps, `HEAD~4` and `HEAD~5`, reach `cf192ed` and the root commit `903724b`; `HEAD~6` does not exist, because the root commit has no parent to step to.
 :::
 
 ::: context garbage-collection What happens to commits nobody points at
