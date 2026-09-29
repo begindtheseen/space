@@ -108,7 +108,7 @@ Every temporal operator restarts when its associated state is entered again. A t
 
 ## Debouncing with duration
 
-A **confirmation counter** (or persistence counter) is the flight-software name for debouncing: a condition must hold for $N$ consecutive samples before the software acts on it. With `duration`, the rule "for $N$ samples" becomes "for $T$ seconds", with $T = (N - 1)h$, because `duration` is zero on the first sample where the condition is true.
+A **[[confirmation counter|persistence-tradeoff]]** (or persistence counter) is the flight-software name for debouncing: a condition must hold for $N$ consecutive samples before the software acts on it. With `duration`, the rule "for $N$ samples" becomes "for $T$ seconds", with $T = (N - 1)h$, because `duration` is zero on the first sample where the condition is true.
 
 ::: example Liftoff detection that ignores a bump
 At 50 Hz, the liftoff transition is `[launch_cmd && duration(accel > 11) >= 0.1]`, where `accel` is the sensed acceleration along the vehicle's long axis in m/s². On the pad the sensor reads about 9.8 m/s², because it feels the pad holding the vehicle up against gravity. Here is a trace, with wake-up numbers:
@@ -286,6 +286,10 @@ A digital computer only sees the world at its sample instants, like a movie that
   <text x="316" y="12" font-size="11" text-anchor="end" fill="#b4232c">0.5 s</text>
 </svg>
 ```
+:::
+
+::: context persistence-tradeoff Choosing N is a trade
+A longer confirmation window rejects more noise but reacts later; a shorter one reacts fast but trips on more glitches. Engineers call the two failures a false alarm (acting on a fault that was not there) and a missed or late detection. For liftoff detection, 0.1 s of delay is harmless, so the window can be generous. For an engine failure near the ground, every tenth of a second matters, so the window is set from how fast the vehicle can get into trouble and how noisy the sensor really is, measured in tests.
 :::
 
 ::: context broadcast Why "broadcast"
