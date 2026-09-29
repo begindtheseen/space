@@ -260,7 +260,7 @@ With `-march=haswell` the compiler may use the processor's **[[fused multiply-ad
 :::
 
 ::: key Why run both a Debug-plus-ASan job and an optimized Release job?
-Sanitizers need instrumented, unoptimised builds to report precise faults, but optimization itself changes behavior: it exposes undefined behavior, different floating-point contraction and different timing. Each job catches bugs the other hides.
+Sanitizers need instrumented builds, usually at low optimization (`-O1`; `-O0` gives the clearest reports, though AddressSanitizer also works at `-O2`), but full optimization itself changes behavior: it exposes undefined behavior, different floating-point contraction and different timing. Each job catches bugs the other hides.
 :::
 
 ## Station 5: regression sims with tolerances
@@ -452,7 +452,7 @@ jobs:
 A few things to notice:
 
 - **The shape.** `lint` runs first because it is fastest. The three build jobs `needs: lint`, so they start together once it passes. `regression` and `benchmark` wait for the Release binaries. Static analysis and docs need nothing and start at once. The result is a [[graph of jobs|job-graph]], and the total time is set by its longest chain.
-- **`concurrency`** cancels the run for an older commit when you push a newer one to the same pull request. On `main` the expression is false, so every merge is checked to the end.
+- **`concurrency`** cancels the run for an older commit when you push a newer one to the same pull request. On `main` the expression is false, so a run already in progress always finishes. It does not guarantee every merge is checked: a group holds one running and one waiting run, and a newer merge replaces the waiting one, so when merges land faster than a run takes, the ones in the middle are never checked on their own.
 - **`permissions: contents: read`** lets the automatic token read the code and nothing else.
 - **`timeout-minutes`** on every job makes a hung simulation fail in minutes, not hours.
 

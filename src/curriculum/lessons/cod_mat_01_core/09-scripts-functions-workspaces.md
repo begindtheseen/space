@@ -50,7 +50,7 @@ You call a function with its inputs in parentheses and catch its outputs in squa
 
 ```matlab
 [dv, r] = stage_dv(348, 111670, 19000)
-%   dv = 6044.3
+%   dv = 6.0443e+03
 %   r  = 5.8774
 dv_only = stage_dv(348, 111670, 19000)     % ask for fewer outputs: you get the first
 [~, r2] = stage_dv(348, 111670, 19000)     % the tilde skips an output you don't want
