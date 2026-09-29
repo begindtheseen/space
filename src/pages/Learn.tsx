@@ -40,7 +40,7 @@ import { Markdown } from '@/lib/markdown'
 import { navigate, useRoute } from '@/lib/router'
 import { TerminalChallenge } from './LearnTerminal'
 import { GateView, PracticeSection, RetestBanner, RetestView } from './LearnMastery'
-import { courseMastered, gateOf, lessonMastered, practiceDone } from '@/learn/practice'
+import { courseMastered, gateOf, lessonMastered, lockedBy, practiceDone, practiceTotal } from '@/learn/practice'
 import './learn.css'
 import './pages.css'
 
@@ -53,6 +53,14 @@ export function Learn({ lessonId }: { lessonId?: string }) {
   if (track) return <CourseView track={track} />
   const found = findLesson(lessonId)
   if (!found) return <LearnHome missing={lessonId} />
+  return <Guarded key={found.lesson.id} found={found} />
+}
+
+/** A lesson or gate, unless its course is still locked behind an earlier course's gate. */
+function Guarded({ found }: { found: { track: LearnTrack; lesson: LearnLesson; index: number } }) {
+  const { state } = useLearner()
+  const lock = lockedBy(found.track, ladderOf(found.track), state.learn)
+  if (lock) return <LockedCourse track={found.track} lock={lock} />
   if (found.lesson.gate) return <GateView key={found.lesson.id} track={found.track} lesson={found.lesson} />
   return <LessonView key={found.lesson.id} track={found.track} lesson={found.lesson} index={found.index} />
 }
@@ -354,8 +362,40 @@ function RoadmapView({ roadmap }: { roadmap: Roadmap }) {
 
 /* ── One course ──────────────────────────────────────────────────────────── */
 
+/** Shown instead of a locked course's lessons: which gate opens it, and the way there. */
+function LockedCourse({ track, lock }: { track: LearnTrack; lock: { track: LearnTrack; gate: LearnLesson } }) {
+  return (
+    <div className="page page--padtop ide-wrap">
+      <a className="lm-back" href={`#/learn/${track.id}`}>
+        <IconChevronLeft size={13} />
+        {track.title}
+      </a>
+      <div className="lm-locked" role="status">
+        <div className="lm-text__kicker">
+          <LangMark lang={track.lang} size={18} />
+          Locked
+        </div>
+        <h1>Pass the {lock.track.name} gate first</h1>
+        <p className="lm-practice__why">
+          {track.name} builds on everything in {lock.track.name}. Its mastery gate is where you show you have it: problems you have not seen and questions on how and why it works, in one sitting. Pass it and this course opens.
+        </p>
+        <div className="lm-help__row">
+          <button type="button" className="ide-run" onClick={() => navigate(`/learn/${lock.gate.id}`)}>
+            Go to the gate
+            <IconArrowRight size={13} />
+          </button>
+          <a className="lm-link" href={`#/learn/${lock.track.id}`}>
+            Back to {lock.track.title}
+          </a>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function CourseView({ track }: { track: LearnTrack }) {
   const { state } = useLearner()
+  const lock = lockedBy(track, ladderOf(track), state.learn)
   const done = passedCount(track, state.learn)
   const total = track.lessons.length
   const next = nextLesson(track, state.learn)
@@ -381,12 +421,30 @@ function CourseView({ track }: { track: LearnTrack }) {
       {ladderOf(track).length > 1 ? (
         <nav className="lm-ladder" aria-label={`${track.subject ?? langName(track.lang)} courses`}>
           {ladderOf(track).map((t, i) => (
-            <a key={t.id} href={`#/learn/${t.id}`} className="lm-ladder__step" data-here={t.id === track.id} data-done={passedCount(t, state.learn) === t.lessons.length}>
+            <a
+              key={t.id}
+              href={`#/learn/${t.id}`}
+              className="lm-ladder__step"
+              data-here={t.id === track.id}
+              data-done={passedCount(t, state.learn) === t.lessons.length}
+              data-locked={!!lockedBy(t, ladderOf(track), state.learn)}
+            >
               <span className="lm-ladder__n">{i + 1}</span>
               {t.subject ? t.title : LEVEL_LABEL[t.level]}
             </a>
           ))}
         </nav>
+      ) : null}
+      {lock ? (
+        <div className="lm-gate-result" role="status">
+          <span className="grow">
+            Locked until you pass the <strong>{lock.track.name}</strong> mastery gate.
+          </span>
+          <button type="button" className="ide-run" onClick={() => navigate(`/learn/${lock.gate.id}`)}>
+            Go to the gate
+            <IconArrowRight size={13} />
+          </button>
+        </div>
       ) : null}
       <div className="lm-course-go">
         <Bar value={done / total} height={6} />
@@ -412,8 +470,8 @@ function CourseView({ track }: { track: LearnTrack }) {
                 <span className="lm-outline__title">{l.gate ? `Mastery gate: ${l.title}` : l.title}</span>
                 {l.gate ? (
                   ok ? <span className="lm-outline__tag">Passed</span> : <span className="lm-outline__tag">{l.gate.problems.length} unseen problems · {l.gate.minutes} min</span>
-                ) : ok && l.practice.length ? (
-                  <span className="lm-outline__tag">{lessonMastered(l, state.learn) ? 'Mastered' : `Practice ${practiceDone(l, state.learn)}/${l.practice.length}`}</span>
+                ) : ok && practiceTotal(l) ? (
+                  <span className="lm-outline__tag">{lessonMastered(l, state.learn) ? 'Mastered' : `Practice ${practiceDone(l, state.learn)}/${practiceTotal(l)}`}</span>
                 ) : ok ? (
                   <span className="lm-outline__tag">Passed</span>
                 ) : here ? (
@@ -525,7 +583,7 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
         <div className="lm-text__kicker">
           <LangMark lang={track.lang} size={18} />
           Lesson {index + 1} of {track.lessons.length}
-          {lessonMastered(lesson, state.learn) && lesson.practice.length ? (
+          {lessonMastered(lesson, state.learn) && practiceTotal(lesson) ? (
             <span className="lm-passed-tag">Mastered</span>
           ) : passedBefore ? (
             <span className="lm-passed-tag">Passed</span>
@@ -577,8 +635,8 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
             <div className="lm-win">
               <IconCheck size={16} />
               <span className="grow">
-                {lesson.practice.length && !lessonMastered(lesson, state.learn)
-                  ? `Lesson passed. Now the practice below: ${lesson.practice.length} problems on the same idea, and the lesson is mastered.`
+                {practiceTotal(lesson) && !lessonMastered(lesson, state.learn)
+                  ? `Lesson passed. Now the practice below: ${practiceTotal(lesson)} more on the same idea, and the lesson is mastered.`
                   : next
                   ? `Lesson passed. Next: ${next.title}`
                   : nextCourse
@@ -655,7 +713,7 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
           ) : null}
         </div>
 
-        {(passedBefore || passedNow) && lesson.practice.length ? <PracticeSection lesson={lesson} /> : null}
+        {(passedBefore || passedNow) && practiceTotal(lesson) ? <PracticeSection lesson={lesson} /> : null}
 
         <div className="lm-nav">
           {prev ? (

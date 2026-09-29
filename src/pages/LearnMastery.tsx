@@ -19,7 +19,8 @@ import { IconArrowRight, IconCheck, IconChevronLeft, IconClock } from '@/compone
 import { markPracticed, recordRetest, updateGate } from '@/engine/apply'
 import { useLearner } from '@/hooks/useLearner'
 import { buildProgram, gradeRun } from '@/learn/grade'
-import { findLesson } from '@/learn/index'
+import { findLesson as findCourseLesson } from '@/learn/index'
+import { findModuleLesson } from '@/learn/modules'
 import { editorLang, runLearn, warmUp } from '@/learn/platform'
 import {
   RETEST_DAYS,
@@ -27,21 +28,28 @@ import {
   asLesson,
   courseMastered,
   dueRetests,
+  answerInSitting,
   endSitting,
   msLeft,
   nextSittingAt,
   openSitting,
   passInSitting,
   practiceDone,
+  practiceTotal,
   retestProblem,
   sittingPassed,
+  sittingScore,
   startSitting,
   type Retest,
 } from '@/learn/practice'
-import type { CheckResult, LearnLesson, LearnTrack } from '@/learn/types'
+import type { CheckResult, LearnExercise, LearnLesson, LearnQuestion, LearnTrack } from '@/learn/types'
+import { answerMatches } from '@/learn/parse'
 import { Markdown } from '@/lib/markdown'
 import { navigate } from '@/lib/router'
 import { TerminalChallenge } from './LearnTerminal'
+
+/** A lesson of a course, or a module's practice set: re-tests come from both. */
+const findLesson = (id: string) => findCourseLesson(id) ?? findModuleLesson(id)
 
 /* ── One graded problem ─────────────────────────────────────────────────── */
 
@@ -109,42 +117,147 @@ function fence(lang: LearnLesson['lang']): string {
   return lang === 'javascript' ? 'js' : lang === 'typescript' ? 'ts' : lang
 }
 
+/* ── One question ───────────────────────────────────────────────────────── */
+
+/**
+ * A question: pick the choice (or choices), or type the answer, then submit.
+ * In a gate (`exam`), it is answered once and says nothing until the sitting
+ * ends; in practice it says at once whether it was right, and why.
+ */
+export function QuestionCard({
+  q,
+  exam,
+  result,
+  reveal,
+  onAnswer,
+}: {
+  q: LearnQuestion
+  exam: boolean
+  /** Its answer so far, if any. */
+  result?: boolean
+  /** Show the right answer and the why (practice after answering; a gate after the sitting). */
+  reveal: boolean
+  onAnswer: (ok: boolean) => void
+}) {
+  const [picked, setPicked] = useState<number[]>([])
+  const [typed, setTyped] = useState('')
+  const multi = (q.choices?.filter((c) => c.correct).length ?? 0) > 1
+  // A gate's review after the sitting only shows: nothing can be answered there.
+  const locked = exam ? reveal || result !== undefined : result === true
+  const submit = () => {
+    if (q.choices) {
+      const right = q.choices.map((c, i) => (c.correct ? i : -1)).filter((i) => i >= 0)
+      onAnswer(right.length === picked.length && right.every((i) => picked.includes(i)))
+    } else onAnswer(answerMatches(q, typed))
+  }
+  const ready = q.choices ? picked.length > 0 : typed.trim() !== ''
+  return (
+    <div className="lm-q" data-result={result === undefined ? undefined : result ? 'right' : 'wrong'}>
+      <div className="lm-practice__title">{q.title}</div>
+      <Markdown>{q.ask}</Markdown>
+      {q.choices ? (
+        <div className="lm-q__choices" role={multi ? 'group' : 'radiogroup'}>
+          {multi ? <div className="lm-practice__locked">More than one is right: pick every one.</div> : null}
+          {q.choices.map((c, i) => (
+            <label key={i} className="lm-q__choice" data-right={reveal && c.correct ? 'true' : undefined}>
+              <input
+                type={multi ? 'checkbox' : 'radio'}
+                name={q.id}
+                disabled={locked}
+                checked={picked.includes(i)}
+                onChange={() => setPicked((p) => (multi ? (p.includes(i) ? p.filter((x) => x !== i) : [...p, i]) : [i]))}
+              />
+              <span>
+                <Markdown>{c.text}</Markdown>
+              </span>
+            </label>
+          ))}
+        </div>
+      ) : (
+        <input
+          className="lm-q__typed"
+          aria-label="Your answer"
+          value={typed}
+          disabled={locked}
+          onChange={(e) => setTyped(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && ready && !locked) submit()
+          }}
+          placeholder="Type your answer"
+        />
+      )}
+      <div className="lm-help__row">
+        {!locked ? (
+          <button type="button" className="ide-run" disabled={!ready} onClick={submit}>
+            {exam ? 'Submit answer' : result === false ? 'Try again' : 'Check'}
+          </button>
+        ) : exam && !reveal ? (
+          <span className="lm-practice__locked">Answered. You will see how it went when the sitting ends.</span>
+        ) : null}
+        {!exam && result !== undefined ? <span className="lm-q__verdict">{result ? 'Right.' : 'Not quite.'}</span> : null}
+      </div>
+      {reveal && (exam || result !== undefined) ? (
+        <div className="lm-hint">
+          {q.answers ? <span className="lm-hint__n">Answer: {q.answers[0]}</span> : null}
+          <Markdown>{q.why}</Markdown>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 /* ── Practice, under a lesson ───────────────────────────────────────────── */
 
 /** Runs before the solution of a practice problem can be opened. */
 const TRIES_BEFORE_SOLUTION = 3
 
+type PracticeItem = { kind: 'problem'; ex: LearnExercise } | { kind: 'question'; q: LearnQuestion }
+
 export function PracticeSection({ lesson }: { lesson: LearnLesson }) {
   const { state, setState } = useLearner()
-  const problems = lesson.practice
-  const firstOpen = problems.findIndex((p) => !state.learn[p.id])
+  const items = useMemo<PracticeItem[]>(
+    () => [...lesson.practice.map((ex) => ({ kind: 'problem' as const, ex })), ...(lesson.quiz ?? []).map((q) => ({ kind: 'question' as const, q }))],
+    [lesson],
+  )
+  const idOf = (it: PracticeItem) => (it.kind === 'problem' ? it.ex.id : it.q.id)
+  const titleOf = (it: PracticeItem) => (it.kind === 'problem' ? it.ex.title : it.q.title)
+  const firstOpen = items.findIndex((it) => !state.learn[idOf(it)])
   const [at, setAt] = useState(firstOpen < 0 ? 0 : firstOpen)
   const [hints, setHints] = useState(0)
   const [fails, setFails] = useState(0)
   const [showSolution, setShowSolution] = useState(false)
   const [solvedNow, setSolvedNow] = useState(false)
-  const ex = problems[at]!
-  const unit = useMemo(() => asLesson(lesson, ex), [lesson, ex])
+  const [answer, setAnswer] = useState<boolean | undefined>(undefined)
+  const item = items[at]!
+  const id = idOf(item)
+  const unit = useMemo(() => (item.kind === 'problem' ? asLesson(lesson, item.ex) : null), [lesson, item])
   const done = practiceDone(lesson, state.learn)
-  const solved = !!state.learn[ex.id]
+  const total = practiceTotal(lesson)
+  const solved = !!state.learn[id]
 
   useEffect(() => {
     setHints(0)
     setFails(0)
     setShowSolution(false)
     setSolvedNow(false)
-  }, [ex.id])
+    setAnswer(undefined)
+  }, [id])
 
   const onGraded = useCallback((passed: boolean) => {
     if (!passed) setFails((n) => n + 1)
   }, [])
   const onPass = useCallback(() => {
-    setState((s) => markPracticed(s, lesson, ex.id))
+    setState((s) => markPracticed(s, lesson, id))
     setSolvedNow(true)
-  }, [ex.id, lesson, setState])
+  }, [id, lesson, setState])
+  const onAnswer = (ok: boolean) => {
+    setAnswer(ok)
+    if (ok) onPass()
+  }
 
-  const nextOpen = problems.findIndex((p, i) => i !== at && !state.learn[p.id] && p.id !== ex.id)
-  const allDone = done === problems.length
+  const nextOpen = items.findIndex((it, i) => i !== at && !state.learn[idOf(it)])
+  const allDone = done === total
+  const questions = lesson.quiz?.length ?? 0
 
   return (
     <section className="lm-practice" aria-label="Practice">
@@ -153,84 +266,95 @@ export function PracticeSection({ lesson }: { lesson: LearnLesson }) {
           <div className="lm-challenge__label">Practice</div>
           <p className="lm-practice__why">
             {allDone
-              ? 'Every practice problem solved: this lesson is mastered. It will come back as a re-test in a few days.'
-              : `Passing the lesson once shows you followed it. These ${problems.length} problems, on the same idea with new data and new twists, are how it sticks.`}
+              ? 'Everything here solved: this lesson is mastered. It will come back as a re-test in a few days.'
+              : `Passing the lesson once shows you followed it. These ${total} ${questions && lesson.practice.length ? 'problems and questions' : questions ? 'questions' : 'problems'}, on the same idea with new data and new twists, are how it sticks.`}
           </p>
         </div>
         <span className="lm-practice__n">
-          {done}/{problems.length}
+          {done}/{total}
         </span>
       </div>
-      <div className="lm-practice__dots" role="tablist" aria-label="Practice problems">
-        {problems.map((p, i) => (
+      <div className="lm-practice__dots" role="tablist" aria-label="Practice">
+        {items.map((it, i) => (
           <button
-            key={p.id}
+            key={idOf(it)}
             type="button"
             role="tab"
             aria-selected={i === at}
             className="lm-practice__dot"
-            data-done={!!state.learn[p.id]}
+            data-kind={it.kind}
+            data-done={!!state.learn[idOf(it)]}
             data-here={i === at}
             onClick={() => setAt(i)}
-            title={`${i + 1}. ${p.title}`}
+            title={`${i + 1}. ${titleOf(it)}`}
           >
-            {state.learn[p.id] ? <IconCheck size={11} /> : i + 1}
+            {state.learn[idOf(it)] ? <IconCheck size={11} /> : it.kind === 'question' ? '?' : i + 1}
           </button>
         ))}
       </div>
 
-      <div className="lm-challenge">
-        <div className="lm-practice__title">
-          {at + 1}. {ex.title}
-          {solved ? <span className="lm-passed-tag">Solved</span> : null}
+      {item.kind === 'question' ? (
+        <div className="lm-challenge">
+          <QuestionCard key={id} q={item.q} exam={false} result={solved ? true : answer} reveal={answer !== undefined || solved} onAnswer={onAnswer} />
         </div>
-        <ProblemText unit={unit} />
-      </div>
-      <div className="lm-work">
-        <ProblemWork key={ex.id} unit={unit} saveKey={`learn:${ex.id}`} onPass={onPass} onGraded={onGraded} />
-      </div>
+      ) : (
+        <>
+          <div className="lm-challenge">
+            <div className="lm-practice__title">
+              {at + 1}. {item.ex.title}
+              {solved ? <span className="lm-passed-tag">Solved</span> : null}
+            </div>
+            <ProblemText unit={unit!} />
+          </div>
+          <div className="lm-work">
+            <ProblemWork key={id} unit={unit!} saveKey={`learn:${id}`} onPass={onPass} onGraded={onGraded} />
+          </div>
+        </>
+      )}
 
       {solvedNow ? (
         <div className="lm-win">
           <IconCheck size={16} />
-          <span className="grow">{nextOpen >= 0 ? `Solved. Next: ${problems[nextOpen]!.title}` : 'Solved — that is every practice problem for this lesson.'}</span>
+          <span className="grow">{nextOpen >= 0 ? `Solved. Next: ${titleOf(items[nextOpen]!)}` : 'Solved — that is all the practice for this lesson.'}</span>
           {nextOpen >= 0 ? (
             <button type="button" className="ide-run" onClick={() => setAt(nextOpen)}>
-              Next problem
+              Next
               <IconArrowRight size={13} />
             </button>
           ) : null}
         </div>
       ) : null}
 
-      <div className="lm-help">
-        {unit.hints.slice(0, hints).map((h, i) => (
-          <div className="lm-hint" key={i}>
-            <span className="lm-hint__n">Hint {i + 1}</span>
-            <Markdown>{h}</Markdown>
+      {unit ? (
+        <div className="lm-help">
+          {unit.hints.slice(0, hints).map((h, i) => (
+            <div className="lm-hint" key={i}>
+              <span className="lm-hint__n">Hint {i + 1}</span>
+              <Markdown>{h}</Markdown>
+            </div>
+          ))}
+          <div className="lm-help__row">
+            {hints < unit.hints.length ? (
+              <button type="button" className="lm-link" onClick={() => setHints((n) => n + 1)}>
+                {hints === 0 ? 'Show a hint' : 'Another hint'}
+              </button>
+            ) : null}
+            {solved || fails >= TRIES_BEFORE_SOLUTION ? (
+              <button type="button" className="lm-link" onClick={() => setShowSolution((v) => !v)}>
+                {showSolution ? 'Hide the solution' : 'Show the solution'}
+              </button>
+            ) : (
+              <span className="lm-practice__locked">The solution opens after {TRIES_BEFORE_SOLUTION} runs that do not pass.</span>
+            )}
           </div>
-        ))}
-        <div className="lm-help__row">
-          {hints < unit.hints.length ? (
-            <button type="button" className="lm-link" onClick={() => setHints((n) => n + 1)}>
-              {hints === 0 ? 'Show a hint' : 'Another hint'}
-            </button>
+          {showSolution ? (
+            <div className="lm-solution">
+              <p>One way to do it. Close it, then write it yourself from memory.</p>
+              <Markdown>{'```' + fence(unit.lang) + '\n' + unit.solution + '```'}</Markdown>
+            </div>
           ) : null}
-          {solved || fails >= TRIES_BEFORE_SOLUTION ? (
-            <button type="button" className="lm-link" onClick={() => setShowSolution((v) => !v)}>
-              {showSolution ? 'Hide the solution' : 'Show the solution'}
-            </button>
-          ) : (
-            <span className="lm-practice__locked">The solution opens after {TRIES_BEFORE_SOLUTION} runs that do not pass.</span>
-          )}
         </div>
-        {showSolution ? (
-          <div className="lm-solution">
-            <p>One way to do it. Close it, then write it yourself from memory.</p>
-            <Markdown>{'```' + fence(unit.lang) + '\n' + unit.solution + '```'}</Markdown>
-          </div>
-        ) : null}
-      </div>
+      ) : null}
     </section>
   )
 }
@@ -254,7 +378,37 @@ function clock(ms: number): string {
   return h ? `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}` : `${m}:${String(sec).padStart(2, '0')}`
 }
 
+/** A course's mastery gate in Learn to code. */
 export function GateView({ track, lesson }: { track: LearnTrack; lesson: LearnLesson }) {
+  const { state } = useLearner()
+  return (
+    <GateScreen
+      lesson={lesson}
+      kicker="Mastery gate"
+      back={{ href: `#/learn/${track.id}`, label: track.title }}
+      markLang={track.lang}
+      passedText={courseMastered(track, state.learn) ? `${track.name} is mastered.` : 'Gate passed, so the next course is open. This course counts as mastered once every lesson’s practice is done too.'}
+    />
+  )
+}
+
+/**
+ * A gate: the rules, the last sitting's result and review, and the sitting
+ * itself. A course's mastery gate and a module's test are both this.
+ */
+export function GateScreen({
+  lesson,
+  kicker,
+  back,
+  markLang,
+  passedText,
+}: {
+  lesson: LearnLesson
+  kicker: string
+  back: { href: string; label: string }
+  markLang: LearnLesson['lang']
+  passedText: string
+}) {
   const { state, setState } = useLearner()
   const now = useNow(1000)
   const gate = lesson.gate!
@@ -277,20 +431,33 @@ export function GateView({ track, lesson }: { track: LearnTrack; lesson: LearnLe
   const handIn = () => setState((s) => updateGate(s, lesson, (r) => endSitting(r!)))
 
   const byId = useMemo(() => new Map(gate.problems.map((p) => [p.id, p])), [gate.problems])
+  const qById = useMemo(() => new Map(gate.questions.map((q) => [q.id, q])), [gate.questions])
 
   if (sitting) {
     const ids = sitting.order.filter((id) => byId.has(id))
-    const id = ids[Math.min(at, ids.length - 1)]!
-    const unit = asLesson(lesson, byId.get(id)!)
-    const passedCount = ids.filter((i) => sitting.passed[i]).length
+    const qids = (sitting.qorder ?? []).filter((id) => qById.has(id))
+    const all = [...ids, ...qids]
+    const i = Math.min(at, all.length - 1)
+    const id = all[i]!
+    const isQ = i >= ids.length
+    const unit = isQ ? null : asLesson(lesson, byId.get(id)!)
+    const passedCount = ids.filter((x) => sitting.passed[x]).length
+    const answeredCount = qids.filter((x) => sitting.answered?.[x]).length
     const left = msLeft(lesson, sitting, now)
     return (
       <div className="page page--padtop ide-wrap">
         <div className="lm-gate-bar" role="status">
           <span className="lm-gate-bar__title">{lesson.title}</span>
-          <span>
-            Passed {passedCount} of {ids.length} · pass mark {gate.pass}
-          </span>
+          {ids.length ? (
+            <span>
+              Problems passed {passedCount}/{ids.length} (need {gate.pass})
+            </span>
+          ) : null}
+          {qids.length ? (
+            <span>
+              Questions answered {answeredCount}/{qids.length} (need {gate.questionPass} right)
+            </span>
+          ) : null}
           <span className="lm-gate-bar__clock" data-low={left < 5 * 60_000}>
             <IconClock size={13} /> {clock(left)}
           </span>
@@ -299,55 +466,82 @@ export function GateView({ track, lesson }: { track: LearnTrack; lesson: LearnLe
           </button>
         </div>
         <article className="lm-flow">
-          <div className="lm-practice__dots" role="tablist" aria-label="Gate problems">
-            {ids.map((pid, i) => (
-              <button
-                key={pid}
-                type="button"
-                role="tab"
-                aria-selected={pid === id}
-                className="lm-practice__dot"
-                data-done={!!sitting.passed[pid]}
-                data-here={pid === id}
-                onClick={() => setAt(i)}
-              >
-                {sitting.passed[pid] ? <IconCheck size={11} /> : i + 1}
-              </button>
-            ))}
+          <div className="lm-practice__dots" role="tablist" aria-label="Gate problems and questions">
+            {all.map((pid, k) => {
+              const q = k >= ids.length
+              const done = q ? !!sitting.answered?.[pid] : !!sitting.passed[pid]
+              return (
+                <button
+                  key={pid}
+                  type="button"
+                  role="tab"
+                  aria-selected={k === i}
+                  className="lm-practice__dot"
+                  data-kind={q ? 'question' : 'problem'}
+                  data-done={done}
+                  data-here={k === i}
+                  onClick={() => setAt(k)}
+                  title={q ? `Question ${k - ids.length + 1}` : `Problem ${k + 1}`}
+                >
+                  {done ? <IconCheck size={11} /> : q ? `Q${k - ids.length + 1}` : k + 1}
+                </button>
+              )
+            })}
           </div>
-          <section className="lm-challenge">
-            <div className="lm-practice__title">
-              Problem {Math.min(at, ids.length - 1) + 1}. {unit.title}
-              {sitting.passed[id] ? <span className="lm-passed-tag">Passed</span> : null}
-            </div>
-            <ProblemText unit={unit} />
-          </section>
-          <div className="lm-work">
-            <ProblemWork
-              key={`${sitting.startedAt}:${id}`}
-              unit={unit}
-              saveKey={`learn:${lesson.id}:${sitting.startedAt}:${id}`}
-              onPass={() => setState((s) => updateGate(s, lesson, (r) => passInSitting(r!, id)))}
-              onGraded={() => {}}
-            />
-          </div>
-          <p className="lm-gate-rules">No hints, no solutions and no Explain during a sitting: this is the exam. Problems can be done in any order.</p>
+          {isQ ? (
+            <section className="lm-challenge">
+              <QuestionCard
+                key={`${sitting.startedAt}:${id}`}
+                q={qById.get(id)!}
+                exam
+                {...(sitting.answered?.[id] ? { result: sitting.answered[id].ok } : {})}
+                reveal={false}
+                onAnswer={(ok) => {
+                  setState((s) => updateGate(s, lesson, (r) => answerInSitting(r!, id, ok)))
+                  if (i + 1 < all.length) setAt(i + 1)
+                }}
+              />
+            </section>
+          ) : (
+            <>
+              <section className="lm-challenge">
+                <div className="lm-practice__title">
+                  Problem {i + 1}. {unit!.title}
+                  {sitting.passed[id] ? <span className="lm-passed-tag">Passed</span> : null}
+                </div>
+                <ProblemText unit={unit!} />
+              </section>
+              <div className="lm-work">
+                <ProblemWork
+                  key={`${sitting.startedAt}:${id}`}
+                  unit={unit!}
+                  saveKey={`learn:${lesson.id}:${sitting.startedAt}:${id}`}
+                  onPass={() => setState((s) => updateGate(s, lesson, (r) => passInSitting(r!, id)))}
+                  onGraded={() => {}}
+                />
+              </div>
+            </>
+          )}
+          <p className="lm-gate-rules">
+            No hints, no solutions and no Explain during a sitting: this is the exam. Take the problems and questions in any order; each question is answered once.
+          </p>
         </article>
       </div>
     )
   }
 
-  const lastScore = last ? Object.keys(last.passed).length : 0
+  const score = last ? sittingScore(last) : null
+  const lastPassed = last ? sittingPassed(lesson, last) : false
   return (
     <div className="page page--padtop ide-wrap">
-      <a className="lm-back" href={`#/learn/${track.id}`}>
+      <a className="lm-back" href={back.href}>
         <IconChevronLeft size={13} />
-        {track.title}
+        {back.label}
       </a>
       <article className="lm-flow">
         <div className="lm-text__kicker">
-          <LangMark lang={track.lang} size={18} />
-          Mastery gate
+          <LangMark lang={markLang} size={18} />
+          {kicker}
           {passedGate ? <span className="lm-passed-tag">Passed</span> : null}
         </div>
         <h1 className="lm-text__title">{lesson.title}</h1>
@@ -355,34 +549,47 @@ export function GateView({ track, lesson }: { track: LearnTrack; lesson: LearnLe
           <Markdown>{lesson.teach}</Markdown>
         </div>
         <ul className="lm-gate-terms">
+          {gate.problems.length ? (
+            <li>
+              <strong>{gate.problems.length} problems</strong> you have not seen: pass <strong>{gate.pass}</strong>.
+            </li>
+          ) : null}
+          {gate.questions.length ? (
+            <li>
+              <strong>{gate.questions.length} questions</strong> on how and why it works, each answered once: get <strong>{gate.questionPass}</strong> right.
+            </li>
+          ) : null}
           <li>
-            <strong>{gate.problems.length} problems</strong> you have not seen, in a new order each sitting.
+            Both in one sitting of <strong>{gate.minutes} minutes</strong>, in a new order each time.
           </li>
-          <li>
-            Pass <strong>{gate.pass}</strong> of them within <strong>{gate.minutes} minutes</strong>, in one sitting.
-          </li>
-          <li>No hints, no solutions, no Explain. Your notes from the course are fair game; the answers are not.</li>
-          <li>Miss the pass mark and the next sitting opens 12 hours later: time to go back over what tripped you up.</li>
+          <li>No hints, no solutions, no Explain. Your notes are fair game; the answers are not.</li>
+          <li>Until it is passed, what comes after stays locked. Miss the mark and the next sitting opens 12 hours later: time to go back over what tripped you up.</li>
         </ul>
-        {last?.endedAt ? (
-          <div className={sittingPassed(lesson, last) ? 'lm-win' : 'lm-gate-result'}>
-            {sittingPassed(lesson, last) ? <IconCheck size={16} /> : null}
+        {last?.endedAt && score ? (
+          <div className={lastPassed ? 'lm-win' : 'lm-gate-result'}>
+            {lastPassed ? <IconCheck size={16} /> : null}
             <span className="grow">
-              Last sitting: {lastScore} of {last.order.length} passed (pass mark {gate.pass}).{' '}
-              {!sittingPassed(lesson, last)
-                ? 'Not this time. The practice problems of the lessons you found hard are the way back in.'
-                : courseMastered(track, state.learn)
-                  ? `${track.name} is mastered.`
-                  : 'Gate passed. The course counts as mastered once every lesson’s practice is done too.'}
+              Last sitting:{gate.problems.length ? ` ${score.problems} of ${last.order.length} problems passed (need ${gate.pass})` : ''}
+              {gate.problems.length && gate.questions.length ? ',' : ''}
+              {gate.questions.length ? ` ${score.questions} of ${gate.questions.length} questions right (need ${gate.questionPass})` : ''}.{' '}
+              {lastPassed ? passedText : 'Not this time. Go back over the lessons behind what you missed, then sit it again.'}
             </span>
           </div>
+        ) : null}
+        {last?.endedAt && gate.questions.length ? (
+          <details className="lm-gate-review">
+            <summary>Go over the last sitting’s questions</summary>
+            {gate.questions.map((q) => (
+              <QuestionCard key={q.id} q={q} exam {...(last.answered?.[q.id] ? { result: last.answered[q.id].ok } : {})} reveal onAnswer={() => {}} />
+            ))}
+          </details>
         ) : null}
         <div className="lm-course-go">
           {waitUntil ? (
             <span>The next sitting opens in {clock(waitUntil.getTime() - now.getTime())}.</span>
           ) : (
             <button type="button" className="ide-run" onClick={start}>
-              {passedGate ? 'Sit it again' : record?.sittings.length ? 'Start another sitting' : 'Start the gate'}
+              {passedGate ? 'Sit it again' : record?.sittings.length ? 'Start another sitting' : `Start the ${kicker.toLowerCase()}`}
               <IconArrowRight size={13} />
             </button>
           )}
@@ -493,7 +700,11 @@ export function RetestView() {
               {outcome === 'pass' ? 'Still there. On to the next one.' : `Not this time: it comes back in ${RETEST_DAYS[0]} days. Go back over the lesson before then.`}
             </span>
             {outcome === 'miss' ? (
-              <button type="button" className="lm-link" onClick={() => navigate(`/learn/${found.lesson.id}`)}>
+              <button
+                type="button"
+                className="lm-link"
+                onClick={() => navigate(found.track.module ? `/module/${found.track.module}?lesson=${found.lesson.forLesson}` : `/learn/${found.lesson.id}`)}
+              >
                 Open the lesson
               </button>
             ) : null}

@@ -18,6 +18,9 @@
    material they do not have the prerequisites for.
    ========================================================================== */
 import { PLACEMENT_SKILLS } from '@/curriculum/placement'
+import { moduleTest, practiceFor, testLocks } from '@/learn/modules'
+import type { LearnLesson } from '@/learn/types'
+import { GateScreen, PracticeSection } from './LearnMastery'
 import { testedOutKeys } from '@/engine/placement'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
@@ -170,6 +173,23 @@ function ModuleView({ module }: { module: Module }) {
   const startRecall = () => navigate(`/review?module=${module.id}`)
   const markStudied = () => setState((s) => markRead(s, module.id, new Date()))
 
+  // A module that builds on one whose test is not passed stays shut: the test is how you show you are ready.
+  const testLock = testLocks(module, state.learn)
+  if (testLock.length) return <TestLocked module={module} locks={testLock} />
+
+  const test = moduleTest(module.id)
+  if (test && route.query.test) {
+    return (
+      <GateScreen
+        lesson={test}
+        kicker="Module test"
+        back={{ href: `#/module/${module.id}`, label: module.title }}
+        markLang={test.lang}
+        passedText="Passed: what builds on this module is open now."
+      />
+    )
+  }
+
   const openLesson = route.query.lesson
     ? (module.lessons ?? []).find((l) => l.id === route.query.lesson)
     : undefined
@@ -230,6 +250,7 @@ function ModuleView({ module }: { module: Module }) {
       ) : null}
 
       <StudyPath step={step} status={status} onChange={setStep} />
+      {test ? <ModuleTestCard module={module} test={test} passed={!!state.learn[test.id]} /> : null}
 
       <div className="read">
         <div className="stack">
@@ -287,6 +308,58 @@ function ModuleView({ module }: { module: Module }) {
           <PrereqCard dag={dag} module={module} mastery={mastery} />
           <UnlocksCard dag={dag} module={module} />
         </div>
+      </div>
+    </div>
+  )
+}
+
+/* ── The module test ─────────────────────────────────────────────────────── */
+
+/** The module's last step: its test, and what passing it opens. */
+function ModuleTestCard({ module, test, passed }: { module: Module; test: LearnLesson; passed: boolean }) {
+  const { dag } = useLearner()
+  const opens = dag.childrenOf(module.id)
+  const g = test.gate!
+  return (
+    <div className={passed ? 'lm-win' : 'lm-gate-result'} style={{ marginBottom: 'var(--gap)' }}>
+      {passed ? <IconCheck size={16} /> : null}
+      <span className="grow">
+        <strong>Module test{passed ? ': passed' : ''}.</strong>{' '}
+        {g.problems.length ? `${g.problems.length} problems and ` : ''}
+        {g.questions.length} questions on how and why it works, in one {g.minutes}-minute sitting.
+        {!passed && opens.length ? ` Passing it opens ${opens.length === 1 ? 'the next module' : `the ${opens.length} modules that build on this one`}.` : ''}
+      </span>
+      <Button variant={passed ? 'ghost' : 'primary'} size="sm" onClick={() => navigate(`/module/${module.id}?test=1`)}>
+        {passed ? 'Sit it again' : 'Take the test'}
+        <IconArrowRight size={13} />
+      </Button>
+    </div>
+  )
+}
+
+/** Shown instead of a module whose prerequisite's test has not been passed. */
+function TestLocked({ module, locks }: { module: Module; locks: { moduleId: string; test: LearnLesson }[] }) {
+  const { dag } = useLearner()
+  return (
+    <div className="page page--padtop">
+      <div className="lm-locked" role="status">
+        <div className="page-head__kicker">Locked</div>
+        <h1>{module.title}</h1>
+        <p className="lm-practice__why">
+          This module builds on {locks.length === 1 ? 'a module' : 'modules'} whose test you have not passed yet. Pass{' '}
+          {locks.length === 1 ? 'it' : 'them'} and this one opens: that is how you show you have what it needs.
+        </p>
+        {locks.map((l) => (
+          <div className="lm-help__row" key={l.moduleId}>
+            <Button variant="primary" size="sm" onClick={() => navigate(`/module/${l.moduleId}?test=1`)}>
+              Take the {dag.get(l.moduleId)?.title ?? l.moduleId} test
+              <IconArrowRight size={13} />
+            </Button>
+            <a className="lm-link" href={`#/module/${l.moduleId}`}>
+              Back to that module
+            </a>
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -989,6 +1062,7 @@ function UnlocksCard({ dag, module }: { dag: ReturnType<typeof useLearner>['dag'
 
 
 function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }) {
+  const practiceSet = practiceFor(module.id, lesson.id)
   const { state, setState } = useLearner()
   const lessons = module.lessons ?? []
   const index = lessons.findIndex((l) => l.id === lesson.id)
@@ -1117,6 +1191,8 @@ function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }
       {asking && here ? <ExplainPanel seed={asking} here={here} onClose={closeAsk} /> : null}
 
       {body !== null && practiceLangs(module).length ? <TryItHere langs={practiceLangs(module)} saveKey={`try:${module.id}`} /> : null}
+
+      {body !== null && practiceSet ? <PracticeSection key={practiceSet.id} lesson={practiceSet} /> : null}
 
       <div className="reader__nav">
         <Button variant="ghost" size="md" onClick={() => go(prev)} disabled={!prev}>

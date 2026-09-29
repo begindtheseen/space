@@ -137,11 +137,70 @@ A 7th or 8th problem, where the idea deserves it, can be one of these:
 - **Harder than the practice.** A gate problem is the kind a course's final exam or a technical
   interview would set. Each one should be solvable in 5 to 15 minutes by someone who has
   mastered the course.
-- **Pass mark about 70%**, rounded (7 of 10, 8 of 11). **Time:** about 10 minutes a problem
-  (`minutes 90` to `minutes 150`).
+- **Pass mark about 70%**, rounded (7 of 10, 8 of 11). **Time:** about 10 minutes a problem, plus
+  1 minute a question (`minutes 100` to `minutes 160`).
 - **No hints** (leave the `hint` sections out). Every problem is unseen: never reuse a practice
   problem, even with the data changed.
 - Checks include edge cases, as in practice problems. The starter fails and the solution passes.
+
+## Gate questions: understanding, not just code
+
+A gate also tests understanding with **10 to 12 questions**, each answered once per sitting. The
+pass mark for the questions is about 80% (`questions 8` of 10). Mix these kinds:
+
+- **Predict the output:** show a short program and ask what it prints. The answer is typed.
+- **What does it cost:** the time or space of a piece of code, in big-O. Multiple choice.
+- **Spot the bug:** which line is wrong, and why. Multiple choice.
+- **Explain why:** the choice that gives the real reason. Wrong choices are the misconceptions
+  people actually hold.
+- **What happens if:** an edge case, an error, or a change to one line.
+
+````text
++++ question | What the loop prints
+--- ask
+What does this print?
+
+```python
+total = 0
+for n in range(1, 5):
+    total += n
+print(total)
+```
+--- answer
+10
+--- why
+range(1, 5) is 1, 2, 3 and 4 — it stops before 5 — and 1 + 2 + 3 + 4 is 10.
+
++++ question | Why a set
+--- ask
+Why is `x in s` faster when `s` is a set than when it is a list?
+--- choice
+Sets are sorted, so Python uses binary search.
+--- choice correct
+A set hashes `x` to find where it would be, so it checks about one place instead of every item.
+--- choice
+Sets are stored in C and lists are not.
+--- why
+A set is a hash table: `x in s` is O(1) on average, while a list has to be scanned item by item.
+````
+
+Rules for questions:
+
+- A multiple-choice question needs at least three choices. The wrong ones are the mistakes
+  people really make, never jokes.
+- A typed answer accepts every sensible spelling: one accepted answer per line under
+  `--- answer`. Case and extra spaces do not matter.
+- Every question has a `--- why` that teaches the point. It is shown after the sitting.
+- Questions never repeat a practice problem.
+
+The gate's header line then reads:
+
+```text
+--- gate
+pass 7
+questions 8
+minutes 120
+```
 
 ## Checking your work
 

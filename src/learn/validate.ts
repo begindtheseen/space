@@ -36,9 +36,13 @@ export function courseProblems(t: LearnTrack): string[] {
     }
     for (const p of l.practice) {
       if (!p.hints.length) bad(p.id, 'a practice problem needs at least one hint')
+      if (t.module && !p.checks.length) bad(p.id, 'no checks')
       if (p.checks.length < 3 && !(p.checks.length && p.checks.every((c) => c.kind === 'output'))) bad(p.id, 'at least three checks, or an output check over several cases')
       if (givesAway(asLesson(l, p))) bad(p.id, "the lesson's example gives this problem away")
     }
+
+    // A module's practice set: its lesson (in the module) is the explanation, so only the practice is held here.
+    if (l.forLesson) continue
 
     if (l.gate) {
       if (l.teach.length <= 40) bad(where, 'a gate says what it covers')

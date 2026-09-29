@@ -83,9 +83,28 @@ export interface LearnExercise {
 export interface LearnGate {
   /** Problems she must pass in one sitting. */
   pass: number
+  /** Questions she must answer right in the same sitting. */
+  questionPass: number
   /** The sitting's length. */
   minutes: number
   problems: LearnExercise[]
+  /** Understanding, not just code: what a line prints, what it costs, which line is the bug. */
+  questions: LearnQuestion[]
+}
+
+/**
+ * A question in a gate, answered once per sitting: either pick from choices
+ * (one or more correct) or type an answer (any of `answers`, compared without
+ * case or surrounding space). `why` is shown after the sitting ends.
+ */
+export interface LearnQuestion {
+  /** `<gate id>.q3`. */
+  id: string
+  title: string
+  ask: string
+  choices?: { text: string; correct: boolean }[]
+  answers?: string[]
+  why: string
 }
 
 export interface LearnLesson {
@@ -108,8 +127,19 @@ export interface LearnLesson {
   schema?: string
   /** Graded problems after the main task, on the same idea with new data. */
   practice: LearnExercise[]
+  /**
+   * Questions after the main task, where code cannot run here (Rust, MATLAB,
+   * CAD) or understanding matters as much as code. Mastery needs each right.
+   */
+  quiz?: LearnQuestion[]
   /** Set on a course's mastery gate, which has no task of its own. */
   gate?: LearnGate
+  /**
+   * A module's practice set (`--- for <lesson id>`): the practice problems and
+   * questions under one lesson of an ORBIT module. It has no task of its own;
+   * the lesson it belongs to is the explanation.
+   */
+  forLesson?: string
 }
 
 /** Where a course sits on the way from first line to expert. */
@@ -147,6 +177,11 @@ export interface LearnTrack {
    * its `@track` language but sits on its subject's shelf and ladder.
    */
   subject?: string
+  /**
+   * `@module cod_py_01_basics`: the practice sets and test of an ORBIT module,
+   * not a Learn to code course. Kept apart from the courses.
+   */
+  module?: string
 }
 
 /** A goal, and the courses that reach it in the order a mentor would teach them. */

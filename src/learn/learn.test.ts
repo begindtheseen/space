@@ -5,7 +5,7 @@ import { givesAway } from './giveaway'
 import { LEARN_LANGS } from './platform'
 import { run as runShell } from '@/lib/shell'
 import { LessonFormatError, parseTrack } from './parse'
-import { asLesson } from './practice'
+import { asLesson, gradedUnits } from './practice'
 import { LEVELS, type LearnLesson } from './types'
 import { noteRefs, notePicture, pictureProblem, splitNotes } from '@/lib/contextNotes'
 
@@ -92,7 +92,8 @@ describe('the tracks', () => {
   })
 
   it('every Terminal and Git lesson passes when its solution is typed, and not before', () => {
-    for (const l of [...tracksFor('bash'), ...tracksFor('git')].flatMap((t) => t.lessons)) {
+    // Every graded unit: the lessons, their practice problems and the gates' problems (a gate itself has no checks).
+    for (const l of [...tracksFor('bash'), ...tracksFor('git')].flatMap((t) => t.lessons.flatMap(gradedUnits))) {
       const start = lessonShell(l)
       const before = gradeRun(l, '', { stdout: '', stderr: '', error: null, shell: start, ms: 0 })
       expect(before.passed, `${l.id} passes with nothing typed`).toBe(false)

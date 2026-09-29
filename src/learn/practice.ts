@@ -20,7 +20,7 @@ import type { LearnExercise, LearnLesson, LearnTrack } from './types'
 
 /** A practice or gate problem as a lesson of its own, so the runner and the grader need nothing new. */
 export function asLesson(lesson: LearnLesson, ex: LearnExercise): LearnLesson {
-  const { schema: _schema, stdin: _stdin, gate: _gate, ...rest } = lesson
+  const { schema: _schema, stdin: _stdin, gate: _gate, quiz: _quiz, forLesson: _for, ...rest } = lesson
   const schema = ex.schema ?? lesson.schema
   return {
     ...rest,
@@ -40,17 +40,24 @@ export function asLesson(lesson: LearnLesson, ex: LearnExercise): LearnLesson {
 /** Every graded thing a lesson holds: its own task, then its practice problems (or a gate's problems). */
 export function gradedUnits(lesson: LearnLesson): LearnLesson[] {
   if (lesson.gate) return lesson.gate.problems.map((p) => asLesson(lesson, p))
-  return [lesson, ...lesson.practice.map((p) => asLesson(lesson, p))]
+  const practice = lesson.practice.map((p) => asLesson(lesson, p))
+  return lesson.forLesson ? practice : [lesson, ...practice]
 }
 
 /** A lesson is mastered when its task and every practice problem have passed; a gate, when it has. */
 export function lessonMastered(lesson: LearnLesson, passed: Record<string, string>): boolean {
-  if (!passed[lesson.id]) return false
-  return lesson.practice.every((p) => !!passed[p.id])
+  // A module's practice set has no task of its own: its practice is all there is.
+  if (!lesson.forLesson && !passed[lesson.id]) return false
+  return lesson.practice.every((p) => !!passed[p.id]) && (lesson.quiz ?? []).every((q) => !!passed[q.id])
 }
 
 export function practiceDone(lesson: LearnLesson, passed: Record<string, string>): number {
-  return lesson.practice.filter((p) => passed[p.id]).length
+  return lesson.practice.filter((p) => passed[p.id]).length + (lesson.quiz ?? []).filter((q) => passed[q.id]).length
+}
+
+/** Practice problems and questions together: what "Practice 3/8" counts. */
+export function practiceTotal(lesson: LearnLesson): number {
+  return lesson.practice.length + (lesson.quiz?.length ?? 0)
 }
 
 /** The course's mastery gate, if it has one (the last lesson, by convention). */
@@ -72,6 +79,10 @@ export interface GateSitting {
   order: string[]
   /** Problems passed in this sitting, with when. */
   passed: Record<string, string>
+  /** Questions answered in this sitting (once each), with when and whether right. */
+  answered?: Record<string, { at: string; ok: boolean }>
+  /** The questions' order this sitting. */
+  qorder?: string[]
   /** Set when she hands it in or the time runs out. */
   endedAt?: string
 }
@@ -98,7 +109,13 @@ export function shuffled<T>(items: T[], seed: number): T[] {
 export function startSitting(gate: LearnLesson, record: GateRecord | undefined, now: Date = new Date()): GateRecord {
   const problems = gate.gate?.problems ?? []
   const seed = now.getTime() ^ ((record?.sittings.length ?? 0) * 2654435761)
-  const sitting: GateSitting = { startedAt: now.toISOString(), order: shuffled(problems.map((p) => p.id), seed), passed: {} }
+  const questions = gate.gate?.questions ?? []
+  const sitting: GateSitting = {
+    startedAt: now.toISOString(),
+    order: shuffled(problems.map((p) => p.id), seed),
+    passed: {},
+    ...(questions.length ? { answered: {}, qorder: shuffled(questions.map((q) => q.id), seed ^ 0x9e3779b9) } : {}),
+  }
   return { sittings: [...(record?.sittings ?? []), sitting] }
 }
 
@@ -122,6 +139,15 @@ export function passInSitting(record: GateRecord, problemId: string, now: Date =
   return { sittings }
 }
 
+/** Records a question's one answer in the running sitting; a second answer to the same question is ignored. */
+export function answerInSitting(record: GateRecord, questionId: string, ok: boolean, now: Date = new Date()): GateRecord {
+  const sittings = record.sittings.slice()
+  const last = sittings[sittings.length - 1]
+  if (!last || last.endedAt || last.answered?.[questionId]) return record
+  sittings[sittings.length - 1] = { ...last, answered: { ...(last.answered ?? {}), [questionId]: { at: now.toISOString(), ok } } }
+  return { sittings }
+}
+
 export function endSitting(record: GateRecord, now: Date = new Date()): GateRecord {
   const sittings = record.sittings.slice()
   const last = sittings[sittings.length - 1]
@@ -135,7 +161,13 @@ export function sittingPassed(gate: LearnLesson, sitting: GateSitting): boolean 
   if (!gate.gate) return false
   const end = Date.parse(sitting.startedAt) + gate.gate.minutes * 60_000
   const inTime = Object.values(sitting.passed).filter((at) => Date.parse(at) <= end).length
-  return inTime >= gate.gate.pass
+  const right = Object.values(sitting.answered ?? {}).filter((a) => a.ok && Date.parse(a.at) <= end).length
+  return inTime >= gate.gate.pass && right >= gate.gate.questionPass
+}
+
+/** Problems passed and questions answered right in a sitting, for the score line. */
+export function sittingScore(sitting: GateSitting): { problems: number; questions: number } {
+  return { problems: Object.keys(sitting.passed).length, questions: Object.values(sitting.answered ?? {}).filter((a) => a.ok).length }
 }
 
 /** When she may start another sitting (null: now). */
@@ -207,7 +239,18 @@ export function coerceGates(raw: unknown): Record<string, GateRecord> {
     for (const s of list as Record<string, unknown>[]) {
       if (!s || !isIso(s.startedAt) || !Array.isArray(s.order) || !s.order.every((o) => typeof o === 'string')) continue
       const passed = s.passed && typeof s.passed === 'object' ? Object.fromEntries(Object.entries(s.passed as Record<string, unknown>).filter(([, v]) => isIso(v))) : {}
-      sittings.push({ startedAt: s.startedAt, order: s.order as string[], passed: passed as Record<string, string>, ...(isIso(s.endedAt) ? { endedAt: s.endedAt } : {}) })
+      const answered: Record<string, { at: string; ok: boolean }> = {}
+      if (s.answered && typeof s.answered === 'object') {
+        for (const [q, a] of Object.entries(s.answered as Record<string, { at?: unknown; ok?: unknown }>)) if (a && isIso(a.at) && typeof a.ok === 'boolean') answered[q] = { at: a.at, ok: a.ok }
+      }
+      const qorder = Array.isArray(s.qorder) && s.qorder.every((o) => typeof o === 'string') ? (s.qorder as string[]) : undefined
+      sittings.push({
+        startedAt: s.startedAt,
+        order: s.order as string[],
+        passed: passed as Record<string, string>,
+        ...(qorder ? { qorder, answered } : {}),
+        ...(isIso(s.endedAt) ? { endedAt: s.endedAt } : {}),
+      })
     }
     out[id] = { sittings: sittings.slice(-50) }
   }
@@ -222,4 +265,20 @@ export function coerceRetests(raw: unknown): Record<string, Retest> {
     out[id] = { step: Math.max(0, Math.min(RETEST_DAYS.length - 1, r.step)), due: r.due, ...(r.rusty === true ? { rusty: true } : {}) }
   }
   return out
+}
+
+/* ── Locks ──────────────────────────────────────────────────────────────── */
+
+/**
+ * What keeps a course locked: the first gate, among the courses before it on
+ * its ladder, that has not been passed. Nothing when it is open. The gate of
+ * the course she is on is always open, so she can test out of what she knows.
+ */
+export function lockedBy(track: LearnTrack, ladder: LearnTrack[], passed: Record<string, string>): { track: LearnTrack; gate: LearnLesson } | undefined {
+  for (const t of ladder) {
+    if (t.id === track.id) return undefined
+    const gate = gateOf(t)
+    if (gate && !passed[gate.id]) return { track: t, gate }
+  }
+  return undefined
 }

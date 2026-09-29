@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { markPracticed, recordRetest, updateGate } from '@/engine/apply'
 import { migrateState, newLearnerState } from '@/engine/state'
-import { LessonFormatError, parseTrack } from './parse'
+import { LessonFormatError, answerMatches, parseTrack } from './parse'
 import {
   GATE_COOLDOWN_MS,
   RETEST_DAYS,
+  answerInSitting,
   asLesson,
   courseMastered,
   dueRetests,
@@ -49,8 +50,29 @@ ${problem('practice', 1)}${problem('practice', 2)}
 Everything about print.
 --- gate
 pass 4
+questions 1
 minutes 30
-${[1, 2, 3, 4, 5].map((n) => problem('problem', n)).join('')}`
+${[1, 2, 3, 4, 5].map((n) => problem('problem', n)).join('')}
++++ question | What it prints
+--- ask
+What does \`print(2 + 3)\` print?
+--- answer
+5
+--- why
+2 + 3 is 5.
+
++++ question | Why a set
+--- ask
+Why is membership fast in a set?
+--- choice
+It is sorted.
+--- choice correct
+It hashes.
+--- choice
+It is small.
+--- why
+Hashing finds the slot directly.
+`
 
 const track = parseTrack(SRC, 'test')
 const [lesson, gate] = track.lessons as [NonNullable<(typeof track.lessons)[0]>, NonNullable<(typeof track.lessons)[0]>]
@@ -72,11 +94,23 @@ describe('practice and gate blocks in the lesson format', () => {
     expect(gradedUnits(gate)).toHaveLength(5)
   })
 
+  it('reads questions: typed answers and choices, each with its why', () => {
+    const [typed, choice] = gate.gate!.questions
+    expect(typed).toMatchObject({ id: 't-gate.q1', answers: ['5'] })
+    expect(answerMatches(typed!, '  5 ')).toBe(true)
+    expect(answerMatches(typed!, '6')).toBe(false)
+    expect(choice!.choices!.map((c) => c.correct)).toEqual([false, true, false])
+    expect(gate.gate!.questionPass).toBe(1)
+    expect(() => parseTrack(SRC.replace('--- why\nHashing finds the slot directly.\n', ''), 'x')).toThrow(/why/)
+    expect(() => parseTrack(SRC.replace('--- choice correct\nIt hashes.', '--- choice\nIt hashes.'), 'x')).toThrow(/right choice/)
+    expect(() => parseTrack(SRC.replace('questions 1\n', ''), 'x')).toThrow(/questions N/)
+  })
+
   it('refuses a gate that could not be passed or is too small, and problems outside a gate', () => {
     expect(() => parseTrack(SRC.replace('pass 4', 'pass 6'), 'x')).toThrow(LessonFormatError)
     expect(() => parseTrack(SRC.replace('minutes 30', 'minutes 2'), 'x')).toThrow(/minutes/)
-    expect(() => parseTrack(SRC.replace(problem('problem', 5), ''), 'x')).toThrow(/at least five/)
-    expect(() => parseTrack(SRC.replace(problem('practice', 1), problem('problem', 1)), 'x')).toThrow(/belongs in a gate/)
+    expect(() => parseTrack(SRC.replace(problem('problem', 5), ''), 'x')).toThrow(/at least five problems/)
+    expect(() => parseTrack(SRC.replace(problem('practice', 1), problem('problem', 1)), 'x')).toThrow(/problem" belongs in a gate/)
     expect(() => parseTrack(SRC.replace('+++ practice | Problem 2\n--- task\nPrint 2.\n', '+++ practice | Problem 2\n'), 'x')).toThrow(/needs a task/)
   })
 })
@@ -120,6 +154,12 @@ describe('mastery', () => {
     const late = passInSitting(s.learnGates['t-gate']!, sitting.order[3]!, at(31))
     expect(sittingPassed(gate, late.sittings[0]!)).toBe(false)
     s = updateGate(s, gate, (r) => passInSitting(r!, sitting.order[3]!, at(20)), at(20))
+    // Four problems are not enough without the question mark as well.
+    expect(s.learn['t-gate']).toBeUndefined()
+    s = updateGate(s, gate, (r) => answerInSitting(r!, 't-gate.q2', false, at(21)), at(21))
+    s = updateGate(s, gate, (r) => answerInSitting(r!, 't-gate.q2', true, at(22)), at(22))
+    expect(s.learn['t-gate'], 'a second answer to the same question does not count').toBeUndefined()
+    s = updateGate(s, gate, (r) => answerInSitting(r!, 't-gate.q1', true, at(23)), at(23))
     expect(s.learn['t-gate']).toBeTruthy()
   })
 

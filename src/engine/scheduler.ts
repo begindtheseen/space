@@ -14,6 +14,7 @@
 
    Everything below is derived from those three rules.
    ========================================================================== */
+import { testLocks } from '@/learn/modules'
 import type { Module } from '@/curriculum/types'
 import { itemId } from '@/curriculum/types'
 import { Dag, MASTERY_THRESHOLD } from './graph'
@@ -182,7 +183,8 @@ export function rankFrontier(
   mastery: ReadonlyMap<string, number>,
   now: Date = new Date(),
 ): Candidate[] {
-  const frontier = dag.frontier(mastery)
+  // A module behind an unpassed module test is not ready, whatever its prerequisites' mastery says.
+  const frontier = dag.frontier(mastery).filter((m) => !testLocks(m, state.learn).length)
   const maxUnlocks = Math.max(1, ...frontier.map((m) => dag.descendants(m.id).size))
 
   const out = frontier.map((m) => {
