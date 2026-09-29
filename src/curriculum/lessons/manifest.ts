@@ -987,7 +987,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-when-you-do-not-know",
       "title": "Rebuilding a result you cannot recall",
-      "minutes": 23,
+      "minutes": 24,
       "covers": [
         "the answering standard: state assumptions, write the equation, interpret physically, sanity check"
       ],
@@ -996,7 +996,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-gain-phase-and-delay-margin",
       "title": "Gain, phase and delay margin",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "stability margins: gain margin, phase margin and delay margin, what each means physically and why you need all three"
       ],
@@ -1005,7 +1005,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-reading-margins-and-the-nyquist-criterion",
       "title": "Reading margins off a plot, and when the numbers lie",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "reading margins from a Bode plot and from a Nyquist plot; the Nyquist criterion",
         "why a large gain margin with a small phase margin is still a fragile design"
@@ -1024,7 +1024,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-the-linear-kalman-filter-from-memory",
       "title": "The linear Kalman filter, from memory",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "the Kalman filter in linear form: the predict and update equations and what each term does"
       ],
@@ -1033,7 +1033,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-the-ekf-jacobians-and-divergence",
       "title": "The EKF: Jacobians, where it fails, and how it diverges",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "the extended Kalman filter: Jacobians, where linearisation fails, and divergence modes"
       ],
@@ -1042,7 +1042,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-the-ukf-sigma-points-and-cost",
       "title": "The UKF: sigma points, and when it earns its cost",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "the unscented Kalman filter: sigma points, why it exists and when it is worth the cost"
       ],
@@ -1051,7 +1051,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-tuning-and-consistency-nees-and-nis",
       "title": "Tuning and consistency: Q, R, NEES and NIS",
-      "minutes": 20,
+      "minutes": 24,
       "covers": [
         "filter tuning and consistency: process noise, measurement noise, NEES and NIS"
       ],
@@ -1060,7 +1060,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-wahba-stated-and-solved",
       "title": "Wahba's problem, stated and solved four ways",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "attitude determination: Wahba’s problem stated formally",
         "solutions to Wahba: Davenport’s q-method, the SVD method, QUEST, and TRIAD as the degenerate two-vector case"
@@ -1070,7 +1070,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-the-multiplicative-quaternion-ekf",
       "title": "The multiplicative quaternion EKF, and the three-dimensional error",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "the multiplicative quaternion EKF and why the error state is three-dimensional"
       ],
@@ -1079,7 +1079,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-strapdown-imu-bias-states-and-gyro-propagation",
       "title": "Strapdown IMU integration, bias states and gyro propagation",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "strapdown IMU integration, bias states and gyro propagation"
       ],
@@ -1088,7 +1088,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-orbit-determination-at-the-whiteboard",
       "title": "Orbit determination: observability, batch and sequential",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "orbit determination: observability, batch least squares versus sequential filtering, measurement types"
       ],
@@ -1110,7 +1110,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-variable-mass-and-thrust",
       "title": "Variable-mass mechanics and the thrust equation",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "variable-mass Newtonian mechanics and the thrust term as momentum flux plus a pressure term"
       ],
@@ -1119,7 +1119,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-tsiolkovsky",
       "title": "Deriving Tsiolkovsky, and what it hides",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "deriving Tsiolkovsky from the variable-mass equation"
       ],
@@ -1128,7 +1128,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-planar-powered-flight",
       "title": "Planar powered flight in three degrees of freedom",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "planar 3-DOF powered flight: the velocity, flight-path-angle, position and mass equations"
       ],
@@ -1155,7 +1155,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-dimensional-analysis",
       "title": "Dimensional analysis as a live error check",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "dimensional analysis as a live error check"
       ],
@@ -1164,7 +1164,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-the-fermi-method",
       "title": "The Fermi method: decompose, bound, multiply, check",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "Fermi estimation method: decompose, bound each factor, multiply, sanity check, state uncertainty"
       ],
