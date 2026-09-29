@@ -153,7 +153,7 @@ You build curves, span surfaces between them, trim them and stitch them together
 
 ## The outer mold line
 
-The **outer mold line** — the OML, in American documents usually spelled *outer mold line* — is the outside surface of the vehicle: the skin the air touches. On a rocket it is the barrel of each stage, the interstage, the fairing and the nose, plus everything that sticks out of them, such as cable raceways and fins. The matching inside surface of the structure is the **inner mold line** (IML). The word comes from shipbuilding, where full-size templates of a hull's shape were called molds.
+The **outer mold line** — the OML; British documents spell it *outer mould line* — is the outside surface of the vehicle: the skin the air touches. On a rocket it is the barrel of each stage, the interstage, the fairing and the nose, plus everything that sticks out of them, such as cable raceways and fins. The matching inside surface of the structure is the **inner mold line** (IML). The word comes from shipbuilding, where full-size templates of a hull's shape were called molds.
 
 Why does it get its own name? Because for the airflow, *only* the OML exists. Nothing inside it can change the pressure on the vehicle or the heat going into it.
 

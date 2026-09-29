@@ -113,7 +113,7 @@ Usually it can. But if the change [[splits a face in two|topology-split]], *merg
 Commercial systems — NX, CATIA, Creo, SolidWorks, Onshape — have spent decades on clever matching, and they get it right most of the time. None of them can be right every time, because sometimes there is no single right answer: if one face became two, which one did you mean? The open-source program [[FreeCAD|freecad]] was long known for how often it tripped on this, and its developers worked on it for years. The defense is the same everywhere, and it is the list above: reference planes and the origin, which never change, instead of faces and edges, which can.
 
 ::: example Thickening the plate: two loud breaks and one quiet one
-Take the robust bracket from the last example, but with three shortcuts in it. The plate is $6\,\mathrm{mm}$ thick. The wheel holes were cut **blind, $6\,\mathrm{mm}$ deep**, which went exactly through. Sketch 3, which places a small cable-tie hole, was dimensioned $8\,\mathrm{mm}$ from the edge of **Fillet 1** where the upright meets the plate. And the upright was sketched on the plate's top face.
+Take the robust bracket from the last example, but with three shortcuts in it. The plate is $6\,\mathrm{mm}$ thick. The wheel holes were cut **blind, $6\,\mathrm{mm}$ deep**, which went exactly through. Sketch 3, which places the wheel holes, was dimensioned $8\,\mathrm{mm}$ from the edge of **Fillet 1** where the upright meets the plate. And the upright was sketched on the plate's top face.
 
 A stress analysis asks for a stiffer plate: $6\,\mathrm{mm}$ becomes $8\,\mathrm{mm}$.
 
@@ -121,7 +121,7 @@ A stress analysis asks for a stiffer plate: $6\,\mathrm{mm}$ becomes $8\,\mathrm
 
 **Fine, as intended.** The upright's sketch sits on the top face of the plate, so the upright moves up with it: its base goes from $6$ to $8\,\mathrm{mm}$ above the bottom, and if it is $10\,\mathrm{mm}$ tall its top goes from $6 + 10 = 16$ to $8 + 10 = 18\,\mathrm{mm}$. Whether that is right depends on the intent. If the wheel must sit at exactly $16\,\mathrm{mm}$, the upright should have been extruded *up to* a datum plane at $16\,\mathrm{mm}$ instead.
 
-**The loud ones.** Next, for a simplified analysis model, someone suppresses Fillet 1. Sketch 3's dimension now points to an edge that does not exist. The sketch reports a missing reference, the cable-tie hole fails, and the pattern that copies it fails too — three red features from one suppressed fillet. Dimensioning the hole from the Front plane would have avoided all three.
+**The loud ones.** Next, for a simplified analysis model, someone suppresses Fillet 1. Sketch 3's dimension now points to an edge that does not exist. The sketch reports a missing reference, Hole 1 fails, and the pattern that copies it fails too — three red features from one suppressed fillet. Dimensioning the hole from the Front plane would have avoided all three.
 :::
 
 ::: note Why "reference the planes" works
