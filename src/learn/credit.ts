@@ -20,7 +20,8 @@
    ========================================================================== */
 import { CREDIT } from './credit-map'
 import { findLesson, ladderOf, trackFor } from './index'
-import { moduleTest, testLocks } from './modules'
+import { lessonsFor } from '@/curriculum'
+import { MODULE_TRACKS, moduleTest, testLocks } from './modules'
 import { courseMastered, gateOf, lessonMastered, lockedBy } from './practice'
 import type { LearnLesson, LearnTrack } from './types'
 
@@ -31,6 +32,12 @@ export interface CreditMap {
   modules: Record<string, string[]>
   /** A Learn course → the modules whose tests together cover all of it. */
   courses: Record<string, string[]>
+  /**
+   * `module::lesson` → Learn lessons that teach most of it, and what the module lesson adds. When she has
+   * mastered those, the lesson says what she already knows and what is new, so she reads only the new part.
+   * It still counts only when its practice passes: that is the proof of the new part.
+   */
+  overlap?: Record<string, { learn: string[]; newHere: string }>
 }
 
 /** The Learn lessons that give a module lesson its credit, when she has mastered all of them. */
@@ -42,14 +49,43 @@ export function lessonCredit(moduleId: string, lessonId: string, passed: Record<
   return lessons as LearnLesson[]
 }
 
-/** Every module lesson (`module::lesson`) that counts as read through Learn to code. */
+/** Every module lesson (`module::lesson`) that counts as read: mastered in Learn to code, or in a module whose test she passed. */
 export function creditedLessonKeys(passed: Record<string, string>, map: CreditMap = CREDIT): Set<string> {
   const out = new Set<string>()
   for (const key of Object.keys(map.lessons)) {
     const [m, l] = key.split('::')
     if (m && l && lessonCredit(m, l, passed, map)) out.add(key)
   }
+  // Testing out of a module is proof of all of it: every one of its lessons counts.
+  for (const t of MODULE_TRACKS) {
+    const test = t.module ? moduleTest(t.module) : undefined
+    if (!t.module || !test || !passed[test.id]) continue
+    for (const l of lessonsFor(t.module)) out.add(`${t.module}::${l.id}`)
+  }
   return out
+}
+
+/** Whether a module lesson counts as read without reading it (see creditedLessonKeys). */
+export function lessonCounted(moduleId: string, lessonId: string, passed: Record<string, string>, map: CreditMap = CREDIT): boolean {
+  if (lessonCredit(moduleId, lessonId, passed, map)) return true
+  const test = moduleTest(moduleId)
+  return !!test && !!passed[test.id]
+}
+
+/** What she already knows of a module lesson from Learn to code, and what it adds, once the overlapping lessons are mastered. */
+export function lessonOverlap(moduleId: string, lessonId: string, passed: Record<string, string>, map: CreditMap = CREDIT): { lessons: LearnLesson[]; newHere: string } | null {
+  const o = map.overlap?.[`${moduleId}::${lessonId}`]
+  if (!o?.learn.length) return null
+  const lessons = o.learn.map((id) => findLesson(id)?.lesson)
+  if (lessons.some((l) => !l || !lessonMastered(l, passed))) return null
+  return { lessons: lessons as LearnLesson[], newHere: o.newHere }
+}
+
+/** How much of a module she already knows from Learn to code: lessons covered whole or mostly, of all its lessons. */
+export function moduleReadiness(moduleId: string, passed: Record<string, string>, map: CreditMap = CREDIT): { known: number; total: number } {
+  const lessons = lessonsFor(moduleId)
+  const known = lessons.filter((l) => lessonCredit(moduleId, l.id, passed, map) || lessonOverlap(moduleId, l.id, passed, map)).length
+  return { known, total: lessons.length }
 }
 
 /** The Learn courses that pass a module's test for her, when she has mastered all of them. */

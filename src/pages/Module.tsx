@@ -19,7 +19,7 @@
    ========================================================================== */
 import { PLACEMENT_SKILLS } from '@/curriculum/placement'
 import { moduleTest, practiceFor } from '@/learn/modules'
-import { creditedLessonKeys, lessonCredit, moduleCredit, moduleLocks } from '@/learn/credit'
+import { creditedLessonKeys, lessonCounted, lessonCredit, lessonOverlap, moduleCredit, moduleLocks, moduleReadiness } from '@/learn/credit'
 import type { LearnLesson } from '@/learn/types'
 import { GateScreen, PracticeSection } from './LearnMastery'
 import { testedOutKeys } from '@/engine/placement'
@@ -124,7 +124,7 @@ function statusOf(state: LearnerState, module: Module, now: Date): Status {
   return {
     lessons: lessons.length,
     // A lesson mastered in Learn to code counts as read: she does not have to learn it twice.
-    lessonsRead: lessons.filter((l) => !!state.read[lessonKey(module.id, l.id)] || !!lessonCredit(module.id, l.id, state.learn)).length,
+    lessonsRead: lessons.filter((l) => !!state.read[lessonKey(module.id, l.id)] || lessonCounted(module.id, l.id, state.learn)).length,
     lessonMinutes: lessons.reduce((a, l) => a + l.minutes, 0),
     atoms: atoms.length,
     cards: module.cards?.length ?? 0,
@@ -338,10 +338,18 @@ function ModuleTestCard({ module, test, passed }: { module: Module; test: LearnL
       </div>
     )
   }
+  const ready = moduleReadiness(module.id, state.learn)
+  const suggest = !passed && ready.total > 0 && ready.known / ready.total >= 0.6
   return (
     <div className={passed ? 'lm-win' : 'lm-gate-result'} style={{ marginBottom: 'var(--gap)' }}>
       {passed ? <IconCheck size={16} /> : null}
       <span className="grow">
+        {suggest ? (
+          <>
+            <strong>You are probably ready to test out.</strong> You already know {ready.known} of this module’s {ready.total} lessons, wholly or mostly, from
+            Learn to code. Pass the test and the whole module counts.{' '}
+          </>
+        ) : null}
         <strong>Module test{passed ? ': passed' : ''}.</strong>{' '}
         {g.problems.length ? `${g.problems.length} problems and ` : ''}
         {g.questions.length} questions on how and why it works, in one {g.minutes}-minute sitting.
@@ -580,6 +588,7 @@ function Learn({
           <div className="sect" style={{ paddingTop: 6, paddingBottom: 6 }}>
             {lessons.map((l, i) => {
               const fromLearn = credited.has(lessonKey(module.id, l.id))
+              const known = !fromLearn && !!lessonOverlap(module.id, l.id, state.learn)
               const done = !!state.read[lessonKey(module.id, l.id)] || fromLearn
               const skipped = !done && testedOut.has(lessonKey(module.id, l.id))
               return (
@@ -597,7 +606,9 @@ function Learn({
                     <span className="lesson__meta">
                       {l.minutes} min
                       {fromLearn && !state.read[lessonKey(module.id, l.id)]
-                        ? ' · mastered in Learn to code'
+                        ? ' · counts as read'
+                        : known && !done
+                          ? ' · mostly known from Learn to code'
                         : skipped
                           ? ' · tested out'
                           : !done && firstUnread?.id === l.id
@@ -1097,6 +1108,8 @@ function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }
   const practiceSet = practiceFor(module.id, lesson.id)
   const { state: learner } = useLearner()
   const fromLearn = lessonCredit(module.id, lesson.id, learner.learn)
+  const testedOutOfModule = !fromLearn && lessonCounted(module.id, lesson.id, learner.learn)
+  const overlap = lessonOverlap(module.id, lesson.id, learner.learn)
   const { state, setState } = useLearner()
   const lessons = module.lessons ?? []
   const index = lessons.findIndex((l) => l.id === lesson.id)
@@ -1198,6 +1211,26 @@ function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }
         </div>
       </div>
 
+      {!fromLearn && testedOutOfModule ? (
+        <div className="lm-win" style={{ marginBottom: 'var(--gap)' }}>
+          <IconCheck size={16} />
+          <span className="grow">You passed this module’s test, so this lesson counts as read and its practice is optional. It is here whenever you want it.</span>
+        </div>
+      ) : null}
+      {!fromLearn && !testedOutOfModule && overlap ? (
+        <div className="lm-gate-result" style={{ marginBottom: 'var(--gap)' }}>
+          <span className="grow">
+            <strong>You know most of this already</strong> from Learn to code:{' '}
+            {overlap.lessons.map((l, i) => (
+              <span key={l.id}>
+                {i ? ', ' : ''}
+                <a href={`#/learn/${l.id}`}>{l.title}</a>
+              </span>
+            ))}
+            . <strong>New here:</strong> {overlap.newHere} Read for those, then pass the practice below and the lesson counts.
+          </span>
+        </div>
+      ) : null}
       {fromLearn ? (
         <div className="lm-win" style={{ marginBottom: 'var(--gap)' }}>
           <IconCheck size={16} />
@@ -1242,7 +1275,7 @@ function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }
 
       {body !== null && practiceLangs(module).length ? <TryItHere langs={practiceLangs(module)} saveKey={`try:${module.id}`} /> : null}
 
-      {body !== null && practiceSet ? <PracticeSection key={practiceSet.id} lesson={practiceSet} optional={!!fromLearn} /> : null}
+      {body !== null && practiceSet ? <PracticeSection key={practiceSet.id} lesson={practiceSet} optional={!!fromLearn || testedOutOfModule} /> : null}
 
       <div className="reader__nav">
         <Button variant="ghost" size="md" onClick={() => go(prev)} disabled={!prev}>
