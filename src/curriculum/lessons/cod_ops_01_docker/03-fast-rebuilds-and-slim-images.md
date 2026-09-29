@@ -20,7 +20,7 @@ For each instruction, Docker asks: "Have I built exactly this step before, on to
 
 What counts as "exactly this step" depends on the instruction:
 
-- For `RUN`, `ENV`, `WORKDIR` and most others: the text of the instruction (with any `ARG` and `ENV` values filled in) and the parent layer.
+- For `RUN`, `ENV`, `WORKDIR` and most others: the text of the instruction (with any `ARG` and `ENV` values filled in) and the parent layer. Every `RUN` after an `ARG` also receives that argument as an environment variable, and its value is part of the step's key, so changing a `--build-arg` makes every later `RUN` miss the cache even when its text never mentions the argument. Declare an `ARG` just before the first step that needs it.
 - For `COPY`: also a **[[checksum|checksum-idea]]** of the contents of every file being copied. Edit one byte in one copied file and the checksum changes, so the `COPY` step misses the cache.
 
 Put those together and you get the **cascade**: once one step misses, every step after it runs again, because each one's parent layer is new.
