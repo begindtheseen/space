@@ -482,7 +482,7 @@ function Table({ rows }: { rows: string[] }) {
 function inline(src: string): ReactNode[] {
   const out: ReactNode[] = []
   const re =
-    /(\\\$)|(`[^`]+`)|(\$(?!\s)(?:[^$\n\\]|\\.)+?(?<!\s)\$)|(\[\[[^\]|\n]+\|[a-z0-9][a-z0-9-]*\]\])|(\*\*[^*]+\*\*)|(\*[^*\s][^*]*\*)|(\[[^\]]+\]\([^)]+\))/g
+    /(\\[$*_])|(`[^`]+`)|(\$(?!\s)(?:[^$\n\\]|\\.)+?(?<!\s)\$)|(\[\[[^\]|\n]+\|[a-z0-9][a-z0-9-]*\]\])|(\*\*[^*]+\*\*)|(\*[^*\s][^*]*\*)|(\[[^\]]+\]\([^)]+\))/g
   let last = 0
   let m: RegExpExecArray | null
   let key = 0
@@ -491,8 +491,9 @@ function inline(src: string): ReactNode[] {
     if (m.index > last) out.push(src.slice(last, m.index))
     const tok = m[0]
 
-    if (tok === '\\$') {
-      out.push('$')
+    // A backslash before $, * or _ keeps the character itself (Σ\* is Σ*, not the start of italics).
+    if (tok.length === 2 && tok.startsWith('\\')) {
+      out.push(tok[1]!)
     } else if (tok.startsWith('`')) {
       out.push(
         <code className="md__code" key={key++}>

@@ -77,3 +77,11 @@ describe('lesson video', () => {
     expect(html).toContain('After.')
   })
 })
+
+describe('backslash escapes', () => {
+  it('keeps an escaped star, underscore or dollar as the character itself', () => {
+    const html = renderToStaticMarkup(<Markdown>{'Σ\\* is every string; a\\*b\\* is not italic; 5\\$ and snake\\_case'}</Markdown>)
+    expect(html).toContain('Σ* is every string; a*b* is not italic; 5$ and snake_case')
+    expect(html).not.toContain('<em>')
+  })
+})
