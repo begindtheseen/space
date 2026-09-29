@@ -47,7 +47,7 @@ Roles add a clearance line because the work itself touches classified material. 
 Two things never happen. Holding a clearance does not replace ITAR eligibility. And meeting ITAR eligibility gets you no closer to a clearance if citizenship is what stands in the way. They are two separate gates, and a clearance-required role asks you to pass both.
 
 ::: key
-Some GNC-org roles, notably on the SRE and Starshield side, list the ability and willingness to obtain and maintain a Top Secret clearance. Clearance requires US citizenship and a detailed background investigation.
+Some GNC-org roles, notably on the SRE and Starshield side, list the ability and willingness to obtain and maintain a Top Secret clearance. Clearance generally requires US citizenship and a detailed background investigation.
 
 A security clearance is a separate government process (SF-86, a background investigation, adjudication, and continuous evaluation afterward), not an ITAR requirement. It is generally limited to US citizens — a narrower group than the full set of US persons — and it is required in addition to ordinary export-control eligibility, never instead of it.
 :::

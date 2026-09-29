@@ -133,7 +133,7 @@ The flow rate cancels. That is the rocket equation: the propellant needed for a 
 :::
 
 ::: key Engine-out behavior of explicit guidance
-Recompute $t_{go}$ with the reduced thrust and mass flow, re-solve the steering, burn longer on a flatter profile. No special case in the algorithm — the work is in the reserve and fallback-target decision logic.
+Recompute $t_{go}$ with the reduced thrust and mass flow, re-solve the steering, burn longer on a gentler acceleration profile (slower velocity build-up). No special case in the algorithm — the work is in the reserve and fallback-target decision logic.
 :::
 
 ::: example How much reserve a failure actually consumes

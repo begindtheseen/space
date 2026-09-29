@@ -129,7 +129,7 @@ The **decomposition** of a chart or superstate says how its substates relate. Th
 **Parallel (AND) decomposition** makes every substate active at the same time. When the parent is active, all its parallel substates are active; when it is entered, all of them are entered. So there is nothing to choose, and parallel states need no default transitions. They have **dashed borders**, and there are no transitions between them: you cannot "go" from one to another, because you are already in both.
 
 ::: key
-Parallel versus exclusive states, with a spacecraft example: Exclusive (OR): the vehicle is in exactly one flight phase at a time. Parallel (AND): a thermal supervisor, a power supervisor and a fault monitor all run simultaneously alongside the phase machine.
+Parallel versus exclusive states, with a spacecraft example: Exclusive (OR): the vehicle is in exactly one flight phase at a time. Parallel (AND): a thermal supervisor, a power supervisor and a fault monitor are all active alongside the phase machine, executing one after another in execution order each step.
 :::
 
 A typical flight chart mixes both. The top level is parallel, with one state per job. Inside each, the states are exclusive:

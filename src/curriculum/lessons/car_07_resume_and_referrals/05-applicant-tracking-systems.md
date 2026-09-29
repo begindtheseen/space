@@ -13,7 +13,7 @@ The first four lessons of this module assumed a person eventually reads your wor
 The word that matters most is *silently*. A **[[parsing failure|silent-failure]]** gives you no error message to fix. It produces an application that goes nowhere, with no reason given. From where you sit, it looks the same as an application that was read carefully and turned down. The only defense against a failure nobody will tell you about is not causing it — which means formatting the file with the same care you gave its content.
 
 ::: key
-Applicant tracking systems parse plain document structure. Multi-column layouts commonly interleave text, tables lose their alignment, and images contribute nothing. A parsing failure is an automatic rejection that you never learn about.
+Applicant tracking systems parse plain document structure. Multi-column layouts commonly interleave text, tables lose their alignment, and images contribute nothing. A parsing failure can cause a rejection that you never learn about.
 :::
 
 The rest of this lesson takes that key apart, one piece at a time: headings, columns and tables, images, the PDF file itself, and a self-test you can run in two minutes.

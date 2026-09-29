@@ -60,12 +60,12 @@ Recall Sr. GNC Engineer's basic qualifications from the first lesson. It offers 
 The senior posting counts professional experience in GNC or software engineering **regardless of employer**. Years earned at Firefly or Stoke are counted, not only years at SpaceX. That is the whole mechanism of Path 3.
 
 ::: key
-Path 3 — NewSpace ladder: Varda, Stoke, Firefly, Astra, True Anomaly, Impulse, Relativity and Intuitive Machines hire GNC with looser credential gates. Two to three years there converts into the 5+ years professional GNC experience or the 7+ years in lieu of a degree that SpaceX senior postings accept.
+Path 3 — NewSpace ladder: Varda, Stoke, Firefly, Astra, True Anomaly, Impulse, Relativity and Intuitive Machines hire GNC with looser credential gates. Two to three years there counts toward the 5+ years professional GNC experience or the 7+ years in lieu of a degree that SpaceX senior postings accept.
 :::
 
 ### Reading "converts" carefully
 
-Read "converts into" as **adds up toward**, not as a magic exchange rate. Two to three years is not five, and it is not seven. It is a real, substantial, countable piece of either total.
+Read "counts toward" as **adds up toward**, not as a magic exchange rate. Two to three years is not five, and it is not seven. It is a real, substantial, countable piece of either total.
 
 Those years are often worth more per year than the calendar suggests. A small team usually hands each engineer broader **scope** — a wider slice of the work — across guidance, estimation and simulation than one narrow corner of a much larger program would. But how much of the 5-year or 7-year total they supply depends on what other experience you bring with you.
 

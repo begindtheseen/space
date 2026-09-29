@@ -28,7 +28,7 @@ Dynamic pressure and mass, primarily — they set aerodynamic stability and cont
 :::
 
 ::: key Flex and slosh in the control loop
-Bending modes are handled by notch or roll-off filtering with attention to the sensor location relative to the mode shape (a node on the wrong side inverts the sign). Slosh is handled by bandwidth separation and by not exciting it, because notching a mode whose frequency migrates with fill level is fragile.
+Bending modes are handled by notch or roll-off filtering with attention to the sensor location relative to the mode shape (a displacement sensor across a node, or a rate gyro across an antinode where the slope changes sign, sees the mode with inverted sign). Slosh is handled by bandwidth separation and by not exciting it, because notching a mode whose frequency migrates with fill level is fragile.
 :::
 
 ## Two tests, both passing

@@ -197,7 +197,7 @@ Every tool in this module can be wrong. A code generator could mistranslate a bl
 In civil aviation, software is certified under **[[DO-178C|do-178c-levels]]**. It grades software by how bad a failure could be, from **Level A** (a failure could be catastrophic, such as loss of the aircraft) down to Level E (no safety effect). The higher the level, the more verification objectives apply, such as MC/DC coverage at Level A. A companion document, **[[DO-330|do-330]]**, "Software Tool Qualification Considerations", says how to qualify tools.
 
 ::: key
-What does tool qualification mean, and why does it matter? Under DO-330 and DO-178C, if you rely on a tool to replace or reduce a verification activity, you must show the tool does its job correctly. A qualification kit supplies the evidence so that, for example, Embedded Coder output does not have to be re-verified from scratch.
+What does tool qualification mean, and why does it matter? Under DO-330 and DO-178C, if you rely on a tool to replace or reduce a verification activity, you must show the tool does its job correctly. A qualification kit supplies the evidence; in practice teams qualify the verification tools that check Embedded Coder output (code inspection, SIL equivalence tests, coverage) rather than the code generator itself.
 :::
 
 ### Development tools and verification tools

@@ -177,7 +177,7 @@ The solvers module ended with the golden rule: a model destined for flight code 
 **Only blocks that support code generation.** Some blocks exist only for simulation. The **[[Interpreted MATLAB Function|interpreted-fcn]]** block calls MATLAB itself at each step, and there is no MATLAB on a flight computer, so it cannot become C. Signals whose size can change without a fixed upper bound cannot be given fixed memory. Viewing blocks such as Scopes usually just produce no code, but their settings are worth checking before a build.
 
 ::: key
-Name three model constructs that block ERT code generation: continuous states with a variable-step solver; algebraic loops; and blocks with no code-generation support such as the Interpreted MATLAB Function, scopes with certain settings, and unbounded variable-size signals.
+Name three model constructs that block ERT code generation: continuous states with a variable-step solver; algebraic loops; and blocks with no code-generation support such as the Interpreted MATLAB Function, and unbounded variable-size signals.
 :::
 
 ::: example Auditing a model before pressing Build

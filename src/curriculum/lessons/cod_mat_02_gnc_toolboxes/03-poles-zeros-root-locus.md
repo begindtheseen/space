@@ -144,7 +144,7 @@ G = (1 - s)/((s + 1)*(s + 2));
 A system with a zero in the right half plane is called **[[non-minimum phase|wrong-way-aircraft]]**. The name comes from the phase. On a frequency sweep (lesson 4's subject), a zero at $s = -a$ and a zero at $s = +a$ have exactly the same size at every frequency: both grow as the frequency rises. But the left-half-plane zero pushes the phase *ahead*, up to $+90^\circ$, while the right-half-plane zero drags it *behind*, down to $-90^\circ$. At the frequency $\omega = a$, both have grown the gain by a factor of $\sqrt{2}$; one has added $+45^\circ$ and the other $-45^\circ$. More gain and more lag at the same time is the worst combination for a feedback loop.
 
 ::: key
-A non-minimum-phase zero is a zero in the right half plane, which adds phase lag while increasing gain and puts a hard limit on achievable bandwidth. Sensor placement relative to a flexible mode node can invert the initial response, producing exactly this.
+A non-minimum-phase zero is a zero in the right half plane, which adds phase lag while increasing gain and puts a hard limit on achievable bandwidth. Sensor placement relative to the mode shape of a flexible mode can invert the initial response, producing exactly this.
 :::
 
 **Bandwidth** here means roughly how fast the loop is allowed to respond. You cannot tune the limit away: no controller can undo the wrong-way start, because it is in the plant. A common rule of thumb keeps the loop's crossover frequency, where its gain falls through 1 (lesson 4), below about half the zero's frequency.

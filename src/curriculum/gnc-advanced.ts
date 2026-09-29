@@ -136,7 +136,7 @@ export const GNC_ADVANCED: Module[] = [
 
    d_k = x_{k+1} - x_k - (h/6)(f_k + 4 f_mid + f_{k+1})
 
-3. Sample the exact solution of xdot = -x at the knots and plot max|d| against h on log axes for both schemes. Read the slope off the plot. You should measure a **local** order of 3 for trapezoid and 5 for Hermite-Simpson, which is the global order of 2 and 4 respectively.
+3. Sample the exact solution of xdot = -x at the knots and plot max|d| against h on log axes for both schemes. Read the slope off the plot. You should measure a **local** order of 3 for trapezoid and 5 for Hermite-Simpson, which correspond to global orders of 2 and 4.
 
 Success: both slopes come out right, and you can explain in one sentence why an NLP that drives every d_k to zero is solving the differential equation.`,
         starter: `import numpy as np
@@ -467,7 +467,7 @@ Success: a short written comparison whose conclusion you could defend in an inte
       {
         id: 'c_m42_bolza',
         front: 'Bolza, Mayer and Lagrange cost forms',
-        back: 'Bolza: J = phi(x(tf), tf) + integral of L dt. Mayer: terminal term only. Lagrange: integral only. Any one converts to any other by adding a state whose derivative is L.',
+        back: 'Bolza: J = phi(x(tf), tf) + integral of L dt. Mayer: terminal term only. Lagrange: integral only. Bolza or Lagrange converts to Mayer by adding a state whose derivative is L; Mayer converts to Lagrange with L = (dphi/dx)^T f + dphi/dt.',
         formula: true,
       },
       {
@@ -540,7 +540,7 @@ Success: a short written comparison whose conclusion you could defend in an inte
       {
         id: 'c_m42_scaling',
         front: 'The two standard fixes for a trajectory NLP that will not converge',
-        back: 'First, non-dimensionalise: get states, controls, constraint residuals and cost to order one, since a problem in metres, kilograms and seconds carries condition numbers of 1e9 and fails restoration before it fails to find the optimum. Second, homotopy: solve an easy version (more thrust, no path constraints, shorter horizon) and sweep a parameter toward the real problem, warm starting each solve from the last.',
+        back: 'First, non-dimensionalise: get states, controls, constraint residuals and cost to order one, since a problem in poorly chosen units can carry condition numbers of 1e5 to 1e9 and fails restoration before it fails to find the optimum. Second, homotopy: solve an easy version (more thrust, no path constraints, shorter horizon) and sweep a parameter toward the real problem, warm starting each solve from the last.',
       },
     ],
     tags: ['interview', 'math'],
@@ -838,12 +838,12 @@ assert abs(relaxation_gap(u, loose) - 0.25) < 1e-12, "a slack node must be repor
 **Stage 2 — minimum fuel.** Minimise propellant (equivalently, maximise terminal z) subject to landing error <= d*. This is the part that matters: if the target is reachable, d* is zero and stage 2 is the fuel-optimal solution to the target; if it is not reachable, stage 2 spends the least fuel getting as close as stage 1 proved possible.
 
 Then:
-1. Flight time is the only parameter that is not convex. Wrap both stages in a golden-section line search over tf and plot cost against tf — you should see a single well-defined minimum.
+1. Flight time is the only parameter that is not convex. Wrap both stages in a golden-section line search over tf and plot cost against tf — you should see a single well-defined minimum. Short flight times are infeasible (no landing exists at all), so the search must handle an infeasible tf, for example by scoring it as +inf.
 2. Sweep initial downrange position and initial velocity, record which cases return d* = 0, and plot the **reachable landing footprint**. Overlay the footprint for two propellant loads.
 3. Add the glideslope constraint as a second-order cone and show the footprint shrink.
-4. Report the relaxation gap for every solve in the sweep; if it is ever non-zero, find out why.
+4. Report the relaxation gap for every stage-2 solve in the sweep; if it is ever non-zero, find out why. (Stage 1 does not charge for fuel, so its slack may legitimately be loose.)
 
-Success: a footprint plot from at least 200 converged solves, all with a relaxation gap below 1e-6, and a written paragraph on why the two-stage structure is the right way to pose "land as close as you can, as cheaply as you can".`,
+Success: a footprint plot from at least 200 converged solves, all with a stage-2 relaxation gap below 1e-6, and a written paragraph on why the two-stage structure is the right way to pose "land as close as you can, as cheaply as you can".`,
       },
       {
         id: 'ex_m43_scvx',
@@ -962,7 +962,7 @@ assert abs(r_small - 1e-3) < 1e-12, "radius must clip at r_min"`,
 1. Profile your G-FOLD SOCP: solve time against node count N, for N from 20 to 200, on one core, using ECOS or Clarabel. Fit the scaling. Record the interior-point iteration count, not just wall time — that is the number that has a theoretical bound.
 2. Choose a guidance rate (say 1-2 Hz for powered descent) and a node count that meets the accuracy you need. State the worst-case solve time you observed over 1000 dispersed initial conditions, not the mean.
 3. Write the fallback policy: what does the vehicle fly on the cycle where the solver does not return in time? (The honest answers are: hold the previously computed solution and re-plan next cycle; fall back to a closed-form polynomial or ZEM/ZEV law; or declare a fault. Pick one and defend it.)
-4. Quantify warm starting: re-solve each cycle from the previous cycle's solution and report the reduction in iteration count.
+4. Quantify warm starting: reuse the previous cycle's trajectory (as the first reference, if your pipeline runs SCvx) and report the change in iteration count; note whether the solver itself supports warm starting (ECOS does not, and interior-point warm starts help little).
 5. One paragraph: why does a bounded iteration count let a certification authority accept this algorithm when a sequential quadratic programming solve of the same problem would not be accepted?
 
 Success: a plot of solve time and iteration count against N, a stated worst case with a margin against the guidance period, and a written fallback policy you would be willing to defend in a design review.`,
@@ -1576,7 +1576,7 @@ Success: two measured blocking-time distributions, before and after, and a parag
       {
         id: 'c_m44_priority_inversion',
         front: 'Unbounded priority inversion',
-        back: 'A high-priority task blocks on a resource held by a low-priority task, which is then preempted by an unrelated medium-priority task. The high task waits for the medium task, with no bound. Killed Mars Pathfinder in flight.',
+        back: 'A high-priority task blocks on a resource held by a low-priority task, which is then preempted by an unrelated medium-priority task. The high task waits for the medium task, with no bound. Caused repeated resets on Mars Pathfinder in flight until a patch enabled priority inheritance.',
       },
       {
         id: 'c_m44_priority_inheritance',
@@ -2711,7 +2711,7 @@ Success: a written validation argument with a table of evidence per model, and a
 3. **percentile_nearest_rank(samples, p)** — a percentile computed by nearest rank, with no interpolation. For a verification claim you want an actual observed sample, not an interpolated value between two.
 4. **cep(x, y)** — circular error probable, the radius of the circle about the target containing half the landings. Report it alongside a high percentile, never instead of one.
 
-Then the distinction: generate a heavy-tailed sample, and show that the mean plus three standard deviations and the 99.73rd percentile are far apart. **Three sigma and 99.73 percent are the same number only for a Gaussian**, and landing dispersions, driven through saturations and discrete logic, are not Gaussian.
+Then the distinction: generate a heavy-tailed sample, and show that the mean plus three standard deviations and the 99.73rd percentile are far apart. **Three sigma and 99.73 percent are the same number only for a Gaussian** (and then only two-sided: mean + 3 sigma alone is the 99.865th percentile), and landing dispersions, driven through saturations and discrete logic, are not Gaussian.
 
 Success: tests pass, and you can say out loud what claim 2303 runs with zero failures supports.`,
         starter: `import math
@@ -3022,7 +3022,7 @@ Success: a CI configuration that genuinely fails on an injected regression — p
       {
         id: 'c_m47_three_sigma',
         front: 'Three sigma vs the 99.73rd percentile',
-        back: 'Equal only for a Gaussian. Closed-loop outputs pushed through saturations and mode logic are skewed and heavy-tailed, so quote the observed percentile from the sample, not mean plus three standard deviations.',
+        back: 'Equal only for a Gaussian, and then only as the two-sided band mean +/- 3 sigma (one-sided, mean + 3 sigma is the 99.865th percentile). Closed-loop outputs pushed through saturations and mode logic are skewed and heavy-tailed, so quote the observed percentile from the sample, not mean plus three standard deviations.',
       },
       {
         id: 'c_m47_cep',
@@ -3058,7 +3058,7 @@ Success: a CI configuration that genuinely fails on an injected regression — p
       {
         id: 'c_m47_mcdc',
         front: 'MC-DC coverage',
-        back: 'Modified condition/decision coverage: each condition in a compound decision must be shown to independently change the outcome. Costs about N+1 tests for N conditions instead of 2^N. Required at the highest DO-178C level.',
+        back: 'Modified condition/decision coverage: each condition in a compound decision must be shown to independently change the outcome. Costs between N+1 and 2N tests for N conditions instead of 2^N. Required at the highest DO-178C level.',
       },
       {
         id: 'c_m47_coverage_caveat',
@@ -3236,7 +3236,7 @@ zem = -(np.array([0.0, 0.0, 1000.0]) + 0.5 * g * 400.0)
 zev = -(g * 20.0)
 expect = (6.0 / 400.0) * zem - (2.0 / 20.0) * zev
 assert np.allclose(a, expect, atol=1e-9), "expected %r, got %r" % (expect, a)
-assert a[2] < 0.0, "the command must brake, not accelerate downward"`,
+assert a[2] < 0.0, "starting at rest high above the pad, the energy-optimal command first pushes down (a[2] < 0)"`,
           },
           {
             name: 'the time-to-go singularity is guarded',
@@ -3479,7 +3479,7 @@ Success: a report someone who has never seen the project could audit, with every
       {
         id: 'c_m48_flex_slosh',
         front: 'Flex and slosh in the control loop',
-        back: 'Bending modes are handled by notch or roll-off filtering with attention to the sensor location relative to the mode shape (a node on the wrong side inverts the sign). Slosh is handled by bandwidth separation and by not exciting it, because notching a mode whose frequency migrates with fill level is fragile.',
+        back: 'Bending modes are handled by notch or roll-off filtering with attention to the sensor location relative to the mode shape (a displacement sensor across a node, or a rate gyro across an antinode where the slope changes sign, sees the mode with inverted sign). Slosh is handled by bandwidth separation and by not exciting it, because notching a mode whose frequency migrates with fill level is fragile.',
       },
       {
         id: 'c_m48_known_limitations',
@@ -3620,7 +3620,7 @@ Success: all six delivered inside the time limit, twice, on separate days, with 
         prompt: `Aerospace coding rounds lean toward fixed memory, no allocation, and integer arithmetic. Build the classic pieces here in Python to fix the algorithms in your head, then **re-implement every one of them in C++ with no heap allocation and a GoogleTest suite** — that version is the artefact you bring to the interview.
 
 1. **RingBuffer**, fixed capacity, overwriting the oldest element when full. The one every flight system has, for telemetry, for delay lines, for moving averages. Get the wrap arithmetic right without a modulo in the hot path.
-2. **Q15 fixed point.** q15_from_float saturates rather than wrapping — saturation is a design decision, and wrapping in a control loop means a full-scale sign reversal. q15_mul rounds rather than truncating: truncation biases every product toward zero, and a biased integrator drifts.
+2. **Q15 fixed point.** q15_from_float saturates rather than wrapping — saturation is a design decision, and wrapping in a control loop means a full-scale sign reversal. q15_mul rounds rather than truncating: truncation biases every product downward (toward -infinity), and a biased integrator drifts.
 3. Then, in C++: a lock-free single-producer single-consumer queue for telemetry out of the control task, and a moving-average filter over the ring buffer with no division in the update.
 
 Success: the Python tests pass, and you have a C++ repository with tests, benchmarks, and a note on the worst-case execution time of each operation.`,
@@ -3890,7 +3890,7 @@ Success: two full loops, recorded, with a written self-assessment and a measurab
       {
         id: 'c_m49_hohmann',
         front: 'Hohmann transfer delta-v, and when it is not optimal',
-        back: 'Two tangential burns via an ellipse touching both circular orbits; minimum two-impulse cost for a ratio of radii below about 11.94. Above that, a bi-elliptic transfer is cheaper, at the cost of a far longer transfer time.',
+        back: 'Two tangential burns via an ellipse touching both circular orbits; the cheapest two-impulse transfer at any ratio of radii. Above a ratio of about 11.94 a three-impulse bi-elliptic transfer can be cheaper (and always is above about 15.58), at the cost of a far longer transfer time.',
         formula: true,
       },
       {

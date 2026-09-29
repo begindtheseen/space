@@ -13,7 +13,7 @@ A job interview day can work the same way. This lesson looks the least like engi
 The argument is about structure, and lesson five laid the ground for it. The **[[onsite|onsite-day]]** — the full day of interviews at the company — is five to seven back-to-back interviews over eight or more hours. The last two rounds are scored exactly like the first two. Each produces its own **[[report|interview-report]]**, written by its own interviewer, and every report goes into the same **debrief** — the meeting where the decision gets made. But most candidates are measurably worse by the end of the day. They are slower to organize an answer. Their follow-up answers are thinner. They struggle to tell a clear ninety-second story. The gap between how a round is scored and how a tired candidate performs in it is what this lesson is here to close.
 
 ::: key
-Sleep the two nights before, not just the night before. Eat something that does not spike and crash. Carry water. Ask for a five-minute break between rounds if you need one — it is normal and nobody marks you down for it.
+Sleep the two nights before, not only the night before. Eat something that does not spike and crash. Carry water. Ask for a five-minute break between rounds if you need one — it is normal and nobody marks you down for it.
 :::
 
 ## Sleep the two nights before
