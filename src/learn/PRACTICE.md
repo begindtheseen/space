@@ -213,7 +213,8 @@ The first command runs every problem's solution and starter against its checks:
 
 - Python runs on CPython.
 - C++ runs on clang with the in-browser compiler's flags: `-std=c++20 -fno-exceptions`, so no
-  `throw` or `try`.
+  `throw` or `try`. Avoid function names that the system headers already declare (`truncate`,
+  `index`, `link`, `remove`, `time`, `log`, `abs`), or the checks will not compile.
 - SQL runs on SQLite.
 - Terminal and Git problems run on the practice shell.
 
