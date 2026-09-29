@@ -760,6 +760,7 @@ export const COMMANDS: CommandRef[] = [
   /* ------------------------------------------------------ grouping extras */
   {
     name: 'GROUPING SETS',
+    aliases: ['SETS'],
     lang: 'sql',
     kind: 'clause',
     official: 'More complex grouping operations than those described above are possible using the concept of grouping sets.',

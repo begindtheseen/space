@@ -8,6 +8,18 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.1.14
+
+- Explain now covers every name the coding lessons teach, in sentences as well as in code: 2,959
+  entries, up from 1,764. A test reads every lesson and fails if any name is missing.
+- New languages: Rust (keywords, macros, standard library paths, the methods the lessons call, and the
+  crates they use), MATLAB and Simulink functions, CMake commands and variables, Dockerfile instructions,
+  GitHub Actions, Compose, Kubernetes and GitLab YAML keys, and Cargo and pyproject TOML keys and tables.
+- The names written in a lesson's text but never in its code are covered too, such as Python's exception
+  classes, more C++ standard library names, and terminal tools like `psql`, `base64`, `zstd`, `gh` and
+  `git-lfs`.
+- In the Rust lessons, C++ names such as `std::vector` and `std::map` open the C++ card, not a Rust one.
+
 ## 1.1.13
 
 - Explain now opens a card for commands that look like ordinary words, such as `echo`, `cat`,

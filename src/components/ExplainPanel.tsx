@@ -15,7 +15,7 @@ import { Chip } from '@/components/ui'
 import { searchLessons } from '@/curriculum/lessons'
 import { moduleById } from '@/curriculum'
 import { useLearner } from '@/hooks/useLearner'
-import { entryByName, kindLabel, langOf, loadReference, matchCommand, refLang, type CommandMatch, type Reference } from '@/lib/commands'
+import { entryByName, kindLabel, langOf, loadReference, matchCommand, moduleLang, refLang, type CommandMatch, type Reference } from '@/lib/commands'
 import { claimCtx, holdCtxOpen, onCtxClaimed } from '@/lib/ctxBus'
 import {
   matchCards,
@@ -161,10 +161,10 @@ export function ExplainPanel({
   }, [])
   const command = useMemo<CommandMatch | null>(() => {
     if (!reference) return null
-    const where = refLang(seed.lang) ?? refLang(lang)
+    const where = refLang(seed.lang) ?? refLang(lang) ?? moduleLang(here.moduleId)
     const other = seeing ? entryByName(reference, seeing, where) : undefined
     return other ? { ref: other, flags: [] } : matchCommand(reference, seed.selection, { inCode: seed.inCode, lang: where })
-  }, [seed, seeing, reference, lang])
+  }, [seed, seeing, reference, lang, here.moduleId])
   const [failed, setFailed] = useState(false)
   const ref = useRef<HTMLElement | null>(null)
   // Read once per highlight: marking a lesson read while the panel is open should not reshuffle it.

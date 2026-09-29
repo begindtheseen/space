@@ -1,5 +1,5 @@
 /** The language a reference entry belongs to. Terminal and git commands are `shell`. */
-export type CommandLang = 'shell' | 'python' | 'cpp' | 'sql'
+export type CommandLang = 'shell' | 'python' | 'cpp' | 'sql' | 'rust' | 'matlab' | 'cmake' | 'dockerfile' | 'yaml' | 'toml'
 
 /** One command, keyword or library name ORBIT teaches, as Explain shows it. */
 export interface CommandRef {
