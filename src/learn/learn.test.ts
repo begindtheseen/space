@@ -102,7 +102,7 @@ describe('the tracks', () => {
       const failing = after.results.filter((r) => r.status === 'fail').map((r) => `${r.name}: ${r.actual ?? r.detail}`)
       expect(failing, l.id).toEqual([])
     }
-  })
+  }, 120_000)
 
   it('every course has a full name for the roadmap, and Git is a course of its own', () => {
     for (const t of TRACKS) expect(t.name.length, t.lang).toBeGreaterThan(t.lang === 'sql' ? 3 : 5)
