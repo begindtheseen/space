@@ -1,0 +1,1576 @@
+@track python
+@course mod-cod_rs_03_aerospace
+@module cod_rs_03_aerospace
+@title no_std Rust and its aerospace footprint: practice and test
+
+=== rs03-l01 | Practice: no_std, no_main and how a microcontroller starts
+--- for
+l01-no-std-and-the-bare-metal-entry
+
++++ question | What a heap-free library may use
+--- ask
+A `#![no_std]` filter library will be linked into firmware that has no allocator at all. Pick every item the library can use and still let the firmware build for `thumbv7em-none-eabihf`.
+--- choice correct
+A `static` `core::sync::atomic::AtomicU32` counting samples
+--- choice correct
+A `[f32; 8]` window summed with `.iter().fold(0.0, |a, x| a + x)`
+--- choice
+`alloc::string::String`, after `extern crate alloc;`
+--- choice
+`std::collections::HashMap` to look up calibration values
+--- choice
+`x.sqrt()` on an `f32` sample
+--- choice correct
+`libm::sqrtf(x)` from the `libm` crate
+--- why
+Atomics, arrays, iterators and closures are all part of the language, so they live in `core` and need neither a heap nor an operating system. `String` lives in `alloc`: the library compiles, but the firmware fails at its final link with "no global memory allocator found". `HashMap` is in `std`, which a `no_std` crate cannot name at all. Square root on floats comes from the operating system's maths library, so on this toolchain `f32` has no `sqrt` method in `core` (error E0599). `libm` is a pure-Rust maths library, so it works on a bare chip.
+
++++ question | How much RAM, from four bytes
+--- ask
+You dump the start of flash on an unknown STM32 board. Its RAM starts at `0x20000000`, and its start-up code puts the stack at the very top of RAM. The first word of `.vector_table` prints as:
+
+```text
+ 8000000 00800120 ...
+```
+
+How many KiB of RAM does the chip have? Type the number.
+--- answer
+96
+96 KiB
+96KiB
+96 KB
+96KB
+96 k
+96K
+--- why
+Cortex-M is little-endian, so the bytes `00 80 01 20` hold the word `0x20018000`: reverse them to read it. Word 0 is the initial stack pointer, and the stack starts at the top of RAM because it grows downward. So RAM ends at `0x20018000`. Subtract the start: `0x20018000 - 0x20000000 = 0x18000`, which is $98\,304$ bytes, and $98\,304 / 1024 = 96$ KiB. Reading the digits in the order printed would give `0x00800120`, an address with no RAM behind it.
+
++++ question | Counting the sections
+--- ask
+`size -A` on a release build lists these sections:
+
+```text
+section           size
+.vector_table      408
+.text             6212
+.rodata            344
+.data               12
+.bss              1540
+```
+
+How many bytes of flash does the program use, and how many bytes of RAM do its statics use? Type the two numbers, flash first, separated by a space.
+--- answer
+6976 1552
+6976, 1552
+6976,1552
+--- why
+Flash holds the vector table, the code, the constants and the starting values of `.data`: $408 + 6212 + 344 + 12 = 6976$ bytes. RAM holds `.data` and `.bss`: $12 + 1540 = 1552$ bytes. `.data` is counted twice, once in each: its starting values must survive power-off, so they sit in flash, and `Reset` copies them into RAM. `.bss` costs no flash, because the start-up code only fills it with zeros. The two common slips are leaving `.data` out of flash (6964) and putting `.bss` in flash (8516).
+
++++ question | Which entry functions compile
+--- ask
+Each choice is a whole function marked `#[entry]` from cortex-m-rt, in a `#![no_std]` `#![no_main]` program with a panic handler. `init` returns `()` and `done` returns `bool`. Pick every one that compiles.
+--- choice correct
+`fn main() -> ! { loop { cortex_m::asm::nop(); } }`
+--- choice correct
+`fn main() -> ! { init(); panic!("init finished") }`
+--- choice
+`fn main() { loop { cortex_m::asm::nop(); } }`
+--- choice
+`fn main() -> ! { loop { if done() { break; } } }`
+--- why
+`#[entry]` insists on the signature `fn() -> !`, so a `main` with no return type is rejected by the attribute itself, even though its loop never ends. A `loop` with no `break` has type `!`, the never type, so it satisfies the signature. `panic!` also has type `!`: it never returns, so ending the body with it type-checks, even though it is an odd way to end a program. A `loop` that contains a `break` can finish, so its type is `()`, and the compiler reports mismatched types: expected `!`, found `()`.
+
++++ question | A new board that dies before main
+--- ask
+A team moves its firmware to a smaller part: 256 KiB of flash at `0x08000000` and 64 KiB of RAM at `0x20000000`. The project keeps its old `memory.x`:
+
+```text
+MEMORY
+{
+  FLASH : ORIGIN = 0x08000000, LENGTH = 256K
+  RAM   : ORIGIN = 0x20000000, LENGTH = 128K
+}
+```
+
+The build succeeds, but a breakpoint on the first line of `main` is never reached. What is wrong?
+--- choice correct
+The RAM `LENGTH` should be `64K`. The linker puts the initial stack pointer at `0x20020000`, 64 KiB past the end of real RAM, so the first stack push in `Reset` faults before `main` is ever called.
+--- choice
+The FLASH line is wrong: `ORIGIN` must be the end of flash, because the vector table is placed at the top.
+--- choice
+Nothing in `memory.x` is wrong; the panic handler is looping, and a panic in `main` stops the breakpoint.
+--- choice
+The RAM line is fine, since a larger `LENGTH` only leaves unused space; the problem must be a missing `#![no_main]`.
+--- why
+The linker believes `memory.x`, so it computes the top of RAM as $\mathtt{0x20000000} + 128 \times 1024 = \mathtt{0x20020000}$ and writes that into word 0 of the vector table. On this chip RAM really ends at `0x20010000`. The very first thing that uses the stack writes to an address with no memory behind it, the chip faults, and it never reaches your code. A breakpoint in a panic path would not help either, because nothing in `main` ever ran. Always take `ORIGIN` and `LENGTH` from the datasheet of the exact part on the board.
+
++++ question | The wheel after a panic
+--- ask
+A reaction-wheel controller uses `panic-halt`. Its wheel driver switches the motor off when it is dropped:
+
+```rust
+impl Drop for Wheel {
+    fn drop(&mut self) {
+        self.set_duty(0); // motor off
+    }
+}
+
+#[entry]
+fn main() -> ! {
+    let mut wheel = Wheel::new();
+    loop {
+        let cmd = next_command(); // an index out of bounds in here panics
+        wheel.set_duty(cmd);
+    }
+}
+```
+
+The wheel is spinning at duty 70 when `next_command` panics. What happens to the wheel?
+--- choice
+`drop` runs while the panic unwinds out of `main`, so the motor is switched off.
+--- choice
+The chip resets at once, and the motor stops because the reset clears the timer.
+--- choice correct
+It keeps spinning at duty 70. On Cortex-M the panic strategy is abort, so nothing unwinds and `drop` never runs; the processor just loops in the panic handler.
+--- choice
+The panic handler returns to `main`, which carries on with the next command.
+--- why
+With `std` on a laptop a panic unwinds the stack and runs every `Drop` on the way. On Cortex-M targets the panic strategy is abort: control jumps into the `#[panic_handler]`, which must never return (its type is `!`), and no destructor runs. `panic-halt` just loops, so the timer that drives the motor keeps its last setting. Nothing resets unless something makes it, such as a watchdog. That is why a flight panic handler must make the hardware safe itself, or let a watchdog reset the chip into a safe mode.
+
+=== rs03-l02 | Practice: Registers, PACs, HALs and embedded-hal
+--- for
+l02-embedded-hal-pacs-and-hals
+
++++ question | The LED on PC13
+--- ask
+On the STM32F411, the GPIOC base address is `0x40020800`, and the output data register `ODR` sits at offset `0x14` in every GPIO port. A board's LED is on pin PC13. Which address and mask toggle it, as in `*odr ^= mask`?
+--- choice correct
+Address `0x40020814`, mask `0x2000`
+--- choice
+Address `0x40020814`, mask `0x0D`
+--- choice
+Address `0x40020800`, mask `0x2000`
+--- choice
+Address `0x40020814`, mask `0x04000000`
+--- why
+The register's address is the port's base plus the offset: $\mathtt{0x40020800} + \mathtt{0x14} = \mathtt{0x40020814}$. Pin 13 is bit 13 of `ODR`, so its mask is $2^{13} = 8192$, which is `0x2000`. `0x0D` is the number 13 itself, not a mask with bit 13 set. `0x40020800` is the port's base, where `MODER` lives. `0x04000000` is $1$ shifted left 26 places: the `01` output pattern for pin 13 in `MODER`, whose two bits are 26 and 27. It belongs in a different register.
+
++++ question | Reading a mode register
+--- ask
+A debugger shows `GPIOA_MODER = 0x00000C51`. Each pin has two bits, starting at bit $2n$, and the patterns are `00` input, `01` output, `10` alternate function, `11` analog. Which pins of port A are general-purpose outputs? Type their numbers in increasing order, separated by spaces.
+--- answer
+0 2 3
+0, 2, 3
+0,2,3
+0, 2 and 3
+0 2 and 3
+PA0 PA2 PA3
+PA0, PA2, PA3
+PA0, PA2 and PA3
+pins 0 2 3
+pins 0, 2, 3
+pins 0, 2 and 3
+--- why
+Write the low bits out: `0xC51` is binary `1100 0101 0001`. Take them in pairs from the right. Bits 1 and 0 are `01`: pin 0 is an output. Bits 3 and 2 are `00`: pin 1 is an input. Bits 5 and 4 are `01`: pin 2 is an output. Bits 7 and 6 are `01`: pin 3 is an output. Bits 9 and 8 are `00`: pin 4 is an input. Bits 11 and 10 are `11`: pin 5 is analog, not an output. Every higher pair is `00`. So the outputs are pins 0, 2 and 3.
+
++++ question | A helper that takes the peripherals
+--- ask
+A student adds a helper to a PAC program:
+
+```rust
+fn led_on() {
+    let dp = stm32f411::Peripherals::take().unwrap();
+    dp.GPIOA.odr().modify(|_, w| w.odr5().set_bit());
+}
+
+#[entry]
+fn main() -> ! {
+    let dp = stm32f411::Peripherals::take().unwrap();
+    dp.RCC.ahb1enr().modify(|_, w| w.gpioaen().set_bit());
+    dp.GPIOA.moder().modify(|_, w| w.moder5().output());
+    led_on();
+    loop {}
+}
+```
+
+It builds with `panic-halt`. What happens on the board?
+--- choice
+The LED lights: each call to `take()` returns its own handle to the same registers.
+--- choice
+It does not compile: `dp` is moved into `main`, so `led_on` cannot name the peripherals.
+--- choice correct
+The LED stays off. The second `take()` returns `None`, `.unwrap()` panics, and `panic-halt` stops the chip in a loop.
+--- choice
+The LED lights, but the two handles race, so it flickers.
+--- why
+`Peripherals::take()` is the singleton pattern: it hands out the chip's peripherals once, returning `Some` the first time and `None` after that, so two parts of the program can never both believe they own GPIOA. The code compiles, because the check happens when it runs. The panic in `led_on` goes to `panic-halt`, which loops forever, so the write to `ODR` never happens. The fix is ownership: pass `&dp.GPIOA` (or the pin) into the helper instead of taking the peripherals again.
+
++++ question | One pair of bytes, three readings
+--- ask
+An MPU-6050 at its $\pm 2\,g$ range (16384 counts per $g$) sends `80 00` for the x axis, high byte first. What does this print, line by line?
+
+```rust
+let raw = [0x80u8, 0x00];
+println!("{}", i16::from_be_bytes(raw) as f32 / 16384.0);
+println!("{}", u16::from_be_bytes(raw) as f32 / 16384.0);
+println!("{}", i16::from_le_bytes(raw) as f32 / 16384.0);
+```
+--- choice correct
+`-2`, then `2`, then `0.0078125`
+--- choice
+`-2`, then `-2`, then `-2`
+--- choice
+`2`, then `2`, then `0.0078125`
+--- choice
+`-2`, then `2`, then `-2`
+--- why
+Read high byte first, `80 00` is `0x8000`. As a signed 16-bit number that is the most negative value, $32768 - 65536 = -32768$, and $-32768 / 16384 = -2$: the right reading, the bottom of the range. Taken unsigned, the same bits are $+32768$, giving $+2$: the sign is lost. Taken low byte first, the bytes mean `0x0080` $= 128$, and $128 / 16384 = 0.0078125$. Both wrong readings are the classic first-day bugs with a new sensor, and only `i16::from_be_bytes` gets both halves right.
+
++++ question | A driver that names the wrong error
+--- ask
+A BMP280 pressure sensor answers at I2C address `0x76`, and its chip-id register is `0xD0`. This generic driver does not compile:
+
+```rust
+use embedded_hal::i2c::I2c;
+
+pub struct Bmp280<I> {
+    i2c: I,
+}
+
+impl<I: I2c> Bmp280<I> {
+    pub fn chip_id(&mut self) -> Result<u8, stm32f4xx_hal::i2c::Error> {
+        let mut b = [0u8; 1];
+        self.i2c.write_read(0x76, &[0xD0], &mut b)?;
+        Ok(b[0])
+    }
+}
+```
+
+What is wrong, and what is the fix?
+--- choice correct
+The return type names an STM32 error, but the bus is any `I`, whose error is `I::Error`; `?` cannot turn one into the other. Return `Result<u8, I::Error>`.
+--- choice
+`0xD0` is an 8-bit bus address; pass the 7-bit address `0x68` instead.
+--- choice
+`write_read` needs a mutable slice for the register, `&mut [0xD0]`.
+--- choice
+Nothing is wrong with the code; the crate is missing the `critical-section-single-core` feature.
+--- why
+Inside `impl<I: I2c>`, the only error the compiler knows about is `I::Error`, the one each bus names through `ErrorType`. `?` would need a conversion from any `I::Error` into `stm32f4xx_hal::i2c::Error`, and no such conversion exists, so the build fails (E0277). Returning `I::Error` keeps the driver chip-free: an STM32 bus, a Nordic bus and a fake desk bus all work. Here `0xD0` is a register number sent as data, not an address; `0x76` is already the 7-bit address embedded-hal wants.
+
++++ question | An ADC you cannot read too early
+--- ask
+You are writing a HAL for an ADC that returns garbage until it has been calibrated once. You want "read before calibrate" to be a compile error, not a bug found on the bench. Which design does that?
+--- choice
+One `Adc` type with a `calibrated: bool` field; `read` returns `Err` when the flag is false.
+--- choice correct
+Two types, `Adc<Raw>` and `Adc<Calibrated>`. `calibrate(self)` consumes the raw one and returns the calibrated one, and only `Adc<Calibrated>` has a `read` method.
+--- choice
+One `Adc` type with `calibrate(&mut self)` and `read(&mut self)`, and a doc comment that says to call `calibrate` first.
+--- choice
+Mark `read` as `unsafe fn`, with a `# Safety` section that says calibration must come first.
+--- why
+This is typestate, the same trick as a pin that has no `set_high` until `into_push_pull_output()` turns it into an output. Because `calibrate` takes `self` by value, the raw value is moved and cannot be used again, so there is never an uncalibrated handle left to read from. The flag version catches the mistake only when it runs. The doc comment and the `unsafe` version both leave the rule to a human, and `unsafe` is meant for memory-safety promises, not for ordering rules the type system can enforce.
+
+=== rs03-l03 | Practice: Embassy, RTIC, Hubris and Tock
+--- for
+l03-embassy-rtic-hubris-and-tock
+
++++ question | Who may interrupt a lock
+--- ask
+An RTIC app has four tasks. A (priority 1) and B (priority 3) both use the shared resource `r`. C (priority 4) and D (priority 6) do not use `r`. E (priority 2) does not use `r` either. While A is inside `cx.shared.r.lock(|r| ...)`, which tasks can start if their interrupt fires? Pick every one.
+--- choice
+B
+--- choice correct
+C
+--- choice correct
+D
+--- choice
+E
+--- why
+The ceiling of `r` is the highest priority of any task that uses it: 3, from B. While A holds the lock, RTIC raises the running priority to 3, so nothing at 3 or below can start. B is kept out, which is the point, since it would find `r` half-updated. E is at 2 and is held off too, even though it never touches `r`: that is a small cost of the scheme. C and D are above the ceiling. They never ask for `r`, so letting them run cannot hurt it, and they preempt at once.
+
++++ question | What Hubris does
+--- ask
+Pick every statement that is true of Hubris, the operating system from Oxide Computer Company.
+--- choice correct
+The list of tasks, their memory and their priorities is fixed in a configuration file when the system is built.
+--- choice correct
+Device drivers run as ordinary unprivileged tasks, each in its own MPU-protected memory.
+--- choice
+Drivers are kernel capsules, kept apart because capsule code may not use `unsafe`.
+--- choice
+New applications, written in C or Rust, can be loaded and replaced separately from the kernel.
+--- choice correct
+Tasks talk by synchronous messages: the sender waits until the receiver replies.
+--- choice correct
+When a task crashes, the kernel stops it, and a supervisor task can restart it while the others keep running.
+--- why
+Hubris is static and all-Rust: tasks are decided at build time, the kernel never allocates, drivers are separate unprivileged programs behind the MPU, messages are synchronous (a phone call, not a letter), and a crashed task can be restarted. The two wrong statements describe Tock. Tock puts drivers in the kernel as capsules isolated by the type system, and its separately loadable processes, in C or Rust, are what the MPU walls off.
+
++++ question | A checksum that makes the IMU late
+--- ask
+One Embassy executor runs two tasks. `housekeeping` wakes every 100 ms and computes a checksum over a log block in one plain loop that takes 6 ms and has no `.await` in it. `imu_read` wakes every 2 ms and awaits an I2C read. Sometimes `imu_read` runs 6 ms late. Pick every change that bounds that lateness.
+--- choice correct
+Split the checksum into chunks of a few hundred bytes, with an `.await` between chunks, so the executor can switch tasks.
+--- choice correct
+Run `imu_read` on an `InterruptExecutor` at a higher interrupt priority, so it can preempt the ordinary executor.
+--- choice
+Turn the checksum loop into an `async fn` and call it with `.await`, leaving the loop itself unchanged.
+--- choice
+Give `imu_read` more task slots in its `#[embassy_executor::task]` attribute.
+--- choice
+Replace the `Timer` in `housekeeping` with a `Ticker`.
+--- why
+The executor is cooperative: it can switch tasks only at an `.await`. A 6 ms stretch with none holds up every other task on that executor for 6 ms, whatever the other task's period. Adding `.await` points between chunks gives the executor places to switch, so the worst delay shrinks to one chunk. An `InterruptExecutor` runs inside an interrupt, so the NVIC hardware can preempt the busy task. Wrapping the loop in an `async fn` changes nothing if the loop still never awaits. Task slots decide how many copies of a task can exist, not when it runs, and `Ticker` only changes how the wake-ups are timed.
+
++++ question | One counter in two local lists
+--- ask
+A student wants both RTIC tasks to count interrupts in the same variable, so both list it as a local resource:
+
+```rust
+#[local]
+struct Local {
+    ticks: u32,
+}
+
+#[task(binds = TIM2, priority = 3, local = [ticks])]
+fn control_loop(cx: control_loop::Context) {
+    *cx.local.ticks += 1;
+}
+
+#[task(binds = USART1, priority = 1, local = [ticks])]
+fn radio_rx(cx: radio_rx::Context) {
+    *cx.local.ticks += 1;
+}
+```
+
+What happens?
+--- choice
+It compiles, and the count is sometimes wrong, because the two tasks race on `ticks`.
+--- choice
+It compiles, and RTIC quietly adds a lock around each access.
+--- choice correct
+It does not compile: a local resource belongs to exactly one task. Data used by two tasks must go in `#[shared]` and be reached through `lock`.
+--- choice
+It compiles, and each task gets its own copy of `ticks`, starting at the value from `init`.
+--- why
+RTIC hands out `&mut` access to a local resource with no locking at all, which is only safe because exactly one task can ever touch it. A second task naming the same local would break that promise, so RTIC rejects the program when it compiles. Move `ticks` to `#[shared]`: the priority-1 task then locks it, raising the running priority to 3 for the length of the closure, and the data race becomes impossible. RTIC never inserts locks you did not write, and it never copies resources behind your back.
+
++++ question | The second blinker
+--- ask
+This Embassy program should blink a green and a red LED at different rates:
+
+```rust
+#[embassy_executor::task]
+async fn blink(mut led: Output<'static>, period_ms: u64) {
+    loop {
+        led.toggle();
+        Timer::after_millis(period_ms).await;
+    }
+}
+
+#[embassy_executor::main]
+async fn main(spawner: Spawner) {
+    let p = embassy_stm32::init(Default::default());
+    let green = Output::new(p.PA5, Level::Low, Speed::Low);
+    let red = Output::new(p.PB14, Level::Low, Speed::Low);
+    spawner.spawn(blink(green, 500).unwrap());
+    spawner.spawn(blink(red, 200).unwrap());
+    loop {
+        Timer::after_millis(1000).await;
+    }
+}
+```
+
+The board has `panic-halt`. The green LED toggles once and freezes, and the red one never lights. Why?
+--- choice correct
+A task has one slot by default, so the second `blink(red, 200)` returns an error and `.unwrap()` panics. Give the task two slots, for example `#[embassy_executor::task(pool_size = 2)]`.
+--- choice
+Two tasks cannot both call `Timer::after_millis`; the second timer cancels the first.
+--- choice
+`Output<'static>` cannot be passed to a task; the pins must be globals.
+--- choice
+The executor only runs tasks after `main` returns, and this `main` never returns.
+--- why
+Embassy stores every task in memory reserved when the program is built, so each task function has a fixed number of slots, one unless you ask for more. Calling `blink(...)` fills a slot and returns a token, or an error if none is free. The first call used the only slot. The second got an error, `unwrap` panicked, and `panic-halt` froze the chip before the executor ever ran the green task past its first toggle. Many tasks can wait on timers at once, and `main` is itself a task that the executor switches away from at each `.await`.
+
++++ question | Proving the logger's deadline
+--- ask
+An RTIC design has two tasks. The attitude loop runs at the higher priority with period $T_1 = 2\,\mathrm{ms}$ and worst case $C_1 = 0.5\,\mathrm{ms}$. The logger runs below it with period $T_2 = 25\,\mathrm{ms}$ and worst case $C_2 = 6\,\mathrm{ms}$. Using the iteration $R \leftarrow C_2 + \lceil R / T_1 \rceil\, C_1$, starting from $R = C_2$, what is the logger's worst response time $R_2$ in milliseconds?
+--- answer
+8
+8 ms
+8ms
+8.0
+8.0 ms
+--- why
+Start at $R = 6$. Then $6 + \lceil 6/2 \rceil \times 0.5 = 6 + 3 \times 0.5 = 7.5$. Next $6 + \lceil 7.5/2 \rceil \times 0.5 = 6 + 4 \times 0.5 = 8$. Next $6 + \lceil 8/2 \rceil \times 0.5 = 6 + 4 \times 0.5 = 8$, the same, so it has settled: $R_2 = 8\,\mathrm{ms}$, inside the 25 ms period. Each round counts how many attitude-loop runs can start while the logger is still working; the ceiling rounds up because a run that starts even slightly inside the window costs its full 0.5 ms. The logger is the lowest priority here, so it has no blocking term.
+
+=== rs03-l04 | Practice: Logging, flashing and fixed-size memory
+--- for
+l04-embedded-tooling-and-static-memory
+
++++ question | Ten bytes into eight slots
+--- ask
+What does this print? Type the output exactly.
+
+```rust
+use heapless::spsc::Queue;
+
+fn main() {
+    let mut q: Queue<u8, 8> = Queue::new();
+    let mut dropped = 0;
+    for b in 1..=10u8 {
+        if q.enqueue(b).is_err() {
+            dropped += 1;
+        }
+    }
+    q.dequeue();
+    q.dequeue();
+    let _ = q.enqueue(42);
+    println!("{} {} {:?}", q.len(), dropped, q.peek());
+}
+```
+--- answer
+6 3 Some(3)
+--- why
+A `Queue<T, 8>` holds at most 7 items, because one slot stays empty so full and empty look different. So bytes 1 to 7 go in, and 8, 9 and 10 are handed back as `Err`: 3 dropped. Two `dequeue` calls take out 1 and 2, the oldest, leaving 3 to 7, which is five items. `42` then fits, making six. `peek` looks at the next item to come out without removing it: `Some(3)`.
+
++++ question | Which log lines survive
+--- ask
+A firmware crate `fw` has an `imu` module and a main module. It is built with:
+
+```text
+DEFMT_LOG=warn,fw::imu=debug
+```
+
+Pick every line whose message can ever reach the laptop.
+--- choice correct
+`defmt::debug!("fifo level {}", n)` in `fw::imu`
+--- choice
+`defmt::trace!("raw {=[u8]}", bytes)` in `fw::imu`
+--- choice
+`defmt::info!("boot complete")` in the main module
+--- choice correct
+`defmt::warn!("bus retry {}", k)` in the main module
+--- choice correct
+`defmt::error!("sensor lost")` in the main module
+--- why
+`DEFMT_LOG` sets the lowest level that is compiled in, and a module can have its own setting. The levels run `trace`, `debug`, `info`, `warn`, `error`. For `fw::imu` the floor is `debug`, so its `debug!` stays and its `trace!` is removed. Everywhere else the floor is `warn`, so `info!` is removed and `warn!` and `error!` stay. Removed lines are not skipped at run time: they are gone from the build and cost nothing. With `DEFMT_LOG` unset, only `error!` would be kept.
+
++++ question | The size of a housekeeping record
+--- ask
+What is `core::mem::size_of::<Hk>()`?
+
+```rust
+#[repr(C)]
+struct Hk {
+    mode: u8,
+    temp: i16,
+    volts: f32,
+    flags: u8,
+}
+```
+--- answer
+12
+12 bytes
+--- why
+With `#[repr(C)]` the fields stay in the order written, each at the next multiple of its alignment. `mode` takes byte 0. `temp` needs a multiple of 2, so one padding byte follows and `temp` fills bytes 2 and 3. `volts` needs a multiple of 4 and starts at 4, filling 4 to 7. `flags` takes byte 8. The whole struct's size must be a multiple of its largest alignment, 4, so three more padding bytes bring it to 12. The fields hold 8 bytes of data; the other 4 are padding. An `assert_eq_size!(Hk, [u8; 12]);` line would make the build check this.
+
++++ question | Eight bytes of text
+--- ask
+Here `String` is `heapless::String`. What does this print?
+
+```rust
+let mut a: String<8> = String::new();
+let mut b: String<8> = String::new();
+let mut c: String<8> = String::new();
+println!(
+    "{:?} {:?} {:?} {}",
+    a.push_str("dv=12.50"),
+    b.push_str("Δv=12.5"),
+    c.push_str("Δv=12.50"),
+    c.len()
+);
+```
+--- choice
+`Ok(()) Ok(()) Ok(()) 8`
+--- choice correct
+`Ok(()) Ok(()) Err(CapacityError) 0`
+--- choice
+`Ok(()) Err(CapacityError) Err(CapacityError) 0`
+--- choice
+`Ok(()) Ok(()) Err(CapacityError) 8`
+--- why
+The `8` in `String<8>` counts bytes of UTF-8, not characters. `"dv=12.50"` is 8 bytes and fits exactly. `Δ` takes 2 bytes, so `"Δv=12.5"` is $2 + 6 = 8$ bytes and also fits, though it is only 7 characters. `"Δv=12.50"` is 9 bytes, one too many, so `push_str` returns `Err` and leaves `c` as it was: empty, length 0. A heapless collection never keeps part of what did not fit and never grows; it reports the failure and hands the decision to you.
+
++++ question | A frame counter that panics in the lock
+--- ask
+This firmware panics the first time `bump` runs with a frame stored. Which line is the cause?
+
+```rust
+use core::cell::RefCell;
+use critical_section::{CriticalSection, Mutex};
+
+static STATE: Mutex<RefCell<Option<Frame>>> = Mutex::new(RefCell::new(None));
+
+fn seq_now(cs: CriticalSection<'_>) -> Option<u16> {
+    STATE.borrow(cs).borrow().as_ref().map(|f| f.seq)
+}
+
+fn bump() -> Option<u16> {
+    critical_section::with(|cs| {
+        let mut slot = STATE.borrow(cs).borrow_mut();
+        if let Some(f) = slot.as_mut() {
+            f.seq = f.seq.wrapping_add(1);
+        }
+        seq_now(cs)
+    })
+}
+```
+--- choice correct
+`seq_now(cs)`: `slot`, a mutable borrow of the `RefCell`, is still alive, so the shared `borrow()` inside `seq_now` panics with "already mutably borrowed". Read the value from `slot` instead, or drop `slot` first.
+--- choice
+`critical_section::with`: a critical section cannot be entered from a function that returns a value.
+--- choice
+`seq_now` needs its own `critical_section::with`, because the `cs` token cannot be passed to another function.
+--- choice
+`f.seq.wrapping_add(1)`: changing a field through `as_mut()` is not allowed inside a critical section.
+--- why
+The critical section and the `Mutex` only prove that no interrupt can get in. The `RefCell` inside still keeps its own rule, many readers or one writer, and checks it when the code runs. `slot` is a `RefMut` that lasts until the end of the closure, so the `borrow()` in `seq_now` finds a writer already active and panics. The `cs` token is a zero-sized value that can be passed around freely while the section lasts; passing it is exactly how helpers prove they are inside one.
+
++++ question | Sizing a UART queue
+--- ask
+A UART at 115200 baud feeds an interrupt that enqueues each received byte into a `heapless::spsc::Queue<u8, N>`. Each byte takes 10 bits on the wire (start bit, 8 data bits, stop bit). In the worst case the main loop drains the queue only every 5 ms, and no byte may be dropped. What is the smallest `N` that works?
+--- answer
+59
+N = 59
+n=59
+--- why
+115200 bits per second at 10 bits per byte is 11520 bytes per second, or 11.52 bytes per millisecond. In 5 ms that is 57.6 bytes, so up to 58 whole bytes can arrive between drains. A `Queue<T, N>` holds $N - 1$ items, because one slot always stays empty, so $N - 1 \ge 58$ and $N \ge 59$. Answering 58 is the classic slip. A real design would add a margin and often round up to 64, a power of two.
+
+=== rs03-l05 | Practice: Calling between Rust and C or C++
+--- for
+l05-ffi-with-c-and-cpp
+
++++ question | The header cbindgen writes
+--- ask
+With `usize_is_size_t = true` in `cbindgen.toml`, which declaration does cbindgen write for this function?
+
+```rust
+#[repr(C)]
+pub struct Quat {
+    pub w: f32,
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn gnc_average(qs: *const Quat, n: usize, out: *mut Quat) -> i32 {
+    // ...
+}
+```
+--- choice correct
+`int32_t gnc_average(const struct Quat *qs, size_t n, struct Quat *out);`
+--- choice
+`int gnc_average(const Quat &qs, size_t n, Quat &out);`
+--- choice
+`int32_t gnc_average(struct Quat *qs, uintptr_t n, struct Quat *out);`
+--- choice
+`int32_t gnc_average(const float *qs, size_t n, float *out);`
+--- why
+cbindgen translates each Rust type into its C twin: `*const Quat` becomes `const struct Quat *`, `*mut Quat` becomes `struct Quat *`, `i32` becomes `int32_t`, and with `usize_is_size_t` a `usize` becomes `size_t`. C has no references, so `&` cannot appear in a C header. Dropping `const` would let C believe the function may write through `qs`, and a `Quat` pointer is not a `float` pointer, even though the struct holds floats. Because the header is generated on every build, it can never drift away from the Rust source.
+
++++ question | What bindgen writes
+--- ask
+The legacy telemetry code has this C header:
+
+```c
+int32_t tm_pack(const tm_frame_t *f, uint8_t *buf, size_t cap);
+```
+
+Which is what `bindgen` produces for it?
+--- choice correct
+`unsafe extern "C" { pub fn tm_pack(f: *const tm_frame_t, buf: *mut u8, cap: usize) -> i32; }`
+--- choice
+`unsafe extern "C" { pub fn tm_pack(f: &tm_frame_t, buf: &mut [u8]) -> i32; }`
+--- choice
+`#[unsafe(no_mangle)] pub extern "C" fn tm_pack(f: *const tm_frame_t, buf: *mut u8, cap: usize) -> i32 { 0 }`
+--- choice
+`pub fn tm_pack(f: *const tm_frame_t, buf: *mut u8, cap: usize) -> i32;` as a safe function
+--- why
+bindgen reads a C header and writes Rust declarations inside an `extern "C"` block: raw pointers for C pointers, `usize` for `size_t`, `i32` for `int32_t`. It cannot invent references or slices, because a C pointer promises nothing about null, length or lifetime. The `no_mangle` version is a Rust definition, the other direction, which is what cbindgen's input looks like. Every function in an `extern` block is unsafe to call, since the compiler cannot see inside the C code; the safe face comes from a wrapper you write.
+
++++ question | A safe face for tm_pack
+--- ask
+`tm_pack` from the bindgen output writes at most `cap` bytes into `buf`, keeps no copy of either pointer, and returns the number of bytes written, or `-1` if `cap` is too small. Which wrapper is sound and handles the error?
+--- choice correct
+```rust
+pub fn pack(f: &TmFrame, buf: &mut [u8]) -> Option<usize> {
+    // SAFETY: `f` is a valid reference, and `buf.as_mut_ptr()` points
+    // to `buf.len()` writable bytes for the whole call.
+    let n = unsafe { tm_pack(f, buf.as_mut_ptr(), buf.len()) };
+    usize::try_from(n).ok()
+}
+```
+--- choice
+```rust
+pub fn pack(f: &TmFrame, buf: &mut [u8], cap: usize) -> Option<usize> {
+    let n = unsafe { tm_pack(f, buf.as_mut_ptr(), cap) };
+    usize::try_from(n).ok()
+}
+```
+--- choice
+```rust
+pub fn pack(f: &TmFrame, buf: &[u8]) -> Option<usize> {
+    let n = unsafe { tm_pack(f, buf.as_ptr() as *mut u8, buf.len()) };
+    usize::try_from(n).ok()
+}
+```
+--- choice
+```rust
+pub fn pack(f: &TmFrame, buf: &mut [u8]) -> usize {
+    unsafe { tm_pack(f, buf.as_mut_ptr(), buf.len()) as usize }
+}
+```
+--- why
+A safe function must stay sound whatever a caller passes. Taking a `&mut [u8]` and passing its own pointer and length means the pair can never disagree. The second version lets the caller pass a `cap` larger than the slice, so safe code could make C write past the end. The third writes through a pointer made from a shared `&[u8]`, which is undefined behavior. The fourth turns `-1` into `usize::MAX`, so a caller that slices `&buf[..n]` panics. `usize::try_from(n).ok()` maps any negative status to `None`.
+
++++ question | An index past the gain table
+--- ask
+A Rust staticlib exports:
+
+```rust
+static GAINS: [f64; 4] = [0.8, 1.0, 1.2, 1.5];
+
+#[unsafe(no_mangle)]
+pub extern "C" fn gnc_gain(mode: u32) -> f64 {
+    GAINS[mode as usize]
+}
+```
+
+The C flight code calls `gnc_gain(6)`. What happens, with Rust 1.81 or later?
+--- choice
+C receives `0.0`, the default value for an index that does not exist.
+--- choice
+C receives whatever 8 bytes sit after the table in memory.
+--- choice correct
+The index panics, the panic cannot unwind into C, and the whole program aborts.
+--- choice
+The panic unwinds into C as an exception that the C code can catch.
+--- why
+Rust checks every slice index, so reading past the table is not undefined behavior: it panics. A panic unwinds by default, but unwinding cannot pass through C frames, so a panic that reaches the edge of an `extern "C"` function aborts the process on purpose. C has no exceptions to catch. The border should not be able to panic at all: use `GAINS.get(mode as usize)` and return a status code or an agreed fallback for a bad mode.
+
++++ question | Freeing a filter the wrong way
+--- ask
+A Rust library gives C a filter object:
+
+```rust
+#[unsafe(no_mangle)]
+pub extern "C" fn gnc_filter_new(gain: f64) -> *mut Filter {
+    Box::into_raw(Box::new(Filter { gain, state: 0.0 }))
+}
+```
+
+The C code does:
+
+```c
+Filter *f = gnc_filter_new(0.2);
+/* ... use f ... */
+free(f);
+```
+
+What is wrong, and what is the right design?
+--- choice correct
+The memory came from Rust's allocator and C's `free` may use a different one, which is undefined behavior. Export `gnc_filter_free(Filter *f)`, which turns the pointer back into a `Box` with `Box::from_raw` and drops it, and let C treat `Filter` as an opaque handle.
+--- choice
+Nothing is wrong: `Box` uses `malloc` underneath, so `free` releases it correctly.
+--- choice
+C must call `free` twice, once for the `Box` and once for the `Filter` inside it.
+--- choice
+The fix is `#[repr(C)]` on `Filter`, so C's `free` knows the object's size.
+--- why
+Rust and C may use different allocators, so memory must be freed on the side that allocated it. Even when both happen to use the same one today, nothing promises that. The pattern is a matching pair of exported functions, `new` and `free`, with C holding a pointer to a type it knows only by name. C then cannot poke at the fields or free the memory the wrong way. `free` never needs a size, so `repr(C)` does not help. In flight code it is often simpler still for C to own the storage and pass a pointer in.
+
++++ question | A command struct without repr(C)
+--- ask
+The C side declares a command, and the Rust side mirrors it:
+
+```c
+typedef struct { uint8_t id; double t; uint16_t flags; } Cmd;
+```
+
+```rust
+pub struct Cmd {
+    pub id: u8,
+    pub t: f64,
+    pub flags: u16,
+}
+```
+
+C passes a `Cmd *` to a Rust `extern "C"` function that reads `t`. On x86-64, what is wrong?
+--- choice correct
+In C, `sizeof(Cmd)` is 24, with `t` at offset 8. Rust's default layout is free to reorder fields, for example `t`, `flags`, `id` in 16 bytes, so Rust may read `t` from the wrong bytes. Add `#[repr(C)]`.
+--- choice
+Nothing: with only primitive fields, Rust and C always choose the same layout.
+--- choice
+Both are 11 bytes, since there is no padding between fields of different sizes.
+--- choice
+The layouts match, but the byte order differs, because Rust stores floats big-endian.
+--- why
+In C the fields stay in order: `id` at 0, seven padding bytes, `t` at 8 to 15, `flags` at 16 and 17, then padding to a multiple of 8: 24 bytes. Rust's own layout is deliberately unspecified; the compiler may reorder fields to save space, and today it would pack this into 16 bytes. Anything that crosses the border must be `#[repr(C)]`, which gives C's order and padding exactly. Both languages use the machine's native byte order.
+
+=== rs03-l06 | Practice: nalgebra matrices
+--- for
+l06-nalgebra-matrices
+
++++ question | Inline or on the heap
+--- ask
+Pick every nalgebra type whose numbers live inside the value itself, with no heap block.
+--- choice correct
+`SMatrix<f32, 12, 1>`
+--- choice correct
+`Vector3<f64>`
+--- choice
+`DVector<f32>`
+--- choice
+`Matrix<f64, Const<6>, Dyn, VecStorage<f64, Const<6>, Dyn>>`
+--- choice correct
+`SMatrix<f64, 100, 100>`
+--- why
+A matrix is inline exactly when both of its dimensions are `Const`: then its storage is an `ArrayStorage`, an array inside the value. `SMatrix<f32, 12, 1>` is 48 bytes of inline floats and `Vector3<f64>` is 24. Any `Dyn` dimension means `VecStorage`, a `Vec` on the heap, and that holds even when the other dimension is fixed, as in the 6-row matrix with a `Dyn` column count. `SMatrix<f64, 100, 100>` is inline too, all 80000 bytes of it, which is why it belongs in a `static`, not on a small stack.
+
++++ question | Filling down the columns
+--- ask
+What does this print? Type the two numbers separated by a space.
+
+```rust
+use nalgebra::Matrix2x3;
+
+fn main() {
+    let m = Matrix2x3::from_column_slice(&[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
+    println!("{} {}", m[(0, 1)], m[(1, 2)]);
+}
+```
+--- answer
+3 6
+3, 6
+3,6
+--- why
+`from_column_slice` fills down the columns: column 0 gets 1 and 2, column 1 gets 3 and 4, column 2 gets 5 and 6. Written as rows, the matrix is $\begin{bmatrix} 1 & 3 & 5 \\ 2 & 4 & 6 \end{bmatrix}$. Indexing is always row, then column, so `m[(0, 1)]` is row 0, column 1, which is 3, and `m[(1, 2)]` is row 1, column 2, which is 6. With `Matrix2x3::new` and the same six numbers, typed row by row, the answer would have been 2 and 6.
+
++++ question | Which products are shaped right
+--- ask
+`p` is a `Matrix2<f64>`, `h` is a `Matrix1x2<f64>` and `x` is a `Vector2<f64>`. Pick every line that compiles.
+--- choice correct
+`let a = h * x;`
+--- choice correct
+`let b = x * h;`
+--- choice
+`let c = p * h;`
+--- choice correct
+`let d = h * p;`
+--- choice
+`let e = p * x.transpose();`
+--- choice correct
+`let f = x.transpose() * p * x;`
+--- why
+A product compiles only when the left matrix's columns equal the right one's rows, as types. `h * x` is 1 by 2 times 2 by 1, giving 1 by 1. `x * h` is 2 by 1 times 1 by 2, an outer product, giving 2 by 2. `h * p` is 1 by 2 times 2 by 2, giving 1 by 2. `x.transpose() * p * x` is 1 by 2, times 2 by 2, times 2 by 1, giving 1 by 1. `p * h` would need 2 to equal 1, and `p * x.transpose()` would need 2 to equal 1 again, so for both the compiler finds no `DimEq<Const<2>, Const<1>>` and stops.
+
++++ question | A fixed matrix times a dynamic vector
+--- ask
+What happens with this program?
+
+```rust
+use nalgebra::{DVector, Matrix3};
+
+fn main() {
+    let r = Matrix3::<f64>::identity();
+    let v = DVector::from_vec(vec![1.0, 2.0]);
+    println!("built");
+    let w = r * v;
+    println!("{}", w);
+}
+```
+--- choice
+It does not compile: `DimEq<Const<3>, Dyn>` is not implemented.
+--- choice correct
+It compiles, prints `built`, and then panics with "Gemv: dimensions mismatch" at the multiplication.
+--- choice
+It compiles and prints a 3-element vector, padding the missing entry with zero.
+--- choice
+It does not compile, because a fixed-size matrix and a dynamic vector can never be multiplied.
+--- why
+nalgebra implements the shape check `DimEq` for equal fixed dimensions, and also for any pair where one side is `Dyn`, because a `Dyn` length could be 3. So the product compiles, and the check moves to run time, where the vector turns out to have 2 entries: panic. One dynamic operand is enough to lose the compile-time guarantee. On a flight computer that panic would happen in the middle of a control loop, which is why a filter keeps every type fixed-size.
+
++++ question | A position that never moves
+--- ask
+A constant-velocity filter builds its transition matrix like this:
+
+```rust
+let dt = 0.1;
+let f = Matrix2::from_column_slice(&[1.0, dt, 0.0, 1.0]);
+let x_next = f * x; // x = (position, velocity)
+```
+
+Starting from `x = (0.0, 2.0)`, every prediction leaves the position at 0. What is wrong?
+--- choice correct
+`from_column_slice` fills down the columns, so `f` is $\begin{bmatrix} 1 & 0 \\ 0.1 & 1 \end{bmatrix}$, the transpose of what was meant. Build it with `Matrix2::new(1.0, dt, 0.0, 1.0)`, which reads row by row.
+--- choice
+`dt` must be an `f32` to match the matrix.
+--- choice
+The product should be `x * f`, because nalgebra multiplies vectors on the left.
+--- choice
+Nothing is wrong with `f`; a constant-velocity model never changes position.
+--- why
+The intended model is position plus $\Delta t$ times velocity, $\begin{bmatrix} 1 & \Delta t \\ 0 & 1 \end{bmatrix}$. Filled down the columns, the same four numbers give its transpose. Then the new position is $1 \cdot 0 + 0 \cdot 2 = 0$, and the velocity picks up $0.1$ times the position instead. The types cannot catch this, because both matrices are 2 by 2. Printing a new matrix once with `{}`, which draws it as rows, catches it at once. `x * f` would not even compile: 2 by 1 times 2 by 2.
+
++++ question | One Kalman update by hand
+--- ask
+A two-state filter (position, velocity) has `x = (2.0, 0.5)` and
+
+$$
+\mathbf{P} = \begin{bmatrix} 9 & 1.2 \\ 1.2 & 1 \end{bmatrix}.
+$$
+
+It fuses one position measurement $z = 5$ with variance $r = 3$, using $h = \begin{bmatrix} 1 & 0 \end{bmatrix}$, $s = h\mathbf{P}h^\mathsf{T} + r$, $k = \mathbf{P}h^\mathsf{T} / s$ and $x \leftarrow x + k\,(z - h x)$. What are the new position and velocity? Type the two numbers separated by a space.
+--- answer
+4.25 0.8
+4.25, 0.8
+4.25,0.8
+4.25 0.80
+4.25, 0.80
+(4.25, 0.8)
+(4.25, 0.80)
+--- why
+$h\mathbf{P}h^\mathsf{T}$ picks out the position variance, 9, so $s = 9 + 3 = 12$. $\mathbf{P}h^\mathsf{T}$ is the first column of $\mathbf{P}$, $(9, 1.2)$, so the gain is $k = (9/12, 1.2/12) = (0.75, 0.1)$. The innovation is $5 - 2 = 3$. So the position becomes $2 + 0.75 \times 3 = 4.25$ and the velocity $0.5 + 0.1 \times 3 = 0.8$. The velocity moved although only position was measured, because the off-diagonal 1.2 links the two errors. In nalgebra, $h\mathbf{P}h^\mathsf{T}$ is a 1 by 1 matrix, so you index it with `[(0, 0)]` before adding $r$.
+
+=== rs03-l07 | Practice: nalgebra geometry and its neighbors
+--- for
+l07-nalgebra-geometry-and-neighbour-crates
+
++++ question | A quarter turn about y
+--- ask
+Write the unit quaternion for a turn of $90^\circ$ about the $y$ axis, as $w\ x\ y\ z$ to four decimals, separated by spaces.
+--- answer
+0.7071 0 0.7071 0
+0.7071 0.0000 0.7071 0.0000
+0.7071, 0, 0.7071, 0
+0.7071, 0.0000, 0.7071, 0.0000
+(0.7071, 0, 0.7071, 0)
+(0.7071, 0.0000, 0.7071, 0.0000)
+0.7071 0.0 0.7071 0.0
+0.7071, 0.0, 0.7071, 0.0
+(0.7071, 0.0, 0.7071, 0.0)
+--- why
+The recipe is $q = (\cos\frac{\theta}{2}, \sin\frac{\theta}{2}\,\hat{\mathbf{n}})$ with the half angle. For $\theta = 90^\circ$ the half angle is $45^\circ$, and $\cos 45^\circ = \sin 45^\circ = 0.7071$. The axis is $(0, 1, 0)$, so only the $y$ part of the vector is non-zero: $(0.7071, 0, 0.7071, 0)$. Its length is $\sqrt{0.5 + 0.5} = 1$. Using the full angle would give $(0, 0, 1, 0)$, which is a $180^\circ$ turn.
+
++++ question | Back into the sensor frame
+--- ask
+`body_from_sensor` turns $90^\circ$ about $z$ and then slides by $(1, 2, 0)$. What does this print? Type the three numbers separated by spaces.
+
+```rust
+let rot = UnitQuaternion::from_axis_angle(&Vector3::z_axis(), FRAC_PI_2);
+let body_from_sensor = Isometry3::from_parts(Translation3::new(1.0, 2.0, 0.0), rot);
+let p = body_from_sensor.inverse() * Point3::new(1.0, 5.0, 0.0);
+println!("{:.1} {:.1} {:.1}", p.x, p.y, p.z);
+```
+--- answer
+3.0 0.0 0.0
+3 0 0
+3.0, 0.0, 0.0
+3, 0, 0
+3.0 -0.0 0.0
+3.0 0.0 -0.0
+(3, 0, 0)
+(3.0, 0.0, 0.0)
+--- why
+The isometry turns first and slides second, so its inverse undoes them in the opposite order: slide back, then turn back. Subtract $(1, 2, 0)$ from $(1, 5, 0)$ to get $(0, 3, 0)$. Then turn by $-90^\circ$ about $z$, which sends $(x, y)$ to $(y, -x)$: $(0, 3, 0)$ becomes $(3, 0, 0)$. Check it forward: turning $(3, 0, 0)$ by $+90^\circ$ gives $(0, 3, 0)$, and sliding gives $(1, 5, 0)$. Turning back before sliding back would give a wrong point.
+
++++ question | Naming the reverse chain
+--- ask
+You have `inertial_from_body` and `body_from_tracker`, both `Isometry3<f64>`. Pick every expression that equals `tracker_from_inertial`.
+--- choice correct
+`(inertial_from_body * body_from_tracker).inverse()`
+--- choice correct
+`body_from_tracker.inverse() * inertial_from_body.inverse()`
+--- choice
+`inertial_from_body.inverse() * body_from_tracker.inverse()`
+--- choice
+`inertial_from_body * body_from_tracker`
+--- choice
+`body_from_tracker * inertial_from_body`
+--- why
+With frame names written `a_from_b`, a product is valid when the inner names match and cancel: `inertial_from_body * body_from_tracker` is `inertial_from_tracker`. Its inverse is `tracker_from_inertial`. Inverting a product reverses its order: `tracker_from_body * body_from_inertial`, which is the second choice, and again the inner names cancel. The third puts `body_from_inertial` next to `tracker_from_body` with the inner names `inertial` and `tracker`, which do not match. The last one has inner names `tracker` and `inertial`, so it is meaningless.
+
++++ question | A turn of 300 degrees
+--- ask
+What does this print? Type it exactly.
+
+```rust
+let a = UnitQuaternion::from_axis_angle(&Vector3::z_axis(), 300f64.to_radians());
+let b = UnitQuaternion::from_axis_angle(&Vector3::z_axis(), (-60f64).to_radians());
+println!("{:.1} {:.1}", a.angle().to_degrees(), a.angle_to(&b).to_degrees());
+```
+--- answer
+60.0 0.0
+--- why
+Turning $300^\circ$ one way ends in the same attitude as turning $60^\circ$ the other way, and `angle()` reports the shortest equivalent turn, between 0 and $180^\circ$: 60. `b` is that same $-60^\circ$ turn, so the angle between them is 0. Their four numbers differ, though: `a` is $(\cos 150^\circ, 0, 0, \sin 150^\circ) = (-0.866, 0, 0, 0.5)$ and `b` is $(0.866, 0, 0, -0.5)$, exactly minus `a`. That is the double cover: $q$ and $-q$ are one attitude, which is why you compare attitudes with `angle_to`, never by subtracting components.
+
++++ question | A slew command that overshoots
+--- ask
+A slew planner builds its target like this:
+
+```rust
+let target = UnitQuaternion::from_axis_angle(&Vector3::z_axis(), 90.0_f64);
+```
+
+The team expected a quarter turn. What does `target.angle().to_degrees()` report, and why?
+--- choice
+`90.0`: `from_axis_angle` takes degrees.
+--- choice correct
+About `116.6`: the angle is read as 90 radians, which is 14 whole turns plus about 2.035 rad, or $116.6^\circ$. Pass `90f64.to_radians()` or `FRAC_PI_2`.
+--- choice
+`0.0`: 90 is not between 0 and $2\pi$, so the turn is dropped.
+--- choice
+It panics, because the angle is out of range.
+--- why
+nalgebra angles are always radians. $90 / 2\pi \approx 14.32$ turns, and $90 - 14 \times 2\pi = 90 - 87.965 = 2.035$ rad, which is $116.6^\circ$. That is already less than $180^\circ$, so `angle()` reports it as it is. Nothing panics and nothing is clamped: any angle makes a valid unit quaternion, which is what makes this bug quiet. A one-line test with a known quarter turn catches it.
+
++++ question | A GPS time stamp in UTC
+--- ask
+A GPS receiver stamps an event at 12:00:30 GPS time on 2026-03-01. What is the UTC time of the event? Type it as hh:mm:ss.
+--- answer
+12:00:12
+12:00:12 UTC
+2026-03-01 12:00:12
+2026-03-01T12:00:12
+2026-03-01T12:00:12 UTC
+2026-03-01 12:00:12 UTC
+--- why
+In 2026, TAI is 37 s ahead of UTC because of leap seconds. GPS time was set equal to UTC in 1980, when UTC was 19 s behind TAI, and it has never added a leap second since. So GPS time is $37 - 19 = 18$ s ahead of UTC, and 12:00:30 GPS is 12:00:12 UTC. Mixing the scales puts a navigation fix 18 s out, well over a hundred kilometers at orbital speed. On a chip, hifitime does this with its leap-second table, and it can be built without `std`.
+
+=== rs03-l08 | Practice: DO-178C, coverage, tool qualification and ECSS
+--- for
+l08-certification-do-178c-and-ecss
+
++++ question | What DAL B asks of the tests
+--- ask
+A software item is assigned DAL B. Pick every item DO-178C requires of it.
+--- choice correct
+Statement coverage from the requirement-based tests
+--- choice correct
+Decision coverage from the requirement-based tests
+--- choice
+MC/DC coverage
+--- choice
+Tests of every combination of conditions in every decision
+--- choice correct
+More of its objectives met with independence than a DAL C item needs
+--- why
+The coverage levels stack: statement coverage from DAL C up, decision coverage added at DAL B, MC/DC added only at DAL A. No level asks for every combination of conditions; that is exactly the $2^N$ cost MC/DC avoids. DAL B has 69 objectives against 62 at DAL C, and at higher levels more of them must be checked by someone other than the author. DAL B is "hazardous": a large reduction in safety margins, with serious or fatal injury to some occupants possible.
+
++++ question | MC/DC for a different abort rule
+--- ask
+A decision reads `a || (b && c)`. Pick every test set that achieves MC/DC. Each test is written as the values of $a$, $b$, $c$.
+--- choice correct
+(F, T, T), (F, F, T), (F, T, F), (T, F, T)
+--- choice correct
+(F, T, T), (F, F, T), (F, T, F), (T, T, F)
+--- choice
+(F, T, T), (F, F, T), (T, F, F), (T, T, T)
+--- choice
+(F, F, F), (T, F, F), (F, T, T), (T, T, T)
+--- choice
+(F, T, T), (F, F, T), (F, T, F), (T, T, T)
+--- why
+For each condition you need two tests that differ only in it and give different answers. For $b$ that forces $a$ = F and $c$ = T: the only pair is (F, F, T) and (F, T, T). For $c$ it forces $a$ = F and $b$ = T: only (F, T, F) and (F, T, T). For $a$ you need $b \wedge c$ false, so (T, F, T) pairs with (F, F, T), and (T, T, F) pairs with (F, T, F). The first two sets have all three pairs in four tests, $N + 1$. The third misses $c$'s pair, the fourth misses both $b$ and $c$, and in the last, (T, T, T) and (F, T, T) both give T, so $a$ is never shown to matter.
+
++++ question | Two tools on a DAL A project
+--- ask
+A DAL A project uses two tools. A model-based code generator writes part of the flight code. A test-results checker compares every test's outputs with the expected values, and its automatic pass verdict is used instead of a manual review of the results. Which Tool Qualification Levels do they need?
+--- choice correct
+Code generator TQL-1; results checker TQL-4
+--- choice
+Code generator TQL-1; results checker TQL-5
+--- choice
+Both TQL-1, because the software is DAL A
+--- choice
+Code generator TQL-2; results checker TQL-4
+--- why
+The code generator's output is flight code, so it could insert an error: criteria 1, which at DAL A is TQL-1, the heaviest level. The checker automates verification and its result is used to drop another process, the manual review: criteria 2, which at DAL A and B is TQL-4. If the checker only could fail to spot an error, with nothing else cut back, it would be criteria 3 and TQL-5. The DAL alone does not set the TQL; what the tool could do to the evidence does.
+
++++ question | Branches the source does not show
+--- ask
+This function is DAL A code, built with overflow checks on:
+
+```rust
+fn scaled(buf: &[i32], i: usize, k: i32) -> Option<i32> {
+    let v = buf[i];
+    let s = v.checked_mul(k)?;
+    Some(s + 1)
+}
+```
+
+Pick every branch in the object code that a line-by-line view of the source hides, and that the team must trace to a test or justify.
+--- choice correct
+The bounds check on `buf[i]`, with its jump to a panic
+--- choice correct
+The early return hidden in `?` when `checked_mul` gives `None`
+--- choice correct
+The overflow check on `s + 1`, with its jump to a panic
+--- choice
+A check that `buf` is not a null pointer
+--- choice
+A check that `k` is not zero
+--- why
+Each of the three real ones is a decision the compiler wrote from one short line: index in range or panic; `Some` or return `None` now; sum fits or panic. For DAL A, code in the object file that does not trace directly to the source needs extra analysis: which requirement-based test reaches it, or why none can. A Rust slice reference is never null, so there is no null check. Multiplying by zero is fine, so nothing checks `k`; only division has a zero check.
+
++++ question | A test set that misses one condition
+--- ask
+For the decision $(a \wedge b) \vee c$, a team claims MC/DC with four tests: rows 7 (T, T, F → T), 3 (F, T, F → F), 5 (T, F, F → F) and 8 (T, T, T → T). What is wrong?
+--- choice correct
+No pair shows $c$ matters: rows 7 and 8 differ only in $c$ but both give T. Add row 6 (T, F, T → T), which pairs with row 5.
+--- choice
+No pair shows $a$ matters; add row 1.
+--- choice
+Nothing: four tests is $N + 1$ for three conditions, so the set is complete.
+--- choice
+No pair shows $b$ matters; replace row 5 with row 2.
+--- why
+Rows 3 and 7 show $a$ (F to T, with $b$ = T, $c$ = F). Rows 5 and 7 show $b$. For $c$, a pair must flip only $c$ and flip the answer, which happens only while $a \wedge b$ is false. Row 8 pairs with row 7, where $a \wedge b$ is true, so the answer stays T and proves nothing. Rows 5 and 6 work: $a \wedge b$ is false in both, and flipping $c$ turns F into T. Having $N + 1$ tests is necessary, not sufficient: the pairs are what count.
+
++++ question | Code that will not run
+--- ask
+Two pieces of code in one flight build:
+
+```rust
+// (1) Used on the cargo variant of the aircraft; the passenger variant
+//     sets cfg.variant = Variant::Passenger in its configuration file.
+if cfg.variant == Variant::Cargo {
+    arm_cargo_door_monitor();
+}
+
+// (2) Left over from an old requirement.
+if alt_m < 0.0 && alt_m > 100.0 {
+    recover_altitude();
+}
+```
+
+How does DO-178C treat each on the passenger variant?
+--- choice correct
+(1) is deactivated code: it stays, and the team must show it cannot run by accident where it is switched off. (2) is dead code: no requirement asks for it and it can never run, so it is removed.
+--- choice
+Both are dead code on the passenger variant, and both must be removed.
+--- choice
+(1) is dead code, and (2) is deactivated code that must be shown to stay off.
+--- choice
+Neither matters, because structural coverage is only measured on code that runs.
+--- why
+Deactivated code exists on purpose, for a configuration where it is used, so it stays, with evidence that it stays off elsewhere. The condition in (2) can never be true, since no number is below 0 and above 100 at once, and no current requirement asks for it: dead code, which DO-178C expects to be removed. Uncovered code is exactly what structural coverage is meant to surface, and each piece must be explained as a missing requirement, a missing test, or code to delete.
+
+=== rs03-l09 | Practice: Ferrocene, the qualified toolchain
+--- for
+l09-ferrocene-the-qualified-toolchain
+
++++ question | What the toolchain carries
+--- ask
+Pick every true statement about Ferrocene's compiler qualification.
+--- choice correct
+It is qualified for ISO 26262 up to ASIL D.
+--- choice
+It is qualified for IEC 61508 up to SIL 4.
+--- choice correct
+It is qualified for IEC 62304 Class C.
+--- choice
+It holds a DO-178C certificate at DAL C.
+--- choice correct
+Its source and its qualification documents are public under MIT and Apache-2.0.
+--- choice
+It is a separate Rust dialect with its own syntax for safety code.
+--- why
+The certificates, from TÜV SÜD, name ISO 26262 up to ASIL D, IEC 61508 up to SIL 3 (one below that standard's top level, SIL 4) and IEC 62304 Class C. For aviation there is no certificate at all: DO-330 qualifies tools inside a project, and Ferrous Systems supports customers doing that towards DAL C. Ferrocene is upstream `rustc` frozen at a version and wrapped in evidence, and it is open source; what you pay for is signed releases and long-term support.
+
++++ question | Calls the core certificate could cover
+--- ask
+Pick every call that could be covered by Ferrocene's certified library subset. (You would still check each one against the published list.)
+--- choice correct
+`Option::map`
+--- choice correct
+`u32::checked_add`
+--- choice correct
+`<[f32]>::iter`, iterating over a slice
+--- choice
+`alloc::vec::Vec::push`
+--- choice
+`heapless::Vec::push`
+--- choice
+`std::time::Instant::now`
+--- why
+The certified library code is a subset of `core` only. `Option`, integer methods and slices live in `core`, so they are the kind of item the subset covers, but only the published list says whether a given function is in it. `Vec` is in `alloc`, and `Instant` is in `std`; neither carries any library certification. `heapless` is a third-party crate, not part of Ferrocene at all, so it is reviewed and tested like the team's own code.
+
++++ question | A sequence number in release
+--- ask
+What does this print when built with `cargo run --release`? Type it on one line.
+
+```rust
+fn next(seq: u8) -> u8 {
+    seq + 3
+}
+
+fn main() {
+    let mut s: u8 = 250;
+    for _ in 0..3 {
+        s = next(s);
+        print!("{s} ");
+    }
+    println!();
+}
+```
+--- answer
+253 0 3
+--- why
+A `u8` holds 0 to 255. $250 + 3 = 253$. $253 + 3 = 256$, which does not fit: release builds have overflow checks off unless you turn them on, so the sum wraps to $256 - 256 = 0$. Then $0 + 3 = 3$. A debug build would panic on the second call instead. Both are exactly what Rust promises, so a qualified compiler behaves the same way. The bug is a missing requirement: nobody said what the sequence number does at 255. `wrapping_add` or `checked_add`, plus a test at the limit, is the evidence no compiler supplies.
+
++++ question | Rust at DAL B
+--- ask
+An avionics team wants to write a DAL B module in Rust with Ferrocene. What can Ferrous Systems offer for the compiler?
+--- choice
+A DO-178C qualification certificate for DAL B, issued by TÜV SÜD.
+--- choice correct
+No ready package: qualification support is offered towards DAL C. At DAL B the team must qualify the compiler within its own project or verify the compiler's output with its own tests and analysis.
+--- choice
+Nothing is needed, because the ASIL D certificate is accepted as DAL B.
+--- choice
+The DAL C support covers DAL B too, since B only adds decision coverage.
+--- why
+Under DO-330 there is no stand-alone tool certificate at any level: a tool is qualified inside one project and accepted as part of it. Ferrous Systems supplies documents that shorten that work towards DAL C; for DAL A and B no such package is offered. ASIL D belongs to the automotive ladder and does not convert into a DAL. Most DO-178C projects verify the compiler's output instead of qualifying the compiler, and that path is still open at DAL B.
+
++++ question | The flaw in an evidence plan
+--- ask
+A satellite team plans its evidence for a safety-relevant Rust module built with Ferrocene for `thumbv7em-none-eabihf`. Which step of the plan is wrong?
+--- choice
+Step 1: follow the safety manual's conditions of use, and argue the tool choice under ECSS-Q-ST-80C.
+--- choice
+Step 2: check every `core` function the module calls against the certified subset's list.
+--- choice correct
+Step 3: treat `heapless` as covered, since it compiled with a qualified toolchain.
+--- choice
+Step 4: write requirement-based unit tests and measure structural coverage.
+--- why
+Compiling a crate with a qualified compiler says the translation is trustworthy. It says nothing about whether the crate's source is correct. `heapless` is ordinary third-party code, outside Ferrocene's library certificate, so it is reviewed and tested like the team's own. The other steps are right: the safety manual's conditions make the qualification hold, a space project argues its tools under its own standard, each `core` function is checked against the list, and the team's own verification stays the team's.
+
++++ question | The one honest sentence
+--- ask
+Pick the one sentence that states Ferrocene's scope with no error.
+--- choice correct
+Ferrocene is a TÜV SÜD-qualified Rust toolchain for ISO 26262 up to ASIL D, IEC 61508 up to SIL 3 and IEC 62304 Class C, with support for project-level DO-178C qualification towards DAL C and a certified subset of `core` at SIL 2 and ASIL B; it is a prerequisite, not a certification of what we build.
+--- choice
+Ferrocene is a TÜV SÜD-qualified Rust toolchain for ISO 26262 up to ASIL D, IEC 61508 up to SIL 4 and IEC 62304 Class C, with support for project-level DO-178C qualification towards DAL C and a certified subset of `core` at SIL 2 and ASIL B; it is a prerequisite, not a certification of what we build.
+--- choice
+Ferrocene is a TÜV SÜD-qualified Rust toolchain for ISO 26262 up to ASIL D, IEC 61508 up to SIL 3 and IEC 62304 Class C, with support for project-level DO-178C qualification towards DAL C and a certified standard library, including `alloc`, at SIL 2 and ASIL B; it is a prerequisite, not a certification of what we build.
+--- choice
+Ferrocene is a TÜV SÜD-certified Rust toolchain for ISO 26262 up to ASIL D, IEC 61508 up to SIL 3 and IEC 62304 Class C, with a DO-178C certificate at DAL C and a certified subset of `core` at SIL 2 and ASIL B; code it compiles is certified to those levels.
+--- why
+Each wrong sentence differs by a clause an expert would catch at once. The compiler reaches SIL 3, not SIL 4. The certified library code is a subset of `core`; nothing in `alloc` or `std` is certified. There is no DO-178C certificate for any tool, and nothing becomes certified because of the compiler that built it. The right sentence is longer, and every clause in it can be checked, which is what wins the argument.
+
+=== rs03-l10 | Practice: Rust in space, and the evidence
+--- for
+l10-rust-in-space-the-evidence
+
++++ question | Four kinds of source
+--- ask
+The question is "did N7 Space build a Rust RTOS for the SAMV71?". Match each item to its kind: (1) N7 Space's final-presentation slides on ESA's own site; (2) a journalist's conference report that summarizes the talk and links to the slides; (3) an encyclopedia page that lists "used by ESA" in its Rust article; (4) a social-media post by someone outside the project saying "ESA runs Rust on satellites now", with no link.
+--- choice correct
+(1) primary, (2) secondary, (3) tertiary, (4) no source at all
+--- choice
+(1) primary, (2) primary, (3) secondary, (4) tertiary
+--- choice
+(1) secondary, (2) secondary, (3) tertiary, (4) no source at all
+--- choice
+(1) primary, (2) secondary, (3) secondary, (4) tertiary
+--- why
+The slides were made by the team that did the work and published by the agency: primary. The report describes the talk, and its link lets you walk to the primary source yourself: secondary. An encyclopedia page summarizes other summaries: tertiary, good for leads and never for settling a question. The post names no origin you could inspect. It is not even tertiary; it is a claim with no source, and its confident tone is not evidence.
+
++++ question | Claims a reviewer can check
+--- ask
+Pick every claim that primary evidence supports.
+--- choice correct
+N7 Space built a Rust RTOS, Aerugo, with a board support package for the SAMV71, under an ESA contract.
+--- choice correct
+The arXiv paper by Seidel and Beier says industry uptake of Rust in safety-critical space settings is still lacking.
+--- choice
+ESA's Rust studies show that Rust flight software is flying on European satellites.
+--- choice
+SpaceX requires Rust experience for Starlink embedded engineers.
+--- choice correct
+A DLR team reported porting Rust's `std` to RTEMS, at ADCSS 2024.
+--- why
+The Aerugo work is ESA activity 4000140241, with the code open on GitHub and the final presentation from June 2024. The arXiv paper is a primary source for its own argument, and a sober one. The DLR talk is in ESA's own workshop program. Both ESA activities are evaluations, not missions, so "flying" overreaches. The only SpaceX evidence is one posting that listed Rust as one of five acceptable languages, with an "or": accepted, not required.
+
++++ question | Reading a target you have never seen
+--- ask
+`rustc --print cfg --target` on an unfamiliar target prints, among other lines:
+
+```text
+panic="abort"
+target_arch="riscv32"
+target_endian="little"
+target_os="none"
+target_pointer_width="32"
+```
+
+Pick every conclusion that follows.
+--- choice correct
+There is no operating system, so code for it is `#![no_std]`, and a program also needs `#![no_main]` and a panic handler.
+--- choice correct
+`usize` and pointers are 4 bytes.
+--- choice correct
+A panic cannot unwind, so no `Drop` code runs on the way out.
+--- choice
+The chip is little-endian, so a sensor that sends its readings high byte first can be decoded with `i16::from_le_bytes`.
+--- choice
+Because the target is in the compiler's list, `rustup target add` can install `std` for it.
+--- why
+`target_os="none"` is the same "none" as in `thumbv7em-none-eabihf`: nothing underneath to provide files, threads or start-up, so `std` cannot exist. `target_pointer_width="32"` fixes the size of pointers and `usize`. `panic="abort"` means the panic handler is the end of the road, with no destructors. The chip's byte order says nothing about the order a sensor sends; that comes from the sensor's datasheet, so a big-endian sensor still needs `from_be_bytes`. Being in the target list says the code is in the compiler, not that prebuilt libraries exist.
+
++++ question | A target rustup will not install
+--- ask
+You run `rustup target add armv7-rtems-eabihf` and get "no prebuilt artifacts available for target". What does that tell you about the claim that the target is in the official compiler?
+--- choice correct
+Nothing against it: that is what Tier 3 means. The code is in the compiler, which `rustc --print target-list` confirms, but the Rust project ships no prebuilt standard library, so you build it yourself.
+--- choice
+The claim is false: a target in the official compiler can always be installed with rustup.
+--- choice
+The target was removed from Rust after the ESA study ended.
+--- choice
+It shows the target is Tier 2: built on every change but not tested.
+--- why
+Tier 1 targets are built and tested on every change, Tier 2 targets are built and come with prebuilt libraries that rustup installs, and Tier 3 targets are code only. The failed install is exactly the Tier 3 signature, and the target list and `--print cfg` show the target is really there. Checking a primary artifact with your own tools takes a minute and beats any article about it.
+
++++ question | Fixing a memo sentence
+--- ask
+A draft memo says: "Rust is already flying: Starship steers its engines with Rust at 1000 Hz, NASA's Mars Sample Return plans its paths in Rust, and SpaceX hires Rust engineers for Starlink." Which rewrite is fully supported by the evidence?
+--- choice correct
+No primary source supports the Starship or Mars Sample Return claims; the one primary item is a Starlink customer-hardware posting that listed Rust as one of five acceptable languages.
+--- choice
+The Starship claim is unconfirmed, but JPL documents describe Rust path planning for Mars Sample Return.
+--- choice
+SpaceX uses Rust on its Starlink satellites, though its use on Starship is only rumored.
+--- choice
+Many websites report these uses, so at least some of them are likely true.
+--- why
+Both vehicle claims trace to AI-generated content farms, with no SpaceX, NASA or JPL document behind them. The posting was for customer hardware, the equipment on the user's end, not the satellites, and Rust was one option among C, C++, Golang and Python. Counting websites is circular reporting: many copies of one unsourced claim are still one unsourced claim. The supported sentence keeps the true core and says plainly where the evidence stops.
+
++++ question | Five articles, one origin
+--- ask
+A claim appears in five articles. A cites nothing. B cites A. C cites B. D cites A. E cites both C and D. A search engine's summary then cites E. What is the claim's evidence worth?
+--- choice correct
+One origin, A, and no primary source anywhere in the chain: it is an unsupported claim repeated six times.
+--- choice
+Five independent sources plus a summary: strongly supported.
+--- choice
+Two independent sources, since C and D reach E by different paths.
+--- choice
+Supported, because E cross-checks two sources before repeating the claim.
+--- why
+Follow every citation back to its start: all of them end at A, and A points to nothing you can inspect. The two paths into E, through C and through D, both begin at A, so they are one source, not two. Two sources that copy each other count as one. The search summary is tertiary and inherits every weakness of what it cites. Ask what the first source was, not how many places repeat it.
+
+=== rs03-test | no_std Rust and its aerospace footprint: module test
+--- teach
+The test covers the whole module: no_std start-up and the vector table, registers, HALs and embedded-hal drivers, Embassy, RTIC and the microcontroller operating systems, logging, heapless and critical sections, FFI with C and C++, nalgebra's matrices and geometry, DO-178C, DO-330 and ECSS, Ferrocene's exact scope, and the evidence for Rust in space. Most questions combine two or more lessons: you work out addresses, sizes, response times and poses, find why code fails, or pick the claim that survives a reviewer. To get ready, redo the practice questions of the lessons that felt hard, and work every number on paper before you answer.
+--- gate
+questions 13
+minutes 24
+
++++ question | Keeping DMatrix off the chip
+--- ask
+A flight filter library uses nalgebra and is linked into firmware for `thumbv7em-none-eabihf`. Pick every set-up in which a `DMatrix` that someone adds to the library by mistake stops the firmware from building.
+--- choice correct
+`nalgebra = { version = "0.35", default-features = false, features = ["libm"] }`
+--- choice correct
+`nalgebra = { version = "0.35", default-features = false, features = ["libm", "alloc"] }`, with no `#[global_allocator]` anywhere in the firmware
+--- choice
+`nalgebra = { version = "0.35", default-features = false, features = ["libm", "alloc"] }`, with an `embedded-alloc` heap registered as the `#[global_allocator]`
+--- choice
+Any nalgebra set-up, as long as the filter's unit tests pass with `cargo test` on the laptop
+--- choice
+`panic = "abort"` in the release profile
+--- why
+With `std` and `alloc` off, `DMatrix` is not defined at all, so the library fails to compile ("could not find `DMatrix` in `nalgebra`"). With `alloc` on, `DMatrix` exists, but firmware with no allocator refuses to link ("no global memory allocator found"). Either way the heap never reaches the chip. Registering an allocator makes the mistake build and run. Laptop tests have the system allocator, so they prove nothing about the chip. `panic = "abort"` changes what a panic does, not whether memory can be allocated.
+
++++ question | A lock that switches everything off
+--- ask
+An RTIC control loop runs at the top priority with period 1 ms and worst case 0.25 ms. A priority-1 telemetry task shares a resource with it and holds that lock for at most 0.01 ms. A logging driver running at priority 1 also calls `critical_section::with` for up to 0.08 ms, and the firmware uses the `cortex-m` single-core implementation, which disables all interrupts. What is the control loop's worst response time, in milliseconds?
+--- answer
+0.33
+0.33 ms
+0.33ms
+.33
+0.330
+--- why
+On one core, `critical_section::with` masks every interrupt, so it blocks even the top-priority task, although that task never uses the logger's data. The control loop can therefore be held up by the telemetry lock or by the driver's critical section. It is blocked at most once per activation: while its interrupt is pending, no lower-priority code can start a new critical section. So the blocking term is the longer of the two, 0.08 ms, and $R = 0.25 + 0.08 = 0.33\,\mathrm{ms}$. Adding both (0.34) double-counts; ignoring the global section (0.26) is the mistake that makes loops jitter on the bench.
+
++++ question | The USART2 vector
+--- ask
+On the STM32F411, USART2 is device interrupt number 38. The vector table starts at `0x08000000`, and the linker placed the USART2 handler at `0x08001234`. At which address is USART2's vector-table entry, and how does `llvm-objdump -s` print its four bytes?
+--- choice correct
+Address `0x080000D8`, printed as `35120008`
+--- choice
+Address `0x08000098`, printed as `35120008`
+--- choice
+Address `0x080000D8`, printed as `34120008`
+--- choice
+Address `0x080000D8`, printed as `08001235`
+--- why
+Device interrupts start after the 16 core entries, so interrupt 38 is entry $16 + 38 = 54$. Each entry is 4 bytes: $54 \times 4 = 216$, which is `0xD8`, so the entry is at `0x080000D8`. Forgetting the 16 core entries gives `0x98`. The entry holds the handler's address with the Thumb bit set, `0x08001235`, and a Cortex-M stores it little-endian, lowest byte first: `35 12 00 08`. Without the Thumb bit the chip would fault on the first USART2 interrupt.
+
++++ question | A temperature through a fake bus
+--- ask
+A TMP102 temperature sensor sends a 12-bit reading, left-justified in two bytes, high byte first; each count is 0.0625 °C. Here is a generic driver:
+
+```rust
+use embedded_hal::i2c::I2c;
+
+pub struct Tmp102<I> {
+    i2c: I,
+}
+
+impl<I: I2c> Tmp102<I> {
+    pub fn celsius(&mut self) -> Result<f32, I::Error> {
+        let mut raw = [0u8; 2];
+        self.i2c.write_read(0x48, &[0x00], &mut raw)?;
+        let counts = i16::from_be_bytes(raw) >> 4;
+        Ok(counts as f32 * 0.0625)
+    }
+}
+```
+
+In a desk test, a fake bus that implements `I2c` answers the read with the bytes `E7 00`. What does `println!("{}", t.celsius().unwrap())` print?
+--- answer
+-25
+-25.0
+--- why
+High byte first, the bytes make `0xE700`. Its top bit is set, so as an `i16` it is $59136 - 65536 = -6400$. Shifting a signed integer right keeps its sign, so `>> 4` gives $-6400 / 16 = -400$ counts. Then $-400 \times 0.0625 = -25$ °C, and Rust prints the `f32` as `-25`. Decoding as `u16` would shift in zeros and give $3696 \times 0.0625 = 231$ °C. The driver never names a chip, so the same code reads the real sensor on any board whose HAL implements the embedded-hal `I2c` trait.
+
++++ question | Two halves with no lock
+--- ask
+A UART interrupt handler enqueues bytes through the `Producer` half of a `heapless::spsc::Queue`, and the main loop dequeues them through the `Consumer` half. Two tasks pushing into one shared `heapless::Vec` would need a lock or a critical section. Why do the queue's halves need none?
+--- choice correct
+Only the producer ever moves the write position and only the consumer ever moves the read position, so each position has exactly one writer. `split()` borrows the queue mutably, so nothing else can touch it while the halves exist.
+--- choice
+`enqueue` switches interrupts off internally, so it is a critical section in disguise.
+--- choice
+Each half keeps its own copy of the queue, and the copies are merged when the main loop runs.
+--- choice
+The queue is `Send`, and `Send` types are updated atomically.
+--- why
+A data race needs two writers to the same thing. In a single-producer, single-consumer ring, the interrupt writes only the item slots ahead of the read position and the write position itself, and the main loop only reads those slots and moves the read position. Neither side ever writes what the other writes. The borrow checker enforces the "single": there is one `Producer` and one `Consumer`, and the queue cannot be reached another way while they live. Two tasks pushing into one `Vec` would both write its length, which is a real race.
+
++++ question | Logs from a unit in the field
+--- ask
+A unit returned from a field test holds defmt logs. An engineer decodes them with the ELF from this morning's build, and the messages come out as nonsense. What went wrong, and what should the team change?
+--- choice correct
+Each defmt message is sent as an index into the strings kept in the ELF of the build that was flashed. A later build numbers its strings differently. Decode with the ELF archived next to the flashed binary, and archive the ELF with every release.
+--- choice
+The RTT buffer overflowed in the field; make the buffer larger.
+--- choice
+defmt logs can only be decoded when `DEFMT_LOG=trace` is set on the laptop.
+--- choice
+The wrong `--chip` was given to probe-rs when the logs were read.
+--- why
+defmt keeps every format string out of flash: each one gets an index when the firmware is built, and only the index and the raw argument bytes travel. The laptop turns them back into text by looking the index up in the ELF. That mapping belongs to one build, so another build's ELF turns the same indexes into the wrong sentences. `DEFMT_LOG` decides which levels are compiled into the firmware, not how the laptop decodes, and a bad `--chip` would stop flashing, not scramble text.
+
++++ question | A telemetry header, then reordered
+--- ask
+The C telemetry code declares
+
+```c
+typedef struct { uint16_t apid; uint8_t flags; uint32_t seq; uint8_t crc; } hdr_t;
+```
+
+and the Rust side mirrors it as a `#[repr(C)]` struct with the same fields in the same order. What is `size_of` of the Rust struct on a Cortex-M? Then both sides agree to reorder the fields from largest alignment to smallest: `seq`, `apid`, `flags`, `crc`. What is the size then? Type the two numbers separated by a space.
+--- answer
+12 8
+12, 8
+12,8
+12 and 8
+--- why
+In the original order: `apid` fills bytes 0 and 1, `flags` byte 2, one padding byte so `seq` can start at 4, `seq` fills 4 to 7, `crc` byte 8, and three padding bytes round the size up to a multiple of 4: 12. Reordered: `seq` 0 to 3, `apid` 4 and 5, `flags` 6, `crc` 7, which is 8 bytes with no padding at all. Both sides must change together, because `repr(C)` only promises that Rust matches C's layout for the order written. An `assert_eq_size!` line on the Rust side would catch anyone who breaks it later.
+
++++ question | A sum across the border
+--- ask
+Which of these exported functions is sound for every call a C program could make, given its documented contract: "`p` is null, or points to `n` readable floats; returns 0.0 for null or `n == 0`"?
+--- choice
+```rust
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn gnc_sum(p: *const f32, n: usize) -> f32 {
+    let xs = unsafe { core::slice::from_raw_parts(p, n) };
+    xs.iter().sum()
+}
+```
+--- choice correct
+```rust
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn gnc_sum(p: *const f32, n: usize) -> f32 {
+    if p.is_null() || n == 0 {
+        return 0.0;
+    }
+    // SAFETY: non-null, and the contract promises `n` readable floats.
+    let xs = unsafe { core::slice::from_raw_parts(p, n) };
+    xs.iter().sum()
+}
+```
+--- choice
+```rust
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn gnc_sum(p: *const f32, n: usize) -> f32 {
+    if p.is_null() {
+        return 0.0;
+    }
+    let xs = unsafe { core::slice::from_raw_parts(p, n) };
+    (0..=n).map(|i| xs[i]).sum()
+}
+```
+--- choice
+```rust
+#[unsafe(no_mangle)]
+pub extern "C" fn gnc_sum(xs: &[f32]) -> f32 {
+    xs.iter().sum()
+}
+```
+--- why
+`from_raw_parts` requires a non-null pointer even when the length is 0, so the first version is undefined behavior for a null `p`. The second checks what it can and states the rest in a `SAFETY` comment: the small unsafe core behind a checked edge. The third reads one element past the end, `xs[n]`, which panics, and a panic at the edge of an `extern "C"` function aborts the program. The fourth puts a slice in the signature, but a slice is a pointer and a length that C has no way to pass; only C-compatible types may cross.
+
++++ question | Adding the sensor noise
+--- ask
+A Kalman update in nalgebra has `p: Matrix2<f64>`, `h: Matrix1x2<f64>` and `r: f64`. This line does not compile:
+
+```rust
+let s = h * p * h.transpose() + r;
+```
+
+Why, and what is the fix?
+--- choice correct
+`h * p * h.transpose()` is a 1 by 1 matrix, not an `f64`, and nalgebra defines no `+` between a matrix and a plain number. Take the number out first: `(h * p * h.transpose())[(0, 0)] + r`.
+--- choice
+`h * p` has mismatched shapes; it must be `p * h`.
+--- choice
+It compiles in a debug build and fails only in release.
+--- choice
+`r` must be wrapped in `Matrix2`, since `s` is 2 by 2.
+--- why
+The shapes are fine: 1 by 2, times 2 by 2, times 2 by 1, gives 1 by 1. But a 1 by 1 matrix is still a matrix type, and adding an `f64` to it has no implementation, so the compiler reports that it cannot add a float to `Matrix<_, Const<1>, Const<1>, _>`. Indexing with `[(0, 0)]` gives the plain number. `p * h` would need 2 to equal 1 and does not compile. The innovation variance is a single number, not a 2 by 2 matrix.
+
++++ question | A point through two poses
+--- ask
+`inertial_from_body` turns $90^\circ$ about $z$ and then slides by $(10, 0, 0)$. `body_from_tracker` does not turn and slides by $(0.5, 0, 0)$. Where is the tracker-frame point $(1, 0, 0)$ in the inertial frame, as computed by `(inertial_from_body * body_from_tracker) * Point3::new(1.0, 0.0, 0.0)`? Type the three coordinates separated by spaces.
+--- answer
+10 1.5 0
+10.0 1.5 0.0
+10, 1.5, 0
+10.0, 1.5, 0.0
+(10, 1.5, 0)
+(10.0, 1.5, 0.0)
+10 1.5 0.0
+10.0 1.5 0
+--- why
+Apply the right-hand pose first. `body_from_tracker` only slides: $(1, 0, 0) + (0.5, 0, 0) = (1.5, 0, 0)$ in the body frame. `inertial_from_body` turns first: a quarter turn about $z$ sends $(1.5, 0, 0)$ to $(0, 1.5, 0)$. Then it slides: $(0, 1.5, 0) + (10, 0, 0) = (10, 1.5, 0)$. It is a `Point3`, so every slide applies; the direction `Vector3::new(1.0, 0.0, 0.0)` would come out as $(0, 1, 0)$, turned but never slid.
+
++++ question | An average of two attitudes
+--- ask
+A planner wants the attitude halfway between $q_a = (0.7071, 0, 0, 0.7071)$, a $90^\circ$ turn about $z$, and $q_b = (-0.9239, 0, 0, 0.3827)$. It averages the four components and normalizes the result. The answer is a turn of $157.5^\circ$ about $-z$, nowhere near the expected $22.5^\circ$ about $+z$. What went wrong?
+--- choice correct
+$q_b$ is the negated form of a $-45^\circ$ turn about $z$. The dot product $q_a \cdot q_b$ is negative, so the straight average heads the long way round and lands $180^\circ$ from the right answer. Flip $q_b$ to $-q_b$ first, or use `slerp` at $t = 0.5$, which makes that flip itself.
+--- choice
+$q_b$ is not a unit quaternion, so the average is meaningless.
+--- choice
+Nothing went wrong; $157.5^\circ$ about $-z$ is the same attitude as $22.5^\circ$ about $+z$.
+--- choice
+Averaging is right, but `nlerp` paces the path unevenly, and the error at $t = 0.5$ is largest.
+--- why
+$q_b$ has length $\sqrt{0.9239^2 + 0.3827^2} = 1$, and $-q_b = (0.9239, 0, 0, -0.3827)$ is the familiar $-45^\circ$ turn about $z$: the same attitude. Every attitude has two quaternions, and averaging mixes components as if $q$ and $-q$ were far apart. Here $q_a \cdot q_b = 0.7071 \times (-0.9239) + 0.7071 \times 0.3827 = -0.383 < 0$. Averaging $q_a$ with $-q_b$ gives the expected $22.5^\circ$. A turn of $157.5^\circ$ about $-z$ is $-157.5^\circ$ about $+z$, exactly $180^\circ$ from $+22.5^\circ$. nlerp is exact at $t = 0.5$, and its uneven pace is a separate, smaller issue.
+
++++ question | Coverage evidence for Rust at DAL A
+--- ask
+A team plans the structural coverage evidence for a DAL A Rust module. Pick every true statement.
+--- choice correct
+Stable Rust's `-C instrument-coverage` reports line and region coverage, not MC/DC, so it cannot on its own supply the MC/DC evidence DAL A needs.
+--- choice correct
+A coverage analyzer can only fail to notice missing coverage, so it is criteria 3 and needs TQL-5, even at DAL A.
+--- choice correct
+Branches the compiler adds, such as bounds checks and the early return in `?`, need extra analysis, because they do not trace directly to the source.
+--- choice
+Because the compiler is qualified, structural coverage can be measured on the source alone, with no look at the object code.
+--- choice
+Short-circuit `&&` and `||` make MC/DC impossible to achieve in Rust.
+--- why
+MC/DC is the DAL A coverage level, and a tool that measures lines and regions does not show that each condition independently changes its decision. The TQL comes from what the tool could do: a coverage tool can miss something but cannot put errors into flight code, so it is TQL-5 at every DAL. Compiler-inserted branches are object code with no direct source line, and DAL A asks for them to be explained. A qualified compiler does not remove that analysis. Short-circuiting does not block MC/DC; the guidance allows for it, but the coverage tool has to understand which conditions were never evaluated.
+
++++ question | Rust at the top of the aviation scale
+--- ask
+Which statement about a DAL A flight-control module written in Rust is accurate?
+--- choice correct
+No Ferrocene qualification package is offered for DAL A. The team either verifies the compiler's output itself (tests on the object code, coverage, source-to-object analysis) or qualifies the compiler within its own project, and it still owes all of its own verification.
+--- choice
+Ferrocene's ASIL D qualification is accepted as DAL A, since both are the top of their scales.
+--- choice
+The team needs Ferrocene's DO-178C DAL A certificate from TÜV SÜD before any code can fly.
+--- choice
+At DAL A the compiler must be qualified to TQL-1 before a line of flight code can be written.
+--- why
+Ferrous Systems supports customer qualification towards DAL C only; nothing is packaged for A or B. DO-330 has no stand-alone tool certificates at any level, and the industry ladders are defined differently, so ASIL D never converts into DAL A. Most DO-178C projects, at every level, do not qualify their compiler at all; they verify what it produced. A qualified compiler would shorten that work, but the requirements, tests, coverage and reviews stay the team's.
+
++++ question | Sentences for the memo
+--- ask
+Pick every sentence that can go into a memo on Rust in flight software unchanged.
+--- choice correct
+The Rust compiler includes the Tier 3 target `armv7-rtems-eabihf`, which came from ESA-funded work by DLR.
+--- choice correct
+ESA activity 4000140241 evaluated Rust by building an RTOS and a board support package for the Cortex-M7 SAMV71.
+--- choice
+Starship's thrust vector control runs Rust at 1000 Hz.
+--- choice
+A SpaceX Starlink posting required Rust experience.
+--- choice
+Ferrocene is qualified to ECSS-Q-ST-80C, so European space projects need no further tool argument.
+--- why
+The first two name artifacts a reviewer can open: the target in the compiler's own list, and the activity on ESA's website with its code on GitHub. The Starship claim has no primary source and traces to content farms. The posting listed Rust as one of five acceptable languages, so "required" overreaches. Ferrocene has no ECSS certificate: a space project still justifies its tools under ECSS-Q-ST-80C, with Ferrocene's documents as useful evidence in that argument.
+
++++ question | Four jobs, four foundations
+--- ask
+Match each job to the best foundation. (1) A 2 kHz motor current loop whose deadline must be proven on paper. (2) Firmware for a USB link, a radio modem and an SD-card logger, with no hard deadlines. (3) A system where every driver is a separate unprivileged program, a supervisor restarts one that crashes, and the task list is fixed at build time. (4) A kernel that loads third-party applications, some written in C, separately from itself.
+--- choice correct
+(1) RTIC, (2) Embassy, (3) Hubris, (4) Tock
+--- choice
+(1) Embassy, (2) RTIC, (3) Hubris, (4) Tock
+--- choice
+(1) RTIC, (2) Embassy, (3) Tock, (4) Hubris
+--- choice
+(1) Hubris, (2) Embassy, (3) RTIC, (4) Tock
+--- why
+RTIC's fixed priorities, run by the NVIC, and its bounded blocking make a deadline provable from measured times. Embassy's cooperative `async` tasks fit firmware that spends its life waiting on buses, and the chip sleeps when nothing is ready. Hubris fixes every task at build time, runs drivers as unprivileged tasks behind the MPU, and restarts crashed ones. Tock's processes are MPU-isolated applications, in C or Rust, loaded separately from its Rust kernel, whose own drivers are capsules kept apart by the type system.
+
++++ question | Two drivers on one bus
+--- ask
+An MPU-6050 driver and a BMP280 driver both take their bus by value: `Mpu6050::new(i2c: I)` and `Bmp280::new(i2c: I)`. Both sensors are wired to the one I2C1 bus.
+
+```rust
+let i2c = dp.I2C1.i2c((gpiob.pb8, gpiob.pb9), 400.kHz(), &mut rcc);
+let mut imu = Mpu6050::new(i2c);
+let mut baro = Bmp280::new(i2c);
+```
+
+What happens, and what is the right fix?
+--- choice correct
+It does not compile: `i2c` moved into the first driver (E0382). Share the bus with the `embedded-hal-bus` crate, which gives each driver its own handle that implements `I2c`.
+--- choice
+It compiles, and the two drivers take turns on the bus automatically.
+--- choice
+Call `i2c.clone()` for the second driver, so each owns a copy of the bus.
+--- choice
+Call the PAC's `unsafe fn steal()` to get a second I2C1 and build a second bus from it.
+--- why
+Taking the bus by value is ownership from module 02: after `Mpu6050::new(i2c)`, the first driver owns it and the name `i2c` is dead. HAL bus types are not `Clone`, because two owners of one peripheral is exactly what the singleton design prevents, and `steal()` breaks that rule behind an `unsafe` word. `embedded-hal-bus` exists for this: it wraps the one bus and hands out handles that take turns safely, so both drivers stay generic over `I2c` and never know they share.
