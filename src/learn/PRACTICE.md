@@ -211,7 +211,8 @@ npx vitest run src/learn/learn.test.ts src/learn/practice.test.ts           # fo
 
 The first command runs every problem's solution and starter against its checks:
 
-- Python runs on CPython.
+- Python runs on CPython. In the app it runs on Pyodide, which is 32-bit WebAssembly: NumPy's default
+  integer there is int32, so never let a check depend on a default dtype, its size or strides.
 - C++ runs on clang with the in-browser compiler's flags: `-std=c++20 -fno-exceptions`, so no
   `throw` or `try`. Avoid function names that the system headers already declare (`truncate`,
   `index`, `link`, `remove`, `time`, `log`, `abs`), or the checks will not compile.

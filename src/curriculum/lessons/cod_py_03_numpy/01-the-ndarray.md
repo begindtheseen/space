@@ -116,7 +116,7 @@ Because an array is one packed block, every element must be the same kind of num
 
 `float64` is the same **[[double-precision float|float64-is-double]]** as an ordinary Python float, just without the box. The number in the name is the size in bits; divide by 8 to get bytes. So `float32` is 32 bits, which is 4 bytes.
 
-If you do not say, NumPy looks at what you gave it and picks. Whole numbers only gives `int64`. Any decimal point anywhere promotes the whole array to `float64`. You can also choose with `dtype=`:
+If you do not say, NumPy looks at what you gave it and picks. Whole numbers only gives `int64` on a 64-bit computer, which is what the outputs in this module show. ORBIT's in-browser Python is 32-bit, so there the same array is `int32`: 4 bytes an element, whole numbers up to about 2.1 billion. When the size matters, say it with `dtype=`. Any decimal point anywhere promotes the whole array to `float64`. You can also choose with `dtype=`:
 
 ```python
 >>> import numpy as np
