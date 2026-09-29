@@ -105,7 +105,7 @@ describe('markdown becomes prose', () => {
   })
 
   it('expands units that stand alone', () => {
-    expect(speakableFromMarkdown('it flew at 7.7 km/s')).toContain('kilometres per second')
+    expect(speakableFromMarkdown('it flew at 7.7 km/s')).toContain('kilometers per second')
   })
 })
 
@@ -236,9 +236,9 @@ describe('quotients and units', () => {
 
   it('leaves the slash inside a unit alone', () => {
     // "1000 m divided by s" is an algebraic quotient; the text means a speed.
-    expect(mathToWords('u = 1000\\ \\text{m/s}')).toBe('u equals 1000 metres per second')
+    expect(mathToWords('u = 1000\\ \\text{m/s}')).toBe('u equals 1000 meters per second')
     expect(mathToWords('2750\\ \\text{kg/s}')).toBe('2750 kilograms per second')
-    expect(mathToWords('9.81\\ \\text{m/s}^2')).toBe('9.81 metres per second squared')
+    expect(mathToWords('9.81\\ \\text{m/s}^2')).toBe('9.81 meters per second squared')
   })
 
   it('speaks escaped punctuation instead of its backslash', () => {
@@ -326,10 +326,10 @@ describe('equations read the way a person says them', () => {
   })
 
   it('reads the arithmetic symbols prose uses', () => {
-    expect(speakableFromMarkdown('About 3 × 10⁸ m/s.')).toBe('About 3 times 10 to the power of 8 metres per second.')
+    expect(speakableFromMarkdown('About 3 × 10⁸ m/s.')).toBe('About 3 times 10 to the power of 8 meters per second.')
     expect(speakableFromMarkdown('Take 10^6 samples.')).toBe('Take 10 to the power of 6 samples.')
     expect(speakableFromMarkdown('An area in m².')).toBe('An area in m squared.')
-    expect(speakableFromMarkdown('It costs 9.81 m/s² of lift.')).toBe('It costs 9.81 metres per second squared of lift.')
+    expect(speakableFromMarkdown('It costs 9.81 m/s² of lift.')).toBe('It costs 9.81 meters per second squared of lift.')
     expect(speakableFromMarkdown('first · second')).toBe('first, second')
     expect(speakableFromMarkdown('Done. · Next')).toBe('Done. Next')
   })
@@ -361,3 +361,106 @@ describe('equations read the way a person says them', () => {
   })
 })
 
+
+describe('words the voice used to get wrong', () => {
+  const say = (md: string) => speakableFromMarkdown(md)
+
+  it('reads vs as versus, and the common abbreviations in full', () => {
+    expect(say('Verification vs validation.')).toBe('Verification versus validation.')
+    expect(say('Three sigma vs. the 99.73rd percentile.')).toBe('Three sigma versus the 99.73rd percentile.')
+    expect(say('Units, e.g. meters, i.e. lengths, etc.')).toBe('Units, for example, meters, that is, lengths, et cetera.')
+  })
+
+  it('reads units after numbers in prose, singular for one', () => {
+    expect(say('The orbit takes 84.4 min, about 5073 s.')).toBe('The orbit takes 84.4 minutes, about 5073 seconds.')
+    expect(say('It climbs 400 m in 1 s and pushes 10 N.')).toBe('It climbs 400 meters in 1 second and pushes 10 newtons.')
+    expect(say('A 3 GB log at 2 Mbps.')).toBe('A 3 gigabytes log at 2 megabits per second.')
+  })
+
+  it('leaves letters after numbers alone inside maths and code', () => {
+    expect(say('$x = 2t$')).not.toContain('tons')
+    expect(say('$G(s) = 5s$')).not.toContain('seconds')
+    expect(say('Run `sleep 2m` now.')).not.toContain('meters')
+  })
+
+  it('reads code the way a programmer says it', () => {
+    expect(say('Call `std::vector::push_back()` or `p->next`.')).toBe('Call standard vector push back or p arrow next.')
+    expect(say('Write `++index == capacity`.')).toBe('Write plus plus index equals equals capacity.')
+    expect(say('Use `std::vector<int>` here.')).toBe('Use standard vector of int here.')
+  })
+
+  it('names the tools and languages the way people say them', () => {
+    expect(say('C++ and NumPy print to stdout.')).toBe('C plus plus and num pie print to standard out.')
+    expect(say('Save it as JSON.')).toBe('Save it as Jason.')
+  })
+
+  it('reads signs and ranges in prose', () => {
+    expect(say('Only 85% of it, ~60 people, 5–10 of them.')).toBe('Only 85 percent of it, about 60 people, 5 to 10 of them.')
+    expect(say('a ≈ 7 and b ≤ 3, ± 2')).toBe('a about 7 and b less than or equal to 3, plus or minus 2')
+    expect(say('The date 2024-06-01 stays.')).toBe('The date 2024-06-01 stays.')
+  })
+})
+
+describe('code names written in prose', () => {
+  const say = (md: string) => speakableFromMarkdown(md)
+  it('reads C++ versions, compilers and std names', () => {
+    expect(say('std::variant arrived in C++17; build with clang++ and libstdc++.')).toBe(
+      'standard variant arrived in C plus plus 17; build with clang plus plus and lib standard C plus plus.',
+    )
+  })
+  it('reads names with underscores as words', () => {
+    expect(say('Use ROW_NUMBER over sat_id.')).toBe('Use row number over sat id.')
+    expect(say('A `Host *` block matches every name.')).toBe('A Host star block matches every name.')
+  })
+})
+
+describe('units inside equations', () => {
+  it('says the unit, not its letters', () => {
+    expect(mathToWords('655\\,\\mathrm{s}')).toBe('655 seconds')
+    expect(mathToWords('9.81\\,\\mathrm{m/s^2}')).toBe('9.81 meters per second squared')
+    expect(mathToWords('J = 500\\,\\mathrm{kg\\,m^2}')).toBe('J equals 500 kilogram meters squared')
+    expect(mathToWords('\\sigma = 4.398\\,\\mathrm{s^{-1}}')).toBe('sigma equals 4.398 per second')
+    expect(mathToWords('1.225\\,\\mathrm{kg/m^3}')).toBe('1.225 kilograms per meter cubed')
+    expect(mathToWords('50\\,\\mathrm{\\mu s}')).toBe('50 microseconds')
+    expect(mathToWords('1\\,\\mathrm{kHz}')).toBe('1 kilohertz')
+    expect(mathToWords('6{,}000\\,\\mathrm{rpm}')).toBe('6000 R P M')
+  })
+
+  it('leaves labels and one-letter names alone', () => {
+    expect(mathToWords('\\mathbf{I} = \\mathrm{diag}(900, 1200)')).toBe('I equals diag (900, 1200)')
+    expect(mathToWords('\\mathrm{d}t')).toBe('d t')
+    expect(mathToWords('t_\\mathrm{s}')).toBe('t sub s')
+    expect(mathToWords('q_{\\text{true}}')).toBe('q sub true')
+    expect(mathToWords('0.1298^\\circ/\\mathrm{h}')).toBe('0.1298 degrees per hour')
+  })
+})
+
+describe('the rest of what the voice read wrong', () => {
+  it('reads a unit that follows a number written as maths', () => {
+    expect(speakableFromMarkdown('It must land within $r = 15$ m of the pad.')).toBe('It must land within r equals 15 meters of the pad.')
+    expect(speakableFromMarkdown('Hold it for $1$ s.')).toBe('Hold it for 1 second.')
+    expect(speakableFromMarkdown('Take $x$ m of rope.')).toBe('Take x m of rope.')
+  })
+
+  it('reads bars as a size, and hyphenated vs', () => {
+    expect(mathToWords('|0.7 y| > L')).toBe('the absolute value of 0.7 y is greater than L')
+    expect(mathToWords('P(A|B)P(B|A)')).not.toContain('absolute')
+    expect(speakableFromMarkdown('A drag-vs-velocity profile.')).toBe('A drag versus velocity profile.')
+  })
+
+  it('reads a subscript that is a named symbol or has braces inside', () => {
+    expect(mathToWords('\\Delta v_\\perp')).toBe('delta v sub perp')
+    expect(mathToWords('\\min_{u_0, u_{N-1}} J')).not.toContain('_')
+  })
+})
+
+describe('last round of voice fixes', () => {
+  it('reads a braceless upright unit and bars around a call', () => {
+    expect(mathToWords('4.76\\,\\mathrm m')).toBe('4.76 meters')
+    expect(mathToWords('|G(j4)| = 1')).toBe('the absolute value of G(j4) equals 1')
+  })
+
+  it('drops stray underscores in code names', () => {
+    expect(speakableFromMarkdown('Members `_pass` and `data_` go last.')).toBe('Members pass and data go last.')
+  })
+})

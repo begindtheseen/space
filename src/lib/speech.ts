@@ -362,6 +362,16 @@ export function speechRateOptions(current: number): number[] {
   return [...all].sort((a, b) => a - b)
 }
 
+/** Brackets that open before they close and all close: `G(j4)` yes, `B)P(B` no. */
+function balanced(x: string): boolean {
+  let depth = 0
+  for (const c of x) {
+    depth += c === '(' ? 1 : c === ')' ? -1 : 0
+    if (depth < 0) return false
+  }
+  return depth === 0
+}
+
 export function mathToWords(tex: string): string {
   let s = tex
 
@@ -370,6 +380,9 @@ export function mathToWords(tex: string): string {
   s = vectorDots(s)
   // Upright text first, so a transpose written `^{\mathsf{T}}` is still seen
   // as one, and an apostrophe in `\text{…}` is plainly inside a word.
+  // A thousands comma, `6{,}000`, is part of the number.
+  s = s.replace(/(\d)\{,\}(?=\d)/g, '$1')
+  s = mathUnitsToWords(s)
   s = rewrite(s, 'mathrm', 1, (a) => a)
   s = rewrite(s, 'text', 1, (a) => a)
   s = rewrite(s, 'mathsf', 1, (a) => a)
@@ -409,9 +422,15 @@ export function mathToWords(tex: string): string {
   // `|_N` means "evaluated in frame N" throughout these lessons, and a voice
   // reading the bar as "sub N" loses the only word that carried the meaning.
   s = s.replace(/\|\s*_\{?([A-Za-z])\}?/g, ' in frame $1 ')
+  // Bars around a short term are its size: |0.7 y| is "the absolute value of 0.7 y".
+  // Brackets inside rule out a conditional like P(A|B) … P(B|A).
+  s = s.replace(/(?<!\\)\|([^|\n]{1,40}?)(?<!\\)\|/g, (m, x: string) => (balanced(x) ? ` the absolute value of ${x} ` : m))
 
   // Subscripts.
-  s = s.replace(/_\{([^{}]*)\}/g, (_m, p: string) => ` sub ${mathToWords(p)} `)
+  s = s.replace(/_\{((?:[^{}]|\{[^{}]*\})*)\}/g, (_m, p: string) => ` sub ${mathToWords(p)} `)
+  // A named symbol after the underscore has been spelled out by now: `v_\perp`.
+  s = s.replace(/_\s+([A-Za-z]+)/g, (_m, p: string) => ` sub ${SUB_WORDS[p] ?? p} `)
+  s = s.replace(/_\s*(\\[A-Za-z]+)/g, ' sub $1 ')
   s = s.replace(/_(\w)/g, (_m, p: string) => ` sub ${SUB_WORDS[p] ?? p} `)
   // Labels abbreviated in a subscript: v_circ is circular speed.
   s = s.replace(/\bsub\s+(circ|esc|max|min|ref|cmd|init|avg|rel)\b/g, (_m, l: string) =>
@@ -458,17 +477,113 @@ export function mathToWords(tex: string): string {
 
 /* ── Units ───────────────────────────────────────────────────────────────── */
 
+interface Said {
+  name: [string, string]
+  power: number
+}
+
+/** Each unit written upright in an equation, as [one, many]. */
+const MATH_UNITS: Record<string, [string, string]> = {
+  s: ['second', 'seconds'], ms: ['millisecond', 'milliseconds'], 'µs': ['microsecond', 'microseconds'],
+  ns: ['nanosecond', 'nanoseconds'], min: ['minute', 'minutes'], h: ['hour', 'hours'], hr: ['hour', 'hours'],
+  d: ['day', 'days'], day: ['day', 'days'], yr: ['year', 'years'],
+  m: ['meter', 'meters'], km: ['kilometer', 'kilometers'], cm: ['centimeter', 'centimeters'],
+  mm: ['millimeter', 'millimeters'], 'µm': ['micrometer', 'micrometers'], nm: ['nanometer', 'nanometers'],
+  AU: ['astronomical unit', 'astronomical units'], ft: ['foot', 'feet'],
+  kg: ['kilogram', 'kilograms'], g: ['gram', 'grams'], mg: ['milli g', 'milli g'], t: ['metric ton', 'metric tons'],
+  lb: ['pound', 'pounds'], lbf: ['pound of force', 'pounds of force'],
+  N: ['newton', 'newtons'], mN: ['millinewton', 'millinewtons'], kN: ['kilonewton', 'kilonewtons'],
+  MN: ['meganewton', 'meganewtons'], Pa: ['pascal', 'pascals'], kPa: ['kilopascal', 'kilopascals'],
+  MPa: ['megapascal', 'megapascals'], GPa: ['gigapascal', 'gigapascals'], bar: ['bar', 'bar'],
+  atm: ['atmosphere', 'atmospheres'], psi: ['P S I', 'P S I'],
+  J: ['joule', 'joules'], kJ: ['kilojoule', 'kilojoules'], MJ: ['megajoule', 'megajoules'],
+  W: ['watt', 'watts'], kW: ['kilowatt', 'kilowatts'], MW: ['megawatt', 'megawatts'],
+  V: ['volt', 'volts'], A: ['amp', 'amps'], mA: ['milliamp', 'milliamps'], K: ['kelvin', 'kelvin'],
+  nT: ['nanotesla', 'nanotesla'], 'Ω': ['ohm', 'ohms'],
+  rad: ['radian', 'radians'], mrad: ['milliradian', 'milliradians'], 'µrad': ['microradian', 'microradians'],
+  deg: ['degree', 'degrees'], mdeg: ['millidegree', 'millidegrees'], arcsec: ['arcsecond', 'arcseconds'],
+  rpm: ['R P M', 'R P M'], rev: ['revolution', 'revolutions'],
+  Hz: ['hertz', 'hertz'], kHz: ['kilohertz', 'kilohertz'], MHz: ['megahertz', 'megahertz'], GHz: ['gigahertz', 'gigahertz'],
+  dB: ['decibel', 'decibels'], decade: ['decade', 'decades'], ppm: ['part per million', 'parts per million'],
+  B: ['byte', 'bytes'], bytes: ['byte', 'bytes'], KB: ['kilobyte', 'kilobytes'], kB: ['kilobyte', 'kilobytes'],
+  KiB: ['kibibyte', 'kibibytes'], MB: ['megabyte', 'megabytes'], MiB: ['mebibyte', 'mebibytes'],
+  GB: ['gigabyte', 'gigabytes'], TB: ['terabyte', 'terabytes'], bit: ['bit', 'bits'], bits: ['bit', 'bits'],
+  FLOP: ['flop', 'flops'], GFLOP: ['gigaflop', 'gigaflops'],
+}
+
+/**
+ * An upright unit — `\mathrm{m/s^2}`, `\mathrm{kg\,m^2}`, `\mathrm{s^{-1}}` —
+ * as words: "meters per second squared", "kilogram meters squared", "per
+ * second". Null when any part of it is not a unit, so `\mathrm{diag}` and
+ * `\text{true}` are left to be read as the words they are.
+ */
+export function mathUnitWords(unit: string, one = false): string | null {
+  const parts = unit
+    .replace(/\\mu\s*/g, 'µ')
+    .replace(/\\Omega\b/g, 'Ω')
+    .split('/')
+  const top: Said[] = []
+  const bottom: Said[] = []
+  for (const [i, part] of parts.entries()) {
+    const factors = part.replace(/\\[,;: !]|\\cdot|·|~/g, ' ').trim().split(/\s+/).filter(Boolean)
+    if (!factors.length) return null
+    for (const f of factors) {
+      const m = /^([A-Za-zµΩ]+)(?:\^\s*\{?\s*(-?\d)\s*\}?)?$/.exec(f)
+      if (!m || !Object.hasOwn(MATH_UNITS, m[1]!)) return null
+      const name = MATH_UNITS[m[1]!]!
+      const power = Number(m[2] ?? 1)
+      ;(i === 0 && power > 0 ? top : bottom).push({ name, power: Math.abs(power) })
+    }
+  }
+  const say = (u: Said, many: boolean) =>
+    `${u.name[many ? 1 : 0]}${u.power === 2 ? ' squared' : u.power === 3 ? ' cubed' : u.power > 1 ? ` to the power of ${u.power}` : ''}`
+  const head = top.map((u, i) => say(u, i === top.length - 1 && !one)).join(' ')
+  const tail = bottom.map((u) => `per ${say(u, false)}`).join(' ')
+  return [head, tail].filter(Boolean).join(' ')
+}
+
+const UPRIGHT_RE = /\\(?:mathrm|text)(?:\s*\{((?:[^{}]|\{[^{}]*\})*)\}|\s+([A-Za-z]+)\b)/g
+const MATH_SPACE = String.raw`(?:\\[,;: ]|~|\s)*`
+
+/**
+ * Units in an equation. With `\mathrm` simply unwrapped, `370\,\mathrm{m}` was
+ * read "370 m" and `9.8\,\mathrm{m/s^2}` "9.8 m divided by s squared". A
+ * one-letter unit is only a unit after a number (or after the thin space
+ * that sets one off), so `t_\mathrm{s}` and `\mathrm{d}t` keep their letters.
+ */
+function mathUnitsToWords(tex: string): string {
+  return tex.replace(UPRIGHT_RE, (whole, braced: string | undefined, word: string | undefined, at: number, all: string) => {
+    const unit = braced ?? word!
+    const before = all.slice(0, at)
+    const after = all.slice(at + whole.length)
+    const bare = before.replace(new RegExp(`${MATH_SPACE}$`), '')
+    // A label, not a unit: v_{\mathrm{esc}}, \mathrm{PM}_{\mathrm{rad}}, \mathrm{diag}(…).
+    if (/(?:[_^]\s*\{?)$/.test(bare) || /^\s*[_(]/.test(after)) return whole
+    // Degrees per second is read by the degree rule.
+    if (/(?:°|\\circ)\s*\/$/.test(bare) && /^s(?:\^\{?2\}?)?$/.test(unit.trim())) return whole
+    const spaced = bare.length < before.length && /\\[,;: ]|~/.test(before.slice(bare.length))
+    const number = /(?<![\w.^])(\d[\d,{}]*(?:\.\d+)?)$/.exec(bare)?.[1]
+    const perSlash = bare.endsWith('/')
+    const short = unit.trim().length === 1
+    if (short && !number && !spaced && !perSlash && !/[})]$/.test(bare)) return whole
+    const words = mathUnitWords(unit, number === '1' || perSlash || /\bper$/.test(bare))
+    if (!words) return whole
+    return ` ${perSlash ? 'per ' : ''}${words} `
+  }).replace(/\/\s+per /g, ' per ')
+}
+
+
 /**
  * Unit abbreviations, expanded only where they stand alone as a word so that
  * "m" inside a variable name is left alone.
  */
 const UNITS: [RegExp, string][] = [
-  [/\bkm\/s\b/g, 'kilometres per second'],
+  [/\bkm\/s\b/g, 'kilometers per second'],
   [/\bkg\/s\b/g, 'kilograms per second'],
-  [/\bN\/m\b/g, 'newtons per metre'],
-  [/\bm\/s\^?2\b/g, 'metres per second squared'],
-  [/\bm\/s\b/g, 'metres per second'],
-  [/\bkm\b/g, 'kilometres'],
+  [/\bN\/m\b/g, 'newtons per meter'],
+  [/\bm\/s\^?2\b/g, 'meters per second squared'],
+  [/\bm\/s\b/g, 'meters per second'],
+  [/\bkm\b/g, 'kilometers'],
   [/\bkg\b/g, 'kilograms'],
   [/\bkN\b/g, 'kilonewtons'],
   [/\bkPa\b/g, 'kilopascals'],
@@ -485,6 +600,162 @@ function expandUnits(s: string): string {
   let out = s
   for (const [re, word] of UNITS) out = out.replace(re, word)
   return out
+}
+
+/* ── Code, abbreviations and the symbols prose leaves in ─────────────────── */
+
+/**
+ * Inline code as a person reads it aloud. `std::vector::push_back` came out
+ * as "std colon colon vector colon colon push underscore back", `p->next` as
+ * "p minus greater than next".
+ */
+export function codeToWords(code: string): string {
+  return (
+    code
+      // Template arguments: vector<int> is "vector of int".
+      .replace(/(\w)<([\w:, *&]+)>/g, '$1 of $2')
+      .replace(/\bstd::/g, 'standard ')
+      .replace(/::/g, ' ')
+      .replace(/->/g, ' arrow ')
+      .replace(/\+\+/g, ' plus plus ')
+      .replace(/--(?=\w)|(?<=\w)--/g, ' minus minus ')
+      .replace(/==/g, ' equals equals ')
+      .replace(/!=/g, ' not equals ')
+      .replace(/<=/g, ' less than or equal to ')
+      .replace(/>=/g, ' greater than or equal to ')
+      .replace(/&&/g, ' and ')
+      .replace(/\|\|/g, ' or ')
+      .replace(/\+=/g, ' plus equals ')
+      .replace(/-=/g, ' minus equals ')
+      .replace(/\*=/g, ' times equals ')
+      .replace(/(^|[\s(])!(?=\w)/g, '$1not ')
+      .replace(/\s%\s/g, ' mod ')
+      .replace(/\s&\s/g, ' and ')
+      .replace(/\s<\s/g, ' less than ')
+      .replace(/\s>\s/g, ' greater than ')
+      .replace(/\s=\s/g, ' equals ')
+      .replace(/#include\b/g, 'hash include')
+      // A call's empty brackets are silent: push_back() is "push back".
+      .replace(/\(\)/g, '')
+      .replace(/(?<=[A-Za-z_)\]])\.(?=[A-Za-z_])/g, ' dot ')
+      .replace(/\s\*\s/g, ' times ')
+      .replace(/\*/g, ' star ')
+      .replace(/\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b/g, (id) => id.toLowerCase())
+      .replace(/(?<=[A-Za-z0-9])_(?=[A-Za-z0-9])/g, ' ')
+      // A leading or trailing underscore (_pass, data_) has no sound.
+      .replace(/_/g, ' ')
+      .replace(/[;{}]/g, ' ')
+  )
+}
+
+/** Tech names the voice guesses at, spelled the way people say them. */
+const SAID_AS: [RegExp, string][] = [
+  [/\bC\+\+(?=\d)/g, 'C plus plus '], [/\bC\+\+/g, 'C plus plus'], [/\bg\+\+/g, 'G plus plus'], [/\bC#/g, 'C sharp'],
+  [/\blibstdc\+\+/g, 'lib standard C plus plus'], [/\bJSF\+\+/g, 'J S F plus plus'],
+  [/\b(\w+)\+\+/g, '$1 plus plus'],
+  [/\bstd::/g, 'standard '], [/(?<=\w)::(?=\w)/g, ' '],
+  [/\bNumPy\b|\bnumpy\b/g, 'num pie'], [/\bSciPy\b|\bscipy\b/g, 'sigh pie'],
+  [/\b[Mm]atplotlib\b/g, 'mat plot lib'], [/\bpytest\b/g, 'pie test'], [/\bPyPI\b/g, 'pie P I'],
+  [/\bsudo\b/g, 'soo doo'], [/\bstdout\b/g, 'standard out'], [/\bstdin\b/g, 'standard in'],
+  [/\bstderr\b/g, 'standard error'], [/\bprintf\b/g, 'print F'], [/\bcout\b/g, 'see out'],
+  [/\bcin\b/g, 'see in'], [/\bJSON\b/g, 'Jason'], [/\bGUI\b/g, 'gooey'], [/\bASCII\b/g, 'ask ee'],
+  [/\bLaTeX\b/g, 'lay tech'], [/\bMATLAB\b/g, 'mat lab'], [/\bgcc\b/g, 'G C C'], [/\bgdb\b/g, 'G D B'],
+  [/\b[Cc][Mm]ake\b|\bcmake\b/g, 'C make'], [/\bnpm\b/g, 'N P M'], [/\bYAML\b/g, 'yam ul'],
+  [/\bSQLite\b/g, 'S Q L light'], [/\bPostgreSQL\b/g, 'post gres Q L'], [/\biff\b/g, 'if and only if'],
+  [/\bNaN\b/g, 'not a number'],
+]
+
+const ABBREVIATIONS: [RegExp, string][] = [
+  [/\bvs\.?(?=\s|$|[,;:)])/g, 'versus'], [/(?<=[a-z])-vs-(?=[a-z])/g, ' versus '], [/\bVs\.?(?=\s)/g, 'Versus'],
+  [/\be\.g\.,?/g, 'for example,'], [/\bi\.e\.,?/g, 'that is,'], [/\betc\./g, 'et cetera.'],
+  [/\bapprox\./g, 'approximately'], [/\bcf\./g, 'compare'], [/\bw\.r\.t\.?/g, 'with respect to'],
+  [/\ba\.k\.a\.?/g, 'also known as'], [/\bFig\.(?=\s*\d)/g, 'Figure'], [/\bEq\.(?=\s*\d)/g, 'Equation'],
+  [/\bNo\.(?=\s*\d)/g, 'number'],
+]
+
+/** Units written after a number: "84.4 min", "5073 s", "400 m", "3 GB". */
+const NUMBER_UNITS: [string, string][] = [
+  ['µs', 'microseconds'], ['us', 'microseconds'], ['ns', 'nanoseconds'], ['s', 'seconds'], ['sec', 'seconds'],
+  ['min', 'minutes'], ['h', 'hours'], ['hr', 'hours'], ['hrs', 'hours'], ['yr', 'years'],
+  ['m', 'meters'], ['cm', 'centimeters'], ['mm', 'millimeters'], ['µm', 'micrometers'], ['ft', 'feet'],
+  ['mi', 'miles'], ['nmi', 'nautical miles'], ['mph', 'miles per hour'], ['km/h', 'kilometers per hour'],
+  ['N', 'newtons'], ['MN', 'meganewtons'], ['N·m', 'newton meters'], ['Nm', 'newton meters'], ['lbf', 'pounds of force'],
+  ['lb', 'pounds'], ['t', 'metric tons'], ['g', 'grams'], ['W', 'watts'], ['kW', 'kilowatts'], ['MW', 'megawatts'],
+  ['V', 'volts'], ['mA', 'milliamps'], ['Ω', 'ohms'], ['K', 'kelvin'], ['psi', 'P S I'], ['atm', 'atmospheres'],
+  ['kHz', 'kilohertz'], ['MHz', 'megahertz'], ['GHz', 'gigahertz'], ['dB', 'decibels'],
+  ['KB', 'kilobytes'], ['kB', 'kilobytes'], ['MB', 'megabytes'], ['GB', 'gigabytes'], ['TB', 'terabytes'],
+  ['kbps', 'kilobits per second'], ['Mbps', 'megabits per second'], ['Gbps', 'gigabits per second'],
+]
+const esc = (u: string) => u.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')
+const NUMBER_UNIT_RE = new RegExp(
+  String.raw`(?<![\w.])(\d[\d,]*(?:\.\d+)?)\s?(${[...NUMBER_UNITS].sort((a, b) => b[0].length - a[0].length).map(([u]) => esc(u)).join('|')})(?![\w/^²³])`,
+  'g',
+)
+const NUMBER_UNIT = new Map(NUMBER_UNITS)
+
+/**
+ * Units after numbers, in prose only: inside an equation "2t" is two times t
+ * and "5s" is the Laplace variable, so maths and inline code are left alone.
+ * "1 seconds" is read "1 second".
+ */
+/** A unit after a number, said: "1 second", "3 seconds". */
+function unitWord(n: string, u: string): string {
+  const word = NUMBER_UNIT.get(u)!
+  if (n !== '1' || word.includes(' per ')) return word
+  return word === 'feet' ? 'foot' : word.replace(/s$/, '')
+}
+
+export function unitsToWords(text: string): string {
+  const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+\$|`[^`\n]+`)/)
+  return parts
+    .map((part, i) => {
+      if (i % 2) return part
+      // "$15$ m": the number is in the equation and its unit in the prose after it.
+      const math = parts[i - 1] ?? ''
+      const out = /\d\$$/.test(math)
+        ? part.replace(/^\s?([^\s\d.,;:)]+)(?![\w/^²³])/, (m, u: string) =>
+            NUMBER_UNIT.has(u) ? ` ${unitWord(math === '$1$' ? '1' : '', u)}` : m,
+          )
+        : part
+      return out.replace(NUMBER_UNIT_RE, (_m, n: string, u: string) => `${n} ${unitWord(n, u)}`)
+    })
+    .join('')
+}
+
+const SIGNS: [RegExp, string][] = [
+  [/(\d)\s?%/g, '$1 percent'], [/~\s?(?=\d|Mach\b)/g, 'about '], [/≈/g, ' about '],
+  [/≤/g, ' less than or equal to '], [/≥/g, ' greater than or equal to '], [/≠/g, ' not equal to '],
+  [/±/g, ' plus or minus '], [/→/g, ' to '], [/←/g, ' from '], [/↔/g, ' and '], [/√/g, ' the square root of '],
+  [/÷/g, ' divided by '], [/−(?=\s?\d)/g, 'minus '], [/§\s?/g, 'section '], [/′/g, ' prime'],
+  [/Δ/g, 'delta '], [/σ/g, 'sigma'], [/ω/g, 'omega'], [/α/g, 'alpha'], [/β/g, 'beta'], [/π/g, 'pi'],
+  [/χ/g, 'chi'], [/µ/g, 'mu'], [/Ω/g, 'omega'],
+  [/⌀/g, 'diameter '], [/Ⓜ/g, ' circled M '], [/Ⓛ/g, ' circled L '], [/Ⓕ/g, ' circled F '],
+  [/Ⓟ/g, ' circled P '], [/⌖/g, ' position '], [/[●○✓]/g, ' '],
+  [/[₀₁₂₃₄₅₆₇₈₉]/g, ''],
+  // A range: 5–10 is "5 to 10".
+  [/(\d)\s?–\s?(?=\d)/g, '$1 to '],
+  [/\s&\s/g, ' and '],
+  // Evaluated in a frame: "d A over d t | sub inertial".
+  [/\s\|\s(?=sub\b)/g, ' '], [/\|\|([^|\n]+)\|\|/g, 'the norm of $1'], [/\s\|\s/g, ', '],
+  // A markdown heading marker left mid-paragraph.
+  [/\s#{2,6}\s/g, '. '],
+  // A differential: "m dv equals v sub e dm" is "m d v equals v sub e d m".
+  [/\bd([tvxyzrsmθ])\b/g, 'd $1'],
+]
+
+/** Abbreviations, units, tech names and signs that reach the voice as prose. */
+export function proseToWords(text: string): string {
+  let s = text
+  const subs = '₀₁₂₃₄₅₆₇₈₉'
+  s = s.replace(/[₀₁₂₃₄₅₆₇₈₉]/g, (c) => String(subs.indexOf(c)))
+  // Names with underscores outside code: ROW_NUMBER is "row number", sat_id "sat id".
+  s = s
+    .replace(/\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b/g, (id) => id.toLowerCase().replace(/_/g, ' '))
+    .replace(/\b([a-z][a-z0-9]*(?:_[a-z0-9]+)+)\b/g, (id) => id.replace(/_/g, ' '))
+  for (const [re, w] of SAID_AS) s = s.replace(re, w)
+  for (const [re, w] of ABBREVIATIONS) s = s.replace(re, w)
+  for (const [re, w] of SIGNS) s = s.replace(re, w)
+  return s.replace(/ {2,}/g, ' ').replace(/ +([.,;:!?])/g, '$1')
 }
 
 /* ── Markdown ────────────────────────────────────────────────────────────── */
@@ -513,6 +784,9 @@ export function speakableFromMarkdown(md: string): string {
 
   // Fenced code: named, not read.
   s = s.replace(/```[\s\S]*?```/g, '\nCode block.\n')
+
+  // Units after numbers, while maths and inline code can still be told apart.
+  s = unitsToWords(s)
 
   // Tables: named, not read. A table read linearly is unintelligible.
   s = s.replace(/^\|.*\|\s*$(?:\n^\|.*\|\s*$)+/gm, '\nTable.\n')
@@ -544,7 +818,7 @@ export function speakableFromMarkdown(md: string): string {
   s = s.replace(/\$([^$\n]+)\$/g, (_m, tex: string) => ` ${mathToWords(tex)} `)
 
   // Inline code reads as its own text — it is usually an identifier.
-  s = s.replace(/`([^`\n]+)`/g, ' $1 ')
+  s = s.replace(/`([^`\n]+)`/g, (_m, code: string) => ` ${codeToWords(code)} `)
 
   // Headings become sentences so the voice drops and takes a breath.
   s = s.replace(/^#{1,6}\s+(.*)$/gm, (_m, t: string) => `\n${t.replace(/[.:;]+$/, '')}.\n`)
@@ -564,6 +838,7 @@ export function speakableFromMarkdown(md: string): string {
   s = s.replace(/^>\s?/gm, '')
 
   s = symbolsToWords(s)
+  s = proseToWords(s)
 
   return s
     .replace(/[ \t]+/g, ' ')
