@@ -130,7 +130,7 @@ A candidate answers the failure question with: "I once spent three weeks optimiz
 :::
 
 ::: answer
-**Consequence:** three weeks of her own effort, with no stated effect on anyone else or on the project — weak, though not empty if those weeks displaced something that mattered, which the answer does not say. **Fault:** clearly hers and clearly stated; nobody told her to optimize the wrong thing. **Change:** missing entirely. The story can be saved in two moves: say what the three weeks cost the project, and end on what she does now — for example, that she measures where the time goes (profiles the code) before optimizing, and can point to that measurement step in her recent work. Without those, it is a small, honest, unfinished answer.
+**Consequence:** three weeks of her own effort, with no stated effect on anyone else or on the project — weak, though not empty if those weeks displaced something that mattered, which the answer does not say. **Fault:** plainly hers and plainly stated; nobody told her to optimize the wrong thing. **Change:** missing entirely. The story can be saved in two moves: say what the three weeks cost the project, and end on what she does now — for example, that she measures where the time goes (profiles the code) before optimizing, and can point to that measurement step in her recent work. Without those, it is a small, honest, unfinished answer.
 :::
 
 ::: check
