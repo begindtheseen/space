@@ -37,7 +37,7 @@ jobs:
         with:
           python-version: '3.14'
       - name: Python packages lessons may import
-        run: pip install numpy
+        run: pip install numpy scipy matplotlib pandas
       - name: Typecheck
         run: npx tsc -b
       - name: Unit tests
