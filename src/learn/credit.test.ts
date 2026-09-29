@@ -3,10 +3,11 @@
    mastered, every mapped module test really passed, and credit never flowing through credit. */
 import { describe, expect, it } from 'vitest'
 import { MODULES, lessonsFor } from '@/curriculum'
-import { courseCredit, creditedLessonKeys, gatePassed, lessonCredit, moduleCredit, moduleTestPassed, type CreditMap } from './credit'
+import { courseCredit, courseLock, creditedLessonKeys, gatePassed, lessonCredit, moduleCredit, moduleTestPassed, type CreditMap } from './credit'
 import { CREDIT } from './credit-map'
 import { TRACKS, findLesson, trackFor } from './index'
 import { moduleTest } from './modules'
+import { gateOf } from './practice'
 import type { LearnLesson, LearnTrack } from './types'
 
 const WHEN = '2026-01-01T00:00:00.000Z'
@@ -175,5 +176,18 @@ describe('credit rules, on a small made-up map', () => {
     expect(gatePassed(course('python-advanced'), both, MAP)).toBe(false)
     // Only sitting the test does.
     expect(courseCredit('python-advanced', { ...both, [test.id]: WHEN }, MAP)).toEqual([PY])
+  })
+})
+
+describe('course locks follow @requires', () => {
+  it('a degree course opens once the gate of every course it requires is passed, and not before', () => {
+    const dsa2 = trackFor('cs-dsa2')!
+    expect(dsa2.requires?.length).toBeGreaterThan(0)
+    let passed: Record<string, string> = {}
+    for (const id of dsa2.requires!) {
+      expect(courseLock(dsa2, passed)?.track.id).toBe(id)
+      passed = { ...passed, [gateOf(trackFor(id)!)!.id]: WHEN }
+    }
+    expect(courseLock(dsa2, passed)).toBeUndefined()
   })
 })

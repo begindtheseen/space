@@ -178,6 +178,11 @@ export interface LearnTrack {
    */
   subject?: string
   /**
+   * `@requires cs-dsa1 cs-disc`: the courses whose gates open this one. Without it, a course
+   * opens when every course before it on its ladder has been passed.
+   */
+  requires?: string[]
+  /**
    * `@module cod_py_01_basics`: the practice sets and test of an ORBIT module,
    * not a Learn to code course. Kept apart from the courses.
    */

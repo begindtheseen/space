@@ -69,6 +69,7 @@ Prefer counting when it is natural. It is exact, and it keeps the test suite fas
 @track python
 @course cs-dsa1
 @subject Computer Science
+@requires python-intermediate
 @level intermediate
 @title DSA I
 @name Data Structures and Algorithms I: analysis, lists, sorting, hashing, trees and graphs
@@ -82,6 +83,22 @@ Prefer counting when it is natural. It is exact, and it keeps the test suite fas
 
 Lesson ids are `<prefix>-NN` (for example `dsa1-07`). A lesson split in two gets a letter
 (`dsa1-07b`). Never change an id once it has shipped.
+
+`@requires` lists the courses whose gates open this one. A degree course builds on particular
+courses, not on every course numbered before it, so each names its own:
+
+| Course | Requires |
+|---|---|
+| `cs-disc`, `cs-dsa1`, `cs-org` | `python-intermediate` |
+| `cs-dsa2` | `cs-dsa1` (and `cs-disc` once it ships) |
+| `cs-dsacpp` | `cs-dsa1`, `cpp-intermediate` |
+| `cs-sys` | `cpp-intermediate`, `cs-org` |
+| `cs-os` | `cs-sys` |
+| `cs-net`, `cs-theory` | `cs-dsa2`, `cs-disc` |
+| `cs-plc` | `cs-theory`, `cs-org` |
+| `cs-sec` | `cs-sys`, `cs-net`, `cs-disc` |
+| `cs-par` | `cs-os`, `cs-net` |
+| capstones | the courses each project draws on |
 
 ## Writing a course in parts
 

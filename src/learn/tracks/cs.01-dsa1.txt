@@ -1,6 +1,7 @@
 @track python
 @course cs-dsa1
 @subject Computer Science
+@requires python-intermediate
 @level intermediate
 @title DSA I
 @name Data Structures and Algorithms I: analysis, lists, sorting, hashing, trees and graphs

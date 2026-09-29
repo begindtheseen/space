@@ -117,6 +117,18 @@ describe('the tracks', () => {
     expect(new Set(all.map((r) => r.id)).size).toBe(all.length)
   })
 
+  it('a course\'s @requires names real courses that end in a gate, never itself, and every degree course has one', () => {
+    const byId = new Map(TRACKS.map((t) => [t.id, t]))
+    for (const t of TRACKS) {
+      for (const id of t.requires ?? []) {
+        expect(byId.has(id), `${t.id} requires ${id}`).toBe(true)
+        expect(id, t.id).not.toBe(t.id)
+        expect(byId.get(id)!.lessons.some((l) => l.gate), `${t.id} requires ${id}, which has no gate`).toBe(true)
+      }
+      if (t.subject) expect(t.requires?.length, `${t.id} needs @requires`).toBeGreaterThan(0)
+    }
+  })
+
   it('a language with more than one course has a beginner-to-expert roadmap through all of them', () => {
     for (const lang of LEARN_LANGS) {
       const courses = tracksFor(lang)

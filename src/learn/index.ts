@@ -30,6 +30,17 @@ export function ladderOf(track: LearnTrack): LearnTrack[] {
   return track.subject ? TRACKS.filter((t) => t.subject === track.subject) : tracksFor(track.lang)
 }
 
+/**
+ * The courses whose gates must be passed before this one opens, then the course itself: its
+ * `@requires` list when it has one (a degree course builds on particular courses, not on every
+ * course numbered before it), otherwise the courses before it on its ladder.
+ */
+export function prerequisitesOf(track: LearnTrack): LearnTrack[] {
+  if (!track.requires) return ladderOf(track)
+  const before = track.requires.map((id) => TRACKS.find((t) => t.id === id)).filter((t): t is LearnTrack => !!t)
+  return [...before, track]
+}
+
 
 /** The course to carry on with in a language: the first not finished, or the last. */
 export function currentTrack(lang: string, passed: Record<string, string>): LearnTrack | undefined {

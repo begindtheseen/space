@@ -19,7 +19,7 @@
    The map itself (credit-map.ts) says what teaches what.
    ========================================================================== */
 import { CREDIT } from './credit-map'
-import { findLesson, ladderOf, trackFor } from './index'
+import { findLesson, prerequisitesOf, trackFor } from './index'
 import { lessonsFor } from '@/curriculum'
 import { MODULE_TRACKS, moduleTest, testLocks } from './modules'
 import { courseMastered, gateOf, lessonMastered, lockedBy } from './practice'
@@ -128,5 +128,5 @@ export function moduleLocks(module: { prereqs: string[] }, passed: Record<string
 
 /** What keeps a Learn course locked, with credit from the modules counted. */
 export function courseLock(track: LearnTrack, passed: Record<string, string>, map: CreditMap = CREDIT) {
-  return lockedBy(track, ladderOf(track), passed, (t) => !!courseCredit(t.id, passed, map))
+  return lockedBy(track, prerequisitesOf(track), passed, (t) => !!courseCredit(t.id, passed, map))
 }

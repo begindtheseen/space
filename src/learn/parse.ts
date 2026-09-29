@@ -6,6 +6,7 @@
      @track python
      @course python-advanced             (optional: the course id; default the language)
      @level advanced                     (optional: basics, intermediate, advanced, expert, projects)
+     @requires cs-dsa1 cs-disc           (optional: the courses whose gates open this one)
      @title Python
      @name Python, a first language      (optional: the course's full name)
      @blurb One line on what this track covers.
@@ -400,6 +401,7 @@ export function parseTrack(source: string, file = 'track'): LearnTrack {
     lessons,
     plainVoice: meta.plainvoice === 'true',
     ...(meta.subject ? { subject: meta.subject } : {}),
+    ...(meta.requires ? { requires: meta.requires.split(/\s+/).filter(Boolean) } : {}),
     ...(meta.module ? { module: meta.module } : {}),
   }
 }
