@@ -330,5 +330,15 @@ export function parseTrack(source: string, file = 'track'): LearnTrack {
   if (!LEVELS.includes(level)) fail(file, `"@level" must be one of ${LEVELS.join(', ')}`)
   const id = meta.course ?? (level === 'basics' ? lang : `${lang}-${level}`)
   if (lessons.some((l) => l.checks.some((c) => c.kind === 'type-error')) && lang !== 'typescript') fail(file, 'type-error checks are for TypeScript tracks')
-  return { id, lang, level, title: meta.title!, name: meta.name ?? meta.title!, blurb: meta.blurb ?? '', lessons, plainVoice: meta.plainvoice === 'true' }
+  return {
+    id,
+    lang,
+    level,
+    title: meta.title!,
+    name: meta.name ?? meta.title!,
+    blurb: meta.blurb ?? '',
+    lessons,
+    plainVoice: meta.plainvoice === 'true',
+    ...(meta.subject ? { subject: meta.subject } : {}),
+  }
 }

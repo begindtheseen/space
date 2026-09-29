@@ -141,6 +141,12 @@ export interface LearnTrack {
    * context notes. The validator holds such a course to the notes rule.
    */
   plainVoice?: boolean
+  /**
+   * `@subject Computer Science`: a course of a subject rather than of a
+   * language (data structures and algorithms, operating systems…). It runs in
+   * its `@track` language but sits on its subject's shelf and ladder.
+   */
+  subject?: string
 }
 
 /** A goal, and the courses that reach it in the order a mentor would teach them. */

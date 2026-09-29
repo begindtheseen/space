@@ -28,8 +28,13 @@ const TAUGHT: LearnLang[] = ['bash', 'git', 'python', 'sql', 'cpp']
 const FILES = import.meta.glob('./tracks/*.txt', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
 const LEVEL_ORDER = ['basics', 'intermediate', 'advanced', 'expert', 'projects']
 
+/*
+ * `cs.<nn>-<name>.txt` is a course of the Computer Science degree: after every
+ * language, in the order its number gives.
+ */
 function sortKey(file: string): [number, number] {
   const [lang = '', level = 'basics'] = file.replace(/\.txt$/, '').split('.')
+  if (lang === 'cs') return [TAUGHT.length, Number.parseInt(level, 10)]
   return [TAUGHT.indexOf(lang as LearnLang), LEVEL_ORDER.indexOf(level)]
 }
 

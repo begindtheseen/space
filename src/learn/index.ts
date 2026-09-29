@@ -5,7 +5,7 @@
    text and parsed once. Which files an app carries is its platform.ts's call. A malformed file fails loudly in the unit tests, so a
    typo never reaches a learner as a lesson that cannot be passed.
    ========================================================================== */
-import { LEARN_SOURCES, ROADMAPS } from './platform'
+import { LEARN_LANGS, LEARN_SOURCES, ROADMAPS } from './platform'
 import { parseTrack } from './parse'
 import type { LearnLang, LearnLesson, LearnTrack, Roadmap } from './types'
 
@@ -20,10 +20,16 @@ export function trackFor(id: string): LearnTrack | undefined {
   return TRACKS.find((t) => t.id === id) ?? TRACKS.find((t) => t.lang === id)
 }
 
-/** A language's courses, basics first. */
+/** A language's courses, basics first. Subject courses (the CS degree) sit on their subject's shelf instead. */
 export function tracksFor(lang: string): LearnTrack[] {
-  return TRACKS.filter((t) => t.lang === lang)
+  return TRACKS.filter((t) => t.lang === lang && !t.subject)
 }
+
+/** The ladder a course sits on: its subject's courses in order, or its language's. */
+export function ladderOf(track: LearnTrack): LearnTrack[] {
+  return track.subject ? TRACKS.filter((t) => t.subject === track.subject) : tracksFor(track.lang)
+}
+
 
 /** The course to carry on with in a language: the first not finished, or the last. */
 export function currentTrack(lang: string, passed: Record<string, string>): LearnTrack | undefined {
@@ -109,6 +115,22 @@ export const MASTERY: Roadmap[] = [...new Set(TRACKS.map((t) => t.lang))]
     blurb: `${langName(lang)} from the first line to expert: the basics, then the idioms, the design and debugging skills and the problem solving that let you build anything in it on your own, then real projects.`,
     steps: masterySteps(lang),
   }))
+
+/** Every shelf of courses: one per language this app teaches, then one per subject. */
+export interface Shelf {
+  key: string
+  name: string
+  lang: LearnLang
+  tracks: LearnTrack[]
+}
+
+export const SHELVES: Shelf[] = [
+  ...LEARN_LANGS.map((lang) => ({ key: lang, name: langName(lang), lang, tracks: tracksFor(lang) })),
+  ...[...new Set(TRACKS.map((t) => t.subject).filter((s): s is string => !!s))].map((subject) => {
+    const tracks = TRACKS.filter((t) => t.subject === subject)
+    return { key: subject, name: subject, lang: tracks[0]!.lang, tracks }
+  }),
+]
 
 export { parseTrack, ROADMAPS }
 export type { LearnLang, LearnLesson, LearnTrack, Roadmap }

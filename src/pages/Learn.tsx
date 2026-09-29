@@ -30,9 +30,8 @@ import { Bar, Button } from '@/components/ui'
 import { markPracticed } from '@/engine/apply'
 import { useLearner } from '@/hooks/useLearner'
 import { buildProgram, gradeRun } from '@/learn/grade'
-import { LEARN_LANGS } from '@/learn/platform'
 import { stuckHelp } from '@/learn/stuck'
-import { MASTERY, ROADMAPS, currentTrack, findLesson, langName, nextLesson, passedCount, streak, trackFor, tracksFor } from '@/learn/index'
+import { MASTERY, ROADMAPS, SHELVES, currentTrack, findLesson, ladderOf, langName, nextLesson, passedCount, streak, trackFor } from '@/learn/index'
 import { editorLang, runLearn, warmUp } from '@/learn/platform'
 import { LEVEL_LABEL, type CheckResult, type LearnLesson, type LearnTrack, type Roadmap } from '@/learn/types'
 import { onExplainRequested } from '@/lib/ctxBus'
@@ -137,17 +136,17 @@ function LearnHome({ missing }: { missing?: string }) {
       </section>
 
       <h2 className="lm-h2">Browse every course</h2>
-      {LEARN_LANGS.map((lang) => (
-        <section key={lang} className="lm-lang" aria-label={langName(lang)}>
+      {SHELVES.map((shelf) => (
+        <section key={shelf.key} className="lm-lang" aria-label={shelf.name}>
           <h3 className="lm-lang__name">
-            <LangMark lang={lang} size={20} />
-            {langName(lang)}
+            <LangMark lang={shelf.lang} size={20} />
+            {shelf.name}
             <span className="lm-lang__count">
-              {tracksFor(lang).length} course{tracksFor(lang).length === 1 ? '' : 's'} · {tracksFor(lang).reduce((n, t) => n + t.lessons.length, 0)} lessons
+              {shelf.tracks.length} course{shelf.tracks.length === 1 ? '' : 's'} · {shelf.tracks.reduce((n, t) => n + t.lessons.length, 0)} lessons
             </span>
           </h3>
           <div className="lm-courses">
-            {tracksFor(lang).map((t) => {
+            {shelf.tracks.map((t) => {
               const done = passedCount(t, state.learn)
               return (
                 <a key={t.id} className="lm-course" href={`#/learn/${t.id}`}>
@@ -156,7 +155,7 @@ function LearnHome({ missing }: { missing?: string }) {
                   </span>
                   <span className="lm-course__text">
                     <span className="lm-course__level" data-level={t.level}>
-                      {LEVEL_LABEL[t.level]}
+                      {t.subject ? t.title : LEVEL_LABEL[t.level]}
                     </span>
                     <span className="lm-course__title">{t.name}</span>
                     <span className="lm-course__meta">
@@ -372,19 +371,19 @@ function CourseView({ track }: { track: LearnTrack }) {
         </span>
         <div style={{ minWidth: 0 }} className="grow">
           <div className="page-head__kicker">
-            {LEVEL_LABEL[track.level]} · {total} lessons
+            {track.subject ? track.subject : LEVEL_LABEL[track.level]} · {total} lessons
             {gateOf(track) ? (courseMastered(track, state.learn) ? ' · Mastered' : ' · ends in a mastery gate') : ''} <Streak />
           </div>
           <h1 className="h-page">{track.name}</h1>
           <p className="page-head__sub">{track.blurb}</p>
         </div>
       </div>
-      {tracksFor(track.lang).length > 1 ? (
-        <nav className="lm-ladder" aria-label={`${langName(track.lang)} courses`}>
-          {tracksFor(track.lang).map((t, i) => (
+      {ladderOf(track).length > 1 ? (
+        <nav className="lm-ladder" aria-label={`${track.subject ?? langName(track.lang)} courses`}>
+          {ladderOf(track).map((t, i) => (
             <a key={t.id} href={`#/learn/${t.id}`} className="lm-ladder__step" data-here={t.id === track.id} data-done={passedCount(t, state.learn) === t.lessons.length}>
               <span className="lm-ladder__n">{i + 1}</span>
-              {LEVEL_LABEL[t.level]}
+              {t.subject ? t.title : LEVEL_LABEL[t.level]}
             </a>
           ))}
         </nav>
@@ -468,7 +467,7 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
   const prev = track.lessons[index - 1]
   const next = track.lessons[index + 1]
   // At the end of a course, the way on is the next course in the language.
-  const ladder = tracksFor(track.lang)
+  const ladder = ladderOf(track)
   const nextCourse = next ? undefined : ladder[ladder.findIndex((t) => t.id === track.id) + 1]
 
   useEffect(() => warmUp(lesson.lang), [lesson.lang])
