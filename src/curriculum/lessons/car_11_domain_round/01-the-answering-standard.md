@@ -274,7 +274,7 @@ Each move hands something to the next. The assumptions fix what the symbols mean
     <rect x="282" y="30" width="72" height="44" rx="6"/>
   </g>
   <g font-size="12" fill="#1f2a44" text-anchor="middle">
-    <text x="43" y="49">1 State</text><text x="43" y="64">assumptions</text>
+    <text x="43" y="49">1 State</text><text x="43" y="64" font-size="11">assumptions</text>
     <text x="135" y="49">2 Write the</text><text x="135" y="64">equation</text>
     <text x="227" y="49">3 Say what</text><text x="227" y="64">it means</text>
     <text x="318" y="49">4 Sanity</text><text x="318" y="64">check</text>
@@ -313,13 +313,13 @@ Plot a filter's uncertainty over time and you get a sawtooth. Between measuremen
   <line x1="30" y1="120" x2="350" y2="120" stroke="#1f2a44" stroke-width="2"/>
   <line x1="30" y1="120" x2="30" y2="14" stroke="#1f2a44" stroke-width="2"/>
   <text x="344" y="138" font-size="11" fill="#1f2a44" text-anchor="end">time</text>
-  <text x="36" y="20" font-size="11" fill="#1f2a44">uncertainty</text>
-  <polyline points="30,30 90,50 90,85 150,62 150,92 210,68 210,94 270,69 270,95 330,70 330,95" fill="none" stroke="#1d6fd1" stroke-width="2.5"/>
+  <text x="36" y="12" font-size="11" fill="#1f2a44">uncertainty</text>
+  <polyline points="30,60 90,40 90,85 150,62 150,92 210,68 210,94 270,69 270,95 330,70 330,95" fill="none" stroke="#1d6fd1" stroke-width="2.5"/>
   <g stroke="#6c7a93" stroke-width="1" stroke-dasharray="3 3">
     <line x1="90" y1="120" x2="90" y2="30"/><line x1="150" y1="120" x2="150" y2="30"/><line x1="210" y1="120" x2="210" y2="30"/><line x1="270" y1="120" x2="270" y2="30"/><line x1="330" y1="120" x2="330" y2="30"/>
   </g>
-  <text x="212" y="44" font-size="11" fill="#6c7a93">measurements</text>
-  <text x="112" y="72" font-size="11" fill="#1d6fd1" text-anchor="middle">grows</text>
+  <text x="150" y="24" font-size="11" fill="#6c7a93" text-anchor="middle">measurements</text>
+  <text x="120" y="58" font-size="11" fill="#1d6fd1" text-anchor="middle">grows</text>
   <text x="170" y="108" font-size="11" fill="#1d6fd1">shrinks</text>
 </svg>
 ```
