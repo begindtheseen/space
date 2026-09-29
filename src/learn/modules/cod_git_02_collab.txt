@@ -358,6 +358,61 @@ Maya has fetched, and wants to see exactly the commits a `git push` of `main` wo
 --- why
 `A..B` means the commits reachable from `B` but not from `A`. A push sends what `main` has and `origin/main` lacks, so `origin/main..main`. The other way round, `main..origin/main`, is what a pull would bring in, a very common slip. `git diff` shows a change in files, not a list of commits. `git status` does count ahead and behind, but against the note `origin/main`, not against the server itself, and it lists no commits.
 
++++ practice | Both directions, by the upstream's short name
+--- task
+Maya, in `~/project`, has made two commits on `main` that she has not pushed. Meanwhile Leo pushed `Add equatorial radius` to the server's `main`, and Maya has not talked to the server since.
+
+1. Update Maya's notes about the server, without changing any of her branches.
+2. Write `to_push.txt` with exactly the commits a `git push` of `main` would send, and `to_pull.txt` with exactly the commits a `git pull` would bring in, one line per commit, as `git log --oneline` prints them. Name the other side by the short name of `main`'s upstream, `@{u}`, not by typing `origin/main`.
+
+Do not merge, rebase or commit anything, and do not commit the two files.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'MU_EARTH = 3.986004418e14\n' > gravity.py
+git add gravity.py
+git commit -m "Add Earth's gravitational parameter"
+git init --bare ~/server/orbit-sim.git
+git remote add origin ~/server/orbit-sim.git
+git push -u origin main
+git clone ~/server/orbit-sim.git ~/leo
+cd ~/leo
+git config user.name "Leo Park"
+printf 'MU_EARTH = 3.986004418e14\nR_EARTH = 6378137.0\n' > gravity.py
+git commit -am "Add equatorial radius"
+git push
+cd ~/project
+printf 'import math\n\n\ndef escape_speed(r):\n    return math.sqrt(2 * 3.986004418e14 / r)\n' > escape.py
+git add escape.py
+git commit -m "Add escape speed helper"
+mkdir tests
+printf 'from escape import escape_speed\n' > tests/test_escape.py
+git add tests
+git commit -m "Test escape speed"
+--- solution
+git fetch
+git log --oneline @{u}.. > to_push.txt
+git log --oneline ..@{u} > to_pull.txt
+cat to_push.txt to_pull.txt
+--- hint
+Only `git fetch` refreshes `origin/main`, the note of where the server's `main` was. Until then, a pull looks as if it would bring nothing.
+--- hint
+`@{u}` names the current branch's upstream. `A..B` lists what `B` has and `A` lacks, and a missing side means `HEAD`: so `@{u}..` is what you have that the server lacks, and `..@{u}` the other way round.
+--- check shell | to_push.txt lists Maya's two commits only
+file to_push.txt contains Add escape speed helper
+file to_push.txt contains Test escape speed
+file to_push.txt excludes Add equatorial radius
+file to_push.txt lines == 2
+--- check shell | to_pull.txt lists Leo's commit, so the notes were fetched first
+file to_pull.txt contains Add equatorial radius
+file to_pull.txt lines == 1
+used @{u}
+--- check shell | Nothing was merged, rebased or committed
+git . at main message == Test escape speed
+git . commits == 3
+git . merges == 0
+git . untracked to_push.txt
+
 === git02-l02 | Practice: Merge versus rebase, and the golden rule
 --- for
 l02-merge-versus-rebase
@@ -1974,6 +2029,61 @@ A pull request changes only `src/nav/README.md`. Whose review does "require revi
 orbit-team/writers
 --- why
 All four lines match `src/nav/README.md`, and the **last** matching line wins: `*.md`, so `@orbit-team/writers`. Not the GNC team, even though the file sits in `/src/nav/`. If the team wants GNC to own everything under `src/nav/`, documents included, the `/src/nav/` line must come after the `*.md` line. Read the file from the bottom up and stop at the first match.
+
++++ practice | Review a branch as the pull-request page shows it
+--- task
+Maya, in `~/project`, is asked to review Leo's branch `leo/j2`, which he pushed to the server and wants merged into `main`. Since Leo branched, Ravi pushed `List models in README` to the server's `main`, and Maya has not fetched since.
+
+Without switching branches, write `review.txt` holding the `git diff --stat` of exactly what Leo's pull request changes: the work on his branch since it split from the server's `main`, as the pull-request page shows it. Ravi's README change must not appear in it. Compare the server's two branches as Maya's notes know them after fetching (`origin/main` and `origin/leo/j2`).
+
+Do not merge anything, and do not commit `review.txt`.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf '# orbit-sim\n' > README.md
+printf 'MU_EARTH = 3.986004418e14\n' > gravity.py
+git add README.md gravity.py
+git commit -m "Add README and gravity constant"
+git init --bare ~/server/orbit-sim.git
+git remote add origin ~/server/orbit-sim.git
+git push -u origin main
+git clone ~/server/orbit-sim.git ~/leo
+git clone ~/server/orbit-sim.git ~/ravi
+cd ~/leo
+git config user.name "Leo Park"
+git switch -c leo/j2
+printf 'MU_EARTH = 3.986004418e14\nJ2 = 1.08262668e-3\n' > gravity.py
+git commit -am "Add J2 oblateness constant"
+mkdir tests
+printf 'from gravity import J2\n' > tests/test_j2.py
+git add tests
+git commit -m "Test the J2 constant"
+git push -u origin leo/j2
+cd ~/ravi
+git config user.name "Ravi Patel"
+printf '# orbit-sim\n\nModels: point-mass gravity.\nUnits: SI throughout.\n' > README.md
+git commit -am "List models in README"
+git push
+cd ~/project
+--- solution
+git fetch
+git diff --stat origin/main...origin/leo/j2 > review.txt
+cat review.txt
+--- hint
+Fetch first: until then Maya's notes know neither Leo's branch nor Ravi's commit.
+--- hint
+Comparing the two tips, with a space or two dots, shows Ravi's later README lines as if Leo had deleted them. Three dots, `A...B`, diff from the point where `B` split from `A` to `B`'s tip.
+--- check shell | The review lists Leo's two files
+file review.txt contains gravity.py
+file review.txt contains tests/test_j2.py
+file review.txt contains 2 files changed
+--- check shell | Ravi's README change is not in it
+file review.txt excludes README
+--- check shell | Nothing was merged or committed, and Maya stayed on main
+git . branch main
+git . at main message == Add README and gravity constant
+git . untracked review.txt
+git . merges == 0
 
 === git02-l07 | Practice: Reviewing a diff
 --- for

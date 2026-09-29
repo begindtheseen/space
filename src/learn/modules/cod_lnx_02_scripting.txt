@@ -688,6 +688,79 @@ echo "${#a[@]} ${!a[@]}"
 --- why
 `+=( )` appends `gamma` at index 2. `unset "a[0]"` removes element 0 and leaves a hole, so the array holds indices 1 and 2. `${#a[@]}` counts elements, 2, and `${!a[@]}` lists the indices, `1 2`. That hole is why a loop counting from 0 to the length is wrong for arrays; loop over `"${a[@]}"` or `"${!a[@]}"` instead.
 
++++ practice | The case that vanished after an unset
+--- task
+`list_cases.sh` keeps its cases in an array, drops case 2 with `unset`, and should then print every case that is left with its index, then a count:
+
+```
+0: case_01
+2: entry burn 03
+3: case_04
+3 cases left
+```
+
+It prints an empty case 1 instead, and never reaches `case_04`. Fix the loop, keep the `unset` line as it is, then run `bash list_cases.sh > cases_left.txt`.
+--- starter
+printf '#!/usr/bin/env bash\ncases=(case_01 case_02 "entry burn 03" case_04)\nunset "cases[1]"\nfor ((i = 0; i < ${#cases[@]}; i++)); do\n  echo "$i: ${cases[$i]}"\ndone\necho "${#cases[@]} cases left"\n' > list_cases.sh
+--- solution
+echo '#!/usr/bin/env bash' > list_cases.sh
+echo 'cases=(case_01 case_02 "entry burn 03" case_04)' >> list_cases.sh
+echo 'unset "cases[1]"' >> list_cases.sh
+echo 'for i in "${!cases[@]}"; do' >> list_cases.sh
+echo '  echo "$i: ${cases[$i]}"' >> list_cases.sh
+echo 'done' >> list_cases.sh
+echo 'echo "${#cases[@]} cases left"' >> list_cases.sh
+bash list_cases.sh > cases_left.txt
+--- hint
+After the `unset`, the array holds indices 0, 2 and 3. Its length is 3, so counting from 0 to 2 visits the hole at 1 and stops before 3.
+--- hint
+`"${!cases[@]}"` (with an exclamation mark) lists the indices that really exist. Loop over those.
+--- check shell | Every case that is left, with its own index
+file cases_left.txt ~= 0: case_01\n2: entry burn 03\n3: case_04\n3 cases left
+--- check shell | No empty case, and the spaced name in one piece
+file cases_left.txt lines == 4
+file cases_left.txt excludes case_02
+file cases_left.txt contains 2: entry burn 03
+--- check shell | The unset stayed, and the loop reads the real indices
+file list_cases.sh contains unset "cases[1]"
+file list_cases.sh contains ${!cases[@]}
+ran bash list_cases.sh
+
++++ practice | A tally by status
+--- task
+`status.log` has one line per case: an id, then a status. One line has no status at all.
+
+Count the cases for each status with an associative array (`declare -A`), reading the file with a `while read` loop. Count a line with no status under the name `MISSING`. Then write `tally.txt` with one line per status, sorted by name, the status, a space and its count:
+
+```
+DIVERGED 1
+FAIL 2
+MISSING 1
+OK 4
+```
+
+Work every count out from the file; do not type any of them.
+--- starter
+printf 'case_01 OK\ncase_02 FAIL\ncase_03 OK\ncase_04 DIVERGED\ncase_05\ncase_06 OK\ncase_07 FAIL\ncase_08 OK\n' > status.log
+--- solution
+declare -A n
+while read -r id st; do k=${st:-MISSING}; n[$k]=$(( ${n[$k]:-0} + 1 )); done < status.log
+for k in "${!n[@]}"; do echo "$k ${n[$k]}"; done | sort > tally.txt
+--- hint
+`declare -A n` makes `n` an associative array: its keys are text, such as `n[OK]`.
+--- hint
+`${st:-MISSING}` gives `MISSING` when `st` is empty. `${n[$k]:-0}` gives 0 for a status seen for the first time.
+--- hint
+An associative array lists its keys in no useful order: loop over `"${!n[@]}"` and pipe the lines through `sort`.
+--- check shell | One line per status, sorted, with the right counts
+file tally.txt ~= DIVERGED 1\nFAIL 2\nMISSING 1\nOK 4
+--- check shell | The line with no status was counted, not dropped
+file tally.txt contains MISSING 1
+file tally.txt lines == 4
+--- check shell | Counted with an associative array
+used declare -A
+used status.log
+
 === lnx02-l05 | Practice: Control flow, and the two kinds of bracket
 --- for
 l05-control-flow-and-tests
@@ -844,6 +917,83 @@ done
 `case_7.log: log`, then `run.csv: other`, then `case_12: other`
 --- why
 `case` tries the patterns in order and runs only the first that fits, then leaves at `;;`. `case_7.log` fits `*.log` first, so the more specific-looking `case_[0-9]*` is never tried for it. `case_12` does not end in `.log`, and it fits `case_[0-9]*`: the text `case_`, one digit, then anything. When the order of patterns matters, put the narrower ones first.
+
++++ practice | Sort the inbox with case
+--- task
+Write `sort_in.sh`. It loops over every file in `inbox` and decides what to do from the file's name with one `case` statement:
+
+- a name that starts with `debug_` and ends in `.log` is thrown away (removed);
+- any other `.log` file moves to `logs`;
+- a `.csv` or `.tsv` file moves to `tables`;
+- anything else stays where it is, and the script prints `left <name>`, where `<name>` is the file's name without `inbox/`.
+
+Run it with `bash sort_in.sh`. At the end `inbox` holds only the two files that fit no rule.
+--- starter
+mkdir -p inbox logs tables
+touch inbox/driver.log inbox/debug_0412.log inbox/wheel_rpm.csv inbox/bus.tsv inbox/README "inbox/entry notes.txt"
+--- solution
+echo '#!/usr/bin/env bash' > sort_in.sh
+echo 'for f in inbox/*; do' >> sort_in.sh
+echo '  name=$(basename "$f")' >> sort_in.sh
+echo '  case "$name" in' >> sort_in.sh
+echo '    debug_*.log) rm "$f" ;;' >> sort_in.sh
+echo '    *.log) mv "$f" logs/ ;;' >> sort_in.sh
+echo '    *.csv|*.tsv) mv "$f" tables/ ;;' >> sort_in.sh
+echo '    *) echo "left $name" ;;' >> sort_in.sh
+echo '  esac' >> sort_in.sh
+echo 'done' >> sort_in.sh
+bash sort_in.sh
+--- hint
+`case "$name" in pattern) commands ;; … esac` runs the commands of the first pattern that fits, and only those.
+--- hint
+`debug_0412.log` also fits `*.log`. Put the narrower pattern first, or the debug log is moved instead of removed.
+--- hint
+One pattern can hold two choices joined by a bar: `*.csv|*.tsv)`.
+--- check shell | The debug log is gone, and was not moved
+missing inbox/debug_0412.log
+missing logs/debug_0412.log
+count logs/* == 1
+--- check shell | The tables moved, and the other files stayed
+count tables/* == 2
+count inbox/* == 2
+count inbox/entry*.txt == 1
+file inbox/README
+--- check shell | The files that fit no rule were reported by name
+printed-line left entry notes.txt
+printed-line left README
+file sort_in.sh contains esac
+
++++ practice | The case number inside a run name
+--- task
+Each line of `runs.txt` should be a run name such as `run_2026-05-11_case0412_seed200412`: the text `run_`, a date written as four digits, dash, two digits, dash, two digits, then `_case` and exactly four digits, then `_seed` and one or more digits, and nothing after that.
+
+Read the file with a `while read` loop and test each line with `[[ … =~ … ]]`. For a line that fits, write `case <case number> seed <seed>` to `ids.txt`, taking both numbers from `BASH_REMATCH`. Write every line that does not fit, unchanged, to `bad.txt`. For the file here:
+
+```
+case 0412 seed 200412
+case 0007 seed 7
+```
+
+Three lines are bad: a three-digit case number, a name with `_old` after the seed, and a line that is not a run name at all.
+--- starter
+printf 'run_2026-05-11_case0412_seed200412\nrun_2026-05-11_case041_seed200041\nrun_2026-05-12_case0413_seed200413_old\nnotes about the sweep\nrun_2026-05-12_case0007_seed7\n' > runs.txt
+--- solution
+re='^run_[0-9]{4}-[0-9]{2}-[0-9]{2}_case([0-9]{4})_seed([0-9]+)$'
+while read -r line; do if [[ $line =~ $re ]]; then echo "case ${BASH_REMATCH[1]} seed ${BASH_REMATCH[2]}"; else echo "$line" >&2; fi; done < runs.txt > ids.txt 2> bad.txt
+--- hint
+Put the regular expression in a variable and write `[[ $line =~ $re ]]` with the variable unquoted: a quoted right-hand side is matched as plain text.
+--- hint
+`^` and `$` pin the pattern to the whole line, so `_old` at the end cannot sneak through. `[0-9]{4}` is exactly four digits.
+--- hint
+Each pair of round brackets captures a part: `${BASH_REMATCH[1]}` is the first, `${BASH_REMATCH[2]}` the second. Sending bad lines to standard error lets one loop fill both files: `done < runs.txt > ids.txt 2> bad.txt`.
+--- check shell | The good names, with both numbers
+file ids.txt ~= case 0412 seed 200412\ncase 0007 seed 7
+--- check shell | The three bad lines, unchanged
+file bad.txt ~= run_2026-05-11_case041_seed200041\nrun_2026-05-12_case0413_seed200413_old\nnotes about the sweep
+file bad.txt lines == 3
+--- check shell | Matched with =~ and read from BASH_REMATCH
+used =~
+used BASH_REMATCH
 
 === lnx02-l06 | Practice: Functions, return values and exit codes
 --- for
@@ -1035,6 +1185,104 @@ echo "outside: $count"
 --- why
 Bash scope is dynamic: a function sees the variables of whoever called it. `bump` is called from `show`, so the `count` it finds is `show`'s local one, and it changes that from 0 to 1. The global `count` is never touched and stays 10. Declaring every variable `local` and passing values as arguments keeps functions from reaching into their callers like this.
 
++++ practice | A function that answers with a value and a status
+--- task
+`walltime.txt` has one line per case: an id and its run time in whole seconds. Write the file `timelib.sh`, which defines one function, `fastest`. Called as `fastest FILE`, it:
+
+- prints `<id> <seconds>` for the case with the smallest time, and returns 0; when two cases tie, the one that comes first in the file wins;
+- prints nothing and returns 1 when the file has no lines;
+- prints nothing and returns 2 when the file cannot be read.
+
+Your shell already has the variables `id` and `t` set, to `case_00` and `999`. Calling `fastest` must not change them, so keep every variable the function uses `local`.
+
+Load the function into your shell with `source timelib.sh`, then run:
+
+```
+fastest walltime.txt > fastest.txt
+fastest empty.txt; echo $? > empty_status.txt
+fastest nope.txt; echo $? > nope_status.txt
+```
+--- starter
+printf 'case_01 182\ncase_02 175\ncase_03 201\ncase_04 175\ncase_05 190\n' > walltime.txt
+touch empty.txt
+id=case_00
+t=999
+--- solution
+echo 'fastest() {' > timelib.sh
+echo '  local file="$1" id t best="" min=0' >> timelib.sh
+echo '  [ -r "$file" ] || return 2' >> timelib.sh
+echo '  while read -r id t; do' >> timelib.sh
+echo '    if [ -z "$best" ] || [ "$t" -lt "$min" ]; then best=$id; min=$t; fi' >> timelib.sh
+echo '  done < "$file"' >> timelib.sh
+echo '  [ -n "$best" ] || return 1' >> timelib.sh
+echo '  echo "$best $min"' >> timelib.sh
+echo '}' >> timelib.sh
+source timelib.sh
+fastest walltime.txt > fastest.txt
+fastest empty.txt; echo $? > empty_status.txt
+fastest nope.txt; echo $? > nope_status.txt
+--- hint
+A function hands back a value by printing it, and a verdict with `return N`. Check the unreadable file first, and leave with `return 2` straight away.
+--- hint
+Keep the best id and time so far, starting from none (an empty `best`), and replace them only when a time is strictly smaller (`-lt`), so the first of a tie stays.
+--- hint
+`local file="$1" id t best="" min=0` on the function's first line keeps all of them inside it; without it, `while read -r id t` would overwrite your shell's `id` and `t`.
+--- check shell | The fastest case, first of the tie
+file fastest.txt == case_02 175
+--- check shell | An empty file returns 1 and an unreadable one 2
+file empty_status.txt == 1
+file nope_status.txt == 2
+--- check shell | Your shell's own variables were not touched
+var id == case_00
+var t == 999
+file timelib.sh contains local
+
++++ practice | The retry loop that ends the sweep early
+--- task
+`sweep.sh` should run cases 1, 2 and 3, each with three attempts, and print one line per attempt, then `sweep done`:
+
+```
+case 1 attempt 1
+case 1 attempt 2
+case 1 attempt 3
+case 2 attempt 1
+…
+case 3 attempt 3
+sweep done
+```
+
+It runs case 1 and then stops, because the function `attempt` changes a variable that belongs to the loop that calls it. Fix the function so that it cannot change its caller's variables, without renaming anything, then run `bash sweep.sh > sweep.txt`.
+--- starter
+printf '#!/usr/bin/env bash\nattempt() {\n  for i in 1 2 3; do\n    echo "case $1 attempt $i"\n  done\n}\ni=1\nwhile [ "$i" -le 3 ]; do\n  attempt "$i"\n  i=$((i + 1))\ndone\necho "sweep done"\n' > sweep.sh
+--- solution
+echo '#!/usr/bin/env bash' > sweep.sh
+echo 'attempt() {' >> sweep.sh
+echo '  local i' >> sweep.sh
+echo '  for i in 1 2 3; do' >> sweep.sh
+echo '    echo "case $1 attempt $i"' >> sweep.sh
+echo '  done' >> sweep.sh
+echo '}' >> sweep.sh
+echo 'i=1' >> sweep.sh
+echo 'while [ "$i" -le 3 ]; do' >> sweep.sh
+echo '  attempt "$i"' >> sweep.sh
+echo '  i=$((i + 1))' >> sweep.sh
+echo 'done' >> sweep.sh
+echo 'echo "sweep done"' >> sweep.sh
+bash sweep.sh > sweep.txt
+--- hint
+Both the function and the loop use `i`. A variable a function sets without `local` is the caller's variable. What is `i` when the first call returns?
+--- hint
+`local i` as the function's first line gives `attempt` its own `i`, and the loop's `i` is left alone.
+--- check shell | All three cases ran, three attempts each
+file sweep.txt contains case 2 attempt 1
+file sweep.txt contains case 3 attempt 3
+file sweep.txt lines == 10
+--- check shell | Each case ran exactly once, and the sweep finished
+file sweep.txt ~= case 1 attempt 1\ncase 1 attempt 2\ncase 1 attempt 3\ncase 2 attempt 1\ncase 2 attempt 2\ncase 2 attempt 3\ncase 3 attempt 1\ncase 3 attempt 2\ncase 3 attempt 3\nsweep done
+--- check shell | The function keeps its variable to itself
+file sweep.sh contains local i
+file sweep.sh contains attempt "$i"
+
 === lnx02-l07 | Practice: trap, and cleaning up on every exit path
 --- for
 l07-trap-and-cleanup
@@ -1140,6 +1388,95 @@ Write the process id into `out/.lock` and delete the file on the script's last l
 `mkdir out/.lock || exit 75`, with `rmdir out/.lock` in an `EXIT` trap.
 --- why
 `SIGKILL` cannot be trapped, so any scheme that relies on the script removing a file leaves a stale lock, and every later run refuses to start. `flock` puts the lock on the open file descriptor, and the kernel releases it when the process ends, however it ends. `-n` means "do not wait": a second copy gives up at once with 75, the "temporary failure, try again" code.
+
++++ practice | The scratch folder a failure leaves behind
+--- task
+`snap.sh SOURCE DEST` makes a scratch folder with `mktemp -d`, puts the first three lines of SOURCE in it, copies them to DEST, and removes the folder on its last line. When the copy fails, `set -e` ends the script first, and the scratch folder stays in `/tmp` for ever.
+
+Change the script so that the scratch folder is removed on every way out, success or failure, by an `EXIT` trap set straight after `mktemp`. Keep `set -euo pipefail`. Then run, in this order:
+
+```
+bash snap.sh logs/run.log out/head.txt; echo $? > fail_status.txt
+bash snap.sh logs/run.log head.txt
+```
+
+The first run fails, because the folder `out` does not exist. At the end, `/tmp` must hold no scratch folder at all. If an earlier try left one behind, remove it.
+--- starter
+mkdir -p logs
+printf 't=0.5 chan=WHEEL_RPM val=4187.0\nt=1.0 chan=BUS_VOLTS val=27.9\nt=1.5 chan=GYRO_X_DPS val=-0.1\nt=2.0 chan=TANK_PSI val=314.2\n' > logs/run.log
+printf '#!/usr/bin/env bash\nset -euo pipefail\ntmp=$(mktemp -d)\nhead -3 "$1" > "$tmp/head.txt"\ncp "$tmp/head.txt" "$2"\nrm -rf "$tmp"\necho "wrote $2"\n' > snap.sh
+--- solution
+echo '#!/usr/bin/env bash' > snap.sh
+echo 'set -euo pipefail' >> snap.sh
+echo 'tmp=$(mktemp -d)' >> snap.sh
+echo 'cleanup() { rm -rf "$tmp"; }' >> snap.sh
+echo 'trap cleanup EXIT' >> snap.sh
+echo 'head -3 "$1" > "$tmp/head.txt"' >> snap.sh
+echo 'cp "$tmp/head.txt" "$2"' >> snap.sh
+echo 'echo "wrote $2"' >> snap.sh
+bash snap.sh logs/run.log out/head.txt; echo $? > fail_status.txt
+bash snap.sh logs/run.log head.txt
+--- hint
+A cleanup line at the end of a script is skipped whenever the script stops early. `trap … EXIT` runs its handler on every way out.
+--- hint
+Put the cleanup in a small function, `cleanup() { rm -rf "$tmp"; }`, and install it with `trap cleanup EXIT` on the line after `mktemp -d`. A function also saves you from quotes inside quotes.
+--- hint
+`ls /tmp` shows what is left. `rm -rf /tmp/tmp.*` clears folders an earlier try left behind.
+--- check shell | The failed run still failed, with cp's status
+file fail_status.txt == 1
+printed cp: cannot create
+--- check shell | The good run wrote the three lines
+file head.txt ~= t=0.5 chan=WHEEL_RPM val=4187.0\nt=1.0 chan=BUS_VOLTS val=27.9\nt=1.5 chan=GYRO_X_DPS val=-0.1
+printed-line wrote head.txt
+--- check shell | No scratch folder is left in /tmp
+count /tmp/* == 0
+file snap.sh contains trap
+ran bash snap.sh logs/run.log out/head.txt
+
++++ practice | One trap for three scratch folders
+--- task
+`sweep.sh` makes one scratch folder per case with `mktemp -d` and sets a `trap` for each. Only the last `trap` survives, so after a run two of the three folders are still in `/tmp`. The script also takes an optional argument: the number of a case that fails, which makes the script stop with status 3.
+
+Fix it with one cleanup function, set once with `trap … EXIT` before the loop, that removes every folder the script made. Collect the folders in an array called `scratch` as you make them. Then run:
+
+```
+bash sweep.sh
+bash sweep.sh 2; echo $? > status.txt
+```
+
+At the end, `/tmp` must hold no scratch folder at all, even after the failed run. If an earlier try left some behind, remove them.
+--- starter
+printf '#!/usr/bin/env bash\nset -euo pipefail\nfor c in 1 2 3; do\n  tmp=$(mktemp -d)\n  trap "rm -rf $tmp" EXIT\n  if [ "$c" = "${1:-}" ]; then echo "case $c failed" >&2; exit 3; fi\n  echo "case $c" > "$tmp/case.txt"\n  cat "$tmp/case.txt"\ndone\n' > sweep.sh
+--- solution
+echo '#!/usr/bin/env bash' > sweep.sh
+echo 'set -euo pipefail' >> sweep.sh
+echo 'scratch=()' >> sweep.sh
+echo 'cleanup() { rm -rf "${scratch[@]}"; }' >> sweep.sh
+echo 'trap cleanup EXIT' >> sweep.sh
+echo 'for c in 1 2 3; do' >> sweep.sh
+echo '  tmp=$(mktemp -d)' >> sweep.sh
+echo '  scratch+=("$tmp")' >> sweep.sh
+echo '  if [ "$c" = "${1:-}" ]; then echo "case $c failed" >&2; exit 3; fi' >> sweep.sh
+echo '  echo "case $c" > "$tmp/case.txt"' >> sweep.sh
+echo '  cat "$tmp/case.txt"' >> sweep.sh
+echo 'done' >> sweep.sh
+bash sweep.sh
+bash sweep.sh 2; echo $? > status.txt
+--- hint
+A signal has one handler at a time: each `trap … EXIT` replaces the one before it.
+--- hint
+Start with `scratch=()`, add each new folder with `scratch+=("$tmp")`, and let the one handler remove `"${scratch[@]}"`.
+--- hint
+`ls /tmp` shows what is left; `rm -rf /tmp/tmp.*` clears the leftovers of earlier tries.
+--- check shell | The full run printed every case
+printed-line case 3
+--- check shell | The run with a failing case stopped with status 3
+printed-line case 2 failed
+file status.txt == 3
+--- check shell | Every scratch folder was removed, on both runs
+count /tmp/* == 0
+file sweep.sh contains scratch+=
+ran bash sweep.sh 2
 
 === lnx02-l08 | Practice: A script's interface — getopts, arguments and here-docs
 --- for
@@ -1277,6 +1614,129 @@ echo "$status"
 FAIL solver diverged
 --- why
 `read` splits the line on `IFS` and gives one word to each variable, except the last, which receives everything left over. So `id` is `case_07` and `status` is the rest of the line. `read` never complains about the wrong number of fields; name every field you expect, using `_` for the ones you throw away, or set `IFS` for that one `read`.
+
++++ practice | Options for a trimming script
+--- task
+Write `trim.sh`, which parses its options with `getopts` and takes exactly one file after them:
+
+```
+trim.sh [-n LINES] [-o OUTFILE] [-q] FILE
+```
+
+- It writes the first LINES lines of FILE (5 if `-n` is not given) to OUTFILE, or to standard output if `-o` is not given.
+- Unless `-q` is given, it also prints `trim: <LINES> lines of <FILE>` to standard error.
+- An option that is missing its value: print `trim.sh: option -<letter> needs a value` to standard error and exit 2.
+- An unknown option: print `trim.sh: unknown option -<letter>` to standard error and exit 2.
+- No file, or more than one, after the options: print `usage: trim.sh [-n LINES] [-o OUTFILE] [-q] FILE` to standard error and exit 2.
+
+Then run these, in order:
+
+```
+bash trim.sh -q -n 2 -o top.txt telemetry.csv 2> quiet.txt
+bash trim.sh -n3 telemetry.csv > three.txt
+bash trim.sh -qo five.txt telemetry.csv
+bash trim.sh -n; echo $? >> codes.txt
+bash trim.sh -z telemetry.csv; echo $? >> codes.txt
+bash trim.sh -q; echo $? >> codes.txt
+```
+--- starter
+printf 't,chan,val\n0.5,WHEEL_RPM,4187.0\n1.0,BUS_VOLTS,27.9\n1.5,GYRO_X_DPS,-0.1\n2.0,TANK_PSI,314.2\n2.5,WHEEL_RPM,4190.3\n3.0,BUS_VOLTS,28.1\n' > telemetry.csv
+--- solution
+echo '#!/usr/bin/env bash' > trim.sh
+echo 'set -euo pipefail' >> trim.sh
+echo 'usage() { echo "usage: trim.sh [-n LINES] [-o OUTFILE] [-q] FILE" >&2; exit 2; }' >> trim.sh
+echo 'n=5; out=""; quiet=0' >> trim.sh
+echo 'while getopts ":n:o:q" opt; do' >> trim.sh
+echo '  case "$opt" in' >> trim.sh
+echo '    n) n="$OPTARG" ;;' >> trim.sh
+echo '    o) out="$OPTARG" ;;' >> trim.sh
+echo '    q) quiet=1 ;;' >> trim.sh
+echo '    :) echo "trim.sh: option -$OPTARG needs a value" >&2; exit 2 ;;' >> trim.sh
+echo '    \?) echo "trim.sh: unknown option -$OPTARG" >&2; exit 2 ;;' >> trim.sh
+echo '  esac' >> trim.sh
+echo 'done' >> trim.sh
+echo 'shift $((OPTIND - 1))' >> trim.sh
+echo '[ "$#" -eq 1 ] || usage' >> trim.sh
+echo 'if [ -n "$out" ]; then head -n "$n" "$1" > "$out"; else head -n "$n" "$1"; fi' >> trim.sh
+echo 'if [ "$quiet" -eq 0 ]; then echo "trim: $n lines of $1" >&2; fi' >> trim.sh
+bash trim.sh -q -n 2 -o top.txt telemetry.csv 2> quiet.txt
+bash trim.sh -n3 telemetry.csv > three.txt
+bash trim.sh -qo five.txt telemetry.csv
+bash trim.sh -n; echo $? >> codes.txt
+bash trim.sh -z telemetry.csv; echo $? >> codes.txt
+bash trim.sh -q; echo $? >> codes.txt
+--- hint
+In the option string `":n:o:q"`, a colon after a letter means that option takes a value, and the colon at the front lets your script print its own messages: a missing value arrives as `:` and an unknown option as `?`, with the letter in `OPTARG`.
+--- hint
+After the loop, `shift $((OPTIND - 1))` drops the option words, so the file is `$1` and `$#` counts what is left.
+--- hint
+`getopts` already understands `-n3` and `-qo five.txt`: an option's value may be glued to its letter, and options without values may be bundled.
+--- check shell | The values from -n and -o were used, and the default is 5
+file top.txt ~= t,chan,val\n0.5,WHEEL_RPM,4187.0
+file three.txt lines == 3
+file five.txt lines == 5
+--- check shell | Only the run without -q reported what it did
+printed-line trim: 3 lines of telemetry.csv
+file quiet.txt empty
+--- check shell | The three mistakes each ended with status 2 and their own message
+file codes.txt ~= 2\n2\n2
+printed-line trim.sh: option -n needs a value
+printed-line trim.sh: unknown option -z
+printed-line usage: trim.sh [-n LINES] [-o OUTFILE] [-q] FILE
+
++++ practice | A configuration and an awk program from one script
+--- task
+Write `mkcase.sh ID`. It uses two here-documents, one after the other:
+
+1. The first writes `cases/case_<ID>.conf`, with the ID and the seed (100000 plus the ID) filled in. For ID 12 the file is:
+
+```
+# case 12, made by mkcase.sh
+case_id = 12
+seed    = 100012
+outdir  = results/case_12
+```
+
+2. The second writes `cases/sum_<ID>.awk`, an awk program that adds up column 3 of a file. Nothing in it may be filled in by bash: `$3` must reach the file exactly as typed.
+
+```
+{ s += $3 }
+END { print "total", s }
+```
+
+Run `bash mkcase.sh 7` and `bash mkcase.sh 12`, then run the generated program with `awk -f cases/sum_12.awk samples.txt`.
+--- starter
+mkdir -p cases
+printf 'a 1 10\nb 2 20\nc 3 12\n' > samples.txt
+--- solution
+echo '#!/usr/bin/env bash' > mkcase.sh
+echo 'set -euo pipefail' >> mkcase.sh
+echo 'cat > "cases/case_$1.conf" <<EOF' >> mkcase.sh
+echo '# case $1, made by mkcase.sh' >> mkcase.sh
+echo 'case_id = $1' >> mkcase.sh
+echo 'seed    = $((100000 + $1))' >> mkcase.sh
+echo 'outdir  = results/case_$1' >> mkcase.sh
+echo 'EOF' >> mkcase.sh
+echo "cat > \"cases/sum_\$1.awk\" <<'EOF'" >> mkcase.sh
+echo '{ s += $3 }' >> mkcase.sh
+echo 'END { print "total", s }' >> mkcase.sh
+echo 'EOF' >> mkcase.sh
+bash mkcase.sh 7
+bash mkcase.sh 12
+awk -f cases/sum_12.awk samples.txt
+--- hint
+With an unquoted marker, `<<EOF`, the body is filled in like a double-quoted string: `$1` and `$(( ))` work. With a quoted marker, `<<'EOF'`, the body is passed on exactly as typed.
+--- hint
+Write the script line by line with `echo '…' >> mkcase.sh`. The line that starts the second here-document contains single quotes itself, so write that one line inside double quotes, with a backslash before each `"` and `$` that must reach the file.
+--- check shell | The configuration was filled in
+file cases/case_12.conf ~= # case 12, made by mkcase.sh\ncase_id = 12\nseed = 100012\noutdir = results/case_12
+file cases/case_7.conf contains seed    = 100007
+--- check shell | The awk program was written exactly as typed
+file cases/sum_7.awk ~= { s += $3 }\nEND { print "total", s }
+file cases/sum_12.awk contains $3
+count cases/* == 4
+--- check shell | The generated program runs
+printed-line total 42
 
 === lnx02-l09 | Practice: sed — substitution and addressing
 --- for
@@ -1540,6 +2000,70 @@ Nothing: `awk` stops with "undefined variable lim".
 --- why
 Single quotes keep bash out of the program, so `awk` sees `$lim`. In `awk`, `$` followed by a number is a field, and the unset variable `lim` counts as 0, so `$lim` is `$0`, the whole record. Pass the value in with `-v lim="$lim"` and compare with `$6 > lim`, no dollar.
 
++++ practice | A mean for every channel
+--- task
+`run.log` holds telemetry lines such as `t=0.5 chan=WHEEL_RPM val=4187.0`, plus comment lines that start with `#`. With one `awk` program, write `means.txt` with one line per channel, sorted by channel name: the channel, the number of samples, and their mean with two decimals:
+
+```
+BUS_VOLTS n=3 mean=28.00
+GYRO_X_DPS n=2 mean=-0.15
+TANK_PSI n=1 mean=314.20
+WHEEL_RPM n=2 mean=4188.65
+```
+
+The comment lines must not count as samples of anything.
+--- starter
+printf '# bench run 7\nt=0.5 chan=WHEEL_RPM val=4187.0\nt=1.0 chan=BUS_VOLTS val=27.9\nt=1.5 chan=GYRO_X_DPS val=-0.1\n# valve cycled\nt=2.0 chan=TANK_PSI val=314.2\nt=2.5 chan=WHEEL_RPM val=4190.3\nt=3.0 chan=BUS_VOLTS val=28.1\nt=3.5 chan=GYRO_X_DPS val=-0.2\nt=4.0 chan=BUS_VOLTS val=28.0\n' > run.log
+--- solution
+awk -F'[= ]+' '/^#/ { next } { n[$4]++; s[$4] += $6 } END { for (c in n) printf "%s n=%d mean=%.2f\n", c, n[c], s[c] / n[c] }' run.log | sort > means.txt
+--- hint
+With `-F'[= ]+'` as the separator, `t=0.5 chan=WHEEL_RPM val=4187.0` has six fields: the channel is `$4` and the value `$6`.
+--- hint
+Keep two arrays keyed by channel, a count and a sum, and divide them per channel in `END`. `/^#/ { next }` skips a comment line before any other rule sees it.
+--- hint
+`for (c in n)` visits the keys in no useful order, so pipe the result through `sort`. `printf "%.2f"` prints two decimals.
+--- check shell | One line per channel, with its count and mean
+file means.txt ~= BUS_VOLTS n=3 mean=28.00\nGYRO_X_DPS n=2 mean=-0.15\nTANK_PSI n=1 mean=314.20\nWHEEL_RPM n=2 mean=4188.65
+--- check shell | The comments were skipped, not counted
+file means.txt lines == 4
+file means.txt excludes #
+--- check shell | Done with awk
+used awk
+used run.log
+
++++ practice | Seeds for the results, even with no seeds at all
+--- task
+`seeds.txt` gives a seed for some case ids (`12 100012`), and `results.txt` has one line per case: an id and a status. With one `awk` program that reads both files, write `report.txt` with one line per result, in the order of `results.txt`:
+
+```
+3 seed=100003 OK
+12 seed=100012 FAIL
+40 seed=? OK
+```
+
+A case with no seed gets `seed=?`. Run the same program again with `empty_seeds.txt`, which has no lines at all, in place of `seeds.txt`, and write `report_noseeds.txt`: every result must still be there, each with `seed=?`.
+--- starter
+printf '3 100003\n12 100012\n' > seeds.txt
+touch empty_seeds.txt
+printf '3 OK\n12 FAIL\n40 OK\n' > results.txt
+--- solution
+awk 'FILENAME == ARGV[1] { seed[$1] = $2; next } { print $1, "seed=" ($1 in seed ? seed[$1] : "?"), $2 }' seeds.txt results.txt > report.txt
+awk 'FILENAME == ARGV[1] { seed[$1] = $2; next } { print $1, "seed=" ($1 in seed ? seed[$1] : "?"), $2 }' empty_seeds.txt results.txt > report_noseeds.txt
+--- hint
+Store the first file in an array keyed by id, skip to the next line with `next`, and look ids up while reading the second file.
+--- hint
+`NR == FNR` means "still in the first file" only when the first file has lines. With an empty first file it is true all through the second, and every result is swallowed. `FILENAME == ARGV[1]` has no such hole.
+--- hint
+`(id in seed)` asks whether a key exists without creating it. `cond ? a : b` picks one of two values.
+--- check shell | Each result with its seed, or a question mark
+file report.txt ~= 3 seed=100003 OK\n12 seed=100012 FAIL\n40 seed=? OK
+--- check shell | An empty seeds file still gives every result
+file report_noseeds.txt ~= 3 seed=? OK\n12 seed=? FAIL\n40 seed=? OK
+file report_noseeds.txt lines == 3
+--- check shell | Both files went through awk
+used awk
+used empty_seeds.txt results.txt
+
 === lnx02-l11 | Practice: jq for JSON, and lining up tabular text
 --- for
 l11-jq-and-tabular-text
@@ -1633,6 +2157,81 @@ Tab-separated files cannot be joined; convert them to spaces first.
 The headers are missing; `join` needs `--header` on sorted files.
 --- why
 `sort -n` puts 2 before 10, but `join` expects the order it compares in, which is text order in the current locale. `LC_ALL=C` makes `sort` and `join` agree on every machine. The complaint comes after partial output, so a script that ignores the status keeps a half-joined table.
+
++++ practice | Three answers from a manifest
+--- task
+`manifest.json` lists a campaign's cases, each with an `id`, a `status` and a miss distance `miss_m`, which is `null` for a case that produced none. With `jq`, write three files:
+
+- `ok_count.txt`: the number of cases whose status is `OK`, alone on its line;
+- `misses.txt`: one line per case, `<id>:<miss_m>`, with `none` in place of a missing miss distance;
+- `worst.txt`: the id of the case with the largest miss distance, among the cases that have one.
+
+For these cases, `misses.txt` is:
+
+```
+1:210.5
+2:none
+3:0
+4:488.5
+```
+
+Case 3 missed by exactly 0 metres, which is a real value: it must stay `0`, not become `none`.
+--- starter
+printf '{"campaign": "entry-burn-2026-05", "cases": [\n  {"id": 1, "status": "OK", "miss_m": 210.5},\n  {"id": 2, "status": "FAIL", "miss_m": null},\n  {"id": 3, "status": "OK", "miss_m": 0},\n  {"id": 4, "status": "OK", "miss_m": 488.5}\n]}\n' > manifest.json
+--- solution
+jq '[.cases[] | select(.status == "OK")] | length' manifest.json > ok_count.txt
+jq -r '.cases[] | "\(.id):\(.miss_m // "none")"' manifest.json > misses.txt
+jq '[.cases[] | select(.miss_m != null)] | sort_by(-.miss_m) | .[0].id' manifest.json > worst.txt
+--- hint
+Square brackets around a filter collect its results into one array, so `[.cases[] | select(…)] | length` counts them.
+--- hint
+`a // b` gives `b` when `a` is `null` or `false`, and 0 is neither. `"\(expr)"` drops a value into a string, and `-r` prints strings without their quotes.
+--- hint
+Drop the cases with no miss distance before sorting: `sort_by(-.miss_m)` puts the largest first, and `.[0].id` takes its id.
+--- check shell | Three OK cases
+file ok_count.txt == 3
+--- check shell | One line per case, a real 0 kept and a null replaced
+file misses.txt ~= 1:210.5\n2:none\n3:0\n4:488.5
+--- check shell | The worst case among those with a miss distance
+file worst.txt == 4
+used jq
+
++++ practice | Joining two tables that do not line up
+--- task
+`cases.txt` gives a seed for each case id, and `miss.txt` a miss distance, one `id value` pair per line. Neither file has every id, and both are sorted by id as numbers.
+
+1. With `join`, write `joined.txt` holding every id that appears in either file, one line each, as `<id> <seed> <miss>`, with `MISSING` for a value the other file lacks. Put the lines in order of id as a number:
+
+```
+1 100001 MISSING
+2 100002 519.0
+3 100003 308.9
+4 MISSING 229.3
+10 100010 431.0
+12 100012 MISSING
+```
+
+2. Then write `no_miss.txt`: the ids whose miss is `MISSING`, on one line, separated by commas (`1,12`). Use `paste` to put them on one line.
+--- starter
+printf '1 100001\n2 100002\n3 100003\n10 100010\n12 100012\n' > cases.txt
+printf '2 519.0\n3 308.9\n4 229.3\n10 431.0\n' > miss.txt
+--- solution
+join -a1 -a2 -e MISSING -o 0,1.2,2.2 <(sort -k1,1 cases.txt) <(sort -k1,1 miss.txt) | sort -n > joined.txt
+awk '$3 == "MISSING" { print $1 }' joined.txt | paste -s -d, > no_miss.txt
+--- hint
+`join` compares keys as text, where `10` comes before `2`. Sorted as numbers, the files are out of `join`'s order: sort each one on its first field as text first, `sort -k1,1`, for example inside `<( )`.
+--- hint
+`-a1 -a2` keeps the ids found on only one side, `-e MISSING` fills the empty side, and `-o 0,1.2,2.2` fixes the columns: the key, then field 2 of each file. Sort the result with `sort -n` for people.
+--- hint
+`paste -s -d,` joins its input lines into one line, with commas between them.
+--- check shell | Every id, with MISSING where a side has none, in number order
+file joined.txt ~= 1 100001 MISSING\n2 100002 519.0\n3 100003 308.9\n4 MISSING 229.3\n10 100010 431.0\n12 100012 MISSING
+--- check shell | Six lines: no id dropped
+file joined.txt lines == 6
+used join
+--- check shell | The ids with no miss, on one line
+file no_miss.txt == 1,12
+used paste
 
 === lnx02-l12 | Practice: shellcheck as a mandatory linter
 --- for
@@ -1754,6 +2353,44 @@ With `nullglob`, the unmatched glob expands to nothing, so the command is `grep 
 The redirect to `summary.txt` waits until a file appears.
 --- why
 Many tools read standard input when given no file names, and `nullglob` is exactly what removes the names. A linter reads code, not your folders, so it cannot know the folder will be empty. Check for the empty case yourself — count the matches first — and run the unusual inputs before calling a script finished.
+
++++ practice | The failure that local swallowed
+--- task
+`shellcheck` reports SC2155 on line 4 of `collect.sh`: `local out=$(cat "$1")` masks the status of `cat`. The script has `set -euo pipefail`, yet given a file that does not exist it prints `collected: ` with nothing after it and exits 0.
+
+Fix the function the way SC2155 asks, keeping `out` local, so that a missing file stops the script with `cat`'s status before anything is printed to standard output. Then run:
+
+```
+bash collect.sh reading.txt
+bash collect.sh nope.txt > nope_out.txt; echo $? > status.txt
+```
+--- starter
+printf '42\n' > reading.txt
+printf '#!/usr/bin/env bash\nset -euo pipefail\ngrab() {\n  local out=$(cat "$1")\n  echo "collected: $out"\n}\ngrab "$1"\n' > collect.sh
+--- solution
+echo '#!/usr/bin/env bash' > collect.sh
+echo 'set -euo pipefail' >> collect.sh
+echo 'grab() {' >> collect.sh
+echo '  local out' >> collect.sh
+echo '  out=$(cat "$1")' >> collect.sh
+echo '  echo "collected: $out"' >> collect.sh
+echo '}' >> collect.sh
+echo 'grab "$1"' >> collect.sh
+bash collect.sh reading.txt
+bash collect.sh nope.txt > nope_out.txt; echo $? > status.txt
+--- hint
+`local` is a command. When the assignment is one of its arguments, the line's status is `local`'s own, which is success, whatever `cat` did.
+--- hint
+Declare and assign on two lines: `local out`, then `out=$(cat "$1")`. On its own line the assignment carries the status of `cat`, and `set -e` acts on it.
+--- check shell | A readable file is still collected
+printed-line collected: 42
+--- check shell | A missing file stops the script with status 1, printing nothing
+file status.txt == 1
+file nope_out.txt empty
+printed nope.txt
+--- check shell | out is still local, declared on its own line
+file collect.sh contains local out
+file collect.sh excludes local out=
 
 === lnx02-l13 | Practice: cron and systemd timers
 --- for
@@ -1938,11 +2575,11 @@ Bash has flat lists and flat string maps, nothing nested. Gluing two names into 
 
 === lnx02-test | Bash scripting and text processing: module test
 --- teach
-The test covers the whole module: scripts and their exit statuses, `set -euo pipefail` and where it does not fire, quoting and globs, `$( )` and `$(( ))`, loops and tests, exit codes, forwarding arguments, `sed`, and the linter's findings — in eight new problems, most of them combining several lessons, with no hints. Twelve questions then cover what the practice terminal cannot run: `trap`, `getopts`, here-documents, `awk`, `jq`, arrays and functions, `[[ ]]`, schedulers and when to leave bash. The terminal runs scripts with `if`, `for`, `while`, `[ ]`, `$( )` and `$(( ))`, but has no functions, `case`, `[[ ]]`, `break`, `continue`, `shift` or arrays, so write the problems without them. To prepare, redo the practice problems of the lessons that felt hardest, and reread the check-yourself questions of lessons 02, 03 and 07.
+The test covers the whole module: scripts and their exit statuses, `set -euo pipefail` and where it does not fire, quoting and globs, `$( )` and `$(( ))`, loops and tests, exit codes, forwarding arguments, options and cleanup traps, `sed`, `awk` and `jq`, and the linter's findings — in ten new problems, most of them combining several lessons, with no hints. Twelve questions then test the understanding behind them: signals and exit statuses, corner cases of `getopts` and here-documents, `awk`, `jq`, arrays and functions, `[[ ]]`, schedulers and when to leave bash. The practice terminal runs functions, `case`, `[[ ]]`, arrays, `trap`, `getopts`, here-documents inside scripts, `awk` and `jq`, but it cannot send real signals. To prepare, redo the practice problems of the lessons that felt hardest, and reread the check-yourself questions of lessons 02, 03 and 07.
 --- gate
-pass 6
+pass 7
 questions 10
-minutes 92
+minutes 112
 
 +++ problem | A sweep driver that fails loudly
 --- task
@@ -2238,6 +2875,107 @@ printed-line logs/day1.log: 0
 printed-line logs/day 2.log: 2
 --- check shell | The unreadable file was reported and skipped
 printed-line logs/nope.log: unreadable
+
++++ problem | A collector with options and a clean exit
+--- task
+Write `gather.sh`, which takes options, then one or more log files (names may contain spaces):
+
+```
+gather.sh [-s STATUS] [-o OUTFILE] LOG...
+```
+
+- It collects every line that contains STATUS (default `FAIL`) from each log, in the order given, into OUTFILE (default `summary.txt`). Each line is written as `<log name>: <line>`, where the log name has no folders in front. A log with no matching line adds nothing and is not an error.
+- It builds the result in a scratch folder made with `mktemp -d`, and moves it to OUTFILE only when every log has been read, so a run that fails never creates or changes OUTFILE.
+- A log that cannot be read: print `gather.sh: cannot read <log>` to standard error and exit 3.
+- An unknown option, an option missing its value, or no log at all: print `usage: gather.sh [-s STATUS] [-o OUTFILE] LOG...` to standard error and exit 2.
+- The scratch folder is removed on every way out.
+- Its first two lines are `#!/usr/bin/env bash` and `set -euo pipefail`.
+
+Run, in this order:
+
+```
+bash gather.sh -o fails.txt "logs/day 1.log" logs/day2.log
+bash gather.sh -s DIVERGED "logs/day 1.log" logs/day2.log
+bash gather.sh -o bad.txt logs/day2.log logs/nope.log; echo $? >> codes.txt
+bash gather.sh -x logs/day2.log; echo $? >> codes.txt
+bash gather.sh -s; echo $? >> codes.txt
+```
+--- starter
+mkdir -p logs
+printf 'case 1 OK\ncase 2 FAIL solver\ncase 3 OK\n' > "logs/day 1.log"
+printf 'case 4 OK\ncase 5 FAIL mesh\ncase 6 DIVERGED\ncase 7 FAIL timeout\n' > logs/day2.log
+--- solution
+echo '#!/usr/bin/env bash' > gather.sh
+echo 'set -euo pipefail' >> gather.sh
+echo 'usage() { echo "usage: gather.sh [-s STATUS] [-o OUTFILE] LOG..." >&2; exit 2; }' >> gather.sh
+echo 'status=FAIL; out=summary.txt; tmp=""' >> gather.sh
+echo 'cleanup() { if [ -n "$tmp" ]; then rm -rf "$tmp"; fi; }' >> gather.sh
+echo 'trap cleanup EXIT' >> gather.sh
+echo 'while getopts ":s:o:" opt; do' >> gather.sh
+echo '  case "$opt" in' >> gather.sh
+echo '    s) status="$OPTARG" ;;' >> gather.sh
+echo '    o) out="$OPTARG" ;;' >> gather.sh
+echo '    *) usage ;;' >> gather.sh
+echo '  esac' >> gather.sh
+echo 'done' >> gather.sh
+echo 'shift $((OPTIND - 1))' >> gather.sh
+echo '[ "$#" -ge 1 ] || usage' >> gather.sh
+echo 'tmp=$(mktemp -d)' >> gather.sh
+echo 'touch "$tmp/out"' >> gather.sh
+echo 'for log in "$@"; do' >> gather.sh
+echo '  if [ ! -r "$log" ]; then echo "gather.sh: cannot read $log" >&2; exit 3; fi' >> gather.sh
+echo '  name=$(basename "$log")' >> gather.sh
+echo '  grep "$status" "$log" | sed "s/^/$name: /" >> "$tmp/out" || true' >> gather.sh
+echo 'done' >> gather.sh
+echo 'mv "$tmp/out" "$out"' >> gather.sh
+bash gather.sh -o fails.txt "logs/day 1.log" logs/day2.log
+bash gather.sh -s DIVERGED "logs/day 1.log" logs/day2.log
+bash gather.sh -o bad.txt logs/day2.log logs/nope.log; echo $? >> codes.txt
+bash gather.sh -x logs/day2.log; echo $? >> codes.txt
+bash gather.sh -s; echo $? >> codes.txt
+--- check shell | The FAIL lines of both logs, labelled, the spaced name whole
+file fails.txt ~= day 1.log: case 2 FAIL solver\nday2.log: case 5 FAIL mesh\nday2.log: case 7 FAIL timeout
+--- check shell | Another status, into the default file, past a log with no match
+file summary.txt == day2.log: case 6 DIVERGED
+--- check shell | The unreadable log failed with 3 and created nothing
+missing bad.txt
+printed-line gather.sh: cannot read logs/nope.log
+--- check shell | The bad options ended with status 2
+file codes.txt ~= 3\n2\n2
+printed-line usage: gather.sh [-s STATUS] [-o OUTFILE] LOG...
+--- check shell | No scratch folder was left behind
+count /tmp/* == 0
+file gather.sh contains mktemp -d
+
++++ problem | A status table from a JSON manifest
+--- task
+`manifest.json` lists a campaign's cases, each with an `id`, a `status` and a miss distance `miss_m`, which is `null` for a case that produced none. Using `jq` to get the data out and `awk` to add it up, write:
+
+1. `status_table.txt`: one line per status, sorted by status, with its number of cases and the mean of its miss distances to one decimal place, counting only the cases that have one. A status none of whose cases has a miss distance gets `n/a`. For this manifest:
+
+```
+DIVERGED n=2 mean_miss=n/a
+FAIL n=2 mean_miss=612.0
+OK n=3 mean_miss=233.0
+```
+
+2. `no_miss.txt`: the ids of the cases with no miss distance, in the manifest's order, on one line, separated by commas.
+
+A miss distance of exactly 0 is a real measurement and counts.
+--- starter
+printf '{"campaign": "entry-burn-2026-05", "cases": [\n  {"id": 1, "status": "OK", "miss_m": 210.5},\n  {"id": 2, "status": "FAIL", "miss_m": null},\n  {"id": 3, "status": "OK", "miss_m": 0},\n  {"id": 4, "status": "DIVERGED", "miss_m": null},\n  {"id": 5, "status": "OK", "miss_m": 488.5},\n  {"id": 6, "status": "FAIL", "miss_m": 612.0},\n  {"id": 7, "status": "DIVERGED", "miss_m": null}\n]}\n' > manifest.json
+--- solution
+jq -r '.cases[] | [.status, (.miss_m // "")] | @tsv' manifest.json | awk -F'\t' '{ n[$1]++; if ($2 != "") { s[$1] += $2; m[$1]++ } } END { for (k in n) if (m[k]) printf "%s n=%d mean_miss=%.1f\n", k, n[k], s[k] / m[k]; else printf "%s n=%d mean_miss=n/a\n", k, n[k] }' | sort > status_table.txt
+jq -r '.cases[] | select(.miss_m == null) | .id' manifest.json | paste -s -d, > no_miss.txt
+--- check shell | One line per status, the mean over real measurements only
+file status_table.txt ~= DIVERGED n=2 mean_miss=n/a\nFAIL n=2 mean_miss=612.0\nOK n=3 mean_miss=233.0
+--- check shell | Three statuses
+file status_table.txt lines == 3
+--- check shell | The cases with no miss distance, on one line
+file no_miss.txt == 2,4,7
+--- check shell | jq took the data out and awk added it up
+used jq
+used awk
 
 +++ question | Killed by the kernel
 --- ask
