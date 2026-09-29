@@ -21,7 +21,7 @@ That is exactly what a branch is on disk. A branch is a **ref** — a named poin
 The other name you need is **HEAD**, the "you are here" marker. Normally HEAD does not hold a hash; it holds the *name of a branch*, like `ref: refs/heads/main`. So there are two hops: HEAD names a branch, and the branch names a commit.
 
 ::: key What a branch is, physically
-A 41-byte file under `.git/refs/heads` containing a commit hash. Creating a branch is free; moving it is a one-line write. HEAD is a ref that usually points at a branch ref.
+A 41-byte file under `.git/refs/heads` (or, once packed, a line in `.git/packed-refs`) containing a commit hash. Creating a branch is free; moving it is a one-line write. HEAD is a ref that usually points at a branch ref.
 :::
 
 ## Making a branch: `git branch`

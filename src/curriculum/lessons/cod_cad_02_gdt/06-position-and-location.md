@@ -161,10 +161,10 @@ Worse, it is **rarely the function**. Take an oval shaft whose long radius is $1
 So the modern advice is: for a round feature that must run true, use runout; for a feature that must be located for assembly, use position; for a complex surface, use profile. All three are cheaper to check and closer to what the part does.
 
 ::: key Concentricity: why is it discouraged?
-It controls the distribution of median points, which is expensive to measure and rarely the actual function. Runout or position usually expresses the real requirement and is far cheaper to inspect, which is why Y14.5-2018 pushes designers away from it.
+It controls the distribution of median points, which is expensive to measure and rarely the actual function. Runout or position usually expresses the real requirement and is far cheaper to inspect, which is why Y14.5-2018 removed the concentricity and symmetry symbols.
 :::
 
-The 2018 revision of **ASME Y14.5** went further than advice: it removed the concentricity and symmetry symbols from the standard altogether. They are **legacy controls**. You will still meet them — on older drawings made to earlier revisions, which stay valid for the parts they define, and in the **[[ISO|iso-still]]** standards, which keep similar symbols. When you do, read them as median-point controls, and when you get to redraw the part, replace them with runout, position or profile.
+The 2018 revision of **ASME Y14.5** did not just advise against them: it removed the concentricity and symmetry symbols from the standard altogether. They are **legacy controls**. You will still meet them — on older drawings made to earlier revisions, which stay valid for the parts they define, and in the **[[ISO|iso-still]]** standards, which keep similar symbols. When you do, read them as median-point controls, and when you get to redraw the part, replace them with runout, position or profile.
 
 ::: warning Concentricity is not "position of a round feature"
 Position of a shaft to a datum axis controls the shaft's *axis*, found from its whole surface. Concentricity controls *median points*, pair by pair. The oval shaft above passes concentricity perfectly and could still fail runout. Do not treat the two as the same number with a different symbol.

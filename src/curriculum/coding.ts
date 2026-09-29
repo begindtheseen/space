@@ -648,7 +648,7 @@ export const CODING: Module[] = [
         id: 'git01_c2',
         front: 'What is a branch, physically?',
         back:
-          'A 41-byte file under .git/refs/heads containing a commit hash. Creating a branch is free; moving it is a one-line write. HEAD is a ref that usually points at a branch ref.',
+          'A 41-byte file under .git/refs/heads (or, once packed, a line in .git/packed-refs) containing a commit hash. Creating a branch is free; moving it is a one-line write. HEAD is a ref that usually points at a branch ref.',
       },
       {
         id: 'git01_c3',
@@ -666,7 +666,7 @@ export const CODING: Module[] = [
         id: 'git01_c5',
         front: 'What does the reflog record?',
         back:
-          'Every local movement of HEAD and of branch tips, with timestamps, for about 90 days by default. It is how you recover commits that are no longer reachable from any branch, including after a hard reset or a botched rebase.',
+          'Every local movement of HEAD and of branch tips, with timestamps, for 90 days by default (30 days for entries no longer reachable from a branch). It is how you recover commits that are no longer reachable from any branch, including after a hard reset or a botched rebase.',
       },
       {
         id: 'git01_c6',
@@ -723,7 +723,7 @@ export const CODING: Module[] = [
         ],
         answer: 1,
         explain:
-          'Objects survive until garbage collection prunes unreachable ones, typically after 30 days for loose objects. `git reflog` gives you the hash to check out or branch from.',
+          'Objects survive until garbage collection prunes unreachable ones (reflog entries for unreachable commits expire after 30 days by default, and gc then prunes unreferenced loose objects older than 2 weeks). `git reflog` gives you the hash to check out or branch from.',
         b: 0.1,
         bloom: 'understand',
       },
@@ -900,7 +900,7 @@ export const CODING: Module[] = [
         id: 'git02_c2',
         front: 'What is the golden rule of rebasing?',
         back:
-          'Never rebase commits that exist outside your repository. Rewriting published history forces everyone else into a painful reconciliation and can silently duplicate or drop commits.',
+          'Never rebase commits that exist outside your repository. Rewriting published history forces everyone else into a painful reconciliation and can silently duplicate or drop commits. The usual exception is your own pushed feature branch that nobody else builds on, rewritten and pushed with --force-with-lease.',
       },
       {
         id: 'git02_c3',
@@ -2597,7 +2597,7 @@ export const CODING: Module[] = [
           {
             name: 'yaw of 90 degrees rotates x into -y',
             assert:
-              'import numpy as np\nC = dcm321(np.pi / 2, 0.0, 0.0)\nassert np.allclose(C @ np.array([1.0, 0.0, 0.0]), np.array([0.0, -1.0, 0.0]), atol=1e-12), "check the 3-2-1 convention and sign of the sine terms"\nC = dcm321(0.0, np.pi / 2, 0.0)\nassert np.allclose(C @ np.array([1.0, 0.0, 0.0]), np.array([0.0, 0.0, 1.0]), atol=1e-12), "a 90 degree pitch must map body x onto inertial z in this convention"\n',
+              'import numpy as np\nC = dcm321(np.pi / 2, 0.0, 0.0)\nassert np.allclose(C @ np.array([1.0, 0.0, 0.0]), np.array([0.0, -1.0, 0.0]), atol=1e-12), "check the 3-2-1 convention and sign of the sine terms"\nC = dcm321(0.0, np.pi / 2, 0.0)\nassert np.allclose(C @ np.array([1.0, 0.0, 0.0]), np.array([0.0, 0.0, 1.0]), atol=1e-12), "a 90 degree pitch must put inertial x along body +z in this convention"\n',
           },
           {
             name: 'skew reproduces the cross product',
@@ -6984,7 +6984,7 @@ export const CODING: Module[] = [
     tier: 8,
     title: 'Eigen: Numerical Linear Algebra in C++',
     summary:
-      "The library aerospace C++ actually uses for vectors, matrices, quaternions and decompositions. Fixed-size types are allocation-free and unrolled, which is exactly why PX4 and flight-adjacent codebases ship it.",
+      "The library aerospace C++ actually uses for vectors, matrices, quaternions and decompositions. Fixed-size types are allocation-free and unrolled, which is exactly why flight-adjacent codebases ship it (PX4's own matrix library copies the same fixed-size design).",
     prereqs: ['cod_cpp_05_templates', 'cod_py_03_numpy'],
     hours: 30,
     topics: [
@@ -7053,7 +7053,7 @@ export const CODING: Module[] = [
         id: 'cpp09_ex2',
         title: 'Covariance update without inverting',
         prompt:
-          'Implement a Kalman measurement update for a 6-state, 3-measurement problem using fixed-size Eigen types. Compute the innovation covariance S = H P H^T + R and the gain K = P H^T S^-1 by solving with an LDLT decomposition rather than forming S.inverse(), then apply the Joseph-form covariance update. Verify that the posterior covariance stays symmetric positive definite (its LLT succeeds) and that no dynamic allocation happens in the update. Expected: the trace of P decreases after the update, symmetry error is below 1e-15, and the allocation counter reads zero.',
+          'Implement a Kalman measurement update for a 6-state, 3-measurement problem using fixed-size Eigen types. Compute the innovation covariance S = H P H^T + R and the gain K = P H^T S^-1 by solving with an LDLT decomposition rather than forming S.inverse(), then apply the Joseph-form covariance update. Verify that the posterior covariance stays symmetric positive definite (its LLT succeeds) and that no dynamic allocation happens in the update. Expected: the trace of P decreases after the update, symmetry error is below 1e-15, and the update runs without asserting inside an Eigen::internal::set_is_malloc_allowed(false) region (EIGEN_RUNTIME_NO_MALLOC, in a build without NDEBUG).',
         kind: 'code',
         lang: 'cpp',
         starter:
@@ -7080,13 +7080,13 @@ export const CODING: Module[] = [
         id: 'cpp09_c3',
         front: 'What does noalias() prevent?',
         back:
-          'Eigen creating a temporary for a matrix product assignment. Write C.noalias() = A * B only when you know C does not appear on the right-hand side; using it when it does gives a silently wrong result.',
+          'Eigen creating a temporary for a matrix product assignment. Write C.noalias() = A * B only when you know C does not appear on the right-hand side; using it when it does can give a silently wrong result.',
       },
       {
         id: 'cpp09_c4',
         front: 'Why is a = a * b hazardous?',
         back:
-          'The product reads a while writing it. Eigen inserts a temporary for matrix products by default to be safe, but for coefficient-wise expressions and some in-place ops you must call .eval() yourself.',
+          'The product reads a while writing it. Eigen inserts a temporary for matrix products by default to be safe, but for expressions that read other positions of the destination (a transpose, overlapping blocks) you must call .eval() yourself.',
       },
       {
         id: 'cpp09_c5',
@@ -7116,7 +7116,7 @@ export const CODING: Module[] = [
         id: 'cpp09_c9',
         front: 'How do you prove an Eigen update step allocates nothing?',
         back:
-          'Compile with EIGEN_RUNTIME_NO_MALLOC and wrap the region with Eigen::internal::set_is_malloc_allowed(false); any attempted allocation then asserts. Keep it in a test so a future refactor that introduces a dynamic type fails CI.',
+          'Compile with EIGEN_RUNTIME_NO_MALLOC and wrap the region with Eigen::internal::set_is_malloc_allowed(false); any attempted allocation then asserts. Keep it in a test so a future refactor that introduces a dynamic type fails CI. The check is an assertion, so run it in a build without NDEBUG.',
       },
       {
         id: 'cpp09_c10',
@@ -7183,7 +7183,7 @@ export const CODING: Module[] = [
       },
       {
         id: 'cpp09_q3',
-        q: 'Why does PX4 and similar flight-adjacent code use fixed-size Eigen types?',
+        q: 'Why does flight-adjacent code prefer fixed-size matrix types such as Eigen\'s Matrix3d?',
         choices: [
           'They are easier to type',
           'No dynamic allocation, loops unrolled at compile time, and dimension errors caught by the compiler',
@@ -7198,7 +7198,7 @@ export const CODING: Module[] = [
       },
       {
         id: 'cpp09_q4',
-        q: 'A = A * B silently gives the wrong answer in a coefficient-wise expression. The cause is:',
+        q: 'A = A.transpose() or an overlapping block copy silently gives the wrong answer in a release build. The cause is:',
         choices: [
           'A compiler bug',
           'Aliasing: the expression reads A while writing it, and lazy evaluation means no temporary was made',
@@ -10830,7 +10830,7 @@ DROP TABLE _chk;`,
         id: 'sql02_c4',
         front: 'WHERE versus HAVING',
         back:
-          'WHERE filters rows before grouping and can use indexes; HAVING filters groups after aggregation and can reference aggregate results. Putting a non-aggregate condition in HAVING is legal and usually slower.',
+          'WHERE filters rows before grouping and can use indexes; HAVING filters groups after aggregation and can reference aggregate results. Putting a non-aggregate condition in HAVING is legal but misleading; some databases evaluate it after grouping (PostgreSQL\'s planner moves it into WHERE).',
       },
       {
         id: 'sql02_c5',
@@ -11329,7 +11329,7 @@ DROP TABLE _chk;`,
         q: 'For a five-minute moving average over irregularly sampled telemetry, which frame is correct?',
         choices: [
           'ROWS BETWEEN 300 PRECEDING AND CURRENT ROW',
-          'RANGE BETWEEN INTERVAL 5 MINUTE PRECEDING AND CURRENT ROW',
+          'RANGE BETWEEN INTERVAL \'5 minutes\' PRECEDING AND CURRENT ROW',
           'ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW',
           'No frame is needed',
         ],
@@ -11689,7 +11689,7 @@ DROP TABLE _chk;`,
         id: 'sql04_c9',
         front: 'How do you store 10 Hz data from 6000 satellites for two years?',
         back:
-          'Roughly 3.8e12 samples, so: narrow rows or columnar storage, range partitioning by time (daily or weekly), compression on older partitions, continuous aggregates for the common queries, a short hot window in a row store and the archive in Parquet on object storage.',
+          'Roughly 3.8e12 samples per channel (6000 × 10 Hz × 2 years), so: narrow rows or columnar storage, range partitioning by time (daily or weekly), compression on older partitions, continuous aggregates for the common queries, a short hot window in a row store and the archive in Parquet on object storage.',
       },
       {
         id: 'sql04_c10',
@@ -11928,7 +11928,7 @@ DROP TABLE _chk;`,
         id: 'cad01_c1',
         front: 'Third-angle versus first-angle projection',
         back:
-          'Third angle (US practice) places each view on the side of the object you look from; first angle (ISO/European) places it on the opposite side. The truncated-cone symbol in the title block tells you which, and misreading it mirrors your understanding of the part.',
+          'Third angle (US practice) places each view on the side of the object you look from; first angle (ISO/European) places it on the opposite side. The truncated-cone symbol in or beside the title block tells you which, and misreading it mirrors your understanding of the part.',
       },
       {
         id: 'cad01_c2',
@@ -12242,7 +12242,7 @@ DROP TABLE _chk;`,
         id: 'cad02_c13',
         front: 'Concentricity: why is it discouraged?',
         back:
-          'It controls the distribution of median points, which is expensive to measure and rarely the actual function. Runout or position usually expresses the real requirement and is far cheaper to inspect, which is why Y14.5-2018 pushes designers away from it.',
+          'It controls the distribution of median points, which is expensive to measure and rarely the actual function. Runout or position usually expresses the real requirement and is far cheaper to inspect, which is why Y14.5-2018 removed the concentricity and symmetry symbols.',
       },
     ],
     quiz: [
@@ -12430,7 +12430,7 @@ DROP TABLE _chk;`,
         id: 'cad03_c1',
         front: 'Which CAD system does SpaceX use, and why?',
         back:
-          'Siemens NX with Teamcenter for product data management, plus NX Nastran and Femap for analysis. They moved after roughly a year on a mid-range package whose Falcon 1 assemblies took over an hour to load; NX handles 25,000-plus part assemblies in five to ten minutes, and technicians use the models directly.',
+          'Siemens NX with Teamcenter for product lifecycle management (PLM), plus NX Nastran and Femap for analysis. They moved after roughly a year on a mid-range package whose Falcon 1 assemblies took over an hour to load; NX handles 25,000-plus part assemblies in five to ten minutes, and technicians use the models directly.',
       },
       {
         id: 'cad03_c2',
@@ -12490,7 +12490,7 @@ DROP TABLE _chk;`,
         id: 'cad03_c11',
         front: 'STEP versus native format: what is lost?',
         back:
-          'STEP and IGES carry geometry but not the feature tree, the parametric relationships or (for older practice) the PMI, so the model becomes dumb solid. That is why a supplier working from STEP cannot make a parametric change the way the originator can.',
+          'STEP and IGES carry geometry but not the feature tree, the parametric relationships or (for older practice) the PMI, so the model becomes a dumb solid. That is why a supplier working from STEP cannot make a parametric change the way the originator can.',
       },
       {
         id: 'cad03_c12',
@@ -12613,7 +12613,7 @@ DROP TABLE _chk;`,
         ],
         answer: 1,
         explain:
-          'The research is explicit that CAD is peripheral to GNC. Budget the hours accordingly and spend the saved time on C++ and Python.',
+          'CAD is peripheral to GNC work. Budget the hours accordingly and spend the saved time on C++ and Python.',
         b: 0.2,
         bloom: 'understand',
       },
@@ -12726,7 +12726,7 @@ DROP TABLE _chk;`,
         id: 'int01_ex2',
         title: 'Fixed-capacity ring buffer',
         prompt:
-          'Implement RingBuffer(capacity) backed by a single pre-allocated list, with push(item) overwriting the oldest element when full, pop_oldest() returning None when empty, to_list() returning contents oldest first, __len__ and capacity(). Every operation must be O(1) except to_list, and no list may grow or shrink after construction. A capacity below 1 raises ValueError. This is the aerospace telemetry pattern and a common live-coding ask.',
+          'Implement RingBuffer(capacity) backed by a single pre-allocated list stored in self._buf, with push(item) overwriting the oldest element when full, pop_oldest() returning None when empty, to_list() returning contents oldest first, __len__ and capacity(). Every operation must be O(1) except to_list, and no list may grow or shrink after construction. A capacity below 1 raises ValueError. This is the aerospace telemetry pattern and a common live-coding ask.',
         kind: 'code',
         lang: 'python',
         starter:
@@ -13128,7 +13128,7 @@ DROP TABLE _chk;`,
         id: 'int02_c12',
         front: 'What is the ITAR gate?',
         back:
-          'Essentially all SpaceX roles require US person status, meaning a citizen or lawful permanent resident, because the work is export-controlled. It is confirmed in the recruiter screen and it is not negotiable.',
+          'Essentially all SpaceX roles require US person status, meaning a citizen, lawful permanent resident or protected individual (refugee or asylee), because the work is export-controlled. It is confirmed in the recruiter screen and it is not negotiable.',
       },
       {
         id: 'int02_c13',

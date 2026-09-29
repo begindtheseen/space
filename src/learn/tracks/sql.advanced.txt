@@ -437,7 +437,7 @@ You need a row for **every** day, with 0 where nothing happened. That is called 
 
 ### Step 1: a calendar
 
-A **calendar** here means a list of every day in a range, one row per day. Build it with the same shape as last lesson's counter. The step uses `date(day, '+1 day')`, from the lesson "Dates and times", which gives [[the day after|date-steps]] `day`:
+A **calendar** here means a list of every day in a range, one row per day. Build it with the same shape as last lesson's counter. The step uses `date(day, '+1 day')`, from the lesson "Date arithmetic and date ranges", which gives [[the day after|date-steps]] `day`:
 
 ```sql
 WITH RECURSIVE days(day) AS (
@@ -1787,7 +1787,7 @@ Here is the catch. `LAG` means the previous **row**, not the previous **day**. N
 
 That may be what you want: a comparison with the last day that had sales. If it is not, build a full calendar first, as you did in "Recursive CTEs: generating a series", so every day has a row.
 
-Either way, it helps to show how far back the previous row was. `julianday`, from the lesson "Dates and times", turns a date into a [[day number|julian-day]], so subtracting two of them gives the days between. `LAG(day)` fetches the previous row's date, the same way `LAG(amount)` fetched its amount:
+Either way, it helps to show how far back the previous row was. `julianday`, from the lesson "Date arithmetic and date ranges", turns a date into a [[day number|julian-day]], so subtracting two of them gives the days between. `LAG(day)` fetches the previous row's date, the same way `LAG(amount)` fetched its amount:
 
 ```sql
 SELECT day,

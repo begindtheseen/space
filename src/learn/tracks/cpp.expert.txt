@@ -649,6 +649,7 @@ Complete `template <typename T> class DynArray`. No `main`.
 
 It must work for types **without a default constructor** (like the starter's `Tracked`, which counts live objects), destroy every element it built, and handle `a.push_back(a[0])`.
 --- starter
+#include <algorithm>
 #include <cstddef>
 #include <memory>
 #include <utility>
@@ -690,6 +691,7 @@ private:
     std::size_t cap_ = 0;
 };
 --- solution
+#include <algorithm>
 #include <cstddef>
 #include <memory>
 #include <utility>

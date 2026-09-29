@@ -8,6 +8,14 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.1.6
+
+**Fixes from a careful check of the lessons.** A C++ lesson that could not compile now does (it was
+missing a line every solution needs), an SQL check that was meant to refuse a zero quantity now
+really tests one, and about thirty flashcards and quiz questions that were slightly wrong are
+corrected, from which poles make a system unstable to what counts as a US person for export rules.
+Each one was checked by running the code or redoing the maths.
+
 ## 1.1.5
 
 **Stuck on a coding lesson? It notices.** After two tries that do not pass, the lesson shows

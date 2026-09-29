@@ -280,7 +280,8 @@ INSERT OR IGNORE INTO products (id, sku, name, category, price_cents) VALUES (2,
 INSERT OR IGNORE INTO orders (id, customer_id, placed, status) VALUES (2, 1, '2024-01-04 10:00:00', 'Shipped ') RETURNING id
 => []
 --- check query | A zero quantity, or the same product twice in one order, is refused
-INSERT OR IGNORE INTO order_items (order_id, product_id, qty, unit_cents) VALUES (1, 1, 1, 900) RETURNING qty
+INSERT INTO products (id, sku, name, category, price_cents) VALUES (4, 'PEN', 'Pen', 'stationery', 3250);
+INSERT OR IGNORE INTO order_items (order_id, product_id, qty, unit_cents) VALUES (1, 1, 1, 900), (1, 4, 0, 3250) RETURNING qty
 => []
 --- check query | order_items points at orders (cascading) and products
 SELECT "table", "from", on_delete FROM pragma_foreign_key_list('order_items') ORDER BY "from"

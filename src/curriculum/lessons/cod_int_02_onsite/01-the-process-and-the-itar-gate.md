@@ -122,7 +122,7 @@ Rockets and spacecraft are treated by US law much like weapons technology. The r
 That status is called being a **US person**. In the short form a recruiter will use, it means a US citizen or a **[[lawful permanent resident|green-card]]** (a green card holder). The [[full legal definition|us-person-full]] adds two small groups, which the ITAR module covers.
 
 ::: key The ITAR gate
-Essentially all SpaceX roles require US person status, meaning a citizen or lawful permanent resident, because the work is export-controlled. It is confirmed in the recruiter screen and it is not negotiable.
+Essentially all SpaceX roles require US person status, meaning a citizen, lawful permanent resident or protected individual (refugee or asylee), because the work is export-controlled. It is confirmed in the recruiter screen and it is not negotiable.
 :::
 
 Three words in that key block matter.

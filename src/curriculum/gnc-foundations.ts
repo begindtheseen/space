@@ -2471,7 +2471,7 @@ assert max(second_order_step(1.0, 2.0, t) for t in ts) <= 1.0 + 1e-9`,
       {
         id: 'c_lti_stability',
         front: 'Stability test for a continuous-time LTI system from its poles.',
-        back: 'Asymptotically stable iff every pole (eigenvalue of A) has Re(s) < 0. Poles exactly on the imaginary axis are marginally stable; anything to the right is unstable.',
+        back: 'Asymptotically stable iff every pole (eigenvalue of A) has Re(s) < 0. Simple (non-repeated) poles exactly on the imaginary axis are marginally stable; repeated ones, or anything to the right, are unstable.',
       },
       {
         id: 'c_convolution',
@@ -2824,7 +2824,7 @@ def sample_covariance_through(A: np.ndarray, P: np.ndarray, n: int, seed: int = 
       {
         id: 'c_arw',
         front: 'What does gyro angle random walk (ARW) specify, in what units?',
-        back: 'The random-walk growth of attitude error from white rate noise, quoted in °/√hr (or equivalently the rate noise PSD). Attitude error grows as σ_θ = ARW·√t.',
+        back: 'The random-walk growth of attitude error from white rate noise, quoted in °/√hr (or equivalently the square root of the rate-noise PSD). Attitude error grows as σ_θ = ARW·√t.',
         formula: true,
       },
       {
@@ -3836,7 +3836,7 @@ class RingBuffer {
           '- Release the GIL around the compute loop so a `multiprocessing`-free thread pool can actually use cores.',
           '- Run a 10 000-case dispersed Monte Carlo from Python and compare wall-clock time against the pure-NumPy version.',
           '',
-          'Success: identical results to 1e-12, a measured speedup you can explain, and a `pip install -e .` that builds',
+          'Success: identical results to 1e-12 relative (`np.allclose(a, b, rtol=1e-12, atol=0)`), a measured speedup you can explain, and a `pip install -e .` that builds',
           'from a clean checkout.',
         ].join('\n'),
       },
@@ -3870,7 +3870,7 @@ class RingBuffer {
       {
         id: 'c_power_of_ten_rules',
         front: 'Name four of the Power of Ten rules.',
-        back: 'No complex control flow (no goto, setjmp, recursion); all loops have a fixed upper bound; no dynamic memory allocation after initialisation; functions short enough to fit one page (~60 lines); at least two assertions per function; check every return value; minimal preprocessor use; restricted pointer use and no function pointers; compile with all warnings on and zero warnings tolerated.',
+        back: 'No complex control flow (no goto, setjmp, recursion); all loops have a fixed upper bound; no dynamic memory allocation after initialisation; functions short enough to fit one page (~60 lines); at least two assertions per function; declare data at the smallest possible scope; check every return value; minimal preprocessor use; restricted pointer use and no function pointers; compile with all warnings on and zero warnings tolerated.',
       },
       {
         id: 'c_eigen_quat_storage',
@@ -3911,7 +3911,7 @@ class RingBuffer {
       {
         id: 'c_cache_layout',
         front: 'Struct-of-arrays vs array-of-structs — which and why for a Monte Carlo?',
-        back: 'Struct-of-arrays. Sweeping one field over many cases touches contiguous memory, so every cache line is fully used and the loop vectorises. Array-of-structs strides over unused fields and wastes most of each line.',
+        back: 'Struct-of-arrays. Sweeping one field over many cases touches contiguous memory, so every cache line is fully used and the loop can vectorise (a floating-point sum only if the compiler may reorder it, e.g. -ffast-math). Array-of-structs strides over unused fields and wastes most of each line.',
       },
       {
         id: 'c_sanitizers',

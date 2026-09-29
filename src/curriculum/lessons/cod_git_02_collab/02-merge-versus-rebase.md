@@ -247,7 +247,7 @@ A conflict in `drag.py`, a file Leo never touched! The merge base is `76ccba1`, 
 That is why every Git team, whatever else they disagree about, keeps [[one rule|golden-rule-flow]]:
 
 ::: key What is the golden rule of rebasing?
-Never rebase commits that exist outside your repository. Rewriting published history forces everyone else into a painful reconciliation and can silently duplicate or drop commits.
+Never rebase commits that exist outside your repository. Rewriting published history forces everyone else into a painful reconciliation and can silently duplicate or drop commits. The usual exception is your own pushed feature branch that nobody else builds on, rewritten and pushed with `--force-with-lease`.
 :::
 
 Leo does have a way out. If he throws away the merge and runs `git pull --rebase` instead, Git [[notices|fork-point]] that his first two commits are old copies of commits already upstream, skips them, and replays only his test:

@@ -196,7 +196,7 @@ Aborted
 The first product wrote straight into `C`'s existing buffer, which was allocated before the fence went up. The second one, as the lesson on aliasing explained, first builds the product in a temporary in case `C` appears on the right-hand side. For dynamic matrices that temporary comes from the heap, and the fence caught it on the spot. (There is also `EIGEN_NO_MALLOC`, a blunter tool that forbids Eigen heap allocation everywhere in the program, with no switch to turn it back on.)
 
 ::: key How to prove an Eigen update step allocates nothing
-Compile with `EIGEN_RUNTIME_NO_MALLOC` and wrap the region with `Eigen::internal::set_is_malloc_allowed(false)`; any attempted allocation then asserts. Keep it in a test so a future refactor that introduces a dynamic type fails CI.
+Compile with `EIGEN_RUNTIME_NO_MALLOC` and wrap the region with `Eigen::internal::set_is_malloc_allowed(false)`; any attempted allocation then asserts. Keep it in a test so a future refactor that introduces a dynamic type fails CI. The check is an assertion, so run it in a build without NDEBUG.
 :::
 
 ::: warning The check vanishes in a release build

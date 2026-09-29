@@ -24,7 +24,7 @@ What a neutral file carries is almost always the finished shape, stored as a **[
 What a neutral file does *not* carry is how that shape was made. There is no sketch, no "this hole stays concentric with that boss", no "wall = 2 mm". The receiving program gets a solid that is correct today and has no idea how it is meant to change. Engineers call this a **dumb solid** — a solid with geometry but no history or rules.
 
 ::: key
-**STEP versus native format: what is lost.** STEP and IGES carry geometry but not the feature tree, the parametric relationships or (for older practice) the PMI, so the model becomes dumb solid. That is why a supplier working from STEP cannot make a parametric change the way the originator can.
+**STEP versus native format: what is lost.** STEP and IGES carry geometry but not the feature tree, the parametric relationships or (for older practice) the PMI, so the model becomes a dumb solid. That is why a supplier working from STEP cannot make a parametric change the way the originator can.
 :::
 
 A dumb solid is not useless. You can measure it, clash-check it, compute its mass properties, machine from it, and even push its faces around with **direct editing** tools — tools that move a face with no feature tree behind it. But move one face by hand and nothing that "should" follow it will follow.
@@ -140,7 +140,7 @@ Now the map. The big systems all work the same way at heart — sketches, featur
 SpaceX's choice is documented in [[Siemens's published case study|case-study]] of the company. The account runs like this.
 
 ::: key
-**Which CAD system SpaceX uses, and why.** Siemens NX with Teamcenter for product data management, plus NX Nastran and Femap for analysis. They moved after roughly a year on a mid-range package whose Falcon 1 assemblies took over an hour to load; NX handles 25,000-plus part assemblies in five to ten minutes, and technicians use the models directly.
+**Which CAD system SpaceX uses, and why.** Siemens NX with Teamcenter for product lifecycle management (PLM), plus NX Nastran and Femap for analysis. They moved after roughly a year on a mid-range package whose Falcon 1 assemblies took over an hour to load; NX handles 25,000-plus part assemblies in five to ten minutes, and technicians use the models directly.
 :::
 
 Read that the way an engineer would. The reason was **scale**: a rocket is a huge assembly, and a tool that takes an hour to open it wastes everyone's day. Teamcenter manages the data — the next lesson is about what that means. **NX Nastran** is a finite-element solver (it computes stresses and vibration modes) and **Femap** sets up and displays those analyses. NX descends from a program called Unigraphics, so older engineers still say "UG".

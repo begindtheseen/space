@@ -327,7 +327,7 @@ It returns the right answer, but it says the wrong thing. Logically it builds ev
 To be fair to PostgreSQL: its planner notices a HAVING condition like this one that uses no aggregate, and quietly moves it into WHERE (`EXPLAIN` shows it as a filter on the table scan). But not every engine does, not every condition can be moved, and the reader of your query should not have to know the planner's habits to see what it does.
 
 ::: key WHERE versus HAVING
-WHERE filters rows before grouping and can use indexes; HAVING filters groups after aggregation and can reference aggregate results. Putting a non-aggregate condition in HAVING is legal and usually slower.
+WHERE filters rows before grouping and can use indexes; HAVING filters groups after aggregation and can reference aggregate results. Putting a non-aggregate condition in HAVING is legal but misleading; some databases evaluate it after grouping (PostgreSQL's planner moves it into WHERE).
 :::
 
 A query can have both, and most real ones do: WHERE narrows to the channel and time window, GROUP BY makes the piles, HAVING keeps the interesting piles.
