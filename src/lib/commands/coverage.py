@@ -46,7 +46,7 @@ _found = {}
 # same names everywhere, not only for what happens to be on the computer running it.
 KNOWN_TOOLS = set('''apk apport ash conda-lock cowsay cron dnf docker-compose dos2unix ed gawk gcovr gh git-lfs
 git-subtree gsed ifconfig logrotate netstat pyenv rpm sftp spack sshd svn ufw yum zstd zstdcat ssh scp rsync
-kubectl podman conda crontab htop screen ip ss shellcheck nix-shell ssh-add ssh-agent ssh-keygen ssh-copy-id'''.split())
+kubectl podman conda crontab htop screen ip ss shellcheck nix-shell ssh-add ssh-agent ssh-keygen ssh-copy-id perf route'''.split())
 
 def is_command(word):
     if word in KNOWN_TOOLS: return True
@@ -87,9 +87,12 @@ def python(text, block):
 # Words that exist as commands but that the lessons only ever use as something else: the `w` permission bit and
 # vim/sed/tmux keys, `init` for `git init`, jq's `select()`, `systemctl enable`, `free` memory, tmux's `watch`
 # window, getopts' `opt` variable, ssh -G's `hostname` line, a `script.sh`, C++'s `sum +=`, Nix's `let … in`,
-# a Kubernetes `kind:`, shellcheck's `code` field, `at` and `ab` as sample text, git's working `tree`, a `wip asdf` commit. (Some of these are installed on
+# a Kubernetes `kind:`, shellcheck's `code` field and `info` level, `at` and `ab` as sample text, git's working `tree`,
+# a `wip asdf` commit, lsblk's `lvm` type, a variable `n`. (Some of these are installed on
 # CI's runners but not here, so they must be named or the check would differ between machines.)
-NOT_COMMANDS = {'w', 'init', 'select', 'enable', 'free', 'watch', 'opt', 'hostname', 'script', 'sum', 'let', 'kind', 'code', 'at', 'ab', 'tree', 'asdf'}
+NOT_COMMANDS = {'w', 'init', 'select', 'enable', 'free', 'watch', 'opt', 'hostname', 'script', 'sum', 'let', 'kind', 'code', 'at', 'ab', 'tree', 'asdf', 'info', 'lvm', 'n'}
+
+PROMPT = re.compile(r'^\s*[~\w/.@:-]*\s*\$\s+')
 
 def shell(text):
     s = re.sub(r'^[~\w/.-]*\s*\$\s+', '', text.strip()).replace('sudo ', '')
@@ -157,7 +160,12 @@ def other(lang, text):
 
 def scan(lang, text, block):
     if lang == 'python': python(text, block)
-    elif lang == 'shell': shell(text) if not block else [shell(l) for l in text.split('\n') if l.strip() and not l.strip().startswith('#')]
+    elif lang == 'shell':
+        if not block: return shell(text)
+        lines = [l for l in text.split('\n') if l.strip() and not l.strip().startswith('#')]
+        # A transcript: only the lines at a prompt are commands; the rest is what they printed (`red`, `open chute`).
+        prompted = [l for l in lines if PROMPT.match(l)]
+        for l in prompted or lines: shell(l)
     elif lang == 'cpp': cpp(text)
     elif lang == 'sql': sql(text)
     elif lang == 'rust': rust(text, block)
