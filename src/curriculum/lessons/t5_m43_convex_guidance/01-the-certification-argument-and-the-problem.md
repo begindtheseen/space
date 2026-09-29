@@ -53,7 +53,7 @@ A general **nonlinear program** (NLP) — an optimization problem with curved co
 Guidance runs every cycle, on whatever off-nominal state the vehicle is in, with nobody watching the log. "It converged on every case we tried" is evidence. It is not a proof, and a vehicle with its engine lit cannot fall back on evidence.
 
 ::: example Five starting guesses, one non-convex solver, five different answers
-Take a small landing problem in two dimensions (downrange and altitude). A Mars lander of mass $1905\,\mathrm{kg}$ starts at $\mathbf{r}_0 = (300, 900)\,\mathrm{m}$ with velocity $\mathbf{v}_0 = (-20, -40)\,\mathrm{m/s}$. Gravity is $g = 3.7114\,\mathrm{m/s^2}$, the engine's specific impulse is $I_{sp}=225\,\mathrm{s}$, and it must land at rest at the origin after $t_f = 24\,\mathrm{s}$. The thrust vector $\mathbf{T}_k$ is held fixed over each of eight $3\,\mathrm{s}$ steps. Its size must stay in the band $\rho_{\min} = 4972\,\mathrm{N} \le \|\mathbf{T}_k\| \le \rho_{\max} = 13260\,\mathrm{N}$, written exactly as the non-convex constraint it is — nothing relaxed.
+Take a small landing problem in two dimensions (downrange and altitude). A Mars lander of mass $1905\,\mathrm{kg}$ starts at $\mathbf{r}_0 = (300, 900)\,\mathrm{m}$ with velocity $\mathbf{v}_0 = (-20, -40)\,\mathrm{m/s}$. Gravity is $g = 3.7114\,\mathrm{m/s^2}$, the engine's specific impulse is $I_{sp}=225\,\mathrm{s}$, and it must land at rest at the origin after $t_f = 24\,\mathrm{s}$. The thrust vector $\mathbf{T}_k$ is held fixed over each of eight $3\,\mathrm{s}$ steps. Its size must stay in the band $\rho_{\min} = 4972\,\mathrm{N} \le \|\mathbf{T}_k\| \le \rho_{\max} = 13260\,\mathrm{N}$ (read these "rho min" and "rho max"), written exactly as the non-convex constraint it is — nothing relaxed.
 
 Hand this to SciPy's SLSQP, a standard constrained NLP solver, from five physically sensible starting guesses, each allowed up to $300$ iterations:
 
@@ -94,7 +94,7 @@ The rules of the game:
 
 - start from the known $\mathbf{r}(0)$, $\mathbf{v}(0)$, $m(0)$;
 - touch down on target at rest: $\mathbf{r}(t_f) = \mathbf{r}_{\text{target}}$ and $\mathbf{v}(t_f) = \mathbf{0}$;
-- keep thrust in a band, $\rho_{\min} \le \|\mathbf{T}\|_2 \le \rho_{\max}$, with $\rho_{\min} > 0$ (read $\rho_{\min}$ as "rho min");
+- keep thrust in a band, $\rho_{\min} \le \|\mathbf{T}\|_2 \le \rho_{\max}$, with $\rho_{\min} > 0$;
 - keep the thrust within some angle of a reference direction (a pointing limit).
 
 The goal: land with as much propellant left as possible. That is, maximize $m(t_f)$, which is the same as minimizing $\int_0^{t_f}\|\mathbf{T}\|_2\,dt$, the total thrust used.
