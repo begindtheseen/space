@@ -1,0 +1,1280 @@
+@track python
+@course mod-cod_ops_02_ci
+@module cod_ops_02_ci
+@title Continuous integration for simulation code: practice and test
+
+=== ops02-l01 | Practice: What continuous integration buys a simulation team
+--- for
+l01-what-ci-buys-a-simulation-team
+
++++ question | A data file that lives on one laptop
+--- ask
+Priya's trajectory tool reads `data/atmosphere_1976.csv`. The file sits in her working copy, but she never committed it, and `.gitignore` lists `data/`. Everything runs on her laptop. She opens a pull request, and CI runs the tests on a fresh runner. What happens, and which failure from the lesson is this?
+--- choice correct
+The tests fail on her own pull request, because the runner has only what is committed and the file is not in it. It is environment drift, "it works on my machine", caught at the cheapest moment.
+--- choice
+CI passes, because the runner copies the developer's whole folder, ignored files included. The break shows up later, for a teammate.
+--- choice
+The tests fail, and it is a semantic merge conflict: her branch and `main` disagree about the file.
+--- choice
+CI passes, because a missing data file only matters on another operating system. It is a portability break, found by a matrix.
+--- why
+A runner starts clean: it fetches exactly what is committed and installs exactly what is declared. An ignored file, like a package missing from the requirements file, does not exist there. So the job fails on the pull request of the person who caused it, while she still remembers why the file is needed. The fix is to commit the file, or a script that fetches it, so the dependency is written down. A semantic conflict needs two changes and a portability break needs two platforms; here one machine simply had something nobody declared.
+
++++ question | Two branches, one broken main
+--- ask
+On Monday, Dana and Eli branch from the same `main`.
+
+- Dana changes `propagate()` so that it returns a pair `(t, state)` instead of only `state`, and she updates every existing caller. Her tests pass.
+- Eli adds a new file, `scenarios/deorbit.py`, which calls `propagate()` and uses the result as a state, plus a test for it. His tests pass.
+
+Dana's pull request merges on Wednesday. Eli's has no merge conflict and merges on Thursday, without its checks being run again. On Friday `main` fails Eli's new test. Which statement is right?
+--- choice
+Git should have reported a conflict, because both branches depend on `propagate()`. The merge tool is broken.
+--- choice correct
+Each branch was correct on its own; only the combination is wrong. It is a semantic merge conflict, caught only by running the tests on the merged result, which Eli's checks would have done if they had run again after Dana's merge.
+--- choice
+Only code review can catch this, because CI tests each branch exactly as it sits and can never see how two branches combine.
+--- choice
+Eli's tests on his own branch should have failed, because his branch already contained Dana's change.
+--- why
+Git compares lines of text, and Dana and Eli changed different lines, in different files, so the merge is clean. It is the meaning that clashes: Eli relies on the old return value that Dana changed. A pull request's checks test the branch merged into the current `main`, so once Dana's change was in `main`, a fresh run of Eli's checks would have failed on his own pull request. The mistake was merging on results that were two days old. The last lesson of the module shows the rule that forces that re-run.
+
++++ question | Rounding mu for a navigation satellite
+--- ask
+A navigation-satellite simulator flies an orbit at a speed of about 3,870 m/s. Someone trims the digits of $\mu$, which changes it by 2 parts in a million (a relative change of $2 \times 10^{-6}$). Use the lesson's reasoning: the angular rate changes by half the relative change in $\mu$, the angle error grows in a straight line with time, and the position error is the radius times the angle error (and the radius times the angular rate is the speed). About how far off is the satellite after 10 days, 864,000 s?
+--- choice correct
+About 3.3 km.
+--- choice
+About 6.7 km.
+--- choice
+About 334 m.
+--- choice
+About 33 km.
+--- why
+The angular rate changes by half of $2 \times 10^{-6}$, so by $10^{-6}$ of itself. After time $t$ the angle error is $10^{-6}\, n\, t$, and the position error is $r$ times that, which is $10^{-6}\, v\, t = 10^{-6} \times 3870 \times 864\,000 \approx 3344\,\mathrm{m}$. Forgetting the half gives 6.7 km; 334 m is only one day; 33 km would mean the error grows with the square of time. Kilometers of error from trimming digits, and nothing crashes: that is why a reference test must run on every change.
+
++++ question | A bigger monthly hunt
+--- ask
+A team runs its slow regression simulation by hand once a month, and uses `git bisect` when it fails. With about 250 commits a month, a hunt takes about 8 test runs. Next year the team doubles in size and lands about 500 commits a month. About how many test runs does a monthly hunt take then? Type a number.
+--- answer
+9
+nine
+9 runs
+about 9
+--- why
+Bisect halves the suspect range with each run, so the number of runs grows like $\log_2$ of the range: $\log_2 250 \approx 8$ and $\log_2 500 \approx 9$. Doubling the range adds one halving, one more run. That sounds cheap, but each run is still a full slow simulation, someone still has to understand a change made weeks ago, and there are now twice as many authors to ask. With the regression run on every pull request there is no hunt at all: the red check sits on the guilty pull request.
+
++++ question | A test that is always green
+--- ask
+This test has passed on every pull request for a year:
+
+```python
+def test_reentry_peak_heating():
+    result = simulate_reentry(entry_angle_deg=-5.5)
+    print(f"peak heating: {result.peak_heating_w_m2:.1f}")
+```
+
+Last week someone found that the heating model had been off by a factor of two all along. What is wrong with the test?
+--- choice correct
+It has no assert. It fails only if the simulation raises an exception, so any number, right or wrong, passes, and it paints the pipeline green.
+--- choice
+pytest compares printed output with the last passing run, and a model that was wrong from day one never "changed".
+--- choice
+Nothing: a test that runs on every change is doing its job, and the factor of two is a modelling question, not a testing one.
+--- choice
+It prints too few digits: with `.1f` the factor of two is rounded away before pytest sees it.
+--- why
+A test fails when an assert is false or an exception escapes. Printing checks nothing, and pytest does not compare printed output unless a test does that itself. Ask the lesson's question: what would have turned this check red? Only a crash. A useful test asserts against a value someone reviewed, such as a hand estimate or an independent reference run, with a stated tolerance.
+
++++ question | Discipline instead of CI
+--- ask
+A team lead proposes dropping CI. Before every push, each developer will make a fresh virtual environment from the requirements file and run the whole test suite, reference-orbit test included, on the same operating system and Python version as production. The build steps live in a script in the repository. Suppose everyone really does this, every time. Which failure from the lesson can still reach `main`?
+--- choice correct
+Two good changes that break together: each developer tests their own branch, and nobody tests the merged result before it lands.
+--- choice
+It works on my machine: an undeclared package still slips through.
+--- choice
+The silent numerical regression: a changed constant still passes.
+--- choice
+The build nobody can rebuild: the recipe still lives in someone's head.
+--- why
+The rules in the question close the other failures: the fresh environment catches undeclared packages, the full suite with its reference test catches the numerical shift, the shared platform rules out a portability break, and the build script in the repository is pipeline as code in all but name. What no single person can test is a combination that does not exist on their machine yet: Alice's branch plus Bob's branch, merged. CI tests each pull request merged into the current `main`, for everyone, every time, without depending on anyone's discipline.
+
+=== ops02-l02 | Practice: GitHub Actions, your first pipeline
+--- for
+l02-github-actions-basics
+
++++ question | Runs on a filtered afternoon
+--- ask
+A workflow starts with:
+
+```yaml
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "tests/**"
+  push:
+    branches: [main]
+```
+
+Then, in order:
+
+1. You push a new branch `docs-typo` whose only change is to `README.md`.
+2. You open a pull request from `docs-typo` into `main`.
+3. It is approved and merged.
+4. You push a branch `fix-gravity` that changes `src/orbitsim/gravity.py`, and open a pull request from it.
+5. A teammate looks for a "Run workflow" button in the Actions tab, to start it by hand.
+
+How many workflow runs start? Type a number.
+--- answer
+2
+two
+2 runs
+--- why
+Step 1 is a push to a branch that is not `main`: no run. Step 2 is a pull request, but its only file is not under `src/` or `tests/`, so the `paths:` filter skips it. Step 3 adds a commit to `main`, which is a push to `main`, and `push` has no `paths:` filter: one run. Pushing `fix-gravity` starts nothing, but its pull request touches `src/`: one run. Step 5 finds no button, because `workflow_dispatch` is not under `on:`. Total 2. Notice that the two filters are separate: the docs-only change skipped the pull request run but still ran on `main`.
+
++++ question | Time through a job graph
+--- ask
+A workflow has these jobs:
+
+| Job | Minutes | `needs:` |
+| --- | --- | --- |
+| lint | 1 | none |
+| build | 6 | lint |
+| unit | 3 | build |
+| regression | 8 | build |
+| package | 2 | unit, regression |
+| docs | 5 | none |
+
+How many minutes does a green run take, from start to finish? Type a number.
+--- answer
+17
+17 minutes
+17 min
+seventeen
+--- why
+`lint` and `docs` start at 0; `docs` ends at 5. `build` runs from 1 to 7. Then `unit` (7 to 10) and `regression` (7 to 15) run side by side. `package` waits for both, so it runs from 15 to 17. The longest chain, lint then build then regression then package, is $1 + 6 + 8 + 2 = 17$ minutes: the critical path. Making `unit` or `docs` faster changes nothing; making `regression` faster would. Run one after another, the jobs would take 25 minutes.
+
++++ question | Which steps still run
+--- ask
+A job has these steps:
+
+```yaml
+    steps:
+      - uses: actions/checkout@v7
+      - name: Lint
+        run: ruff check src tests
+      - name: Unit tests
+        run: pytest -q --junitxml=report.xml
+      - name: Show the lint settings
+        if: failure()
+        run: cat pyproject.toml
+      - name: Upload the report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: unit-report
+          path: report.xml
+      - name: Say done
+        run: echo done
+```
+
+ruff finds an unused import and exits with code 1. Which steps run after `Lint`?
+--- choice correct
+"Show the lint settings" and "Upload the report". "Unit tests" and "Say done" are skipped, and the upload finds no `report.xml`, because pytest never ran.
+--- choice
+Only "Upload the report", because `failure()` reacts only to failed tests, not to a failed lint.
+--- choice
+All of them: a failed step only marks the job red once every step has finished.
+--- choice
+Only "Show the lint settings", because an `always()` step is skipped once a step has failed.
+--- why
+After a failed step, ordinary steps are skipped. `failure()` is true when any earlier step failed, whatever it was, and `always()` is true whether or not anything failed. The upload runs but has nothing to send: the report would have come from pytest, which was skipped. That is one reason teams give lint its own job, so a lint failure does not hide the test results.
+
++++ question | Nothing changed, but Monday is red
+--- ask
+A regression job compares a C++ simulation's output with a golden file. It passed on Friday. On Monday it fails, with differences in the last digits, on a pull request that only edits a comment. The job says `runs-on: ubuntu-latest`. What is the most likely cause, and the fix?
+--- choice correct
+Over the weekend GitHub moved `ubuntu-latest` to a newer Ubuntu image, with a newer compiler and math library, and the last digits shifted. Pin `runs-on: ubuntu-24.04`, so an image change becomes a deliberate commit.
+--- choice
+Comments are compiled into the program, so editing one changed the numbers.
+--- choice
+Hosted runners keep files between jobs, and Friday's build folder was reused.
+--- choice
+The `pull_request` event tests the branch alone, and the branch is behind `main`.
+--- why
+Nothing in the repository changed that could move the numbers, so the environment did. `ubuntu-latest` is a moving name; `ubuntu-24.04` stays put until the image is retired. Hosted runners are fresh for every job, comments compile to nothing, and a pull request run tests the branch merged into `main`. Pinning does not mean never upgrading: it means upgrading on purpose, in a pull request where the changed numbers can be judged. (A golden test that fails on last-digit differences also needs a tolerance, as lesson 6 explains.)
+
++++ question | A workflow that never runs
+--- ask
+A correct workflow file, with `on: pull_request:` and one job, is committed at `.github/workflow/ci.yml`. Pull requests show no checks at all, and the Actions tab lists no runs, not even failed ones. What is wrong?
+--- choice correct
+The folder must be `.github/workflows`, plural. GitHub looks only there, so this file is never read.
+--- choice
+A workflow file must be named `main.yml`.
+--- choice
+GitHub only registers a workflow that also has `workflow_dispatch:`.
+--- choice
+A workflow without a `permissions:` block is refused.
+--- why
+GitHub finds workflows by where they are: any `.yml` or `.yaml` file in `.github/workflows/` at the top of the repository, and nowhere else. The file name is yours to choose. `permissions:` limits the automatic token but is not required, and `workflow_dispatch` only adds a button. When a workflow shows no runs at all, suspect its location or its `on:` events before its jobs.
+
++++ question | Lint first, the rest in parallel
+--- ask
+A pipeline has three jobs: `lint` (1 minute), `unit` (3 minutes) and `regression` (6 minutes). The team wants a lint failure to stop both slower jobs from starting, but does not want `unit` and `regression` to wait for each other. Which `needs:` setup does that, and how long does a green run take?
+--- choice
+`unit` needs `lint`, and `regression` needs `unit`: 10 minutes.
+--- choice correct
+`unit` needs `lint`, and `regression` needs `lint`: 7 minutes.
+--- choice
+No `needs:` at all: 6 minutes.
+--- choice
+`lint` needs `[unit, regression]`: 10 minutes.
+--- why
+Both slow jobs wait for `lint`, and nothing links them to each other, so both start at minute 1: `unit` ends at 4 and `regression` at 7. Chaining `regression` after `unit` stretches the line to $1 + 3 + 6 = 10$ minutes for nothing. With no `needs:`, a green run takes 6 minutes, but a lint failure stops nothing, and the runner time is spent anyway. The reversed arrow runs the cheap check last, which is the opposite of the point.
+
+=== ops02-l03 | Practice: Matrices, caches, artifacts and secrets
+--- for
+l03-matrices-caching-and-secrets
+
++++ question | An exclude that matches twice
+--- ask
+How many jobs does this matrix make? Type a number.
+
+```yaml
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, macos-latest]
+        python-version: ["3.11", "3.12", "3.13"]
+        numpy: ["1.26", "2.4"]
+        exclude:
+          - python-version: "3.13"
+            numpy: "1.26"
+```
+--- answer
+10
+ten
+10 jobs
+--- why
+The grid is $2 \times 3 \times 2 = 12$ combinations. The exclude entry names only two of the three settings, so it removes every combination that matches both of them, whatever the operating system: Linux with 3.13 and NumPy 1.26, and macOS with 3.13 and NumPy 1.26. That leaves $12 - 2 = 10$. An exclude entry with fewer keys than the matrix is a pattern, not a single cell.
+
++++ question | Extend or add
+--- ask
+```yaml
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, windows-latest]
+        build_type: [Debug, Release]
+        include:
+          - os: windows-latest
+            generator: "Visual Studio 17 2022"
+          - os: ubuntu-24.04
+            build_type: RelWithDebInfo
+```
+
+Which statement is right?
+--- choice correct
+5 jobs. Both Windows jobs get `generator`, and the Linux `RelWithDebInfo` entry becomes a new, fifth job.
+--- choice
+6 jobs, because each include entry always adds a new job.
+--- choice
+4 jobs. The second entry changes one Linux job's build type to RelWithDebInfo.
+--- choice
+5 jobs, but only the first Windows job, Debug, gets `generator`.
+--- why
+The first entry fits both Windows combinations without changing any value they already have, so it extends both. The second entry would have to change the `build_type` of a Linux combination, Debug or Release, and `include` never overwrites an original matrix value, so it becomes a new combination instead: $4 + 1 = 5$ jobs.
+
++++ question | One red cell, and the rest
+--- ask
+A `test` job runs a matrix of 3 operating systems times 2 Python versions, with no `fail-fast` setting. A second job, `report`, has `needs: test`. Two minutes in, `test (windows-latest, 3.11)` fails while the other five are still running. What happens?
+--- choice correct
+The combinations still running are cancelled and `report` is skipped, so you never learn whether macOS or Linux would have failed too. For a portability matrix, set `fail-fast: false`.
+--- choice
+The other five run to the end, because `fail-fast` is off unless you turn it on, and then `report` runs.
+--- choice
+Only the other Windows job is cancelled; Linux and macOS finish, and `report` runs.
+--- choice
+All six run to the end, and `report` runs anyway, because `needs:` waits only for the first combination.
+--- why
+`fail-fast` is `true` unless you say otherwise: the first failure cancels every combination still running. That saves runner time and hides information. For `needs:`, a matrix job counts as one job made of all its combinations, so `report` waits for all of them, and if any failed or was cancelled, `report` is skipped. With `fail-fast: false` every combination runs to the end, and you see the whole picture; `report` is still skipped if one of them failed.
+
++++ question | A failed job and the cache
+--- ask
+A job caches pip's downloads with
+
+`key: pip-${{ runner.os }}-${{ hashFiles('requirements.lock') }}`
+
+and `restore-keys: pip-${{ runner.os }}-`. An entry `pip-Linux-aaaa` already exists, saved on `main`. On a pull request:
+
+- Push 1 changes `requirements.lock` (new fingerprint `bbbb`), and a test fails.
+- Push 2 fixes the test; the lockfile is the same as in push 1.
+
+On push 2, what does the cache step restore, and what is saved at the end?
+--- choice correct
+There is no exact hit, because push 1 failed and saved nothing under `pip-Linux-bbbb`. The prefix restores `pip-Linux-aaaa`. Push 2 succeeds, so `pip-Linux-bbbb` is saved at its end.
+--- choice
+An exact hit on `pip-Linux-bbbb`, which push 1 saved at its end.
+--- choice
+Nothing, because a pull request may not read a cache saved on `main`.
+--- choice
+`pip-Linux-aaaa`, which is then overwritten with the new downloads under the same name.
+--- why
+A cache is saved only when the job succeeds and there was no exact hit, so failed push 1 left no `bbbb` entry. A branch may use caches saved on itself or on the default branch, so the prefix finds `main`'s `aaaa`. Entries are never overwritten; the new one gets its own key. Either way the same packages are installed, because the lockfile decides the versions. The cache only decides how long the download takes.
+
++++ question | Six jobs, one artifact name
+--- ask
+```yaml
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest, macos-latest]
+        python-version: ["3.11", "3.12"]
+    steps:
+      # checkout, setup-python and install steps here
+      - run: pytest -q --junitxml=report.xml
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: test-report
+          path: report.xml
+```
+
+Every test passes, yet in every run one job is green and the other five fail at the upload step. What is the fix?
+--- choice correct
+Put the matrix values in the name, for example `name: test-report-${{ matrix.os }}-${{ matrix.python-version }}`, so each job makes its own artifact.
+--- choice
+Remove `if: always()`, which makes all six jobs upload at the same moment.
+--- choice
+Add `retention-days: 1`, so each report is deleted before the next one arrives.
+--- choice
+Save the reports with `actions/cache`, which lets several jobs use the same key.
+--- why
+Since version 4 of `upload-artifact`, artifact names must be unique within a run: the first job to upload takes the name, and the others fail. Every matrix combination runs the same step, so the name must carry the matrix values. `if: always()` is right, because a report matters most when tests fail. `retention-days` is about age, not names. A cache is the wrong tool: it is for speed, can vanish at any time, and an existing entry is never overwritten, so it is no place for evidence.
+
++++ question | Where the upload token lives
+--- ask
+A public repository's CI must send its test reports to the team's results server, using a token. Pull requests also come from forks. Which design keeps the token safe?
+--- choice correct
+A separate `publish` job that runs only for pushes to `main`, after the tests, names an environment with a required reviewer, and gives the token to the one upload step, in that step's `env:`.
+--- choice
+Put the token in the workflow's top-level `env:`, so every job can upload its own report, and rely on the `***` mask to keep it out of the log.
+--- choice
+Switch to `pull_request_target`, so fork pull requests get the token too and every pull request's reports are uploaded.
+--- choice
+Store the token base64-encoded in the workflow file, so it cannot be read as plain text.
+--- why
+In one step's `env:`, only that step sees the secret. The environment adds a human approval and can hold the secret itself, and running only on `main` means no stranger's code ever runs where the secret exists. A top-level `env:` hands it to every step, including actions written by others, and the mask only catches the exact text. `pull_request_target` runs with secrets, so checking out and running a fork's code there hands the token to anyone. Base64 is an encoding, reversed with one command, and the file stays in the git history forever.
+
+=== ops02-l04 | Practice: Reuse, runners and other CI systems
+--- for
+l04-reuse-runners-and-other-ci-systems
+
++++ question | Steps or jobs
+--- ask
+Six repositories each have their own CI jobs, with their own runners and matrices. Every one of those jobs begins with the same three steps: install ccache, restore its cache folder, and configure CMake with the ccache launcher. The tools team wants to write those three steps once. What should they write?
+--- choice correct
+A composite action: an `action.yml` with `runs: using: composite` holding the three steps, which each job calls as a step with `uses:`.
+--- choice
+A reusable workflow with `on: workflow_call`, called as the first step of each job.
+--- choice
+A reusable workflow, because only reusable workflows may live in another repository.
+--- choice
+A composite action that sets `runs-on`, so all six repositories build on the same machine.
+--- why
+What is shared is a few steps inside jobs that otherwise differ, which is exactly the size of a composite action. A reusable workflow packages whole jobs and is called in place of a job, never as a step. Both can live in a shared repository and be pinned to a tag. A composite action runs inside the caller's job, so it cannot choose the runner. And every `run:` step inside it must say `shell: bash`.
+
++++ question | A workflow called as a step
+--- ask
+`sim-tests.yml` in the shared repository is a reusable workflow, with `on: workflow_call`. GitHub rejects this caller:
+
+```yaml
+jobs:
+  sim:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: orbit-gnc/ci-templates/.github/workflows/sim-tests.yml@v2
+        with:
+          regression-cases: 50
+```
+
+Why, and what is the fix?
+--- choice correct
+A reusable workflow is called by a whole job, not by a step. The job `sim` should have no `runs-on` and no `steps`: only `uses:` with the workflow's path and `@v2`, and `with:` for the inputs.
+--- choice
+A workflow in another repository must be pinned to a branch, `@main`, not to a tag.
+--- choice
+The checkout step must come after the `uses:` line, because the called workflow checks out its own repository first.
+--- choice
+A reusable workflow can only be called from its own repository; copy the file in.
+--- why
+A job either has `steps:` or `uses:` a reusable workflow, never both; the called workflow brings its own jobs, runners and steps. Pinning to a tag is right: with `@main`, one bad commit in the shared repository breaks every project at once. And the called workflow's checkout fetches the caller's code, because the run belongs to the caller.
+
++++ question | Which projects break
+--- ask
+The tools team merges a commit to the `main` branch of `orbit-gnc/ci-templates` that breaks the regression job in `sim-tests.yml`. They move no tags. Three projects call the shared workflow:
+
+- `nav-filter` uses `...sim-tests.yml@main`
+- `guidance` uses `...sim-tests.yml@v2`
+- `dynamics` uses `...sim-tests.yml@` followed by a full 40-character commit hash from last month
+
+Which projects' next pull requests run the broken job?
+--- choice correct
+Only `nav-filter`.
+--- choice
+`nav-filter` and `guidance`, because a tag follows the newest commit of the repository.
+--- choice
+All three, because a called workflow is always read from the default branch.
+--- choice
+None, because each project's own tests are unchanged.
+--- why
+`@main` follows every new commit. A tag names the commit its publisher pointed it at, so until the tools team moves `v2`, `guidance` runs the old version. A commit hash can never move. The tests are each project's own, but the job definition, the recipe, comes from the shared repository, so it can break a project whose code did not change. That is why callers pin, and move to a new version in a reviewed pull request.
+
++++ question | Which jobs can use the rig
+--- ask
+A lab machine was registered with `--labels hil-rig`. GitHub shows its labels as `self-hosted`, `linux`, `x64` and `hil-rig`. Four jobs are queued:
+
+- (a) `runs-on: [self-hosted, hil-rig]`
+- (b) `runs-on: [self-hosted, linux, x64, hil-rig]`
+- (c) `runs-on: [self-hosted, linux, hil-rig, gpu]`
+- (d) `runs-on: ubuntu-24.04`
+
+Which of them can run on this machine?
+--- choice correct
+(a) and (b).
+--- choice
+Only (b), because a job must list every label the runner has.
+--- choice
+(a), (b) and (c), because matching most of the labels is enough.
+--- choice
+All four, because a self-hosted runner takes any job from its repository.
+--- why
+A job runs only on a runner that has all of the labels it lists; the runner may have more. Job (c) asks for `gpu`, which this machine lacks, so it waits in the queue for a runner that has all four rather than running here. Job (d) asks for a GitHub-hosted machine. Labels are how the one job that needs the rig finds it, and how everything else stays off it.
+
++++ question | A GitLab job that never runs
+--- ask
+Merge requests show the `lint` job, but the unit tests never appear in any pipeline. Why?
+
+```yaml
+stages: [lint, test]
+
+default:
+  image: python:3.12-slim
+
+lint:
+  stage: lint
+  script:
+    - pip install ruff
+    - ruff check .
+
+.unit-tests:
+  stage: test
+  script:
+    - pip install -r requirements.lock
+    - pytest -q
+```
+--- choice correct
+The job name starts with a dot, which makes it a hidden job: it never runs by itself and exists only to be extended. Rename it `unit-tests`.
+--- choice
+A job in the `test` stage needs `needs: [lint]` before GitLab will schedule it.
+--- choice
+GitLab jobs must sit under a `jobs:` key.
+--- choice
+`default: image:` applies only to the first job in the file.
+--- why
+In `.gitlab-ci.yml`, every top-level key that is not a reserved word is a job, and one whose name starts with a dot is hidden: a template for `extends:`, such as a shared `.sim-setup`. The `stages:` list already runs `lint` before `test`, there is no `jobs:` key in GitLab, and `default:` applies to every job.
+
++++ question | Hardware tests for an open project
+--- ask
+A university CubeSat team keeps its flight software in a public GitHub repository and welcomes pull requests from forks. It wants closed-loop tests on the one hardware-in-the-loop rig in its lab. A student proposes registering the rig's computer as a self-hosted runner and running the HIL job on every pull request: "The runner only calls out to GitHub, so no port is open and nobody can get in." What is the sound plan?
+--- choice correct
+Never run fork pull requests on the rig. Run the HIL job only for pushes to `main`, after review, prefer an ephemeral runner, and give the machine only the network access and secrets it needs.
+--- choice
+The student is right: with only an outgoing connection, a stranger's code cannot reach the lab network, so every pull request may use the rig.
+--- choice
+Run it on every pull request, but set `timeout-minutes`, so a hostile job cannot run for long.
+--- choice
+Run the HIL job on `ubuntu-24.04` instead, and connect the rig to it over the internet.
+--- why
+Calling out means no port has to be opened in the firewall, but the job the runner fetches then runs whatever commands the pull request contains, inside the lab. On a public repository anyone can open a pull request, which is why GitHub advises self-hosted runners only for private repositories. Main-only means only reviewed, merged code reaches the rig, which also suits a rig that runs one job at a time. A timeout limits how long, not how much damage; and exposing the rig to the internet is worse than any runner.
+
+=== ops02-l05 | Practice: A pipeline for GNC code
+--- for
+l05-a-gnc-pipeline
+
++++ question | A suppression a reviewer can read
+--- ask
+clang-tidy, run with `--warnings-as-errors='*'`, reports `bugprone-easily-swappable-parameters` on `double drag_force(double rho, double v, double cd_area)`. The team has decided to keep the signature, because an interface document, ICD-204, fixes the order. Which change is right?
+--- choice correct
+Put `// NOLINTNEXTLINE(bugprone-easily-swappable-parameters): order fixed by ICD-204` on the line above the definition.
+--- choice
+Add a bare `// NOLINT` at the end of the line.
+--- choice
+Remove `bugprone-*` from the CI command, since that family gives false alarms.
+--- choice
+Drop `--warnings-as-errors`, so the finding stays in the log without failing the job.
+--- why
+A good suppression names the one check and gives the reason where a reviewer sees it, and every other check still runs on that line. A bare `NOLINT` hides every check on the line and explains nothing. Removing the family, or making warnings advisory, switches the station off for all the code to silence one known finding, and a warning that fails nothing is soon ignored.
+
++++ question | A baseline that moves
+--- ask
+A benchmark job fails when the median is more than 10 percent above the baseline. To "keep the baseline fresh", the team resets `bench/baseline.json` to the newest median after every merge. Three pull requests merge in a row, and each makes the simulation step 8 percent slower. How much slower is the step than before the first of them, and how many benchmark failures were there?
+--- choice correct
+About 26 percent slower, because $1.08^3 \approx 1.26$, with no failures: each change was compared only with the one before it.
+--- choice
+24 percent slower, with one failure, at the second pull request.
+--- choice
+8 percent slower in total, because each pull request stayed within the threshold.
+--- choice
+About 26 percent slower, with one failure, at the third pull request.
+--- why
+The slowdowns multiply: $1.08 \times 1.08 \times 1.08 \approx 1.26$. Each pull request is 8 percent above its own, freshly reset baseline, under the 10 percent limit, so each passes while the baseline creeps up. A baseline is an approved reference, like a golden file: change it on purpose, in a reviewed commit, when a slowdown is accepted. Reset automatically, the job only catches a single big jump and lets a slow creep through.
+
++++ question | How long the GNC pipeline takes
+--- ask
+The jobs of a GNC pull-request pipeline:
+
+| Job | Minutes | `needs:` |
+| --- | --- | --- |
+| lint | 1 | none |
+| static-analysis | 4 | none |
+| unit-coverage | 5 | lint |
+| debug-asan | 7 | lint |
+| release | 4 | lint |
+| regression | 3 | release |
+| benchmark | 6 | release |
+| docs | 2 | none |
+
+How many minutes does a green run take? Type a number.
+--- answer
+11
+11 minutes
+11 min
+eleven
+--- why
+`lint` ends at 1, and the three builds start together: `unit-coverage` ends at 6, `debug-asan` at 8, `release` at 5. Then `regression` runs from 5 to 8 and `benchmark` from 5 to 11. `static-analysis` and `docs` end at 4 and 2. The longest chain is lint, release, benchmark: $1 + 4 + 6 = 11$. Notice that `debug-asan`, the slowest build, is not on it: speeding it up changes nothing, while speeding up `release` or `benchmark` would.
+
++++ question | Ten new lines under a high average
+--- ask
+A library has 100 lines of code, and its tests run all 100. The CI gate is `gcovr --root . --filter src/ --fail-under-line 85`. A pull request adds a 10-line function to `src/` with no test at all. What does the gate do?
+--- choice correct
+It passes: 100 of 110 lines ran, about 90.9 percent. The gate looks at the total, so new untested code can hide under a high average, though the report still lists the ten missed lines.
+--- choice
+It fails, because every new line must be covered.
+--- choice
+It fails, because coverage dropped by 10 percentage points.
+--- choice
+It passes, because gcovr only counts lines inside functions that some test calls.
+--- why
+A coverage gate is a floor on the total. When the existing code is well covered, a few new untested lines barely move it: $100 / 110 \approx 0.909$. So the gate catches code that arrives with no tests only when there is enough of it. Reviewers still read the list of missed lines for the new code, and the gate stays what the lesson calls it: a floor, never a definition of done.
+
++++ question | The report that is never there
+--- ask
+```yaml
+      - name: Coverage gate
+        run: pipx run gcovr --root . --filter src/ --fail-under-line 85 --html-details coverage.html
+      - uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report
+          path: coverage*.html
+```
+
+The team wants the HTML report on the days the gate fails, to see which lines were missed. Exactly on those runs, there is no `coverage-report` artifact; on green runs it is there. What is the fix?
+--- choice correct
+Add `if: always()` to the upload step. When the gate step fails, later steps are skipped unless they say otherwise.
+--- choice
+Move the upload step above the gate step, so it runs first.
+--- choice
+Add `retention-days: 90`, because failed runs keep their artifacts for less time.
+--- choice
+Give the job `permissions: contents: write`, so it may save artifacts after a failure.
+--- why
+The gate step writes the report and then exits with a non-zero code, so every ordinary step after it is skipped. `if: always()` makes the upload run whatever happened. Moving the upload above the gate uploads nothing, because the HTML is written by the gate step itself. Artifacts need no extra permission and do not expire faster after a failure.
+
++++ question | Getting the pull request under ten minutes
+--- ask
+A pull-request pipeline has grown to 41 minutes:
+
+| Job | Minutes | `needs:` |
+| --- | --- | --- |
+| lint | 1 | none |
+| static-analysis | 4 | none |
+| unit-coverage | 6 | lint |
+| debug-asan | 8 | lint |
+| release | 5 | lint |
+| small regression, 12 cases | 3 | release |
+| full dispersion, 500 cases | 35 | release |
+| benchmark suite | 20 | release |
+
+Which plan brings the pull-request loop to about ten minutes without weakening its checks for the most common breakage?
+--- choice correct
+Move the full dispersion and the benchmark suite to the nightly schedule, and keep the rest on the pull request. The longest chain drops to 9 minutes.
+--- choice
+Drop the coverage gate and the ASan job, the slow checks that fail least often.
+--- choice
+Add more runners, so that all the jobs run at the same time.
+--- choice
+Move the ASan job and the small regression to the nightly schedule, and keep the full dispersion on the pull request.
+--- why
+The time is set by the longest chain: lint, release, full dispersion, $1 + 5 + 35 = 41$ minutes. The jobs already run in parallel, so more runners cannot shorten a chain. Dropping coverage and ASan removes checks and does not touch the chain at all. With the two long jobs moved to the night, the chains are lint then ASan (9), lint then release then small regression (9), and lint then unit-coverage (7). The long jobs still run every day, so a break is found within a day.
+
+=== ops02-l06 | Practice: Golden files and the nightly Monte Carlo
+--- for
+l06-golden-files-and-nightly-monte-carlo
+
++++ question | Two elements against the rule
+--- ask
+Does this call pass?
+
+```python
+np.testing.assert_allclose([7000.004, 0.002], [7000.0, 0.0], rtol=1e-6, atol=1e-3)
+```
+--- choice correct
+No. The first element passes (error 0.004, allowance 0.001 + 0.007 = 0.008), but the second fails (error 0.002, allowance 0.001).
+--- choice
+Yes, because both errors are below 0.008.
+--- choice
+No, because the first error, 0.004, is bigger than `atol`.
+--- choice
+Yes, because `assert_allclose` passes when most elements are within tolerance.
+--- why
+The allowance is worked out for each element from its own golden value: $\text{atol} + \text{rtol} \times |\text{desired}|$. For 7000 that is $0.001 + 0.007 = 0.008$; for 0.0 it is only `atol`, 0.001. One element out of tolerance fails the whole call. There is no single allowance for the whole array.
+
++++ question | Which argument is the golden one
+--- ask
+What does this print?
+
+```python
+import math
+import numpy as np
+
+print(np.isclose(100.0, 104.0, rtol=0.039, atol=0.0),
+      np.isclose(104.0, 100.0, rtol=0.039, atol=0.0),
+      math.isclose(104.0, 100.0, rel_tol=0.039))
+```
+--- answer
+True False True
+True, False, True
+True,False,True
+--- why
+The difference is 4 each time. NumPy measures the allowance against the second argument: $0.039 \times 104 = 4.056$, so the first is `True`; $0.039 \times 100 = 3.9$, so the second is `False`. `math.isclose` is symmetric: it uses the larger of the two sizes, so it allows 4.056 and gives `True` whichever way round. Near the edge of a tolerance the order decides the answer, which is why the golden value always goes second.
+
++++ question | A hand-written comparison
+--- ask
+What does this print?
+
+```python
+golden = [6778137.0, 0.0, float("nan"), 7.5]
+actual = [6778137.004, 4e-13, float("nan"), 7.5000001]
+rtol, atol = 1e-9, 1e-12
+bad = [i for i, (a, e) in enumerate(zip(actual, golden))
+       if not abs(a - e) <= atol + rtol * abs(e)]
+print(bad)
+```
+--- answer
+[2, 3]
+[2,3]
+2, 3
+2 3
+--- why
+Index 0: an error of about 0.004 against an allowance of about 0.0068, fine. Index 1: $4 \times 10^{-13}$ fits under `atol` alone. Index 2: NaN minus NaN is NaN, and every comparison with NaN is `False`, so `not ...` is `True` and a NaN in both places counts as a mismatch. Index 3: an error of $10^{-7}$ against an allowance of $7.5 \times 10^{-9}$, a real mismatch. To match `assert_allclose`, which treats NaN in both as equal by default, check `math.isnan` on both values before using the formula.
+
++++ question | Where to put rtol
+--- ask
+Positions in a golden test are about $7 \times 10^{6}$ m. Across compilers and platforms, the differences from the golden file have been measured at up to $3 \times 10^{-9}$ m. The smallest change the team wants to be told about is 5 mm. Which relative tolerance fits the positions best?
+--- choice
+`rtol=1e-16`
+--- choice correct
+`rtol=1e-12`
+--- choice
+`rtol=1e-9`
+--- choice
+`rtol=1e-6`
+--- why
+The allowance is about $\text{rtol} \times 7 \times 10^{6}$ m. `1e-16` allows $7 \times 10^{-10}$ m, below the measured noise, so the test goes red on harmless platform changes. `1e-12` allows $7 \times 10^{-6}$ m: over a thousand times the noise and several hundred times below 5 mm, right in the gap. `1e-9` allows 7 mm, so a 5 mm change passes unnoticed; `1e-6` allows 7 m. A tolerance is chosen from measurements on both sides, not copied from another test.
+
++++ question | The seed that changes nothing
+--- ask
+The nightly Monte Carlo writes its base seed, today's date, into `report.json` and into the artifact's name. Its case function begins:
+
+```python
+def run_case(base_seed, case_id):
+    rng = np.random.default_rng(case_id)
+    ...
+```
+
+After a week someone notices that all seven reports have exactly the same percentiles and the same failing cases, although their seeds differ. What is wrong?
+--- choice correct
+The generator is built from `case_id` alone, so the base seed is recorded but never used, and every night flies the same 500 cases. Build it from both: `np.random.default_rng([base_seed, case_id])`.
+--- choice
+Nothing: identical results show that the simulation is deterministic, which is the goal.
+--- choice
+The generator should be made once at the start of the run and shared by every case, so that each night differs.
+--- choice
+`default_rng` ignores a single number, so the draws come from the clock and just happen to repeat.
+--- why
+With the case number as the only seed, case 17 draws the same errors every night. It is reproducible, but no longer random by design: the campaign never explores new draws. Seeding from the pair gives new cases each night, and any case can still be rebuilt from the recorded base seed and its number. A shared generator would make each case depend on how many numbers the cases before it drew, so a single case could not be rerun alone. And `default_rng` with a number is fully determined by it.
+
++++ question | A campaign longer than one job
+--- ask
+A new dispersion has 4,000 cases of about 9 seconds each: 10 hours on one runner. It must run every night on GitHub-hosted runners. Which design works?
+--- choice correct
+A matrix of 8 shards, where shard `k` runs cases `k`, `k + 8`, `k + 16` and so on, each case seeding its generator from the base seed and its own case number. Each shard uploads its part under a name with the seed and the shard number, and a final job with `needs:` combines them.
+--- choice
+One job with `timeout-minutes: 720`, giving the campaign 12 hours to finish.
+--- choice
+A matrix of 8 shards sharing one generator seeded with the base seed, each drawing numbers in turn for its cases.
+--- choice
+Cut the campaign to 2,000 cases, so it fits in one job.
+--- why
+A job on a hosted runner may run for at most 6 hours, and no `timeout-minutes` can raise that. Eight shards of 500 cases take about 75 minutes each. Because each case's generator depends only on the base seed and the case number, the results are the same however the cases are split, and any case can be rerun alone. Separate machines cannot share one generator, and draws taken in turn would depend on timing. Halving the cases changes the question: rarer failures go unseen. The artifact names must differ, because names are unique within a run.
+
+=== ops02-l07 | Practice: MATLAB and Simulink in CI
+--- for
+l07-matlab-and-simulink-in-ci
+
++++ question | A private repository on hosted runners
+--- ask
+A small company keeps its attitude-control models in a private GitHub repository and wants its Simulink Test suites to run on GitHub-hosted runners. It uses Simulink, Simulink Test and Simulink Coverage, and no code generation. How does MATLAB get a license there?
+--- choice correct
+The team asks MathWorks for a batch licensing token, stores it as a secret, and passes it as `MLM_LICENSE_TOKEN` in the `env:` of the steps that start MATLAB.
+--- choice
+Automatically: setup-matlab licenses the products it installs in any repository.
+--- choice
+Set `MLM_LICENSE_FILE` to `27000@` and the company's license server in the job's `env:`.
+--- choice
+It cannot: MATLAB in CI always needs a self-hosted runner.
+--- why
+Automatic licensing covers public repositories only, and not transformation products. A private repository on hosted runners uses a batch licensing token, kept as a secret and given only to the steps that start MATLAB. A license server address only helps a runner that can reach the server, and a hosted runner in GitHub's data center cannot reach a company network. A self-hosted runner is one route, not the only one.
+
++++ question | Test Manager results with no verdict
+--- ask
+CI runs `matlab -batch "run_sltests"`, where `run_sltests.m` is:
+
+```matlab
+sltest.testmanager.load("tests/pointing_regression.mldatx");
+resultSet = sltest.testmanager.run;
+sltest.testmanager.exportResults(resultSet, "reports/pointing_results.mldatx");
+```
+
+Two of its 30 test cases fail. What color is the check, and why?
+--- choice correct
+Green. The Test Manager records the failures in the result set but throws no error, so the script finishes and MATLAB exits with code 0. Add a check of `resultSet.NumFailed` that calls `error(...)`.
+--- choice
+Red, because `-batch` exits with a non-zero code whenever a test case fails.
+--- choice
+Red, because `exportResults` refuses to write a result set with failures.
+--- choice
+Green, and nothing can change that: a MATLAB script has no way to fail a CI step short of crashing.
+--- why
+`matlab -batch` exits with 0 when the statement finishes and with a non-zero code when it throws an error, and that exit code is all the runner sees. The Test Manager does not throw on a failed test case, so the script must: `if resultSet.NumFailed > 0, error(...)`. It is the same job `assertSuccess` does for `runtests`. A gate is only as good as its exit code, so break a test on purpose once and watch the check turn red.
+
++++ question | A nightly matrix and a small pool
+--- ask
+The team owns 5 concurrent Simulink Test licenses. The nightly run starts at 03:23 UTC, when no engineer is working, but one license must always stay free for the engineer on call. The nightly matrix is 3 MATLAB releases times 4 test groups, and each job takes about 20 minutes. With `max-parallel` set as high as that rule allows, how many minutes does the run take? Type a number.
+--- answer
+60
+60 minutes
+60 min
+1 hour
+one hour
+--- why
+There are $3 \times 4 = 12$ jobs. With one license kept free, 4 may be used, so `max-parallel: 4`. The jobs run in $12 / 4 = 3$ waves of 20 minutes: 60 minutes. With no limit, all 12 would start, 5 would take every license, including the on-call one, and 7 would fail with error -4: false reds that say nothing about the models.
+
++++ question | An error after the server moved
+--- ask
+The self-hosted MATLAB runner's jobs all start failing overnight with "License Manager Error -15". No code or workflow changed; IT moved the license server to a new machine that week. What is the likely cause?
+--- choice correct
+MATLAB cannot reach a license server: `MLM_LICENSE_FILE` still names the old host, or a firewall blocks the new one. Update the `port@host` address and check that both the license daemon's port and the vendor daemon's port are open.
+--- choice
+The license pool is full; lower `max-parallel`.
+--- choice
+A product is missing from `products:` in setup-matlab.
+--- choice
+The batch licensing token expired; replace the `MLM_LICENSE_TOKEN` secret.
+--- why
+Error -15 means no server could be reached: a wrong address, a server that is down, or a firewall. Error -4 is the full pool. A self-hosted runner that uses `MLM_LICENSE_FILE` has MATLAB installed already and does not use setup-matlab or a token; those belong to the hosted routes. The address is a location, not a secret, so it is fixed wherever it is set, in the workflow or on the runner machine.
+
++++ question | Code generation passes for maintainers only
+--- ask
+A public repository runs its Simulink tests on hosted runners with the automatic license. A second job generates C code with Embedded Coder, using a batch licensing token from the `MLM_LICENSE_TOKEN` secret. That job passes on pull requests from branches of the repository itself, but fails with a license error on every pull request from a contributor's fork. The Simulink tests pass in both cases. Why?
+--- choice correct
+Embedded Coder is a transformation product, so it needs the token, and GitHub does not give secrets to workflows started by pull requests from forks. Run the code-generation job on pushes to `main` instead.
+--- choice
+A fork does not copy the `.github/` folder, so its workflow has no `products:` line.
+--- choice
+Pull requests from forks run on a different Ubuntu image, which has no C compiler.
+--- choice
+Switch the job to `pull_request_target`, the safe way to run a fork's code with secrets.
+--- why
+The automatic license covers the Simulink tests, but not transformation products such as Embedded Coder, so that job depends on the token, and the token is withheld from fork pull requests on purpose. Otherwise one line in a stranger's pull request could send it anywhere. `pull_request_target` would provide the token, but building or running the fork's code there is exactly the hole that rule closes.
+
++++ question | A release upgrade that fails its baselines
+--- ask
+A pull request moves setup-matlab's `release:` from R2024a to R2024b. Three Simulink Test baseline tests fail: the pitch angle differs from the stored baselines by at most $2 \times 10^{-14}$ rad. The baseline criteria were set up with tolerances of zero. What should happen?
+--- choice correct
+Keep the upgrade, and in the same reviewed pull request give the baseline criteria an explicit tolerance chosen from the physics and the measured noise, with the reason written down: $2 \times 10^{-14}$ rad is rounding noise from a new release.
+--- choice
+Set `release: latest`, so the baselines always meet the newest release and stop drifting.
+--- choice
+Add an automatic retry to the test step, since differences this small are usually flaky.
+--- choice
+Let CI regenerate a baseline whenever it fails, so upgrades never block.
+--- why
+Numerical results may shift between MATLAB releases, which is why the release is pinned and changed in a pull request like this one. A tolerance of zero is exact equality, so rounding noise turns red. The tolerance belongs between the noise and the smallest change that matters, reviewed as part of the test's contract. `latest` lets the environment change silently; a retry of a deterministic simulation gives the same answer; and a baseline that CI rewrites whenever it fails is no baseline at all. Had the differences been large, the pull request would carry new baselines, explained and reviewed.
+
+=== ops02-l08 | Practice: Flaky tests, protected branches and releases
+--- for
+l08-flaky-tests-protection-and-releases
+
++++ question | Forty slightly flaky tests
+--- ask
+A suite has 40 integration tests. Each fails 0.5 percent of the time for reasons unrelated to the code, independently of the others. About what fraction of pipeline runs are red with nothing wrong?
+--- choice
+About 0.5 percent.
+--- choice correct
+About 18 percent.
+--- choice
+Exactly 20 percent.
+--- choice
+About 40 percent.
+--- why
+All 40 pass with probability $0.995^{40} \approx 0.818$, so a false red comes with probability $1 - 0.818 \approx 0.18$. Adding the chances, $40 \times 0.5$ percent, is close for small numbers but counts twice the runs in which two tests fail, and it goes badly wrong as the suite grows: it would pass 100 percent at 200 tests. 0.5 percent is one test on its own. Almost one run in five red for nothing is how a team learns to stop reading red.
+
++++ question | Fails only on busy nights
+--- ask
+```python
+def test_ephemeris_roundtrip():
+    write_ephemeris("/tmp/ephem.csv", make_table(seed=7))
+    table = read_ephemeris("/tmp/ephem.csv")
+    assert table == make_table(seed=7)
+```
+
+The team's build machine hosts two self-hosted runners. This test fails about once in ten runs there, and only on nights when both runners have a job at once. It never fails on GitHub-hosted runners, or when run alone. What is the cause, and the fix?
+--- choice correct
+Both jobs write and read the same fixed path, `/tmp/ephem.csv`, so one job can overwrite the other's file between the write and the read. Give each test its own folder, for example with pytest's `tmp_path` fixture.
+--- choice
+The random generator is not seeded; seed it.
+--- choice
+The comparison is numerically marginal; compare with a tolerance.
+--- choice
+The machine is slow on busy nights; add a retry after a short pause.
+--- why
+The data is seeded and compared with itself, so neither randomness nor rounding explains a failure. The pattern, failing only when two jobs share one machine, points at shared state: a fixed temporary file. Hosted runners give each job a fresh machine, which is why they never see it. `tmp_path` gives each test a new, empty folder. A retry would make it pass more often and leave the race in place.
+
++++ question | Green at nine, stale at ten
+--- ask
+At 09:00 two pull requests into `main` are both green. PR 1 merges at 10:00. At 10:05 the author of PR 2, which has had no new commits since 09:00, presses merge. Branch protection requires the check `all-checks`, but not that branches be up to date. What were PR 2's checks run against, and which setting would catch a semantic conflict between the two?
+--- choice correct
+A trial merge with `main` as it was before 09:00, without PR 1. "Require branches to be up to date before merging", or a merge queue, makes PR 2 merge with the new `main` and pass its checks again first.
+--- choice
+The current `main`, because GitHub reruns every open pull request's checks whenever `main` changes.
+--- choice
+PR 2's branch alone, never merged with anything; "require approvals" fixes that.
+--- choice
+The current `main`; no setting is needed, because the `pull_request` event always tests against the newest `main`.
+--- why
+The `pull_request` event fires when a pull request is opened, gets new commits or is reopened, not when `main` moves, and its trial merge is made when it runs. So PR 2's green says "the old `main` plus PR 2 works", which is not what is about to land. Requiring up-to-date branches blocks the merge until PR 2 includes PR 1 and its checks pass again; a merge queue does the same automatically, one pull request on top of another. Approvals are about people, not about what the tests saw.
+
++++ question | Clean runs before you believe it
+--- ask
+A test used to fail 5 percent of the time. Its owner thinks she has fixed it. She wants less than a 1 percent chance that a test which is still broken would pass all of her runs by luck. At least how many clean runs in a row does she need? Type a number.
+--- answer
+90
+90 runs
+ninety
+--- why
+A still-broken test passes one run with probability 0.95, and $n$ runs in a row with probability $0.95^n$. Set $0.95^n \le 0.01$: taking logarithms, $n \ge \ln 0.01 / \ln 0.95 \approx -4.605 / -0.0513 \approx 89.8$, so 90 runs, rounding up. Twenty clean runs prove little: a still-broken test passes 20 in a row $0.95^{20} \approx 36$ percent of the time.
+
++++ question | The release that did not start
+--- ask
+The release workflow begins:
+
+```yaml
+on:
+  push:
+    tags:
+      - "v[0-9].[0-9].[0-9]"
+```
+
+It published `v1.8.2` and `v1.9.0`. Then the tag `v1.10.0` was pushed to GitHub, and no run started. What is the fix?
+--- choice correct
+Each `[0-9]` matches exactly one digit, so `10` does not match. Write `"v[0-9]+.[0-9]+.[0-9]+"`, where `+` means one or more.
+--- choice
+Push the tag with `git push origin v1.10.0`, since `git push` alone does not send tags.
+--- choice
+GitHub sorts `v1.10.0` before `v1.9.0` and ignores a tag that goes backwards.
+--- choice
+Tag filters only see lightweight tags; recreate the tag without `-a`.
+--- why
+In a filter, `[0-9]` is one character and `+` repeats the thing before it. The single-digit pattern worked until the minor number reached 10. The tag did reach GitHub, as the question says, and GitHub does not compare version numbers to decide whether a workflow starts. Annotated tags, made with `-a`, are the usual choice for releases.
+
++++ question | A flake budget for a big suite
+--- ask
+A suite has 200 tests. The team wants at most 5 percent of pipeline runs to be red for no reason. If every test has the same independent flake rate $p$, about how large may $p$ be?
+--- choice correct
+About 0.025 percent: one failure in about 4,000 runs.
+--- choice
+About 0.25 percent: one failure in 400 runs.
+--- choice
+About 2.5 percent.
+--- choice
+5 percent: if each test is within the target, the suite is too.
+--- why
+We need $(1 - p)^{200} \ge 0.95$, so $1 - p \ge 0.95^{1/200} \approx 0.999744$, and $p \le 0.000256$, about one in 3,900. A quick check: for small $p$ the false-red rate is about $N p = 200 \times 0.00025 = 0.05$. A test that fails once in a thousand runs, which nobody would call flaky by eye, already makes $1 - 0.999^{200} \approx 18$ percent of runs red. That is why every flaky test is quarantined and fixed, not tolerated.
+
+=== ops02-test | Continuous integration for simulation code: module test
+--- teach
+The test covers the whole module: the failures CI prevents, GitHub Actions workflows and job graphs, matrices, caches, artifacts and secrets, reusable pipelines, self-hosted runners and the GitLab and Jenkins dialects, the GNC pipeline with its coverage gate, sanitizer and Release builds and benchmarks, golden files with tolerances, the nightly Monte Carlo, MATLAB and Simulink in CI, and flaky tests, branch protection and releases. Most questions combine two or more lessons: you predict what a pipeline or a comparison will do, find why it misbehaves, or pick the real reason. To get ready, redo the practice questions of the lessons that felt hard, and trace each workflow, tolerance and probability by hand before you answer.
+--- gate
+questions 13
+minutes 24
+
++++ question | Jobs in a compiler and sanitizer matrix
+--- ask
+On a pull request where every job succeeds, how many jobs run (skipped jobs do not count)? Type a number.
+
+```yaml
+on:
+  pull_request:
+  schedule:
+    - cron: "23 3 * * *"
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - run: clang-format --dry-run --Werror src/*.cpp src/*.hpp
+
+  build-test:
+    needs: lint
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+        config: [asan, release]
+        include:
+          - config: asan
+            flags: "-O0 -g -fsanitize=address -fno-omit-frame-pointer"
+          - config: release
+            flags: "-O2"
+          - compiler: gcc
+            config: coverage
+            flags: "-O0 --coverage"
+    steps:
+      - uses: actions/checkout@v7
+      - run: ./ci/build_and_test.sh "${{ matrix.compiler }}" "${{ matrix.flags }}"
+
+  full-matrix:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - run: ./ci/full_matrix.sh
+```
+--- answer
+6
+six
+6 jobs
+--- why
+`lint` is one job. The matrix grid is $2 \times 2 = 4$. The `asan` entry fits both asan combinations without changing a value, so it only adds `flags` to them, and the `release` entry does the same for both release combinations. The coverage entry would have to change `config` in every combination, so it becomes a fifth combination, gcc with coverage. `full-matrix` is skipped by its `if:` on a pull request. That makes $1 + 5 = 6$.
+
++++ question | Green under ASan, red in Release
+--- ask
+A pull request changes the attitude filter. The Debug + ASan job passes with no sanitizer report. The Release job, running the same tests at `-O2`, fails one test: the settled angle is off by far more than rounding. What is the right reading?
+--- choice correct
+The code probably relies on something the optimizer may change, such as undefined behavior (a signed integer overflow, say) that happens to work at `-O0`. ASan finds bad memory accesses, not every kind of undefined behavior. Catching this is what the Release job is for: investigate the code.
+--- choice
+ASan passing proves the code is correct, so the Release failure is a compiler bug; pin another compiler version.
+--- choice
+Drop the Release job: the sanitizer build is stricter, so it already finds everything Release would.
+--- choice
+Rerun the Release job until it passes, since optimized builds give a different answer on every run.
+--- why
+Each build hides bugs the other shows. ASan puts a check around memory accesses; it knows nothing about signed overflow and similar undefined behavior, which the optimizer is allowed to assume never happens. "Far more than rounding" rules out a last-bits effect such as fused multiply-add. A Release build is deterministic, so a rerun gives the same answer. Compiler bugs exist, but they are far rarer than undefined behavior in the code, and blaming the compiler first skips the likely cause.
+
++++ question | Default tolerances on a position
+--- ask
+What does this print?
+
+```python
+import numpy as np
+
+truth = 6778137.0
+print(np.isclose(truth + 30.0, truth),
+      np.isclose(truth + 30.0, truth, rtol=1e-9, atol=1e-3))
+```
+--- answer
+True False
+True, False
+True,False
+--- why
+`np.isclose` defaults to `rtol=1e-05` and `atol=1e-08`, so the allowance is about $10^{-5} \times 6\,778\,137 \approx 67.8$ m, and a 30 m error passes. With the stated contract the allowance is $0.001 + 0.0068 \approx 0.0078$ m, and it fails. `assert_allclose` has different defaults again (`rtol=1e-07`, `atol=0`). Pass both tolerances every time, so the test says what "the same" means instead of borrowing a default.
+
++++ question | A statistical test that fails one run in seven
+--- ask
+`estimate_bias` returns the mean of its readings. This test fails now and then, with no code change:
+
+```python
+def test_star_tracker_bias():
+    rng = np.random.default_rng()
+    readings = 0.10 + 0.02 * rng.standard_normal(25)
+    assert abs(estimate_bias(readings) - 0.10) < 0.006
+```
+
+Which diagnosis and fix are right?
+--- choice correct
+The standard error of a 25-reading mean is $0.02 / 5 = 0.004$, so the tolerance is only 1.5 standard errors and the test fails about 13 percent of the time by chance. Seed the generator, and widen the tolerance to about 5 standard errors, 0.02.
+--- choice
+`estimate_bias` has an intermittent bug; add `--reruns 2` until someone finds it.
+--- choice
+Seeding alone is the whole fix: once the test is deterministic, the tolerance of 0.006 can stay.
+--- choice
+Quarantine it for good, since a test with random numbers can never be made reliable.
+--- why
+Averaging 25 readings divides the spread by $\sqrt{25} = 5$. A miss beyond 1.5 standard errors happens about 13 percent of the time, one run in seven or eight, which matches the symptom and clears the function. A seed makes the test deterministic, but with a 1.5 standard error tolerance about one seed in seven fails, so any harmless change that alters the draws can turn it red on some unrelated pull request. With 5 standard errors a random miss is rarer than one in a million, while a real bug is still caught. Reruns would hide real intermittent bugs, and quarantine is for the time it takes to fix a test, not forever.
+
++++ question | A cron with its fields swapped
+--- ask
+A nightly dispersion should start at 03:23 UTC on weeknights. The workflow says:
+
+```yaml
+on:
+  schedule:
+    - cron: "3 23 * * 1-5"
+```
+
+When does it actually run?
+--- choice correct
+At 23:03 UTC, Monday to Friday. The first field is the minute and the second the hour; it should be `"23 3 * * 1-5"`.
+--- choice
+At 03:23 UTC, Monday to Friday, as intended.
+--- choice
+At 03:23 in the repository owner's local time, Monday to Friday.
+--- choice
+At 23:03 UTC every day, because `1-5` is the day of the month.
+--- why
+The five fields are minute, hour, day of the month, month and day of the week, and GitHub reads them in UTC. `1-5` sits in the fifth field, so it means Monday to Friday. 23:03 UTC is evening in Europe and working hours in the Americas, so this "nightly" run competes with engineers for runners and licenses. Printing the next few times with a tool such as croniter catches this before it ships.
+
++++ question | A seed that never reaches the next step
+--- ask
+A nightly workflow has these steps:
+
+```yaml
+      - name: Choose the base seed
+        run: export SEED=$(date -u +%Y%m%d)
+      - name: Run the dispersion
+        run: python dispersion.py --seed "$SEED" --cases 500 --out mc-report
+      - name: Publish the report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: mc-report-${{ env.SEED }}
+          path: mc-report/
+```
+
+The dispersion step fails at once, complaining that the seed is empty, and the artifact is named only `mc-report-`. Why?
+--- choice correct
+Each `run:` step starts a new shell, so a variable exported in one step is gone in the next. Append `SEED=...` to the file named by `$GITHUB_ENV`, which makes it an environment variable for every later step and readable as `env.SEED`.
+--- choice
+`date -u` prints nothing on GitHub's runners.
+--- choice
+`export` only works inside a composite action.
+--- choice
+`env.SEED` is only filled in for runs started by the "Run workflow" button.
+--- why
+Steps share the machine and its files, so a file written in one step is there for the next, but not the shell's variables. `$GITHUB_ENV` bridges that gap: each `NAME=value` line written to it becomes an environment variable in the following steps of the job. Here the missing seed does double damage: the run cannot start, and the evidence would be published without the seed that makes it reproducible.
+
++++ question | A GitLab MATLAB job that is always green
+--- ask
+This GitLab job has been green for weeks, although its log shows failing tests. What is wrong?
+
+```yaml
+simulink-tests:
+  stage: test
+  tags: [matlab-r2024b]
+  variables:
+    MLM_LICENSE_FILE: "27000@flexlm.gnc.example.com"
+  script:
+    - matlab -batch "runtests('tests', 'IncludeSubfolders', true)"
+  artifacts:
+    when: always
+    reports:
+      junit: reports/results.xml
+```
+--- choice correct
+`runtests` returns its results without throwing, so the statement finishes and MATLAB exits with code 0. Keep the results and call `assertSuccess` on them, so a failed test becomes an error and a non-zero exit code.
+--- choice
+GitLab ignores the exit code of a job with `artifacts: when: always`.
+--- choice
+The license address must be a masked secret; a plain variable makes GitLab pass the job.
+--- choice
+`tags:` sends the job to a shell runner, and a shell runner cannot fail a job.
+--- why
+GitLab, like GitHub and Jenkins, judges a command by its exit code, and `matlab -batch` exits non-zero only when the statement throws. `when: always` only decides when artifacts are uploaded, the license address is a location rather than a secret, and tags only pick the runner. There is a second hint in the file: nothing writes `reports/results.xml`, since plain `runtests` writes no JUnit report; that needs a test runner with the XML plugin.
+
++++ question | The Jenkinsfile in GitHub's words
+--- ask
+Which GitHub Actions job does what this Jenkins stage does?
+
+```groovy
+pipeline {
+    agent none
+    options { timeout(time: 45, unit: 'MINUTES') }
+    stages {
+        stage('HIL smoke') {
+            agent { label 'hil-rig' }
+            when { branch 'main' }
+            steps {
+                sh './scripts/run_hil.sh --suite smoke --junit hil.xml'
+            }
+            post {
+                always { junit 'hil.xml' }
+            }
+        }
+    }
+}
+```
+--- choice correct
+A job with `if: github.ref == 'refs/heads/main'`, `runs-on: [self-hosted, hil-rig]` and `timeout-minutes: 45`, whose steps are a checkout, the `run_hil.sh` command, and an upload of `hil.xml` marked `if: always()`.
+--- choice
+A job with `runs-on: ubuntu-24.04` and `container: hil-rig`, a 45-minute timeout, and the same steps.
+--- choice
+The same job as the first, but with the upload step not marked `if: always()`, because `post` only runs when the steps pass.
+--- choice
+A job with `needs: main` in place of the `if:`, `runs-on: [self-hosted, hil-rig]` and `timeout-minutes: 45`.
+--- why
+An agent picked by label is a self-hosted runner picked by labels in `runs-on`; `when { branch 'main' }` is an `if:` on the ref (or a `branches: [main]` filter); `options { timeout }` is `timeout-minutes`; and `post { always }` runs whether the steps passed or not, like `if: always()`. `container:` names a Docker image, not a machine, so it cannot reach a rig on a lab bench. `needs:` names jobs, not branches. And GitHub needs an explicit checkout step.
+
++++ question | A required job that never runs on pull requests
+--- ask
+Branch protection on `main` requires the check `regression`. The workflow runs on `pull_request` and on pushes to `main`, and the job is:
+
+```yaml
+  regression:
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - run: ./ci/regression.sh
+```
+
+What happens with a pull request that breaks the regression results?
+--- choice correct
+On the pull request, `regression` is skipped by its `if:`, and a job skipped that way reports success. The required check is green, the pull request merges, and the regression first runs, and fails, on `main`.
+--- choice
+The pull request waits forever, because a skipped required check never reports.
+--- choice
+The pull request is blocked, because a skipped job reports failure.
+--- choice
+GitHub runs a required job even when its `if:` is false.
+--- why
+A job skipped by an `if:` condition reports success. Only a check whose whole workflow never ran, for example because of a `paths:` filter, is left waiting. So this required check guards nothing on pull requests: the team believes regressions are gated and they are not. Let the job run on pull requests, perhaps with a small regression set, and remember the lesson 1 question: what would turn this check red?
+
++++ question | An approval that outlived its code
+--- ask
+Branch protection on `main` requires one approval and the check `all-checks`. On Tuesday, the guidance code owner approves a pull request. On Wednesday the author pushes one more commit that changes a controller gain; `all-checks` runs again and is green, and the author merges without anyone looking at the new commit. Which setting would have required a fresh review?
+--- choice correct
+"Dismiss stale approvals when new commits are pushed".
+--- choice
+"Require branches to be up to date before merging".
+--- choice
+"Require review from code owners".
+--- choice
+"Block force pushes".
+--- why
+An approval stays on a pull request through later commits unless stale approvals are dismissed, so Tuesday's approval covered code the reviewer never saw. Up-to-date branches are about new commits on `main`, not on the pull request. Code-owner review was already given, by the code owner. Blocking force pushes protects the history of `main`. Green checks do not replace review: a wrong gain can pass every test that does not assert on it.
+
++++ question | Coverage that rose with no new tests
+--- ask
+A project's gate is `pytest --cov=orbitsim --cov-fail-under=85`. Last week it failed at 83 percent. Today it passes at 86 percent, and no test was added or changed. Which change could explain that?
+--- choice correct
+An old, unused module that no test ran was deleted: fewer lines in total, the same lines run.
+--- choice
+A flaky test was quarantined and deselected in the gate job with `-m "not quarantine"`.
+--- choice
+The runner moved to a newer Python, which runs each line faster.
+--- choice
+`--cov-fail-under` rounds anything above 82.5 percent up to 85.
+--- why
+Line coverage is the lines that ran divided by the lines counted, so deleting untested code raises it without testing anything more. Removing dead code is fine, but it shows what the number measures: a share of lines executed, not verification. Deselecting a test can only lower coverage, speed has nothing to do with it, and the gate compares the real percentage.
+
++++ question | A cached virtual environment in a matrix
+--- ask
+A matrix runs Python 3.11, 3.12 and 3.13 on Linux. To save time, each job caches its whole `.venv` folder, whose compiled packages are built for one interpreter, with
+
+`key: venv-${{ runner.os }}-${{ hashFiles('requirements.lock') }}`
+
+Jobs now fail with import errors in compiled packages, depending on which Python version happened to save the cache first. What is the fix?
+--- choice correct
+Put the Python version in the key, for example `venv-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('requirements.lock') }}`, so each interpreter restores only a folder built for it.
+--- choice
+Add `restore-keys: venv-`, so an older cache is used when there is no exact hit.
+--- choice
+End the key in `${{ github.sha }}` and restore by prefix, as for ccache.
+--- choice
+Remove the lockfile's hash from the key, so the cache is shared more widely.
+--- why
+A key must change whenever the cached contents would differ, and a virtual environment depends on the interpreter as well as the lockfile. With one key for three versions, the first job to save wins, and the entry is never overwritten. A broader prefix or a shorter key only spreads the wrong folder further. The ccache trick is safe only because ccache checks every object's own fingerprint before using it; a virtual environment has no such check. A cache must never change what is built.
+
++++ question | An exact time column
+--- ask
+A golden test gives the time column a tolerance of zero, "because time is computed from whole numbers of steps". A refactor replaces `t = k * dt` with adding `dt` at every step. With `dt = 0.1`, what does this print?
+
+```python
+t_steps = 0.0
+for _ in range(10):
+    t_steps += 0.1
+t_count = 10 * 0.1
+
+print(t_steps == 1.0, t_count == 1.0, abs(t_steps - 1.0) <= 1e-12)
+```
+--- answer
+False True True
+False, True, True
+False,True,True
+--- why
+0.1 has no exact binary form, and ten additions round ten times, ending at 0.9999999999999999. `10 * 0.1` rounds once, to exactly 1.0. So the exact time check was only valid for `k * dt`; after the refactor the time column fails with the physics unchanged. Either keep `k * dt`, or give time a tolerance on purpose. A tolerance contract depends on how each value is computed, and a refactor can change that.
+
++++ question | A self-hosted pool of MATLAB runners
+--- ask
+A nightly matrix has 10 Simulink jobs of about 12 minutes each. They run on a pool of 3 self-hosted MATLAB runners, and the license server has 8 free licenses at night. `max-parallel` is not set. How many minutes does the run take? Type a number.
+--- answer
+48
+48 minutes
+48 min
+--- why
+Each self-hosted runner takes one job at a time, so at most 3 jobs run at once, fewer than the 8 free licenses: here the runners, not the licenses, set the limit. Ten jobs in waves of 3, 3, 3 and 1 make 4 waves, $4 \times 12 = 48$ minutes, and no job fails with error -4. With 10 runners and no `max-parallel`, the licenses would become the limit, and 2 jobs would fail for want of one.
+
++++ question | A benchmark that fails one pull request in five
+--- ask
+A benchmark job on `runs-on: ubuntu-24.04` fails about one pull request in five with "+12% TOO SLOW" against a 10 percent threshold, including pull requests that only change comments. Reruns usually pass. What should the team do?
+--- choice correct
+Treat it as a noisy measurement: hosted runners are shared virtual machines whose speed varies. Run the benchmark on a dedicated self-hosted runner with nothing else on it, keep the warm-up and the median of repeats, and set the threshold well above that runner's measured noise.
+--- choice
+Add an automatic retry, and fail only when three runs in a row are too slow.
+--- choice
+Raise the threshold to 50 percent, so the hosted runner's noise stays under it.
+--- choice
+Compare the mean of the repetitions instead of the median, so that every run counts.
+--- why
+Same code, different verdicts: the check is flaky, and the cause is the environment. A consistent machine is the fix. Retries teach the team to ignore red and let real slowdowns through; a 50 percent threshold misses the 30 percent regressions the job exists for; and the mean is dragged up by the slow outliers that the median ignores.
+
++++ question | A tag that does not match its version
+--- ask
+The simulator is at `4.9.3`. A pull request adds a new optional `--seed-file` option and fixes a crash on empty input; nothing users rely on changes. The author sets `version = "4.9.4"` in `pyproject.toml`, merges, and pushes the tag `v4.10.0`. The release workflow is the lesson's: it starts on tags matching `"v[0-9]+.[0-9]+.[0-9]+"`, runs the tests, then fails if `v` plus the `pyproject.toml` version differs from the tag. What happens, and what is the right version?
+--- choice correct
+The workflow starts and the tests pass, but the version check finds `v4.9.4` against `v4.10.0` and fails before building, so nothing is published. The right version is 4.10.0: a feature that breaks nothing is a MINOR change, and the fix rides along.
+--- choice
+The release is published as 4.10.0, because the tag wins over `pyproject.toml`.
+--- choice
+Nothing starts, because `v4.10.0` sorts before `v4.9.3` and GitHub ignores older tags.
+--- choice
+The version check fails, and 4.9.4 is right, because two small changes together make a PATCH.
+--- why
+The tag matches the pattern, so the workflow runs; the check exists exactly for a tag and a version that disagree, and it stops the release before anything is built. By semantic versioning a new feature that breaks nothing bumps MINOR and resets PATCH, and the biggest kind of change in a release wins, so 4.10.0 is right. Versions compare number by number, so 4.10.0 comes after 4.9.3, and GitHub does not compare versions to start a workflow anyway. The fix: bump the version in a pull request, then recreate the tag on that commit.
