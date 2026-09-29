@@ -1,0 +1,3355 @@
+@track sql
+@course mod-cod_sql_03_windows
+@module cod_sql_03_windows
+@title Window functions for telemetry: practice and test
+@schema
+CREATE TABLE batt (
+    sat_id TEXT NOT NULL,
+    ts     TEXT NOT NULL,
+    soc    REAL NOT NULL
+);
+INSERT INTO batt VALUES
+  ('SAT-011', '2026-04-01T00:00:00Z', 0.92),
+  ('SAT-011', '2026-04-01T00:10:00Z', 0.88),
+  ('SAT-011', '2026-04-01T00:20:00Z', 0.81),
+  ('SAT-011', '2026-04-01T00:30:00Z', 0.74),
+  ('SAT-011', '2026-04-01T00:40:00Z', 0.77),
+  ('SAT-011', '2026-04-01T00:50:00Z', 0.83),
+  ('SAT-012', '2026-04-01T00:00:00Z', 0.64),
+  ('SAT-012', '2026-04-01T00:10:00Z', 0.61),
+  ('SAT-012', '2026-04-01T00:30:00Z', 0.58),
+  ('SAT-012', '2026-04-01T00:40:00Z', 0.58),
+  ('SAT-012', '2026-04-01T01:10:00Z', 0.66),
+  ('SAT-013', '2026-04-01T00:00:00Z', 0.79),
+  ('SAT-013', '2026-04-01T00:10:00Z', 0.79),
+  ('SAT-013', '2026-04-01T00:20:00Z', 0.74),
+  ('SAT-013', '2026-04-01T00:30:00Z', 0.82),
+  ('SAT-014', '2026-04-01T00:20:00Z', 0.55);
+CREATE TABLE tank (
+    sat_id  TEXT PRIMARY KEY,
+    load_kg REAL NOT NULL
+);
+INSERT INTO tank VALUES
+  ('SAT-011', 4.0), ('SAT-012', 3.0), ('SAT-013', 5.0), ('SAT-014', 3.0);
+CREATE TABLE burn (
+    burn_id  INTEGER PRIMARY KEY,
+    sat_id   TEXT NOT NULL,
+    ts       TEXT NOT NULL,
+    thruster TEXT NOT NULL,
+    prop_kg  REAL NOT NULL
+);
+INSERT INTO burn VALUES
+  (1, 'SAT-011', '2026-04-02T03:00:00Z', 'A', 0.50),
+  (2, 'SAT-011', '2026-04-05T10:00:00Z', 'A', 0.75),
+  (3, 'SAT-011', '2026-04-05T10:00:00Z', 'B', 0.25),
+  (4, 'SAT-011', '2026-04-09T08:30:00Z', 'A', 1.25),
+  (5, 'SAT-011', '2026-04-15T22:00:00Z', 'B', 0.25),
+  (6, 'SAT-012', '2026-04-03T12:00:00Z', 'A', 0.50),
+  (7, 'SAT-012', '2026-04-08T06:00:00Z', 'A', 1.00),
+  (8, 'SAT-012', '2026-04-12T18:00:00Z', 'A', 0.75),
+  (9, 'SAT-013', '2026-04-06T00:00:00Z', 'A', 2.25);
+CREATE TABLE temp (
+    sat_id TEXT NOT NULL,
+    ts     TEXT NOT NULL,
+    deg_c  REAL NOT NULL
+);
+INSERT INTO temp VALUES
+  ('SAT-011', '2026-04-01T00:00:00Z', 27.0),
+  ('SAT-011', '2026-04-01T00:01:00Z', 28.0),
+  ('SAT-011', '2026-04-01T00:02:00Z', 30.5),
+  ('SAT-011', '2026-04-01T00:03:00Z', 31.0),
+  ('SAT-011', '2026-04-01T00:04:00Z', 29.5),
+  ('SAT-011', '2026-04-01T00:05:00Z', 30.2),
+  ('SAT-011', '2026-04-01T00:05:10Z', 33.0),
+  ('SAT-011', '2026-04-01T00:05:20Z', 34.0),
+  ('SAT-011', '2026-04-01T00:05:30Z', 32.5),
+  ('SAT-011', '2026-04-01T00:06:30Z', 29.0),
+  ('SAT-011', '2026-04-01T00:07:30Z', 28.5),
+  ('SAT-012', '2026-04-01T00:00:00Z', 31.0),
+  ('SAT-012', '2026-04-01T00:01:00Z', 30.8),
+  ('SAT-012', '2026-04-01T00:02:00Z', 29.9),
+  ('SAT-012', '2026-04-01T00:03:00Z', 29.0),
+  ('SAT-012', '2026-04-01T00:04:00Z', 30.1),
+  ('SAT-013', '2026-04-01T00:00:00Z', 25.0),
+  ('SAT-013', '2026-04-01T00:01:00Z', 25.5),
+  ('SAT-013', '2026-04-01T00:03:00Z', 26.0);
+CREATE TABLE tlm (
+    ingest_id INTEGER PRIMARY KEY,
+    sat_id    TEXT NOT NULL,
+    channel   TEXT NOT NULL,
+    ts        TEXT NOT NULL,
+    value     REAL NOT NULL,
+    station   TEXT NOT NULL,
+    rx_at     TEXT NOT NULL,
+    crc_ok    INTEGER NOT NULL
+);
+INSERT INTO tlm VALUES
+  ( 1, 'SAT-021', 'volt', '2026-05-01T00:00:00Z', 28.1, 'kiruna',   '2026-05-01T00:03:10Z', 1),
+  ( 2, 'SAT-021', 'volt', '2026-05-01T00:00:00Z', 28.1, 'hawaii',   '2026-05-01T00:03:10Z', 1),
+  ( 3, 'SAT-021', 'volt', '2026-05-01T00:01:00Z', 28.0, 'kiruna',   '2026-05-01T00:04:05Z', 1),
+  ( 4, 'SAT-021', 'amps', '2026-05-01T00:00:00Z',  3.2, 'kiruna',   '2026-05-01T00:03:10Z', 1),
+  ( 5, 'SAT-021', 'amps', '2026-05-01T00:01:00Z',  3.4, 'kiruna',   '2026-05-01T00:04:05Z', 1),
+  ( 6, 'SAT-021', 'amps', '2026-05-01T00:01:00Z',  3.9, 'hawaii',   '2026-05-01T00:04:01Z', 0),
+  ( 7, 'SAT-021', 'volt', '2026-05-01T00:02:00Z', 27.9, 'kiruna',   '2026-05-01T00:05:00Z', 1),
+  ( 8, 'SAT-021', 'volt', '2026-05-01T00:02:00Z', 27.9, 'kiruna',   '2026-05-01T00:05:00Z', 1),
+  ( 9, 'SAT-022', 'volt', '2026-05-01T00:00:30Z', 27.5, 'santiago', '2026-05-01T00:02:00Z', 1),
+  (10, 'SAT-022', 'volt', '2026-05-01T00:01:30Z', 27.6, 'santiago', '2026-05-01T00:03:00Z', 1),
+  (11, 'SAT-022', 'volt', '2026-05-01T00:01:30Z', 27.6, 'santiago', '2026-05-01T00:03:00Z', 1),
+  (12, 'SAT-022', 'amps', '2026-05-01T00:00:30Z',  2.9, 'santiago', '2026-05-01T00:02:00Z', 1),
+  (13, 'SAT-022', 'volt', '2026-05-01T00:02:30Z', 27.2, 'santiago', '2026-05-01T00:05:30Z', 0);
+CREATE TABLE rw (
+    sat_id TEXT    NOT NULL,
+    t_s    INTEGER NOT NULL,
+    rpm    REAL    NOT NULL
+);
+INSERT INTO rw VALUES
+  ('SAT-031',  0, 4800), ('SAT-031', 10, 5100), ('SAT-031', 20, 5250),
+  ('SAT-031', 30, 4950), ('SAT-031', 40, 5020), ('SAT-031', 50, 5080),
+  ('SAT-031', 60, 5150), ('SAT-031', 70, 4900), ('SAT-031', 80, 4700),
+  ('SAT-032',  0, 5300), ('SAT-032', 10, 5400), ('SAT-032', 40, 5350),
+  ('SAT-032', 50, 4000),
+  ('SAT-033',  0, 3000), ('SAT-033', 10, 3200);
+CREATE TABLE packet (
+    sat_id  TEXT NOT NULL,
+    station TEXT NOT NULL,
+    ts      TEXT NOT NULL
+);
+INSERT INTO packet VALUES
+  ('SAT-041', 'KIRUNA',   '2026-05-02T08:00:00Z'),
+  ('SAT-041', 'KIRUNA',   '2026-05-02T08:00:30Z'),
+  ('SAT-041', 'KIRUNA',   '2026-05-02T08:01:00Z'),
+  ('SAT-041', 'KIRUNA',   '2026-05-02T08:01:30Z'),
+  ('SAT-041', 'KIRUNA',   '2026-05-02T08:04:00Z'),
+  ('SAT-041', 'KIRUNA',   '2026-05-02T08:04:30Z'),
+  ('SAT-041', 'KIRUNA',   '2026-05-02T08:05:00Z'),
+  ('SAT-041', 'SVALBARD', '2026-05-02T09:40:00Z'),
+  ('SAT-041', 'SVALBARD', '2026-05-02T09:40:30Z'),
+  ('SAT-041', 'SVALBARD', '2026-05-02T09:41:00Z'),
+  ('SAT-041', 'SVALBARD', '2026-05-02T09:41:30Z'),
+  ('SAT-041', 'INUVIK',   '2026-05-02T09:42:00Z'),
+  ('SAT-041', 'INUVIK',   '2026-05-02T09:42:30Z'),
+  ('SAT-042', 'TROLL',    '2026-05-02T08:02:00Z'),
+  ('SAT-042', 'TROLL',    '2026-05-02T08:02:30Z'),
+  ('SAT-042', 'TROLL',    '2026-05-02T08:03:00Z'),
+  ('SAT-042', 'TROLL',    '2026-05-02T08:08:00Z'),
+  ('SAT-042', 'TROLL',    '2026-05-02T08:08:30Z'),
+  ('SAT-042', 'TROLL',    '2026-05-02T08:30:00Z'),
+  ('SAT-042', 'INUVIK',   '2026-05-02T10:00:00Z'),
+  ('SAT-042', 'INUVIK',   '2026-05-02T10:00:30Z'),
+  ('SAT-042', 'INUVIK',   '2026-05-02T10:01:00Z');
+INSERT INTO packet
+WITH RECURSIVE k(n) AS (SELECT 0 UNION ALL SELECT n + 1 FROM k WHERE n < 24)
+SELECT 'SAT-043', 'TROLL', strftime('%Y-%m-%dT%H:%M:%SZ', '2026-05-02T08:15:00Z', '+' || (30 * n) || ' seconds')
+FROM k;
+CREATE TABLE gyro (
+    sat_id   TEXT NOT NULL,
+    ts       TEXT NOT NULL,
+    rate_dps REAL NOT NULL
+);
+INSERT INTO gyro
+WITH RECURSIVE k(n) AS (SELECT 0 UNION ALL SELECT n + 1 FROM k WHERE n < 149)
+SELECT 'SAT-051',
+       strftime('%Y-%m-%dT%H:%M:%SZ', '2026-05-10T12:00:00Z', '+' || n || ' seconds'),
+       ROUND(((n * 7) % 13 - 6) / 100.0 + CASE WHEN n BETWEEN 95 AND 97 THEN 0.9 ELSE 0 END, 2)
+FROM k;
+INSERT INTO gyro
+WITH RECURSIVE k(n) AS (SELECT 0 UNION ALL SELECT n + 1 FROM k WHERE n < 149)
+SELECT 'SAT-052',
+       strftime('%Y-%m-%dT%H:%M:%SZ', '2026-05-10T12:00:00Z', '+' || n || ' seconds'),
+       ROUND(((n * 5) % 11 - 5) / 100.0 - CASE WHEN n BETWEEN 40 AND 41 THEN 0.7 ELSE 0 END, 2)
+FROM k
+WHERE n < 60 OR n >= 120;
+CREATE TABLE mode_log (
+    sat_id TEXT NOT NULL,
+    ts     TEXT NOT NULL,
+    mode   TEXT NOT NULL
+);
+INSERT INTO mode_log VALUES
+  ('SAT-011', '2026-04-01T00:00:00Z', 'NOMINAL'),
+  ('SAT-011', '2026-04-01T00:25:00Z', 'SAFE'),
+  ('SAT-011', '2026-04-01T00:45:00Z', 'NOMINAL'),
+  ('SAT-012', '2026-03-31T23:00:00Z', 'NOMINAL'),
+  ('SAT-012', '2026-04-01T00:30:00Z', 'ECLIPSE'),
+  ('SAT-014', '2026-04-01T00:20:00Z', 'SAFE');
+CREATE TABLE anomaly (
+    sat_id TEXT NOT NULL,
+    ts     TEXT NOT NULL,
+    code   TEXT NOT NULL
+);
+INSERT INTO anomaly VALUES
+  ('SAT-011', '2026-04-01T00:14:00Z', 'BUS_UV'),
+  ('SAT-011', '2026-04-01T00:25:00Z', 'MODE_SW'),
+  ('SAT-012', '2026-04-01T00:52:00Z', 'PKT_CRC'),
+  ('SAT-013', '2026-04-01T00:45:00Z', 'HTR_ON'),
+  ('SAT-014', '2026-04-01T00:05:00Z', 'RW_TEMP');
+@end
+
+=== sql03-l01 | Practice: Windows: aggregates that keep every row
+--- for
+l01-windows-versus-groups
+
++++ practice | Each reading beside its satellite's figures
+--- task
+`batt` (`sat_id`, `ts`, `soc`) holds battery samples. `soc` is the state of charge, a fraction from 0 (empty) to 1 (full).
+
+List every reading together with two numbers worked out from its own satellite's readings:
+
+- `n`: how many readings that satellite has in the table
+- `sat_max`: that satellite's highest reading
+
+Keep every row of the table. Return `sat_id`, `ts`, `soc`, `n` and `sat_max`, sorted by `sat_id`, then `ts`.
+--- starter
+SELECT sat_id, ts, soc, COUNT(*) AS n, MAX(soc) AS sat_max
+FROM batt
+GROUP BY sat_id
+ORDER BY sat_id, ts;
+--- solution
+SELECT sat_id, ts, soc,
+       COUNT(*) OVER (PARTITION BY sat_id) AS n,
+       MAX(soc) OVER (PARTITION BY sat_id) AS sat_max
+FROM batt
+ORDER BY sat_id, ts;
+--- hint
+Run the starter: GROUP BY squashed each satellite into one row. You want the satellite's figures written onto every row instead.
+--- hint
+Put `OVER (PARTITION BY sat_id)` after `COUNT(*)` and after `MAX(soc)`, and drop the GROUP BY.
+--- check result | All 16 readings, each with its satellite's count and maximum
+ordered
+[["SAT-011", "2026-04-01T00:00:00Z", 0.92, 6, 0.92], ["SAT-011", "2026-04-01T00:10:00Z", 0.88, 6, 0.92], ["SAT-011", "2026-04-01T00:20:00Z", 0.81, 6, 0.92], ["SAT-011", "2026-04-01T00:30:00Z", 0.74, 6, 0.92], ["SAT-011", "2026-04-01T00:40:00Z", 0.77, 6, 0.92], ["SAT-011", "2026-04-01T00:50:00Z", 0.83, 6, 0.92], ["SAT-012", "2026-04-01T00:00:00Z", 0.64, 5, 0.66], ["SAT-012", "2026-04-01T00:10:00Z", 0.61, 5, 0.66], ["SAT-012", "2026-04-01T00:30:00Z", 0.58, 5, 0.66], ["SAT-012", "2026-04-01T00:40:00Z", 0.58, 5, 0.66], ["SAT-012", "2026-04-01T01:10:00Z", 0.66, 5, 0.66], ["SAT-013", "2026-04-01T00:00:00Z", 0.79, 4, 0.82], ["SAT-013", "2026-04-01T00:10:00Z", 0.79, 4, 0.82], ["SAT-013", "2026-04-01T00:20:00Z", 0.74, 4, 0.82], ["SAT-013", "2026-04-01T00:30:00Z", 0.82, 4, 0.82], ["SAT-014", "2026-04-01T00:20:00Z", 0.55, 1, 0.55]]
+--- check source | Uses a window
+[Oo][Vv][Ee][Rr]\s*\(
+--- check source absent | Does not join a grouped copy back on
+[Jj][Oo][Ii][Nn]
+
++++ practice | Readings well below the satellite's best
+--- task
+Using `batt` (`sat_id`, `ts`, `soc`), list the readings that are more than 0.06 below their own satellite's highest reading.
+
+Return `sat_id`, `ts`, `soc` and `sat_max` (that satellite's highest reading), sorted by `sat_id`, then `ts`.
+
+The starter is the query most people try first. Run it and read the error before you change it.
+--- starter
+SELECT sat_id, ts, soc, MAX(soc) OVER (PARTITION BY sat_id) AS sat_max
+FROM batt
+WHERE soc < MAX(soc) OVER (PARTITION BY sat_id) - 0.06
+ORDER BY sat_id, ts;
+--- solution
+WITH w AS (
+    SELECT sat_id, ts, soc,
+           MAX(soc) OVER (PARTITION BY sat_id) AS sat_max
+    FROM batt
+)
+SELECT sat_id, ts, soc, sat_max
+FROM w
+WHERE soc < sat_max - 0.06
+ORDER BY sat_id, ts;
+--- hint
+WHERE runs before any window function is worked out, so the maximum does not exist yet when WHERE wants it.
+--- hint
+Compute `sat_max` in a CTE first. In the outer query it is an ordinary column, and WHERE can test it.
+--- check result | Seven readings from three satellites
+ordered
+[["SAT-011", "2026-04-01T00:20:00Z", 0.81, 0.92], ["SAT-011", "2026-04-01T00:30:00Z", 0.74, 0.92], ["SAT-011", "2026-04-01T00:40:00Z", 0.77, 0.92], ["SAT-011", "2026-04-01T00:50:00Z", 0.83, 0.92], ["SAT-012", "2026-04-01T00:30:00Z", 0.58, 0.66], ["SAT-012", "2026-04-01T00:40:00Z", 0.58, 0.66], ["SAT-013", "2026-04-01T00:20:00Z", 0.74, 0.82]]
+--- check source | Computes the window in one step and filters in the next
+[Ww][Ii][Tt][Hh]\s|[Ff][Rr][Oo][Mm]\s*\(
+--- check source absent | Does not type the maximums
+0\.(92|66|82)\b
+
++++ practice | Each satellite's share of the samples
+--- task
+Return one row per satellite in `batt`:
+
+- `sat_id`
+- `samples`: its number of readings
+- `pct`: its share of all the readings in the table, as a percentage rounded to 1 decimal
+
+Sort by `sat_id`. Write it as one grouped query, with a window over the grouped rows for the total. The total must come from the data, not be typed in.
+--- starter
+SELECT sat_id, COUNT(*) AS samples, 0 AS pct
+FROM batt
+GROUP BY sat_id
+ORDER BY sat_id;
+--- solution
+SELECT sat_id,
+       COUNT(*) AS samples,
+       ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 1) AS pct
+FROM batt
+GROUP BY sat_id
+ORDER BY sat_id;
+--- hint
+After GROUP BY there are four rows, one per satellite, each with its `COUNT(*)`. A window runs after grouping, so it can add up those four counts.
+--- hint
+`SUM(COUNT(*)) OVER ()` is the total of the per-satellite counts, on every row. Multiply by `100.0`, not `100`, so the division keeps its decimals.
+--- check result | 37.5, 31.3, 25.0 and 6.3 percent
+ordered
+[["SAT-011", 6, 37.5], ["SAT-012", 5, 31.3], ["SAT-013", 4, 25.0], ["SAT-014", 1, 6.3]]
+--- check source | Uses a window over the grouped rows
+[Oo][Vv][Ee][Rr]\s*\(\s*\)
+--- check source absent | Does not type the total
+\b16\b
+
++++ practice | The baseline from the whole table
+--- task
+List the `batt` readings taken at or after `'2026-04-01T00:30:00Z'`. Beside each one, show `vs_avg`: the reading minus its satellite's average over **all** of that satellite's readings in the table, whatever their time, rounded to 3 decimals.
+
+Return `sat_id`, `ts`, `soc` and `vs_avg`, sorted by `sat_id`, then `ts`. A satellite with no reading from 00:30 on does not appear.
+--- starter
+SELECT sat_id, ts, soc,
+       ROUND(soc - AVG(soc) OVER (PARTITION BY sat_id), 3) AS vs_avg
+FROM batt
+WHERE ts >= '2026-04-01T00:30:00Z'
+ORDER BY sat_id, ts;
+--- solution
+WITH w AS (
+    SELECT sat_id, ts, soc,
+           AVG(soc) OVER (PARTITION BY sat_id) AS sat_avg
+    FROM batt
+)
+SELECT sat_id, ts, soc, ROUND(soc - sat_avg, 3) AS vs_avg
+FROM w
+WHERE ts >= '2026-04-01T00:30:00Z'
+ORDER BY sat_id, ts;
+--- hint
+The starter's numbers are wrong, not its rows. Which readings did each average see, given that WHERE ran first?
+--- hint
+Work out the average in a CTE over the whole table, and apply the time filter in the outer query.
+--- check result | SAT-011's baseline is 0.825, SAT-012's 0.614 and SAT-013's 0.785
+ordered
+[["SAT-011", "2026-04-01T00:30:00Z", 0.74, -0.085], ["SAT-011", "2026-04-01T00:40:00Z", 0.77, -0.055], ["SAT-011", "2026-04-01T00:50:00Z", 0.83, 0.005], ["SAT-012", "2026-04-01T00:30:00Z", 0.58, -0.034], ["SAT-012", "2026-04-01T00:40:00Z", 0.58, -0.034], ["SAT-012", "2026-04-01T01:10:00Z", 0.66, 0.046], ["SAT-013", "2026-04-01T00:30:00Z", 0.82, 0.035]]
+--- check source | Uses a window
+[Oo][Vv][Ee][Rr]\s*\(
+--- check source | Computes the window in one step and filters in the next
+[Ww][Ii][Tt][Hh]\s|[Ff][Rr][Oo][Mm]\s*\(
+
++++ practice | An average that will not sit still
+--- task
+This query should put each satellite's average charge, rounded to 3 decimals, on every one of its `batt` rows, so `sat_avg` is the same on all rows of a satellite. Instead the number changes from row to row.
+
+Find the reason and fix it. Keep the columns `sat_id`, `ts`, `soc` and `sat_avg`, sorted by `sat_id`, then `ts`.
+--- starter
+SELECT sat_id, ts, soc,
+       ROUND(AVG(soc) OVER (PARTITION BY sat_id ORDER BY ts), 3) AS sat_avg
+FROM batt
+ORDER BY sat_id, ts;
+--- solution
+SELECT sat_id, ts, soc,
+       ROUND(AVG(soc) OVER (PARTITION BY sat_id), 3) AS sat_avg
+FROM batt
+ORDER BY sat_id, ts;
+--- hint
+Look at SAT-011's first row: its `sat_avg` equals its own reading. How many rows was that average taken over?
+--- hint
+An ORDER BY inside OVER turns an aggregate into "so far". The whole satellite needs no order at all.
+--- check result | 0.825, 0.614, 0.785 and 0.55 on every row of each satellite
+ordered
+[["SAT-011", "2026-04-01T00:00:00Z", 0.92, 0.825], ["SAT-011", "2026-04-01T00:10:00Z", 0.88, 0.825], ["SAT-011", "2026-04-01T00:20:00Z", 0.81, 0.825], ["SAT-011", "2026-04-01T00:30:00Z", 0.74, 0.825], ["SAT-011", "2026-04-01T00:40:00Z", 0.77, 0.825], ["SAT-011", "2026-04-01T00:50:00Z", 0.83, 0.825], ["SAT-012", "2026-04-01T00:00:00Z", 0.64, 0.614], ["SAT-012", "2026-04-01T00:10:00Z", 0.61, 0.614], ["SAT-012", "2026-04-01T00:30:00Z", 0.58, 0.614], ["SAT-012", "2026-04-01T00:40:00Z", 0.58, 0.614], ["SAT-012", "2026-04-01T01:10:00Z", 0.66, 0.614], ["SAT-013", "2026-04-01T00:00:00Z", 0.79, 0.785], ["SAT-013", "2026-04-01T00:10:00Z", 0.79, 0.785], ["SAT-013", "2026-04-01T00:20:00Z", 0.74, 0.785], ["SAT-013", "2026-04-01T00:30:00Z", 0.82, 0.785], ["SAT-014", "2026-04-01T00:20:00Z", 0.55, 0.55]]
+--- check source | Still partitions by satellite
+[Pp][Aa][Rr][Tt][Ii][Tt][Ii][Oo][Nn]\s+[Bb][Yy]\s+sat_id
+--- check source absent | Does not join a grouped copy back on
+[Jj][Oo][Ii][Nn]
+
++++ practice | Latest reading against the fleet
+--- task
+The power engineer wants one row per satellite: its latest `batt` reading, next to two baselines.
+
+- `sat_id`, `ts` and `soc` of that satellite's latest reading
+- `sat_avg`: the satellite's average over all its readings, rounded to 3
+- `fleet_avg`: the average of every reading in the table, rounded to 3
+- `status`: `'below fleet'` if the latest reading is below the fleet average (unrounded), otherwise `'ok'`
+
+Both averages must use every reading in the table, not only the latest ones. Sort by `sat_id`. Use only what this lesson teaches: aggregates with OVER, a CTE and CASE.
+--- starter
+SELECT sat_id, MAX(ts) AS ts, 0 AS soc, 0 AS sat_avg, 0 AS fleet_avg, 'ok' AS status
+FROM batt
+GROUP BY sat_id
+ORDER BY sat_id;
+--- solution
+WITH w AS (
+    SELECT sat_id, ts, soc,
+           MAX(ts)  OVER (PARTITION BY sat_id) AS latest_ts,
+           AVG(soc) OVER (PARTITION BY sat_id) AS sat_avg,
+           AVG(soc) OVER ()                    AS fleet_avg
+    FROM batt
+)
+SELECT sat_id, ts, soc,
+       ROUND(sat_avg, 3)   AS sat_avg,
+       ROUND(fleet_avg, 3) AS fleet_avg,
+       CASE WHEN soc < fleet_avg THEN 'below fleet' ELSE 'ok' END AS status
+FROM w
+WHERE ts = latest_ts
+ORDER BY sat_id;
+--- hint
+Put three windows on every row in a CTE: the satellite's latest time (`MAX(ts)` over the satellite), its average, and the average over all rows (`OVER ()`).
+--- hint
+Filter to `ts = latest_ts` only in the outer query. Filter earlier and the averages would be taken over the latest rows alone.
+--- check result | Fleet average 0.732; SAT-012 and SAT-014 end below it
+ordered
+[["SAT-011", "2026-04-01T00:50:00Z", 0.83, 0.825, 0.732, "ok"], ["SAT-012", "2026-04-01T01:10:00Z", 0.66, 0.614, 0.732, "below fleet"], ["SAT-013", "2026-04-01T00:30:00Z", 0.82, 0.785, 0.732, "ok"], ["SAT-014", "2026-04-01T00:20:00Z", 0.55, 0.55, 0.732, "below fleet"]]
+--- check source | Uses a window over all rows
+[Oo][Vv][Ee][Rr]\s*\(\s*\)
+--- check source absent | Does not type the fleet average
+0\.73
+
++++ question | The count that ignored LIMIT
+--- ask
+In `batt`, 8 of the 16 readings are 0.75 or more. What is in the `n_all` column of this query's output?
+
+```sql
+SELECT sat_id, COUNT(*) OVER () AS n_all
+FROM batt
+WHERE soc >= 0.75
+LIMIT 3;
+```
+--- choice
+3 on each of the three rows, because LIMIT keeps three rows.
+--- choice correct
+8 on each of the three rows.
+--- choice
+16 on each of the three rows, because `OVER ()` means the whole table.
+--- choice
+1, 2 and 3, because the window counts the rows so far.
+--- why
+WHERE runs first and keeps 8 rows. The window is then worked out over those 8 rows, so `OVER ()` counts 8. LIMIT runs last and only trims the output to three rows; it never shrinks a window. There is no ORDER BY inside OVER, so the count is over the whole window, not "so far".
+
+=== sql03-l02 | Practice: Ranking rows
+--- for
+l02-ranking-functions
+
++++ practice | Numbering each satellite's burns
+--- task
+`burn` (`burn_id`, `sat_id`, `ts`, `thruster`, `prop_kg`) has one row per thruster firing. Two firings can share a timestamp.
+
+Number each satellite's burns in time order as `burn_no`: 1 for its first burn, 2 for the next, and so on. Burns at the same moment are numbered in `burn_id` order. Return `sat_id`, `burn_id`, `ts` and `burn_no`, sorted by `sat_id`, then `burn_no`.
+--- starter
+SELECT sat_id, burn_id, ts, burn_id AS burn_no
+FROM burn
+ORDER BY sat_id, burn_no;
+--- solution
+SELECT sat_id, burn_id, ts,
+       ROW_NUMBER() OVER (PARTITION BY sat_id ORDER BY ts, burn_id) AS burn_no
+FROM burn
+ORDER BY sat_id, burn_no;
+--- hint
+Each satellite starts again at 1, so partition by it. The order inside the window is time, then `burn_id` to settle the tie.
+--- hint
+`ROW_NUMBER() OVER (PARTITION BY sat_id ORDER BY ts, burn_id)`.
+--- check result | SAT-011 numbered 1 to 5, SAT-012 1 to 3, SAT-013 once
+ordered
+[["SAT-011", 1, "2026-04-02T03:00:00Z", 1], ["SAT-011", 2, "2026-04-05T10:00:00Z", 2], ["SAT-011", 3, "2026-04-05T10:00:00Z", 3], ["SAT-011", 4, "2026-04-09T08:30:00Z", 4], ["SAT-011", 5, "2026-04-15T22:00:00Z", 5], ["SAT-012", 6, "2026-04-03T12:00:00Z", 1], ["SAT-012", 7, "2026-04-08T06:00:00Z", 2], ["SAT-012", 8, "2026-04-12T18:00:00Z", 3], ["SAT-013", 9, "2026-04-06T00:00:00Z", 1]]
+--- check source | Uses ROW_NUMBER
+[Rr][Oo][Ww]_[Nn][Uu][Mm][Bb][Ee][Rr]
+--- check source | Restarts for each satellite
+[Pp][Aa][Rr][Tt][Ii][Tt][Ii][Oo][Nn]\s+[Bb][Yy]\s+sat_id
+
++++ practice | A league table of burns
+--- task
+Rank all the burns in `burn`, fleet-wide, from the most propellant to the least:
+
+- `rnk`: tied burns share a place, and the next place counts every burn before it (1, 2, 2, 4)
+- `dense`: tied burns share a place, with no gap after a tie (1, 2, 2, 3)
+
+Return `burn_id`, `sat_id`, `prop_kg`, `rnk` and `dense`, sorted by `rnk`, then `burn_id`.
+--- starter
+SELECT burn_id, sat_id, prop_kg, burn_id AS rnk, burn_id AS dense
+FROM burn
+ORDER BY rnk, burn_id;
+--- solution
+SELECT burn_id, sat_id, prop_kg,
+       RANK()       OVER (ORDER BY prop_kg DESC) AS rnk,
+       DENSE_RANK() OVER (ORDER BY prop_kg DESC) AS dense
+FROM burn
+ORDER BY rnk, burn_id;
+--- hint
+Most propellant first means `ORDER BY prop_kg DESC` inside OVER. No PARTITION BY: the whole fleet is one list.
+--- hint
+The first description is RANK; the second is DENSE_RANK.
+--- check result | Three pairs of ties: rnk reaches 8, dense only 6
+ordered
+[[9, "SAT-013", 2.25, 1, 1], [4, "SAT-011", 1.25, 2, 2], [7, "SAT-012", 1.0, 3, 3], [2, "SAT-011", 0.75, 4, 4], [8, "SAT-012", 0.75, 4, 4], [1, "SAT-011", 0.5, 6, 5], [6, "SAT-012", 0.5, 6, 5], [3, "SAT-011", 0.25, 8, 6], [5, "SAT-011", 0.25, 8, 6]]
+--- check source | Uses RANK
+(^|[^_A-Za-z])[Rr][Aa][Nn][Kk]\s*\(
+--- check source | Uses DENSE_RANK
+[Dd][Ee][Nn][Ss][Ee]_[Rr][Aa][Nn][Kk]
+
++++ practice | Satellites by propellant used
+--- task
+`tank` (`sat_id`, `load_kg`) lists every satellite in the fleet. `burn` (`burn_id`, `sat_id`, `ts`, `thruster`, `prop_kg`) lists their burns; a satellite may have none.
+
+Return one row per satellite in `tank`:
+
+- `sat_id`
+- `used_kg`: its total propellant burned, 0 if it never burned
+- `place`: its place when the satellites are ranked by `used_kg`, most first; tied satellites share a place and the next place skips
+
+Sort by `place`, then `sat_id`.
+--- starter
+SELECT b.sat_id, SUM(b.prop_kg) AS used_kg, 1 AS place
+FROM burn AS b
+GROUP BY b.sat_id
+ORDER BY place, b.sat_id;
+--- solution
+SELECT t.sat_id,
+       COALESCE(SUM(b.prop_kg), 0) AS used_kg,
+       RANK() OVER (ORDER BY COALESCE(SUM(b.prop_kg), 0) DESC) AS place
+FROM tank AS t
+LEFT JOIN burn AS b ON b.sat_id = t.sat_id
+GROUP BY t.sat_id
+ORDER BY place, t.sat_id;
+--- hint
+Start from `tank` and left-join `burn`, so SAT-014 keeps its row. COALESCE turns its NULL total into 0.
+--- hint
+A window runs after GROUP BY, so `RANK() OVER (ORDER BY <the total> DESC)` ranks the grouped rows.
+--- check result | SAT-011 first, SAT-012 and SAT-013 tied second, SAT-014 fourth
+ordered
+[["SAT-011", 3.0, 1], ["SAT-012", 2.25, 2], ["SAT-013", 2.25, 2], ["SAT-014", 0, 4]]
+--- check source | Uses RANK
+(^|[^_A-Za-z])[Rr][Aa][Nn][Kk]\s*\(
+--- check source | Keeps satellites with no burns
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+
++++ practice | Early and late halves
+--- task
+Split each satellite's `batt` readings, in time order, into two halves with NTILE: half 1 is the earlier readings, half 2 the later ones. When a satellite has an odd number of readings, NTILE decides which half gets the extra one; a satellite with a single reading has only a half 1.
+
+Return one row per satellite and half: `sat_id`, `half`, `n` (readings in that half) and `avg_soc` (their average, rounded to 3). Sort by `sat_id`, then `half`.
+--- starter
+SELECT sat_id, 1 AS half, COUNT(*) AS n, ROUND(AVG(soc), 3) AS avg_soc
+FROM batt
+GROUP BY sat_id
+ORDER BY sat_id, half;
+--- solution
+WITH h AS (
+    SELECT sat_id, soc,
+           NTILE(2) OVER (PARTITION BY sat_id ORDER BY ts) AS half
+    FROM batt
+)
+SELECT sat_id, half, COUNT(*) AS n, ROUND(AVG(soc), 3) AS avg_soc
+FROM h
+GROUP BY sat_id, half
+ORDER BY sat_id, half;
+--- hint
+Label every reading with `NTILE(2) OVER (PARTITION BY sat_id ORDER BY ts)` in a CTE.
+--- hint
+Then group the CTE by `sat_id` and the label. The bigger bucket comes first, so SAT-012's five readings split 3 and 2.
+--- check result | SAT-012 splits 3 and 2; SAT-014 has only half 1
+ordered
+[["SAT-011", 1, 3, 0.87], ["SAT-011", 2, 3, 0.78], ["SAT-012", 1, 3, 0.61], ["SAT-012", 2, 2, 0.62], ["SAT-013", 1, 2, 0.79], ["SAT-013", 2, 2, 0.78], ["SAT-014", 1, 1, 0.55]]
+--- check source | Uses NTILE
+[Nn][Tt][Ii][Ll][Ee]\s*\(\s*2\s*\)
+--- check source absent | Does not pick satellites by name
+'SAT-01[1-4]'
+
++++ practice | One lowest reading per satellite
+--- task
+This query should return exactly one row per satellite: its lowest `batt` reading, with the time. When a satellite has two readings tied at its lowest, the earlier one wins. It returns five rows instead of four.
+
+Fix it. Return `sat_id`, `ts` and `soc`, sorted by `sat_id`.
+--- starter
+WITH r AS (
+    SELECT sat_id, ts, soc,
+           RANK() OVER (PARTITION BY sat_id ORDER BY soc) AS n
+    FROM batt
+)
+SELECT sat_id, ts, soc
+FROM r
+WHERE n = 1
+ORDER BY sat_id;
+--- solution
+WITH r AS (
+    SELECT sat_id, ts, soc,
+           ROW_NUMBER() OVER (PARTITION BY sat_id ORDER BY soc, ts) AS n
+    FROM batt
+)
+SELECT sat_id, ts, soc
+FROM r
+WHERE n = 1
+ORDER BY sat_id;
+--- hint
+Which satellite comes back twice? Look at its two lowest readings.
+--- hint
+RANK gives tied rows the same number, so both keep the 1. Use a function that always gives different numbers, and add a tie-breaker that says "earlier first".
+--- check result | SAT-012's 0.58 at 00:30, not both 0.58s
+ordered
+[["SAT-011", "2026-04-01T00:30:00Z", 0.74], ["SAT-012", "2026-04-01T00:30:00Z", 0.58], ["SAT-013", "2026-04-01T00:20:00Z", 0.74], ["SAT-014", "2026-04-01T00:20:00Z", 0.55]]
+--- check source | Uses ROW_NUMBER
+[Rr][Oo][Ww]_[Nn][Uu][Mm][Bb][Ee][Rr]
+--- check source absent | No longer uses RANK
+(^|[^_A-Za-z])[Rr][Aa][Nn][Kk]\s*\(
+
++++ practice | Each satellite's biggest burn
+--- task
+Create a view named `biggest_burn` with one row per satellite that has burns:
+
+- `sat_id`
+- `burn_id` and `prop_kg` of its largest burn; if two burns tie for largest, the earlier one wins, then the lower `burn_id`
+- `n_burns`: how many burns the satellite has
+- `share_pct`: the largest burn as a percentage of all that satellite's propellant, rounded to 1
+
+Then finish with `SELECT * FROM biggest_burn ORDER BY sat_id;`. The view must stay right as burns are added.
+--- starter
+CREATE VIEW biggest_burn AS
+SELECT sat_id, MAX(burn_id) AS burn_id, MAX(prop_kg) AS prop_kg,
+       COUNT(*) AS n_burns, 100.0 AS share_pct
+FROM burn
+GROUP BY sat_id;
+SELECT * FROM biggest_burn ORDER BY sat_id;
+--- solution
+CREATE VIEW biggest_burn AS
+WITH r AS (
+    SELECT sat_id, burn_id, prop_kg,
+           ROW_NUMBER() OVER (PARTITION BY sat_id ORDER BY prop_kg DESC, ts, burn_id) AS pos,
+           COUNT(*)     OVER (PARTITION BY sat_id) AS n_burns,
+           SUM(prop_kg) OVER (PARTITION BY sat_id) AS total_kg
+    FROM burn
+)
+SELECT sat_id, burn_id, prop_kg, n_burns,
+       ROUND(100.0 * prop_kg / total_kg, 1) AS share_pct
+FROM r
+WHERE pos = 1;
+SELECT * FROM biggest_burn ORDER BY sat_id;
+--- hint
+Three windows over each satellite in one CTE: a ROW_NUMBER that puts the largest burn first, a COUNT and a SUM.
+--- hint
+The ROW_NUMBER's order is `prop_kg DESC, ts, burn_id`: largest first, then earlier, then lower id. Keep position 1 outside.
+--- check result | Burns 4, 7 and 9: 41.7, 44.4 and 100.0 percent
+ordered
+[["SAT-011", 4, 1.25, 5, 41.7], ["SAT-012", 7, 1.0, 3, 44.4], ["SAT-013", 9, 2.25, 1, 100.0]]
+--- check query | An earlier burn of the same size wins the tie
+INSERT INTO burn VALUES (10, 'SAT-013', '2026-04-01T09:00:00Z', 'B', 2.25);
+SELECT sat_id, burn_id, prop_kg, n_burns, share_pct FROM biggest_burn WHERE sat_id = 'SAT-013'
+=> [["SAT-013", 10, 2.25, 2, 50.0]]
+--- check source | Uses ROW_NUMBER
+[Rr][Oo][Ww]_[Nn][Uu][Mm][Bb][Ee][Rr]
+
++++ question | Percent rank by hand
+--- ask
+A column holds the five values 3, 5, 5, 8 and 10. What is `PERCENT_RANK() OVER (ORDER BY value)` on the row with the value 8?
+--- answer
+0.75
+.75
+3/4
+--- why
+PERCENT_RANK is (rank − 1) / (rows − 1). The value 8 has rank 4, because three rows come before it (3 and the two 5s). So it is (4 − 1) / (5 − 1) = 3/4 = 0.75. The two 5s share rank 2 and so share the percent rank 0.25.
+
+=== sql03-l03 | Practice: Looking back and ahead: LAG, LEAD and friends
+--- for
+l03-lag-lead-and-offsets
+
++++ practice | Minutes since the last sample
+--- task
+For every `batt` reading, show `step_min`: the whole minutes since the previous reading of the same satellite. It is NULL on a satellite's first reading, where there is no previous one.
+
+Return `sat_id`, `ts` and `step_min`, sorted by `sat_id`, then `ts`. Work in seconds with `unixepoch`, then divide by 60.
+--- starter
+SELECT sat_id, ts, 10 AS step_min
+FROM batt
+ORDER BY sat_id, ts;
+--- solution
+SELECT sat_id, ts,
+       (unixepoch(ts) - unixepoch(LAG(ts) OVER (PARTITION BY sat_id ORDER BY ts))) / 60 AS step_min
+FROM batt
+ORDER BY sat_id, ts;
+--- hint
+`LAG(ts)` over each satellite in time order gives the previous reading's time on each row.
+--- hint
+`unixepoch(ts) - unixepoch(LAG(ts) OVER (...))` is the step in seconds. Both are whole numbers, so `/ 60` gives whole minutes.
+--- check result | SAT-012's steps are 10, 20, 10 and 30; every first reading is NULL
+ordered
+[["SAT-011", "2026-04-01T00:00:00Z", null], ["SAT-011", "2026-04-01T00:10:00Z", 10], ["SAT-011", "2026-04-01T00:20:00Z", 10], ["SAT-011", "2026-04-01T00:30:00Z", 10], ["SAT-011", "2026-04-01T00:40:00Z", 10], ["SAT-011", "2026-04-01T00:50:00Z", 10], ["SAT-012", "2026-04-01T00:00:00Z", null], ["SAT-012", "2026-04-01T00:10:00Z", 10], ["SAT-012", "2026-04-01T00:30:00Z", 20], ["SAT-012", "2026-04-01T00:40:00Z", 10], ["SAT-012", "2026-04-01T01:10:00Z", 30], ["SAT-013", "2026-04-01T00:00:00Z", null], ["SAT-013", "2026-04-01T00:10:00Z", 10], ["SAT-013", "2026-04-01T00:20:00Z", 10], ["SAT-013", "2026-04-01T00:30:00Z", 10], ["SAT-014", "2026-04-01T00:20:00Z", null]]
+--- check source | Uses LAG
+[Ll][Aa][Gg]\s*\(
+--- check source | Partitions by satellite
+[Pp][Aa][Rr][Tt][Ii][Tt][Ii][Oo][Nn]\s+[Bb][Yy]\s+sat_id
+
++++ practice | Hours to the next burn
+--- task
+For every burn in `burn` (`burn_id`, `sat_id`, `ts`, `thruster`, `prop_kg`), look ahead to the same satellite's next burn:
+
+- `next_kg`: the next burn's `prop_kg`
+- `hours_to_next`: hours from this burn to that one, as a decimal rounded to 1
+
+Both are NULL on a satellite's last burn. Burns at the same moment follow `burn_id` order. Return `sat_id`, `burn_id`, `next_kg` and `hours_to_next`, sorted by `sat_id`, then `ts`, then `burn_id`.
+--- starter
+SELECT sat_id, burn_id, prop_kg AS next_kg, 0 AS hours_to_next
+FROM burn
+ORDER BY sat_id, ts, burn_id;
+--- solution
+SELECT sat_id, burn_id,
+       LEAD(prop_kg) OVER w AS next_kg,
+       ROUND((unixepoch(LEAD(ts) OVER w) - unixepoch(ts)) / 3600.0, 1) AS hours_to_next
+FROM burn
+WINDOW w AS (PARTITION BY sat_id ORDER BY ts, burn_id)
+ORDER BY sat_id, ts, burn_id;
+--- hint
+LEAD looks at the next row of the window. Both columns use the same window, so you can name it once with `WINDOW w AS (...)`.
+--- hint
+Divide the seconds by `3600.0`, not `3600`, or the hours lose their decimals.
+--- check result | Burns 2 and 3 are 0 hours apart; each satellite's last burn is NULL
+ordered
+[["SAT-011", 1, 0.75, 79.0], ["SAT-011", 2, 0.25, 0.0], ["SAT-011", 3, 1.25, 94.5], ["SAT-011", 4, 0.25, 157.5], ["SAT-011", 5, null, null], ["SAT-012", 6, 1.0, 114.0], ["SAT-012", 7, 0.75, 108.0], ["SAT-012", 8, null, null], ["SAT-013", 9, null, null]]
+--- check source | Uses LEAD
+[Ll][Ee][Aa][Dd]\s*\(
+--- check source absent | Does not type the times
+'2026-04
+
++++ practice | Fast discharges
+--- task
+For each `batt` reading, work out `rate_per_h`: the change in `soc` since the same satellite's previous reading, divided by the hours between the two readings. List only the readings where the charge fell faster than 0.25 per hour (a rate below −0.25).
+
+Return `sat_id`, `ts` and `rate_per_h` rounded to 3, sorted by `sat_id`, then `ts`.
+--- starter
+SELECT sat_id, ts, 0 AS rate_per_h
+FROM batt
+ORDER BY sat_id, ts;
+--- solution
+WITH d AS (
+    SELECT sat_id, ts,
+           soc - LAG(soc) OVER w AS delta,
+           unixepoch(ts) - unixepoch(LAG(ts) OVER w) AS dt_s
+    FROM batt
+    WINDOW w AS (PARTITION BY sat_id ORDER BY ts)
+)
+SELECT sat_id, ts, ROUND(delta / dt_s * 3600, 3) AS rate_per_h
+FROM d
+WHERE delta / dt_s * 3600 < -0.25
+ORDER BY sat_id, ts;
+--- hint
+Two LAGs over the same window: one for the previous `soc`, one for the previous `ts`. Then rate = delta ÷ seconds × 3600.
+--- hint
+The filter uses a window result, so compute the rate in a CTE and filter in the outer query. The first rows have a NULL rate and drop out on their own.
+--- check result | Two steep drops on SAT-011 and one on SAT-013
+ordered
+[["SAT-011", "2026-04-01T00:20:00Z", -0.42], ["SAT-011", "2026-04-01T00:30:00Z", -0.42], ["SAT-013", "2026-04-01T00:20:00Z", -0.3]]
+--- check source | Uses LAG
+[Ll][Aa][Gg]\s*\(
+--- check source | Computes in one step and filters in the next
+[Ww][Ii][Tt][Hh]\s|[Ff][Rr][Oo][Mm]\s*\(
+
++++ practice | A gap report that stays right
+--- task
+Create a view named `gap_report` listing every silence longer than 15 minutes between two consecutive `batt` readings of the same satellite:
+
+- `sat_id`
+- `gap_start`: the time of the reading before the silence
+- `gap_end`: the time of the reading after it
+- `gap_min`: the length of the silence in whole minutes
+
+A silence of exactly 15 minutes is not listed, and a satellite's first reading is never a gap. Then finish with `SELECT * FROM gap_report ORDER BY sat_id, gap_start;`.
+--- starter
+CREATE VIEW gap_report AS
+SELECT sat_id, ts AS gap_start, ts AS gap_end, 0 AS gap_min
+FROM batt
+WHERE soc < 0;
+SELECT * FROM gap_report ORDER BY sat_id, gap_start;
+--- solution
+CREATE VIEW gap_report AS
+WITH g AS (
+    SELECT sat_id, ts,
+           LAG(ts) OVER (PARTITION BY sat_id ORDER BY ts) AS prev_ts
+    FROM batt
+)
+SELECT sat_id,
+       prev_ts AS gap_start,
+       ts      AS gap_end,
+       (unixepoch(ts) - unixepoch(prev_ts)) / 60 AS gap_min
+FROM g
+WHERE unixepoch(ts) - unixepoch(prev_ts) > 900;
+SELECT * FROM gap_report ORDER BY sat_id, gap_start;
+--- hint
+Put the previous reading's time on every row with LAG, in a CTE. The view is the outer query that keeps the long steps.
+--- hint
+Fifteen minutes is 900 seconds. "Longer than" means `> 900`. On a first reading the step is NULL, and a NULL comparison is never true.
+--- check result | SAT-012's two silences, 20 and 30 minutes
+ordered
+[["SAT-012", "2026-04-01T00:10:00Z", "2026-04-01T00:30:00Z", 20], ["SAT-012", "2026-04-01T00:40:00Z", "2026-04-01T01:10:00Z", 30]]
+--- check query | A step of exactly 15 minutes is not a gap
+INSERT INTO batt VALUES ('SAT-014', '2026-04-01T00:35:00Z', 0.56);
+SELECT COUNT(*) FROM gap_report WHERE sat_id = 'SAT-014'
+=> [[0]]
+--- check query | A new 20-minute silence on SAT-013 appears
+INSERT INTO batt VALUES ('SAT-013', '2026-04-01T00:50:00Z', 0.80);
+SELECT sat_id, gap_start, gap_end, gap_min FROM gap_report WHERE sat_id = 'SAT-013'
+=> [["SAT-013", "2026-04-01T00:30:00Z", "2026-04-01T00:50:00Z", 20]]
+
++++ practice | Distance to the final reading
+--- task
+For every `batt` reading, `to_final` should be the reading minus its satellite's final (latest) reading, rounded to 2. The query below gives 0 on every row.
+
+Find out why and fix it. Keep the columns `sat_id`, `ts`, `soc` and `to_final`, sorted by `sat_id`, then `ts`.
+--- starter
+SELECT sat_id, ts, soc,
+       ROUND(soc - LAST_VALUE(soc) OVER (PARTITION BY sat_id ORDER BY ts), 2) AS to_final
+FROM batt
+ORDER BY sat_id, ts;
+--- solution
+SELECT sat_id, ts, soc,
+       ROUND(soc - LAST_VALUE(soc) OVER (PARTITION BY sat_id ORDER BY ts
+                     ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING), 2) AS to_final
+FROM batt
+ORDER BY sat_id, ts;
+--- hint
+With an ORDER BY inside OVER, where does each row's window stop? So which row is "last" in it?
+--- hint
+Either stretch the window to the whole partition with `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING`, or take `FIRST_VALUE` with the order reversed.
+--- check result | SAT-011 ends at 0.83, so its first row shows 0.09
+ordered
+[["SAT-011", "2026-04-01T00:00:00Z", 0.92, 0.09], ["SAT-011", "2026-04-01T00:10:00Z", 0.88, 0.05], ["SAT-011", "2026-04-01T00:20:00Z", 0.81, -0.02], ["SAT-011", "2026-04-01T00:30:00Z", 0.74, -0.09], ["SAT-011", "2026-04-01T00:40:00Z", 0.77, -0.06], ["SAT-011", "2026-04-01T00:50:00Z", 0.83, 0.0], ["SAT-012", "2026-04-01T00:00:00Z", 0.64, -0.02], ["SAT-012", "2026-04-01T00:10:00Z", 0.61, -0.05], ["SAT-012", "2026-04-01T00:30:00Z", 0.58, -0.08], ["SAT-012", "2026-04-01T00:40:00Z", 0.58, -0.08], ["SAT-012", "2026-04-01T01:10:00Z", 0.66, 0.0], ["SAT-013", "2026-04-01T00:00:00Z", 0.79, -0.03], ["SAT-013", "2026-04-01T00:10:00Z", 0.79, -0.03], ["SAT-013", "2026-04-01T00:20:00Z", 0.74, -0.08], ["SAT-013", "2026-04-01T00:30:00Z", 0.82, 0.0], ["SAT-014", "2026-04-01T00:20:00Z", 0.55, 0.0]]
+--- check source | Uses LAST_VALUE or FIRST_VALUE
+[Ll][Aa][Ss][Tt]_[Vv][Aa][Ll][Uu][Ee]|[Ff][Ii][Rr][Ss][Tt]_[Vv][Aa][Ll][Uu][Ee]
+--- check source absent | Does not type the final readings
+\b0\.(83|66|82|55)\b
+
++++ practice | A time-weighted average
+--- task
+A plain average gives every reading one vote, even when readings are unevenly spaced. A **time-weighted average** lets each reading count for as long as it stayed the latest value: from its own time until the same satellite's next reading. A satellite's last reading has no next reading, so it counts for nothing.
+
+For each satellite with at least two `batt` readings, return `sat_id`, `plain_avg` (the ordinary average of all its readings) and `tw_avg` (the time-weighted average: the sum of `soc` × seconds-until-next, divided by the sum of those seconds), both rounded to 3. Sort by `sat_id`.
+--- starter
+SELECT sat_id, ROUND(AVG(soc), 3) AS plain_avg, ROUND(AVG(soc), 3) AS tw_avg
+FROM batt
+GROUP BY sat_id
+ORDER BY sat_id;
+--- solution
+WITH h AS (
+    SELECT sat_id, soc,
+           unixepoch(LEAD(ts) OVER (PARTITION BY sat_id ORDER BY ts)) - unixepoch(ts) AS hold_s
+    FROM batt
+)
+SELECT sat_id,
+       ROUND(AVG(soc), 3) AS plain_avg,
+       ROUND(SUM(soc * hold_s) / SUM(hold_s), 3) AS tw_avg
+FROM h
+GROUP BY sat_id
+HAVING COUNT(*) >= 2
+ORDER BY sat_id;
+--- hint
+The time a reading "holds" is the next reading's time minus its own: LEAD, in a CTE.
+--- hint
+Group the CTE by satellite. On the last reading `hold_s` is NULL, so `soc * hold_s` is NULL and SUM skips it. Keep only satellites with at least two readings.
+--- check result | SAT-012's long silences pull its weighted average down to 0.597
+ordered
+[["SAT-011", 0.825, 0.824], ["SAT-012", 0.614, 0.597], ["SAT-013", 0.785, 0.773]]
+--- check source | Uses LEAD
+[Ll][Ee][Aa][Dd]\s*\(
+--- check source absent | Does not type the averages
+0\.(824|597|773)
+
++++ question | How many NULLs two rows back
+--- ask
+`batt` holds 6 readings of SAT-011, 5 of SAT-012, 4 of SAT-013 and 1 of SAT-014. On how many of its 16 rows is this expression NULL?
+
+```sql
+LAG(soc, 2) OVER (PARTITION BY sat_id ORDER BY ts)
+```
+--- answer
+7
+seven
+--- why
+`LAG(soc, 2)` reaches two rows back inside the satellite's own partition, so it is NULL on the first two rows of each satellite. SAT-011, SAT-012 and SAT-013 each have two such rows, and SAT-014 has only one row: 2 + 2 + 2 + 1 = 7. Without the PARTITION BY it would be NULL on just the first two rows of the whole table, because the offset would reach across satellites.
+
+=== sql03-l04 | Practice: Running totals and moving averages
+--- for
+l04-running-totals-and-moving-averages
+
++++ practice | Propellant used so far
+--- task
+For every burn in `burn` (`burn_id`, `sat_id`, `ts`, `thruster`, `prop_kg`), show `used_kg`: that satellite's total propellant burned up to and including this burn. Burns are counted in time order, and burns at the same moment in `burn_id` order.
+
+Return `sat_id`, `burn_id`, `ts` and `used_kg`, sorted by `sat_id`, then `ts`, then `burn_id`.
+--- starter
+SELECT sat_id, burn_id, ts, SUM(prop_kg) OVER () AS used_kg
+FROM burn
+ORDER BY sat_id, ts, burn_id;
+--- solution
+SELECT sat_id, burn_id, ts,
+       SUM(prop_kg) OVER (PARTITION BY sat_id ORDER BY ts, burn_id) AS used_kg
+FROM burn
+ORDER BY sat_id, ts, burn_id;
+--- hint
+A running total is SUM with an ORDER BY inside OVER. It must restart for each satellite.
+--- hint
+Order the window by `ts, burn_id`, so the two burns at 10:00 on 5 April are counted one after the other.
+--- check result | SAT-011 climbs 0.5, 1.25, 1.5, 2.75, 3.0
+ordered
+[["SAT-011", 1, "2026-04-02T03:00:00Z", 0.5], ["SAT-011", 2, "2026-04-05T10:00:00Z", 1.25], ["SAT-011", 3, "2026-04-05T10:00:00Z", 1.5], ["SAT-011", 4, "2026-04-09T08:30:00Z", 2.75], ["SAT-011", 5, "2026-04-15T22:00:00Z", 3.0], ["SAT-012", 6, "2026-04-03T12:00:00Z", 0.5], ["SAT-012", 7, "2026-04-08T06:00:00Z", 1.5], ["SAT-012", 8, "2026-04-12T18:00:00Z", 2.25], ["SAT-013", 9, "2026-04-06T00:00:00Z", 2.25]]
+--- check source | Uses SUM as a window
+[Ss][Uu][Mm]\s*\(\s*prop_kg\s*\)\s*[Oo][Vv][Ee][Rr]
+--- check source | Restarts for each satellite
+[Pp][Aa][Rr][Tt][Ii][Tt][Ii][Oo][Nn]\s+[Bb][Yy]\s+sat_id
+
++++ practice | Deepest so far, and the climb back
+--- task
+For every `batt` reading, show:
+
+- `low_so_far`: the lowest reading of that satellite up to and including this one, in time order
+- `recovered`: how far this reading is above `low_so_far`, rounded to 2
+
+Return `sat_id`, `ts`, `soc`, `low_so_far` and `recovered`, sorted by `sat_id`, then `ts`.
+--- starter
+SELECT sat_id, ts, soc, MIN(soc) OVER (PARTITION BY sat_id) AS low_so_far, 0 AS recovered
+FROM batt
+ORDER BY sat_id, ts;
+--- solution
+SELECT sat_id, ts, soc,
+       MIN(soc) OVER (PARTITION BY sat_id ORDER BY ts) AS low_so_far,
+       ROUND(soc - MIN(soc) OVER (PARTITION BY sat_id ORDER BY ts), 2) AS recovered
+FROM batt
+ORDER BY sat_id, ts;
+--- hint
+The starter's minimum is over the whole satellite, so early rows already "know" the later dip. "So far" needs an ORDER BY inside OVER.
+--- hint
+A running minimum can only stay level or fall. Check that `low_so_far` never goes up.
+--- check result | SAT-011 bottoms at 0.74 and has climbed back 0.09 by 00:50
+ordered
+[["SAT-011", "2026-04-01T00:00:00Z", 0.92, 0.92, 0.0], ["SAT-011", "2026-04-01T00:10:00Z", 0.88, 0.88, 0.0], ["SAT-011", "2026-04-01T00:20:00Z", 0.81, 0.81, 0.0], ["SAT-011", "2026-04-01T00:30:00Z", 0.74, 0.74, 0.0], ["SAT-011", "2026-04-01T00:40:00Z", 0.77, 0.74, 0.03], ["SAT-011", "2026-04-01T00:50:00Z", 0.83, 0.74, 0.09], ["SAT-012", "2026-04-01T00:00:00Z", 0.64, 0.64, 0.0], ["SAT-012", "2026-04-01T00:10:00Z", 0.61, 0.61, 0.0], ["SAT-012", "2026-04-01T00:30:00Z", 0.58, 0.58, 0.0], ["SAT-012", "2026-04-01T00:40:00Z", 0.58, 0.58, 0.0], ["SAT-012", "2026-04-01T01:10:00Z", 0.66, 0.58, 0.08], ["SAT-013", "2026-04-01T00:00:00Z", 0.79, 0.79, 0.0], ["SAT-013", "2026-04-01T00:10:00Z", 0.79, 0.79, 0.0], ["SAT-013", "2026-04-01T00:20:00Z", 0.74, 0.74, 0.0], ["SAT-013", "2026-04-01T00:30:00Z", 0.82, 0.74, 0.08], ["SAT-014", "2026-04-01T00:20:00Z", 0.55, 0.55, 0.0]]
+--- check source | Uses MIN as a window
+[Mm][Ii][Nn]\s*\(\s*soc\s*\)\s*[Oo][Vv][Ee][Rr]
+--- check source absent | Does not join the table to itself
+[Jj][Oo][Ii][Nn]
+
++++ practice | Propellant left in each tank
+--- task
+`tank` (`sat_id`, `load_kg`) holds the propellant each satellite was launched with. For every burn in `burn`, show:
+
+- `remaining_kg`: the satellite's load minus all its propellant burned up to and including this burn (time order, then `burn_id`), rounded to 2
+- `status`: `'LOW'` when `remaining_kg` is below 30% of the satellite's load, otherwise `'OK'`
+
+Return `burn_id`, `sat_id`, `ts`, `remaining_kg` and `status`, sorted by `sat_id`, then `ts`, then `burn_id`.
+--- starter
+SELECT b.burn_id, b.sat_id, b.ts, t.load_kg - b.prop_kg AS remaining_kg, 'OK' AS status
+FROM burn AS b
+JOIN tank AS t ON t.sat_id = b.sat_id
+ORDER BY b.sat_id, b.ts, b.burn_id;
+--- solution
+WITH r AS (
+    SELECT b.burn_id, b.sat_id, b.ts, t.load_kg,
+           t.load_kg - SUM(b.prop_kg) OVER (PARTITION BY b.sat_id ORDER BY b.ts, b.burn_id) AS remaining_kg
+    FROM burn AS b
+    JOIN tank AS t ON t.sat_id = b.sat_id
+)
+SELECT burn_id, sat_id, ts,
+       ROUND(remaining_kg, 2) AS remaining_kg,
+       CASE WHEN remaining_kg < 0.3 * load_kg THEN 'LOW' ELSE 'OK' END AS status
+FROM r
+ORDER BY sat_id, ts, burn_id;
+--- hint
+Join each burn to its satellite's tank, then subtract a running total per satellite from `load_kg`.
+--- hint
+Work the remaining propellant out in a CTE, so the CASE in the outer query can compare it with `0.3 * load_kg` without repeating the window.
+--- check result | SAT-011's last burn and SAT-012's last burn leave them LOW
+ordered
+[[1, "SAT-011", "2026-04-02T03:00:00Z", 3.5, "OK"], [2, "SAT-011", "2026-04-05T10:00:00Z", 2.75, "OK"], [3, "SAT-011", "2026-04-05T10:00:00Z", 2.5, "OK"], [4, "SAT-011", "2026-04-09T08:30:00Z", 1.25, "OK"], [5, "SAT-011", "2026-04-15T22:00:00Z", 1.0, "LOW"], [6, "SAT-012", "2026-04-03T12:00:00Z", 2.5, "OK"], [7, "SAT-012", "2026-04-08T06:00:00Z", 1.5, "OK"], [8, "SAT-012", "2026-04-12T18:00:00Z", 0.75, "LOW"], [9, "SAT-013", "2026-04-06T00:00:00Z", 2.75, "OK"]]
+--- check source | Uses a running SUM
+[Ss][Uu][Mm]\s*\([^)]*\)\s*[Oo][Vv][Ee][Rr]
+--- check source absent | Does not type the loads
+\b(4\.0|3\.0|5\.0)\b
+
++++ practice | A centred three-sample average
+--- task
+For every `batt` reading, show `centred3`: the average of the same satellite's previous reading, this reading and the next reading, rounded to 3. At either end of a satellite's readings there is only one neighbour, and a satellite with a single reading has none; average whatever readings there are. Also show `n`, the number of readings that went into the average.
+
+Return `sat_id`, `ts`, `centred3` and `n`, sorted by `sat_id`, then `ts`.
+--- starter
+SELECT sat_id, ts, soc AS centred3, 3 AS n
+FROM batt
+ORDER BY sat_id, ts;
+--- solution
+SELECT sat_id, ts,
+       ROUND(AVG(soc) OVER w, 3) AS centred3,
+       COUNT(*) OVER w AS n
+FROM batt
+WINDOW w AS (PARTITION BY sat_id ORDER BY ts ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING)
+ORDER BY sat_id, ts;
+--- hint
+The frame for "one before, me, one after" is `ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING`.
+--- hint
+A frame never leaves its partition, so the ends and the single-reading satellite take care of themselves. `COUNT(*)` over the same window shows how many rows each frame held.
+--- check result | Ends average two readings; SAT-014 averages its one reading
+ordered
+[["SAT-011", "2026-04-01T00:00:00Z", 0.9, 2], ["SAT-011", "2026-04-01T00:10:00Z", 0.87, 3], ["SAT-011", "2026-04-01T00:20:00Z", 0.81, 3], ["SAT-011", "2026-04-01T00:30:00Z", 0.773, 3], ["SAT-011", "2026-04-01T00:40:00Z", 0.78, 3], ["SAT-011", "2026-04-01T00:50:00Z", 0.8, 2], ["SAT-012", "2026-04-01T00:00:00Z", 0.625, 2], ["SAT-012", "2026-04-01T00:10:00Z", 0.61, 3], ["SAT-012", "2026-04-01T00:30:00Z", 0.59, 3], ["SAT-012", "2026-04-01T00:40:00Z", 0.607, 3], ["SAT-012", "2026-04-01T01:10:00Z", 0.62, 2], ["SAT-013", "2026-04-01T00:00:00Z", 0.79, 2], ["SAT-013", "2026-04-01T00:10:00Z", 0.773, 3], ["SAT-013", "2026-04-01T00:20:00Z", 0.783, 3], ["SAT-013", "2026-04-01T00:30:00Z", 0.78, 2], ["SAT-014", "2026-04-01T00:20:00Z", 0.55, 1]]
+--- check source | Uses a centred ROWS frame
+1\s+[Pp][Rr][Ee][Cc][Ee][Dd][Ii][Nn][Gg]\s+[Aa][Nn][Dd]\s+1\s+[Ff][Oo][Ll][Ll][Oo][Ww][Ii][Nn][Gg]
+--- check source | Restarts for each satellite
+[Pp][Aa][Rr][Tt][Ii][Tt][Ii][Oo][Nn]\s+[Bb][Yy]\s+sat_id
+
++++ practice | A moving maximum one sample too wide
+--- task
+`temp` (`sat_id`, `ts`, `deg_c`) holds bus temperatures. `max3` should be the highest of the current reading and the two before it, for the same satellite. On some rows it reports an older, higher temperature that should already have left the window.
+
+Find the mistake and fix it. Keep the columns `sat_id`, `ts`, `deg_c` and `max3`, sorted by `sat_id`, then `ts`.
+--- starter
+SELECT sat_id, ts, deg_c,
+       MAX(deg_c) OVER (PARTITION BY sat_id ORDER BY ts
+                        ROWS BETWEEN 3 PRECEDING AND CURRENT ROW) AS max3
+FROM temp
+ORDER BY sat_id, ts;
+--- solution
+SELECT sat_id, ts, deg_c,
+       MAX(deg_c) OVER (PARTITION BY sat_id ORDER BY ts
+                        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS max3
+FROM temp
+ORDER BY sat_id, ts;
+--- hint
+Count the rows in `3 PRECEDING AND CURRENT ROW`. Does the current row count as one of them?
+--- hint
+Three readings means the current one plus two before it.
+--- check result | SAT-011 at 00:07:30 shows 32.5, not 34.0; SAT-012 at 00:03 shows 30.8
+ordered
+[["SAT-011", "2026-04-01T00:00:00Z", 27.0, 27.0], ["SAT-011", "2026-04-01T00:01:00Z", 28.0, 28.0], ["SAT-011", "2026-04-01T00:02:00Z", 30.5, 30.5], ["SAT-011", "2026-04-01T00:03:00Z", 31.0, 31.0], ["SAT-011", "2026-04-01T00:04:00Z", 29.5, 31.0], ["SAT-011", "2026-04-01T00:05:00Z", 30.2, 31.0], ["SAT-011", "2026-04-01T00:05:10Z", 33.0, 33.0], ["SAT-011", "2026-04-01T00:05:20Z", 34.0, 34.0], ["SAT-011", "2026-04-01T00:05:30Z", 32.5, 34.0], ["SAT-011", "2026-04-01T00:06:30Z", 29.0, 34.0], ["SAT-011", "2026-04-01T00:07:30Z", 28.5, 32.5], ["SAT-012", "2026-04-01T00:00:00Z", 31.0, 31.0], ["SAT-012", "2026-04-01T00:01:00Z", 30.8, 31.0], ["SAT-012", "2026-04-01T00:02:00Z", 29.9, 31.0], ["SAT-012", "2026-04-01T00:03:00Z", 29.0, 30.8], ["SAT-012", "2026-04-01T00:04:00Z", 30.1, 30.1], ["SAT-013", "2026-04-01T00:00:00Z", 25.0, 25.0], ["SAT-013", "2026-04-01T00:01:00Z", 25.5, 25.5], ["SAT-013", "2026-04-01T00:03:00Z", 26.0, 26.0]]
+--- check source | Frame starts two rows back
+2\s+[Pp][Rr][Ee][Cc][Ee][Dd][Ii][Nn][Gg]
+--- check source absent | No three-row look-back left
+3\s+[Pp][Rr][Ee][Cc][Ee][Dd][Ii][Nn][Gg]
+
++++ practice | Half the propellant, burn by burn
+--- task
+For each satellite with burns, find the first burn at which its running propellant use reached at least half of its total use (time order, then `burn_id`).
+
+Return `sat_id`, `burn_id`, `ts` and `pct_so_far` (the running use at that burn as a percentage of the satellite's total, rounded to 1), sorted by `sat_id`.
+--- starter
+SELECT sat_id, MIN(burn_id) AS burn_id, MIN(ts) AS ts, 50.0 AS pct_so_far
+FROM burn
+GROUP BY sat_id
+ORDER BY sat_id;
+--- solution
+WITH r AS (
+    SELECT sat_id, burn_id, ts,
+           SUM(prop_kg) OVER (PARTITION BY sat_id ORDER BY ts, burn_id) AS so_far,
+           SUM(prop_kg) OVER (PARTITION BY sat_id) AS total
+    FROM burn
+),
+reached AS (
+    SELECT sat_id, burn_id, ts, 100.0 * so_far / total AS pct,
+           ROW_NUMBER() OVER (PARTITION BY sat_id ORDER BY ts, burn_id) AS k
+    FROM r
+    WHERE so_far >= total / 2
+)
+SELECT sat_id, burn_id, ts, ROUND(pct, 1) AS pct_so_far
+FROM reached
+WHERE k = 1
+ORDER BY sat_id;
+--- hint
+Put a running total and the satellite's whole total on every burn, in a CTE. Keep the burns where the running total is at least half.
+--- hint
+Of those, you want the earliest per satellite: number them with ROW_NUMBER in time order and keep 1.
+--- check result | SAT-011 reaches exactly half at burn 3; SAT-012 passes it at burn 7
+ordered
+[["SAT-011", 3, "2026-04-05T10:00:00Z", 50.0], ["SAT-012", 7, "2026-04-08T06:00:00Z", 66.7], ["SAT-013", 9, "2026-04-06T00:00:00Z", 100.0]]
+--- check source | Uses a running SUM
+[Ss][Uu][Mm]\s*\([^)]*\)\s*[Oo][Vv][Ee][Rr]
+--- check source absent | Does not type the burn ids
+burn_id\s*(=|IN)\s*\(?\s*\d
+
++++ question | A moving average by hand
+--- ask
+SAT-011's `batt` readings, in time order, are 0.92, 0.88, 0.81, 0.74, 0.77 and 0.83. What does this give on the 00:40 row (the reading 0.77)? Round to 3 decimals.
+
+```sql
+AVG(soc) OVER (PARTITION BY sat_id ORDER BY ts
+               ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)
+```
+--- answer
+0.773
+.773
+0.7733
+--- why
+The frame is the current row and the two rows before it: 0.81, 0.74 and 0.77. Their sum is 2.32, and 2.32 / 3 = 0.7733, so 0.773. The 0.92 and 0.88 have already slid out of the frame. A running average from the start would give 4.12 / 5 = 0.824 on the same row.
+
+=== sql03-l05 | Practice: Frames: ROWS, RANGE and the default
+--- for
+l05-frames
+
++++ practice | Burns at the same moment share a step
+--- task
+SAT-011 fired thrusters A and B at the same moment on 5 April. The flight team counts them as one step: both rows should show the satellite's running total *after* both burns.
+
+For every burn in `burn`, show `step_total`: the satellite's propellant burned up to and including this moment, where all burns at the same `ts` count together. Return `burn_id`, `sat_id`, `ts` and `step_total`, sorted by `sat_id`, then `ts`, then `burn_id`.
+--- starter
+SELECT burn_id, sat_id, ts,
+       SUM(prop_kg) OVER (PARTITION BY sat_id ORDER BY ts
+                          ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS step_total
+FROM burn
+ORDER BY sat_id, ts, burn_id;
+--- solution
+SELECT burn_id, sat_id, ts,
+       SUM(prop_kg) OVER (PARTITION BY sat_id ORDER BY ts) AS step_total
+FROM burn
+ORDER BY sat_id, ts, burn_id;
+--- hint
+A ROWS frame stops at exactly the current row, so it splits the two 10:00 burns. Which frame treats rows tied on the ORDER BY value as one step?
+--- hint
+The default frame with an ORDER BY is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`, and in RANGE mode CURRENT ROW takes in all its peers. Order by `ts` alone.
+--- check result | Burns 2 and 3 both show 1.5
+ordered
+[[1, "SAT-011", "2026-04-02T03:00:00Z", 0.5], [2, "SAT-011", "2026-04-05T10:00:00Z", 1.5], [3, "SAT-011", "2026-04-05T10:00:00Z", 1.5], [4, "SAT-011", "2026-04-09T08:30:00Z", 2.75], [5, "SAT-011", "2026-04-15T22:00:00Z", 3.0], [6, "SAT-012", "2026-04-03T12:00:00Z", 0.5], [7, "SAT-012", "2026-04-08T06:00:00Z", 1.5], [8, "SAT-012", "2026-04-12T18:00:00Z", 2.25], [9, "SAT-013", "2026-04-06T00:00:00Z", 2.25]]
+--- check source | Uses a window
+[Oo][Vv][Ee][Rr]\s*\(
+--- check source absent | No ROWS frame
+[Rr][Oo][Ww][Ss]\s+([Bb][Ee][Tt][Ww][Ee][Ee][Nn]|[Uu][Nn][Bb])
+
++++ practice | One step back means one moment back
+--- task
+For every burn, show `two_steps`: the propellant the satellite burned at this burn's moment plus at its previous moment. Burns that share a `ts` are one moment, so on SAT-011's 9 April burn the previous moment is the pair of burns on 5 April, both of them.
+
+Return `burn_id`, `sat_id`, `ts` and `two_steps`, sorted by `sat_id`, then `ts`, then `burn_id`.
+--- starter
+SELECT burn_id, sat_id, ts,
+       SUM(prop_kg) OVER (PARTITION BY sat_id ORDER BY ts
+                          ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS two_steps
+FROM burn
+ORDER BY sat_id, ts, burn_id;
+--- solution
+SELECT burn_id, sat_id, ts,
+       SUM(prop_kg) OVER (PARTITION BY sat_id ORDER BY ts
+                          GROUPS BETWEEN 1 PRECEDING AND CURRENT ROW) AS two_steps
+FROM burn
+ORDER BY sat_id, ts, burn_id;
+--- hint
+ROWS counts single rows, so one row back from burn 4 is only burn 3. You need a mode that counts groups of tied rows.
+--- hint
+`GROUPS BETWEEN 1 PRECEDING AND CURRENT ROW` means this moment's group of ties plus the one before it.
+--- check result | Burn 4 adds both 5 April burns: 2.25
+ordered
+[[1, "SAT-011", "2026-04-02T03:00:00Z", 0.5], [2, "SAT-011", "2026-04-05T10:00:00Z", 1.5], [3, "SAT-011", "2026-04-05T10:00:00Z", 1.5], [4, "SAT-011", "2026-04-09T08:30:00Z", 2.25], [5, "SAT-011", "2026-04-15T22:00:00Z", 1.5], [6, "SAT-012", "2026-04-03T12:00:00Z", 0.5], [7, "SAT-012", "2026-04-08T06:00:00Z", 1.5], [8, "SAT-012", "2026-04-12T18:00:00Z", 1.75], [9, "SAT-013", "2026-04-06T00:00:00Z", 2.25]]
+--- check source | Uses a GROUPS frame
+[Gg][Rr][Oo][Uu][Pp][Ss]\s+[Bb][Ee][Tt][Ww][Ee][Ee][Nn]
+--- check source absent | Does not type the sums
+2\.25\b
+
++++ practice | Above the recent level
+--- task
+For every `temp` reading, work out `prior_avg`: the average of the same satellite's readings from the 3 minutes before it, **not** counting the reading itself. A reading exactly 3 minutes earlier counts. List only the readings more than 2.0 °C above their `prior_avg`; a reading with no earlier reading in those 3 minutes has no `prior_avg` and is not listed.
+
+Return `sat_id`, `ts`, `deg_c` and `prior_avg` rounded to 1, sorted by `sat_id`, then `ts`. Measure time with `unixepoch(ts)`.
+--- starter
+SELECT sat_id, ts, deg_c, deg_c AS prior_avg
+FROM temp
+ORDER BY sat_id, ts;
+--- solution
+WITH p AS (
+    SELECT sat_id, ts, deg_c,
+           AVG(deg_c) OVER (PARTITION BY sat_id ORDER BY unixepoch(ts)
+                            RANGE BETWEEN 180 PRECEDING AND 1 PRECEDING) AS prior_avg
+    FROM temp
+)
+SELECT sat_id, ts, deg_c, ROUND(prior_avg, 1) AS prior_avg
+FROM p
+WHERE deg_c > prior_avg + 2.0
+ORDER BY sat_id, ts;
+--- hint
+Three minutes of time is a RANGE frame on `unixepoch(ts)`: 180 seconds. The frame's end must stop before the current row.
+--- hint
+With whole seconds, `1 PRECEDING` ends the frame one second before this reading, which leaves the reading itself out. Filter on the result in an outer query.
+--- check result | The heater burst on SAT-011 stands out
+ordered
+[["SAT-011", "2026-04-01T00:02:00Z", 30.5, 27.5], ["SAT-011", "2026-04-01T00:03:00Z", 31.0, 28.5], ["SAT-011", "2026-04-01T00:05:10Z", 33.0, 30.2], ["SAT-011", "2026-04-01T00:05:20Z", 34.0, 30.9]]
+--- check source | Uses a RANGE frame on seconds
+[Rr][Aa][Nn][Gg][Ee]\s+[Bb][Ee][Tt][Ww][Ee][Ee][Nn]\s+180
+--- check source | Orders the window by seconds
+[Uu][Nn][Ii][Xx][Ee][Pp][Oo][Cc][Hh]\s*\(\s*ts\s*\)
+
++++ practice | Ten minutes, both ends included
+--- task
+For every `batt` reading, look at the same satellite's readings in the 10 minutes up to and including it. A reading exactly 10 minutes earlier counts.
+
+- `n10`: how many readings are in those 10 minutes
+- `avg10`: their average, rounded to 3, or NULL when `n10` is below 2, since one reading is not a trend
+
+Return `sat_id`, `ts`, `n10` and `avg10`, sorted by `sat_id`, then `ts`. SAT-012 has silences, so a count of rows is not the same as a span of time here.
+--- starter
+SELECT sat_id, ts,
+       COUNT(*) OVER w AS n10,
+       ROUND(AVG(soc) OVER w, 3) AS avg10
+FROM batt
+WINDOW w AS (PARTITION BY sat_id ORDER BY ts ROWS BETWEEN 1 PRECEDING AND CURRENT ROW)
+ORDER BY sat_id, ts;
+--- solution
+WITH w AS (
+    SELECT sat_id, ts,
+           COUNT(*) OVER t AS n10,
+           AVG(soc) OVER t AS a10
+    FROM batt
+    WINDOW t AS (PARTITION BY sat_id ORDER BY unixepoch(ts)
+                 RANGE BETWEEN 600 PRECEDING AND CURRENT ROW)
+)
+SELECT sat_id, ts, n10,
+       CASE WHEN n10 >= 2 THEN ROUND(a10, 3) END AS avg10
+FROM w
+ORDER BY sat_id, ts;
+--- hint
+Ten minutes is a length of time, so it needs a RANGE frame on `unixepoch(ts)` with `600 PRECEDING`. RANGE includes both ends.
+--- hint
+A CASE with no ELSE gives NULL when its test fails: `CASE WHEN n10 >= 2 THEN ... END`.
+--- check result | SAT-012 at 00:30 and 01:10 stands alone; SAT-011 at 00:10 includes 00:00
+ordered
+[["SAT-011", "2026-04-01T00:00:00Z", 1, null], ["SAT-011", "2026-04-01T00:10:00Z", 2, 0.9], ["SAT-011", "2026-04-01T00:20:00Z", 2, 0.845], ["SAT-011", "2026-04-01T00:30:00Z", 2, 0.775], ["SAT-011", "2026-04-01T00:40:00Z", 2, 0.755], ["SAT-011", "2026-04-01T00:50:00Z", 2, 0.8], ["SAT-012", "2026-04-01T00:00:00Z", 1, null], ["SAT-012", "2026-04-01T00:10:00Z", 2, 0.625], ["SAT-012", "2026-04-01T00:30:00Z", 1, null], ["SAT-012", "2026-04-01T00:40:00Z", 2, 0.58], ["SAT-012", "2026-04-01T01:10:00Z", 1, null], ["SAT-013", "2026-04-01T00:00:00Z", 1, null], ["SAT-013", "2026-04-01T00:10:00Z", 2, 0.79], ["SAT-013", "2026-04-01T00:20:00Z", 2, 0.765], ["SAT-013", "2026-04-01T00:30:00Z", 2, 0.78], ["SAT-014", "2026-04-01T00:20:00Z", 1, null]]
+--- check source | Uses a RANGE frame
+[Rr][Aa][Nn][Gg][Ee]\s+[Bb][Ee][Tt][Ww][Ee][Ee][Nn]\s+600
+--- check source absent | No ROWS frame
+[Rr][Oo][Ww][Ss]\s+[Bb][Ee][Tt][Ww][Ee][Ee][Nn]
+
++++ practice | A twenty-minute average that never averages
+--- task
+This query should give each `batt` reading the average of the same satellite's readings in the 20 minutes up to and including it, with the count beside it. Instead `n20` is 1 on every row and `avg20` just repeats the reading. It runs without an error.
+
+Find the mistake and fix it. Keep the columns `sat_id`, `ts`, `avg20` (rounded to 3) and `n20`, sorted by `sat_id`, then `ts`.
+--- starter
+SELECT sat_id, ts,
+       ROUND(AVG(soc) OVER w, 3) AS avg20,
+       COUNT(*) OVER w AS n20
+FROM batt
+WINDOW w AS (PARTITION BY sat_id ORDER BY ts
+             RANGE BETWEEN 1200 PRECEDING AND CURRENT ROW)
+ORDER BY sat_id, ts;
+--- solution
+SELECT sat_id, ts,
+       ROUND(AVG(soc) OVER w, 3) AS avg20,
+       COUNT(*) OVER w AS n20
+FROM batt
+WINDOW w AS (PARTITION BY sat_id ORDER BY unixepoch(ts)
+             RANGE BETWEEN 1200 PRECEDING AND CURRENT ROW)
+ORDER BY sat_id, ts;
+--- hint
+A RANGE offset is subtracted from the ORDER BY value. What is `ts` here, and what is "`ts` minus 1200"?
+--- hint
+`ts` is text. Order the window by a number of seconds, `unixepoch(ts)`, so that 1200 means twenty minutes.
+--- check result | SAT-011 at 00:20 averages three readings; SAT-012 at 00:30 averages two
+ordered
+[["SAT-011", "2026-04-01T00:00:00Z", 0.92, 1], ["SAT-011", "2026-04-01T00:10:00Z", 0.9, 2], ["SAT-011", "2026-04-01T00:20:00Z", 0.87, 3], ["SAT-011", "2026-04-01T00:30:00Z", 0.81, 3], ["SAT-011", "2026-04-01T00:40:00Z", 0.773, 3], ["SAT-011", "2026-04-01T00:50:00Z", 0.78, 3], ["SAT-012", "2026-04-01T00:00:00Z", 0.64, 1], ["SAT-012", "2026-04-01T00:10:00Z", 0.625, 2], ["SAT-012", "2026-04-01T00:30:00Z", 0.595, 2], ["SAT-012", "2026-04-01T00:40:00Z", 0.58, 2], ["SAT-012", "2026-04-01T01:10:00Z", 0.66, 1], ["SAT-013", "2026-04-01T00:00:00Z", 0.79, 1], ["SAT-013", "2026-04-01T00:10:00Z", 0.79, 2], ["SAT-013", "2026-04-01T00:20:00Z", 0.773, 3], ["SAT-013", "2026-04-01T00:30:00Z", 0.783, 3], ["SAT-014", "2026-04-01T00:20:00Z", 0.55, 1]]
+--- check source | Orders the window by seconds
+[Uu][Nn][Ii][Xx][Ee][Pp][Oo][Cc][Hh]\s*\(\s*ts\s*\)
+--- check source | Still a RANGE frame
+[Rr][Aa][Nn][Gg][Ee]\s+[Bb][Ee][Tt][Ww][Ee][Ee][Nn]
+
++++ practice | Where counting samples lies about time
+--- task
+Two engineers smooth `temp` differently. One averages the current reading and the two before it (`rows3`). The other averages the same satellite's readings in the 2 minutes up to and including the current one (`time2`). On regular data they agree; during SAT-011's heater burst, and after SAT-013's missing sample, they do not.
+
+List the readings where the two averages differ by more than 0.2 °C. Return `sat_id`, `ts`, `span_s` (the seconds from the oldest reading in the `rows3` frame to the current reading), `rows3` and `time2`, both rounded to 1. Sort by `sat_id`, then `ts`.
+--- starter
+SELECT sat_id, ts, 0 AS span_s, deg_c AS rows3, deg_c AS time2
+FROM temp
+ORDER BY sat_id, ts;
+--- solution
+WITH s AS (
+    SELECT sat_id, ts,
+           unixepoch(ts) - MIN(unixepoch(ts)) OVER by_rows AS span_s,
+           AVG(deg_c) OVER by_rows AS rows3,
+           AVG(deg_c) OVER by_time AS time2
+    FROM temp
+    WINDOW by_rows AS (PARTITION BY sat_id ORDER BY ts
+                       ROWS BETWEEN 2 PRECEDING AND CURRENT ROW),
+           by_time AS (PARTITION BY sat_id ORDER BY unixepoch(ts)
+                       RANGE BETWEEN 120 PRECEDING AND CURRENT ROW)
+)
+SELECT sat_id, ts, span_s, ROUND(rows3, 1) AS rows3, ROUND(time2, 1) AS time2
+FROM s
+WHERE ABS(rows3 - time2) > 0.2
+ORDER BY sat_id, ts;
+--- hint
+Two named windows: one ROWS frame of two rows back, one RANGE frame of 120 seconds on `unixepoch(ts)`.
+--- hint
+The span of the ROWS frame is the current time minus the earliest time in that same frame: `MIN(unixepoch(ts))` over the ROWS window. Compare the averages in an outer query with `ABS`.
+--- check result | Two burst readings, where three rows span 20 s, and SAT-013 after its dropout, where they span 180 s
+ordered
+[["SAT-011", "2026-04-01T00:05:20Z", 20, 32.4, 31.7], ["SAT-011", "2026-04-01T00:05:30Z", 20, 33.2, 31.8], ["SAT-013", "2026-04-01T00:03:00Z", 180, 25.5, 25.8]]
+--- check source | Uses a ROWS frame
+[Rr][Oo][Ww][Ss]\s+[Bb][Ee][Tt][Ww][Ee][Ee][Nn]\s+2\s+[Pp][Rr][Ee][Cc]
+--- check source | Uses a RANGE frame
+[Rr][Aa][Nn][Gg][Ee]\s+[Bb][Ee][Tt][Ww][Ee][Ee][Nn]\s+120
+
++++ question | Counting with ties
+--- ask
+A table `k` holds four rows with the values 1, 2, 2 and 3. What four numbers does this print, in order?
+
+```sql
+SELECT COUNT(*) OVER (ORDER BY v) AS c
+FROM k
+ORDER BY v;
+```
+--- answer
+1, 3, 3, 4
+1,3,3,4
+1 3 3 4
+--- why
+With an ORDER BY and no frame clause, the frame is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`. In RANGE mode CURRENT ROW means the current row and all its peers, the rows with the same value. So both 2s see the 1 and both 2s: 3 rows each. With `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` the answer would be 1, 2, 3, 4, with the order of the two 2s left to chance.
+
+=== sql03-l06 | Practice: Deduplicating and picking the latest per key
+--- for
+l06-deduplication-and-latest-per-key
+
++++ practice | Keep the copy that passed its check
+--- task
+`tlm` (`ingest_id`, `sat_id`, `channel`, `ts`, `value`, `station`, `rx_at`, `crc_ok`) holds telemetry as it reached the ground. One sample is identified by `sat_id`, `channel` and `ts` together, and some samples arrived more than once. `crc_ok` is 1 when the frame passed its error check and 0 when it failed.
+
+Keep exactly one row per sample. Prefer a copy that passed its check; among those, the one received first (`rx_at`); and if that still ties, the lower `ingest_id`. A sample with only a failed copy keeps that copy.
+
+Return `ingest_id`, `sat_id`, `channel`, `ts` and `value`, sorted by `sat_id`, then `channel`, then `ts`.
+--- starter
+SELECT ingest_id, sat_id, channel, ts, value
+FROM tlm
+ORDER BY sat_id, channel, ts;
+--- solution
+WITH numbered AS (
+    SELECT ingest_id, sat_id, channel, ts, value,
+           ROW_NUMBER() OVER (PARTITION BY sat_id, channel, ts
+                              ORDER BY crc_ok DESC, rx_at, ingest_id) AS rn
+    FROM tlm
+)
+SELECT ingest_id, sat_id, channel, ts, value
+FROM numbered
+WHERE rn = 1
+ORDER BY sat_id, channel, ts;
+--- hint
+Partition by what "the same sample" means. The ORDER BY inside OVER is the preference, most preferred first.
+--- hint
+`crc_ok DESC` puts the passed copies (1) before the failed ones (0). Finish with `rx_at, ingest_id`, then keep row number 1 in an outer query.
+--- check result | Nine samples; SAT-021's amps at 00:01 keeps 3.4, the copy that passed
+ordered
+[[4, "SAT-021", "amps", "2026-05-01T00:00:00Z", 3.2], [5, "SAT-021", "amps", "2026-05-01T00:01:00Z", 3.4], [1, "SAT-021", "volt", "2026-05-01T00:00:00Z", 28.1], [3, "SAT-021", "volt", "2026-05-01T00:01:00Z", 28.0], [7, "SAT-021", "volt", "2026-05-01T00:02:00Z", 27.9], [12, "SAT-022", "amps", "2026-05-01T00:00:30Z", 2.9], [9, "SAT-022", "volt", "2026-05-01T00:00:30Z", 27.5], [10, "SAT-022", "volt", "2026-05-01T00:01:30Z", 27.6], [13, "SAT-022", "volt", "2026-05-01T00:02:30Z", 27.2]]
+--- check source | Uses ROW_NUMBER
+[Rr][Oo][Ww]_[Nn][Uu][Mm][Bb][Ee][Rr]
+--- check source | Prefers frames that passed their check
+crc_ok
+
++++ practice | The current value of every channel
+--- task
+Create a view named `current_value` with one row per satellite and channel from `tlm`: its newest sample (latest `ts`). If that sample arrived more than once, choose the copy the same way as before: passed check first, then earliest `rx_at`, then lowest `ingest_id`. The view has the columns `sat_id`, `channel`, `ts` and `value`.
+
+Then finish with `SELECT * FROM current_value ORDER BY sat_id, channel;`. The view must stay right as new rows arrive.
+--- starter
+CREATE VIEW current_value AS
+SELECT sat_id, channel, MAX(ts) AS ts, MAX(value) AS value
+FROM tlm
+GROUP BY sat_id, channel;
+SELECT * FROM current_value ORDER BY sat_id, channel;
+--- solution
+CREATE VIEW current_value AS
+WITH numbered AS (
+    SELECT sat_id, channel, ts, value,
+           ROW_NUMBER() OVER (PARTITION BY sat_id, channel
+                              ORDER BY ts DESC, crc_ok DESC, rx_at, ingest_id) AS rn
+    FROM tlm
+)
+SELECT sat_id, channel, ts, value
+FROM numbered
+WHERE rn = 1;
+SELECT * FROM current_value ORDER BY sat_id, channel;
+--- hint
+The starter's `MAX(value)` is the largest value, not the latest one. The row you want is decided by an order, so number the rows.
+--- hint
+Partition by `sat_id, channel`. Order by `ts DESC` first (newest sample), then the copy preferences.
+--- check result | Four channels; SAT-021's amps is 3.4, SAT-022's volt is 27.2
+ordered
+[["SAT-021", "amps", "2026-05-01T00:01:00Z", 3.4], ["SAT-021", "volt", "2026-05-01T00:02:00Z", 27.9], ["SAT-022", "amps", "2026-05-01T00:00:30Z", 2.9], ["SAT-022", "volt", "2026-05-01T00:02:30Z", 27.2]]
+--- check query | A newer amps sample arrives twice; the copy that passed wins
+INSERT INTO tlm VALUES (14, 'SAT-022', 'amps', '2026-05-01T00:01:30Z', 3.1, 'santiago', '2026-05-01T00:03:00Z', 1);
+INSERT INTO tlm VALUES (15, 'SAT-022', 'amps', '2026-05-01T00:01:30Z', 3.0, 'kiruna', '2026-05-01T00:02:50Z', 0);
+SELECT sat_id, channel, value FROM current_value WHERE sat_id = 'SAT-022' ORDER BY channel
+=> [["SAT-022", "amps", 3.1], ["SAT-022", "volt", 27.2]]
+--- check source | Uses ROW_NUMBER
+[Rr][Oo][Ww]_[Nn][Uu][Mm][Bb][Ee][Rr]
+
++++ practice | Changes after cleaning
+--- task
+Show how each channel changed from one sample to the next, after the duplicates are gone. First keep one copy per sample (`sat_id`, `channel`, `ts`), preferring a passed check, then earliest `rx_at`, then lowest `ingest_id`. Then give every kept sample `delta`: its value minus the previous kept sample's value on the same satellite and channel, rounded to 2, NULL on the first.
+
+Return `sat_id`, `channel`, `ts`, `value` and `delta`, sorted by `sat_id`, then `channel`, then `ts`.
+--- starter
+SELECT sat_id, channel, ts, value,
+       ROUND(value - LAG(value) OVER (PARTITION BY sat_id, channel ORDER BY ts), 2) AS delta
+FROM tlm
+ORDER BY sat_id, channel, ts;
+--- solution
+WITH numbered AS (
+    SELECT sat_id, channel, ts, value,
+           ROW_NUMBER() OVER (PARTITION BY sat_id, channel, ts
+                              ORDER BY crc_ok DESC, rx_at, ingest_id) AS rn
+    FROM tlm
+)
+SELECT sat_id, channel, ts, value,
+       ROUND(value - LAG(value) OVER (PARTITION BY sat_id, channel ORDER BY ts), 2) AS delta
+FROM numbered
+WHERE rn = 1
+ORDER BY sat_id, channel, ts;
+--- hint
+Run the starter: a duplicate makes a sample its own "previous" sample, with a delta of 0, and a bad copy makes a jump that never happened.
+--- hint
+Deduplicate in a CTE. In the outer query, WHERE `rn = 1` runs before the LAG is worked out, so the LAG only ever sees kept rows.
+--- check result | Nine samples; SAT-021's amps rose 0.2, SAT-022's volt fell 0.4
+ordered
+[["SAT-021", "amps", "2026-05-01T00:00:00Z", 3.2, null], ["SAT-021", "amps", "2026-05-01T00:01:00Z", 3.4, 0.2], ["SAT-021", "volt", "2026-05-01T00:00:00Z", 28.1, null], ["SAT-021", "volt", "2026-05-01T00:01:00Z", 28.0, -0.1], ["SAT-021", "volt", "2026-05-01T00:02:00Z", 27.9, -0.1], ["SAT-022", "amps", "2026-05-01T00:00:30Z", 2.9, null], ["SAT-022", "volt", "2026-05-01T00:00:30Z", 27.5, null], ["SAT-022", "volt", "2026-05-01T00:01:30Z", 27.6, 0.1], ["SAT-022", "volt", "2026-05-01T00:02:30Z", 27.2, -0.4]]
+--- check source | Uses ROW_NUMBER
+[Rr][Oo][Ww]_[Nn][Uu][Mm][Bb][Ee][Rr]
+--- check source | Uses LAG
+[Ll][Aa][Gg]\s*\(
+
++++ practice | The last copy wins, every time
+--- task
+Another team keeps the copy received **last**: the latest `rx_at`. When two copies of a sample were received in the same second, they keep the one with the higher `ingest_id`, so the choice never changes from run to run.
+
+Create a view named `last_copy` with one row per sample (`sat_id`, `channel`, `ts`) chosen that way, with the columns `ingest_id`, `sat_id`, `channel`, `ts` and `value`. Then finish with `SELECT ingest_id FROM last_copy ORDER BY ingest_id;`.
+--- starter
+CREATE VIEW last_copy AS
+SELECT MAX(ingest_id) AS ingest_id, sat_id, channel, ts, value
+FROM tlm
+GROUP BY sat_id, channel, ts;
+SELECT ingest_id FROM last_copy ORDER BY ingest_id;
+--- solution
+CREATE VIEW last_copy AS
+WITH numbered AS (
+    SELECT ingest_id, sat_id, channel, ts, value,
+           ROW_NUMBER() OVER (PARTITION BY sat_id, channel, ts
+                              ORDER BY rx_at DESC, ingest_id DESC) AS rn
+    FROM tlm
+)
+SELECT ingest_id, sat_id, channel, ts, value
+FROM numbered
+WHERE rn = 1;
+SELECT ingest_id FROM last_copy ORDER BY ingest_id;
+--- hint
+The starter assumes a higher `ingest_id` was always received later. Compare rows 5 and 6: which one reached the ground last?
+--- hint
+Order the copies by `rx_at DESC, ingest_id DESC` inside a ROW_NUMBER, and keep 1.
+--- check result | Nine copies kept: 2, 3, 4, 5, 8, 9, 11, 12, 13
+ordered
+[[2], [3], [4], [5], [8], [9], [11], [12], [13]]
+--- check query | A third copy received in the same second, with a higher id, takes over
+INSERT INTO tlm VALUES (16, 'SAT-021', 'volt', '2026-05-01T00:00:00Z', 28.4, 'svalbard', '2026-05-01T00:03:10Z', 1);
+SELECT ingest_id, value FROM last_copy WHERE sat_id = 'SAT-021' AND channel = 'volt' AND ts = '2026-05-01T00:00:00Z'
+=> [[16, 28.4]]
+--- check query | Still one row per sample
+SELECT COUNT(*) FROM last_copy
+=> [[9]]
+
++++ practice | Duplicates that survive the dedup
+--- task
+This query should keep one copy of every sample in `tlm`: the copy received first, and the lower `ingest_id` if two arrived in the same second. There are 9 samples, but it returns 12 rows.
+
+Find the mistake and fix it. Return `ingest_id`, `sat_id`, `channel`, `ts` and `value`, sorted by `ingest_id`.
+--- starter
+WITH numbered AS (
+    SELECT ingest_id, sat_id, channel, ts, value,
+           RANK() OVER (PARTITION BY sat_id, channel, ts ORDER BY rx_at) AS rn
+    FROM tlm
+)
+SELECT ingest_id, sat_id, channel, ts, value
+FROM numbered
+WHERE rn = 1
+ORDER BY ingest_id;
+--- solution
+WITH numbered AS (
+    SELECT ingest_id, sat_id, channel, ts, value,
+           ROW_NUMBER() OVER (PARTITION BY sat_id, channel, ts ORDER BY rx_at, ingest_id) AS rn
+    FROM tlm
+)
+SELECT ingest_id, sat_id, channel, ts, value
+FROM numbered
+WHERE rn = 1
+ORDER BY ingest_id;
+--- hint
+Which extra rows came back? Compare their `rx_at` with the copy they duplicate.
+--- hint
+RANK gives copies received in the same second the same number, so both keep the 1. Use ROW_NUMBER, and add the tie-breaker the task names.
+--- check result | Nine rows: 1, 3, 4, 6, 7, 9, 10, 12, 13
+ordered
+[[1, "SAT-021", "volt", "2026-05-01T00:00:00Z", 28.1], [3, "SAT-021", "volt", "2026-05-01T00:01:00Z", 28.0], [4, "SAT-021", "amps", "2026-05-01T00:00:00Z", 3.2], [6, "SAT-021", "amps", "2026-05-01T00:01:00Z", 3.9], [7, "SAT-021", "volt", "2026-05-01T00:02:00Z", 27.9], [9, "SAT-022", "volt", "2026-05-01T00:00:30Z", 27.5], [10, "SAT-022", "volt", "2026-05-01T00:01:30Z", 27.6], [12, "SAT-022", "amps", "2026-05-01T00:00:30Z", 2.9], [13, "SAT-022", "volt", "2026-05-01T00:02:30Z", 27.2]]
+--- check source | Uses ROW_NUMBER
+[Rr][Oo][Ww]_[Nn][Uu][Mm][Bb][Ee][Rr]
+--- check source absent | No longer uses RANK
+(^|[^_A-Za-z])[Rr][Aa][Nn][Kk]\s*\(
+
++++ practice | A disagreement report
+--- task
+Before trusting the dedup, the ground team wants to see every sample that arrived more than once. For each such sample (`sat_id`, `channel`, `ts`), return:
+
+- `copies`: how many copies arrived
+- `n_values`: how many different values those copies hold
+- `kept_value`: the value of the copy the dedup keeps (passed check first, then earliest `rx_at`, then lowest `ingest_id`)
+- `status`: `'DISAGREE'` if the copies hold more than one value, otherwise `'agree'`
+
+Return `sat_id`, `channel`, `ts`, `copies`, `n_values`, `kept_value` and `status`, sorted by `sat_id`, then `channel`, then `ts`.
+--- starter
+SELECT sat_id, channel, ts, COUNT(*) AS copies, 1 AS n_values, MIN(value) AS kept_value, 'agree' AS status
+FROM tlm
+GROUP BY sat_id, channel, ts
+ORDER BY sat_id, channel, ts;
+--- solution
+WITH numbered AS (
+    SELECT sat_id, channel, ts, value,
+           ROW_NUMBER() OVER (PARTITION BY sat_id, channel, ts
+                              ORDER BY crc_ok DESC, rx_at, ingest_id) AS rn
+    FROM tlm
+)
+SELECT sat_id, channel, ts,
+       COUNT(*)                                  AS copies,
+       COUNT(DISTINCT value)                     AS n_values,
+       MAX(CASE WHEN rn = 1 THEN value END)      AS kept_value,
+       CASE WHEN COUNT(DISTINCT value) > 1 THEN 'DISAGREE' ELSE 'agree' END AS status
+FROM numbered
+GROUP BY sat_id, channel, ts
+HAVING COUNT(*) > 1
+ORDER BY sat_id, channel, ts;
+--- hint
+Number the copies in a CTE as the dedup does, then group that CTE by the sample key and keep groups with more than one row.
+--- hint
+`MAX(CASE WHEN rn = 1 THEN value END)` is the kept copy's value: every other row gives NULL, and MAX skips NULLs.
+--- check result | Four duplicated samples; only SAT-021's amps at 00:01 disagrees
+ordered
+[["SAT-021", "amps", "2026-05-01T00:01:00Z", 2, 2, 3.4, "DISAGREE"], ["SAT-021", "volt", "2026-05-01T00:00:00Z", 2, 1, 28.1, "agree"], ["SAT-021", "volt", "2026-05-01T00:02:00Z", 2, 1, 27.9, "agree"], ["SAT-022", "volt", "2026-05-01T00:01:30Z", 2, 1, 27.6, "agree"]]
+--- check source | Uses ROW_NUMBER
+[Rr][Oo][Ww]_[Nn][Uu][Mm][Bb][Ee][Rr]
+--- check source absent | Does not name the samples
+'SAT-02[12]'
+
++++ question | What the MAX-of-time join returns
+--- ask
+A teammate finds the latest reading per satellite and channel in `tlm` by joining each row to its key's `MAX(ts)`:
+
+```sql
+SELECT t.sat_id, t.channel, t.ts, t.value
+FROM tlm AS t
+JOIN (SELECT sat_id, channel, MAX(ts) AS max_ts
+      FROM tlm GROUP BY sat_id, channel) AS m
+  ON m.sat_id = t.sat_id AND m.channel = t.channel AND m.max_ts = t.ts;
+```
+
+There are four keys. SAT-021's newest amps sample and its newest volt sample each arrived twice; SAT-022's newest amps and volt samples arrived once each. How many rows does the query return?
+--- answer
+6
+six
+--- why
+The join keeps every row whose `ts` equals its key's newest time, and duplicates share that time. So SAT-021 gives 2 + 2 rows and SAT-022 gives 1 + 1: six rows for four keys. It is the fan-out from the joins module. `ROW_NUMBER() ... = 1` always returns exactly one row per key, whatever the duplicates.
+
+=== sql03-l07 | Practice: Gaps and islands
+--- for
+l07-gaps-and-islands
+
++++ practice | Runs of healthy charge
+--- task
+A reading in `batt` is healthy when `soc` is 0.80 or more. Find every run of consecutive healthy readings of a satellite (in time order, with no unhealthy reading of that satellite between them), using the difference of two row numbers.
+
+Return one row per run: `sat_id`, `t_start` (its first reading's `ts`), `t_end` (its last) and `samples`. Sort by `sat_id`, then `t_start`.
+--- starter
+SELECT sat_id, MIN(ts) AS t_start, MAX(ts) AS t_end, COUNT(*) AS samples
+FROM batt
+WHERE soc >= 0.80
+GROUP BY sat_id
+ORDER BY sat_id, t_start;
+--- solution
+WITH flagged AS (
+    SELECT sat_id, ts,
+           CASE WHEN soc >= 0.80 THEN 1 ELSE 0 END AS ok
+    FROM batt
+),
+labelled AS (
+    SELECT sat_id, ts, ok,
+           ROW_NUMBER() OVER (PARTITION BY sat_id ORDER BY ts)
+         - ROW_NUMBER() OVER (PARTITION BY sat_id, ok ORDER BY ts) AS grp
+    FROM flagged
+)
+SELECT sat_id, MIN(ts) AS t_start, MAX(ts) AS t_end, COUNT(*) AS samples
+FROM labelled
+WHERE ok = 1
+GROUP BY sat_id, grp
+ORDER BY sat_id, t_start;
+--- hint
+The starter's WHERE threw away the unhealthy readings before anything could notice them breaking a run. Flag every row first.
+--- hint
+Label each row with `ROW_NUMBER()` over the satellite minus `ROW_NUMBER()` over the satellite and the flag. Keep the healthy rows and group by `sat_id` and the label.
+--- check result | SAT-011 has two runs, SAT-013 one; SAT-012 and SAT-014 none
+ordered
+[["SAT-011", "2026-04-01T00:00:00Z", "2026-04-01T00:20:00Z", 3], ["SAT-011", "2026-04-01T00:50:00Z", "2026-04-01T00:50:00Z", 1], ["SAT-013", "2026-04-01T00:30:00Z", "2026-04-01T00:30:00Z", 1]]
+--- check source | Uses two row numbers
+[Rr][Oo][Ww]_[Nn][Uu][Mm][Bb][Ee][Rr][\s\S]*[Rr][Oo][Ww]_[Nn][Uu][Mm][Bb][Ee][Rr]
+--- check source absent | Does not type the times
+'2026-04-01T
+
++++ practice | Counting overspeed episodes
+--- task
+`rw` (`sat_id`, `t_s`, `rpm`) holds reaction-wheel speeds, with `t_s` in whole seconds. A sample is in overspeed when `rpm` is above 5000. An overspeed episode starts on an overspeed sample whose previous sample of the same satellite was not in overspeed, or that has no previous sample at all.
+
+Return every satellite in `rw` with `episodes`, its number of overspeed episodes (0 if it never overspeeds), sorted by `sat_id`. Mark the starts with LAG.
+--- starter
+SELECT sat_id, 0 AS episodes
+FROM rw
+GROUP BY sat_id
+ORDER BY sat_id;
+--- solution
+WITH flagged AS (
+    SELECT sat_id, t_s,
+           CASE WHEN rpm > 5000 THEN 1 ELSE 0 END AS over
+    FROM rw
+),
+marked AS (
+    SELECT sat_id,
+           CASE WHEN over = 1
+                 AND over IS DISTINCT FROM LAG(over) OVER (PARTITION BY sat_id ORDER BY t_s)
+                THEN 1 ELSE 0 END AS starts
+    FROM flagged
+)
+SELECT sat_id, SUM(starts) AS episodes
+FROM marked
+GROUP BY sat_id
+ORDER BY sat_id;
+--- hint
+A start is an overspeed row whose flag differs from the previous row's flag. LAG gives the previous flag.
+--- hint
+On a satellite's first row LAG is NULL, and `1 <> NULL` is not true. `IS DISTINCT FROM` (or SQLite's `IS NOT`) treats NULL as a value, so SAT-032's first-sample episode still counts.
+--- check result | SAT-031 twice, SAT-032 once, SAT-033 never
+ordered
+[["SAT-031", 2], ["SAT-032", 1], ["SAT-033", 0]]
+--- check source | Uses LAG
+[Ll][Aa][Gg]\s*\(
+--- check source absent | Does not name satellites
+'SAT-03[1-3]'
+
++++ practice | Low-charge episodes
+--- task
+A `batt` reading is low when `soc` is below 0.80. Find every episode of consecutive low readings of a satellite that has at least two readings, and describe it:
+
+- `sat_id`, `t_start` and `t_end` (first and last reading of the episode)
+- `duration_min`: minutes from its first to its last reading, as a whole number
+- `lowest`: its lowest reading
+
+Sort by `sat_id`, then `t_start`.
+--- starter
+SELECT sat_id, MIN(ts) AS t_start, MAX(ts) AS t_end, 0 AS duration_min, MIN(soc) AS lowest
+FROM batt
+WHERE soc < 0.80
+GROUP BY sat_id
+ORDER BY sat_id, t_start;
+--- solution
+WITH flagged AS (
+    SELECT sat_id, ts, soc,
+           CASE WHEN soc < 0.80 THEN 1 ELSE 0 END AS low
+    FROM batt
+),
+labelled AS (
+    SELECT sat_id, ts, soc, low,
+           ROW_NUMBER() OVER (PARTITION BY sat_id ORDER BY ts)
+         - ROW_NUMBER() OVER (PARTITION BY sat_id, low ORDER BY ts) AS grp
+    FROM flagged
+)
+SELECT sat_id,
+       MIN(ts) AS t_start,
+       MAX(ts) AS t_end,
+       (unixepoch(MAX(ts)) - unixepoch(MIN(ts))) / 60 AS duration_min,
+       MIN(soc) AS lowest
+FROM labelled
+WHERE low = 1
+GROUP BY sat_id, grp
+HAVING COUNT(*) >= 2
+ORDER BY sat_id, t_start;
+--- hint
+Flag, label and collapse as for any island. The minimum length is a test on whole groups, so it goes in HAVING.
+--- hint
+The duration is `unixepoch(MAX(ts)) - unixepoch(MIN(ts))` seconds; divide by 60.
+--- check result | Three episodes; SAT-014's single low reading is not one
+ordered
+[["SAT-011", "2026-04-01T00:30:00Z", "2026-04-01T00:40:00Z", 10, 0.74], ["SAT-012", "2026-04-01T00:00:00Z", "2026-04-01T01:10:00Z", 70, 0.58], ["SAT-013", "2026-04-01T00:00:00Z", "2026-04-01T00:20:00Z", 20, 0.74]]
+--- check source absent | Does not type the times
+'2026-04-01T
+--- check source | Uses a window
+[Oo][Vv][Ee][Rr]\s*\(
+
++++ practice | Overspeed runs with dropouts
+--- task
+The reaction-wheel samples in `rw` are due every 10 seconds, but some never arrived: SAT-032 has nothing between 10 s and 40 s. Nobody knows what the wheel did in that silence, so an overspeed run must not be glued together across it.
+
+Find the overspeed runs (`rpm` above 5000), where a new run starts when the overspeed flag changes **or** when the step from the previous sample of the same satellite is longer than 15 seconds. Return `sat_id`, `t_start`, `t_end` and `samples` for each overspeed run, sorted by `sat_id`, then `t_start`.
+--- starter
+WITH flagged AS (
+    SELECT sat_id, t_s, CASE WHEN rpm > 5000 THEN 1 ELSE 0 END AS over
+    FROM rw
+),
+labelled AS (
+    SELECT sat_id, t_s, over,
+           ROW_NUMBER() OVER (PARTITION BY sat_id ORDER BY t_s)
+         - ROW_NUMBER() OVER (PARTITION BY sat_id, over ORDER BY t_s) AS grp
+    FROM flagged
+)
+SELECT sat_id, MIN(t_s) AS t_start, MAX(t_s) AS t_end, COUNT(*) AS samples
+FROM labelled
+WHERE over = 1
+GROUP BY sat_id, grp
+ORDER BY sat_id, t_start;
+--- solution
+WITH marked AS (
+    SELECT sat_id, t_s,
+           CASE WHEN rpm > 5000 THEN 1 ELSE 0 END AS over,
+           CASE WHEN (rpm > 5000) IS DISTINCT FROM LAG(rpm > 5000) OVER w
+                  OR t_s - LAG(t_s) OVER w > 15
+                THEN 1 ELSE 0 END AS is_start
+    FROM rw
+    WINDOW w AS (PARTITION BY sat_id ORDER BY t_s)
+),
+runs AS (
+    SELECT sat_id, t_s, over,
+           SUM(is_start) OVER (PARTITION BY sat_id ORDER BY t_s
+                               ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS run_id
+    FROM marked
+)
+SELECT sat_id, MIN(t_s) AS t_start, MAX(t_s) AS t_end, COUNT(*) AS samples
+FROM runs
+WHERE over = 1
+GROUP BY sat_id, run_id
+ORDER BY sat_id, t_start;
+--- hint
+The starter's row numbers treat the samples at 10 s and 40 s as neighbours. Row numbers cannot see missing time; a start mark can.
+--- hint
+Mark a start when the flag differs from the previous row's (IS DISTINCT FROM, for the first row) or when `t_s - LAG(t_s)` is over 15. A running SUM of the marks labels the runs.
+--- check result | SAT-032's overspeed splits at the dropout: 0 to 10 s, then 40 s alone
+ordered
+[["SAT-031", 10, 20, 2], ["SAT-031", 40, 60, 3], ["SAT-032", 0, 10, 2], ["SAT-032", 40, 40, 1]]
+--- check source | Uses LAG
+[Ll][Aa][Gg]\s*\(
+--- check source | Numbers runs with a running SUM
+[Ss][Uu][Mm]\s*\([^)]*\)\s*[Oo][Vv][Ee][Rr]
+
++++ practice | A cool reading inside a hot spell
+--- task
+This query should list the hot spells in `temp` (readings above 30.0 °C), one row per spell, with its start, end, number of readings and peak. It also lists cool stretches, and its first SAT-011 "spell" has swallowed the cool reading at 00:04.
+
+Find the mistake and fix it. Keep the columns `sat_id`, `t_start`, `t_end`, `samples` and `peak`, sorted by `sat_id`, then `t_start`.
+--- starter
+WITH flagged AS (
+    SELECT sat_id, ts, deg_c,
+           CASE WHEN deg_c > 30.0 THEN 1 ELSE 0 END AS hot
+    FROM temp
+),
+labelled AS (
+    SELECT sat_id, ts, deg_c, hot,
+           ROW_NUMBER() OVER (PARTITION BY sat_id ORDER BY ts)
+         - ROW_NUMBER() OVER (PARTITION BY sat_id, hot ORDER BY ts) AS grp
+    FROM flagged
+)
+SELECT sat_id, MIN(ts) AS t_start, MAX(ts) AS t_end, COUNT(*) AS samples, MAX(deg_c) AS peak
+FROM labelled
+GROUP BY sat_id, grp
+ORDER BY sat_id, t_start;
+--- solution
+WITH flagged AS (
+    SELECT sat_id, ts, deg_c,
+           CASE WHEN deg_c > 30.0 THEN 1 ELSE 0 END AS hot
+    FROM temp
+),
+labelled AS (
+    SELECT sat_id, ts, deg_c, hot,
+           ROW_NUMBER() OVER (PARTITION BY sat_id ORDER BY ts)
+         - ROW_NUMBER() OVER (PARTITION BY sat_id, hot ORDER BY ts) AS grp
+    FROM flagged
+)
+SELECT sat_id, MIN(ts) AS t_start, MAX(ts) AS t_end, COUNT(*) AS samples, MAX(deg_c) AS peak
+FROM labelled
+WHERE hot = 1
+GROUP BY sat_id, grp
+ORDER BY sat_id, t_start;
+--- hint
+Work out `grp` by hand for SAT-011's cool reading at 00:04 and for its first hot spell. What do you notice?
+--- hint
+A label is only unique within one kind of row. Keep only the hot rows before grouping.
+--- check result | Four hot spells, peaks 31.0, 34.0, 31.0 and 30.1
+ordered
+[["SAT-011", "2026-04-01T00:02:00Z", "2026-04-01T00:03:00Z", 2, 31.0], ["SAT-011", "2026-04-01T00:05:00Z", "2026-04-01T00:05:30Z", 4, 34.0], ["SAT-012", "2026-04-01T00:00:00Z", "2026-04-01T00:01:00Z", 2, 31.0], ["SAT-012", "2026-04-01T00:04:00Z", "2026-04-01T00:04:00Z", 1, 30.1]]
+--- check source | Keeps only the hot rows
+hot\s*=\s*1
+--- check source | Still uses two row numbers
+[Rr][Oo][Ww]_[Nn][Uu][Mm][Bb][Ee][Rr][\s\S]*[Rr][Oo][Ww]_[Nn][Uu][Mm][Bb][Ee][Rr]
+
++++ practice | Cleared or still in progress
+--- task
+The anomaly report for `temp` needs to say, for every hot spell (readings above 30.0 °C), when it was seen to be over. Return one row per hot spell:
+
+- `sat_id`, `t_start` and `t_end` (its first and last hot reading)
+- `cleared_at`: the time of the first reading of that satellite after the spell, or NULL if the data ends while it is still hot
+- `status`: `'cleared'`, or `'in progress'` when `cleared_at` is NULL
+
+Sort by `sat_id`, then `t_start`.
+--- starter
+SELECT sat_id, MIN(ts) AS t_start, MAX(ts) AS t_end, NULL AS cleared_at, 'cleared' AS status
+FROM temp
+WHERE deg_c > 30.0
+GROUP BY sat_id
+ORDER BY sat_id, t_start;
+--- solution
+WITH flagged AS (
+    SELECT sat_id, ts,
+           CASE WHEN deg_c > 30.0 THEN 1 ELSE 0 END AS hot
+    FROM temp
+),
+labelled AS (
+    SELECT sat_id, ts, hot,
+           ROW_NUMBER() OVER (PARTITION BY sat_id ORDER BY ts)
+         - ROW_NUMBER() OVER (PARTITION BY sat_id, hot ORDER BY ts) AS grp
+    FROM flagged
+),
+all_runs AS (
+    SELECT sat_id, hot, MIN(ts) AS t_start, MAX(ts) AS t_end
+    FROM labelled
+    GROUP BY sat_id, hot, grp
+),
+with_next AS (
+    SELECT sat_id, hot, t_start, t_end,
+           LEAD(t_start) OVER (PARTITION BY sat_id ORDER BY t_start) AS cleared_at
+    FROM all_runs
+)
+SELECT sat_id, t_start, t_end, cleared_at,
+       CASE WHEN cleared_at IS NULL THEN 'in progress' ELSE 'cleared' END AS status
+FROM with_next
+WHERE hot = 1
+ORDER BY sat_id, t_start;
+--- hint
+Collapse runs of **both** kinds, grouping by `sat_id`, the flag and the label. Then a hot run's next run, in time order, is the cool run that ended it.
+--- hint
+LEAD over the collapsed runs gives the next run's `t_start`. Keep only the hot runs after that, in the outer query.
+--- check result | SAT-012's last spell is still in progress
+ordered
+[["SAT-011", "2026-04-01T00:02:00Z", "2026-04-01T00:03:00Z", "2026-04-01T00:04:00Z", "cleared"], ["SAT-011", "2026-04-01T00:05:00Z", "2026-04-01T00:05:30Z", "2026-04-01T00:06:30Z", "cleared"], ["SAT-012", "2026-04-01T00:00:00Z", "2026-04-01T00:01:00Z", "2026-04-01T00:02:00Z", "cleared"], ["SAT-012", "2026-04-01T00:04:00Z", "2026-04-01T00:04:00Z", null, "in progress"]]
+--- check source | Uses LEAD
+[Ll][Ee][Aa][Dd]\s*\(
+--- check source absent | Does not type the times
+'2026-04-01T
+
++++ question | Which label the last island gets
+--- ask
+A sensor's flags, in time order, are `1 1 0 1 0 0 1 1 1`. With the difference-of-row-numbers trick (row number over all rows minus row number over the rows with the same flag), what label do the three rows of the last island of 1s get?
+--- answer
+3
+three
+--- why
+Number all nine rows 1 to 9. The 1-rows are rows 1, 2, 4, 7, 8 and 9, and counting only them gives 1 to 6. The last island is rows 7, 8 and 9, counted 4, 5 and 6 among the 1s: 7 − 4 = 8 − 5 = 9 − 6 = 3. The earlier islands get 0 (rows 1 and 2) and 1 (row 4). Each jump equals the number of 0-rows that sat in between.
+
+=== sql03-l08 | Practice: Sessionising event streams
+--- for
+l08-sessionisation
+
++++ practice | How many passes
+--- task
+`packet` (`sat_id`, `station`, `ts`) has one row per radio packet received. A satellite's packets form one pass until a silence longer than 5 minutes (300 seconds); the next packet after such a silence starts a new pass. A satellite's first packet always starts a pass.
+
+Return each satellite with `passes`, its number of passes, sorted by `sat_id`. A pass can move from one station to another without a silence; it is still one pass.
+--- starter
+SELECT sat_id, COUNT(DISTINCT station) AS passes
+FROM packet
+GROUP BY sat_id
+ORDER BY sat_id;
+--- solution
+WITH stepped AS (
+    SELECT sat_id,
+           unixepoch(ts) - unixepoch(LAG(ts) OVER (PARTITION BY sat_id ORDER BY ts)) AS gap_s
+    FROM packet
+)
+SELECT sat_id,
+       SUM(CASE WHEN gap_s IS NULL OR gap_s > 300 THEN 1 ELSE 0 END) AS passes
+FROM stepped
+GROUP BY sat_id
+ORDER BY sat_id;
+--- hint
+A pass starts where the gap to the previous packet of the same satellite is over 300 seconds, or where there is no previous packet.
+--- hint
+Put the gap on each row with LAG in a CTE, then add up the start marks per satellite. `gap_s IS NULL` catches the first packet.
+--- check result | SAT-041 two passes, SAT-042 three, SAT-043 one
+ordered
+[["SAT-041", 2], ["SAT-042", 3], ["SAT-043", 1]]
+--- check source | Uses LAG
+[Ll][Aa][Gg]\s*\(
+--- check source | Partitions by satellite
+[Pp][Aa][Rr][Tt][Ii][Tt][Ii][Oo][Nn]\s+[Bb][Yy]\s+sat_id
+
++++ practice | The pass table
+--- task
+Turn `packet` into one row per pass, with the same rule: a silence longer than 300 seconds ends a pass. For each pass return:
+
+- `sat_id` and `pass_no` (1 for the satellite's first pass, then 2, 3, …)
+- `aos` and `los`: the times of its first and last packet
+- `duration_s`: seconds from `aos` to `los`
+- `packets`: how many packets it holds
+
+Sort by `sat_id`, then `pass_no`.
+--- starter
+SELECT sat_id, 1 AS pass_no, MIN(ts) AS aos, MAX(ts) AS los,
+       unixepoch(MAX(ts)) - unixepoch(MIN(ts)) AS duration_s, COUNT(*) AS packets
+FROM packet
+GROUP BY sat_id
+ORDER BY sat_id, pass_no;
+--- solution
+WITH stepped AS (
+    SELECT sat_id, ts,
+           unixepoch(ts) - unixepoch(LAG(ts) OVER (PARTITION BY sat_id ORDER BY ts)) AS gap_s
+    FROM packet
+),
+numbered AS (
+    SELECT sat_id, ts,
+           SUM(CASE WHEN gap_s IS NULL OR gap_s > 300 THEN 1 ELSE 0 END)
+             OVER (PARTITION BY sat_id ORDER BY ts
+                   ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS pass_no
+    FROM stepped
+)
+SELECT sat_id, pass_no,
+       MIN(ts) AS aos,
+       MAX(ts) AS los,
+       unixepoch(MAX(ts)) - unixepoch(MIN(ts)) AS duration_s,
+       COUNT(*) AS packets
+FROM numbered
+GROUP BY sat_id, pass_no
+ORDER BY sat_id, pass_no;
+--- hint
+Mark each pass's first packet, then a running SUM of the marks, per satellite, numbers the passes.
+--- hint
+Group by `sat_id` and the pass number, and read the edges with MIN and MAX.
+--- check result | Six passes; SAT-042's silence of exactly 300 s stays inside its first pass
+ordered
+[["SAT-041", 1, "2026-05-02T08:00:00Z", "2026-05-02T08:05:00Z", 300, 7], ["SAT-041", 2, "2026-05-02T09:40:00Z", "2026-05-02T09:42:30Z", 150, 6], ["SAT-042", 1, "2026-05-02T08:02:00Z", "2026-05-02T08:08:30Z", 390, 5], ["SAT-042", 2, "2026-05-02T08:30:00Z", "2026-05-02T08:30:00Z", 0, 1], ["SAT-042", 3, "2026-05-02T10:00:00Z", "2026-05-02T10:01:00Z", 60, 3], ["SAT-043", 1, "2026-05-02T08:15:00Z", "2026-05-02T08:27:00Z", 720, 25]]
+--- check source | Numbers passes with a running SUM
+[Ss][Uu][Mm]\s*\([\s\S]*\)\s*[Oo][Vv][Ee][Rr]
+--- check source | Uses LAG
+[Ll][Aa][Gg]\s*\(
+
++++ practice | Lost packets and quiet time
+--- task
+Every satellite sends one packet every 30 seconds while in contact. Using the same passes (a silence longer than 300 seconds ends one), return for each pass:
+
+- `sat_id`, `pass_no` and `packets`
+- `expected`: the packets due from its first packet to its last, `duration_s / 30 + 1`
+- `lost`: `expected − packets`
+- `quiet_s`: seconds from the satellite's previous pass's last packet to this pass's first packet, NULL on its first pass
+
+Sort by `sat_id`, then `pass_no`.
+--- starter
+SELECT sat_id, 1 AS pass_no, COUNT(*) AS packets, COUNT(*) AS expected, 0 AS lost, NULL AS quiet_s
+FROM packet
+GROUP BY sat_id
+ORDER BY sat_id, pass_no;
+--- solution
+WITH stepped AS (
+    SELECT sat_id, ts,
+           unixepoch(ts) - unixepoch(LAG(ts) OVER (PARTITION BY sat_id ORDER BY ts)) AS gap_s
+    FROM packet
+),
+numbered AS (
+    SELECT sat_id, ts,
+           SUM(CASE WHEN gap_s IS NULL OR gap_s > 300 THEN 1 ELSE 0 END)
+             OVER (PARTITION BY sat_id ORDER BY ts
+                   ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS pass_no
+    FROM stepped
+),
+passes AS (
+    SELECT sat_id, pass_no, MIN(ts) AS aos, MAX(ts) AS los, COUNT(*) AS packets
+    FROM numbered
+    GROUP BY sat_id, pass_no
+)
+SELECT sat_id, pass_no, packets,
+       (unixepoch(los) - unixepoch(aos)) / 30 + 1 AS expected,
+       (unixepoch(los) - unixepoch(aos)) / 30 + 1 - packets AS lost,
+       unixepoch(aos) - unixepoch(LAG(los) OVER (PARTITION BY sat_id ORDER BY aos)) AS quiet_s
+FROM passes
+ORDER BY sat_id, pass_no;
+--- hint
+Build the pass table in a CTE first. Everything after that is arithmetic on its rows, plus one LAG.
+--- hint
+The quiet time looks back one *pass*, so the LAG runs over the pass rows, ordered by `aos`, not over the packets.
+--- check result | SAT-041 lost 4 packets in its dropout; SAT-042 lost 9 in its first pass
+ordered
+[["SAT-041", 1, 7, 11, 4, null], ["SAT-041", 2, 6, 6, 0, 5700], ["SAT-042", 1, 5, 14, 9, null], ["SAT-042", 2, 1, 1, 0, 1290], ["SAT-042", 3, 3, 3, 0, 5400], ["SAT-043", 1, 25, 25, 0, null]]
+--- check source | Uses LAG
+[Ll][Aa][Gg]\s*\(
+--- check source absent | Does not type the times
+'2026-05-02T
+
++++ practice | Contacts per station
+--- task
+The station managers count contacts differently: a contact is a burst of packets from one satellite at **one station**. A satellite handed straight from one station to another makes two contacts, even with no silence between them. Within a satellite and station, a silence longer than 300 seconds ends a contact; a silence of exactly 300 seconds does not.
+
+Return one row per contact: `sat_id`, `station`, `aos`, `los` and `packets`, sorted by `sat_id`, then `aos`.
+--- starter
+SELECT sat_id, station, MIN(ts) AS aos, MAX(ts) AS los, COUNT(*) AS packets
+FROM packet
+GROUP BY sat_id, station
+ORDER BY sat_id, aos;
+--- solution
+WITH stepped AS (
+    SELECT sat_id, station, ts,
+           unixepoch(ts) - unixepoch(LAG(ts) OVER (PARTITION BY sat_id, station ORDER BY ts)) AS gap_s
+    FROM packet
+),
+numbered AS (
+    SELECT sat_id, station, ts,
+           SUM(CASE WHEN gap_s IS NULL OR gap_s > 300 THEN 1 ELSE 0 END)
+             OVER (PARTITION BY sat_id, station ORDER BY ts
+                   ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS contact_no
+    FROM stepped
+)
+SELECT sat_id, station, MIN(ts) AS aos, MAX(ts) AS los, COUNT(*) AS packets
+FROM numbered
+GROUP BY sat_id, station, contact_no
+ORDER BY sat_id, aos;
+--- hint
+The starter makes one row per satellite and station, so SAT-042's two separate TROLL contacts merge. Sessionise within each satellite and station.
+--- hint
+Partition both the LAG and the running SUM by `sat_id, station`, and group by them and the contact number.
+--- check result | SAT-041's handover makes two contacts; SAT-042 has two separate TROLL contacts
+ordered
+[["SAT-041", "KIRUNA", "2026-05-02T08:00:00Z", "2026-05-02T08:05:00Z", 7], ["SAT-041", "SVALBARD", "2026-05-02T09:40:00Z", "2026-05-02T09:41:30Z", 4], ["SAT-041", "INUVIK", "2026-05-02T09:42:00Z", "2026-05-02T09:42:30Z", 2], ["SAT-042", "TROLL", "2026-05-02T08:02:00Z", "2026-05-02T08:08:30Z", 5], ["SAT-042", "TROLL", "2026-05-02T08:30:00Z", "2026-05-02T08:30:00Z", 1], ["SAT-042", "INUVIK", "2026-05-02T10:00:00Z", "2026-05-02T10:01:00Z", 3], ["SAT-043", "TROLL", "2026-05-02T08:15:00Z", "2026-05-02T08:27:00Z", 25]]
+--- check source | Partitions by satellite and station
+[Pp][Aa][Rr][Tt][Ii][Tt][Ii][Oo][Nn]\s+[Bb][Yy]\s+(sat_id\s*,\s*station|station\s*,\s*sat_id)
+--- check source | Uses LAG
+[Ll][Aa][Gg]\s*\(
+
++++ practice | Passes that swallow each other
+--- task
+This query should number each satellite's passes (a silence longer than 300 seconds between two of **its own** packets ends a pass) and list them. It finds only two passes for SAT-042, and the first one runs from 08:02 to 08:30, straight across a 21-minute silence.
+
+Find the mistake and fix it. Keep the columns `sat_id`, `pass_no`, `aos`, `los` and `packets`, sorted by `sat_id`, then `pass_no`.
+--- starter
+WITH stepped AS (
+    SELECT sat_id, ts,
+           unixepoch(ts) - unixepoch(LAG(ts) OVER (ORDER BY ts)) AS gap_s
+    FROM packet
+),
+numbered AS (
+    SELECT sat_id, ts,
+           SUM(CASE WHEN gap_s IS NULL OR gap_s > 300 THEN 1 ELSE 0 END)
+             OVER (PARTITION BY sat_id ORDER BY ts
+                   ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS pass_no
+    FROM stepped
+)
+SELECT sat_id, pass_no, MIN(ts) AS aos, MAX(ts) AS los, COUNT(*) AS packets
+FROM numbered
+GROUP BY sat_id, pass_no
+ORDER BY sat_id, pass_no;
+--- solution
+WITH stepped AS (
+    SELECT sat_id, ts,
+           unixepoch(ts) - unixepoch(LAG(ts) OVER (PARTITION BY sat_id ORDER BY ts)) AS gap_s
+    FROM packet
+),
+numbered AS (
+    SELECT sat_id, ts,
+           SUM(CASE WHEN gap_s IS NULL OR gap_s > 300 THEN 1 ELSE 0 END)
+             OVER (PARTITION BY sat_id ORDER BY ts
+                   ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS pass_no
+    FROM stepped
+)
+SELECT sat_id, pass_no, MIN(ts) AS aos, MAX(ts) AS los, COUNT(*) AS packets
+FROM numbered
+GROUP BY sat_id, pass_no
+ORDER BY sat_id, pass_no;
+--- hint
+Look at SAT-042's packet at 08:30:00. What does the LAG call it the "previous packet"?
+--- hint
+While SAT-042 was silent, SAT-043 was talking. The gap must be measured between packets of the same satellite.
+--- check result | SAT-042 has three passes again, numbered from 1
+ordered
+[["SAT-041", 1, "2026-05-02T08:00:00Z", "2026-05-02T08:05:00Z", 7], ["SAT-041", 2, "2026-05-02T09:40:00Z", "2026-05-02T09:42:30Z", 6], ["SAT-042", 1, "2026-05-02T08:02:00Z", "2026-05-02T08:08:30Z", 5], ["SAT-042", 2, "2026-05-02T08:30:00Z", "2026-05-02T08:30:00Z", 1], ["SAT-042", 3, "2026-05-02T10:00:00Z", "2026-05-02T10:01:00Z", 3], ["SAT-043", 1, "2026-05-02T08:15:00Z", "2026-05-02T08:27:00Z", 25]]
+--- check source absent | No window over every satellite's packets together
+[Oo][Vv][Ee][Rr]\s*\(\s*[Oo][Rr][Dd][Ee][Rr]\s+[Bb][Yy]\s+ts\s*\)
+--- check source | Still numbers passes with a running SUM
+[Ss][Uu][Mm]\s*\([\s\S]*\)\s*[Oo][Vv][Ee][Rr]
+
++++ practice | A station contact report
+--- task
+Each ground station bills by contact time. Using contacts as in "Contacts per station" (a burst of packets from one satellite at one station; a silence longer than 300 seconds within that satellite and station ends it), return one row per station:
+
+- `station`
+- `contacts`: its number of contacts
+- `sats`: how many different satellites it heard
+- `contact_s`: the total seconds of its contacts, each contact measured from its first packet to its last
+- `packets`: its total packets
+
+Sort by `station`.
+--- starter
+SELECT station, COUNT(*) AS contacts, COUNT(DISTINCT sat_id) AS sats, 0 AS contact_s, COUNT(*) AS packets
+FROM packet
+GROUP BY station
+ORDER BY station;
+--- solution
+WITH stepped AS (
+    SELECT sat_id, station, ts,
+           unixepoch(ts) - unixepoch(LAG(ts) OVER (PARTITION BY sat_id, station ORDER BY ts)) AS gap_s
+    FROM packet
+),
+numbered AS (
+    SELECT sat_id, station, ts,
+           SUM(CASE WHEN gap_s IS NULL OR gap_s > 300 THEN 1 ELSE 0 END)
+             OVER (PARTITION BY sat_id, station ORDER BY ts
+                   ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS contact_no
+    FROM stepped
+),
+contacts AS (
+    SELECT sat_id, station,
+           unixepoch(MAX(ts)) - unixepoch(MIN(ts)) AS dur_s,
+           COUNT(*) AS packets
+    FROM numbered
+    GROUP BY sat_id, station, contact_no
+)
+SELECT station,
+       COUNT(*)               AS contacts,
+       COUNT(DISTINCT sat_id) AS sats,
+       SUM(dur_s)             AS contact_s,
+       SUM(packets)           AS packets
+FROM contacts
+GROUP BY station
+ORDER BY station;
+--- hint
+Build one row per contact in a CTE, with its duration and packet count. Then a second GROUP BY, on station, adds them up.
+--- hint
+A contact's duration has to be measured before you add them. Summing `MAX(ts) − MIN(ts)` over a whole station would count the hours between contacts.
+--- check result | TROLL made three contacts with two satellites
+ordered
+[["INUVIK", 2, 2, 90, 5], ["KIRUNA", 1, 1, 300, 7], ["SVALBARD", 1, 1, 90, 4], ["TROLL", 3, 2, 1110, 31]]
+--- check source | Partitions by satellite and station
+[Pp][Aa][Rr][Tt][Ii][Tt][Ii][Oo][Nn]\s+[Bb][Yy]\s+(sat_id\s*,\s*station|station\s*,\s*sat_id)
+--- check source absent | Does not type the stations
+'(KIRUNA|SVALBARD|INUVIK|TROLL)'
+
++++ question | Sessions of a star tracker
+--- ask
+A star tracker logs events at these times, in seconds: 0, 4, 9, 19, 35, 36 and 50. A gap **longer than** 10 seconds starts a new session. How many sessions are there?
+--- answer
+3
+three
+--- why
+The gaps are 4, 5, 10, 16, 1 and 14 seconds. Only the gaps of 16 and 14 are longer than 10, so new sessions start at 35 and at 50, plus the first event at 0: sessions 0–19, 35–36 and 50. The gap of exactly 10 seconds, from 9 to 19, does not break the first session, because 10 is not longer than 10.
+
+=== sql03-l09 | Practice: Downsampling into time buckets
+--- for
+l09-downsampling-and-binning
+
++++ practice | A one-minute summary
+--- task
+`gyro` (`sat_id`, `ts`, `rate_dps`) holds body rates in degrees per second, one sample a second, with `ts` as text like `'2026-05-10T12:01:35Z'`. Downsample SAT-051 into one-minute buckets. For each minute return:
+
+- `minute`: the bucket's start, as text like `'2026-05-10T12:01:00Z'`
+- `n`, `min_dps`, `max_dps`
+- `mean_dps`: the average, rounded to 4
+
+Sort by `minute`.
+--- starter
+SELECT ts AS minute, 1 AS n, rate_dps AS min_dps, rate_dps AS max_dps, rate_dps AS mean_dps
+FROM gyro
+WHERE sat_id = 'SAT-051'
+ORDER BY minute;
+--- solution
+SELECT strftime('%Y-%m-%dT%H:%M:00Z', ts) AS minute,
+       COUNT(*)                AS n,
+       MIN(rate_dps)           AS min_dps,
+       MAX(rate_dps)           AS max_dps,
+       ROUND(AVG(rate_dps), 4) AS mean_dps
+FROM gyro
+WHERE sat_id = 'SAT-051'
+GROUP BY minute
+ORDER BY minute;
+--- hint
+Every sample in the same minute needs the same key. `strftime` can rewrite a time with the seconds fixed at zero.
+--- hint
+`strftime('%Y-%m-%dT%H:%M:00Z', ts)` is the minute's key. Group by it and aggregate.
+--- check result | Three buckets; only the maximum of 12:01 shows the spike
+ordered
+[["2026-05-10T12:00:00Z", 60, -0.06, 0.06, -0.0013], ["2026-05-10T12:01:00Z", 60, -0.06, 0.93, 0.0447], ["2026-05-10T12:02:00Z", 30, -0.06, 0.06, -0.0007]]
+--- check source | Uses strftime for the key
+[Ss][Tt][Rr][Ff][Tt][Ii][Mm][Ee]
+--- check source | Groups the samples
+[Gg][Rr][Oo][Uu][Pp]\s+[Bb][Yy]
+
++++ practice | Twenty-second bins
+--- task
+Look closer at SAT-051's minute from `'2026-05-10T12:01:00Z'` up to (not including) `'2026-05-10T12:02:00Z'`. Cut it into 20-second bins aligned to the minute (12:01:00, 12:01:20, 12:01:40), using whole-number division of `unixepoch(ts)`.
+
+For each bin return `bin` (its start, as text like `'2026-05-10T12:01:20Z'`), `n` and `max_dps`. Sort by `bin`.
+--- starter
+SELECT strftime('%Y-%m-%dT%H:%M:00Z', ts) AS bin, COUNT(*) AS n, MAX(rate_dps) AS max_dps
+FROM gyro
+WHERE sat_id = 'SAT-051'
+  AND ts >= '2026-05-10T12:01:00Z' AND ts < '2026-05-10T12:02:00Z'
+GROUP BY bin
+ORDER BY bin;
+--- solution
+SELECT strftime('%Y-%m-%dT%H:%M:%SZ', (unixepoch(ts) / 20) * 20, 'unixepoch') AS bin,
+       COUNT(*)      AS n,
+       MAX(rate_dps) AS max_dps
+FROM gyro
+WHERE sat_id = 'SAT-051'
+  AND ts >= '2026-05-10T12:01:00Z' AND ts < '2026-05-10T12:02:00Z'
+GROUP BY bin
+ORDER BY bin;
+--- hint
+`unixepoch(ts)` is a whole number of seconds, so `/ 20` drops the remainder, and `* 20` gives the bin's start in seconds.
+--- hint
+Turn those seconds back into text with `strftime('%Y-%m-%dT%H:%M:%SZ', seconds, 'unixepoch')`.
+--- check result | Twenty samples in each bin; the spike sits in the 12:01:20 bin
+ordered
+[["2026-05-10T12:01:00Z", 20, 0.06], ["2026-05-10T12:01:20Z", 20, 0.93], ["2026-05-10T12:01:40Z", 20, 0.06]]
+--- check source | Uses unixepoch
+[Uu][Nn][Ii][Xx][Ee][Pp][Oo][Cc][Hh]\s*\(\s*ts\s*\)
+--- check source | Divides by the bin width
+/\s*20\b
+
++++ practice | First, last, lowest and highest
+--- task
+A plot of a downsampled channel draws one stroke per bucket, so for each bucket it needs the first value, the last value, the lowest and the highest. For both satellites in `gyro`, and each minute, return `sat_id`, `minute` (text like `'2026-05-10T12:00:00Z'`), `first_dps` (the value at the earliest `ts` in the bucket), `last_dps` (the value at the latest `ts`), `min_dps` and `max_dps`.
+
+Sort by `sat_id`, then `minute`.
+--- starter
+SELECT sat_id, strftime('%Y-%m-%dT%H:%M:00Z', ts) AS minute,
+       MIN(rate_dps) AS first_dps, MAX(rate_dps) AS last_dps,
+       MIN(rate_dps) AS min_dps, MAX(rate_dps) AS max_dps
+FROM gyro
+GROUP BY sat_id, minute
+ORDER BY sat_id, minute;
+--- solution
+WITH b AS (
+    SELECT sat_id, strftime('%Y-%m-%dT%H:%M:00Z', ts) AS minute, rate_dps,
+           ROW_NUMBER() OVER (PARTITION BY sat_id, strftime('%Y-%m-%dT%H:%M:00Z', ts) ORDER BY ts)      AS rn_up,
+           ROW_NUMBER() OVER (PARTITION BY sat_id, strftime('%Y-%m-%dT%H:%M:00Z', ts) ORDER BY ts DESC) AS rn_down
+    FROM gyro
+)
+SELECT sat_id, minute,
+       MAX(CASE WHEN rn_up = 1 THEN rate_dps END)   AS first_dps,
+       MAX(CASE WHEN rn_down = 1 THEN rate_dps END) AS last_dps,
+       MIN(rate_dps) AS min_dps,
+       MAX(rate_dps) AS max_dps
+FROM b
+GROUP BY sat_id, minute
+ORDER BY sat_id, minute;
+--- hint
+The starter takes "first" and "last" from the values' order, not the time order. Number each bucket's rows by time, both ways, in a CTE.
+--- hint
+`MAX(CASE WHEN rn_up = 1 THEN rate_dps END)` picks the value on the earliest row, because every other row gives NULL.
+--- check result | Five buckets; SAT-052 has no 12:01 bucket at all
+ordered
+[["SAT-051", "2026-05-10T12:00:00Z", -0.06, 0.04, -0.06, 0.06], ["SAT-051", "2026-05-10T12:01:00Z", -0.02, -0.05, -0.06, 0.93], ["SAT-051", "2026-05-10T12:02:00Z", 0.02, -0.03, -0.06, 0.06], ["SAT-052", "2026-05-10T12:00:00Z", -0.05, 0.04, -0.73, 0.05], ["SAT-052", "2026-05-10T12:02:00Z", 0.01, 0.03, -0.05, 0.05]]
+--- check source | Uses ROW_NUMBER
+[Rr][Oo][Ww]_[Nn][Uu][Mm][Bb][Ee][Rr]
+--- check source | Finds the last row by time
+ts\s+[Dd][Ee][Ss][Cc]|[Mm][Aa][Xx]\s*\(\s*ts\s*\)
+
++++ practice | Every minute, even the silent one
+--- task
+SAT-052 sent nothing from 12:01:00 to 12:01:59. A chart that joins its buckets with a line would draw straight across that hole, as if everything were fine. The summary must show the silent minute as a row.
+
+For SAT-052 and each minute from `'2026-05-10T12:00:00Z'` to `'2026-05-10T12:02:00Z'`, return `minute`, `n` (0 for a silent minute), `min_dps` and `max_dps` (NULL for a silent minute). Sort by `minute`.
+--- starter
+SELECT strftime('%Y-%m-%dT%H:%M:00Z', ts) AS minute, COUNT(*) AS n,
+       MIN(rate_dps) AS min_dps, MAX(rate_dps) AS max_dps
+FROM gyro
+WHERE sat_id = 'SAT-052'
+GROUP BY minute
+ORDER BY minute;
+--- solution
+WITH RECURSIVE minutes(minute) AS (
+    SELECT '2026-05-10T12:00:00Z'
+    UNION ALL
+    SELECT strftime('%Y-%m-%dT%H:%M:%SZ', minute, '+1 minute')
+    FROM minutes
+    WHERE minute < '2026-05-10T12:02:00Z'
+),
+summary AS (
+    SELECT strftime('%Y-%m-%dT%H:%M:00Z', ts) AS minute,
+           COUNT(*) AS n, MIN(rate_dps) AS min_dps, MAX(rate_dps) AS max_dps
+    FROM gyro
+    WHERE sat_id = 'SAT-052'
+    GROUP BY 1
+)
+SELECT m.minute, COALESCE(s.n, 0) AS n, s.min_dps, s.max_dps
+FROM minutes AS m
+LEFT JOIN summary AS s ON s.minute = m.minute
+ORDER BY m.minute;
+--- hint
+GROUP BY can only make rows for minutes that have data. Make the list of minutes yourself with a recursive CTE.
+--- hint
+Left-join the per-minute summary onto the list of minutes. COALESCE turns the silent minute's NULL count into 0.
+--- check result | 12:01 appears with 0 samples; 12:00 keeps the dip to -0.73
+ordered
+[["2026-05-10T12:00:00Z", 60, -0.73, 0.05], ["2026-05-10T12:01:00Z", 0, null, null], ["2026-05-10T12:02:00Z", 30, -0.05, 0.05]]
+--- check source | Builds the minutes with a recursive CTE
+[Rr][Ee][Cc][Uu][Rr][Ss][Ii][Vv][Ee]
+--- check source | Keeps the empty minute with a left join
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+
++++ practice | The last value is not the largest
+--- task
+This summary should give, for each minute of SAT-052, the reading at the end of the minute as `last_dps`. It reports the largest reading of the minute instead.
+
+Fix it. Return `minute` (text like `'2026-05-10T12:00:00Z'`) and `last_dps`, sorted by `minute`.
+--- starter
+SELECT strftime('%Y-%m-%dT%H:%M:00Z', ts) AS minute,
+       MAX(rate_dps) AS last_dps
+FROM gyro
+WHERE sat_id = 'SAT-052'
+GROUP BY minute
+ORDER BY minute;
+--- solution
+WITH b AS (
+    SELECT strftime('%Y-%m-%dT%H:%M:00Z', ts) AS minute, rate_dps,
+           ROW_NUMBER() OVER (PARTITION BY strftime('%Y-%m-%dT%H:%M:00Z', ts) ORDER BY ts DESC) AS rn_desc
+    FROM gyro
+    WHERE sat_id = 'SAT-052'
+)
+SELECT minute, MAX(CASE WHEN rn_desc = 1 THEN rate_dps END) AS last_dps
+FROM b
+GROUP BY minute
+ORDER BY minute;
+--- hint
+`MAX(rate_dps)` orders by value. "Last" is an order by time.
+--- hint
+Number each minute's rows from the latest back in a CTE, and take the value on row 1.
+--- check result | The readings at 12:00:59 and 12:02:29
+ordered
+[["2026-05-10T12:00:00Z", 0.04], ["2026-05-10T12:02:00Z", 0.03]]
+--- check source | Uses ROW_NUMBER
+[Rr][Oo][Ww]_[Nn][Uu][Mm][Bb][Ee][Rr]
+--- check source | Finds the last row by time
+ts\s+[Dd][Ee][Ss][Cc]|[Mm][Aa][Xx]\s*\(\s*ts\s*\)
+
++++ practice | Means that survive a second pass
+--- task
+The archive keeps only one-minute summaries, and someone wants each satellite's mean over all of its `gyro` samples from them. Averaging the minute means is wrong when minutes hold different numbers of samples.
+
+For each satellite, from one-minute buckets, return `sat_id`, `minutes` (the number of buckets with data), `mean_of_means` (the plain average of the minute means) and `true_mean` (the sum of the minute sums divided by the sum of the minute counts), both rounded to 4. Sort by `sat_id`.
+--- starter
+SELECT sat_id, 0 AS minutes, ROUND(AVG(rate_dps), 4) AS mean_of_means, ROUND(AVG(rate_dps), 4) AS true_mean
+FROM gyro
+GROUP BY sat_id
+ORDER BY sat_id;
+--- solution
+WITH per_min AS (
+    SELECT sat_id, strftime('%Y-%m-%dT%H:%M:00Z', ts) AS minute,
+           COUNT(*) AS n, SUM(rate_dps) AS s, AVG(rate_dps) AS mean
+    FROM gyro
+    GROUP BY sat_id, minute
+)
+SELECT sat_id,
+       COUNT(*) AS minutes,
+       ROUND(AVG(mean), 4) AS mean_of_means,
+       ROUND(SUM(s) / SUM(n), 4) AS true_mean
+FROM per_min
+GROUP BY sat_id
+ORDER BY sat_id;
+--- hint
+Build the per-minute summary in a CTE with each bucket's count, sum and mean. The answer is a second GROUP BY over it.
+--- hint
+The half-full last minute gets a full vote in `AVG(mean)`. `SUM(s) / SUM(n)` gives each sample one vote.
+--- check result | The two means differ for both satellites
+ordered
+[["SAT-051", 3, 0.0142, 0.0172], ["SAT-052", 2, -0.0106, -0.0147]]
+--- check source | Summarises per minute first
+[Ss][Tt][Rr][Ff][Tt][Ii][Mm][Ee]
+--- check source | Adds up the sums
+[Ss][Uu][Mm]\s*\(
+
++++ question | Which five-minute bin
+--- ask
+What does this SQLite expression return?
+
+```sql
+SELECT strftime('%Y-%m-%dT%H:%M:%SZ',
+                (unixepoch('2026-05-10T12:07:45Z') / 300) * 300,
+                'unixepoch');
+```
+--- answer
+2026-05-10T12:05:00Z
+'2026-05-10T12:05:00Z'
+--- why
+`unixepoch` gives whole seconds since 1970, and both sides of `/ 300` are integers, so SQLite drops the remainder. That rounds the time down to a multiple of 300 seconds, five minutes counted from a midnight. 12:07:45 lies in the bin from 12:05:00 up to (not including) 12:10:00, and the bin is labelled by its start.
+
+=== sql03-l10 | Practice: Window or self-join?
+--- for
+l10-windows-versus-self-joins
+
++++ practice | The mode at each reading
+--- task
+`mode_log` (`sat_id`, `ts`, `mode`) records each mode change: from `ts` on, the satellite is in `mode` until its next change. For every `batt` reading, show the mode its satellite was in at that moment: the latest change at or before the reading's time. A change at exactly the reading's time counts. A satellite with no change at or before a reading gets NULL.
+
+Return `sat_id`, `ts`, `soc` and `mode`, sorted by `sat_id`, then `ts`. SQLite has no LATERAL, so use a correlated scalar subquery.
+--- starter
+SELECT b.sat_id, b.ts, b.soc, m.mode
+FROM batt AS b
+LEFT JOIN mode_log AS m ON m.sat_id = b.sat_id AND m.ts = b.ts
+ORDER BY b.sat_id, b.ts;
+--- solution
+SELECT b.sat_id, b.ts, b.soc,
+       (SELECT m.mode
+        FROM mode_log AS m
+        WHERE m.sat_id = b.sat_id
+          AND m.ts <= b.ts
+        ORDER BY m.ts DESC
+        LIMIT 1) AS mode
+FROM batt AS b
+ORDER BY b.sat_id, b.ts;
+--- hint
+Joining on equal times only finds a mode when a change happened at exactly the reading's time. You want the latest change at or before it.
+--- hint
+In the SELECT list: the satellite's changes with `m.ts <= b.ts`, newest first, `LIMIT 1`.
+--- check result | SAT-011 is SAFE at 00:30 and 00:40; SAT-012 switches to ECLIPSE exactly at 00:30
+ordered
+[["SAT-011", "2026-04-01T00:00:00Z", 0.92, "NOMINAL"], ["SAT-011", "2026-04-01T00:10:00Z", 0.88, "NOMINAL"], ["SAT-011", "2026-04-01T00:20:00Z", 0.81, "NOMINAL"], ["SAT-011", "2026-04-01T00:30:00Z", 0.74, "SAFE"], ["SAT-011", "2026-04-01T00:40:00Z", 0.77, "SAFE"], ["SAT-011", "2026-04-01T00:50:00Z", 0.83, "NOMINAL"], ["SAT-012", "2026-04-01T00:00:00Z", 0.64, "NOMINAL"], ["SAT-012", "2026-04-01T00:10:00Z", 0.61, "NOMINAL"], ["SAT-012", "2026-04-01T00:30:00Z", 0.58, "ECLIPSE"], ["SAT-012", "2026-04-01T00:40:00Z", 0.58, "ECLIPSE"], ["SAT-012", "2026-04-01T01:10:00Z", 0.66, "ECLIPSE"], ["SAT-013", "2026-04-01T00:00:00Z", 0.79, null], ["SAT-013", "2026-04-01T00:10:00Z", 0.79, null], ["SAT-013", "2026-04-01T00:20:00Z", 0.74, null], ["SAT-013", "2026-04-01T00:30:00Z", 0.82, null], ["SAT-014", "2026-04-01T00:20:00Z", 0.55, "SAFE"]]
+--- check source | Takes the latest change at or before the reading
+<=
+--- check source | Keeps one change per reading
+[Ll][Ii][Mm][Ii][Tt]\s+1
+
++++ practice | Mode spans
+--- task
+Turn `mode_log` into spans: each change lasts from its own `ts` until the same satellite's next change. For each change return:
+
+- `sat_id` and `mode`
+- `valid_from`: its `ts`
+- `valid_to`: the next change's `ts`, or `'9999-12-31T23:59:59Z'` for a satellite's last change, which has not ended
+- `minutes`: the span's length in whole minutes, NULL for a span that has not ended
+
+Sort by `sat_id`, then `valid_from`.
+--- starter
+SELECT sat_id, mode, ts AS valid_from, '9999-12-31T23:59:59Z' AS valid_to, NULL AS minutes
+FROM mode_log
+ORDER BY sat_id, valid_from;
+--- solution
+WITH s AS (
+    SELECT sat_id, mode, ts AS valid_from,
+           LEAD(ts) OVER (PARTITION BY sat_id ORDER BY ts) AS next_ts
+    FROM mode_log
+)
+SELECT sat_id, mode, valid_from,
+       COALESCE(next_ts, '9999-12-31T23:59:59Z') AS valid_to,
+       (unixepoch(next_ts) - unixepoch(valid_from)) / 60 AS minutes
+FROM s
+ORDER BY sat_id, valid_from;
+--- hint
+"The next change's time" is LEAD over each satellite's changes in time order.
+--- hint
+LEAD's third argument, or COALESCE, gives the far-future end. Work out `minutes` from the real next time, so the open span stays NULL.
+--- check result | SAT-011 was SAFE for 20 minutes; SAT-012's night-time NOMINAL span lasted 90
+ordered
+[["SAT-011", "NOMINAL", "2026-04-01T00:00:00Z", "2026-04-01T00:25:00Z", 25], ["SAT-011", "SAFE", "2026-04-01T00:25:00Z", "2026-04-01T00:45:00Z", 20], ["SAT-011", "NOMINAL", "2026-04-01T00:45:00Z", "9999-12-31T23:59:59Z", null], ["SAT-012", "NOMINAL", "2026-03-31T23:00:00Z", "2026-04-01T00:30:00Z", 90], ["SAT-012", "ECLIPSE", "2026-04-01T00:30:00Z", "9999-12-31T23:59:59Z", null], ["SAT-014", "SAFE", "2026-04-01T00:20:00Z", "9999-12-31T23:59:59Z", null]]
+--- check source | Uses LEAD
+[Ll][Ee][Aa][Dd]\s*\(
+--- check source absent | Does not type the change times
+'2026-04-01T
+
++++ practice | Average charge in each mode
+--- task
+For each satellite and mode, work out `readings` (how many `batt` readings were taken in that mode) and `avg_soc` (their average, rounded to 3). A mode that a satellite entered more than once counts all its spans together. Leave out readings taken before a satellite's first mode change, and satellites with no changes.
+
+Build spans from `mode_log` with LEAD and join the readings to them with a range condition: a span includes its start and stops just before its end. Return `sat_id`, `mode`, `readings` and `avg_soc`, sorted by `sat_id`, then `mode`.
+--- starter
+SELECT b.sat_id, m.mode, COUNT(*) AS readings, ROUND(AVG(b.soc), 3) AS avg_soc
+FROM batt AS b
+JOIN mode_log AS m ON m.sat_id = b.sat_id
+GROUP BY b.sat_id, m.mode
+ORDER BY b.sat_id, m.mode;
+--- solution
+WITH spans AS (
+    SELECT sat_id, mode, ts AS valid_from,
+           LEAD(ts, 1, '9999-12-31T23:59:59Z') OVER (PARTITION BY sat_id ORDER BY ts) AS valid_to
+    FROM mode_log
+)
+SELECT b.sat_id, sp.mode, COUNT(*) AS readings, ROUND(AVG(b.soc), 3) AS avg_soc
+FROM batt AS b
+JOIN spans AS sp
+  ON sp.sat_id = b.sat_id
+ AND b.ts >= sp.valid_from
+ AND b.ts <  sp.valid_to
+GROUP BY b.sat_id, sp.mode
+ORDER BY b.sat_id, sp.mode;
+--- hint
+The starter pairs every reading with every mode change of its satellite: a fan-out. Each reading must meet only the span that contains it.
+--- hint
+Spans from LEAD, then `b.ts >= valid_from AND b.ts < valid_to`. Half-open spans never overlap, so each reading matches at most one.
+--- check result | SAT-011 averaged 0.86 in NOMINAL and 0.755 in SAFE
+ordered
+[["SAT-011", "NOMINAL", 4, 0.86], ["SAT-011", "SAFE", 2, 0.755], ["SAT-012", "ECLIPSE", 3, 0.607], ["SAT-012", "NOMINAL", 2, 0.625], ["SAT-014", "SAFE", 1, 0.55]]
+--- check source | Uses LEAD
+[Ll][Ee][Aa][Dd]\s*\(
+--- check source | Joins on a range of times
+>=|<=
+
++++ practice | The nearest reading to each anomaly
+--- task
+`anomaly` (`sat_id`, `ts`, `code`) logs anomalies. For each one, find the same satellite's `batt` reading nearest in time, before or after. If the readings before and after are equally far, take the one before. If there is only one side, take that one.
+
+Return `sat_id`, `ts` (the anomaly's time), `code`, `nearest_ts` and `nearest_soc`, sorted by `sat_id`, then `ts`.
+--- starter
+SELECT a.sat_id, a.ts, a.code,
+       (SELECT MAX(b.ts) FROM batt AS b WHERE b.sat_id = a.sat_id AND b.ts <= a.ts) AS nearest_ts,
+       NULL AS nearest_soc
+FROM anomaly AS a
+ORDER BY a.sat_id, a.ts;
+--- solution
+WITH sides AS (
+    SELECT a.sat_id, a.ts, a.code,
+           (SELECT MAX(b.ts) FROM batt AS b WHERE b.sat_id = a.sat_id AND b.ts <= a.ts) AS before_ts,
+           (SELECT MIN(b.ts) FROM batt AS b WHERE b.sat_id = a.sat_id AND b.ts >  a.ts) AS after_ts
+    FROM anomaly AS a
+),
+pick AS (
+    SELECT sat_id, ts, code,
+           CASE WHEN after_ts IS NULL
+                  OR (before_ts IS NOT NULL
+                      AND unixepoch(ts) - unixepoch(before_ts) <= unixepoch(after_ts) - unixepoch(ts))
+                THEN before_ts ELSE after_ts END AS nearest_ts
+    FROM sides
+)
+SELECT p.sat_id, p.ts, p.code, p.nearest_ts, b.soc AS nearest_soc
+FROM pick AS p
+JOIN batt AS b ON b.sat_id = p.sat_id AND b.ts = p.nearest_ts
+ORDER BY p.sat_id, p.ts;
+--- hint
+Find the reading time on each side with two scalar subqueries: the latest at or before the anomaly, and the earliest after it.
+--- hint
+A CASE picks the side: the one before when there is no one after, or when it is at least as close. Then join back to `batt` on satellite and time to fetch the charge.
+--- check result | Both ties go to the earlier reading; SAT-014's anomaly has only a later reading
+ordered
+[["SAT-011", "2026-04-01T00:14:00Z", "BUS_UV", "2026-04-01T00:10:00Z", 0.88], ["SAT-011", "2026-04-01T00:25:00Z", "MODE_SW", "2026-04-01T00:20:00Z", 0.81], ["SAT-012", "2026-04-01T00:52:00Z", "PKT_CRC", "2026-04-01T00:40:00Z", 0.58], ["SAT-013", "2026-04-01T00:45:00Z", "HTR_ON", "2026-04-01T00:30:00Z", 0.82], ["SAT-014", "2026-04-01T00:05:00Z", "RW_TEMP", "2026-04-01T00:20:00Z", 0.55]]
+--- check source | Compares distances in seconds
+[Uu][Nn][Ii][Xx][Ee][Pp][Oo][Cc][Hh]
+--- check source absent | Does not type the times
+'2026-04-01T
+
++++ practice | The mode that arrived one reading late
+--- task
+This query should show the mode each anomaly in `anomaly` happened in: the latest `mode_log` change at or before the anomaly, since a mode applies from the moment it takes effect. The anomaly logged at the very moment SAT-011 entered SAFE mode shows the old mode, NOMINAL.
+
+Fix it. Keep the columns `sat_id`, `ts`, `code` and `mode`, sorted by `sat_id`, then `ts`.
+--- starter
+SELECT a.sat_id, a.ts, a.code,
+       (SELECT m.mode
+        FROM mode_log AS m
+        WHERE m.sat_id = a.sat_id
+          AND m.ts < a.ts
+        ORDER BY m.ts DESC
+        LIMIT 1) AS mode
+FROM anomaly AS a
+ORDER BY a.sat_id, a.ts;
+--- solution
+SELECT a.sat_id, a.ts, a.code,
+       (SELECT m.mode
+        FROM mode_log AS m
+        WHERE m.sat_id = a.sat_id
+          AND m.ts <= a.ts
+        ORDER BY m.ts DESC
+        LIMIT 1) AS mode
+FROM anomaly AS a
+ORDER BY a.sat_id, a.ts;
+--- hint
+Which comparison decides whether a change at exactly the anomaly's time counts?
+--- hint
+"At or before" is `<=`.
+--- check result | MODE_SW at 00:25 happened in SAFE; SAT-014's anomaly came before any change
+ordered
+[["SAT-011", "2026-04-01T00:14:00Z", "BUS_UV", "NOMINAL"], ["SAT-011", "2026-04-01T00:25:00Z", "MODE_SW", "SAFE"], ["SAT-012", "2026-04-01T00:52:00Z", "PKT_CRC", "ECLIPSE"], ["SAT-013", "2026-04-01T00:45:00Z", "HTR_ON", null], ["SAT-014", "2026-04-01T00:05:00Z", "RW_TEMP", null]]
+--- check source | Counts a change at the same moment
+<=|>=
+--- check source | Still keeps one change
+[Ll][Ii][Mm][Ii][Tt]\s+1
+
++++ practice | Mode and time in mode, with windows only
+--- task
+Label every `batt` reading with its satellite's mode at that moment (the latest `mode_log` change at or before it) and with `since_min`: the whole minutes since that mode took effect. Readings with no change at or before them get NULL in both columns.
+
+Do it without any subquery that runs once per reading: stack `mode_log` and `batt` into one stream with UNION ALL, and carry each mode forward with windows. A mode change and a reading at the same moment must count the change as already in force. Return `sat_id`, `ts`, `soc`, `mode` and `since_min`, sorted by `sat_id`, then `ts`.
+--- starter
+SELECT sat_id, ts, soc, NULL AS mode, NULL AS since_min
+FROM batt
+ORDER BY sat_id, ts;
+--- solution
+WITH events AS (
+    SELECT sat_id, ts, 0 AS kind, mode, NULL AS soc FROM mode_log
+    UNION ALL
+    SELECT sat_id, ts, 1 AS kind, NULL, soc FROM batt
+),
+grouped AS (
+    SELECT sat_id, ts, kind, mode, soc,
+           COUNT(mode) OVER (PARTITION BY sat_id ORDER BY ts, kind
+                             ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS grp
+    FROM events
+),
+filled AS (
+    SELECT sat_id, ts, kind, soc,
+           MAX(mode) OVER (PARTITION BY sat_id, grp) AS mode,
+           MAX(CASE WHEN kind = 0 THEN ts END) OVER (PARTITION BY sat_id, grp) AS mode_from
+    FROM grouped
+)
+SELECT sat_id, ts, soc, mode,
+       (unixepoch(ts) - unixepoch(mode_from)) / 60 AS since_min
+FROM filled
+WHERE kind = 1
+ORDER BY sat_id, ts;
+--- hint
+Give the two kinds of row a `kind` column (0 for a change, 1 for a reading) and order by `ts, kind`, so a change sorts before a reading at the same moment.
+--- hint
+A running `COUNT(mode)` rises by one at each change and stays flat across the readings after it: that is a group label. Over each group, `MAX(mode)` and the change's `ts` fill every row. Filter to readings only after the windows.
+--- check result | SAT-012 has been in NOMINAL for 60 minutes at midnight; SAT-013 has no mode
+ordered
+[["SAT-011", "2026-04-01T00:00:00Z", 0.92, "NOMINAL", 0], ["SAT-011", "2026-04-01T00:10:00Z", 0.88, "NOMINAL", 10], ["SAT-011", "2026-04-01T00:20:00Z", 0.81, "NOMINAL", 20], ["SAT-011", "2026-04-01T00:30:00Z", 0.74, "SAFE", 5], ["SAT-011", "2026-04-01T00:40:00Z", 0.77, "SAFE", 15], ["SAT-011", "2026-04-01T00:50:00Z", 0.83, "NOMINAL", 5], ["SAT-012", "2026-04-01T00:00:00Z", 0.64, "NOMINAL", 60], ["SAT-012", "2026-04-01T00:10:00Z", 0.61, "NOMINAL", 70], ["SAT-012", "2026-04-01T00:30:00Z", 0.58, "ECLIPSE", 0], ["SAT-012", "2026-04-01T00:40:00Z", 0.58, "ECLIPSE", 10], ["SAT-012", "2026-04-01T01:10:00Z", 0.66, "ECLIPSE", 40], ["SAT-013", "2026-04-01T00:00:00Z", 0.79, null, null], ["SAT-013", "2026-04-01T00:10:00Z", 0.79, null, null], ["SAT-013", "2026-04-01T00:20:00Z", 0.74, null, null], ["SAT-013", "2026-04-01T00:30:00Z", 0.82, null, null], ["SAT-014", "2026-04-01T00:20:00Z", 0.55, "SAFE", 0]]
+--- check source | Stacks the tables with UNION ALL
+[Uu][Nn][Ii][Oo][Nn]\s+[Aa][Ll][Ll]
+--- check source absent | No per-row lookup subquery
+[Ll][Ii][Mm][Ii][Tt]\s+1
+
++++ question | How many pairs the all-earlier join builds
+--- ask
+A table holds 1,000 samples for each of 3 satellites. How many rows does this inner self-join produce?
+
+```sql
+SELECT cur.sat_id, cur.ts, prev.ts
+FROM samples AS cur
+JOIN samples AS prev
+  ON prev.sat_id = cur.sat_id
+ AND prev.ts < cur.ts;
+```
+--- answer
+1498500
+1,498,500
+1 498 500
+--- why
+Within one satellite, the k-th sample pairs with the k − 1 samples before it, so 0 + 1 + … + 999 = 1000 × 999 / 2 = 499,500 pairs. Three satellites give 3 × 499,500 = 1,498,500 rows, to answer a question LAG answers with 3,000 rows in one ordered pass. The pairs grow with the square of the samples per satellite.
+
+=== sql03-test | Window functions for telemetry: module test
+--- teach
+The test covers the whole module on a new fleet: windows against groups and where they run, ranking and ties, LAG and LEAD, running totals, frames (ROWS, RANGE, GROUPS and the default), deduplication and latest per key, gaps and islands, sessions, downsampling into buckets, and as-of joins. Its ten problems are new, most combine several lessons, and there are no hints; twelve questions after them check that you know why a window gives the rows it gives. The test has its own database: read each task's list of tables, and look at the rows with `SELECT *` before you write. To get ready, redo the practice problems of lessons 5, 7 and 8 without the hints.
+--- gate
+pass 7
+questions 10
+minutes 112
+--- schema
+CREATE TABLE soc (
+    sat_id TEXT NOT NULL,
+    ts     TEXT NOT NULL,
+    soc    REAL NOT NULL
+);
+INSERT INTO soc VALUES
+  ('SAT-301', '2026-06-01T06:00:00Z', 0.90),
+  ('SAT-301', '2026-06-01T06:05:00Z', 0.86),
+  ('SAT-301', '2026-06-01T06:10:00Z', 0.80),
+  ('SAT-301', '2026-06-01T06:15:00Z', 0.74),
+  ('SAT-301', '2026-06-01T06:20:00Z', 0.71),
+  ('SAT-301', '2026-06-01T06:25:00Z', 0.75),
+  ('SAT-301', '2026-06-01T06:30:00Z', 0.82),
+  ('SAT-301', '2026-06-01T06:35:00Z', 0.88),
+  ('SAT-302', '2026-06-01T06:00:00Z', 0.70),
+  ('SAT-302', '2026-06-01T06:05:00Z', 0.66),
+  ('SAT-302', '2026-06-01T06:20:00Z', 0.61),
+  ('SAT-302', '2026-06-01T06:25:00Z', 0.61),
+  ('SAT-302', '2026-06-01T06:30:00Z', 0.55),
+  ('SAT-302', '2026-06-01T06:50:00Z', 0.64),
+  ('SAT-303', '2026-06-01T06:10:00Z', 0.95),
+  ('SAT-303', '2026-06-01T06:15:00Z', 0.93),
+  ('SAT-303', '2026-06-01T06:20:00Z', 0.93),
+  ('SAT-304', '2026-06-01T06:30:00Z', 0.50);
+CREATE TABLE raw_tm (
+    ingest_id INTEGER PRIMARY KEY,
+    sat_id    TEXT NOT NULL,
+    channel   TEXT NOT NULL,
+    ts        TEXT NOT NULL,
+    value     REAL NOT NULL,
+    station   TEXT NOT NULL,
+    rx_at     TEXT NOT NULL,
+    crc_ok    INTEGER NOT NULL
+);
+INSERT INTO raw_tm VALUES
+  ( 1, 'SAT-301', 'temp', '2026-06-01T06:00:00Z', 21.5, 'kiruna',   '2026-06-01T06:04:00Z', 1),
+  ( 2, 'SAT-301', 'temp', '2026-06-01T06:00:00Z', 21.5, 'svalbard', '2026-06-01T06:04:00Z', 1),
+  ( 3, 'SAT-301', 'temp', '2026-06-01T06:01:00Z', 22.0, 'kiruna',   '2026-06-01T06:05:00Z', 1),
+  ( 4, 'SAT-301', 'temp', '2026-06-01T06:02:00Z', 26.2, 'svalbard', '2026-06-01T06:05:40Z', 0),
+  ( 5, 'SAT-301', 'temp', '2026-06-01T06:02:00Z', 22.6, 'kiruna',   '2026-06-01T06:05:55Z', 1),
+  ( 6, 'SAT-301', 'temp', '2026-06-01T06:03:00Z', 23.1, 'kiruna',   '2026-06-01T06:07:00Z', 1),
+  ( 7, 'SAT-301', 'volt', '2026-06-01T06:00:00Z', 28.0, 'kiruna',   '2026-06-01T06:04:00Z', 1),
+  ( 8, 'SAT-301', 'volt', '2026-06-01T06:02:00Z', 27.8, 'kiruna',   '2026-06-01T06:05:55Z', 1),
+  ( 9, 'SAT-301', 'volt', '2026-06-01T06:02:00Z', 27.8, 'kiruna',   '2026-06-01T06:05:55Z', 1),
+  (10, 'SAT-302', 'temp', '2026-06-01T06:00:00Z', 19.0, 'troll',    '2026-06-01T06:03:00Z', 1),
+  (11, 'SAT-302', 'temp', '2026-06-01T06:01:00Z', 19.4, 'troll',    '2026-06-01T06:04:10Z', 1),
+  (12, 'SAT-302', 'temp', '2026-06-01T06:01:00Z', 19.4, 'inuvik',   '2026-06-01T06:04:05Z', 1),
+  (13, 'SAT-302', 'temp', '2026-06-01T06:03:00Z', 18.9, 'troll',    '2026-06-01T06:06:00Z', 1),
+  (14, 'SAT-302', 'volt', '2026-06-01T06:01:00Z', 27.5, 'troll',    '2026-06-01T06:04:10Z', 0);
+CREATE TABLE tank (
+    sat_id  TEXT PRIMARY KEY,
+    load_kg REAL NOT NULL
+);
+INSERT INTO tank VALUES
+  ('SAT-301', 6.0), ('SAT-302', 4.0), ('SAT-303', 3.0), ('SAT-304', 5.0);
+CREATE TABLE burn (
+    burn_id INTEGER PRIMARY KEY,
+    sat_id  TEXT NOT NULL,
+    ts      TEXT NOT NULL,
+    kg      REAL NOT NULL
+);
+INSERT INTO burn VALUES
+  (1, 'SAT-301', '2026-06-02T00:00:00Z', 1.00),
+  (2, 'SAT-301', '2026-06-04T12:00:00Z', 1.50),
+  (3, 'SAT-301', '2026-06-04T12:00:00Z', 0.75),
+  (4, 'SAT-301', '2026-06-07T00:00:00Z', 1.25),
+  (5, 'SAT-301', '2026-06-09T06:00:00Z', 0.50),
+  (6, 'SAT-302', '2026-06-03T00:00:00Z', 2.00),
+  (7, 'SAT-302', '2026-06-05T00:00:00Z', 0.60),
+  (8, 'SAT-302', '2026-06-05T00:00:00Z', 0.45),
+  (9, 'SAT-303', '2026-06-06T00:00:00Z', 0.50);
+CREATE TABLE temp (
+    sat_id TEXT NOT NULL,
+    ts     TEXT NOT NULL,
+    deg_c  REAL NOT NULL
+);
+INSERT INTO temp VALUES
+  ('SAT-301', '2026-06-01T06:00:00Z', 40.0),
+  ('SAT-301', '2026-06-01T06:01:00Z', 41.0),
+  ('SAT-301', '2026-06-01T06:02:00Z', 43.5),
+  ('SAT-301', '2026-06-01T06:03:00Z', 46.0),
+  ('SAT-301', '2026-06-01T06:03:20Z', 47.5),
+  ('SAT-301', '2026-06-01T06:03:40Z', 48.0),
+  ('SAT-301', '2026-06-01T06:04:00Z', 46.5),
+  ('SAT-301', '2026-06-01T06:06:00Z', 44.0),
+  ('SAT-301', '2026-06-01T06:07:00Z', 45.5),
+  ('SAT-301', '2026-06-01T06:10:00Z', 42.0),
+  ('SAT-302', '2026-06-01T06:00:00Z', 44.0),
+  ('SAT-302', '2026-06-01T06:01:00Z', 45.2),
+  ('SAT-302', '2026-06-01T06:02:00Z', 46.1),
+  ('SAT-302', '2026-06-01T06:03:00Z', 45.9),
+  ('SAT-302', '2026-06-01T06:05:00Z', 44.8),
+  ('SAT-302', '2026-06-01T06:06:00Z', 46.3),
+  ('SAT-302', '2026-06-01T06:07:00Z', 46.8),
+  ('SAT-302', '2026-06-01T06:09:00Z', 47.0),
+  ('SAT-303', '2026-06-01T06:00:00Z', 30.0);
+CREATE TABLE pkt (
+    sat_id  TEXT NOT NULL,
+    station TEXT NOT NULL,
+    ts      TEXT NOT NULL
+);
+INSERT INTO pkt VALUES
+  ('SAT-301', 'KIRUNA',   '2026-06-01T07:00:00Z'),
+  ('SAT-301', 'KIRUNA',   '2026-06-01T07:00:20Z'),
+  ('SAT-301', 'KIRUNA',   '2026-06-01T07:00:40Z'),
+  ('SAT-301', 'KIRUNA',   '2026-06-01T07:01:00Z'),
+  ('SAT-301', 'KIRUNA',   '2026-06-01T07:02:40Z'),
+  ('SAT-301', 'KIRUNA',   '2026-06-01T07:03:00Z'),
+  ('SAT-301', 'SVALBARD', '2026-06-01T08:40:00Z'),
+  ('SAT-301', 'SVALBARD', '2026-06-01T08:40:20Z'),
+  ('SAT-301', 'SVALBARD', '2026-06-01T08:40:40Z'),
+  ('SAT-301', 'SVALBARD', '2026-06-01T08:41:00Z'),
+  ('SAT-301', 'SVALBARD', '2026-06-01T08:41:20Z'),
+  ('SAT-301', 'SVALBARD', '2026-06-01T08:41:40Z'),
+  ('SAT-301', 'KIRUNA',   '2026-06-01T10:20:00Z'),
+  ('SAT-301', 'KIRUNA',   '2026-06-01T10:22:00Z'),
+  ('SAT-301', 'KIRUNA',   '2026-06-01T10:22:20Z'),
+  ('SAT-302', 'TROLL',    '2026-06-01T07:01:30Z'),
+  ('SAT-302', 'TROLL',    '2026-06-01T07:01:50Z'),
+  ('SAT-302', 'TROLL',    '2026-06-01T07:02:10Z'),
+  ('SAT-302', 'TROLL',    '2026-06-01T07:02:30Z'),
+  ('SAT-302', 'TROLL',    '2026-06-01T07:02:50Z'),
+  ('SAT-302', 'TROLL',    '2026-06-01T07:03:10Z'),
+  ('SAT-302', 'TROLL',    '2026-06-01T07:03:30Z'),
+  ('SAT-302', 'TROLL',    '2026-06-01T07:30:00Z'),
+  ('SAT-303', 'INUVIK',   '2026-06-01T09:00:00Z'),
+  ('SAT-303', 'INUVIK',   '2026-06-01T09:00:20Z'),
+  ('SAT-303', 'INUVIK',   '2026-06-01T09:00:40Z'),
+  ('SAT-303', 'INUVIK',   '2026-06-01T09:01:00Z');
+CREATE TABLE hk (
+    sat_id TEXT NOT NULL,
+    ts     TEXT NOT NULL,
+    amps   REAL NOT NULL
+);
+INSERT INTO hk
+WITH RECURSIVE k(n) AS (SELECT 0 UNION ALL SELECT n + 1 FROM k WHERE n < 179)
+SELECT 'SAT-301',
+       strftime('%Y-%m-%dT%H:%M:%SZ', '2026-06-01T12:00:00Z', '+' || n || ' seconds'),
+       ROUND(1.5 + ((n * 3) % 7 - 3) / 10.0 + CASE WHEN n BETWEEN 70 AND 71 THEN 2.0 ELSE 0 END, 2)
+FROM k;
+INSERT INTO hk
+WITH RECURSIVE k(n) AS (SELECT 0 UNION ALL SELECT n + 1 FROM k WHERE n < 179)
+SELECT 'SAT-302',
+       strftime('%Y-%m-%dT%H:%M:%SZ', '2026-06-01T12:00:00Z', '+' || n || ' seconds'),
+       ROUND(1.2 + ((n * 5) % 9 - 4) / 10.0 - CASE WHEN n = 130 THEN 1.0 ELSE 0 END, 2)
+FROM k
+WHERE n < 60 OR n >= 90;
+CREATE TABLE mode_evt (
+    sat_id TEXT NOT NULL,
+    ts     TEXT NOT NULL,
+    mode   TEXT NOT NULL
+);
+INSERT INTO mode_evt VALUES
+  ('SAT-301', '2026-06-01T06:12:00Z', 'SAFE'),
+  ('SAT-301', '2026-06-01T06:27:00Z', 'NOMINAL'),
+  ('SAT-302', '2026-06-01T05:00:00Z', 'NOMINAL'),
+  ('SAT-302', '2026-06-01T06:20:00Z', 'ECLIPSE'),
+  ('SAT-302', '2026-06-01T06:50:00Z', 'NOMINAL'),
+  ('SAT-304', '2026-06-01T06:30:00Z', 'SAFE');
+
++++ problem | A clean status board
+--- task
+`raw_tm` (`ingest_id`, `sat_id`, `channel`, `ts`, `value`, `station`, `rx_at`, `crc_ok`) holds telemetry as it arrived. One sample is identified by `sat_id`, `channel` and `ts`; some arrived more than once. When copies differ, keep one per sample: a copy that passed its check (`crc_ok` = 1) first, then the one received first (`rx_at`), then the lower `ingest_id`.
+
+After removing the duplicates, return one row per satellite and channel:
+
+- `sat_id`, `channel`, and `ts` and `value` of its newest sample
+- `delta`: that value minus the value of the kept sample just before it on the same satellite and channel, rounded to 2; NULL if there is none
+- `samples`: how many kept samples the satellite and channel have
+
+Sort by `sat_id`, then `channel`.
+--- starter
+SELECT sat_id, channel, MAX(ts) AS ts, MAX(value) AS value, NULL AS delta, COUNT(*) AS samples
+FROM raw_tm
+GROUP BY sat_id, channel
+ORDER BY sat_id, channel;
+--- solution
+WITH kept AS (
+    SELECT sat_id, channel, ts, value,
+           ROW_NUMBER() OVER (PARTITION BY sat_id, channel, ts
+                              ORDER BY crc_ok DESC, rx_at, ingest_id) AS copy_no
+    FROM raw_tm
+),
+clean AS (
+    SELECT sat_id, channel, ts, value,
+           value - LAG(value) OVER (PARTITION BY sat_id, channel ORDER BY ts) AS delta,
+           ROW_NUMBER() OVER (PARTITION BY sat_id, channel ORDER BY ts DESC) AS newest,
+           COUNT(*) OVER (PARTITION BY sat_id, channel) AS samples
+    FROM kept
+    WHERE copy_no = 1
+)
+SELECT sat_id, channel, ts, value, ROUND(delta, 2) AS delta, samples
+FROM clean
+WHERE newest = 1
+ORDER BY sat_id, channel;
+--- check result | SAT-301's temperature rose 0.5 from the good 22.6, not fell from the corrupt 26.2
+ordered
+[["SAT-301", "temp", "2026-06-01T06:03:00Z", 23.1, 0.5, 4], ["SAT-301", "volt", "2026-06-01T06:02:00Z", 27.8, -0.2, 2], ["SAT-302", "temp", "2026-06-01T06:03:00Z", 18.9, -0.5, 3], ["SAT-302", "volt", "2026-06-01T06:01:00Z", 27.5, null, 1]]
+--- check source | Uses ROW_NUMBER
+[Rr][Oo][Ww]_[Nn][Uu][Mm][Bb][Ee][Rr]
+--- check source | Uses LAG
+[Ll][Aa][Gg]\s*\(
+--- check source absent | Does not type the values
+\b(23\.1|27\.8|18\.9|27\.5)\b
+
++++ problem | The steepest discharges
+--- task
+`soc` (`sat_id`, `ts`, `soc`) holds battery samples. For each reading, the rate of change is the change in `soc` since the same satellite's previous reading divided by the hours between them, rounded to 3.
+
+For every satellite whose charge ever fell (some rate below 0), return its steepest fall: the reading with the most negative rounded rate, and if two tie, the earlier one. Then rank these worst falls across the fleet, steepest first, with tied satellites sharing a place and the next place skipping.
+
+Return `sat_id`, `ts`, `rate_per_h` and `fleet_place`, sorted by `fleet_place`, then `sat_id`.
+--- starter
+SELECT sat_id, MIN(ts) AS ts, 0 AS rate_per_h, 1 AS fleet_place
+FROM soc
+GROUP BY sat_id
+ORDER BY fleet_place, sat_id;
+--- solution
+WITH rates AS (
+    SELECT sat_id, ts,
+           ROUND((soc - LAG(soc) OVER w) * 3600.0
+                 / (unixepoch(ts) - unixepoch(LAG(ts) OVER w)), 3) AS rate_per_h
+    FROM soc
+    WINDOW w AS (PARTITION BY sat_id ORDER BY ts)
+),
+worst AS (
+    SELECT sat_id, ts, rate_per_h,
+           ROW_NUMBER() OVER (PARTITION BY sat_id ORDER BY rate_per_h, ts) AS k
+    FROM rates
+    WHERE rate_per_h < 0
+)
+SELECT sat_id, ts, rate_per_h,
+       RANK() OVER (ORDER BY rate_per_h) AS fleet_place
+FROM worst
+WHERE k = 1
+ORDER BY fleet_place, sat_id;
+--- check result | SAT-301 and SAT-302 share first place at -0.72; SAT-301's tie goes to 06:10
+ordered
+[["SAT-301", "2026-06-01T06:10:00Z", -0.72, 1], ["SAT-302", "2026-06-01T06:30:00Z", -0.72, 1], ["SAT-303", "2026-06-01T06:15:00Z", -0.24, 3]]
+--- check source | Uses LAG
+[Ll][Aa][Gg]\s*\(
+--- check source | Uses RANK
+(^|[^_A-Za-z])[Rr][Aa][Nn][Kk]\s*\(
+--- check source absent | Does not type the times
+'2026-06-01T
+
++++ problem | A propellant ledger
+--- task
+`tank` (`sat_id`, `load_kg`) lists every satellite with the propellant it was launched with. `burn` (`burn_id`, `sat_id`, `ts`, `kg`) lists burns; two burns can share a moment, and those count as one step, so the propellant left after a moment includes every burn at that moment.
+
+Return one row per satellite in `tank`:
+
+- `burns`: its number of burns, 0 if none
+- `remaining_kg`: its load minus all its burns, rounded to 2
+- `low_since`: the first moment after which its remaining propellant was below 25% of its load (exactly 25% is not below), or NULL if that never happened
+
+Sort by `sat_id`.
+--- starter
+SELECT t.sat_id, COUNT(b.burn_id) AS burns, t.load_kg AS remaining_kg, NULL AS low_since
+FROM tank AS t
+LEFT JOIN burn AS b ON b.sat_id = t.sat_id
+GROUP BY t.sat_id
+ORDER BY t.sat_id;
+--- solution
+WITH ledger AS (
+    SELECT b.sat_id, b.ts, t.load_kg,
+           t.load_kg - SUM(b.kg) OVER (PARTITION BY b.sat_id ORDER BY b.ts) AS left_kg
+    FROM burn AS b
+    JOIN tank AS t ON t.sat_id = b.sat_id
+),
+low AS (
+    SELECT sat_id, MIN(ts) AS low_since
+    FROM ledger
+    WHERE left_kg < 0.25 * load_kg
+    GROUP BY sat_id
+)
+SELECT t.sat_id,
+       COUNT(b.burn_id) AS burns,
+       ROUND(t.load_kg - COALESCE(SUM(b.kg), 0), 2) AS remaining_kg,
+       l.low_since
+FROM tank AS t
+LEFT JOIN burn AS b ON b.sat_id = t.sat_id
+LEFT JOIN low AS l ON l.sat_id = t.sat_id
+GROUP BY t.sat_id, t.load_kg, l.low_since
+ORDER BY t.sat_id;
+--- check result | SAT-301 is exactly at 25% after 7 June and below it from 9 June; SAT-302 from 5 June
+ordered
+[["SAT-301", 5, 1.0, "2026-06-09T06:00:00Z"], ["SAT-302", 3, 0.95, "2026-06-05T00:00:00Z"], ["SAT-303", 1, 2.5, null], ["SAT-304", 0, 5.0, null]]
+--- check source | Uses a running SUM
+[Ss][Uu][Mm]\s*\([^)]*\)\s*[Oo][Vv][Ee][Rr]
+--- check source absent | Does not type the moments
+'2026-06-0
+
++++ problem | Readings that disagree with their neighbours
+--- task
+`temp` (`sat_id`, `ts`, `deg_c`) holds temperatures at irregular times. For each reading, `smooth` is the average of the same satellite's readings from 60 seconds before it to 60 seconds after it, both ends included and the reading itself counted; `n` is how many readings that is. `resid` is `deg_c − smooth`.
+
+List the readings whose `resid` is more than 0.7 away from zero. Return `sat_id`, `ts`, `deg_c`, `n`, `smooth` and `resid`, the last two rounded to 2, sorted by `sat_id`, then `ts`.
+--- starter
+SELECT sat_id, ts, deg_c, 1 AS n, deg_c AS smooth, 0 AS resid
+FROM temp
+ORDER BY sat_id, ts;
+--- solution
+WITH s AS (
+    SELECT sat_id, ts, deg_c,
+           COUNT(*)   OVER w AS n,
+           AVG(deg_c) OVER w AS smooth
+    FROM temp
+    WINDOW w AS (PARTITION BY sat_id ORDER BY unixepoch(ts)
+                 RANGE BETWEEN 60 PRECEDING AND 60 FOLLOWING)
+)
+SELECT sat_id, ts, deg_c, n, ROUND(smooth, 2) AS smooth, ROUND(deg_c - smooth, 2) AS resid
+FROM s
+WHERE ABS(deg_c - smooth) > 0.7
+ORDER BY sat_id, ts;
+--- check result | Four readings, among them SAT-301's pair after its two-minute silence
+ordered
+[["SAT-301", "2026-06-01T06:03:40Z", 48.0, 4, 47.0, 1.0], ["SAT-301", "2026-06-01T06:06:00Z", 44.0, 2, 44.75, -0.75], ["SAT-301", "2026-06-01T06:07:00Z", 45.5, 2, 44.75, 0.75], ["SAT-302", "2026-06-01T06:05:00Z", 44.8, 2, 45.55, -0.75]]
+--- check source | Uses a RANGE frame on both sides
+[Rr][Aa][Nn][Gg][Ee]\s+[Bb][Ee][Tt][Ww][Ee][Ee][Nn]\s+60\s+[Pp][Rr][Ee][Cc][Ee][Dd][Ii][Nn][Gg]\s+[Aa][Nn][Dd]\s+60\s+[Ff][Oo][Ll][Ll][Oo][Ww][Ii][Nn][Gg]
+--- check source | Orders the window by seconds
+[Uu][Nn][Ii][Xx][Ee][Pp][Oo][Cc][Hh]\s*\(\s*ts\s*\)
+
++++ problem | Overheat episodes
+--- task
+A `temp` reading is hot above 45.0 °C. Readings are expected at least every 90 seconds, so a step longer than 90 seconds from the same satellite's previous reading is a dropout, and a hot episode must not continue across one: nobody knows what happened in the silence.
+
+A new run starts when the hot flag changes or after a dropout. Return every hot run with at least two readings: `sat_id`, `t_start`, `t_end`, `samples`, `peak` (its highest reading) and `duration_s` (seconds from its first reading to its last). Sort by `sat_id`, then `t_start`.
+--- starter
+SELECT sat_id, MIN(ts) AS t_start, MAX(ts) AS t_end, COUNT(*) AS samples, MAX(deg_c) AS peak,
+       unixepoch(MAX(ts)) - unixepoch(MIN(ts)) AS duration_s
+FROM temp
+WHERE deg_c > 45.0
+GROUP BY sat_id
+ORDER BY sat_id, t_start;
+--- solution
+WITH marked AS (
+    SELECT sat_id, ts, deg_c,
+           CASE WHEN deg_c > 45.0 THEN 1 ELSE 0 END AS hot,
+           CASE WHEN (deg_c > 45.0) IS DISTINCT FROM LAG(deg_c > 45.0) OVER w
+                  OR unixepoch(ts) - unixepoch(LAG(ts) OVER w) > 90
+                THEN 1 ELSE 0 END AS is_start
+    FROM temp
+    WINDOW w AS (PARTITION BY sat_id ORDER BY ts)
+),
+runs AS (
+    SELECT sat_id, ts, deg_c, hot,
+           SUM(is_start) OVER (PARTITION BY sat_id ORDER BY ts
+                               ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS run_id
+    FROM marked
+)
+SELECT sat_id, MIN(ts) AS t_start, MAX(ts) AS t_end, COUNT(*) AS samples, MAX(deg_c) AS peak,
+       unixepoch(MAX(ts)) - unixepoch(MIN(ts)) AS duration_s
+FROM runs
+WHERE hot = 1
+GROUP BY sat_id, run_id
+HAVING COUNT(*) >= 2
+ORDER BY sat_id, t_start;
+--- check result | Three episodes; SAT-302's reading at 06:09 comes after a dropout and stands alone
+ordered
+[["SAT-301", "2026-06-01T06:03:00Z", "2026-06-01T06:04:00Z", 4, 48.0, 60], ["SAT-302", "2026-06-01T06:01:00Z", "2026-06-01T06:03:00Z", 3, 46.1, 120], ["SAT-302", "2026-06-01T06:06:00Z", "2026-06-01T06:07:00Z", 2, 46.8, 60]]
+--- check source | Uses LAG
+[Ll][Aa][Gg]\s*\(
+--- check source absent | Does not type the times
+'2026-06-01T
+
++++ problem | Each satellite's best pass
+--- task
+`pkt` (`sat_id`, `station`, `ts`) has one row per packet. Satellites send a packet every 20 seconds while in contact. A silence longer than 120 seconds between two packets of the same satellite ends a pass; a silence of exactly 120 seconds does not.
+
+For each satellite return:
+
+- `passes`: its number of passes
+- `best_aos`, `best_packets` and `best_lost` for its best pass: the one with the most packets, the earlier if two tie; `best_lost` is the packets due from its first to its last packet, `duration_s / 20 + 1`, minus the packets it holds
+- `longest_quiet_s`: the longest silence, in seconds, between the end of one of its passes and the start of the next, or NULL if it has only one pass
+
+Sort by `sat_id`.
+--- starter
+SELECT sat_id, 1 AS passes, MIN(ts) AS best_aos, COUNT(*) AS best_packets, 0 AS best_lost, NULL AS longest_quiet_s
+FROM pkt
+GROUP BY sat_id
+ORDER BY sat_id;
+--- solution
+WITH stepped AS (
+    SELECT sat_id, ts,
+           unixepoch(ts) - unixepoch(LAG(ts) OVER (PARTITION BY sat_id ORDER BY ts)) AS gap_s
+    FROM pkt
+),
+numbered AS (
+    SELECT sat_id, ts,
+           SUM(CASE WHEN gap_s IS NULL OR gap_s > 120 THEN 1 ELSE 0 END)
+             OVER (PARTITION BY sat_id ORDER BY ts
+                   ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS pass_no
+    FROM stepped
+),
+passes AS (
+    SELECT sat_id, pass_no, MIN(ts) AS aos, MAX(ts) AS los, COUNT(*) AS packets
+    FROM numbered
+    GROUP BY sat_id, pass_no
+),
+rated AS (
+    SELECT sat_id, aos, packets,
+           (unixepoch(los) - unixepoch(aos)) / 20 + 1 - packets AS lost,
+           unixepoch(aos) - unixepoch(LAG(los) OVER (PARTITION BY sat_id ORDER BY aos)) AS quiet_s,
+           ROW_NUMBER() OVER (PARTITION BY sat_id ORDER BY packets DESC, aos) AS best,
+           COUNT(*) OVER (PARTITION BY sat_id) AS passes
+    FROM passes
+)
+SELECT sat_id,
+       MAX(passes) AS passes,
+       MAX(CASE WHEN best = 1 THEN aos END)     AS best_aos,
+       MAX(CASE WHEN best = 1 THEN packets END) AS best_packets,
+       MAX(CASE WHEN best = 1 THEN lost END)    AS best_lost,
+       MAX(quiet_s) AS longest_quiet_s
+FROM rated
+GROUP BY sat_id
+ORDER BY sat_id;
+--- check result | SAT-301's first pass beats its equal second; its third pass keeps an exactly-120 s silence inside
+ordered
+[["SAT-301", 3, "2026-06-01T07:00:00Z", 6, 4, 5900], ["SAT-302", 2, "2026-06-01T07:01:30Z", 7, 0, 1590], ["SAT-303", 1, "2026-06-01T09:00:00Z", 4, 0, null]]
+--- check source | Measures the gaps between packets
+[Ll][Aa][Gg]\s*\(|[Ll][Ee][Aa][Dd]\s*\(
+--- check source absent | Does not type the times
+'2026-06-01T
+
++++ problem | Housekeeping in thirty-second buckets
+--- task
+`hk` (`sat_id`, `ts`, `amps`) holds bus current, one sample a second, for SAT-301 and SAT-302 from 12:00:00 to 12:02:59 on 1 June; SAT-302 sent nothing for half a minute. Downsample both satellites into 30-second buckets aligned to the minute, from `'2026-06-01T12:00:00Z'` to `'2026-06-01T12:02:30Z'` (six buckets each).
+
+For each satellite and bucket, return `sat_id`, `bucket` (its start, as text like `'2026-06-01T12:00:30Z'`), `n`, `min_a`, `max_a`, `mean_a` (rounded to 3) and `last_a` (the value at the bucket's latest `ts`). A bucket with no samples still appears, with `n` = 0 and NULL in the other columns. Sort by `sat_id`, then `bucket`.
+--- starter
+SELECT sat_id, strftime('%Y-%m-%dT%H:%M:00Z', ts) AS bucket, COUNT(*) AS n,
+       MIN(amps) AS min_a, MAX(amps) AS max_a, ROUND(AVG(amps), 3) AS mean_a, MAX(amps) AS last_a
+FROM hk
+GROUP BY sat_id, bucket
+ORDER BY sat_id, bucket;
+--- solution
+WITH RECURSIVE buckets(bucket) AS (
+    SELECT '2026-06-01T12:00:00Z'
+    UNION ALL
+    SELECT strftime('%Y-%m-%dT%H:%M:%SZ', bucket, '+30 seconds')
+    FROM buckets
+    WHERE bucket < '2026-06-01T12:02:30Z'
+),
+sats AS (
+    SELECT DISTINCT sat_id FROM hk
+),
+keyed AS (
+    SELECT sat_id, amps,
+           strftime('%Y-%m-%dT%H:%M:%SZ', (unixepoch(ts) / 30) * 30, 'unixepoch') AS bucket,
+           ROW_NUMBER() OVER (PARTITION BY sat_id, (unixepoch(ts) / 30) ORDER BY ts DESC) AS rn_desc
+    FROM hk
+),
+summary AS (
+    SELECT sat_id, bucket, COUNT(*) AS n, MIN(amps) AS min_a, MAX(amps) AS max_a,
+           AVG(amps) AS mean_a, MAX(CASE WHEN rn_desc = 1 THEN amps END) AS last_a
+    FROM keyed
+    GROUP BY sat_id, bucket
+)
+SELECT s.sat_id, b.bucket, COALESCE(m.n, 0) AS n, m.min_a, m.max_a,
+       ROUND(m.mean_a, 3) AS mean_a, m.last_a
+FROM sats AS s
+CROSS JOIN buckets AS b
+LEFT JOIN summary AS m ON m.sat_id = s.sat_id AND m.bucket = b.bucket
+ORDER BY s.sat_id, b.bucket;
+--- check result | Twelve buckets; SAT-301's spike in the 12:01:00 bucket, SAT-302's silent 12:01:00 bucket
+ordered
+[["SAT-301", "2026-06-01T12:00:00Z", 30, 1.2, 1.8, 1.49, 1.5], ["SAT-301", "2026-06-01T12:00:30Z", 30, 1.2, 1.8, 1.507, 1.4], ["SAT-301", "2026-06-01T12:01:00Z", 30, 1.2, 3.5, 1.633, 1.3], ["SAT-301", "2026-06-01T12:01:30Z", 30, 1.2, 1.8, 1.493, 1.2], ["SAT-301", "2026-06-01T12:02:00Z", 30, 1.2, 1.8, 1.51, 1.8], ["SAT-301", "2026-06-01T12:02:30Z", 30, 1.2, 1.8, 1.503, 1.7], ["SAT-302", "2026-06-01T12:00:00Z", 30, 0.8, 1.6, 1.18, 0.9], ["SAT-302", "2026-06-01T12:00:30Z", 30, 0.8, 1.6, 1.21, 1.5], ["SAT-302", "2026-06-01T12:01:00Z", 0, null, null, null, null], ["SAT-302", "2026-06-01T12:01:30Z", 30, 0.8, 1.6, 1.18, 0.9], ["SAT-302", "2026-06-01T12:02:00Z", 30, 0.0, 1.6, 1.177, 1.5], ["SAT-302", "2026-06-01T12:02:30Z", 30, 0.8, 1.6, 1.21, 1.2]]
+--- check source | Takes the last value by time
+ts\s+[Dd][Ee][Ss][Cc]|[Mm][Aa][Xx]\s*\(\s*ts\s*\)
+--- check source | Keeps silent buckets with a left join
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+
++++ problem | Battery by mode
+--- task
+`mode_evt` (`sat_id`, `ts`, `mode`) records mode changes: from `ts` on, the satellite is in `mode` until its next change. A change at exactly a reading's time already applies to that reading. A reading taken before its satellite's first change, or on a satellite with no changes, is in mode `'UNKNOWN'`.
+
+For each satellite and mode, over the `soc` readings, return `sat_id`, `mode`, `readings`, `avg_soc` (rounded to 3) and `first_ts` (the earliest reading in that mode). A mode entered more than once counts all its readings together. Sort by `sat_id`, then `first_ts`.
+--- starter
+SELECT s.sat_id, COALESCE(m.mode, 'UNKNOWN') AS mode, COUNT(*) AS readings,
+       ROUND(AVG(s.soc), 3) AS avg_soc, MIN(s.ts) AS first_ts
+FROM soc AS s
+LEFT JOIN mode_evt AS m ON m.sat_id = s.sat_id AND m.ts = s.ts
+GROUP BY s.sat_id, mode
+ORDER BY s.sat_id, first_ts;
+--- solution
+WITH spans AS (
+    SELECT sat_id, mode, ts AS valid_from,
+           LEAD(ts, 1, '9999-12-31T23:59:59Z') OVER (PARTITION BY sat_id ORDER BY ts) AS valid_to
+    FROM mode_evt
+),
+tagged AS (
+    SELECT s.sat_id, s.ts, s.soc, COALESCE(sp.mode, 'UNKNOWN') AS mode
+    FROM soc AS s
+    LEFT JOIN spans AS sp
+           ON sp.sat_id = s.sat_id
+          AND s.ts >= sp.valid_from
+          AND s.ts <  sp.valid_to
+)
+SELECT sat_id, mode, COUNT(*) AS readings, ROUND(AVG(soc), 3) AS avg_soc, MIN(ts) AS first_ts
+FROM tagged
+GROUP BY sat_id, mode
+ORDER BY sat_id, first_ts;
+--- check result | SAT-301 starts UNKNOWN; SAT-302's 06:50 reading is back in NOMINAL; SAT-304 is SAFE at 06:30
+ordered
+[["SAT-301", "UNKNOWN", 3, 0.853, "2026-06-01T06:00:00Z"], ["SAT-301", "SAFE", 3, 0.733, "2026-06-01T06:15:00Z"], ["SAT-301", "NOMINAL", 2, 0.85, "2026-06-01T06:30:00Z"], ["SAT-302", "NOMINAL", 3, 0.667, "2026-06-01T06:00:00Z"], ["SAT-302", "ECLIPSE", 3, 0.59, "2026-06-01T06:20:00Z"], ["SAT-303", "UNKNOWN", 3, 0.937, "2026-06-01T06:10:00Z"], ["SAT-304", "SAFE", 1, 0.5, "2026-06-01T06:30:00Z"]]
+--- check source | Uses a window or a lookup for the latest change
+[Ll][Ee][Aa][Dd]\s*\(|[Oo][Vv][Ee][Rr]\s*\(|[Ll][Ii][Mm][Ii][Tt]\s+1
+--- check source absent | Does not type the change times
+'2026-06-01T0[56]
+
++++ problem | Fix the battery dashboard
+--- task
+The battery dashboard shows, for every `soc` reading:
+
+- `delta`: the change since the same satellite's previous reading, rounded to 2, NULL on its first reading
+- `low_so_far`: the satellite's lowest reading up to and including this one
+- `final_soc`: the satellite's latest reading, the same on all its rows
+
+Two of the three columns are wrong. Find both mistakes and fix them. Keep the columns `sat_id`, `ts`, `soc`, `delta`, `low_so_far` and `final_soc`, sorted by `sat_id`, then `ts`.
+--- starter
+SELECT sat_id, ts, soc,
+       ROUND(soc - LAG(soc) OVER (ORDER BY sat_id, ts), 2) AS delta,
+       MIN(soc) OVER (PARTITION BY sat_id ORDER BY ts) AS low_so_far,
+       LAST_VALUE(soc) OVER (PARTITION BY sat_id ORDER BY ts) AS final_soc
+FROM soc
+ORDER BY sat_id, ts;
+--- solution
+SELECT sat_id, ts, soc,
+       ROUND(soc - LAG(soc) OVER (PARTITION BY sat_id ORDER BY ts), 2) AS delta,
+       MIN(soc) OVER (PARTITION BY sat_id ORDER BY ts) AS low_so_far,
+       LAST_VALUE(soc) OVER (PARTITION BY sat_id ORDER BY ts
+                             ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS final_soc
+FROM soc
+ORDER BY sat_id, ts;
+--- check result | Every satellite's first delta is NULL; final_soc is 0.88, 0.64, 0.93 and 0.50
+ordered
+[["SAT-301", "2026-06-01T06:00:00Z", 0.9, null, 0.9, 0.88], ["SAT-301", "2026-06-01T06:05:00Z", 0.86, -0.04, 0.86, 0.88], ["SAT-301", "2026-06-01T06:10:00Z", 0.8, -0.06, 0.8, 0.88], ["SAT-301", "2026-06-01T06:15:00Z", 0.74, -0.06, 0.74, 0.88], ["SAT-301", "2026-06-01T06:20:00Z", 0.71, -0.03, 0.71, 0.88], ["SAT-301", "2026-06-01T06:25:00Z", 0.75, 0.04, 0.71, 0.88], ["SAT-301", "2026-06-01T06:30:00Z", 0.82, 0.07, 0.71, 0.88], ["SAT-301", "2026-06-01T06:35:00Z", 0.88, 0.06, 0.71, 0.88], ["SAT-302", "2026-06-01T06:00:00Z", 0.7, null, 0.7, 0.64], ["SAT-302", "2026-06-01T06:05:00Z", 0.66, -0.04, 0.66, 0.64], ["SAT-302", "2026-06-01T06:20:00Z", 0.61, -0.05, 0.61, 0.64], ["SAT-302", "2026-06-01T06:25:00Z", 0.61, 0.0, 0.61, 0.64], ["SAT-302", "2026-06-01T06:30:00Z", 0.55, -0.06, 0.55, 0.64], ["SAT-302", "2026-06-01T06:50:00Z", 0.64, 0.09, 0.55, 0.64], ["SAT-303", "2026-06-01T06:10:00Z", 0.95, null, 0.95, 0.93], ["SAT-303", "2026-06-01T06:15:00Z", 0.93, -0.02, 0.93, 0.93], ["SAT-303", "2026-06-01T06:20:00Z", 0.93, 0.0, 0.93, 0.93], ["SAT-304", "2026-06-01T06:30:00Z", 0.5, null, 0.5, 0.5]]
+--- check source absent | No window that runs across satellites
+[Oo][Vv][Ee][Rr]\s*\(\s*[Oo][Rr][Dd][Ee][Rr]\s+[Bb][Yy]\s+sat_id
+--- check source absent | Does not type the final readings
+\b0\.(88|64|93)\b
+
++++ problem | Coverage runs and the slots between them
+--- task
+The `soc` samples are due every 5 minutes, on the minute marks :00, :05, :10 and so on. A run of coverage is a stretch of consecutive due times at which a satellite's samples all arrived.
+
+For each satellite, return every run: `sat_id`, `t_start`, `t_end`, `samples`, and `missing_before`: how many due times were missed between the end of the satellite's previous run and the start of this one, NULL for its first run. Sort by `sat_id`, then `t_start`.
+--- starter
+SELECT sat_id, MIN(ts) AS t_start, MAX(ts) AS t_end, COUNT(*) AS samples, NULL AS missing_before
+FROM soc
+GROUP BY sat_id
+ORDER BY sat_id, t_start;
+--- solution
+WITH slotted AS (
+    SELECT sat_id, ts,
+           unixepoch(ts) / 300 - ROW_NUMBER() OVER (PARTITION BY sat_id ORDER BY ts) AS grp
+    FROM soc
+),
+runs AS (
+    SELECT sat_id, MIN(ts) AS t_start, MAX(ts) AS t_end, COUNT(*) AS samples
+    FROM slotted
+    GROUP BY sat_id, grp
+)
+SELECT sat_id, t_start, t_end, samples,
+       (unixepoch(t_start) - unixepoch(LAG(t_end) OVER (PARTITION BY sat_id ORDER BY t_start))) / 300 - 1
+         AS missing_before
+FROM runs
+ORDER BY sat_id, t_start;
+--- check result | SAT-302 has three runs, with 2 and then 3 due times missed between them
+ordered
+[["SAT-301", "2026-06-01T06:00:00Z", "2026-06-01T06:35:00Z", 8, null], ["SAT-302", "2026-06-01T06:00:00Z", "2026-06-01T06:05:00Z", 2, null], ["SAT-302", "2026-06-01T06:20:00Z", "2026-06-01T06:30:00Z", 3, 2], ["SAT-302", "2026-06-01T06:50:00Z", "2026-06-01T06:50:00Z", 1, 3], ["SAT-303", "2026-06-01T06:10:00Z", "2026-06-01T06:20:00Z", 3, null], ["SAT-304", "2026-06-01T06:30:00Z", "2026-06-01T06:30:00Z", 1, null]]
+--- check source | Uses a window
+[Oo][Vv][Ee][Rr]\s*\(
+--- check source absent | Does not type the times
+'2026-06-01T
+
++++ question | Places after a tie
+--- ask
+A column holds the values 4, 7, 7, 9, 9, 9 and 12, ranked in ascending order. What do `RANK()` and `DENSE_RANK()` give the row with 12?
+--- choice
+RANK 4 and DENSE_RANK 4.
+--- choice correct
+RANK 7 and DENSE_RANK 4.
+--- choice
+RANK 7 and DENSE_RANK 7.
+--- choice
+RANK 6 and DENSE_RANK 4.
+--- why
+RANK counts every row before this one and adds 1: six rows come before 12, so its rank is 7. DENSE_RANK counts the distinct values before it: 4, 7 and 9, so 12 is the fourth distinct value. ROW_NUMBER would also give 7 here, but only because 12 has no tie.
+
++++ question | Ten rows into four buckets
+--- ask
+`NTILE(4) OVER (ORDER BY v)` runs over a partition of 10 rows. How many rows land in buckets 1, 2, 3 and 4? Give the four sizes in order.
+--- answer
+3, 3, 2, 2
+3,3,2,2
+3 3 2 2
+--- why
+10 = 4 × 2 + 2: every bucket gets 2 rows, and the 2 left over go one each to the first two buckets. Bucket sizes never differ by more than one, and the bigger buckets come first.
+
++++ question | A running total with a tie
+--- ask
+A table holds four rows (`t`, `x`): (1, 5), (2, 3), (2, 4) and (3, 1). What is `SUM(x) OVER (ORDER BY t)` on the row (2, 3)?
+--- answer
+12
+twelve
+--- why
+With an ORDER BY and no frame clause, the frame is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`, and in RANGE mode the current row brings all its peers. Both rows with `t` = 2 are in the frame, so the sum is 5 + 3 + 4 = 12 on both of them. A ROWS frame would give 8 or 12 depending on which of the tied rows came first.
+
++++ question | What LAST_VALUE returns
+--- ask
+What does `LAST_VALUE(soc) OVER (PARTITION BY sat_id ORDER BY ts)` give on each row, when no two readings of a satellite share a `ts`?
+--- choice
+The satellite's latest reading, on every row.
+--- choice correct
+The row's own reading, because the default frame ends at the current row.
+--- choice
+NULL on every row except the satellite's last one.
+--- choice
+The satellite's latest reading on every row, but only in PostgreSQL; SQLite returns the current row.
+--- why
+With an ORDER BY inside OVER and no frame, the frame is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`. LAST_VALUE takes the last row of the frame, and that is the current row (with its peers, which here are none). Both databases behave the same. Write `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING`, or use `FIRST_VALUE` with the order reversed, to get the partition's last reading.
+
++++ question | How many rows a time frame holds
+--- ask
+One satellite's readings arrive at these seconds: 0, 10, 20, 25, 27, 28 and 60. On the reading at 28 s, how many readings are in the frame `ORDER BY t_s RANGE BETWEEN 10 PRECEDING AND CURRENT ROW`?
+--- answer
+4
+four
+--- why
+The frame holds every reading with `t_s` from 28 − 10 = 18 up to 28, both ends included: 20, 25, 27 and 28, four readings. A `ROWS BETWEEN 2 PRECEDING AND CURRENT ROW` frame on the same row would hold three readings covering only 3 seconds (25 to 28), and on the reading at 60 it would reach back 35 seconds.
+
++++ question | The baseline that moved
+--- ask
+An engineer wants the readings from after 06:30 that sit more than 0.05 below their satellite's average **over the whole day**. She writes:
+
+```sql
+WITH w AS (
+    SELECT sat_id, ts, soc,
+           AVG(soc) OVER (PARTITION BY sat_id) AS day_avg
+    FROM soc
+    WHERE ts > '2026-06-01T06:30:00Z'
+)
+SELECT * FROM w WHERE soc < day_avg - 0.05;
+```
+
+What is wrong?
+--- choice
+Nothing: a CTE computes the window before any filtering.
+--- choice correct
+The WHERE inside the CTE runs before the window, so `day_avg` is the average of the readings after 06:30 only, not of the whole day.
+--- choice
+A window function cannot be used inside a CTE.
+--- choice
+`AVG(...) OVER (PARTITION BY sat_id)` needs an ORDER BY to average the whole partition.
+--- why
+Inside the CTE, WHERE runs first and the window is worked out over the rows that are left, so the baseline moves with the time filter. Move the time filter to the outer query, next to the comparison, and the average is taken over every reading of the day. Without an ORDER BY the frame is already the whole partition; adding one would make it a running average.
+
++++ question | What the all-earlier self-join costs
+--- ask
+A report pairs each sample with every earlier sample of the same satellite: `JOIN samples AS prev ON prev.sat_id = cur.sat_id AND prev.ts < cur.ts`. The table grows from 2,000 to 4,000 samples per satellite, with the same number of satellites. About how many times more rows does the join produce?
+--- choice
+The same number of rows.
+--- choice
+About 2 times as many.
+--- choice correct
+About 4 times as many.
+--- choice
+About 8 times as many.
+--- why
+Each satellite with n samples gives n(n − 1)/2 pairs, which grows with n²: doubling n multiplies the pairs by about 4 (4000 × 3999 / 2 against 2000 × 1999 / 2 is 4.002). A LAG over the same data handles each row once after one sort, so its work only about doubles.
+
++++ question | RANK in a dedup
+--- ask
+A table has 10 rows describing 7 samples. Two samples arrived twice with both copies received in the same second; one sample arrived twice with the copies received a few seconds apart; the other four arrived once. How many rows does this keep?
+
+```sql
+WITH n AS (
+    SELECT *, RANK() OVER (PARTITION BY sat_id, channel, ts ORDER BY rx_at) AS r
+    FROM tlm
+)
+SELECT * FROM n WHERE r = 1;
+```
+--- answer
+9
+nine
+--- why
+RANK gives rows that tie on the ORDER BY the same number. The two same-second pairs each keep both copies with rank 1; the pair received seconds apart keeps only its earlier copy; the four single samples keep their one row. That is 2 + 2 + 1 + 4 = 9 rows for 7 samples. ROW_NUMBER with a unique tie-breaker such as `rx_at, ingest_id` keeps exactly 7.
+
++++ question | The first row of the start marks
+--- ask
+To label runs, a query marks starts with `CASE WHEN flag <> LAG(flag) OVER (PARTITION BY sat_id ORDER BY ts) THEN 1 ELSE 0 END` and labels runs with a running SUM of the marks. What happens on each satellite's first row?
+--- choice
+The query fails, because LAG has no row to read.
+--- choice correct
+LAG is NULL, `flag <> NULL` is not true, so the first row gets 0 instead of 1: its first run is labelled 0 and counting the marks misses one run per satellite.
+--- choice
+The first row gets 1, because a NULL comparison counts as different.
+--- choice
+LAG reads the last row of the previous satellite, so the mark depends on that satellite.
+--- why
+Any ordinary comparison with NULL is UNKNOWN, and CASE treats UNKNOWN like false. The runs still come out as separate groups, since label 0 is as good a name tag as any, but a count of starts is one short for every satellite whose first run is the kind you count. `flag IS DISTINCT FROM LAG(flag) ...` (in SQLite also `IS NOT`) treats NULL as a value and marks the first row. The PARTITION BY stops LAG from reaching into another satellite.
+
++++ question | Choosing a session threshold
+--- ask
+A year of packet gaps for one satellite shows a big peak at 1 second, dropouts spread from 5 to 40 seconds, nothing at all from 1 minute to 50 minutes, and then passes-apart gaps from 50 minutes to 12 hours. Which inactivity threshold would you choose to cut the packets into passes?
+--- choice
+30 seconds, just above the packet rate.
+--- choice correct
+5 minutes, in the empty valley between the longest dropout and the shortest break between passes.
+--- choice
+2 hours, so that no pass is ever split.
+--- choice
+50 minutes, the shortest break between passes.
+--- why
+A threshold shorter than the longest in-pass dropout (40 s) splits passes; one longer than the shortest break between passes (50 minutes) merges them. Anything in the empty valley gives the same passes, so pick a value with room on both sides. 30 seconds would split passes at every longer dropout, 2 hours would merge passes, and 50 minutes sits right on the edge of the next hump.
+
++++ question | The mean of three buckets
+--- ask
+One-minute buckets of a channel hold these (count, mean) pairs: (60, 1.0), (60, 2.0) and (30, 4.0). What is the mean of all the samples together?
+--- answer
+2
+2.0
+2.00
+--- why
+Rebuild each bucket's sum: 60 × 1.0 = 60, 60 × 2.0 = 120 and 30 × 4.0 = 120. The total is 300 over 60 + 60 + 30 = 150 samples, so 300 / 150 = 2.0. The plain average of the three means, (1.0 + 2.0 + 4.0) / 3 = 2.33, gives the half-full bucket a full vote. Keep each bucket's sum and count so buckets can be combined later.
+
++++ question | A handful of lookups in a huge table
+--- ask
+You need the GPS fix at or before each of 30 anomaly times, from a table of 200 million GPS fixes with an index on `(sat_id, ts)`. Which method fits best?
+--- choice
+Stack the anomalies and all the GPS fixes with UNION ALL, sort by time, and carry the fix forward with windows.
+--- choice correct
+For each anomaly, look up the satellite's fixes at or before its time, newest first, with LIMIT 1 (LATERAL in PostgreSQL, a correlated scalar subquery in SQLite).
+--- choice
+LAG over the GPS table, partitioned by satellite.
+--- choice
+Join every anomaly to every earlier fix of its satellite and keep the latest per anomaly with GROUP BY.
+--- why
+With an index, each of the 30 lookups is one hop, so the query touches a few dozen rows. The windows-only method reads and sorts all 200 million fixes to answer 30 questions; it pays off only when most rows need an answer. LAG cannot see the anomaly table at all, and the all-earlier join builds billions of pairs.
