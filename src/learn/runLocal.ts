@@ -1,10 +1,15 @@
 /* Runs Learn problems on this machine, for the tests: Python on CPython, C++ on clang with the
    in-browser compiler's flags, SQL on SQLite through Python's sqlite3 module (result sets the way sql.js
-   returns them), Terminal and Git on the practice shell. Test-only: it spawns processes. */
-import { spawn } from 'node:child_process'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+   returns them), Terminal and Git on the practice shell. Test-only: it spawns processes.
+
+   With LEARN_CPP_WASM set to an installed @yowasp/clang, C++ is built by the app's own compiler for
+   wasm32 and run under WASI instead, exactly as in the browser (slow: for a final sweep). */
+import { type ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { cpus, tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { createInterface } from 'node:readline'
+import { fileURLToPath } from 'node:url'
 import { buildProgram, gradeRun, lessonShell, typeLines } from './grade'
 import { gradedUnits } from './practice'
 import type { LearnLesson, LearnRun, LearnTrack } from './types'
@@ -12,7 +17,47 @@ import type { LearnLesson, LearnRun, LearnTrack } from './types'
 const dir = mkdtempSync(join(tmpdir(), 'orbit-solutions-'))
 /** Removes the scratch folder: call from afterAll. */
 export function cleanUp(): void {
+  for (const c of compilers) c.proc.kill()
   rmSync(dir, { recursive: true, force: true })
+}
+
+// ---- C++ as the browser builds it (LEARN_CPP_WASM) -------------------------------------------
+const HERE = dirname(fileURLToPath(import.meta.url))
+const WASM = process.env.LEARN_CPP_WASM
+type Compiler = { proc: ChildProcessWithoutNullStreams; waiting: Map<string, (r: { ok: boolean; diagnostics: string }) => void>; busy: number }
+const compilers: Compiler[] = []
+
+function compiler(): Compiler {
+  const width = Math.max(1, Number(process.env.LEARN_CPP_WASM_JOBS) || 2)
+  if (compilers.length < width) {
+    const proc = spawn('node', [join(HERE, 'cppwasm.mjs')], { stdio: ['pipe', 'pipe', 'pipe'], env: process.env })
+    const c: Compiler = { proc, waiting: new Map(), busy: 0 }
+    createInterface({ input: proc.stdout }).on('line', (line) => {
+      const { id, ok, diagnostics } = JSON.parse(line) as { id: string; ok: boolean; diagnostics: string }
+      c.waiting.get(id)?.({ ok, diagnostics })
+      c.waiting.delete(id)
+    })
+    proc.stderr.on('data', () => {}) // the compiler's download progress
+    compilers.push(c)
+    return c
+  }
+  return compilers.reduce((a, b) => (b.busy < a.busy ? b : a))
+}
+
+async function runWasm(id: string, program: string, stdin: string): Promise<LearnRun> {
+  const out = join(dir, `w${id}.wasm`)
+  const c = compiler()
+  c.busy++
+  const built = await new Promise<{ ok: boolean; diagnostics: string }>((resolve) => {
+    c.waiting.set(id, resolve)
+    c.proc.stdin.write(`${JSON.stringify({ id, src: program, out })}\n`)
+  })
+  c.busy--
+  if (!built.ok) return { stdout: '', stderr: built.diagnostics, error: built.diagnostics || 'did not compile', ms: 0 }
+  const folder = join(dir, `f${id}`)
+  mkdirSync(folder)
+  const r = await exec('node', ['--no-warnings', join(HERE, 'wasirun.mjs'), out, folder], stdin, 20_000)
+  return { stdout: r.stdout, stderr: r.stderr, error: r.code === 0 ? null : r.stderr.trim().split('\n').pop() || `exit ${r.code}`, ms: 0 }
 }
 
 function exec(cmd: string, args: string[], stdin: string, ms: number): Promise<{ code: number | null; stdout: string; stderr: string }> {
@@ -91,6 +136,7 @@ export async function run(lesson: LearnLesson, code: string): Promise<LearnRun> 
     const r = await exec('python3', ['-I', PY_FILE, file], lesson.stdin ?? '', 30_000)
     return { stdout: r.stdout, stderr: r.stderr, error: r.code === 0 ? null : r.stderr.trim().split('\n').pop() || `exit ${r.code}`, ms: 0 }
   }
+  if (lesson.lang === 'cpp' && WASM) return runWasm(id, program, lesson.stdin ?? '')
   if (lesson.lang === 'cpp') {
     const src = join(dir, `c${id}.cpp`)
     const bin = join(dir, `c${id}`)
@@ -138,6 +184,8 @@ export async function unsolvable(tracks: LearnTrack[]): Promise<string[]> {
     const failing = solved.results.filter((r) => r.status === 'fail').map((r) => `${r.name}: ${r.detail ?? r.actual ?? ''}`.slice(0, 200))
     const out: string[] = []
     if (failing.length) out.push(`${u.id}: the solution fails ${failing.join(' | ')}${solved.error ? ` (error: ${solved.error.slice(0, 200)})` : ''}`)
+    // The browser-build sweep proves solutions; starters were already proved on the native build.
+    if (WASM && u.lang === 'cpp') return out
     const started = gradeRun(u, u.starter, await run(u, u.starter))
     if (started.passed) out.push(`${u.id}: the starter already passes`)
     return out

@@ -106,7 +106,7 @@ You will meet about ten error codes over and over. The ones below cover almost a
 | E0502 | cannot borrow as mutable because it is also borrowed as immutable | `&` and `&mut` alive at once |
 | E0505 | cannot move out of `x` because it is borrowed | Moved a value while a borrow of it lived |
 | E0506 | cannot assign to `x` because it is borrowed | Overwrote a value while a borrow of it lived |
-| E0507 | cannot move out of `x` which is behind a mutable reference | Tried to take ownership through a borrow |
+| E0507 | cannot move out of `x` which is behind a shared reference (or a mutable reference, for `&mut`) | Tried to take ownership through a borrow |
 | E0515 | cannot return reference to local variable | Returned a reference to something about to be dropped |
 | E0597 | `x` does not live long enough | A borrow outlived its owner |
 | E0596 | cannot borrow as mutable, as it is not declared as mutable | `&mut` of a binding without `let mut` |
