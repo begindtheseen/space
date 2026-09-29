@@ -138,7 +138,7 @@ The architecture reported for SpaceX uses both jobs, at two levels. It is someti
 So a bit flip in one core is *detected* inside its string, which goes quiet. The actuator controller then *decides* using the commands it still receives. Commodity x86 parts can fly because no single part has to be trustworthy on its own.
 
 ::: key The fault-tolerant flight computer (card int02_c4)
-Redundancy with cross-checking rather than rad-hard parts: three dual-core x86 flight strings, each comparing its two cores and issuing no command on disagreement, and PowerPC microcontrollers at the actuators judging among the three commands they receive. Citing it shows you did the homework.
+Redundancy with cross-checking rather than rad-hard parts: three dual-core x86 flight strings, each comparing its two cores and issuing no command on disagreement, and PowerPC microcontrollers at the actuators judging among the three commands they receive. The judges' exact selection rule is not public: because a faulty string goes silent instead of sending a wrong command, say which rule you assume (act on any command that arrives, or on two that agree). Citing it shows you did the homework.
 :::
 
 ::: warning Redundancy that is not independent

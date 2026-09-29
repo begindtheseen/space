@@ -1785,7 +1785,7 @@ print(Pair(1, 2) == Pair(1, 2))   # True
 
 To fix it, define **`__hash__`** yourself. [[Hash the same data you compare|hash-rule]], and only if that data cannot change. A tuple never changes, and a tuple of numbers can be hashed, so a class that keeps its data in a tuple can hand the job over:
 
-```python
+```python fragment
     def __hash__(self):          # inside class Pair
         return hash(self.components)
 
@@ -2829,7 +2829,7 @@ Read it line by line. `if not nums:` is true when the list is empty, because an 
 
 Here is what happens for `[3, 1, 4]`. Each call [[waits for the answer|call-stack]] of the one it made:
 
-```python
+```python fragment
 total([3, 1, 4])
 = 3 + total([1, 4])
 = 3 + (1 + total([4]))
@@ -2901,7 +2901,7 @@ The method that feels natural is **[[greedy|greedy]]**: always grab the biggest 
 
 So think in subproblems instead. The best way to make an amount `a` is *one coin `c`, plus the best way to make what is left, `a - c`*, for whichever coin gives the fewest in total. Written as a recipe (almost Python, but not code to run):
 
-```python
+```python fragment
 best[0] = 0
 best[a] = 1 + min(best[a - c] for each coin c <= a)
 ```

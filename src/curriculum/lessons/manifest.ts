@@ -1396,7 +1396,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "title": "Tolerance stack-up — worst case and root-sum-square",
       "minutes": 24,
       "covers": [
-        "Tolerance stack-up: worst case versus root-sum-square"
+        "Tolerance stack-up: worst case versus root-sum-square",
+        "Datums and datum feature symbols (introduction)"
       ],
       "file": "cod_cad_01_drawings/07-tolerance-stack-up.md"
     },
@@ -3327,7 +3328,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "title": "The systems C++ round",
       "minutes": 25,
       "covers": [
-        "Systems C++ round: pointers and memory, double delete, RAII, rule of five, unique_ptr versus shared_ptr, virtual destructors, vtable layout, move semantics, undefined behavior, static and const and volatile, data races, cache effects"
+        "Systems C++ round: pointers and memory, double delete, RAII, rule of five, unique_ptr versus shared_ptr, virtual destructors, vtable layout, move semantics, undefined behavior, static and const and volatile, data races, cache effects, avoiding new in a hot path"
       ],
       "file": "cod_int_02_onsite/02-the-systems-cpp-round.md"
     },
@@ -12303,8 +12304,8 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cad_01_drawings": {
-    "covered": 15,
-    "total": 15,
+    "covered": 16,
+    "total": 16,
     "complete": true,
     "missing": []
   },

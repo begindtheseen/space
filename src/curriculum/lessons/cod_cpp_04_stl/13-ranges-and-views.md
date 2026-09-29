@@ -346,7 +346,7 @@ The views above are all C++20, and `-std=c++20` is enough for them. C++23 added 
 One C++23 piece g++ 13 does **not** have is `std::ranges::to`, which copies a view into a new container (`| std::ranges::to<std::vector>()`). With g++ 13 you write the loop, or construct the container from the view's `begin()` and `end()`. Check the compiler your project flies with before using a C++23 view; embedded toolchains often lag the desktop.
 
 ::: example zip and enumerate, which need -std=c++23
-```cpp
+```cpp fragment
 #include <cstdio>
 #include <ranges>
 #include <vector>

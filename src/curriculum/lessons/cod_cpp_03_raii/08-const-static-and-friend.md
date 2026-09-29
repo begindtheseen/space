@@ -214,7 +214,7 @@ Static member functions are also the natural home for **named constructors**: fu
 ::: example A live-object counter, and the constructor it forgot
 This `main` uses the `Track` class above:
 
-```cpp
+```cpp fragment
 int main() {
     std::printf("sizeof(Track) = %zu\n", sizeof(Track));
     std::printf("start:          live = %d\n", Track::live());

@@ -155,7 +155,7 @@ For this burn, gravity loss reaches 1 % of the target Δv at about $T/W_0\approx
 :::
 
 ::: key Finite-burn loss
-A real burn takes time, during which the vehicle moves and the thrust direction is not always optimal, so the realized Δv falls short of the impulsive calculation. The impulsive approximation degrades when the burn arc becomes a significant fraction of the orbit — roughly when the burn time exceeds a few percent of the period.
+A real burn takes time, during which the vehicle moves and the thrust direction is not always optimal, so the realized Δv falls short of the impulsive calculation. The impulsive approximation degrades when the burn arc becomes a significant fraction of the orbit — roughly when the burn time exceeds a few percent of the period (measured as speed shortfall; the true energy penalty is much smaller).
 :::
 
 Real spacecraft meet this every day. A geostationary satellite's own **[[apogee engine|apogee-engine]]** is far too weak to finish its big burn in one short firing, so operators split it up.

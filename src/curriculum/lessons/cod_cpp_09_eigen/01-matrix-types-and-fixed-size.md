@@ -17,7 +17,7 @@ Numbers in a program can live in either kind of container. A 3-element velocity 
 
 Here is a whole program. It takes a velocity measured in a spacecraft's own body frame and turns it into another frame with a rotation matrix — the kind of step a navigation computer does many times a second.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -104,7 +104,7 @@ There is one more nickname you will use constantly, and it is *not* a matrix. `Q
 ::: example Checking the nicknames with the compiler
 You do not have to trust the table. `static_assert` makes the compiler check a fact while it builds, and `std::is_same_v` asks whether two types are the same type.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 #include <type_traits>
@@ -181,7 +181,7 @@ Fixed-size types store their coefficients in a member array sized at compile tim
 ::: example Measuring the difference
 This program prints the size of each object, then asks the C library how many bytes the heap has handed out before and after making three matrices of each kind. (`mallinfo2` is a GNU C library function; it reports on this machine's heap.)
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <cstdio>
 #include <malloc.h>   // mallinfo2(): glibc's report on the heap
@@ -286,7 +286,7 @@ The straight-line code is also *predictable*. It takes the same time on every ca
 
 Because the size is part of a fixed-size type, the compiler can check your linear algebra before the program runs. Multiplying a $3 \times 3$ matrix by a 2-element vector makes no sense: the inner sizes, $3$ and $2$, do not match.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 
 int main() {
@@ -308,7 +308,7 @@ Eigen's error names are in capitals on purpose, so that you can find the real co
 
 Now write the same mistake with dynamic types:
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 

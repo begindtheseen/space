@@ -53,7 +53,7 @@ Two rows explain nearly every reference error you will see.
 ::: example What the compiler says about each illegal binding
 Six legal bindings and four illegal ones, in one file:
 
-```cpp
+```cpp error
 #include <string>
 
 std::string name() { return "imu"; }
@@ -205,7 +205,7 @@ The word doing the work in the rule is **directly**. If your reference is initia
 ::: example The two cases that dangle, and which tool finds each
 **Case 1: through a function that returns its own parameter.** The temporary binds to the parameter `t`, not to your reference, so it dies at the semicolon.
 
-```cpp
+```cpp fragment
 // Tracer and make() as in the previous example.
 const Tracer& pass_through(const Tracer& t) { return t; }
 
@@ -247,7 +247,7 @@ Look at the order of the lines. `dtor Tracer(7)` printed *before* the read. The 
 
 **Case 2: a reference member initialized in a constructor.** Here nothing at all warns.
 
-```cpp
+```cpp fragment
 // Tracer and make() as before.
 struct Observer {
     const Tracer& t;                       // a reference member

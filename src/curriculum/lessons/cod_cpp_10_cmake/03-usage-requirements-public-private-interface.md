@@ -315,7 +315,7 @@ target_compile_options(gnc PUBLIC -Wall -Wextra -Werror)   # meant to be PRIVATE
 
 `-Werror` turns every warning into an error. Another team adds a small tool that links `gnc`:
 
-```cpp
+```cpp fragment
 #include <gnc/guidance.hpp>
 #include <cstdio>
 

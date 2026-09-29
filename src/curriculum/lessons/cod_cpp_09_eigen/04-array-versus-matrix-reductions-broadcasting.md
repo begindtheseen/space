@@ -22,7 +22,7 @@ There is a second, humbler kind of multiply: multiply the entries that sit in th
 Eigen keeps these two apart by type. To get coefficient-wise behavior, you switch the object into an **`Array`** view with `.array()`. An `Array` holds the same numbers, laid out the same way, but its operators all work entry by entry. `.matrix()` switches back.
 
 ::: example The same two matrices, two different products
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -116,7 +116,7 @@ For a vector, `norm()` is its length, $\lVert \mathbf{v} \rVert = \sqrt{v_1^2 + 
 `minCoeff` and `maxCoeff` can also tell you *where* the extreme sits. Pass them the addresses of index variables and they fill them in.
 
 ::: example Every reduction on one small matrix
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -199,7 +199,7 @@ On a `Matrix`, the broadcast operators are `+`, `-`, `+=` and `-=`. For multiply
 ::: example Removing the bias from accelerometer samples
 A rocket sits on the pad. Its accelerometer should read Earth's gravity reaction straight up and nothing sideways, but every real sensor has a small constant offset called a **[[bias|sensor-bias]]**. We store five samples as the five columns of a 3-by-5 matrix: rows are the x, y and z axes, in m/s².
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 

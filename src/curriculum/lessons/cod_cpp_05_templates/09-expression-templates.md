@@ -228,7 +228,7 @@ When you write `Vec a(n); a = b + c;`, the type on the left is `Vec`, so the tre
 ::: example A proxy that outlives its operand
 Keep the classes from the last example, add a function that returns a vector by value, and replace `main`:
 
-```cpp
+```cpp fragment
 Vec ones(std::size_t n) {
     Vec out(n);
     for (std::size_t i = 0; i < n; ++i) out[i] = 1.0;

@@ -48,7 +48,7 @@ Our illustrative vehicle has these five design points, spread from subsonic flig
 Across just these five points, $M_\alpha$ changes by a factor of about eleven ($3.2 / 0.3 \approx 10.7$) and $M_\delta$ by a factor of about three ($4.5 / 1.6 \approx 2.8$). Include the moment of lift-off, where $\bar{q}$ is zero, and $M_\alpha$ spans from nothing to its peak. Real vehicles also shift their center of gravity as tanks drain.
 
 ::: key
-Dynamic pressure, mass, center of gravity and aerodynamic moments change by orders of magnitude between lift-off and **[[MECO|meco]]**, so a single fixed gain set cannot hold margins across the trajectory. Gains are scheduled on a measurable variable such as Mach or time from lift-off.
+Dynamic pressure, mass, center of gravity and aerodynamic moments change by orders of magnitude between lift-off and **[[MECO|meco]]**, so a single fixed gain set cannot hold margins across the trajectory. Gains are scheduled on a measurable variable such as Mach or dynamic pressure; time from lift-off is simpler, but on a dispersed trajectory it drifts away from the flight condition.
 :::
 
 ## Designing at each point

@@ -3,7 +3,7 @@ id: l02-the-systems-cpp-round
 title: The systems C++ round
 minutes: 25
 covers:
-  - 'Systems C++ round: pointers and memory, double delete, RAII, rule of five, unique_ptr versus shared_ptr, virtual destructors, vtable layout, move semantics, undefined behavior, static and const and volatile, data races, cache effects'
+  - 'Systems C++ round: pointers and memory, double delete, RAII, rule of five, unique_ptr versus shared_ptr, virtual destructors, vtable layout, move semantics, undefined behavior, static and const and volatile, data races, cache effects, avoiding new in a hot path'
 ---
 
 Think about a library book. You borrow it, and exactly one thing must happen next: you return it, once. If you never return it, the library slowly runs out of books. If you return it twice, the second return confuses the records — maybe someone else's book gets marked as returned. If you keep reading it after you returned it, you are reading a book that now belongs to someone else, and the pages may change under you.
@@ -17,10 +17,10 @@ Flight software is written in C++ largely because it gives this control, which i
 Learn the list itself first, so that in the room you can see which of the ten a question is really about.
 
 ::: key Systems C++ round: the ten things to have ready
-What double delete does, RAII in three sentences, rule of five and when moves are suppressed, unique_ptr versus shared_ptr cost, virtual destructors, vtable layout, what std::move actually does, three examples of undefined behavior, what a data race is, and why you would avoid new in a hot path.
+What double delete does, RAII in three sentences, rule of five and when moves are suppressed, unique_ptr versus shared_ptr cost, virtual destructors, vtable layout, what std::move actually does, three examples of undefined behavior, what a data race is, and why you would avoid new in a hot path. Beside the ten, know static, const and volatile, and cache effects.
 :::
 
-Two more topics come up beside these — `static`, `const` and `volatile`, and cache effects — and are covered at the end.
+The two extras, `static`, `const` and `volatile`, and cache effects, are covered at the end.
 
 ## Pointers, the heap, and double delete
 

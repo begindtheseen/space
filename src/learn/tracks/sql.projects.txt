@@ -762,6 +762,9 @@ SELECT o.id, c.email, o.status FROM orders o JOIN customers c ON c.id = o.custom
 --- check query | Each line keeps the price it was charged; the total reconciles
 SELECT (SELECT unit_cents FROM order_items oi JOIN products p ON p.id = oi.product_id WHERE oi.order_id = 1006 AND p.sku = 'HEAD'), SUM(qty * unit_cents) FROM order_items
 => [[7999, 45303]]
+--- check query | Products keep their names and categories
+SELECT sku, name, category FROM products ORDER BY sku
+=> [["CABLE", "USB cable", "electronics"], ["HEAD", "Headphones", "electronics"], ["LAMP", "Desk lamp", "home"], ["MUG", "Mug", "home"], ["NOTE", "Notebook", "stationery"], ["PEN", "Fountain pen", "stationery"]]
 
 === sqlp-03 | Store 3: the revenue report
 --- schema
@@ -1564,6 +1567,8 @@ SELECT DISTINCT typeof(user_id) FROM events
 --- check query | A replayed event is still ignored
 INSERT OR IGNORE INTO events (event_id, user_id, name, ts) VALUES ('e1', 1, 'visit', '2024-07-01 09:00:00') RETURNING event_id
 => []
+--- check source | Reads the rows in the order they arrived (ORDER BY id)
+[Oo][Rr][Dd][Ee][Rr]\s+[Bb][Yy]\s+(\w+\.)?id\b
 
 === sqlp-06 | Analytics 2: daily active users
 --- teach
@@ -2223,6 +2228,8 @@ Finish with `SELECT day, COUNT(*) AS eligible, SUM(hit) AS retained, ROUND(100.0
 --- check result | Seven days of retention, with shrinking eligibility
 ordered
 [[1, 6, 2, 33.3], [2, 6, 1, 16.7], [3, 6, 2, 33.3], [4, 5, 3, 60.0], [5, 5, 1, 20.0], [6, 4, 0, 0.0], [7, 4, 3, 75.0]]
+--- check source absent | Finds the last day with MAX(date(ts)), not by typing a date
+'\d{4}-\d\d-\d\d'
 
 === sqlp-09 | Library 1: the schema
 --- schema
@@ -2465,6 +2472,14 @@ INSERT OR IGNORE INTO loans (id, copy_id, member_id, loaned_on, due_on, returned
 --- check query | loans references copies and members
 SELECT "table", "from" FROM pragma_foreign_key_list('loans') ORDER BY "from"
 => [["copies", "copy_id"], ["members", "member_id"]]
+--- check query | copies references books
+SELECT "table", "from" FROM pragma_foreign_key_list('copies')
+=> [["books", "book_id"]]
+--- check query | The required columns are NOT NULL, and returned_on is not
+SELECT 'copies', name FROM pragma_table_info('copies') WHERE "notnull" = 1
+UNION ALL
+SELECT 'loans', name FROM pragma_table_info('loans') WHERE "notnull" = 1
+=> [["copies", "book_id"], ["copies", "barcode"], ["loans", "copy_id"], ["loans", "member_id"], ["loans", "loaned_on"], ["loans", "due_on"]]
 
 === sqlp-10 | Library 2: what can I borrow?
 --- schema
@@ -3134,6 +3149,10 @@ SELECT COUNT(*) FROM fines WHERE loan_id = 4
 UPDATE loans SET returned_on = '2024-06-01' WHERE id = 5;
 SELECT COUNT(*) FROM fines
 => [[2]]
+--- check query | One day late costs 25 cents
+UPDATE loans SET returned_on = '2024-07-10' WHERE id = 3;
+SELECT cents FROM fines WHERE loan_id = 3
+=> [[25]]
 
 === sqlp-13 | Capstone: event ticketing
 --- schema
@@ -3324,6 +3343,16 @@ SELECT event_id, title, sold, capacity, remaining, revenue_cents FROM event_sale
 DELETE FROM events WHERE id = 10;
 SELECT COUNT(*) FROM tickets
 => [[1]]
+--- check query | A missing venue, title, start time or seat is refused
+INSERT OR IGNORE INTO events (id, venue_id, title, starts_at) VALUES (20, NULL, 'Nowhere', '2024-09-04 19:00'), (21, 1, NULL, '2024-09-04 19:00'), (22, 1, 'No time', NULL);
+INSERT OR IGNORE INTO tickets (id, event_id, seat, buyer_email, price_cents) VALUES (7, 11, NULL, 'fay@x.io', 100);
+SELECT (SELECT COUNT(*) FROM events WHERE id IN (20, 21, 22)), (SELECT COUNT(*) FROM tickets WHERE id = 7)
+=> [[0, 0]]
+--- check query | An event must name a real venue, and a ticket a real event
+SELECT 'events', "table", "from" FROM pragma_foreign_key_list('events')
+UNION ALL
+SELECT 'tickets', "table", "from" FROM pragma_foreign_key_list('tickets')
+=> [["events", "venues", "venue_id"], ["tickets", "events", "event_id"]]
 
 === sqlp-14 | Capstone: splitting expenses
 --- schema
@@ -3529,6 +3558,16 @@ SELECT expense_id, amount_cents, shared_cents FROM unbalanced_expenses ORDER BY 
 DELETE FROM expenses WHERE id = 1;
 SELECT COUNT(*) FROM shares
 => [[4]]
+--- check query | An expense needs a payer and a description
+INSERT OR IGNORE INTO expenses (id, paid_by, description, amount_cents) VALUES (6, 2, NULL, 500), (7, NULL, 'Coffee', 500);
+SELECT COUNT(*) FROM expenses WHERE id IN (6, 7)
+=> [[0]]
+--- check query | paid_by and person_id must name real people
+SELECT 'expenses', "table", "from" FROM pragma_foreign_key_list('expenses')
+UNION ALL
+SELECT 'shares', "table", "from" FROM pragma_foreign_key_list('shares')
+ORDER BY 1, 3
+=> [["expenses", "people", "paid_by"], ["shares", "expenses", "expense_id"], ["shares", "people", "person_id"]]
 
 === sqlp-15 | Capstone: appointment booking
 --- schema
@@ -3787,3 +3826,9 @@ FROM pragma_index_list('appointments') il
 JOIN pragma_index_info(il.name) a ON a.seqno = 0 AND a.name = 'staff_id'
 JOIN pragma_index_info(il.name) b ON b.seqno = 1 AND b.name = 'starts_at'
 => [[1]]
+--- check query | Foreign keys are enforced
+PRAGMA foreign_keys
+=> [[1]]
+--- check query | Each appointment names a real staff member and client
+SELECT "table", "from" FROM pragma_foreign_key_list('appointments') ORDER BY "from"
+=> [["clients", "client_id"], ["staff", "staff_id"]]

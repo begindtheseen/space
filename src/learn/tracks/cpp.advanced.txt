@@ -79,7 +79,7 @@ There is no `unlock` anywhere in `work`, yet every path unlocks. The object `gua
 
 When several objects live in one block, their destructors run in **reverse order** of construction: the last one made is the first one destroyed. So nested guards [[unwind like a stack|reverse-order]] of plates. With the `Say` type from above:
 
-```cpp
+```cpp fragment
 int main() {
     Say a("a");
     Say b("b");

@@ -383,9 +383,9 @@ export const CODING: Module[] = [
           'A log has lines `t=12.5 chan=WHEEL_RPM val=4211.0`. Write one awk program that prints, per channel, the count, mean and max of val, sorted by channel name. Expected output format: `CHANNEL count mean max` with mean to three decimals.',
         kind: 'code',
         lang: 'bash',
-        starter: "awk -F'[= ]' '{ # fields: 1=t 2=<time> 3=chan 4=<name> 5=val 6=<value>\n}' run.log\n",
+        starter: "awk -F'[= ]+' '{ # fields: 1=t 2=<time> 3=chan 4=<name> 5=val 6=<value>\n}' run.log\n",
         solution:
-          "awk -F'[= ]' '\n  { c[$4]++; s[$4] += $6; if (!($4 in mx) || $6 > mx[$4]) mx[$4] = $6 }\n  END { for (k in c) printf \"%s %d %.3f %g\\n\", k, c[k], s[k]/c[k], mx[k] }\n' run.log | sort\n",
+          "awk -F'[= ]+' '\n  { c[$4]++; s[$4] += $6; if (!($4 in mx) || $6 > mx[$4]) mx[$4] = $6 }\n  END { for (k in c) printf \"%s %d %.3f %g\\n\", k, c[k], s[k]/c[k], mx[k] }\n' run.log | sort\n",
         hours: 1,
       },
     ],
@@ -7565,26 +7565,26 @@ export const CODING: Module[] = [
         id: 'cpp11_ex1',
         title: 'Mock the IMU behind an interface',
         prompt:
-          'Define an interface IImu with read(Vector3& gyro, Vector3& accel) returning a status, make the attitude estimator depend on the interface rather than a concrete driver, and write GoogleMock tests for three cases: nominal data, a stuck sensor returning identical samples, and a read failure. Assert the estimator behavior in each, including that it does not propagate a stale sample as fresh. Expected: three passing tests, and the failure case must show the estimator flagging invalid rather than silently continuing.',
+          'Define an interface IImu with read(Vector3& gyro, Vector3& accel) returning a status, make the attitude estimator depend on the interface rather than a concrete driver, and write GoogleMock tests for three cases: nominal data, a stuck sensor returning identical samples, and a read failure. Assert the estimator behavior in each, including that it does not propagate a stale sample as fresh (for example, flag the data stale and invalid once all six numbers have repeated exactly N times in a row). Expected: three passing tests, and the failure case must show the estimator flagging invalid rather than silently continuing.',
         kind: 'code',
         lang: 'cpp',
         starter:
           '#include <gmock/gmock.h>\n#include <gtest/gtest.h>\n\nstruct Vec3 { double x{}, y{}, z{}; };\n\nclass IImu {\npublic:\n    virtual ~IImu() = default;\n    virtual bool read(Vec3& gyro, Vec3& accel) = 0;\n};\n\nclass MockImu : public IImu {\npublic:\n    MOCK_METHOD(bool, read, (Vec3& gyro, Vec3& accel), (override));\n};\n',
         solution:
-          '#include <gmock/gmock.h>\n#include <gtest/gtest.h>\n\nusing ::testing::_;\nusing ::testing::DoAll;\nusing ::testing::Return;\nusing ::testing::SetArgReferee;\n\nstruct Vec3 { double x{}, y{}, z{}; };\n\nclass IImu {\npublic:\n    virtual ~IImu() = default;\n    virtual bool read(Vec3& gyro, Vec3& accel) = 0;\n};\n\nclass MockImu : public IImu {\npublic:\n    MOCK_METHOD(bool, read, (Vec3& gyro, Vec3& accel), (override));\n};\n\nclass Estimator {\npublic:\n    explicit Estimator(IImu& imu) : imu_(imu) {}\n    void step() {\n        Vec3 g{}, a{};\n        if (!imu_.read(g, a)) { valid_ = false; ++consecutive_failures_; return; }\n        valid_ = true;\n        consecutive_failures_ = 0;\n        rate_ = g;\n    }\n    bool valid() const { return valid_; }\n    int consecutive_failures() const { return consecutive_failures_; }\n    Vec3 rate() const { return rate_; }\nprivate:\n    IImu& imu_;\n    Vec3 rate_{};\n    bool valid_{false};\n    int consecutive_failures_{0};\n};\n\nTEST(Estimator, NominalReadIsAccepted) {\n    MockImu imu;\n    EXPECT_CALL(imu, read(_, _))\n        .WillOnce(DoAll(SetArgReferee<0>(Vec3{0.01, 0.0, 0.0}), Return(true)));\n    Estimator e(imu);\n    e.step();\n    EXPECT_TRUE(e.valid());\n    EXPECT_NEAR(e.rate().x, 0.01, 1e-12);\n}\n\nTEST(Estimator, FailedReadInvalidatesAndCounts) {\n    MockImu imu;\n    EXPECT_CALL(imu, read(_, _)).Times(2).WillRepeatedly(Return(false));\n    Estimator e(imu);\n    e.step();\n    e.step();\n    EXPECT_FALSE(e.valid());\n    EXPECT_EQ(e.consecutive_failures(), 2);\n}\n\nTEST(Estimator, StuckSensorStillReadsButValueNeverChanges) {\n    MockImu imu;\n    EXPECT_CALL(imu, read(_, _))\n        .Times(3)\n        .WillRepeatedly(DoAll(SetArgReferee<0>(Vec3{0.5, 0.5, 0.5}), Return(true)));\n    Estimator e(imu);\n    for (int i = 0; i < 3; ++i) e.step();\n    EXPECT_TRUE(e.valid());\n    EXPECT_NEAR(e.rate().x, 0.5, 1e-12);\n    // A real estimator would also run a staleness check; this test documents\n    // that the current one does not, which is the finding.\n}\n',
+          '#include <gmock/gmock.h>\n#include <gtest/gtest.h>\n\nusing ::testing::_;\nusing ::testing::DoAll;\nusing ::testing::Return;\nusing ::testing::SetArgReferee;\n\nstruct Vec3 { double x{}, y{}, z{}; };\n\nbool same(const Vec3& a, const Vec3& b) { return a.x == b.x && a.y == b.y && a.z == b.z; }\n\nclass IImu {\npublic:\n    virtual ~IImu() = default;\n    virtual bool read(Vec3& gyro, Vec3& accel) = 0;\n};\n\nclass MockImu : public IImu {\npublic:\n    MOCK_METHOD(bool, read, (Vec3& gyro, Vec3& accel), (override));\n};\n\nclass Estimator {\npublic:\n    static constexpr int kStaleRepeats = 3;  // identical samples in a row before the data counts as stale\n\n    explicit Estimator(IImu& imu) : imu_(imu) {}\n    void step() {\n        Vec3 g{}, a{};\n        if (!imu_.read(g, a)) { valid_ = false; ++consecutive_failures_; return; }\n        consecutive_failures_ = 0;\n        // All six numbers repeating exactly means the sensor is frozen, not measuring.\n        repeats_ = (have_last_ && same(g, last_gyro_) && same(a, last_accel_)) ? repeats_ + 1 : 0;\n        have_last_ = true;\n        last_gyro_ = g;\n        last_accel_ = a;\n        stale_ = repeats_ >= kStaleRepeats;\n        if (stale_) { valid_ = false; return; }  // keep the last fresh rate, but do not vouch for it\n        valid_ = true;\n        rate_ = g;\n    }\n    bool valid() const { return valid_; }\n    bool stale() const { return stale_; }\n    int consecutive_failures() const { return consecutive_failures_; }\n    Vec3 rate() const { return rate_; }\nprivate:\n    IImu& imu_;\n    Vec3 rate_{};\n    Vec3 last_gyro_{}, last_accel_{};\n    bool have_last_{false};\n    int repeats_{0};\n    bool valid_{false};\n    bool stale_{false};\n    int consecutive_failures_{0};\n};\n\nTEST(Estimator, NominalReadIsAccepted) {\n    MockImu imu;\n    EXPECT_CALL(imu, read(_, _))\n        .WillOnce(DoAll(SetArgReferee<0>(Vec3{0.01, 0.0, 0.0}), Return(true)));\n    Estimator e(imu);\n    e.step();\n    EXPECT_TRUE(e.valid());\n    EXPECT_FALSE(e.stale());\n    EXPECT_NEAR(e.rate().x, 0.01, 1e-12);\n}\n\nTEST(Estimator, FailedReadInvalidatesAndCounts) {\n    MockImu imu;\n    EXPECT_CALL(imu, read(_, _)).Times(2).WillRepeatedly(Return(false));\n    Estimator e(imu);\n    e.step();\n    e.step();\n    EXPECT_FALSE(e.valid());\n    EXPECT_EQ(e.consecutive_failures(), 2);\n}\n\nTEST(Estimator, StuckSensorIsFlaggedStaleNotFresh) {\n    MockImu imu;\n    EXPECT_CALL(imu, read(_, _))\n        .Times(Estimator::kStaleRepeats + 1)\n        .WillRepeatedly(DoAll(SetArgReferee<0>(Vec3{0.5, 0.5, 0.5}),\n                              SetArgReferee<1>(Vec3{0.0, 0.0, 9.81}), Return(true)));\n    Estimator e(imu);\n    for (int i = 0; i < Estimator::kStaleRepeats; ++i) e.step();\n    EXPECT_TRUE(e.valid());   // a value can repeat by chance a couple of times\n    e.step();                 // the same six numbers once too often: frozen\n    EXPECT_TRUE(e.stale());\n    EXPECT_FALSE(e.valid());\n    EXPECT_NEAR(e.rate().x, 0.5, 1e-12);  // the output is left untouched, not updated from stale data\n}\n',
         hours: 4,
       },
       {
         id: 'cpp11_ex2',
         title: 'Parameterized integrator test',
         prompt:
-          'Write a TEST_P suite that runs a fixed-step integrator over six initial conditions and asserts the end state against an analytic solution with EXPECT_NEAR at a tolerance derived from the step size and method order. Give each case a readable name so a failure identifies the condition immediately. Expected: six named test cases appear in the ctest listing and all pass, and doubling the step makes exactly the cases with the tightest tolerance fail.',
+          'Write a TEST_P suite that runs a fixed-step RK4 integrator on y\' = lambda y over six initial conditions and asserts the end state against the analytic solution with EXPECT_NEAR. Derive each tolerance from the step size and the method order instead of typing it: RK4\'s global error is about |y(t_end)| |lambda|^5 t_end h^4 / 120, times a safety factor you state. Give each case a readable name so a failure identifies the condition immediately, and register the suite with gtest_discover_tests(... NO_PRETTY_VALUES) so that CTest lists the names alone. Expected: six named test cases appear in the ctest listing and all pass; rerunning the integrator with twice the step against the same tolerances fails every nonzero case (the error grows about 16 times) while the zero case still passes.',
         kind: 'code',
         lang: 'cpp',
         starter:
-          '#include <gtest/gtest.h>\n#include <cmath>\n\nstruct Case { const char* name; double y0; double lambda; double t_end; double tol; };\n\nclass IntegratorTest : public ::testing::TestWithParam<Case> {};\n\n// TODO: TEST_P body and INSTANTIATE_TEST_SUITE_P with a name generator\n',
+          '#include <gtest/gtest.h>\n#include <cmath>\n\nstruct Case { const char* name; double y0; double lambda; double t_end; };\n\nclass IntegratorTest : public ::testing::TestWithParam<Case> {};\n\n// TODO: an RK4 integrator, a tolerance derived from h and the method order,\n// the TEST_P body, and INSTANTIATE_TEST_SUITE_P with a name generator\n',
         solution:
-          '#include <gtest/gtest.h>\n#include <cmath>\n\nstruct Case { const char* name; double y0; double lambda; double t_end; double tol; };\n\ndouble rk4_decay(double y0, double lambda, double t_end, int n) {\n    const double h = t_end / n;\n    double y = y0;\n    for (int i = 0; i < n; ++i) {\n        const double k1 = lambda * y;\n        const double k2 = lambda * (y + 0.5 * h * k1);\n        const double k3 = lambda * (y + 0.5 * h * k2);\n        const double k4 = lambda * (y + h * k3);\n        y += (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4);\n    }\n    return y;\n}\n\nclass IntegratorTest : public ::testing::TestWithParam<Case> {};\n\nTEST_P(IntegratorTest, MatchesAnalyticSolution) {\n    const Case& c = GetParam();\n    const double got = rk4_decay(c.y0, c.lambda, c.t_end, 200);\n    const double want = c.y0 * std::exp(c.lambda * c.t_end);\n    EXPECT_NEAR(got, want, c.tol) << "case " << c.name;\n}\n\nINSTANTIATE_TEST_SUITE_P(\n    DecayCases, IntegratorTest,\n    ::testing::Values(\n        Case{"unit_slow",   1.0, -0.1,  10.0, 1e-10},\n        Case{"unit_fast",   1.0, -5.0,   2.0, 1e-9},\n        Case{"large_y0",  1e3, -1.0,   3.0, 1e-7},\n        Case{"small_y0",  1e-3, -1.0,  3.0, 1e-13},\n        Case{"growth",     1.0,  0.5,   4.0, 1e-8},\n        Case{"zero",       0.0, -1.0,   1.0, 1e-15}),\n    [](const ::testing::TestParamInfo<Case>& info) { return std::string(info.param.name); });\n',
+          '#include <gtest/gtest.h>\n#include <cmath>\n#include <string>\n\nstruct Case { const char* name; double y0; double lambda; double t_end; };\n\nconstexpr int kSteps = 200;         // the step count the tolerances are derived for\nconstexpr int kRunSteps = kSteps;   // set to kSteps / 2 to rerun at twice the step\n\ndouble rk4_decay(double y0, double lambda, double t_end, int n) {\n    const double h = t_end / n;\n    double y = y0;\n    for (int i = 0; i < n; ++i) {\n        const double k1 = lambda * y;\n        const double k2 = lambda * (y + 0.5 * h * k1);\n        const double k3 = lambda * (y + 0.5 * h * k2);\n        const double k4 = lambda * (y + h * k3);\n        y += (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4);\n    }\n    return y;\n}\n\n// RK4\'s local error on y\' = lambda y is (lambda h)^5 / 120 of y per step; over t_end / h steps that is\n// |y(t_end)| |lambda|^5 t_end h^4 / 120. A safety factor of 4 covers the higher-order terms.\ndouble rk4_tolerance(const Case& c, int n) {\n    const double h = c.t_end / n;\n    const double want = c.y0 * std::exp(c.lambda * c.t_end);\n    return 4.0 * std::abs(want) * std::pow(std::abs(c.lambda), 5) * c.t_end * std::pow(h, 4) / 120.0;\n}\n\nclass IntegratorTest : public ::testing::TestWithParam<Case> {};\n\nTEST_P(IntegratorTest, MatchesAnalyticSolution) {\n    const Case& c = GetParam();\n    const double got = rk4_decay(c.y0, c.lambda, c.t_end, kRunSteps);\n    const double want = c.y0 * std::exp(c.lambda * c.t_end);\n    EXPECT_NEAR(got, want, rk4_tolerance(c, kSteps)) << "case " << c.name;\n}\n\nINSTANTIATE_TEST_SUITE_P(\n    DecayCases, IntegratorTest,\n    ::testing::Values(\n        Case{"unit_slow", 1.0, -0.1, 10.0},\n        Case{"unit_fast", 1.0, -5.0, 2.0},\n        Case{"large_y0", 1e3, -1.0, 3.0},\n        Case{"small_y0", 1e-3, -1.0, 3.0},\n        Case{"growth", 1.0, 0.5, 4.0},\n        Case{"zero", 0.0, -1.0, 1.0}),\n    [](const ::testing::TestParamInfo<Case>& info) { return std::string(info.param.name); });\n',
         hours: 3,
       },
     ],
@@ -7842,13 +7842,13 @@ export const CODING: Module[] = [
         id: 'mat01_ex1',
         title: 'Vectorize and preallocate',
         prompt:
-          'Given a script that builds a 1e6-element result by x(end+1) = ... inside a loop, rewrite it two ways: preallocated loop, and fully vectorized. Report tic/toc for all three. Expected result: the growing-array version is orders of magnitude slower, the preallocated loop is close to the vectorized one, and all three produce identical output to within 1e-12.',
+          'Given a script that builds a 1e6-element result by x(end+1) = ... inside a loop, rewrite it two ways: preallocated loop, and fully vectorized. Report tic/toc for all three. Then run lesson 6\'s doubling test: grow an n-by-3 matrix one row per pass with X(end+1,:) = ..., against a preallocated zeros(n,3), for n = 20000, 40000 and 80000. Expected result: all three 1-D versions produce identical output to within 1e-12, and the vectorized one is the fastest. How far the 1-D x(end+1) version falls behind depends on the release: recent MATLAB versions soften the cost of growing a vector, so it may be only a few times slower than preallocation rather than orders of magnitude. The row-grown matrix shows the quadratic cost plainly: its time goes up about four times each time n doubles, while the preallocated time about doubles. The preallocated 1-D loop usually lands within a small factor of the vectorized code, because the execution engine compiles simple loops.',
         kind: 'code',
         lang: 'matlab',
         starter:
           'n = 1e6;\nt = linspace(0, 10, n);\n\n% Version A: the bug\ntic\nx = [];\nfor k = 1:n\n    x(end+1) = sin(2*pi*t(k)) * exp(-0.1*t(k));   %#ok<AGROW>\nend\ntA = toc;\n\n% TODO: Version B preallocated, Version C vectorized, then compare\n',
         solution:
-          'n = 1e6;\nt = linspace(0, 10, n);\n\ntic\nx = [];\nfor k = 1:n\n    x(end+1) = sin(2*pi*t(k)) * exp(-0.1*t(k));   %#ok<AGROW>\nend\ntA = toc;\n\n% Version B: preallocated. One allocation instead of n reallocations.\ntic\ny = zeros(1, n);\nfor k = 1:n\n    y(k) = sin(2*pi*t(k)) * exp(-0.1*t(k));\nend\ntB = toc;\n\n% Version C: vectorized. No interpreter loop at all.\ntic\nz = sin(2*pi*t) .* exp(-0.1*t);\ntC = toc;\n\nfprintf("grow %.3f s, prealloc %.3f s, vectorized %.3f s\\n", tA, tB, tC);\nassert(max(abs(x - z)) < 1e-12);\nassert(max(abs(y - z)) < 1e-12);\n',
+          'n = 1e6;\nt = linspace(0, 10, n);\n\ntic\nx = [];\nfor k = 1:n\n    x(end+1) = sin(2*pi*t(k)) * exp(-0.1*t(k));   %#ok<AGROW>\nend\ntA = toc;\n\n% Version B: preallocated. One allocation up front, then n writes.\ntic\ny = zeros(1, n);\nfor k = 1:n\n    y(k) = sin(2*pi*t(k)) * exp(-0.1*t(k));\nend\ntB = toc;\n\n% Version C: vectorized. No interpreter loop at all.\ntic\nz = sin(2*pi*t) .* exp(-0.1*t);\ntC = toc;\n\nfprintf("grow %.3f s, prealloc %.3f s, vectorized %.3f s\\n", tA, tB, tC);\nassert(max(abs(x - z)) < 1e-12);\nassert(max(abs(y - z)) < 1e-12);\n\n% Doubling test: a column-major matrix cannot gain a row in place, so every\n% append copies the whole log.\nfor n2 = [20000 40000 80000]\n    tic\n    X = zeros(0, 3);\n    for k = 1:n2\n        X(end+1, :) = [k 2*k 3*k];      %#ok<AGROW>\n    end\n    tGrow = toc;\n    tic\n    Y = zeros(n2, 3);\n    for k = 1:n2\n        Y(k, :) = [k 2*k 3*k];\n    end\n    tPre = toc;\n    assert(isequal(X, Y));\n    fprintf("n = %d: grown %.3f s, preallocated %.3f s\\n", n2, tGrow, tPre);\nend\n',
         hours: 2,
       },
       {
@@ -8111,13 +8111,13 @@ export const CODING: Module[] = [
         id: 'mat02_ex1',
         title: 'Margins, delay and a notch',
         prompt:
-          'Build a rigid-body pitch plant with an integrator and a lightly damped flexible mode near 20 rad/s. Close a PD loop, report gain and phase margin with margin(), then add 40 ms of transport delay and report the margins again. Finally design a notch at the flexible frequency and show the phase margin recovered. Expected: the delay costs roughly omega_c times 0.04 radians of phase at crossover, and the notch restores margin without changing low-frequency response.',
+          'Build a rigid-body pitch plant (a double integrator, 1/s^2) with a lightly damped flexible mode at 20 rad/s (zeta = 0.01). Use the PD controller C = Kp + Kd*s/(1 + s/wf) with Kp = 1 and Kd = 1.5. First try a light derivative roll-off, wf = 20 rad/s: check the closed-loop poles and allmargin\'s Stable field, and explain what the bending peak does. Then gain-stabilize the mode with a heavy roll-off, wf = 3 rad/s, and report gain and phase margin with margin(). Add 40 ms of transport delay and report the margins again. Finally, keep the delay, put a notch at the flexible frequency (zeta_z = 0.02, zeta_p = 0.5), move the roll-off back to wf = 20 rad/s, and show the phase margin recovered. Compare the delayed loops with stepinfo(feedback(L,1)). Expected: with wf = 20 and no notch, the bending peak rises above 0 dB and the closed-loop poles include +0.20 +/- 19.6j, so the loop is unstable. With wf = 3: PM 42.6 degrees at 1.69 rad/s, GM 19.1 dB, stable, with the bending peak 3.3 dB below 0 dB. With the 40 ms delay: PM 38.7 degrees (the predicted loss is omega_c times 0.04 = 0.068 rad, 3.9 degrees) and GM 19.5 dB. Notch, wf = 20 and the delay: PM 55.5 degrees at 1.66 rad/s, GM 16.7 dB, bending peak about 19 dB below 0 dB, and the notch\'s gain at 1 rad/s is 0.999, so the low-frequency response is unchanged. Step overshoot falls from about 41 percent to 24 percent; settling time grows from about 3.3 s to 4.6 s.',
         kind: 'code',
         lang: 'matlab',
         starter:
-          's = tf("s");\nwn = 20; zeta = 0.01;\nP = 1/s^2 * (wn^2)/(s^2 + 2*zeta*wn*s + wn^2);\nC = 1;   % TODO: PD design\nL = C*P;\n% TODO: margin(L), add delay, design notch\n',
+          's = tf("s");\nwn = 20; zeta = 0.01;\nP = 1/s^2 * (wn^2)/(s^2 + 2*zeta*wn*s + wn^2);\nKp = 1; Kd = 1.5;\nwf = 20;\nC = Kp + Kd*s/(1 + s/wf);\nL = C*P;\n% TODO: check stability, roll off to wf = 3, margin(L), add delay, design the notch\n',
         solution:
-          's = tf("s");\nwn = 20; zeta = 0.01;\nP = 1/s^2 * (wn^2)/(s^2 + 2*zeta*wn*s + wn^2);\n\nKp = 4; Kd = 2.5;\nC  = Kp + Kd*s/(1 + s/50);          % PD with a derivative roll-off filter\nL  = C*P;\n[Gm, Pm, ~, Wcp] = margin(L);\nfprintf("no delay : GM %.2f dB, PM %.1f deg at %.2f rad/s\\n", 20*log10(Gm), Pm, Wcp);\n\ntau = 0.040;\nLd  = L * exp(-tau*s);\n[Gm2, Pm2] = margin(Ld);\nfprintf("with %.0f ms delay: GM %.2f dB, PM %.1f deg (lost ~%.1f deg)\\n", ...\n        tau*1e3, 20*log10(Gm2), Pm2, rad2deg(Wcp*tau));\n\nzn = 0.02; zd = 0.5;                 % deep, wide-enough notch at wn\nN  = (s^2 + 2*zn*wn*s + wn^2) / (s^2 + 2*zd*wn*s + wn^2);\nLn = C*N*P*exp(-tau*s);\n[Gm3, Pm3] = margin(Ln);\nfprintf("notched  : GM %.2f dB, PM %.1f deg\\n", 20*log10(Gm3), Pm3);\n\nbode(L, Ld, Ln); grid on;\nlegend("nominal", "with delay", "notched + delay");\n',
+          's = tf("s");\nwn = 20; zeta = 0.01;\nP = 1/s^2 * (wn^2)/(s^2 + 2*zeta*wn*s + wn^2);   % rigid body plus bending mode\nKp = 1; Kd = 1.5;\npdc = @(wf) Kp + Kd*s/(1 + s/wf);                % PD with a derivative roll-off at wf\n\n% 1. A light roll-off leaves the bending peak above 0 dB.\nL20 = pdc(20)*P;\ndisp(pole(feedback(L20, 1)))                     % a pair near +0.20 +/- 19.6j\nm = allmargin(L20);\nfprintf("wf = 20 rad/s, no notch: Stable = %d\\n", m.Stable);\n\n% 2. Gain-stabilize the mode with a heavy roll-off.\nL = pdc(3)*P;\n[Gm, Pm, ~, Wcp] = margin(L);\nfprintf("wf = 3        : GM %.1f dB, PM %.1f deg at %.2f rad/s\\n", 20*log10(Gm), Pm, Wcp);\n\n% 3. Add 40 ms of transport delay.\ntau = 0.040;\nLd  = L*exp(-tau*s);\n[Gm2, Pm2] = margin(Ld);\nfprintf("wf = 3 + delay: GM %.1f dB, PM %.1f deg (predicted loss %.1f deg)\\n", ...\n        20*log10(Gm2), Pm2, rad2deg(Wcp*tau));\n\n% 4. Notch the mode instead, and give the derivative its bandwidth back.\nN  = (s^2 + 2*0.02*wn*s + wn^2)/(s^2 + 2*0.5*wn*s + wn^2);   % 0.02/0.5 = -28 dB at wn\nLn = pdc(20)*N*P*exp(-tau*s);\n[Gm3, Pm3, ~, Wcp3] = margin(Ln);\nfprintf("notch, wf = 20 + delay: GM %.1f dB, PM %.1f deg at %.2f rad/s\\n", ...\n        20*log10(Gm3), Pm3, Wcp3);\nfprintf("|N(j1)| = %.4f\\n", abs(evalfr(N, 1j)));\n\n% 5. Check the closed loops in the time domain.\nS2 = stepinfo(feedback(Ld, 1));\nS3 = stepinfo(feedback(Ln, 1));\nfprintf("overshoot %.0f%% -> %.0f%%, settling %.1f s -> %.1f s\\n", ...\n        S2.Overshoot, S3.Overshoot, S2.SettlingTime, S3.SettlingTime);\n\nbode(L, Ld, Ln); grid on;\nlegend("wf = 3", "wf = 3 + delay", "notch, wf = 20 + delay");\n',
         hours: 4,
       },
       {
@@ -8158,7 +8158,7 @@ export const CODING: Module[] = [
         id: 'mat02_c4',
         front: 'Why do launch vehicles need gain scheduling?',
         back:
-          'Dynamic pressure, mass, center of gravity and aerodynamic moments change by orders of magnitude between lift-off and MECO, so a single fixed gain set cannot hold margins across the trajectory. Gains are scheduled on a measurable variable such as Mach or time from lift-off.',
+          'Dynamic pressure, mass, center of gravity and aerodynamic moments change by orders of magnitude between lift-off and MECO, so a single fixed gain set cannot hold margins across the trajectory. Gains are scheduled on a measurable variable such as Mach or dynamic pressure; time from lift-off is simpler, but on a dispersed trajectory it drifts away from the flight condition.',
       },
       {
         id: 'mat02_c5',
@@ -8375,13 +8375,13 @@ export const CODING: Module[] = [
         id: 'slk01_ex1',
         title: 'Mass-spring-damper against the analytic solution',
         prompt:
-          'Build a second-order mass-spring-damper with two Integrator blocks, a Gain for stiffness and a Gain for damping, driven by a unit step. Use m = 1, c = 0.4, k = 4. Log the output with To Workspace, then in MATLAB compute the analytic step response of the same transfer function and report the maximum absolute difference. Expected: with a tight solver tolerance the difference is below 1e-6, the damped natural frequency is about 1.99 rad/s, and the first peak is about 0.432, which is 1.73 times the 0.25 steady state.',
+          'Build a second-order mass-spring-damper with two Integrator blocks, a Gain for stiffness and a Gain for damping, driven by a unit step. Use m = 1, c = 0.4, k = 4. Log the output with a To Workspace block (variable name y, save format Timeseries), then in MATLAB compute the analytic step response of the same transfer function and report the maximum absolute difference. Expected: with a tight solver tolerance the difference is below 1e-6, the damped natural frequency is about 1.99 rad/s, and the first peak is about 0.432, which is 1.73 times the 0.25 steady state.',
         kind: 'code',
         lang: 'simulink',
         starter:
-          '% Build the model by hand in the editor, then verify here.\nm = 1; c = 0.4; k = 4;\n% TODO: run the model, load yout, compare against step(tf(1, [m c k]))\n',
+          '% Build the model by hand in the editor, then verify here.\nm = 1; c = 0.4; k = 4;\n% TODO: run the model, read the To Workspace output, compare against the analytic step response of tf(1, [m c k])\n',
         solution:
-          'm = 1; c = 0.4; k = 4;\n\n% Reference: analytic/numerical step response of the same plant.\nG = tf(1, [m c k]);\n\nmdl = "msd";                  % model built from two Integrators + two Gains\nset_param(mdl, "Solver", "ode45", "RelTol", "1e-10", "AbsTol", "1e-12", ...\n               "StopTime", "20");\nout = sim(mdl);\n\nt  = out.yout{1}.Values.Time;\ny  = out.yout{1}.Values.Data;\nyr = step(G, t) * (1/k) * k;   % unit step into 1/(ms^2+cs+k)\n\nfprintf("max |model - analytic| = %.3e\\n", max(abs(y - yr)));\nfprintf("wd = %.4f rad/s, first peak = %.4f\\n", ...\n        sqrt(k/m)*sqrt(1 - (c/(2*sqrt(k*m)))^2), max(y)*k);\n\n% If the difference is much larger than 1e-6, the solver tolerance is the first\n% suspect, not the model.\n',
+          'm = 1; c = 0.4; k = 4;\n\nmdl = "msd";                  % two Integrators + two Gains, built in the editor\n% The To Workspace block is set to variable name "y" and save format "Timeseries".\nset_param(mdl, "Solver", "ode45", "RelTol", "1e-10", "AbsTol", "1e-12", ...\n               "StopTime", "20");\nout = sim(mdl);               % single simulation output: logged data is in out\n\nt = out.y.Time;\ny = squeeze(out.y.Data);\n\n% Analytic step response of 1/(m s^2 + c s + k), evaluated at the solver\'s own\n% output times. Those times are not evenly spaced, so a formula is simpler\n% than resampling for step() or lsim().\nwn   = sqrt(k/m);\nzeta = c/(2*sqrt(k*m));\nwd   = wn*sqrt(1 - zeta^2);\nyr   = (1/k) * (1 - exp(-zeta*wn*t) .* (cos(wd*t) + zeta*wn/wd*sin(wd*t)));\n\nfprintf("max |model - analytic| = %.3e\\n", max(abs(y - yr)));\n[ypk, ipk] = max(y);\nfprintf("wd = %.4f rad/s, first peak = %.4f at %.2f s, %.2f times the %.2f steady state\\n", ...\n        wd, ypk, t(ipk), ypk*k, 1/k);\n\n% If the difference is much larger than 1e-6, the solver tolerance is the first\n% suspect, not the model.\n',
         hours: 3,
       },
       {
@@ -8420,9 +8420,9 @@ export const CODING: Module[] = [
       },
       {
         id: 'slk01_c5',
-        front: 'Name three MATLAB constructs that cannot go in a codegen-bound MATLAB Function block',
+        front: 'Name three MATLAB constructs to keep out of a MATLAB Function block bound for flight code',
         back:
-          'Variable-size data without an upper bound, cell arrays or structs whose fields change at runtime, dynamic field names and eval, and calls to functions with no code-generation support such as many plotting and file functions.',
+          'Variable-size data without an upper bound (newer releases can generate it with dynamic memory allocation, which flight code forbids), cell arrays or structs whose fields change at runtime, dynamic field names and eval, and calls to functions with no code-generation support, such as plotting and most file functions: in simulation they run as extrinsic calls back into MATLAB, and the generated code leaves them out.',
       },
       {
         id: 'slk01_c6',
@@ -8489,7 +8489,7 @@ export const CODING: Module[] = [
         choices: ['Mux', 'Bus Creator with a Simulink.Bus object', 'Demux', 'Selector'],
         answer: 1,
         explain:
-          'A Bus keeps names and per-element types and becomes a struct in generated code. Mux would force a common type and discard the names.',
+          'A Bus keeps names and per-element types and becomes a struct in generated code. A Mux output is a plain vector with one data type, so signals of different types either fail to combine or must be converted first, and the names are lost.',
         b: 0.2,
         bloom: 'apply',
       },
@@ -8510,7 +8510,7 @@ export const CODING: Module[] = [
       },
       {
         id: 'slk01_q4',
-        q: 'Which cannot appear in a MATLAB Function block intended for code generation?',
+        q: 'A MATLAB Function block is bound for flight code. Which of these statements has no code-generation support, so it runs only in simulation and is left out of the generated code?',
         choices: [
           'A for loop with a fixed bound',
           'A fixed-size matrix multiply',
@@ -8519,7 +8519,7 @@ export const CODING: Module[] = [
         ],
         answer: 2,
         explain:
-          'Plotting has no code-generation support. The others are all in the supported subset.',
+          'Plotting has no code-generation support. In simulation the block treats plot() as an extrinsic call back into MATLAB, so it runs; the generated code leaves it out, so flight logic must never depend on it. The others are all in the supported subset.',
         b: 0.3,
         bloom: 'recall',
       },
@@ -9303,16 +9303,16 @@ export const CODING: Module[] = [
       },
       {
         id: 'slk04_q5',
-        q: 'Your HIL test shows a 4 ms latency that SIL did not. The most likely source is:',
+        q: 'A controller runs at 50 Hz. In PIL, on the flight processor, its commands match SIL step for step. On the HIL rig, with the same build on the same processor, every actuator command reaches the plant simulator 20 ms late. Which explanation fits best?',
         choices: [
-          'A different compiler optimization level',
-          'Real I/O: bus framing, driver buffering and task scheduling that host simulation does not model',
-          'A floating-point rounding difference',
-          'A wrong gain value',
+          'The compiler optimized the HIL build differently',
+          'The command waits a full frame at a real interface, such as its slot in the bus schedule or a rate transition into a slower I/O task, which PIL never exercises',
+          'Floating-point rounding differs on the HIL rig',
+          'A gain was changed between the runs',
         ],
         answer: 1,
         explain:
-          'Interface and scheduling latency exists only when real hardware and buses are in the loop. That is precisely the class of defect HIL is there to find.',
+          'PIL already ran the same code on the same processor, so compiler, numerics and execution time are ruled out. What HIL adds is real I/O: bus framing and scheduling, driver buffering and rate transitions between tasks. A lag of exactly one 20 ms frame points to a command that misses its slot and waits for the next one. That class of defect only appears when real hardware and buses are in the loop, which is why HIL is not optional.',
         b: 0.9,
         bloom: 'analyze',
       },
@@ -11713,7 +11713,7 @@ DROP TABLE _chk;`,
         id: 'sql04_c13',
         front: 'What is the reported Starlink telemetry stack?',
         back:
-          'A .NET service layer with Kafka for ingest, HBase and HDFS for storage, running on Docker and Kubernetes. Related SpaceX data roles list PostgreSQL, CockroachDB, Hive and Delta Lake, with Grafana, Jupyter, Metabase and PowerBI for exploration.',
+          'As described in a 2021 Stack Overflow blog profile of SpaceX software teams: a .NET service layer with Kafka for ingest, HBase and HDFS for storage, running on Docker and Kubernetes. It is reported, not a design SpaceX has published, and it may have changed since.',
       },
       {
         id: 'sql04_c14',
@@ -11870,6 +11870,7 @@ DROP TABLE _chk;`,
       'Surface finish symbols; weld symbols',
       'Tolerances: limit, plus/minus, bilateral and unilateral',
       'Tolerance stack-up: worst case versus root-sum-square',
+      'Datums and datum feature symbols (introduction)',
       'Fits: clearance, transition, interference',
       'Fastener and thread callouts; materials and specifications',
       'ASME Y14.100 drawing practices, Y14.24 drawing types, Y14.41 model-based definition',
@@ -11918,7 +11919,7 @@ DROP TABLE _chk;`,
         id: 'cad01_ex2',
         title: 'Stack-up for a star-tracker mount',
         prompt:
-          'A star tracker mounts through four stacked parts, each with a plus or minus tolerance on the dimension along the boresight and on the tilt. Compute the worst-case and the root-sum-square stack-up of the resulting boresight misalignment. Then state what that misalignment means for attitude-knowledge error, and which of the two numbers you would quote in a requirements document and why.',
+          'A star tracker mounts through four stacked parts. Each part stands on two mounting pads 80 mm apart (the baseline), so a height difference between its two pads tilts everything above it by that difference divided by 80 mm, in radians. Each pad height has a plus or minus tolerance along the boresight of 0.05, 0.02, 0.03 and 0.02 mm for parts 1 to 4, and each part also has its own tilt tolerance of 0.3, 0.1, 0.2 and 0.1 mrad. Compute the worst-case and the root-sum-square stack-up of the resulting boresight misalignment. Then state what that misalignment means for attitude-knowledge error, and which of the two numbers you would quote in a requirements document and why.',
         kind: 'derivation',
         hours: 3,
       },
@@ -12980,7 +12981,7 @@ DROP TABLE _chk;`,
     topics: [
       'The reported process: recruiter screen, a two to four hour take-home or timed challenge, technical rounds, a day-long onsite of four to six rounds, behavioral throughout',
       'US person status under ITAR as a hard gate for essentially all roles',
-      'Systems C++ round: pointers and memory, double delete, RAII, rule of five, unique_ptr versus shared_ptr, virtual destructors, vtable layout, move semantics, undefined behavior, static and const and volatile, data races, cache effects',
+      'Systems C++ round: pointers and memory, double delete, RAII, rule of five, unique_ptr versus shared_ptr, virtual destructors, vtable layout, move semantics, undefined behavior, static and const and volatile, data races, cache effects, avoiding new in a hot path',
       'Live debugging: here is code that crashes or leaks, find it',
       'Engineering system design: GNC simulation infrastructure for a constellation; a telemetry pipeline for six thousand satellites; how you would verify this flight software; how you would architect a fault-tolerant flight computer',
       'Knowing the SpaceX answer: three dual-core x86 flight strings, per-string core cross-check, PowerPC actuator controllers judging three commands',
@@ -13030,13 +13031,21 @@ DROP TABLE _chk;`,
         free: true,
         note: 'Background on the internal and ground software stack; useful for asking informed questions.',
       },
+      {
+        title: 'SpaceX Careers',
+        author: 'SpaceX',
+        kind: 'site',
+        url: 'https://www.spacex.com/careers/',
+        free: true,
+        note: 'Search it for current GNC and simulation postings; the int02_ex1 critique uses one.',
+      },
     ],
     exercises: [
       {
         id: 'int02_ex1',
         title: 'Design the GNC simulation infrastructure, aloud',
         prompt:
-          'In 25 minutes, design the simulation infrastructure for a satellite constellation GNC team. Cover: module boundaries and interfaces, determinism and seeded reproducibility, the dispersed Monte Carlo layer, hardware-in-the-loop hooks, the C++ core with a Python harness, continuous integration with tolerance-based regression, results storage and the visualization layer. Record yourself, then critique the recording against the real Starlink GNC-Simulations job description.',
+          'In 25 minutes, design the simulation infrastructure for a satellite constellation GNC team. Cover: module boundaries and interfaces, determinism and seeded reproducibility, the dispersed Monte Carlo layer, hardware-in-the-loop hooks, the C++ core with a Python harness, continuous integration with tolerance-based regression, results storage and the visualization layer. Record yourself, then critique the recording against a current SpaceX or Starlink GNC simulation job posting (search the SpaceX careers page in the resources) and note every requirement in it that your design did not address.',
         kind: 'analysis',
         hours: 4,
       },
@@ -13080,7 +13089,7 @@ DROP TABLE _chk;`,
         id: 'int02_c4',
         front: 'How would you architect a fault-tolerant flight computer, and what is the SpaceX answer?',
         back:
-          'Redundancy with cross-checking rather than rad-hard parts: three dual-core x86 flight strings, each comparing its two cores and issuing no command on disagreement, and PowerPC microcontrollers at the actuators judging among the three commands they receive. Citing it shows you did the homework.',
+          'Redundancy with cross-checking rather than rad-hard parts: three dual-core x86 flight strings, each comparing its two cores and issuing no command on disagreement, and PowerPC microcontrollers at the actuators judging among the three commands they receive. The judges\' exact selection rule is not public: because a faulty string goes silent instead of sending a wrong command, say which rule you assume (act on any command that arrives, or on two that agree). Citing it shows you did the homework.',
       },
       {
         id: 'int02_c5',
@@ -13098,7 +13107,7 @@ DROP TABLE _chk;`,
         id: 'int02_c7',
         front: 'Systems C++ round: the ten things to have ready',
         back:
-          'What double delete does, RAII in three sentences, rule of five and when moves are suppressed, unique_ptr versus shared_ptr cost, virtual destructors, vtable layout, what std::move actually does, three examples of undefined behavior, what a data race is, and why you would avoid new in a hot path.',
+          'What double delete does, RAII in three sentences, rule of five and when moves are suppressed, unique_ptr versus shared_ptr cost, virtual destructors, vtable layout, what std::move actually does, three examples of undefined behavior, what a data race is, and why you would avoid new in a hot path. Beside the ten, know static, const and volatile, and cache effects.',
       },
       {
         id: 'int02_c8',
@@ -13165,7 +13174,7 @@ DROP TABLE _chk;`,
         ],
         answer: 1,
         explain:
-          'That is the actual SpaceX Actor-Judge architecture, and it explains how commodity x86 parts can fly. Citing it demonstrates preparation as well as reasoning.',
+          'That is the reported SpaceX Actor-Judge architecture, and it explains how commodity x86 parts can fly. The judges\' exact selection rule is not public, so state the rule you assume. Citing it demonstrates preparation as well as reasoning.',
         b: 0.7,
         bloom: 'apply',
       },

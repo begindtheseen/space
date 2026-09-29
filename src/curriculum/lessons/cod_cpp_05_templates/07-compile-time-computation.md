@@ -83,7 +83,7 @@ There is a bonus hidden in constant evaluation. At run time, reading past the en
 
 Here is a timing constant that overflows. One hour in microseconds is $3.6 \times 10^9$, and a 32-bit signed integer tops out at $2^{31} - 1 = 2\,147\,483\,647$:
 
-```cpp
+```cpp error
 #include <cstdint>
 constexpr std::int32_t ticks(std::int32_t seconds) { return seconds * 1'000'000; }  // microseconds
 constexpr std::int32_t kOneHour = ticks(3600);

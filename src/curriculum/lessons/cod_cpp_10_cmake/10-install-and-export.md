@@ -303,7 +303,7 @@ target_link_libraries(guidance_app PRIVATE gnc::gnc)
 
 and its program, which turns a 1000-newton thrust along the vehicle's nose into the inertial frame after a 90-degree yaw:
 
-```cpp
+```cpp fragment
 #include <gnc/attitude.hpp>
 
 #include <cstdio>

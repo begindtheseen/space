@@ -862,7 +862,7 @@ Picture a shop where every worker at the back can hand a problem up to the front
 
 The run loop is the **error boundary**: the [[one place that reports problems|error-boundary]]. It catches the error, turns it into an `error: ...` line, and carries on with the next command. One typo must never lose the rest of someone's input.
 
-```python
+```python fragment
 try:
     command = parse_command(line)
 except ValueError as err:
@@ -1850,7 +1850,7 @@ list_kind = None      # None (no list open), "ul" or "ol"
 
 ### Step 3: a helper that changes the state
 
-```python
+```python fragment
 def list_item(kind, text):
     nonlocal list_kind
     if list_kind != kind:
@@ -4627,6 +4627,8 @@ Define your own exception class, raise it for every deliberate error (with the e
 (lambda i: (i.execute("let x = 5"), i.execute("let x = 1 / 0"), i.execute("x"))[1:])(Interpreter()) == ("error: division by zero", "5")
 --- check test | Names are case-sensitive and can contain digits and underscores
 (lambda i: (i.execute("let total_2 = 3"), i.execute("total_2 * 2"), i.execute("Total_2"))[1:])(Interpreter()) == ("6", "error: unknown variable Total_2")
+--- check test | Zero to a negative power replies with an error, never raises
+Interpreter().execute("0 ^ -1").startswith("error: ")
 
 === pyp-15 | Capstone: a bank ledger with validation
 --- teach

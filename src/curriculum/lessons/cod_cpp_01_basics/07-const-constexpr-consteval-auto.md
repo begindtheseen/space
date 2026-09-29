@@ -23,7 +23,7 @@ For flight software the payoff is concrete. Work moved to compile time cannot fa
 
 A **`const`** variable — say "const", short for constant — cannot be changed through its name. Try, and the compiler stops you:
 
-```cpp
+```cpp error
 int main() {
     const double kDt = 0.01;
     kDt = 0.02;
@@ -67,7 +67,7 @@ A **pointer** is a variable that holds the address of another object; the next m
 
 (`*p` is read "star p" and means "the thing `p` points at".) Here is the compiler holding you to the first two rows:
 
-```cpp
+```cpp error
 int main() {
     int a = 1, b = 2;
     const int* p = &a;  p = &b;   // fine: p itself may move
@@ -98,7 +98,7 @@ When a function takes `int hz` by value, it gets its own copy of the caller's nu
 
 The difference shows up exactly where C++ *demands* a value at compile time. One such place is the size of a `std::array` — read `std::` as "standard", so `std::array` is "standard array", a fixed-size array from the standard library. Its size goes inside the angle brackets and becomes part of the array's type, a **[[template argument|template-argument]]**, so the compiler must know it. Try to size one with a `const` whose value comes from a function call:
 
-```cpp
+```cpp error
 #include <array>
 int read_config() { return 8; }
 
@@ -212,7 +212,7 @@ Three things happened here that Python cannot do. The array's size is part of it
 
 C++20 added **`consteval`** — say "const-eval". It marks an **[[immediate function|immediate-function]]**: every call to it must be worked out at compile time. There is no fall-back to run time. A call with a run-time value is an error, not a slower path.
 
-```cpp
+```cpp error
 consteval int checked_bits(int n) { return n * 8; }
 
 int main(int argc, char**) {

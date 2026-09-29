@@ -65,7 +65,7 @@ Under each prefix it tries standard subfolders, such as `lib/cmake/<name>/` and 
 ::: example Finding Eigen and reading what came back
 A tiny program computes a spacecraft's angular momentum per kilogram, $\mathbf{h} = \mathbf{r} \times \mathbf{v}$ (read "h equals r cross v"), for a circular orbit about $400\,\mathrm{km}$ up.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -181,7 +181,7 @@ A common habit is the hash, with the tag in a comment, as above: the hash for th
 ::: example Fetching fmt, and what it costs
 A small telemetry tool prints with fmt:
 
-```cpp
+```cpp fragment
 #include <fmt/core.h>
 
 int main() {

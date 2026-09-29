@@ -334,7 +334,7 @@ E        DESIRED: array([6778137.,       0.,       0.])
 
 **Step 3: state tolerances with units.** Position and velocity have different units, so check them separately:
 
-```python
+```python fragment
     assert_allclose(pos1, pos0, rtol=1e-12, atol=1e-6)   # m
     assert_allclose(vel1, vel0, rtol=1e-12, atol=1e-9)   # m/s
 ```

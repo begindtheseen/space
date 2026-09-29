@@ -1601,7 +1601,7 @@ Success: two measured blocking-time distributions, before and after, and a parag
       {
         id: 'c_m44_power_of_ten',
         front: 'The Power of Ten rules, in spirit',
-        back: 'Simple control flow, no recursion; a statically provable bound on every loop; no allocation after initialization; short functions; assertion density; smallest possible scope for data; check every return value; restricted preprocessor; restricted pointer use; compile with all warnings on, zero warnings, plus static analyzers.',
+        back: 'Simple control flow, no recursion; a statically provable bound on every loop; no allocation after initialization; short functions; assertion density; smallest possible scope for data; check every return value; restricted preprocessor; restricted pointer use (one level of dereferencing, no function pointers); compile with all warnings on, zero warnings, plus static analyzers.',
       },
       {
         id: 'c_m44_volatile',
@@ -2888,16 +2888,16 @@ Success: a CI configuration that genuinely fails on an injected regression — p
     quiz: [
       {
         id: 'q_m47_run_count',
-        q: 'How many Monte Carlo runs are needed to support a 99.87% success rate at 95% confidence, assuming zero failures?',
+        q: 'A requirement asks for 99.8% reliability at 95% confidence, and the campaign is allowed no failures. How many Monte Carlo runs are needed?',
         choices: [
-          'About 750',
-          'About 2300 — from N = ln(1 - 0.95) / ln(0.9987)',
+          'About 500, since 1 / (1 - 0.998) = 500',
+          'About 1500 — from N = ln(1 - 0.95) / ln(0.998)',
           'Exactly 10,000, which is why that number is conventional',
           'It cannot be determined without knowing the distribution of the outputs',
         ],
         answer: 1,
         explain:
-          'Treat each case as an independent Bernoulli trial. If the true success probability were exactly R, the chance of seeing N successes in a row is R^N; setting that equal to 1 minus the confidence and solving gives N = ln(0.05)/ln(0.9987) = 2303. Two things to note in an interview. First, this is the zero-failure formula; a single failure raises the required N sharply, and the general case needs a binomial or Clopper-Pearson bound. Second, it assumes the cases are independent and that the dispersion set genuinely covers the failure mechanisms — if the thing that kills the vehicle is not dispersed, no number of runs finds it. That assumption, not the arithmetic, is where these campaigns actually go wrong.',
+          'Treat each case as an independent Bernoulli trial. If the true success probability were exactly R, the chance of seeing N successes in a row is R^N; setting that equal to 1 minus the confidence and solving gives N = ln(0.05)/ln(0.998) = 1496.4, so 1497 runs. The rule of three, N ≈ 3/(1 - R) = 1500, is a quick mental check at 95% confidence; 1/(1 - R) = 500 supports only about 63% confidence. Two things to note in an interview. First, this is the zero-failure formula; a single failure raises the required N sharply, and the general case needs a binomial or Clopper-Pearson bound. Second, it assumes the cases are independent and that the dispersion set genuinely covers the failure mechanisms — if the thing that kills the vehicle is not dispersed, no number of runs finds it. That assumption, not the arithmetic, is where these campaigns actually go wrong.',
         b: 1.0,
         bloom: 'apply',
       },
@@ -3811,16 +3811,16 @@ Success: two full loops, recorded, with a written self-assessment and a measurab
       },
       {
         id: 'q_m49_coding_round',
-        q: 'In an aerospace C++ coding round, you produce a correct solution that allocates inside a loop. What should you say?',
+        q: 'In an aerospace C++ coding round you write a correct recursive depth-first search over a graph whose size comes from the input. The interviewer says it looks good. What is the strongest next move?',
         choices: [
-          'Nothing; the solution is correct',
-          'Point it out yourself and offer the fixed-footprint version: preallocate or use a fixed-capacity container, because allocation in a hot path is non-deterministic and is exactly what flight coding standards forbid',
-          'Explain that modern allocators are fast enough that it does not matter',
-          'Rewrite the whole solution in C',
+          'Nothing; the interviewer has already accepted it',
+          'Point out that the recursion depth grows with the input, so stack use is set by the data and could overflow a small fixed embedded stack, and offer an iterative version with an explicit fixed-capacity stack and a stated size limit',
+          'Explain that the compiler turns recursion into a loop, so stack use does not matter',
+          'Wrap the call in try/catch so a stack overflow is handled as an exception',
         ],
         answer: 1,
         explain:
-          'Correctness is the entry ticket, not the differentiator. What distinguishes a candidate for a flight software role is noticing the properties the domain cares about — allocation, worst-case behavior, bounded loops, fixed footprint — and raising them before the interviewer does. Saying "this works, but it allocates per iteration, which I would not do in a control loop; here is the version with a preallocated buffer" demonstrates the judgment the job needs, and it costs thirty seconds. Arguing that allocators are fast misses the point entirely: the objection is determinism, not speed. The same instinct applies to unbounded recursion, to error handling on a path with no error return, and to anything whose execution time depends on data.',
+          'Correctness is the entry ticket, not the differentiator. What distinguishes a candidate for a flight software role is noticing the properties the domain cares about — allocation, worst-case behavior, bounded loops, fixed footprint — and raising them before the interviewer does, even after the interviewer has moved on. Recursion whose depth depends on the input hands control of stack memory to the data. A depth-first search is not tail-recursive, so the compiler cannot be relied on to turn it into a loop, and a stack overflow in C++ is not an exception that try/catch can handle; on most targets it is undefined behavior or a crash. An explicit stack with a fixed capacity makes the worst case visible and testable. The same instinct applies to allocation in a hot path and to anything whose execution time depends on data.',
         b: 0.8,
         bloom: 'apply',
       },

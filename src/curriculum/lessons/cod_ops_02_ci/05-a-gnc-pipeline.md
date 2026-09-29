@@ -126,7 +126,7 @@ Exit code 2, so the job fails, and the report lists the lines that never ran: 18
 
 **Suite C: calls everything, checks nothing.** This test calls every function and throws the answers away:
 
-```cpp
+```cpp fragment
 #include <cstdio>
 #include <vector>
 

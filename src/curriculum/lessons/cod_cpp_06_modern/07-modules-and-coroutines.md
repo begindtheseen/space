@@ -55,7 +55,7 @@ double helper_not_exported(double x) { return x * 2.0; }
 
 And a program that uses it, in `main.cpp`:
 
-```cpp
+```cpp fragment
 #include <cstdio>
 import units;
 

@@ -6720,32 +6720,112 @@ assert abs(base - 0.5*0.4*300.0**2*np.deg2rad(2.0)) < 1e-9`,
         kind: 'code',
         lang: 'python',
         hours: 8,
-        prompt: `Consider flat-Earth, constant-gravity, vacuum ascent with constant exhaust velocity.
+        prompt: `Consider flat-Earth, constant-gravity, vacuum ascent with constant exhaust velocity and constant mass flow, starting from rest at the origin.
 
 1. Write the Hamiltonian, apply the Euler-Lagrange conditions, and show the costates for the velocity components are linear in time, so the optimal thrust direction satisfies tan(pitch) = A + B*t.
-2. Implement a two-parameter shooting solve for A and B that hits a target burnout altitude, horizontal velocity and vertical velocity.
-3. Compare the propellant used against a direct-collocation optimal solution.
+2. Implement \`integrate_ascent\` with RK4 (a 0.1 s step is accurate to well under a meter; plain Euler needs about 0.01 s). Make the last step land exactly on \`t_burn\`.
+3. Implement a three-parameter shooting solve for A, B and the burn time t_burn that hits a target burnout altitude, horizontal velocity and vertical velocity: three unknowns for three conditions, as lesson 3 sets it up. Use Newton's method with a finite-difference Jacobian, and start from A = 1, B = -0.01, t_burn = 150 s (a nonzero B keeps the Jacobian from going singular).
+4. Check optimality without an optimizer: add a small extra term c*t^2 to tan(pitch), re-solve for (A, B, t_burn) for c between -4e-5 and +4e-5, and show the burn time (and so the propellant, at constant flow) is smallest at c = 0. The minimum is shallow (about 0.04 s at the ends of that range), so converge each solve tightly.
 
-Success: the shooting solution matches the collocation optimum to under 0.1%, and you can reproduce the derivation from memory.`,
+The test vehicle has a mass of 50 t, including 38 t of propellant, and burns 200 kg/s at an exhaust velocity of 3400 m/s. Its thrust is 680 kN, a thrust-to-weight ratio of 1.39 at ignition. The target is horizontal velocity 2800 m/s, vertical velocity 0 and altitude 60 km.
+
+Success: the shooting solve meets all three targets inside the propellant load (the reference burn is 171.16 s, 34.2 t of propellant), step 4 shows a minimum at c = 0, and you can reproduce the derivation from memory.`,
         starter: `import numpy as np
+
+G0 = 9.80665
 
 
 def linear_tangent_pitch(A, B, t):
-    """Thrust pitch angle from the linear tangent law: tan(pitch) = A + B*t."""
+    \"\"\"Thrust pitch angle (rad above horizontal) from tan(pitch) = A + B*t.\"\"\"
     raise NotImplementedError
 
 
-def integrate_ascent(A, B, t_burn, m0, mdot, ve, g=9.80665, dt=0.01):
-    """Flat-Earth vacuum ascent under linear tangent steering.
+def integrate_ascent(A, B, t_burn, m0, mdot, ve, g=G0, dt=0.1):
+    \"\"\"Fly from rest at the origin for t_burn seconds under linear tangent steering.
 
-    Returns the terminal state (x, z, vx, vz).
-    """
+    Flat Earth, uniform gravity, no drag, constant mass flow. Returns the
+    terminal state (x, z, vx, vz) in m and m/s.
+    \"\"\"
     raise NotImplementedError
 
 
-def solve_AB(target_vx, target_vz, target_z, m0, mdot, ve, t_burn, g=9.80665):
-    """Two-parameter shooting for (A, B) that meets the terminal conditions."""
+def solve_steering(target_vx, target_vz, target_z, m0, mdot, ve, g=G0,
+                   guess=(1.0, -0.01, 150.0)):
+    \"\"\"Three-parameter shooting: find (A, B, t_burn) that meets the terminal conditions.\"\"\"
     raise NotImplementedError
+`,
+        solution: `import numpy as np
+
+G0 = 9.80665
+
+
+def linear_tangent_pitch(A, B, t):
+    \"\"\"Thrust pitch angle (rad above horizontal) from tan(pitch) = A + B*t.\"\"\"
+    return np.arctan(A + B * t)
+
+
+def integrate_ascent(A, B, t_burn, m0, mdot, ve, g=G0, dt=0.1):
+    \"\"\"Fly from rest at the origin for t_burn seconds under linear tangent steering.
+
+    Flat Earth, uniform gravity, no drag, constant mass flow. Returns the
+    terminal state (x, z, vx, vz) in m and m/s.
+    \"\"\"
+    n = max(1, int(np.ceil(t_burn / dt)))
+    h = t_burn / n                      # land exactly on t_burn
+
+    def f(t, s):
+        beta = linear_tangent_pitch(A, B, t)
+        a = mdot * ve / (m0 - mdot * t)  # thrust acceleration T/m
+        return np.array([s[2], s[3], a * np.cos(beta), a * np.sin(beta) - g])
+
+    s = np.zeros(4)
+    for k in range(n):
+        t = k * h
+        k1 = f(t, s)
+        k2 = f(t + h / 2, s + h / 2 * k1)
+        k3 = f(t + h / 2, s + h / 2 * k2)
+        k4 = f(t + h, s + h * k3)
+        s = s + h / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
+    x, z, vx, vz = s
+    return x, z, vx, vz
+
+
+def solve_steering(target_vx, target_vz, target_z, m0, mdot, ve, g=G0,
+                   guess=(1.0, -0.01, 150.0)):
+    \"\"\"Three-parameter shooting: find (A, B, t_burn) that meets the terminal conditions.\"\"\"
+    target = np.array([target_vx, target_vz, target_z])
+    weight = np.array([1.0, 1.0, 0.01])   # 1 m/s counts like 100 m of altitude
+
+    def residual(p):
+        x, z, vx, vz = integrate_ascent(p[0], p[1], p[2], m0, mdot, ve, g)
+        return (np.array([vx, vz, z]) - target) * weight
+
+    p = np.array(guess, dtype=float)
+    steps = np.array([1e-6, 1e-8, 1e-4])  # finite-difference step per unknown
+    for _ in range(30):
+        r = residual(p)
+        if np.max(np.abs(r)) < 1e-6:
+            break
+        J = np.column_stack([(residual(p + steps[i] * np.eye(3)[i]) - r) / steps[i]
+                             for i in range(3)])
+        dp = np.linalg.solve(J, -r)
+        lam = 1.0                           # halve the step until the miss shrinks
+        while lam > 1e-3:
+            trial = p + lam * dp
+            if 0.0 < trial[2] < m0 / mdot and np.linalg.norm(residual(trial)) < np.linalg.norm(r):
+                break
+            lam /= 2
+        p = trial
+    A, B, t_burn = p
+    return A, B, t_burn
+
+
+if __name__ == "__main__":
+    m0, mdot, ve = 50000.0, 200.0, 3400.0
+    A, B, t_burn = solve_steering(2800.0, 0.0, 60000.0, m0, mdot, ve)
+    print(f"A = {A:.6f}, B = {B:.8f}, t_burn = {t_burn:.3f} s")
+    print("terminal state:", np.round(integrate_ascent(A, B, t_burn, m0, mdot, ve), 3))
+    print(f"propellant used: {mdot * t_burn:.0f} kg")
 `,
         tests: [
           {
@@ -6764,13 +6844,28 @@ p = np.array([linear_tangent_pitch(2.5, -0.02, t) for t in ts])
 assert np.all(np.diff(p) < 0), "negative B must pitch the vehicle over monotonically"`,
           },
           {
+            name: 'horizontal thrust matches the rocket equation',
+            assert: `import numpy as np
+m0, mdot, ve, t = 50000.0, 200.0, 3400.0, 100.0
+x, z, vx, vz = integrate_ascent(0.0, 0.0, t, m0, mdot, ve)
+mf = m0 - mdot * t
+assert abs(vx - ve * np.log(m0 / mf)) < 0.5, "with pitch 0, vx must follow ve*ln(m0/m)"
+assert abs(vz + G0 * t) < 0.5, "with pitch 0, only gravity acts vertically"
+assert abs(z + 0.5 * G0 * t * t) < 20.0, "altitude must fall as g*t^2/2"
+assert abs(x - ve * (t - (mf / mdot) * np.log(m0 / mf))) < 20.0, "downrange distance is off; check the integrator and its step"`,
+          },
+          {
             name: 'shooting hits the terminal conditions',
             assert: `import numpy as np
-m0, mdot, ve, t_burn = 100000.0, 300.0, 3000.0, 200.0
-tgt = (5200.0, 0.0, 180000.0)
-A, B = solve_AB(tgt[0], tgt[1], tgt[2], m0, mdot, ve, t_burn)
+m0, mdot, ve = 50000.0, 200.0, 3400.0
+tgt = (2800.0, 0.0, 60000.0)
+A, B, t_burn = solve_steering(tgt[0], tgt[1], tgt[2], m0, mdot, ve)
+assert 0.0 < t_burn < 190.0, "the burn must end before the 38 t of propellant runs out"
 x, z, vx, vz = integrate_ascent(A, B, t_burn, m0, mdot, ve)
-assert abs(vx - tgt[0]) < 5.0 and abs(vz - tgt[1]) < 5.0, "terminal velocity not met"`,
+assert abs(vx - tgt[0]) < 1.0 and abs(vz - tgt[1]) < 1.0, "terminal velocity not met"
+assert abs(z - tgt[2]) < 100.0, "terminal altitude not met"
+assert B < 0, "the vehicle must pitch over during the burn"
+assert abs(t_burn - 171.16) < 0.2, "burn time should be about 171.2 s"`,
             hidden: true,
           },
         ],

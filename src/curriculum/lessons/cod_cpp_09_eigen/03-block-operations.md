@@ -39,7 +39,7 @@ In `block(i, j, p, q)`, $p$ and $q$ are how many rows and columns you want, not 
 ::: example A tour of the windows
 A $4 \times 4$ matrix numbered 1 to 16 makes it easy to see which numbers each window picks up.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -147,7 +147,7 @@ where $\mathbf{I}$ is the $3 \times 3$ identity and $\mathbf{0}$ is all zeros. I
 ::: example One prediction step, built from blocks
 A tracked object is at $(100, 0, 50)\,\mathrm{m}$, moving at $(2, -1, 0.5)\,\mathrm{m/s}$. Each position axis is uncertain by $10\,\mathrm{m}$ (variance $100\,\mathrm{m^2}$) and each velocity axis by $1\,\mathrm{m/s}$ (variance $1\,\mathrm{m^2/s^2}$). Predict $0.1\,\mathrm{s}$ ahead.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -238,7 +238,7 @@ Multiplying it by the predicted state above gives `H * x = 100.2 -0.1 50.05`: th
 ::: warning `auto` keeps the window, not the numbers
 A block is a view, and `auto` keeps whatever type it is given. So `auto pos = x.head<3>();` makes `pos` a window onto `x`, not a copy of three numbers:
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 

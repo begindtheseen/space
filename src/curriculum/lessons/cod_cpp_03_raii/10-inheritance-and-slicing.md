@@ -259,7 +259,7 @@ and you pass it an `Imu`. The parameter `s` is a brand-new `Sensor` object, `Sen
 That is **object slicing**: copying a derived object into a base-typed object keeps only the base part. The derived data is gone, and so is the dynamic type — the new object really is a `Sensor`, so virtual calls on it go to `Sensor`'s versions. Nothing is wrong with dispatch. The `Imu` is simply [[no longer there|slicing-picture]].
 
 ::: example Four ways to call, three of them sliced
-```cpp
+```cpp fragment
 void log_by_value(Sensor s) {
     std::printf("  by value:     %s reads %.2f\n", s.kind(), s.read());
 }

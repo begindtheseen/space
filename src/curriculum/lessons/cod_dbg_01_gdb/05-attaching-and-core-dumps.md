@@ -201,7 +201,7 @@ ulimit -c unlimited (and a writable core_pattern), reproduce the crash, then `gd
 ::: example From a core file to the root-cause line
 A small program converts raw sensor counts into engineering units by looking the sensor up in a table. It works for `baro` and `imu_x`, but a user reports that it dies on `gps`. Here is the code, with line numbers counted from the `#include` lines:
 
-```cpp
+```cpp fragment
 Sensor* find_sensor(const char* name) {                  // line 15
     for (Sensor& s : table) {
         if (std::strcmp(s.name, name) == 0) return &s;

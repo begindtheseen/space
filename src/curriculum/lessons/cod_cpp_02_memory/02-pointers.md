@@ -153,7 +153,7 @@ The last two need an initializer and would not compile without one. Any `const` 
 ::: example What the compiler says when you get it wrong
 Four illegal assignments, one per rule, in one file, `l02-const-positions.cpp`:
 
-```cpp
+```cpp error
 int main() {
     int a = 1;
     int b = 2;

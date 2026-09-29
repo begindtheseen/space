@@ -28,7 +28,7 @@ Eigen stores matrices column-major by default: the entries of column 0, then col
 ::: example Seeing the order in memory
 Every Eigen matrix has `.data()`, a pointer to its first number. Walking that pointer shows the real layout.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -110,7 +110,7 @@ Where does such memory come from in a vehicle? A **[[DMA buffer|dma-buffer]]**, 
 ::: example Reading an IMU packet in place
 An **IMU** (inertial measurement unit — the box of accelerometers and gyroscopes that feels how the vehicle moves) sends a packet of six doubles. Here Eigen does its math directly inside the packet.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -165,7 +165,7 @@ A Map has no way to know how the memory was written. It trusts its type. If the 
 ::: example The same nine numbers, two answers
 A rotation matrix arrives as nine doubles written row by row — the way a C array, a JSON file or a NumPy array would store it. The matrix turns vectors 90° about the $z$ axis, so it should turn the $x$ axis into the $y$ axis.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -203,7 +203,7 @@ Wrapping row-major memory in a default (column-major) Map gives you the transpos
 
 Sometimes the numbers you want are spread out with others in between. A buffer might interleave two sensors: $a_0, b_0, a_1, b_1, a_2, b_2$. A Map can take a **stride** — the step, in numbers, from one entry to the next — and view every other number as a **[[vector with gaps|stride-picture]]**:
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 

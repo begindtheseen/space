@@ -2732,7 +2732,7 @@ You call a method with a dot, the same as `name.upper()`. Look closely: `deposit
 
 A method does not have to return anything. This one only changes the data:
 
-```python
+```python fragment
     def empty(self):
         self.balance = 0
 ```

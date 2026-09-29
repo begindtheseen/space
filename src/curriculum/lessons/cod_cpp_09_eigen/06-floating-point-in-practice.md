@@ -47,7 +47,7 @@ The simplest way for a flight computer running at 1 kHz to keep time is to add t
 **Kahan summation** (also called **compensated summation**) keeps a second variable, `c`, that remembers the part of each addition that fell off the ruler, and feeds it back in on the next step.
 
 ::: example One hour of clock ticks
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <cstdio>
 
@@ -126,7 +126,7 @@ $$
 
 Each product is about $1.8 \times 10^{16}$, where doubles are 4 apart, so $(b+1)^2 = 2^{54} + 2^{28} + 1$ loses its final $+1$ when rounded.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <cmath>
 #include <cstdio>
@@ -219,7 +219,7 @@ $$
 
 with a small $\delta$ (read "delta"). Its singular values are $2 - \delta$ and $\delta$, so $\kappa = (2 - \delta)/\delta \approx 2/\delta$. The program solves $\mathbf{P}\mathbf{x} = \mathbf{b}$ for 1,000 random known $\mathbf{x}$ and reports the worst error.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <algorithm>
 #include <cmath>

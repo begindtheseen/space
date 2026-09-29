@@ -72,7 +72,7 @@ The fix is to give `y` the right size from the start, `y = zeros(1, 2);`, so bot
 **Some functions have no code-generation support.** Anything that draws (`plot`, `figure`), most file and interactive functions, and many toolbox functions cannot be turned into C. MathWorks marks each function's page with whether it supports code generation, under a heading about C/C++ code generation.
 
 ::: key
-Name three MATLAB constructs that cannot go in a codegen-bound MATLAB Function block: Variable-size data without an upper bound, cell arrays or structs whose fields change at runtime, dynamic field names and eval, and calls to functions with no code-generation support such as many plotting and file functions.
+Name three MATLAB constructs to keep out of a MATLAB Function block bound for flight code: Variable-size data without an upper bound (newer releases can generate it with dynamic memory allocation, which flight code forbids), cell arrays or structs whose fields change at runtime, dynamic field names and eval, and calls to functions with no code-generation support, such as plotting and most file functions: in simulation they run as extrinsic calls back into MATLAB, and the generated code leaves them out.
 :::
 
 ::: warning The same code, a different answer

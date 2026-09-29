@@ -70,6 +70,7 @@ Last hint: the answer's shape, explained.
 - [ ] Every fact true. Commands in notes actually work.
 
 **The code** (do not break it)
+- [ ] A code block that looks like a whole program gets a Run button, so it must run as written. Fence a piece of a program (one line, one method, code that needs an earlier block) as ```` ```cpp fragment ```` or ```` ```python fragment ````: it is shown but not run. Fence a program the lesson runs to show its compiler error as ```` ```cpp error ````. **(checked: `src/lib/examples.test.ts` compiles every runnable C++ block and parses every Python one)**
 - [ ] `starter`, `solution` and every `check` stay exactly as they were unless one is actually wrong; if you fix one, say so in your report.
 - [ ] Lesson ids never change: her progress is stored under them. A new lesson gets a new id.
 - [ ] `npx vitest run src/learn` passes. **(checked: every Terminal and Git solution passes and the starter does not)**

@@ -29,7 +29,7 @@ Eigen asks for extra alignment only for **fixed-size vectorizable** types: fixed
 
 Here is what the compiler reports on a standard x86-64 build (`g++ -std=c++20 -Wall -Wextra -I/usr/include/eigen3 sizes.cpp`):
 
-```cpp
+```cpp fragment
 #include <Eigen/Geometry>
 #include <cstdio>
 
@@ -102,7 +102,7 @@ The fix for classes is one line. Put the macro `EIGEN_MAKE_ALIGNED_OPERATOR_NEW`
 ::: example Watching the crash, and the fix
 This program builds three `Filter` objects on the heap. The `char` in front pushes things around so the matrix does not happen to land well by luck.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <cstdint>
 #include <cstdio>
@@ -164,7 +164,7 @@ So you want a test that fails the moment anything in the step allocates. Eigen s
 2. Call `Eigen::internal::set_is_malloc_allowed(false)` to lower the flag, run the code under test, and call `set_is_malloc_allowed(true)` to raise it again.
 3. Any Eigen heap allocation while the flag is down hits an **[[assertion|assertion-abort]]** and stops the program.
 
-```cpp
+```cpp fragment
 #define EIGEN_RUNTIME_NO_MALLOC      // must come before any Eigen header
 #include <Eigen/Dense>
 #include <cstdio>
@@ -218,7 +218,7 @@ and exits cleanly, having allocated inside the fence. Build the no-allocation te
 
 Eigen's switch watches Eigen's own allocator, and nothing else. A `std::vector`, a `std::string`, a `std::function` holding a big lambda: none of them go through Eigen, so none of them trip it. Eigen, for its part, gets its heap memory from `malloc`, not from `operator new`. This little program counts every call to `operator new` by replacing it (C++ lets a program supply its own global **[[operator new|replace-new]]**):
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <cstdio>
 #include <cstdlib>

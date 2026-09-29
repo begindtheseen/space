@@ -179,7 +179,7 @@ void print(this const auto& self);
 Read it as "print, whose object is `self`, a const reference of whatever type it is called on". This is the **explicit object parameter**, nicknamed **[[deducing this|deducing-this-name]]**. The type of `self` is deduced at each call, like any `auto` parameter. Call `print` on a `Vec3` and `self` is a `const Vec3&`, already the derived type — no template argument on the base, no cast.
 
 ::: example The Printable mixin, rewritten in C++23
-```cpp
+```cpp error
 #include <cstddef>
 #include <cstdio>
 

@@ -74,7 +74,7 @@ The three `static_assert` lines make the compiler check those claims; the build 
 ::: example Checking the rule-of-zero Matrix3
 Add this `main` to the class above and build it with `g++ -std=c++20 -Wall -Wextra -O2`:
 
-```cpp
+```cpp fragment
 int main() {
     Matrix3 a;
     a.at(0, 0) = 1.0; a.at(1, 1) = 2.0; a.at(2, 2) = 3.0;
@@ -178,7 +178,7 @@ The moved-from object is left in a **[[valid but unspecified state|moved-from]]*
 ::: example Tracing all five
 Run this `main` with the class above:
 
-```cpp
+```cpp fragment
 int main() {
     std::puts("HeapMatrix3 a;");
     HeapMatrix3 a;
@@ -314,7 +314,7 @@ It writes assignment once, in terms of the copy constructor and a `noexcept` swa
 ::: example Proving the guarantees, and measuring the cost
 This program uses `SwapMatrix3` from above, plus a second class, `ReuseMatrix3`, whose copy assignment overwrites its existing block in place instead of making a new one:
 
-```cpp
+```cpp fragment
 int  g_allocs    = 0;
 bool g_fail_next = false;
 double* alloc9() {

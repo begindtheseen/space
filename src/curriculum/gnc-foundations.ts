@@ -919,7 +919,7 @@ class Quaternion:
         id: 'q_broadcast_shapes',
         q: 'You multiply arrays of shape (3,1) and (1,5). What shape comes out, and why does that matter when you build a covariance?',
         choices: [
-          '(3,5) — the outer-product shape, which is exactly how v @ v.T style covariance blocks get built (and how a shape bug silently produces a matrix instead of a scalar)',
+          '(3,5) — the outer-product shape, the same result as np.outer(a, b) (and how a shape bug silently produces a matrix instead of a scalar)',
           '(3,5), but it is an error unless you call np.outer explicitly',
           '(1,1) — the dimensions contract like a dot product',
           'It raises a ValueError: the shapes are incompatible',
@@ -2515,7 +2515,7 @@ assert max(second_order_step(1.0, 2.0, t) for t in ts) <= 1.0 + 1e-9`,
         id: 'q_zeta_0707',
         q: 'Why is ζ ≈ 0.707 a common design target, and when is it the wrong target for a launch vehicle?',
         choices: [
-          'It gives ≈ 4% overshoot with a maximally flat closed-loop magnitude and ≈ 65° phase margin — but an ascent controller is driven by structural load (q̄α), bending-mode separation and an unstable plant, so margins and load relief set the design, not step overshoot',
+          'It gives ≈ 4% overshoot and a maximally flat closed-loop magnitude — but a launch vehicle ascent design is set by structural load (q̄α) and bending-mode limits, not by step overshoot',
           'It minimizes settling time for any system, and is therefore always correct',
           'It is the value that guarantees infinite gain margin; launch vehicles need finite gain margin instead',
           'It eliminates steady-state error, which a launch vehicle does not need',
@@ -3404,18 +3404,27 @@ assert abs(complex_step(lambda z: np.exp(z), 1.0) - exact) < 1e-12`,
           '- terminal conditions `h_N = 0`, `v_N = 0`,',
           '- altitude never negative.',
           '',
-          'Solve it in CVXPY. Then plot the optimal thrust profile and observe that it is **bang-bang**: coast, then full',
-          'thrust. Explain why an LP objective produces a bang-bang solution, and what changes when you add a non-zero',
-          'minimum throttle.',
+          'With constant mass and a fixed N, the boundary conditions fix the impulse (`sum(T_k) dt = g N dt - v0`), so every',
+          'feasible profile costs the same. Two changes make the answer unique:',
+          '- **Free final time.** The impulse grows with N, so the fuel-optimal landing uses the smallest N for which the LP',
+          '  is feasible. Find it by searching over N (a landing that is feasible at N is also feasible at N + 1).',
+          '- **A tie-breaker.** Add `eps * sum(k**2 * T_k) dt` with `eps = 1e-6` to the objective. A term linear in k does',
+          '  not work, because `h_N = 0` fixes `sum(k T_k)` as well. The k² term picks the most concentrated thrust profile',
+          '  among the equal-cost ones.',
+          '',
+          'Solve it in CVXPY at the shortest feasible N. Plot the thrust profile and observe that it is **bang-bang**: coast,',
+          'then full thrust. Solve again at a longer N and watch the vehicle land early and hover, paying g of impulse for',
+          'every extra second. Explain why an LP objective produces a bang-bang solution, and what changes when you add a',
+          'non-zero minimum throttle.',
         ].join('\n'),
         starter: `import cvxpy as cp
 import numpy as np
 
 
 def min_fuel_landing(
-    h0: float, v0: float, g: float, t_max: float, n: int, dt: float
+    h0: float, v0: float, g: float, t_max: float, n: int, dt: float, eps: float = 1e-6
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Solve the 1-D minimum-fuel soft landing as an LP.
+    """Solve the 1-D minimum-fuel soft landing with n steps as an LP.
 
     Dynamics (explicit Euler is fine here):
         h[k+1] = h[k] + v[k] dt
@@ -3429,8 +3438,20 @@ def min_fuel_landing(
     v = cp.Variable(n + 1)
     T = cp.Variable(n)
     # TODO: build the constraint list (dynamics, bounds, boundary conditions),
-    #       set the objective to cp.Minimize(cp.sum(T) * dt), solve, and return
-    #       the .value arrays.
+    #       set the objective to sum(T) * dt plus the tie-breaker
+    #       eps * sum(k**2 * T[k]) * dt, solve, and return the .value arrays.
+    raise NotImplementedError
+
+
+def shortest_feasible_n(
+    h0: float, v0: float, g: float, t_max: float, dt: float, n_max: int = 2000
+) -> int:
+    """The smallest number of steps for which the landing LP is feasible.
+
+    The impulse is g n dt - v0, so this n is also the fuel-optimal one.
+    Feasibility only improves as n grows, so a bisection on n works.
+    """
+    # TODO: implement
     raise NotImplementedError
 `,
         tests: [
@@ -3443,11 +3464,17 @@ assert h.min() > -1e-6
 assert T.min() > -1e-6 and T.max() < 30.0 + 1e-6`,
           },
           {
-            name: 'the optimal profile is bang-bang',
+            name: 'the shortest feasible landing takes 134 steps',
+            assert: `assert shortest_feasible_n(h0=1000.0, v0=-50.0, g=9.80665, t_max=30.0, dt=0.1) == 134`,
+          },
+          {
+            name: 'at the shortest horizon the optimal profile is bang-bang: coast, then full thrust',
             assert: `import numpy as np
-h, v, T = min_fuel_landing(h0=1000.0, v0=-50.0, g=9.80665, t_max=30.0, n=200, dt=0.1)
+h, v, T = min_fuel_landing(h0=1000.0, v0=-50.0, g=9.80665, t_max=30.0, n=134, dt=0.1)
+assert abs(np.sum(T) * 0.1 - 181.409) < 1e-3
 interior = np.sum((T > 0.05 * 30.0) & (T < 0.95 * 30.0))
-assert interior <= 5`,
+assert interior <= 3
+assert np.all(T[:73] < 1e-3) and np.all(T[74:133] > 30.0 - 1e-3)`,
           },
         ],
       },
@@ -4156,7 +4183,7 @@ assert lo[0] < hi[0]`,
       {
         id: 'c_variable_mass_correct',
         front: 'Correct equation of motion for a rocket under external forces.',
-        back: 'm dv/dt = F_ext + v_e|ṁ| = F_ext + T, with T the thrust. The propellant term appears as a force because of the momentum it carries away, not because mass is changing in F = ma.',
+        back: 'm dv/dt = F_ext + v_e|ṁ| = F_ext + T, with T the thrust (all vectors; v_e has the exhaust speed and points along the thrust, opposite to the exhaust flow). The propellant term appears as a force because of the momentum it carries away, not because mass is changing in F = ma.',
         formula: true,
       },
       {
@@ -4480,9 +4507,10 @@ def spin_axis_index(w: np.ndarray) -> int:
         kind: 'analysis',
         hours: 3,
         prompt: [
-          'Build the inertia tensor of a simple spacecraft: a 1.2 m cube bus (400 kg), two solar arrays modeled as thin',
-          'plates (30 kg each, 1 m × 3 m, mounted ±1.1 m along the y axis), and a propellant tank modeled as a sphere',
-          '(120 kg, r = 0.45 m, offset 0.3 m along +z).',
+          'Build the inertia tensor of a simple spacecraft: a 1.2 m cube bus (400 kg) centered at the origin with its faces',
+          'normal to the axes, two solar arrays modeled as thin plates (30 kg each, 1 m along x by 3 m along y, lying in the',
+          'x–y plane, centers at y = ±2.1 m so each root touches a bus face at |y| = 0.6 m), and a propellant tank modeled',
+          'as a sphere (120 kg, r = 0.45 m, center at z = +0.3 m).',
           '',
           '- Compute each component tensor about its own center of mass.',
           '- Move each to the assembly center of mass with the parallel axis theorem.',
@@ -4558,7 +4586,7 @@ def spin_axis_index(w: np.ndarray) -> int:
       {
         id: 'c_axisym_precession',
         front: 'Precession rate of a torque-free axisymmetric body.',
-        back: 'The body-frame transverse rate precesses at λ = ω₃(I₃ − I_t)/I_t, where I_t is the transverse moment. Oblate (I₃ > I_t) and prolate bodies precess in opposite senses.',
+        back: 'The body-frame transverse rate precesses at λ = ω₃(I₃ − I_t)/I_t, where I_t is the transverse moment and ω₃ = n is the spin rate. Oblate (I₃ > I_t) bodies precess with the spin (λ > 0) and prolate (I₃ < I_t) bodies against it (λ < 0).',
         formula: true,
       },
       {
@@ -6396,6 +6424,119 @@ def propagate_universal(
     raise NotImplementedError
 `,
       },
+      {
+        id: 'ex_tle_ground_track',
+        title: 'A ground track from a TLE',
+        kind: 'code',
+        lang: 'python',
+        hours: 4,
+        prompt: [
+          'Reproduce a ground track from a TLE, reading the set yourself.',
+          '',
+          '- Implement `tle_checksum(line)` with the rule from the TLE lesson, and `parse_tle(line1, line2)`, which reads every',
+          '  field by its columns (the implied decimal points included), converts the epoch to a UTC Julian date, and raises',
+          '  `ValueError` when a checksum is wrong.',
+          '- Implement `semi_major_axis_km(n_revday)` from Kepler third law.',
+          '- Implement `ground_track(line1, line2, minutes)`: propagate the mean elements with two-body Kepler motion (no J2),',
+          '  convert to ECI, and turn each position into longitude and geocentric latitude with Greenwich mean sidereal time.',
+          '- Plot one day of the track for the set in the starter, breaking the line where the longitude jumps across ±180°.',
+          '  Measure the westward shift of successive ascending-node crossings and compare it with ω_E·T.',
+          '- If the `sgp4` package is installed, propagate the same set with SGP4 and report how far apart the two positions are',
+          '  after 1 hour and after 24 hours. Explain the difference with the card on TLEs and SGP4: two-body motion from mean',
+          '  elements mixes theories, so expect kilometers, growing with time.',
+        ].join('\n'),
+        starter: `import math
+
+import numpy as np
+
+MU_EARTH = 398600.4418  # km^3/s^2
+
+# A made-up but realistic set for a sun-synchronous weather satellite.
+TLE_LINE1 = '1 43013U 17073A   26100.25000000  .00000045  00000+0  41234-4 0  9991'
+TLE_LINE2 = '2 43013  98.7200  45.1234 0001300  90.5000 269.6300 14.19550000456787'
+
+
+def tle_checksum(line: str) -> int:
+    """Checksum of columns 1-68: every digit counts its value, each minus sign counts 1, all else 0; keep the last digit."""
+    # TODO: implement
+    raise NotImplementedError
+
+
+def parse_tle(line1: str, line2: str) -> dict:
+    """Read a TLE by columns, not by splitting on spaces.
+
+    Return a dict with keys catnum, epoch_jd (UTC Julian date), ndot_over_2 (rev/day^2), bstar (1/Earth radii),
+    inc_deg, raan_deg, ecc, argp_deg, M_deg and n_revday. Raise ValueError if either checksum is wrong.
+    Two-digit years: 57-99 are 1957-1999, 00-56 are 2000-2056. Day 1.0 is January 1 at 00:00 UTC.
+    """
+    # TODO: implement
+    raise NotImplementedError
+
+
+def semi_major_axis_km(n_revday: float, mu: float = MU_EARTH) -> float:
+    """Two-body semi-major axis from mean motion in revolutions per day (Kepler's third law)."""
+    # TODO: implement
+    raise NotImplementedError
+
+
+def ground_track(line1: str, line2: str, minutes: list[float]) -> list[tuple[float, float]]:
+    """(longitude, geocentric latitude) in degrees of the sub-satellite point at each time after the epoch.
+
+    Propagate with two-body Kepler motion from the set's mean elements (no J2), convert to ECI, then rotate by
+    Greenwich mean sidereal time (IAU 1982, with UTC). Longitudes are wrapped to (-180, 180].
+    """
+    # TODO: implement
+    raise NotImplementedError
+`,
+        tests: [
+          {
+            name: 'the checksum rule matches the lesson example and this set',
+            assert: `L1 = "1 25544U 98067A   26265.50000000  .00012345  00000+0  22345-3 0  9999"
+L2 = "2 25544  51.6400 123.4567 0006000  45.6789 314.3211 15.49000000123450"
+assert tle_checksum(L1) == 9 and tle_checksum(L2) == 0
+assert tle_checksum(TLE_LINE1) == 1 and tle_checksum(TLE_LINE2) == 7`,
+          },
+          {
+            name: 'every field is read from its columns, with the implied decimals',
+            assert: `el = parse_tle(TLE_LINE1, TLE_LINE2)
+assert el["catnum"] == 43013
+assert abs(el["epoch_jd"] - 2461140.75) < 1e-6
+assert abs(el["ndot_over_2"] - 4.5e-7) < 1e-15
+assert abs(el["bstar"] - 4.1234e-5) < 1e-12
+assert abs(el["inc_deg"] - 98.72) < 1e-9 and abs(el["raan_deg"] - 45.1234) < 1e-9
+assert abs(el["ecc"] - 0.00013) < 1e-12 and abs(el["argp_deg"] - 90.5) < 1e-9
+assert abs(el["M_deg"] - 269.63) < 1e-9 and abs(el["n_revday"] - 14.1955) < 1e-9`,
+          },
+          {
+            name: 'a damaged line is refused',
+            assert: `bad = TLE_LINE2[:30] + "9" + TLE_LINE2[31:]
+try:
+    parse_tle(TLE_LINE1, bad)
+    raise AssertionError("a line with a wrong checksum was accepted")
+except ValueError:
+    pass`,
+          },
+          {
+            name: 'mean motion converts to semi-major axis',
+            assert: `assert abs(semi_major_axis_km(15.49) - 6797.787) < 1e-3
+assert abs(semi_major_axis_km(14.1955) - 7205.012) < 1e-3`,
+          },
+          {
+            name: 'the sub-satellite points match two-body propagation of the set',
+            assert: `track = ground_track(TLE_LINE1, TLE_LINE2, [0.0, 30.0, 60.0])
+want = [(116.6196, 0.1138), (-43.9284, 71.3059), (-84.0429, -32.6448)]
+for (lon, lat), (lon0, lat0) in zip(track, want):
+    assert -180.0 < lon <= 180.0
+    assert abs(lon - lon0) < 0.02 and abs(lat - lat0) < 0.02`,
+          },
+          {
+            name: 'over one orbit the track reaches 180 deg minus the inclination in latitude',
+            hidden: true,
+            assert: `lats = [lat for _, lat in ground_track(TLE_LINE1, TLE_LINE2, [0.5 * k for k in range(0, 204)])]
+assert abs(max(lats) - 81.28) < 0.1 and abs(min(lats) + 81.28) < 0.1`,
+          },
+        ],
+      },
     ],
     cards: [
       {
@@ -6835,7 +6976,7 @@ def propellant_mass(m0: float, dv: float, isp: float, g0: float = 9.80665e-3) ->
       {
         id: 'c_finite_burn_loss',
         front: 'What is finite-burn loss and when does the impulsive approximation break down?',
-        back: 'A real burn takes time, during which the vehicle moves and the thrust direction is not always optimal, so realized Δv falls short of the impulsive calculation. The approximation degrades when burn arc length becomes a significant fraction of the orbit — roughly when burn time exceeds a few percent of the period.',
+        back: 'A real burn takes time, during which the vehicle moves and the thrust direction is not always optimal, so realized Δv falls short of the impulsive calculation. The approximation degrades when burn arc length becomes a significant fraction of the orbit — roughly when burn time exceeds a few percent of the period (measured as speed shortfall; the true energy penalty is much smaller).',
       },
       {
         id: 'c_edelbaum',
@@ -7738,7 +7879,9 @@ def correct_velocity(x0: np.ndarray, r_target: np.ndarray, dt: float, tol: float
           'Implement the closed-form CW state transition matrix `Phi(t)` for a circular reference orbit of mean motion `n`,',
           'using the LVLH convention x = radial, y = in-track, z = cross-track.',
           '',
-          '- Verify `Phi(0) = I` and `det(Phi(t)) = 1` for all t (the flow is symplectic).',
+          '- Verify `Phi(0) = I` and `det(Phi(t)) = 1` for all t (the flow is symplectic). The determinant test is blind to',
+          '  errors in the y (in-track) row, because the y column of `Phi` is always (0, 1, 0, 0, 0, 0); the drift and',
+          '  nonlinear tests below cover that row.',
           '- Verify the drift-free condition: starting with `ydot0 = -2 n x0` leaves no secular in-track drift.',
           '- Propagate both the CW model and full nonlinear two-body relative motion for separations of 100 m, 1 km and',
           '  50 km, and plot the divergence over five orbits.',
@@ -8095,7 +8238,7 @@ def is_passively_safe(
           '```',
           '',
           '- Implement `allen_eggers_velocity(h, ...)`, `peak_deceleration(...)` and `peak_decel_altitude(...)`.',
-          '- Integrate a flat-planet 3-DOF ballistic entry with an exponential atmosphere and overlay the two.',
+          '- Integrate a flat- or spherical-planet 3-DOF ballistic entry with an exponential atmosphere and overlay the two.',
           '- Sweep beta over 50, 200 and 1000 kg/m² and confirm that the peak deceleration *magnitude* is unchanged while',
           '  the *altitude* at which it occurs drops as beta rises.',
           '- Sweep the entry flight-path angle and confirm the peak deceleration scales with sin(gamma_E).',

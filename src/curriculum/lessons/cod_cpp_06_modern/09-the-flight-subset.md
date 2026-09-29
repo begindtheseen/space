@@ -180,7 +180,7 @@ There are three standard answers, and the real-time module later builds all thre
 ::: example The same loop, packed for flight
 Here is the same program with the heap left out. The history is a `std::array` with a count. The status is a tiny fixed-capacity text class. The trap is still installed.
 
-```cpp
+```cpp fragment
 #include <array>
 #include <cstddef>
 #include <cstdio>

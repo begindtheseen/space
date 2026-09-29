@@ -278,7 +278,7 @@ The fix is the pattern above: declare the destructor in the header, and define i
 ::: example What recompiles when the insides change
 The program is three files: the two above and a `main.cpp` that logs three samples. A three-rule `Makefile` says `main.o` depends on `main.cpp` and `recorder.hpp`, and `recorder.o` depends on `recorder.cpp` and `recorder.hpp`. `make` rebuilds only what is older than the files it depends on.
 
-```cpp
+```cpp fragment
 // main.cpp
 #include "recorder.hpp"
 #include <cstdio>

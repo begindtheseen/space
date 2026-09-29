@@ -392,7 +392,13 @@ Without quotes, `touch` got two words and made two files. With quotes, `"$(…)"
 
 ### The old spelling: backticks
 
-In older scripts you will meet the same thing written with **backticks**, the slanted quote mark that sits under Esc on a US keyboard: `` `ls | wc -l` ``. It does exactly what `$(ls | wc -l)` does. The `$(…)` spelling is easier to read and [[can be nested|nesting]], one inside another, so use that one.
+In older scripts you will meet the same thing written with **backticks**, the slanted quote mark that sits under Esc on a US keyboard. The command goes between two backticks, where `$(` and `)` would go:
+
+```
+n=`ls | wc -l`
+```
+
+It does exactly what `n=$(ls | wc -l)` does. The `$(…)` spelling is easier to read and [[can be nested|nesting]], one inside another, so use that one.
 
 **Watch out:** the dollar and the brackets always go together.
 

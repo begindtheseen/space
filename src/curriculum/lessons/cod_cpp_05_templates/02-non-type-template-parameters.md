@@ -173,7 +173,7 @@ The trick is one letter. `K` appears **twice**: as the column count of `a` and a
 ::: example Rotating a body vector, and a product that cannot compile
 A spacecraft measures a vector in its own **body frame** and needs it in the navigation frame. A **[[rotation matrix|dcm]]** does that. Here the body is turned $90^\circ$ about the $z$ axis.
 
-```cpp
+```cpp fragment
 #include <array>
 #include <cstddef>
 #include <cstdio>

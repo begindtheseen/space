@@ -107,7 +107,7 @@ later. About one note in three gets a picture:
 - [ ] `::: key` blocks carry every flashcard fact, in the card's notation.
 - [ ] `::: warning` blocks where learners really slip.
 - [ ] Every quiz question in the module can be answered from the lessons, but no lesson restates one.
-- [ ] Any code block runs as written.
+- [ ] A code block that looks like a whole program gets a Run button, so it must run as written. Fence a piece of a program (one line, one method, code that needs an earlier block) as ```` ```cpp fragment ```` or ```` ```python fragment ````: it is shown but not run. Fence a program the lesson runs to show its compiler error as ```` ```cpp error ````. **(checked: `src/lib/examples.test.ts` compiles every runnable C++ block and parses every Python one)**
 - [ ] `## Check yourself` has 4–6 `::: check` blocks, each followed by a full `::: answer`. **(checked)**
 - [ ] `## Summary` has a table and a line pointing to the next lesson. **(checked: the Summary exists)**
 - [ ] The arithmetic is right and the maths renders in KaTeX. **(checked)**

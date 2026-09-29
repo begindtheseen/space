@@ -174,7 +174,7 @@ double clamp_throttle(double command) {
 
 The program asks for a throttle of 1.25, which is 25% more than the engine can give:
 
-```cpp
+```cpp fragment
 #include <gnc/checks.hpp>
 #include <cstdio>
 

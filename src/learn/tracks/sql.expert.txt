@@ -1200,6 +1200,12 @@ INSERT OR IGNORE INTO contacts (email, name, updated_at) VALUES (' CY@mail.com',
 --- check query | A new address is still welcome
 INSERT OR IGNORE INTO contacts (id, email, name, updated_at) VALUES (7, 'dee@mail.com', 'Dee', '2024-05-01') RETURNING id
 => [[7]]
+--- check query | Trailing spaces and capitals are refused too
+INSERT OR IGNORE INTO contacts (email, name, updated_at) VALUES ('Bo@Mail.COM  ', 'Bo again', '2024-05-01') RETURNING id
+=> []
+--- check query | The unique index is named contacts_email_key
+SELECT name, "unique" FROM pragma_index_list('contacts') ORDER BY name
+=> [["contacts_email_key", 1]]
 
 === sql4-07 | Pivoting with conditional aggregation
 --- schema
@@ -1671,6 +1677,8 @@ ordered
 [["PEN", 4, 2], ["MUG", 3, 2], ["LAMP", 1, 1]]
 --- check source | Uses json_each
 json_each
+--- check source absent | Adds up the items rather than typing the skus in
+'(PEN|MUG|LAMP)'
 
 === sql4-08b | JSON: giving a field its own column
 --- schema
@@ -2199,13 +2207,19 @@ SELECT (SELECT COUNT(*) FROM note_tags), (SELECT COUNT(*) FROM tags)
 --- check query | The old tags column is gone
 SELECT COUNT(*) FROM pragma_table_info('notes') WHERE name = 'tags'
 => [[0]]
+--- check query | note_tags has the primary key (note_id, tag_id)
+SELECT name, pk FROM pragma_table_info('note_tags') ORDER BY cid
+=> [["note_id", 1], ["tag_id", 2]]
+--- check query | Both links cascade on delete
+SELECT "table", "from", on_delete FROM pragma_foreign_key_list('note_tags') ORDER BY "from"
+=> [["notes", "note_id", "CASCADE"], ["tags", "tag_id", "CASCADE"]]
 
 === sql4-10 | Audit trails with triggers
 --- schema
 CREATE TABLE products (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
-  price REAL NOT NULL
+  price REAL
 );
 INSERT INTO products (id, name, price) VALUES (1, 'Mug', 9.0), (2, 'Lamp', 45.0);
 CREATE TABLE audit_log (
@@ -2220,7 +2234,7 @@ Last lesson you changed a database's design and carried its data across. This le
 
 ### The tables
 
-- `products`: `id`, `name`, `price`. It starts with a Mug (id 1, price 9.0) and a Lamp (id 2, price 45.0).
+- `products`: `id`, `name`, `price`. It starts with a Mug (id 1, price 9.0) and a Lamp (id 2, price 45.0). `price` may be NULL, for a product that has no price yet.
 - `audit_log`: `id`, `product_id`, `action`, `old_row`, `new_row`. It starts empty. Your triggers will fill it.
 
 ### The picture
@@ -2296,7 +2310,7 @@ The `WHEN` compares with `IS NOT`, not `<>` ("not equal"). The difference is NUL
 | 5 and NULL | NULL | 1 (true) |
 | NULL and NULL | NULL | 0 (false) |
 
-So with `<>`, a price changing from NULL to 5 would never be logged. Here both columns are `NOT NULL`, but `IS NOT` is the safe habit for every audit trigger.
+So with `<>`, a price changing from NULL to 5 would never be logged. Here `price` may be NULL, so this matters, and `IS NOT` is the safe habit for every audit trigger anyway.
 
 ### Inserts and deletes
 
@@ -2428,6 +2442,11 @@ SELECT product_id, action, old_row, new_row FROM audit_log ORDER BY id
 --- check query | The old price can be read back from the log
 SELECT json_extract(old_row, '$.price') FROM audit_log WHERE action = 'update'
 => [[9.0]]
+--- check query | A price set for the first time, from NULL, is logged
+INSERT INTO products (id, name, price) VALUES (4, 'Cup', NULL);
+UPDATE products SET price = 2.5 WHERE id = 4;
+SELECT action, old_row, new_row FROM audit_log WHERE product_id = 4 ORDER BY id
+=> [["insert", null, "{\"name\":\"Cup\",\"price\":null}"], ["update", "{\"name\":\"Cup\",\"price\":null}", "{\"name\":\"Cup\",\"price\":2.5}"]]
 
 === sql4-11 | Debugging: orphans and duplicates
 --- schema
@@ -2706,6 +2725,11 @@ SELECT COUNT(*) FROM orders o WHERE NOT EXISTS (SELECT 1 FROM customers c WHERE 
 --- check query | A new duplicate spelling is refused
 INSERT OR IGNORE INTO customers (email, name) VALUES (' CY@Mail.com', 'Cy') RETURNING id
 => []
+--- check query | The unique index is named customers_email_key
+SELECT name, "unique" FROM pragma_index_list('customers') ORDER BY name
+=> [["customers_email_key", 1]]
+--- check source | The repair runs between BEGIN and COMMIT
+^\s*(BEGIN|begin|Begin)\b[\s\S]*^\s*(COMMIT|commit|Commit|END|end|End)\b
 
 === sql4-12 | Problem solving: cohort retention
 --- schema
@@ -3024,6 +3048,8 @@ Each percentage is `ROUND(100.0 * SUM(EXISTS (…)) / COUNT(*), 1)`, once with `
 --- check result | Jan 50/50, Feb 50/100, Mar 100/0
 ordered
 [["2024-01", 4, 50.0, 50.0], ["2024-02", 2, 50.0, 100.0], ["2024-03", 1, 100.0, 0.0]]
+--- check source absent | Works the rows out rather than typing them in
+'2024-|50\.0
 
 === sql4-13 | Problem solving: a conversion funnel
 --- schema
@@ -3296,6 +3322,8 @@ The last `SELECT` reads from `steps`: `ROUND(100.0 * users / LAG(users) OVER (OR
 --- check result | 6 viewed, 4 carted in order, 3 checked out, 2 purchased
 ordered
 [[1, "view", 6, null], [2, "cart", 4, 66.7], [3, "checkout", 3, 75.0], [4, "purchase", 2, 66.7]]
+--- check source absent | Counts the users rather than typing the answer in
+66\.7|75\.0|\b6\b
 
 === sql4-14 | Problem solving: find and fix a slow query
 --- schema

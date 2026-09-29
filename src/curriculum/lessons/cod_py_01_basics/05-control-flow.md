@@ -36,7 +36,7 @@ The convention everywhere is **four spaces per level**. Set your editor to inser
 
 Python checks the shape of your code before it runs anything, and its messages are specific. Here is a missing colon:
 
-```python
+```python error
 # no_colon.py
 ax = [0.02, 12.7]
 for a in ax
@@ -53,7 +53,7 @@ python3 no_colon.py
 
 And here is a block that never got indented:
 
-```python
+```python error
 # no_indent.py
 ax = [0.02, 12.7]
 for a in ax:

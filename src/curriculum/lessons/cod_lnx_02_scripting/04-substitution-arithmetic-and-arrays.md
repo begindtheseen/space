@@ -30,7 +30,13 @@ n=[400]
 
 `wc -l` counted the lines, and its answer became the value of `n`. The square brackets in the `echo` are there only so you can see exactly where the value starts and stops.
 
-There is an older spelling with **[[backticks|backtick-history]]**, `` n=`wc -l < logs/run.log` ``, and it gives the same result. Use `$( )` anyway. It nests — one substitution inside another — with no extra escaping:
+There is an older spelling with **[[backticks|backtick-history]]**: the command goes between two backtick characters instead of inside `$( )`.
+
+```bash
+n=`wc -l < logs/run.log`
+```
+
+It gives the same result. Use `$( )` anyway. It nests — one substitution inside another — with no extra escaping:
 
 ```bash
 echo "parent: $(basename "$(dirname "$(readlink -f logs/run.log)")")"
@@ -40,7 +46,7 @@ echo "parent: $(basename "$(dirname "$(readlink -f logs/run.log)")")"
 parent: logs
 ```
 
-Read it from the inside out: `readlink -f` made a full path, `dirname` cut off the file name, `basename` kept the last directory name. Three substitutions, each with its own quotes, and not one backslash. With backticks, every inner level needs escaping as `` \` ``, which is hard to read at two levels and worse at three.
+Read it from the inside out: `readlink -f` made a full path, `dirname` cut off the file name, `basename` kept the last directory name. Three substitutions, each with its own quotes, and not one backslash. With backticks, every inner backtick needs a backslash in front of it, which is hard to read at two levels and worse at three.
 
 Two properties of `$( )` matter every day.
 

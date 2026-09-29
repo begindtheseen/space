@@ -55,7 +55,7 @@ But inside the object, Eigen stores the four numbers **scalar-last**: `x`, `y`, 
 
 Here it is, running. Compile it the way the whole module does: `g++ -std=c++20 -Wall -Wextra -I/usr/include/eigen3 order.cpp -o order`.
 
-```cpp
+```cpp fragment
 #include <Eigen/Geometry>
 #include <cmath>
 #include <cstdio>
@@ -100,7 +100,7 @@ The trap is wider than `coeffs()`. Every way of building a `Quaterniond` from a 
 
 This program feeds the same four doubles, 1, 2, 3, 4, through four different doors:
 
-```cpp
+```cpp fragment
 #include <Eigen/Geometry>
 #include <cstdio>
 
@@ -142,7 +142,7 @@ A `double[4]`, a `std::array<double, 4>`, a `Vector4d` or four fields in a messa
 
 Suppose someone prints `coeffs()`, copies the four numbers, and pastes them into the constructor. What rotation do they get? Use the lie detector from the first section.
 
-```cpp
+```cpp fragment
 #include <Eigen/Geometry>
 #include <cmath>
 #include <cstdio>
@@ -306,7 +306,7 @@ If the same wrong assumption is made on the way in and on the way out, a round-t
 
 The other round trip you will write often goes through a **[[rotation matrix|dcm]]** (the $3 \times 3$ grid of numbers, also called a **DCM**, that does the same rotation). `q.toRotationMatrix()` goes one way, and constructing a `Quaterniond` from a `Matrix3d` goes back.
 
-```cpp
+```cpp fragment
 #include <Eigen/Geometry>
 #include <cmath>
 #include <cstdio>

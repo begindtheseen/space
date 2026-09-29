@@ -198,7 +198,7 @@ Everything after a `#` (read "hash") on a line is a **comment**: the interpreter
 
 One naming rule now, because it costs a beginner an hour when it bites. **Do not name your file after a module you plan to import.** Say you save a file of your own called `random.py` in the same folder as your script. When the script runs `import random`, Python looks in the script's own folder first, finds *your* file, and imports that instead of the standard library's `random`. The first time you use it, you get this:
 
-```python
+```python fragment
 AttributeError: module 'random' has no attribute 'uniform'
 ```
 

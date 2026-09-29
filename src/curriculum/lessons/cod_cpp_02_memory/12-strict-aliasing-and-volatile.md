@@ -35,6 +35,9 @@ If `a` and `b` could point at the same bytes, every write through `b` would forc
 
 ::: example Same source, two flags, two answers
 ```cpp
+#include <cstdint>
+#include <cstdio>
+
 float scale_then_read(float* f, std::uint32_t* u) {
     *f = 1.0f;
     *u = 0x7F800000;        // the bit pattern of +infinity

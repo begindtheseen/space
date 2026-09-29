@@ -149,7 +149,7 @@ Two more rules and a warning complete the picture.
 ::: warning An exception nobody catches may skip every destructor
 The guarantee is for exceptions that *are* caught. If an exception escapes `main`, the program calls `std::terminate`, and whether the stack is unwound first is up to the implementation. With g++ on Linux, this program never prints `released`:
 
-```cpp
+```cpp fragment
 struct T { ~T() { std::puts("released"); } };
 int main() { T t; throw std::runtime_error("nobody catches this"); }
 ```

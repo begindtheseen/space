@@ -52,7 +52,7 @@ Prefer Eigen fixed-size types (`Vector3d`, `Matrix3d`) in flight code: fixed-siz
 ::: example Fixed-size vectors and matrices
 Here are the operations you will use every day, on a spacecraft 7,000 km from Earth's center.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -139,7 +139,7 @@ It has one consequence you must learn by heart. A recipe card that says "use the
 `auto` asks the compiler to pick the type for you. With Eigen, it picks the recipe card, not the cake.
 
 ::: example Lazy evaluation made visible
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -217,7 +217,7 @@ Eigen's quaternion constructor takes the scalar first, `Eigen::Quaterniond(w, x,
 "Applies `q2` first" works like function notation in math: in $f(g(x))$, $g$ acts first even though $f$ is written first. The factor nearest the vector acts first.
 
 ::: example Quaternion conventions, and the memcpy bug
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include <cstring>
@@ -308,7 +308,7 @@ Sensor drivers hand you plain arrays of doubles, and Python hands you NumPy buff
 - **`Eigen::Map`** is a window: it makes existing memory look like an Eigen object, with no copy.
 - **`Eigen::Ref`** is a parameter type. A function that takes `Ref` accepts a real vector, a block of a bigger vector or a `Map`, without copying and without having to become a template.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -351,7 +351,7 @@ Everything above meets the module's first exercise in one program. It uses the `
 ::: example One orbit of RK4 on a fixed-size state
 The state is $\mathbf{x} = [\mathbf{r}; \mathbf{v}]$, position stacked on velocity. Its rate of change is $\dot{\mathbf{x}} = [\mathbf{v}; -\mu\mathbf{r}/|\mathbf{r}|^3]$, where $\mu = 3.986 \times 10^{14}\,\mathrm{m^3/s^2}$ is Earth's gravitational parameter. We start on a circular orbit 400 km up and step once a second for one full period.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <cstdio>
 #include <cmath>

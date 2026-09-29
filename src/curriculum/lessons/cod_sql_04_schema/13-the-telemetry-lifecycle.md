@@ -185,10 +185,10 @@ Ask first: what are the queries, how many series, how much history, and are tran
 
 What does a real fleet of thousands of satellites use? SpaceX does not publish its architecture, so everything here is **as reported** — in public job postings and in interviews its engineers have given — and details may have changed since.
 
-A 2021 Stack Overflow blog profile of SpaceX's software teams described a telemetry data store built for Starlink on **.NET**, **Kafka**, **HBase** and **HDFS**, running on **Docker** and **Kubernetes**. Starlink job postings since then ask for experience with Kafka, HBase, HDFS, Spark and Flink, and with Docker and Kubernetes. Related SpaceX data roles have listed PostgreSQL, CockroachDB, Hive and Delta Lake, and tools such as Grafana, Jupyter, Metabase and PowerBI. In 2020 the Starlink software team said in a public online Q&A that the constellation was producing **[[more than 5 TB|five-tb]]** of telemetry a day — when it had only a few hundred satellites.
+A 2021 Stack Overflow blog profile of SpaceX's software teams described a telemetry data store built for Starlink on **.NET**, **Kafka**, **HBase** and **HDFS**, running on **Docker** and **Kubernetes**. Starlink job postings since then ask for experience with Kafka, HBase, HDFS, Spark and Flink, and with Docker and Kubernetes. Related SpaceX data roles have listed PostgreSQL, CockroachDB, Hive and Delta Lake, and tools such as Grafana, Jupyter, Metabase and PowerBI. Even the early constellation, with only a few hundred satellites, would have produced telemetry on the order of **[[terabytes a day|five-tb]]**. That is an estimate from assumed rates, not a figure SpaceX has published.
 
 ::: key What is the reported Starlink telemetry stack?
-A .NET service layer with Kafka for ingest, HBase and HDFS for storage, running on Docker and Kubernetes. Related SpaceX data roles list PostgreSQL, CockroachDB, Hive and Delta Lake, with Grafana, Jupyter, Metabase and PowerBI for exploration. (As reported in public job postings and talks, not published by SpaceX as a design.)
+As described in a 2021 Stack Overflow blog profile of SpaceX software teams: a .NET service layer with Kafka for ingest, HBase and HDFS for storage, running on Docker and Kubernetes. It is reported, not a design SpaceX has published, and it may have changed since.
 :::
 
 Here is what each piece does, and where it sits on the road.
@@ -361,8 +361,8 @@ Early rocket telemetry had one radio channel and many sensors. A motor-driven ro
 In InfluxDB, a series is one measurement plus one exact set of tag values. `sat_id` with 6000 values and `channel` with 500 values already make 3 million series. Add a tag with a unique value per packet — a sequence count, say — and the number of series explodes, and the index that tracks them grows without limit. The rule of thumb: tags for things you filter and group by that have a bounded set of values; fields for measured values and anything close to unique.
 :::
 
-::: context five-tb How big is 5 TB a day?
-Five terabytes is five million megabytes. Spread over a day it is about 58 megabytes every second, all day, every day. In 2020 Starlink had only a few hundred satellites in orbit, and each of them was reporting its health, its radios' state and its network traffic. A fleet ten times larger, with more channels, grows from there. That scale is why the data goes into a partitioned log and a cluster, not a single database server.
+::: context five-tb Terabytes a day, estimated
+Assume 400 satellites, each sending 5000 channels (health, radio state, network traffic) at an average of 2 samples a second, and 16 bytes per sample with its timestamp. That is 400 × 5000 × 2 × 16 = 64 megabytes every second, or about 5.5 terabytes a day. The rates are assumptions, not SpaceX numbers, but any plausible choice lands in terabytes a day. A fleet ten times larger, with more channels, grows from there. That scale is why the data goes into a partitioned log and a cluster, not a single database server.
 :::
 
 ::: context kafka-log A log you can rewind

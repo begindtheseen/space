@@ -28,7 +28,7 @@ Those rare slow cycles are the **tail** of the distribution. We name points in i
 ::: example A timing harness that keeps the tail
 This program times 100 000 RK4 steps of lesson 10's two-body problem, one at a time.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <algorithm>
 #include <array>
@@ -177,7 +177,7 @@ corrected = 0.010200
 ::: example Proving a loop allocation-free with memcheck and massif
 Lesson 10's propagator, two ways: fixed-size `Vector6d`, or (with `-DNAIVE`) dynamic `VectorXd`, where every vector result is a heap allocation.
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <cmath>
 #include <cstdio>

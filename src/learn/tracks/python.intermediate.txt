@@ -2188,7 +2188,7 @@ Think of a message passed down a line of people. The boss asks a manager, the ma
 
 Here is a small program that works out the total cost of an order. Each order line is a string like `"tea, 3, 2.50"`: a name, a quantity (how many), and a price. The line numbers on the left are there so you can match them to the traceback; they are not part of the code.
 
-```python
+```python fragment
  1  ORDERS = ["tea, 3, 2.50", "biscuits, 2, 1.25", "jam, 1, 7.50"]
  2
  3
@@ -2263,7 +2263,7 @@ Keep reading upwards and you walk back along the chain of calls, out to the star
 
 This is the most important idea in the lesson. Look at line 10 again:
 
-```python
+```python fragment
 return item["qty"] * item["price"]
 ```
 
@@ -2463,7 +2463,7 @@ print(isinstance(5, int))               # True
 
 Now `__eq__`:
 
-```python
+```python fragment
     def __eq__(self, other):
         if not isinstance(other, Point):
             return NotImplemented

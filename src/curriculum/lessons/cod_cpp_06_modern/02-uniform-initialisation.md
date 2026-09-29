@@ -85,7 +85,7 @@ If your team builds with g++ and without `-Werror`, a narrowing from a variable 
 
 C++ inherited a rule from C: if a line *can* be read as a declaration, it *is* one. The basics module showed the simple case, `double x();`, which declares a function, not a variable. Here is the version that bites experienced programmers:
 
-```cpp
+```cpp error
 #include <cstdio>
 
 struct Clock {

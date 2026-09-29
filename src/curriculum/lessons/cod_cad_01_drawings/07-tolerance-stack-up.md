@@ -4,6 +4,7 @@ title: Tolerance stack-up — worst case and root-sum-square
 minutes: 24
 covers:
   - 'Tolerance stack-up: worst case versus root-sum-square'
+  - 'Datums and datum feature symbols (introduction)'
 ---
 
 Stack five books on a shelf. Each book is "about 3 cm" thick, but no two are exactly the same. Some are a millimeter fat, some a millimeter thin. Now ask: will the stack fit under a shelf that is 15.5 cm high? If every book happens to be fat, the stack is 15.5 cm and it only just fits. If they are a mix, it fits easily. The small differences in each book add up into one bigger difference in the whole stack.

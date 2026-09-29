@@ -295,7 +295,7 @@ HotLoopGuard::HotLoopGuard() { g_hot_loop = true; }
 HotLoopGuard::~HotLoopGuard() { g_hot_loop = false; }
 ```
 
-```cpp
+```cpp fragment
 // noalloc_main.cpp
 #include <array>
 #include <cstdio>

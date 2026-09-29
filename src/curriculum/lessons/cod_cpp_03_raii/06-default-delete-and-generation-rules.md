@@ -54,7 +54,7 @@ The second use is documentation. Writing `T(const T&) = default;` tells the next
 Lesson 03 built `MutexLock`, which locks a mutex in its constructor and unlocks it in its destructor. Copying one would be a disaster: two objects would each unlock the same mutex, and the second unlock is undefined behavior. So it deletes its copy pair. What about moving? `MutexLock` holds a *reference* to its mutex, and [[a reference cannot be re-pointed or emptied|lock-guard]], so there is no sensible "moved-from" state. The exercise asks for it to be non-copyable *and* non-movable, and the generation rules give us that for free.
 
 ::: example `MutexLock`: no copies, and no moves either
-```cpp
+```cpp error
 #include <cstdio>
 #include <mutex>
 #include <utility>

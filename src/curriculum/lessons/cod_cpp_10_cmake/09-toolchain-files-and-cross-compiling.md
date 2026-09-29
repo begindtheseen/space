@@ -241,7 +241,7 @@ float Pid::update(float error, float dt_s) {
 
 The fin program, `apps/fin_controller.cpp`:
 
-```cpp
+```cpp fragment
 #include "gnc/pid.hpp"
 
 // Commands a fin from a pitch error. On the flight computer the error

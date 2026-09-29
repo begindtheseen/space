@@ -146,7 +146,7 @@ Inside the template, the bare name `Vec3` means "this same instantiation", which
 
 For a long time class templates could not deduce anything: you always wrote `Vec3<double>`. C++17 added **[[class template argument deduction|ctad]]**, so `std::vector v{1.0, 2.0}` makes a `std::vector<double>`. C++20 extended it to simple structs like `Vec3`, which have no constructor of their own:
 
-```cpp
+```cpp fragment
 #include <cmath>
 #include <cstdio>
 

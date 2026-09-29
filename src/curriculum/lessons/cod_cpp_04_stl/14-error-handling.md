@@ -279,7 +279,7 @@ It is lesson 05's `std::optional` with a reason attached, and it too lives **[[i
 `std::expected` is C++23. On g++ 13, compile with `-std=c++23`; under `-std=c++20` the header exists but is empty, and the compiler says `'expected' in namespace 'std' does not name a template type`.
 
 ::: example A throttle command parsed in three checked steps
-```cpp
+```cpp fragment
 #include <charconv>
 #include <cstdio>
 #include <expected>

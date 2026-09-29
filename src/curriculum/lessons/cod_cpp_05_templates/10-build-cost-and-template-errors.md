@@ -207,7 +207,7 @@ That structure is also the way in. The message always has the same parts, and fo
 ::: example A set of waypoints with no ordering
 A route stored as a `std::set` (which keeps its elements sorted) of a small struct:
 
-```cpp
+```cpp error
 #include <set>
 
 struct Waypoint {
@@ -294,7 +294,7 @@ After the first error the compiler guesses how to continue, and the guesses prod
 
 Lesson 6 showed what constraining a template does for its messages. Here it is on this error. Suppose a small container class of your own is constrained with the standard concept `std::totally_ordered` ("has all of `<`, `>`, `<=`, `>=`, `==` and `!=`"):
 
-```cpp
+```cpp fragment
 template <std::totally_ordered T>
 class Catalog {
 public:
@@ -359,7 +359,7 @@ Linking failed, not compiling: the header promises `extern template class Kalman
 ::: check
 Here is the middle of a real g++ 13 error for this file, `err4.cpp`, with the longest template argument list shortened to `...`. Which line do you read first, and what is the fix?
 
-```cpp
+```cpp error
 #include <map>
 
 struct Vec3 {

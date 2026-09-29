@@ -799,7 +799,7 @@ The last two lessons were about how classes are built. Now back to generators, f
 
 **Step 1: `yield` gives back a value.** `yield` is an **[[expression|expression-word]]**, so it can sit on the right of an `=`. The line
 
-```python
+```python fragment
 x = yield value
 ```
 
@@ -3243,7 +3243,7 @@ class Parser:
 
 Here is the `expr` rule as a method. Compare it with the grammar line: a term, then "`+` or `-`, then a term" as many times as they appear:
 
-```python
+```python fragment
     def expr(self):
         value = self.term()
         while self.peek() in ("+", "-"):

@@ -83,7 +83,7 @@ Step by step: the compiler reads `scaled` with `T` still blank. It sees `T::valu
 
 This template adds up any container and wants a local variable of the container's element type:
 
-```cpp
+```cpp error
 #include <vector>
 template <typename Container>
 auto sum(const Container& c) {
@@ -240,7 +240,7 @@ Two-phase lookup: non-dependent names are looked up when the template is defined
 
 This template is never used. It has two mistakes:
 
-```cpp
+```cpp error
 template <typename T>
 void calibrate(T& sensor) {
     sensor.aply_bias();        // typo, but depends on T: not checked yet

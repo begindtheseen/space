@@ -122,7 +122,7 @@ While everything passes, the two versions look the same. The difference shows th
 ::: example One bug, reported two ways
 Plant a sign error in the Newton step, using the slope $1 + e\cos E$ instead of $1 - e\cos E$:
 
-```python
+```python fragment
         E -= f / (1.0 + e * math.cos(E))   # bug: wrong sign in f'(E)
 ```
 

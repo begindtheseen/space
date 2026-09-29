@@ -165,7 +165,7 @@ An iterative walk — a plain loop — uses a fixed few tens of bytes of local v
 10. **All warnings on, zero warnings, plus static analysis** on every build. This turns the other nine from a style guide into something a machine checks every time — the job `-Werror` did in the prerequisite C++ module, widened to the whole rule set.
 
 ::: key The Power of Ten rules, in spirit
-Simple control flow, no recursion; a statically provable bound on every loop; no allocation after initialization; short functions; assertion density; smallest possible scope for data; check every return value; restricted preprocessor; restricted pointer use; compile with all warnings on, zero warnings, plus static analyzers.
+Simple control flow, no recursion; a statically provable bound on every loop; no allocation after initialization; short functions; assertion density; smallest possible scope for data; check every return value; restricted preprocessor; restricted pointer use (one level of dereferencing, no function pointers); compile with all warnings on, zero warnings, plus static analyzers.
 :::
 
 ::: key What every rule is for

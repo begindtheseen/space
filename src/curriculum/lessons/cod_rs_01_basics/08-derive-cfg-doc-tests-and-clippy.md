@@ -114,7 +114,7 @@ Notice what the vector did not derive: `Eq`, `Ord` or `Hash`. That was not forge
 :::
 
 ::: warning Floats cannot promise `Eq`
-Add `Eq` to a struct with an `f64` field and the compiler stops you with ``the trait `Eq` is not implemented for `f64` ``. `Eq` promises that every value equals itself. A float cannot keep that promise, because of NaN ("not a number"): `f64::NAN == f64::NAN` is `false`. So structs of floats get `PartialEq` but not `Eq`, and for the same reason not `Ord` or `Hash` either. That is also why you cannot use a float as a `HashMap` key or call `max()` on floats, as the last lesson showed. It is the same [[NaN rule|nan-rule]] C++ follows, now enforced by the type system.
+Add `Eq` to a struct with an `f64` field and the compiler stops you: the trait `Eq` is not implemented for `f64`. `Eq` promises that every value equals itself. A float cannot keep that promise, because of NaN ("not a number"): `f64::NAN == f64::NAN` is `false`. So structs of floats get `PartialEq` but not `Eq`, and for the same reason not `Ord` or `Hash` either. That is also why you cannot use a float as a `HashMap` key or call `max()` on floats, as the last lesson showed. It is the same [[NaN rule|nan-rule]] C++ follows, now enforced by the type system.
 :::
 
 ### Why the unit-conversion error type derives two traits
@@ -136,7 +136,7 @@ error[E0277]: `ConvError` doesn't implement `Debug`
   = note: add `#[derive(Debug)]` to `ConvError` or manually `impl Debug for ConvError`
 ```
 
-`Copy` is not derived, because the variants hold a `String`, which owns heap memory and cannot be copied bit for bit. Try it and the compiler points at the field: ``this field does not implement `Copy` ``.
+`Copy` is not derived, because the variants hold a `String`, which owns heap memory and cannot be copied bit for bit. Try it and the compiler points at the field, saying that this field does not implement `Copy`.
 
 ::: key Derive what the type needs
 `#[derive(...)]` asks the compiler to write standard trait implementations field by field. `Debug` for `{:?}`, `PartialEq` for `==`, `Clone`/`Copy` for copying, `Default` for a zero value. `assert_eq!` needs both `PartialEq` and `Debug`. Floats allow `PartialEq` but not `Eq`, `Ord` or `Hash`.
@@ -486,7 +486,7 @@ A teammate writes `#[derive(Debug, Clone, Copy, PartialEq, Eq)]` on `struct GpsF
 :::
 
 ::: answer
-`Eq` fails: ``the trait `Eq` is not implemented for `f64` ``. `Eq` promises that every value equals itself, and a float cannot keep that promise because NaN is not equal to NaN. `Debug`, `Clone`, `Copy` and `PartialEq` are all fine, because every field (`f64`, `f64`, `u8`) is `Copy` and comparable. The line should be `#[derive(Debug, Clone, Copy, PartialEq)]`.
+`Eq` fails: the trait `Eq` is not implemented for `f64`. `Eq` promises that every value equals itself, and a float cannot keep that promise because NaN is not equal to NaN. `Debug`, `Clone`, `Copy` and `PartialEq` are all fine, because every field (`f64`, `f64`, `u8`) is `Copy` and comparable. The line should be `#[derive(Debug, Clone, Copy, PartialEq)]`.
 :::
 
 ::: check
@@ -494,7 +494,7 @@ You deleted `Debug` from `#[derive(Debug, PartialEq)]` on `ConvError` because "w
 :::
 
 ::: answer
-The tests use `assert_eq!`, which compares its two sides with `==` (needing `PartialEq`) and, if they differ, prints both in the failure message with `{:?}` (needing `Debug`). So a type checked with `assert_eq!` needs `Debug` even if the program never prints it. The compiler says ``ConvError doesn't implement `Debug` `` and suggests adding the derive back.
+The tests use `assert_eq!`, which compares its two sides with `==` (needing `PartialEq`) and, if they differ, prints both in the failure message with `{:?}` (needing `Debug`). So a type checked with `assert_eq!` needs `Debug` even if the program never prints it. The compiler says `ConvError` doesn't implement `Debug`, and suggests adding the derive back.
 :::
 
 ::: check

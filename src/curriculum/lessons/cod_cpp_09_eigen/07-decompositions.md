@@ -59,7 +59,7 @@ $$
 That is exactly the triangular matrix you solved a moment ago. Solving $P\mathbf{x} = \mathbf{b}$ is now two substitutions: forward with $L$ to get $\mathbf{y}$, then back with $L^T$ to get $\mathbf{x}$.
 
 ::: example Factoring a position covariance with LLT and LDLT
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -125,7 +125,7 @@ Why does that matter? In LLT, each diagonal entry is a square root of "what is l
 The "twice as fast" is a count, not a benchmark. Cholesky needs about $n^3/3$ flops. LU needs about $2n^3/3$, because it cannot use the symmetry and must build two different triangles.
 
 ::: example Definite, semi-definite, indefinite
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -215,7 +215,7 @@ Because $Q$ does not stretch anything, multiplying by $Q^T$ keeps lengths the sa
 ::: example Fitting gyro bias against temperature
 A gyro's bias drifts with temperature. Five bench measurements, bias in degrees per hour against temperature in degrees Celsius, fit to the model $\text{bias} = c_0 + c_1 T$:
 
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -299,7 +299,7 @@ with $V$ orthogonal (its columns are the **eigenvectors**) and $\Lambda$ (capita
 For a covariance, the eigenvectors point along the axes of the uncertainty **[[ellipsoid|error-ellipsoid]]**, and the square roots of the eigenvalues are the one-sigma lengths of those axes. For a spacecraft's **[[inertia tensor|principal-axes]]**, the eigenvectors are the principal axes and the eigenvalues are the principal moments of inertia.
 
 ::: example The shape of a position uncertainty
-```cpp
+```cpp fragment
 #include <Eigen/Dense>
 #include <cmath>
 #include <iostream>

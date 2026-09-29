@@ -186,7 +186,7 @@ This code has one global copy of its data, so there must be only one wrapper. De
 
 The scheduler is a loop on `std::chrono::steady_clock`, the clock that never jumps backward. It keeps a variable `next`, the time of the next tick, and after each step it sleeps until that absolute time. Then it adds one period to `next`. Because it adds to the *schedule*, not to "now", small wake-up delays never pile up. That is the difference between `sleep_until(next)` and `sleep_for(period)`, and the next example puts a number on it.
 
-```cpp
+```cpp fragment
 // main.cpp -- hand-written application around the generated controller
 #include "pid.h"
 #include <chrono>

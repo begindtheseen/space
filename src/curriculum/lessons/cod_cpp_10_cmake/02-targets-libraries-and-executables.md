@@ -97,7 +97,7 @@ double orbit_period(double r_m) {
 
 And `apps/orbit_report.cpp` uses both:
 
-```cpp
+```cpp fragment
 #include <cstdio>
 
 #include "gnc/orbit.hpp"

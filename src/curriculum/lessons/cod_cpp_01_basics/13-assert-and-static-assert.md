@@ -205,7 +205,7 @@ So a real project rarely uses the standard `assert` in flight code. It defines i
 
 Read `!(cond)` as "not cond". `__FILE__` and `__LINE__` are filled in by the compiler with the current file name and line number. Here it is guarding a time step, in a program compiled *with* `-DNDEBUG`:
 
-```cpp
+```cpp fragment
 void step(double dt) {
     GNC_ASSERT(dt < 0.1, 42);   // fault 42: time step too large
     std::printf("step ok\n");

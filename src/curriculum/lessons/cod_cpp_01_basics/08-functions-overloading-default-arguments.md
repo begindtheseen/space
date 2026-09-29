@@ -113,7 +113,7 @@ Think of it as a **[[ladder of conversions|ranking-ladder]]**. The fewer rungs a
 
 A call is **ambiguous** when two candidates need conversions of the same rank and neither is better. Here is one:
 
-```cpp
+```cpp error
 void log_value(double v);
 void log_value(long v);
 
@@ -159,7 +159,7 @@ a3.cpp:1:6: note: 'void set_rate(int)' previously defined here
 
 **By value versus by `const` reference.** These *are* different parameter types, so declaring both is legal. But no call can ever choose between them, because handing an argument to either is an exact match:
 
-```cpp
+```cpp error
 struct Vec3 { double x, y, z; };
 
 double norm(Vec3 v)        { return v.x; }
@@ -255,7 +255,7 @@ a5.cpp:1:6: note: previous specification in 'void step(double)' here
 
 **A default plus an overload is usually an ambiguity.**
 
-```cpp
+```cpp error
 void step(double dt = 0.01);
 void step();
 
