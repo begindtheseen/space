@@ -12,6 +12,7 @@ export const COMMANDS: CommandRef[] = [
   /* ---------------------------------------------------------------- keywords */
   {
     name: 'if',
+    aliases: ['then', 'elif', 'else', 'fi'],
     kind: 'keyword',
     official: 'Execute commands based on conditional.',
     source: 'bash built-in help',
@@ -30,6 +31,7 @@ export const COMMANDS: CommandRef[] = [
   },
   {
     name: 'for',
+    aliases: ['do', 'done', 'in'],
     kind: 'keyword',
     official: 'Execute commands for each member in a list.',
     source: 'bash built-in help',
@@ -75,6 +77,7 @@ export const COMMANDS: CommandRef[] = [
   },
   {
     name: 'case',
+    aliases: ['esac'],
     kind: 'keyword',
     official: 'Execute commands based on pattern matching.',
     source: 'bash built-in help',
