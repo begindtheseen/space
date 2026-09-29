@@ -96,7 +96,7 @@ A relaxed operation is atomic, and it respects the variable's single modificatio
 
 A **fence**, `std::atomic_thread_fence(order)`, is an ordering that is not attached to any one variable. A release fence followed by a relaxed store works like a release store. A relaxed load followed by an acquire fence works like an acquire load. One fence can cover several relaxed atomics at once.
 
-```cpp
+```cpp laptop
 #include <atomic>
 #include <cstdio>
 #include <thread>
@@ -234,7 +234,7 @@ It comes with three rules:
 ::: example A counter in a plain struct, with and without atomic_ref
 A health struct keeps two counters. Two threads each count a million frames. One counter uses a plain `++`, the other goes through `atomic_ref`.
 
-```cpp
+```cpp laptop
 #include <atomic>
 #include <cstdint>
 #include <cstdio>

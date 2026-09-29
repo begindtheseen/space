@@ -242,7 +242,7 @@ A static bound says how deep the stack *can* go. You also want to know how deep 
 ::: example Painting a task's stack
 This program gives a thread its own 64 KiB stack in a global array, paints it once, and then runs the thread in three modes of increasing depth. After each run it scans for the high-water mark and checks a 32-byte canary.
 
-```cpp
+```cpp laptop
 #include <pthread.h>
 #include <cstddef>
 #include <cstdio>

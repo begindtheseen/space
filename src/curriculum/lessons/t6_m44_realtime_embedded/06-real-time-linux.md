@@ -124,7 +124,7 @@ Finally, the loop's own timing call. Set an alarm "8 hours after I lie down", an
 
 Here is the core of a $200\,\mathrm{Hz}$ loop with the in-program parts of the checklist. It compiles with `g++ -std=c++17` and runs; without administrator rights the scheduling call prints an error and the loop runs without the guarantee. Isolation, IRQ affinity and C-states are set outside the program, in boot and system settings.
 
-```cpp
+```cpp laptop
 #include <sched.h>
 #include <sys/mman.h>
 #include <time.h>

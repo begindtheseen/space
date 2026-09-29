@@ -41,7 +41,7 @@ A process has its own address space; threads inside one process share it. Each t
 ::: example One global, a thread and a process
 This program changes one global variable twice: once from a second thread, once from a second process. `fork()` is the Linux call that copies the running process into a new child process; it returns `0` in the child and the child's ID in the parent. `waitpid` makes the parent wait for the child.
 
-```cpp
+```cpp laptop
 #include <cstdio>
 #include <sys/wait.h>
 #include <thread>
@@ -104,7 +104,7 @@ Why? The new thread may run long after the line that created it. If it held refe
 When you really do want the thread to use your variable, you say so with **`std::ref`**, from `<functional>`. `std::ref(total)` wraps a reference in a small object that is copied instead, and the wrapped reference comes out the other side still pointing at your `total`. There is also `std::cref` for a `const` reference.
 
 ::: example Copying, sharing, and the error when you forget
-```cpp
+```cpp laptop
 #include <cstdio>
 #include <functional>   // std::ref
 #include <string>
@@ -167,7 +167,7 @@ Once a `std::thread` object is running a thread, you owe a decision about it, an
 If a `std::thread` is **still joinable when it is destroyed**, its destructor calls **`std::terminate`**, which ends the program at once. The same happens if you assign a new thread into a `std::thread` that is still joinable.
 
 ::: example Forgetting to join
-```cpp
+```cpp laptop
 #include <cstdio>
 #include <thread>
 
@@ -204,7 +204,7 @@ A `std::thread` must be joined or detached before it is destroyed; destroying a 
 :::
 
 ::: example What detach really means
-```cpp
+```cpp laptop
 #include <chrono>
 #include <cstdio>
 #include <thread>
@@ -260,7 +260,7 @@ C++20 added **`std::jthread`**, read "j thread" (the "j" is for joining). It is 
 If the function you give a `std::jthread` takes a `std::stop_token` as its *first* parameter, the `std::jthread` passes one in for you. The thread checks `st.stop_requested()` ("st, stop requested?") whenever it is convenient, and returns when the answer is yes. You can ask from outside with `request_stop()`, and the destructor asks for you.
 
 ::: example A heartbeat that stops itself
-```cpp
+```cpp laptop
 #include <chrono>
 #include <cstdio>
 #include <stop_token>

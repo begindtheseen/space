@@ -283,7 +283,7 @@ A **[[data race|data-race]]** happens when two threads touch the same memory at 
 ::: example Counting packets from two threads
 Two threads each count a million received packets into one shared counter. In C++:
 
-```cpp
+```cpp laptop
 #include <thread>
 #include <iostream>
 int main() {

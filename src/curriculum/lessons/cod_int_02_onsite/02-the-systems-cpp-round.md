@@ -294,7 +294,7 @@ A **data race** is the precise version: two threads access the same memory locat
 
 There are two standard fixes. `std::atomic<T>` makes each operation on one variable indivisible. A **[[mutex|mutex-meaning]]** (short for "mutual exclusion") is a lock: only one thread at a time can hold it, so a whole block of code runs without interference. `std::lock_guard` is the RAII wrapper that locks in its constructor and unlocks in its destructor.
 
-```cpp
+```cpp laptop
 #include <atomic>
 #include <cstdio>
 #include <mutex>

@@ -84,7 +84,7 @@ A real-time thread can lock up a core, so Linux allows it only with one of two p
 ::: example Asking for SCHED_FIFO, with and without permission
 This program reads its limit, asks for `SCHED_FIFO` at priority 80, reports what it got, and then locks its memory (a later section of this lesson explains `mlockall`).
 
-```cpp
+```cpp laptop
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
@@ -205,7 +205,7 @@ mlockall(MCL_CURRENT | MCL_FUTURE);
 ::: example Watching page faults move out of the loop
 This program counts minor page faults with `getrusage` while it writes one byte into each page of a fresh 4 MiB buffer, twice. Given any argument, it calls `mlockall` first.
 
-```cpp
+```cpp laptop
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
@@ -408,7 +408,7 @@ The call is `clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next, nullptr)`, r
 ::: example A complete real-time loop skeleton, measured
 Everything in this lesson: lock memory, pre-fault the stack, pin to core 3, ask for `SCHED_FIFO` 80 (only when given an argument, to compare), arm the allocation trap, and run 5000 cycles of 1 ms, recording how late each wake-up was. All output comes after the loop.
 
-```cpp
+```cpp laptop
 // A 1 kHz control-loop skeleton for Linux: set up, then run with no
 // allocation, no I/O and no page faults inside the loop.
 #include <algorithm>

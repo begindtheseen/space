@@ -123,7 +123,7 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
       </pre>
       {/* ```cpp laptop: a whole program that needs what the in-browser compiler leaves out. */}
       {lang.split(/\s+/).includes('laptop') ? (
-        <p className="md__laptop">Build this one on a laptop compiler: it uses C++ exceptions, which ORBIT's in-browser C++ turns off.</p>
+        <p className="md__laptop">Build this one on a laptop compiler: it needs something ORBIT's in-browser C++ leaves out, such as exceptions, threads, signals or the operating system's own calls.</p>
       ) : null}
     </>
   )

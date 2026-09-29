@@ -41,7 +41,7 @@ Linux's `SCHED_FIFO` class (lesson 13 covers it fully) gives threads [[fixed pri
 The mutex is a POSIX `pthread_mutex_t`, not a `std::mutex`, because the setting we need is only available there. `pthread_mutexattr_setprotocol` picks how the mutex treats priorities: `PTHREAD_PRIO_NONE` does nothing special, `PTHREAD_PRIO_INHERIT` turns on priority inheritance. Wrapping it in a class with `lock()` and `unlock()` lets `std::lock_guard` use it.
 
 ::: example Priority inversion on Linux, with and without inheritance
-```cpp
+```cpp laptop
 // Priority inversion, live. Build: g++ -std=c++20 -O2 -pthread inversion.cpp
 // Needs permission to use SCHED_FIFO (root, or CAP_SYS_NICE).
 #include <pthread.h>

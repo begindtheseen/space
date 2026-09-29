@@ -232,7 +232,7 @@ So `make_shared` is faster (one trip to the allocator) and smaller. Its drawback
 Every copy of a `shared_ptr` adds one to the strong count, and every destruction takes one away. Two threads might copy the same `shared_ptr` at the same moment, so these updates must be **[[atomic|atomic-rmw]]**: each one reads the count, changes it and writes it back as a single step that no other thread can interrupt. That safety has a price. Here is how big.
 
 ::: example One thread, then two
-```cpp
+```cpp laptop
 #include <chrono>
 #include <cstdio>
 #include <memory>

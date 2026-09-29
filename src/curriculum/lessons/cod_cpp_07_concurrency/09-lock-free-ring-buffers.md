@@ -87,7 +87,7 @@ Own index: relaxed load. Other side's index: acquire load. Own index after touch
 Here is the ring from the exercise, with a test: a producer writes the sequence numbers 0 to 999,999, a consumer checks it receives each one exactly once, in order.
 
 ::: example The SPSC ring, a million items, and ThreadSanitizer
-```cpp
+```cpp laptop
 #include <array>
 #include <atomic>
 #include <cstddef>
@@ -229,7 +229,7 @@ Lock-free guarantees that some thread makes progress, so the system cannot stall
 ::: example Counting the retries of a CAS loop
 A counter must never pass a limit, so `fetch_add` cannot be used. Four threads each add one, a million times, through a CAS loop, and record how often they lost.
 
-```cpp
+```cpp laptop
 #include <atomic>
 #include <cstdint>
 #include <cstdio>

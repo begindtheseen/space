@@ -46,7 +46,7 @@ Three things are *not* data races:
 Here is the scoreboard in C++. A ground-station tool counts telemetry frames with two threads, one per antenna, and both add to one global.
 
 ::: example Two threads, one counter
-```cpp
+```cpp laptop
 #include <cstdio>
 #include <thread>
 
@@ -134,7 +134,7 @@ Those are the optimizations that make single-threaded code fast. They are also e
 ::: example A stop flag that never stops
 A control loop runs until another thread asks it to stop, through a plain `bool`:
 
-```cpp
+```cpp laptop
 #include <chrono>
 #include <cstdio>
 #include <thread>
@@ -282,7 +282,7 @@ You can have either one without the other.
 ::: example A race condition with no data race
 A spacecraft has a 100 W power budget. Two threads each want to switch on a load if the budget allows. Every access to the budget is protected by a mutex (next lesson's tool; for now, read `std::lock_guard<std::mutex> lock(m_);` as "nobody else may touch the budget until this function returns"):
 
-```cpp
+```cpp laptop
 #include <chrono>
 #include <cstdio>
 #include <mutex>

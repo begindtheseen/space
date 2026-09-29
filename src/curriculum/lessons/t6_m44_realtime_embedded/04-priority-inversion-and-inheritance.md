@@ -105,7 +105,7 @@ So inheritance does not dodge response-time analysis. It makes the analysis true
 
 On a POSIX system (Linux, VxWorks, QNX and many others share one standard thread interface, called **[[pthreads|pthreads]]**) inheritance is a property you switch on when you create the mutex. This compiles and runs as C++17 with `g++ -std=c++17 -pthread`:
 
-```cpp
+```cpp laptop
 #include <pthread.h>
 #include <cstdio>
 

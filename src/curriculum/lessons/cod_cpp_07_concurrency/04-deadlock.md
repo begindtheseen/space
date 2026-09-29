@@ -17,7 +17,7 @@ On a spacecraft this is not a slow program; it is a silent one: a navigation tas
 Two tasks from a small flight program each need both the navigation state and the telemetry frame. The only difference is the order in which they lock them. The `sleep_for` calls hold each first lock for 50 ms, so the bad timing happens every run instead of once a week.
 
 ::: example Two threads, two mutexes, one standstill
-```cpp
+```cpp laptop
 #include <atomic>
 #include <chrono>
 #include <cstdio>
@@ -317,7 +317,7 @@ Without the 50 ms sleeps the first deadlock might strike once in a million runs,
 ::: example TSan reports the inversion without the hang
 The same two tasks, without the sleeps, and run one after the other so this run *cannot* deadlock:
 
-```cpp
+```cpp laptop
 #include <cstdio>
 #include <mutex>
 #include <thread>

@@ -63,6 +63,12 @@ describe('runnable lesson code', () => {
     expect(failed.map(where), 'fence it `cpp fragment` (no Run), `cpp error` (shows an error on purpose), or fix it').toEqual([])
   }, 600_000)
 
+  it('no runnable C++ block needs threads, signals or OS calls, which the in-browser build cannot run', () => {
+    const needsOs = /std::j?thread|pthread|\bsignal\s*\(|sigaction|\bfork\s*\(|std::async|<csignal>|<signal\.h>|<unistd\.h>|<sys\//
+    const bad = blocks.filter((b) => b.lang === 'cpp' && needsOs.test(b.code)).map((b) => `${b.file}: ${b.code.trim().split('\n')[0]}`)
+    expect(bad, 'fence it `cpp laptop` (shown with a note, no Run)').toEqual([])
+  })
+
   it.skipIf(!has('python3'))('every runnable Python block parses', () => {
     const py = blocks.map((b, i) => (b.lang === 'python' ? name(b, i) : '')).filter(Boolean)
     // compile() also catches `return`, `yield` and `break` outside where they belong; top-level

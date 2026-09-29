@@ -225,7 +225,7 @@ A **data race** is two threads accessing the same memory, at least one of them w
 ::: example A race that passes every test
 A sensor thread and a control thread both count frames in one shared variable:
 
-```cpp
+```cpp laptop
 // race.cpp: a sensor thread and a control thread share one counter.
 #include <cstdio>
 #include <thread>
