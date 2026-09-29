@@ -231,6 +231,30 @@ describe('finding the entry in a highlight', () => {
     expect(matchCommand(REF, 'for', { inCode: true, lang: 'cpp' })?.ref.lang).toBe('cpp')
   })
 
+  it('reads a command in its own course even when it looks like a word', () => {
+    expect(m('echo', { lang: 'shell' })).toBe('echo')
+    expect(m('echo', { inCode: true, lang: 'shell' })).toBe('echo')
+    expect(m('echo "Launch at dawn"', { inCode: true, lang: 'shell' })).toBe('echo')
+    expect(m('sort the list', { lang: 'shell' })).toBeUndefined()
+  })
+
+  it('reads a terminal command named in another language\'s lesson', () => {
+    expect(m('echo', { inCode: true, lang: 'python' })).toBe('echo')
+    expect(m('python3 main.py', { inCode: true, lang: 'python' })).toBe('python3')
+    expect(m('print', { inCode: true, lang: 'cpp' })).toBeUndefined()
+  })
+
+  it('finds every entry by its own name, in its own language', () => {
+    const missed = COMMANDS.filter((c) => {
+      const lang = langOf(c)
+      return [true, false].some((inCode) => {
+        const hit = matchCommand(REF, c.name, { inCode, lang })
+        return !hit || (hit.ref !== c && hit.ref.name !== c.name)
+      })
+    }).map((c) => `${langOf(c)}:${c.name}`)
+    expect(missed, 'these names do not open their own card').toEqual([])
+  })
+
   it('reads English words in a sentence as words', () => {
     expect(m('sort the list')).toBeUndefined()
     expect(m('find')).toBeUndefined()
