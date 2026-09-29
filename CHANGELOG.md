@@ -8,6 +8,18 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.1.10
+
+- Read aloud now says "versus" for "vs", and "for example" and "that is" for
+  "e.g." and "i.e.".
+- Units are spoken as words everywhere, in sentences and inside equations:
+  "370 meters", "9.8 meters per second squared", "4.4 per second", "84 minutes",
+  "85 percent", instead of letters like "m" and "s".
+- Code names are read the way a programmer says them: "standard vector push
+  back" instead of "std colon colon vector", "C plus plus", "num pie", "Jason".
+- Symbols such as ~, ≈, ±, → and number ranges like 5–10 are read as words,
+  and bars around a value are read as "the absolute value of".
+
 ## 1.1.9
 
 **Start here: your mission briefing.** A new, five-minute briefing explains what ORBIT is for
