@@ -1,124 +1,122 @@
 ---
 id: l04-the-story-bank
 title: "The story bank and the themes it has to cover"
-minutes: 25
+minutes: 22
 covers:
   - building a bank of ten to twelve stories, each roughly 90 seconds
   - "the themes actually probed: a failure and what changed, conflict with a colleague, a decision with incomplete information, a missed deadline, a time you were wrong, ownership beyond your scope, teaching someone, working extended hours"
 ---
 
-The worst place to think of a story is in the room. Under mild pressure, with someone waiting, memory returns whatever is most recent rather than whatever is best — so the candidate who has not prepared tells the story from last month instead of the story that answers the question, and discovers halfway through that it has no Result.
+Asked to tell a story on the spot, most people grab whatever happened most recently, not whatever is best. An interview is exactly that. With someone waiting, your memory hands you last month's story instead of the one that fits the question — and halfway through, you discover it has no ending.
 
-The fix is a bank: ten to twelve stories, written out, timed at roughly ninety seconds each, indexed by theme. That is the object this module's first exercise asks you to build, and it is the difference between recalling and composing. Composing under time pressure is what produces the scene-heavy, plural-pronoun, no-number answer the previous three lessons have been dismantling. Recalling does not.
-
-This lesson covers how many stories you need and why, the eight themes to prepare against, how to map a small number of stories onto a larger number of themes without stretching them, and how to rehearse so that what you have prepared is a story rather than a paragraph.
+The fix is a **story bank**: ten to twelve true stories from your own work, written out, timed at roughly [[ninety seconds|ninety-seconds]] each, and sorted by the kind of question they answer. Building it is this module's first exercise. It turns the interview from *composing* — inventing an answer live — into *recalling* one you already built. Composing under pressure is what produces the long-scene, "we did it", no-number answer the last three lessons took apart. Recalling does not.
 
 ## Why a bank, and not a set of answers
 
-You cannot prepare answers, because you do not control the questions. The same underlying theme arrives as *tell me about a time you disagreed with a colleague*, or *describe a situation where someone on your team wanted to do something differently*, or *when did you last have to push back on a decision?* — three phrasings, one theme, and a candidate who prepared an answer to the first phrasing is now editing it live.
+You cannot prepare answers, because you do not control the questions. One **theme** — the kind of experience the interviewer wants to hear about — arrives in many wordings. *Tell me about a time you disagreed with a colleague.* *Describe a time someone on your team wanted to do something differently.* *When did you last push back on a decision?* Three phrasings, one theme. A memorized answer to the first has to be edited live to fit the second.
 
-Themes are stable in a way phrasings are not. Prepare against the theme, and the question becomes a retrieval problem: recognise which theme is being asked for, pull the story, tell it in the shape the previous lessons established. That is a much smaller task than composition, and it is one you can do while also listening to the person asking.
+Themes stay put; phrasings do not. Prepare against the theme, and each question becomes a lookup: recognize the theme, pull the matching story, tell it in the STAR shape. That is a much smaller job than composing, and you can do it while still listening.
 
 ## Ten to twelve, and why roughly that many
 
-This module specifies ten to twelve stories at roughly ninety seconds each. The number is not arbitrary, and the reasoning is worth following so you can tell when your own bank is finished.
+There are eight named themes. A bank of exactly eight has no slack. If one interview asks two questions on the same theme, you tell the same story twice, which looks thin. And nothing protects you when a story becomes unusable in the moment — the interviewer mentions they worked on exactly that problem, or your best conflict story turns out to involve something you should not discuss with an outside company.
 
-Eight themes are named. A bank the same size as the theme list has no slack: if a single round asks two questions that land on the same theme, you have told the same story twice, which is visibly thin. It also has no protection against a story becoming unusable in the moment — the interviewer mentions they worked on exactly that kind of problem, or your best conflict story turns out to involve something you should not discuss with an outside company.
+So the bank needs a margin over eight, which is where ten to twelve comes from. The top of the range matters too. Thirty stories is not a bank; it is a filing cabinet, and finding the right one under pressure gets *harder* as the pile grows. Ten to twelve is small enough to hold in your head and large enough to cover every theme with spares.
 
-So the bank wants a margin over the themes, which is where ten to twelve comes from. The upper end matters too: a bank of thirty is not a bank, it is a filing cabinet, and retrieval under pressure gets worse, not better, as the set grows. Ten to twelve is small enough to hold in your head and large enough to cover the themes with spares.
-
-Each one lands at roughly ninety seconds — the exercise asks you to time them between eighty and a hundred — for the reasons the first lesson gave: the budget is what forces the scene down and protects the Result.
+Each story runs about ninety seconds — the exercise says time them between eighty and a hundred — because, as the first lesson showed, a fixed budget keeps the scene short and protects the Result.
 
 ::: key
 Build ten to twelve stories, each roughly ninety seconds. Themes to prepare: a failure and what changed; conflict with a colleague; a decision under incomplete information; a missed deadline; a time you were wrong; ownership beyond your scope; teaching someone; and working extended hours under pressure.
 :::
 
-## The eight themes, and what each one can establish
+## The eight themes, and what each one can show
 
-Take these as categories of evidence rather than as questions to be answered. For each, the useful thing to ask is what a good answer here shows that a good answer elsewhere would not.
+Treat each theme as a kind of evidence. Ask: what does a good answer here show that no other theme can?
 
-**A failure and what changed.** The only theme where the outcome is bad by construction, so it is the only one that can show whether you are able to describe your own work without defending it. The *what changed* half is what makes it evidence rather than confession. This theme gets a whole lesson later in the module.
+**A failure and what changed.** The only theme where the outcome is bad by design, so the only one that shows whether you can describe your own work without defending it. The *what changed* half turns a confession into evidence. The next lesson is all about it.
 
-**Conflict with a colleague.** Tests something no technical round can reach: what you do when the obstacle is a person who is also competent and also sure. A strong answer shows the other position at its strongest, which is a harder thing to do than winning. Also a later lesson of its own.
+**Conflict with a colleague.** It tests what no technical round can reach: what you do when the obstacle is a person who is also competent and also sure. A strong answer gives the other side's position at its strongest, which is harder than winning. This gets its own lesson too.
 
-**A decision with incomplete information.** Engineering work is largely this, and the theme separates two kinds of engineer: one who waits for data that is not coming, and one who acts while naming what she would have wanted and what would have changed her mind. The second is what you want to sound like, and the key move is to say explicitly what you did not know at the time.
+**A decision with incomplete information.** Much of engineering is exactly this. It separates the engineer who waits for data that is never coming from the one who acts while saying what she wished she knew and what would have changed her mind. Sound like the second: say out loud what you did *not* know at the time.
 
-**A missed deadline.** Distinct from failure: the work may have been fine and still been late. A good answer here has an early warning in it — when you first knew it would slip and who you told — because the difference between a missed deadline that is survivable and one that is not is usually the notice.
+**A missed deadline.** Different from failure: the work may have been fine and still late. A good answer contains an early warning — when you first knew it would slip, and who you told. Notice is usually what separates a survivable slip from a disastrous one.
 
-**A time you were wrong.** Narrower than a failure, and often better: no bad outcome is required, only that you held a position, found out it was mistaken, and changed it. What it can establish is how you handle evidence against yourself, and the cleanest version involves someone else being right.
+**A time you were wrong.** Narrower than a failure, and often better. No bad outcome is needed — only that you believed something, found out it was mistaken, and changed your mind. It shows how you handle evidence against yourself. The cleanest version has someone else turning out to be right.
 
-**Ownership beyond your scope.** Something you fixed, built or chased that was not assigned to you. The evidence value is that nobody instructed you to do it, so it says something about judgement rather than compliance. The failure mode is picking an example that was actually a boundary violation — work you took over from someone who had not finished with it.
+**Ownership beyond your scope.** Something you fixed, built or chased that nobody assigned to you. Because no one told you to, it shows judgment rather than obedience. The trap is an example that was really overstepping — taking over work someone had not finished with.
 
-**Teaching someone.** Explaining a thing you understand to someone who does not is a direct, checkable proxy for communication — and communication is one of the axes the past-project round is explicitly scored on, as this track's earlier module sets out. A good answer names what the other person was stuck on, which requires having found out rather than having assumed.
+**Teaching someone.** Explaining something to a person who does not understand it is a direct, checkable test of communication, which the past-project round is explicitly scored on (this track's earlier module lays that out). A good answer names what the other person was stuck on — which means you found out instead of assuming.
 
-**Working extended hours.** This one is different in kind: it is as much a question about a real condition of the job as a request for a story, and it has a lesson of its own later in this module. Prepare a true example of a time you worked long hours, what it produced, and what it cost.
+**Working extended hours.** As much a question about a real condition of the job as a request for a story; it gets its own lesson later. Prepare a true example of when you worked long hours, what it produced, and what it cost you.
 
 ## Mapping stories onto themes
 
-Ten stories and eight themes does not mean a one-to-one assignment. One piece of work usually contains several themes, and the same events can be told against two or three of them by changing which decision sits in the middle.
+Ten stories and eight themes does not mean one theme each. One piece of work usually holds several themes, and you can tell the same events against two or three of them by changing which decision sits in the middle.
 
-That is legitimate and it is not a trick, as long as the story is genuinely about the theme you are answering. The test is whether the Action section changes when the theme changes. If you would tell exactly the same ninety seconds for *a decision with incomplete information* and for *a time you were wrong*, then at most one of them is being answered.
+That is honest, not a trick — as long as the story really is about the theme you are answering. The test: does the Action section change when the theme changes? If you would tell the same ninety seconds for *a decision with incomplete information* and for *a time you were wrong*, at most one question is being answered.
 
-Build the map explicitly. Write your stories down the side and the eight themes across the top, and mark which stories can carry which theme as a primary answer, and which as a fallback. Two things fall out immediately: the themes with no primary story, which is where your remaining preparation goes, and the stories carrying four or five themes each, which is usually a sign that the bank is narrower than it looks.
+Build the map on paper: stories down the left, the eight themes across the top. In each box, mark whether that story is the **primary** answer for that theme (your first choice) or a **fallback** (your backup). Themes with no primary story are where your remaining preparation goes. A story carrying four or five themes means the bank is narrower than it looks.
 
-Aim for every theme to have one primary and one fallback, and for no single story to be the primary answer for more than two themes. In a round with several questions, telling the same story three times is the failure this whole structure exists to avoid.
+Aim for every theme to have one primary and one fallback, and for no story to be primary for more than two themes. That prevents telling one story three times in one interview.
 
-::: warning A bank that is all one project is one story with a coat on
-If eight of your ten stories come from the same simulation, the round will find out — the third answer that opens "so, on the same 6-DOF project..." does it. Deliberately spread the bank across different work: different projects, a team setting and a solo one, something with hardware in it if you have it, something from a job or a course rather than only from the portfolio. Variety here is not decoration; it is what makes the bank robust when one story becomes unusable.
+::: warning A bank that is all one project is one story wearing a coat
+If eight of your ten stories come from the same simulation, the interviewer will notice by the third answer that opens "so, on the same 6-DOF project…". Spread the bank on purpose: different projects, a team setting and a solo one, hardware if you have it, a job or a course and not only your portfolio. Variety is what keeps the bank working when one story becomes unusable.
 :::
 
 ## What makes a story bank-worthy
 
-Five tests. A story enters the bank when it passes all five.
+A story goes in only when it passes all five tests.
 
-**It is true, and it is yours.** Not a story you were told, and not a team result you were adjacent to.
+**It is true, and it is yours.** Not a team result you happened to be near.
 
-**It contains a decision.** Something you chose, with an alternative you rejected. A story where events happened to you has no Action section.
+**It contains a decision.** Something you chose, with an alternative you turned down. A story where things happened to you has no Action section.
 
-**It has an outcome you can quantify.** By the standard of the previous lesson: quantity, baseline, value, standard.
+**It has an outcome you can put a number on.** By the last lesson's standard: quantity, baseline, value, standard.
 
-**It survives three follow-up questions.** This track's screen module built the three-questions-deep interrogation for résumé lines; apply the same thing here. What exactly did you do, why that rather than the alternative, and how do you know it worked.
+**It survives three follow-up questions.** Use the "three questions deep" drill from this track's screening module. What exactly did you do? Why that and not the alternative? How do you know it worked?
 
-**It is yours to tell.** If the work belongs to a previous employer, the intellectual-property and export considerations from the past-project module apply just as much to a spoken story as to a slide, and a story you have to keep steering away from is not a story you want in a bank.
+**It is yours to tell.** If the work belongs to a former employer, the [[intellectual-property and export|ip-and-export]] limits from the past-project module apply to a spoken story as much as to a slide. A story you have to keep steering around does not belong in the bank.
 
 ## Indexing, so the right story arrives under pressure
 
-Storage is not the problem; retrieval is. A bank you wrote three weeks ago will not surface itself in the second before you answer unless you built a handle for each story.
+Storing stories is easy. Finding the right one in the two seconds before you answer is hard, unless each story has a handle.
 
-Give each one a three-word name — *the condition-number afternoon*, *the wind-shear case*, *the hard-mount IMU* — and make the name the thing you rehearse against the theme list. The name is what you actually recall under pressure; the story follows it. An index card per story with the name, the themes it serves, the two-sentence scene, the two or three decisions, and the number is enough. If you cannot get a story onto one card, it is too complicated to tell in ninety seconds.
+Give each a three-word name — *the condition-number afternoon*, *the wind-shear case*, *the hard-mount IMU*. The name is what you remember under pressure, and the story follows it the way a song follows its first line.
 
-Rehearse retrieval separately from delivery. Say a theme out loud at random, name the story you would use within three seconds, and move on. Twenty themes in two minutes, a few times a week, is a different and more useful exercise than reciting a story from beginning to end again.
+One [[index card|index-card]] per story is enough: the name, the themes it serves, the two-sentence scene, the two or three decisions, and the number. If a story will not fit on one card, it is too complicated for ninety seconds.
 
-## Rehearsal, without memorisation
+Practice *finding* separately from *telling*: say a random theme aloud and name your story within three seconds. Twenty themes in two minutes, a few times a week, beats reciting whole stories again.
 
-The past-project module sets out the rehearsal protocol in full — record it, time it, be attacked by a hostile reviewer, drill the questions. Three things are specific to a story bank.
+## Rehearsal, without memorization
 
-**Time each story aloud.** Between eighty and a hundred seconds. Recorded, not estimated. Almost every first draft runs long, and the overrun is almost always in the scene.
+The past-project module gives the full practice routine: record, time, get attacked by a tough reviewer, drill the follow-ups. Three things are specific to a story bank.
 
-**Check the pronouns in the recording, not in the draft.** Written Action sections tend to be cleanly first-person and spoken ones drift back to the plural under mild pressure. The recording is where you find out.
+**Time each story aloud.** Eighty to a hundred seconds, recorded, not guessed. Almost every first draft runs long, and the extra is almost always in the scene.
 
-**Rehearse the number.** The one part of a story worth fixing word for word is the Result's figure and its standard, because approximating a number live is where a good story quietly loses its evidentiary value.
+**Check the pronouns in the recording, not the draft.** Written Action sections stay cleanly "I". Spoken ones drift back to "we" under mild pressure.
+
+**Rehearse the number.** Fix the Result's figure and its standard word for word. Fumbling a number live is where a good story quietly stops being evidence.
 
 ::: example One project, three themes, three different stories
-The work in all three: a multiplicative quaternion EKF fusing IMU and star-tracker data, built as a portfolio project, in which the filter looked accurate for weeks before a consistency test showed it was reporting a covariance about a factor of three tighter than its actual error.
+The work behind all three: a multiplicative [[quaternion EKF|quaternion-ekf]] — a filter that works out which way a spacecraft is pointing — combining an [[IMU and a star tracker|imu-star-tracker]], built as a portfolio project. For weeks it looked accurate. Then a consistency test showed that the uncertainty it reported (its **covariance**) was about a factor of three too tight compared with its real error.
 
-**Told for *a time you were wrong* — the middle is the belief and its correction:**
+**Told for *a time you were wrong* — the middle is a belief and its correction:**
 
-"I had been treating the filter as finished for about three weeks. Its RMS attitude error looked good and the error plots were smooth, and I had told a friend who was using my outputs that the covariance was trustworthy. I was wrong, and the thing that proved it was a test I nearly did not run. When I finally computed the normalised estimation error squared over a hundred Monte Carlo runs, the average sat well above the upper limit of its chi-square band — the filter was accurate on average and badly overconfident about it. What I had actually done was confuse accuracy with consistency: I had been answering *how far off was it* and never once asking *did it know how far off it might be*. I went back and told the person relying on it before I fixed anything."
+"I had been treating the filter as finished for about three weeks. Its RMS attitude error looked good, and I had told a friend using my outputs that the covariance was trustworthy. I was wrong, and the test that proved it was one I nearly did not run. When I computed the normalized estimation error squared over a hundred [[Monte Carlo|monte-carlo]] runs, the average sat well above the upper limit of its chi-square band — accurate on average and badly overconfident about it. I had confused [[accuracy with consistency|accuracy-consistency]]: I kept asking *how far off was it* and never *did it know how far off it might be*. I told the person relying on it before I fixed anything."
 
 **Told for *a decision with incomplete information* — the middle is a choice made without a datasheet:**
 
-"I had to pick a process-noise level for the gyro bias random walk, and I did not have the sensor. The unit I was modelling had a datasheet figure for angle random walk but nothing usable for bias instability, and the two numbers are not interchangeable. What I did was bound it rather than guess it: I ran the filter across a decade of candidate values and looked at where the consistency test broke, which gave me a range where the filter stayed inside its chi-square band rather than a single number I could not defend. I picked the middle of that range and wrote down, in the assumptions section, that this parameter was chosen by consistency rather than measured — so anyone reading it knows exactly which number to replace first when the real hardware arrives."
+"I had to pick a process-noise level for the gyro bias random walk without the sensor. The datasheet gave angle random walk but nothing usable for bias instability, and those two numbers are not interchangeable. So I bounded it instead of guessing. I ran the filter across a factor-of-ten range of values and found where the consistency test broke, which gave me a range that stayed inside the chi-square band rather than one number I could not defend. I picked the middle and wrote in the assumptions section that this parameter was chosen by consistency, not measured — so whoever gets the real hardware knows which number to replace first."
 
 **Told for *teaching someone* — the middle is another person's misunderstanding:**
 
-"A teammate on the club satellite project asked me why his estimator kept passing and mine kept failing, and it turned out he was running the innovation test and I was running the state-error test, and he thought they were the same check. So I did not start with the mathematics. I asked him what he would do with the result if it passed — and he said he would trust the covariance the filter reports on real hardware, which is exactly the thing his test cannot tell him, because the innovation test still works when there is no truth to compare against and the state-error test does not exist outside simulation. Once he had the distinction in terms of what each one is available for, the formulas took about five minutes. He ran both from then on, which is the outcome I wanted, and I got a cleaner way of explaining the difference out of it."
+"A teammate on the club satellite project asked why his estimator kept passing and mine kept failing. He was running the innovation test, I was running the state-error test, and he thought they were the same check. So I did not start with the math. I asked what he would do if his test passed. He said he would trust the covariance on real hardware — exactly what his test cannot tell him, because [[the innovation test works with no truth to compare against|innovation-vs-truth]], and the state-error test does not exist outside simulation. Once he saw when each one is available, the formulas took about five minutes. He ran both from then on, and I got a cleaner way of explaining it."
 
-**What makes these three different stories rather than one story told three times:** each one has a different decision in the middle, a different Result, and a different thing at stake. The first is about a belief being corrected, the second about acting without data, the third about a misunderstanding in someone else's head. The shared project is scenery.
+**Why these are three stories:** each has a different decision in the middle and a different Result — a belief corrected, a choice without data, a misunderstanding in someone else's head. The shared project is only scenery.
 :::
 
 ::: example A coverage map with a hole in it, and the cheapest way to fill it
-A candidate has six stories: the 6-DOF atmosphere decision, the condition-number afternoon on the orbit-determination fit, the overconfident filter, a rewrite of the simulation inner loop in C++, a semester teaching a junior teammate frequency-response measurement, and a hardware week getting a real IMU to produce a usable attitude estimate.
+A candidate has six stories: the 6-DOF atmosphere decision, the condition-number afternoon on her orbit-determination fit, the overconfident filter, a C++ rewrite of the simulation's inner loop, a semester teaching a junior teammate frequency-response measurement, and a hardware week getting a real IMU to give a usable attitude estimate.
 
 Mapped against the eight themes, with P for primary and F for fallback:
 
@@ -131,9 +129,11 @@ Mapped against the eight themes, with P for primary and F for fallback:
 | Teaching frequency response | | | | | | | P | |
 | IMU week | F | | F | | | F | | P |
 
-**What the map shows.** Two themes have nothing at all: conflict with a colleague, and a missed deadline. One story, the overconfident filter, is primary for two themes that are close together, so it cannot cover both in the same conversation. And every single story comes from the candidate's own projects, which means a question about a team setting has nowhere to land.
+**What the map shows.** Read down the columns: conflict and missed deadline are empty. Read across the rows: the overconfident filter is primary for two neighboring themes (failure and was-wrong), so it cannot cover both in one interview. And every story comes from her own projects, so a question about a team setting has nowhere to land.
 
-**The cheapest fix is not to invent two stories.** It is to look at work the candidate has been discounting because it was not GNC. She did have a conflict: on the club satellite project, a teammate wanted to skip the consistency tests before a demo, and she argued for running them. She did miss a deadline: the orbit-determination tool was not ready for the end-of-term showcase and she told the team a week beforehand that it would not be. Both are real, both involve other people, and neither had occurred to her as a story because neither ended in an impressive technical result — which is precisely why she should check the work she has written off before writing anything new.
+**The cheapest fix is not to invent two stories.** It is to look at work she has ignored because it was not GNC (guidance, navigation and control). She did have a conflict: on the club satellite project, a teammate wanted to skip the consistency tests before a demo, and she argued for running them. She did miss a deadline: her orbit-determination tool was not ready for the end-of-term showcase, and she told the team a week ahead. Both are real and involve other people; neither occurred to her because neither ended in an impressive technical result. Check the work you have written off before writing anything new.
+
+Sanity check: with these two added she has eight stories and no empty column — but she is still two short of ten, so the bank is closer, not finished.
 :::
 
 ## Check yourself
@@ -143,15 +143,15 @@ A candidate has eight strong stories. Six of them come from the same 6-DOF simul
 :::
 
 ::: answer
-No, on two counts. Size: eight is below the ten-to-twelve range, leaving no margin if a story is used early or becomes unusable. Concentration: six from one project means the round will hear the same setting repeatedly, and a question about working with other people has nowhere to go if that project was solo. The fix is not to split the simulation into more stories — that makes the concentration worse — but to look at other work: a job, a course project, a club, hardware, teaching. A story does not need an impressive technical result to be bank-worthy; it needs a decision, an outcome and a theme.
+No, for two reasons. **Size:** eight is below ten to twelve, so there is no margin if a story gets used early or becomes unusable. **Concentration:** six from one project means the interviewer hears the same setting again and again, and if that project was solo, a question about working with others has nowhere to go. The fix is other work — a job, a course, a club, hardware, teaching — not splitting the simulation further. A bank-worthy story does not need an impressive technical result. It needs a decision, an outcome and a theme.
 :::
 
 ::: check
-Why does this lesson argue that you cannot prepare answers, only stories, when the eight themes are known in advance?
+The eight themes are known in advance. So why does this lesson say you cannot prepare answers, only stories?
 :::
 
 ::: answer
-Because the theme is what is stable and the phrasing is not. *Tell me about a disagreement*, *describe a time someone wanted to do something differently*, and *when did you last push back on a technical decision* are three surfaces on one theme, and a memorised answer to one of them has to be edited live to fit the others — which puts you back in composition under pressure, which is the state the bank exists to avoid. Preparing stories and mapping them to themes turns the task into recognition and retrieval, both of which survive nerves much better than composition does.
+Because the theme is fixed and the wording is not. *Tell me about a disagreement*, *describe a time someone wanted to do something differently*, and *when did you last push back on a technical decision* are three surfaces on one theme. A memorized answer to one must be edited live to fit the others, which puts you back into composing under pressure — the state the bank exists to avoid. Mapping stories to themes turns the task into recognizing and retrieving, which hold up under nerves far better than composing.
 :::
 
 ::: check
@@ -159,42 +159,147 @@ You can tell the same events for *a decision with incomplete information* and fo
 :::
 
 ::: answer
-Compare the Action sections. If the middle sixty percent is the same sixty seconds, you have one story and you are relabelling it. Two genuine stories out of the same events have different decisions at their centre and different Results: one ends with how you chose under uncertainty and what you documented about the choice, the other ends with what you had believed, what proved it wrong, and what you changed. If you cannot find two different middles, keep it as a primary answer for one theme and a fallback for the other, and find a different story for the second theme.
+Compare the Action sections. If the middle sixty percent is the same sixty seconds, you have one story with two labels. Two genuine stories from the same events have different decisions at the center and different Results: one ends with how you chose under uncertainty and what you wrote down about it; the other with what you believed, what proved it wrong, and what you changed. If not, keep it as primary for one theme and fallback for the other, and find another story for the second.
 :::
 
 ::: check
-What is the purpose of giving each story a three-word name, given that you already know the stories?
+You already know your stories. What is the point of giving each one a three-word name?
 :::
 
 ::: answer
-Retrieval, not storage. Under mild pressure the failure is not that the story has been forgotten but that it does not surface in the two seconds available, and the mind returns whatever is most recent instead. A short handle is a retrieval cue you can rehearse directly against the theme list — say a theme, name the handle within three seconds — which is a different exercise from reciting stories end to end, and a more useful one. It also gives you a way to audit coverage quickly, because you can run through eight themes in under a minute.
+Finding, not storing. Under mild pressure you have not forgotten the story; it does not surface in the two seconds you have, and your mind offers whatever is most recent instead. A short name is a memory cue you can drill directly against the theme list — say a theme, name the story within three seconds — and it lets you check all eight themes in under a minute.
 :::
 
 ::: check
-A candidate's best conflict story involves a disagreement at her current employer about a design that is not public. Should it be in the bank?
+A candidate's best conflict story is a disagreement at her current employer about a design that is not public. Should it be in the bank?
 :::
 
 ::: answer
-Only if she can tell it without the parts she is not free to discuss — and the test is whether the story still has a decision and a Result once those parts are removed. Often it does: the shape of a disagreement, the argument each side made, and how it was resolved can usually be described at a level of abstraction that gives away nothing, and saying plainly "I can describe how we settled it but not what the component was" is a normal, professional sentence. If removing the confidential material leaves nothing assessable, it is not a bank story — carrying one you have to keep steering away from costs more attention in the round than it is worth. The past-project module treats this in full.
+Only if she can tell it without the parts she is not free to discuss. The test is whether it still has a decision and a Result with those parts removed. Often it does — each side's argument and how it was settled can usually be told without giving anything away — and "I can describe how we settled it but not what the component was" is a normal, professional sentence. If removing the confidential material leaves nothing an interviewer can assess, it is not a bank story — steering around it in the room costs more attention than it is worth.
 :::
 
 ::: check
-Why does the lesson insist that timing be done from a recording rather than estimated while reading aloud?
+Why does the lesson insist on timing from a recording rather than estimating while you read aloud?
 :::
 
 ::: answer
-Because both the length and the pronouns drift between the page and the mouth. Written stories run longer when spoken, particularly where numbers and acronyms slow you down, and an Action section that reads as cleanly first-person on the page often comes out in the plural under even mild pressure, since that is the habitual way engineers describe shared work. Neither drift is visible in the draft. The recording is the only place you find out, and both problems are cheap to fix once seen — the length by cutting the scene, the pronouns by rehearsing the seam sentence until it leads the Action.
+Because length and pronouns both drift between page and mouth. Stories run longer spoken, especially around numbers and acronyms. And an Action section that reads as cleanly "I" on the page often comes out as "we" under mild pressure, because that is how engineers habitually describe shared work. Neither drift shows in the draft; only the recording reveals it. Both are cheap to fix once seen: cut the scene for length, and for pronouns, practice the "seam" sentence — the one that turns from the team's situation to your own action — until it leads straight into the Action.
 :::
 
 ## Summary
 
 | Property of the bank | Target | Why |
 | --- | --- | --- |
-| Size | Ten to twelve stories | Margin over eight themes; small enough to retrieve |
-| Length | Roughly ninety seconds, timed at eighty to a hundred | Forces the scene down, protects the Result |
-| Coverage | Every theme one primary plus one fallback | No theme with nowhere to go |
+| Size | Ten to twelve stories | Margin over eight themes; small enough to find fast |
+| Length | Roughly ninety seconds, timed at eighty to a hundred | Keeps the scene short, protects the Result |
+| Coverage | Every theme has one primary plus one fallback | No theme with nowhere to go |
 | Concentration | No story primary for more than two themes | Avoids telling one story three times |
-| Spread | Several settings, not one project | Robust when a story becomes unusable |
-| Index | A three-word handle per story | Retrieval under pressure is the real constraint |
+| Spread | Several settings, not one project | Still works when a story becomes unusable |
+| Index | A three-word name per story | Finding the story under pressure is the real limit |
 
-The next lesson takes the hardest of the eight themes on its own: the failure story, what makes one usable, and how to own a real failure without either minimising it or performing contrition.
+The next lesson takes the hardest theme on its own: the failure story — what makes one usable, and how to own a real failure without either shrinking it or putting on a show of regret.
+
+::: context ninety-seconds What ninety seconds sounds like
+People speaking naturally say roughly 130 to 160 words a minute. Ninety seconds is a minute and a half, so a story that fits the budget is about 195 to 240 spoken words. That is less than most people expect.
+
+Using this module's split of about 20 percent scene, 60 percent Action and 20 percent Result, the ninety seconds divide like this:
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="30" width="64" height="34" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="84" y="30" width="192" height="34" fill="#1d6fd1" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="276" y="30" width="64" height="34" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="52" y="52" font-size="12" text-anchor="middle" fill="#1f2a44">S + T</text>
+  <text x="180" y="52" font-size="12" text-anchor="middle" fill="#ffffff">Action</text>
+  <text x="308" y="52" font-size="12" text-anchor="middle" fill="#1f2a44">Result</text>
+  <text x="52" y="84" font-size="11" text-anchor="middle" fill="#1f2a44">18 s</text>
+  <text x="180" y="84" font-size="11" text-anchor="middle" fill="#1f2a44">54 s</text>
+  <text x="308" y="84" font-size="11" text-anchor="middle" fill="#1f2a44">18 s</text>
+  <text x="180" y="20" font-size="12" text-anchor="middle" fill="#6c7a93">one story, 90 seconds</text>
+  <text x="180" y="102" font-size="11" text-anchor="middle" fill="#6c7a93">20% · 60% · 20%</text>
+</svg>
+```
+
+Eighteen seconds of scene is about two sentences. That is why the scene is where almost every first draft runs over.
+:::
+
+::: context ip-and-export Why some work is not yours to talk about
+Two different rules can limit what you say about past work. **Intellectual property** (IP) is ownership of ideas and designs: work you did for an employer usually belongs to them, and your contract may forbid sharing details.
+
+**Export control** is separate and stricter. In the United States, rules such as ITAR (said "eye-tar", the International Traffic in Arms Regulations) cover a lot of technical data about rockets and spacecraft. Under these rules, showing controlled data to a person who is not a U.S. person can count as an "export" even when nobody leaves the room. The safe habit is to describe the *shape* of a problem and your decisions, not the controlled numbers.
+:::
+
+::: context index-card Why a name works as a handle
+Memory is much better at recognizing than at searching. Hand someone the first line of a song and the rest comes back; ask them to "name a song about rain" and they often go blank. A three-word story name turns a search ("which of my stories is about being wrong?") into recognition ("wrong → *the overconfident filter*").
+
+That is why the drill is theme → name in three seconds. You are building the link from each theme to a short cue, and trusting the practiced story to follow once the cue arrives. One card per story might look like this:
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="10" width="320" height="180" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="20" y1="44" x2="340" y2="44" stroke="#b4232c" stroke-width="1.5"/>
+  <text x="34" y="33" font-size="14" font-weight="700" fill="#1f2a44">the overconfident filter</text>
+  <text x="34" y="66" font-size="12" fill="#1d6fd1">Themes: failure P · was wrong P · info F</text>
+  <text x="34" y="92" font-size="12" fill="#1f2a44">Scene: portfolio attitude filter, looked done</text>
+  <text x="34" y="110" font-size="12" fill="#1f2a44">for three weeks</text>
+  <text x="34" y="136" font-size="12" fill="#1f2a44">Decisions: ran 100-run consistency test;</text>
+  <text x="34" y="154" font-size="12" fill="#1f2a44">told the user before fixing</text>
+  <text x="34" y="178" font-size="12" fill="#b4232c">Number: covariance about 3× too tight</text>
+</svg>
+```
+:::
+
+::: context quaternion-ekf What a quaternion EKF is
+A spacecraft needs to know which way it is pointing — its **attitude**. A **quaternion** is a set of four numbers that stores an orientation without the glitches that three angles can hit when the vehicle turns past certain positions.
+
+An **EKF** (extended Kalman filter, said "E-K-F") is a recipe for blending a prediction with noisy measurements and keeping track of how unsure you are. "Multiplicative" is the version that updates the orientation by a small rotation instead of by adding numbers, so the quaternion stays valid. You will build one in the estimation modules; for this lesson, "a filter that works out which way the spacecraft points" is enough.
+:::
+
+::: context imu-star-tracker Two sensors that disagree in useful ways
+An **IMU** (inertial measurement unit, said "I-M-U") contains gyroscopes that measure how fast the vehicle is turning. It answers quickly and smoothly, but its small errors add up, so over time it drifts.
+
+A **star tracker** is a camera that photographs the stars and matches them to a catalog to find exactly which way it is pointing. It does not drift, but it updates slowly and can be blinded by the Sun.
+
+A filter combines them: the gyros fill in between star fixes, and the star fixes pull the drift back. Almost every spacecraft that needs to point precisely uses this pairing.
+:::
+
+::: context monte-carlo Named after a casino
+A **Monte Carlo** run is one simulation with its uncertain inputs — sensor noise, wind, mass — drawn at random. Run hundreds of them and you see the whole spread of outcomes, not only the average one. The method takes its name from the famous casino in Monaco, because it works by rolling dice on purpose.
+
+Spaceflight engineers lean on it heavily: a landing is judged by how many of, say, a thousand randomly disturbed runs touch down inside the target, not by one perfect run.
+:::
+
+::: context accuracy-consistency Accurate is not the same as honest about it
+Picture a dart player who also draws a circle saying "my dart will land inside this". **Accuracy** is how close the darts land to the bullseye. **Consistency** is whether the circle is the right size for where they actually land.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <g transform="translate(90,80)">
+    <circle r="36" fill="none" stroke="#1d6fd1" stroke-width="2"/>
+    <circle r="3" fill="#1f2a44"/>
+    <circle cx="14" cy="-8" r="4" fill="#b4232c"/><circle cx="-12" cy="16" r="4" fill="#b4232c"/>
+    <circle cx="-20" cy="-18" r="4" fill="#b4232c"/><circle cx="24" cy="18" r="4" fill="#b4232c"/>
+    <text y="62" font-size="12" text-anchor="middle" fill="#1f2a44">consistent</text>
+    <text y="78" font-size="11" text-anchor="middle" fill="#6c7a93">circle fits the darts</text>
+  </g>
+  <g transform="translate(270,80)">
+    <circle r="12" fill="none" stroke="#1d6fd1" stroke-width="2"/>
+    <circle r="3" fill="#1f2a44"/>
+    <circle cx="14" cy="-8" r="4" fill="#b4232c"/><circle cx="-12" cy="16" r="4" fill="#b4232c"/>
+    <circle cx="-20" cy="-18" r="4" fill="#b4232c"/><circle cx="24" cy="18" r="4" fill="#b4232c"/>
+    <text y="62" font-size="12" text-anchor="middle" fill="#1f2a44">overconfident</text>
+    <text y="78" font-size="11" text-anchor="middle" fill="#6c7a93">same darts, circle 3× too small</text>
+  </g>
+</svg>
+```
+
+Both players throw the same darts, so both are equally accurate. The filter in the story was the right-hand player. The NEES test (normalized estimation error squared) checks, over many runs, whether the errors fit the claimed circle; the chi-square band is the range an honest filter would land in.
+:::
+
+::: context innovation-vs-truth Two checks, and when each is available
+The **state-error test** (NEES) compares the filter's estimate to the *true* state. In a simulation you know the truth, because you made it up. On a real spacecraft you never do — so this test only exists in simulation.
+
+The **innovation test** (NIS, normalized innovation squared) compares each new measurement to what the filter *predicted* it would be. The prediction and the measurement both exist on real hardware, so this check keeps working in flight.
+
+That is the whole point the teammate was missing: passing one test says something different from passing the other. The estimation modules later in the course use both.
+:::

@@ -958,7 +958,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-the-negative-result",
       "title": "The talk about the thing that did not work",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "talk structure: problem, why it was hard, approach, the key decision and the alternatives rejected, verification, result, what you would do differently"
       ],
@@ -967,7 +967,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-rehearsal-protocol",
       "title": "Rehearsal: record it, time it, and be attacked",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "rehearsal protocol: record yourself, present to a hostile reviewer, time it, drill 30 anticipated questions"
       ],
@@ -987,7 +987,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-when-you-do-not-know",
       "title": "Rebuilding a result you cannot recall",
-      "minutes": 23,
+      "minutes": 24,
       "covers": [
         "the answering standard: state assumptions, write the equation, interpret physically, sanity check"
       ],
@@ -996,7 +996,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-gain-phase-and-delay-margin",
       "title": "Gain, phase and delay margin",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "stability margins: gain margin, phase margin and delay margin, what each means physically and why you need all three"
       ],
@@ -1005,7 +1005,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-reading-margins-and-the-nyquist-criterion",
       "title": "Reading margins off a plot, and when the numbers lie",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "reading margins from a Bode plot and from a Nyquist plot; the Nyquist criterion",
         "why a large gain margin with a small phase margin is still a fragile design"
@@ -1024,7 +1024,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-the-linear-kalman-filter-from-memory",
       "title": "The linear Kalman filter, from memory",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "the Kalman filter in linear form: the predict and update equations and what each term does"
       ],
@@ -1033,7 +1033,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-the-ekf-jacobians-and-divergence",
       "title": "The EKF: Jacobians, where it fails, and how it diverges",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "the extended Kalman filter: Jacobians, where linearisation fails, and divergence modes"
       ],
@@ -1042,7 +1042,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-the-ukf-sigma-points-and-cost",
       "title": "The UKF: sigma points, and when it earns its cost",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "the unscented Kalman filter: sigma points, why it exists and when it is worth the cost"
       ],
@@ -1051,7 +1051,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-tuning-and-consistency-nees-and-nis",
       "title": "Tuning and consistency: Q, R, NEES and NIS",
-      "minutes": 20,
+      "minutes": 24,
       "covers": [
         "filter tuning and consistency: process noise, measurement noise, NEES and NIS"
       ],
@@ -1060,7 +1060,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-wahba-stated-and-solved",
       "title": "Wahba's problem, stated and solved four ways",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "attitude determination: Wahba’s problem stated formally",
         "solutions to Wahba: Davenport’s q-method, the SVD method, QUEST, and TRIAD as the degenerate two-vector case"
@@ -1070,7 +1070,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-the-multiplicative-quaternion-ekf",
       "title": "The multiplicative quaternion EKF, and the three-dimensional error",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "the multiplicative quaternion EKF and why the error state is three-dimensional"
       ],
@@ -1079,7 +1079,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-strapdown-imu-bias-states-and-gyro-propagation",
       "title": "Strapdown IMU integration, bias states and gyro propagation",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "strapdown IMU integration, bias states and gyro propagation"
       ],
@@ -1088,7 +1088,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-orbit-determination-at-the-whiteboard",
       "title": "Orbit determination: observability, batch and sequential",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "orbit determination: observability, batch least squares versus sequential filtering, measurement types"
       ],
@@ -1110,7 +1110,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-variable-mass-and-thrust",
       "title": "Variable-mass mechanics and the thrust equation",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "variable-mass Newtonian mechanics and the thrust term as momentum flux plus a pressure term"
       ],
@@ -1119,7 +1119,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-tsiolkovsky",
       "title": "Deriving Tsiolkovsky, and what it hides",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "deriving Tsiolkovsky from the variable-mass equation"
       ],
@@ -1128,7 +1128,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-planar-powered-flight",
       "title": "Planar powered flight in three degrees of freedom",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "planar 3-DOF powered flight: the velocity, flight-path-angle, position and mass equations"
       ],
@@ -1146,7 +1146,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-six-dof-and-the-gimbal-moment",
       "title": "Six degrees of freedom and the gimbal moment",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "extending to 6-DOF: Euler’s rotational equation and the moment from a gimballed thrust offset"
       ],
@@ -1155,7 +1155,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-dimensional-analysis",
       "title": "Dimensional analysis as a live error check",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "dimensional analysis as a live error check"
       ],
@@ -1164,7 +1164,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-the-fermi-method",
       "title": "The Fermi method: decompose, bound, multiply, check",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "Fermi estimation method: decompose, bound each factor, multiply, sanity check, state uncertainty"
       ],
@@ -1173,7 +1173,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-worked-space-estimates",
       "title": "Worked space estimates, and how to bound them",
-      "minutes": 24,
+      "minutes": 26,
       "covers": [
         "worked space Fermi examples and how to bound them"
       ],
@@ -1182,7 +1182,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-when-the-number-is-absurd",
       "title": "When the number comes out absurd",
-      "minutes": 23,
+      "minutes": 24,
       "covers": [
         "Fermi estimation method: decompose, bound each factor, multiply, sanity check, state uncertainty",
         "worked space Fermi examples and how to bound them"
@@ -1192,7 +1192,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-physics-puzzles",
       "title": "Attacking an unfamiliar physics puzzle",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "physics puzzles and how to attack an unfamiliar one"
       ],
@@ -1201,7 +1201,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-the-coding-rounds",
       "title": "The coding rounds, narrated",
-      "minutes": 23,
+      "minutes": 24,
       "covers": [
         "the coding rounds: 2 to 3 problems at medium to hard difficulty, C++ for avionics and embedded",
         "coding round discipline: clarify, state the approach and complexity, write it, test the edges",
@@ -1222,8 +1222,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
   "car_13_behavioral_star": [
     {
       "id": "l01-the-round-and-star",
-      "title": "What the behavioural round is asking for",
-      "minutes": 23,
+      "title": "What the behavioral round is asking for",
+      "minutes": 22,
       "covers": [
         "STAR structure: Situation, Task, Action, Result, and the common failure of spending most of the answer on Situation"
       ],
@@ -1250,7 +1250,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-story-bank",
       "title": "The story bank and the themes it has to cover",
-      "minutes": 25,
+      "minutes": 22,
       "covers": [
         "building a bank of ten to twelve stories, each roughly 90 seconds",
         "the themes actually probed: a failure and what changed, conflict with a colleague, a decision with incomplete information, a missed deadline, a time you were wrong, ownership beyond your scope, teaching someone, working extended hours"
@@ -1260,7 +1260,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-the-failure-story",
       "title": "The failure story, owned without performance",
-      "minutes": 23,
+      "minutes": 22,
       "covers": [
         "the themes actually probed: a failure and what changed, conflict with a colleague, a decision with incomplete information, a missed deadline, a time you were wrong, ownership beyond your scope, teaching someone, working extended hours"
       ],
@@ -1269,7 +1269,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-disagreement-without-a-villain",
       "title": "Disagreement without a villain",
-      "minutes": 23,
+      "minutes": 22,
       "covers": [
         "the themes actually probed: a failure and what changed, conflict with a colleague, a decision with incomplete information, a missed deadline, a time you were wrong, ownership beyond your scope, teaching someone, working extended hours"
       ],
@@ -1278,7 +1278,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-reported-red-flags",
       "title": "The four reported red flags",
-      "minutes": 24,
+      "minutes": 22,
       "covers": [
         "reported red flags: blaming others, vagueness, inflated contribution, inability to name a real failure"
       ],
@@ -1287,7 +1287,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-gaps-and-missing-stories",
       "title": "The story you do not have, and the background you do",
-      "minutes": 23,
+      "minutes": 22,
       "covers": [
         "honesty about gaps, career changes and a self-taught background",
         "what to do when you do not have a story for a theme"
@@ -1306,7 +1306,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-intensity-pace-and-your-decision",
       "title": "Intensity, pace, and the decision you are also making",
-      "minutes": 23,
+      "minutes": 22,
       "covers": [
         "intensity and pace as a real tradeoff to evaluate before you accept, not after",
         "cultural fit as a two-way assessment"
@@ -5523,6 +5523,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Algebraic loops: what creates them, the Algebraic Constraint block, breaking them with a unit delay and its phase cost"
       ],
       "file": "cod_slk_02_solvers/08-algebraic-loops.md"
+    },
+    {
+      "id": "l09-solver-profiler-and-the-golden-rule",
+      "title": "The Solver Profiler and the golden rule for flight models",
+      "minutes": 19,
+      "covers": [
+        "The Solver Profiler",
+        "The golden rule for deployable models: fixed-step, cleanly multirate, no algebraic loops"
+      ],
+      "file": "cod_slk_02_solvers/09-solver-profiler-and-the-golden-rule.md"
     }
   ],
   "cod_slk_03_architecture": [
@@ -5534,6 +5544,230 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Virtual versus atomic subsystems: execution ordering and code-generation consequences"
       ],
       "file": "cod_slk_03_architecture/01-virtual-and-atomic-subsystems.md"
+    },
+    {
+      "id": "l02-conditional-subsystems",
+      "title": "Conditional subsystems: enabled, triggered, function-call, If, Switch Case and For Each",
+      "minutes": 26,
+      "covers": [
+        "Enabled, triggered and function-call subsystems; If and Switch Case action subsystems; For Each"
+      ],
+      "file": "cod_slk_03_architecture/02-conditional-subsystems.md"
+    },
+    {
+      "id": "l03-masks-libraries-and-projects",
+      "title": "Masks, libraries and projects",
+      "minutes": 24,
+      "covers": [
+        "Masking: parameters, icons, callbacks, self-documenting blocks",
+        "Libraries and linked blocks; Simulink Projects under source control"
+      ],
+      "file": "cod_slk_03_architecture/03-masks-libraries-and-projects.md"
+    },
+    {
+      "id": "l04-bus-objects",
+      "title": "Bus objects, bus blocks and C structs",
+      "minutes": 22,
+      "covers": [
+        "Simulink.Bus objects as interface contracts; Bus Creator, Selector, Assignment; nested buses",
+        "Virtual versus non-virtual buses, and why non-virtual buses become C structs"
+      ],
+      "file": "cod_slk_03_architecture/04-bus-objects.md"
+    },
+    {
+      "id": "l05-model-reference",
+      "title": "Model reference: one vehicle, many files",
+      "minutes": 22,
+      "covers": [
+        "Model reference: separate compilation, incremental build, interface checking, accelerator modes",
+        "convertToModelReference and the objects it generates"
+      ],
+      "file": "cod_slk_03_architecture/05-model-reference.md"
+    },
+    {
+      "id": "l06-variants",
+      "title": "Variants: one model, flight and test builds",
+      "minutes": 21,
+      "covers": [
+        "Variant subsystems, variant models and variant source/sink for flight versus test builds"
+      ],
+      "file": "cod_slk_03_architecture/06-variants.md"
+    },
+    {
+      "id": "l07-data-dictionaries-and-data-objects",
+      "title": "Data dictionaries and data objects",
+      "minutes": 22,
+      "covers": [
+        "Data dictionaries (.sldd) versus the base workspace; per-subsystem dictionaries",
+        "Simulink.Parameter, Simulink.Signal and storage classes"
+      ],
+      "file": "cod_slk_03_architecture/07-data-dictionaries-and-data-objects.md"
+    },
+    {
+      "id": "l08-stateflow-states-and-transitions",
+      "title": "Stateflow: states and transitions",
+      "minutes": 23,
+      "covers": [
+        "Stateflow: states, hierarchy, transitions, junctions, default transitions"
+      ],
+      "file": "cod_slk_03_architecture/08-stateflow-states-and-transitions.md"
+    },
+    {
+      "id": "l09-actions-and-decomposition",
+      "title": "State actions, transition actions and parallel states",
+      "minutes": 24,
+      "covers": [
+        "entry, during and exit actions; condition actions versus transition actions",
+        "Parallel (AND) versus exclusive (OR) decomposition"
+      ],
+      "file": "cod_slk_03_architecture/09-actions-and-decomposition.md"
+    },
+    {
+      "id": "l10-temporal-logic-and-events",
+      "title": "Temporal logic and events",
+      "minutes": 24,
+      "covers": [
+        "Temporal logic: after, before, every, at, duration",
+        "Events versus conditions, and why flight teams often ban events"
+      ],
+      "file": "cod_slk_03_architecture/10-temporal-logic-and-events.md"
+    },
+    {
+      "id": "l11-transition-order-and-mutual-exclusivity",
+      "title": "Transition order and mutually exclusive guards",
+      "minutes": 20,
+      "covers": [
+        "Transition evaluation order and guaranteeing mutual exclusivity"
+      ],
+      "file": "cod_slk_03_architecture/11-transition-order-and-mutual-exclusivity.md"
+    },
+    {
+      "id": "l12-mode-sequencer-and-fdir",
+      "title": "A launch-vehicle mode sequencer with fault protection",
+      "minutes": 23,
+      "covers": [
+        "A launch-vehicle mode sequencer and FDIR/safe-mode logic"
+      ],
+      "file": "cod_slk_03_architecture/12-mode-sequencer-and-fdir.md"
+    }
+  ],
+  "cod_slk_04_codegen": [
+    {
+      "id": "l01-mil-sil-pil-hil",
+      "title": "MIL, SIL, PIL and HIL: four questions on the way to flight",
+      "minutes": 23,
+      "covers": [
+        "The MIL to SIL to PIL to HIL progression and what each step proves"
+      ],
+      "file": "cod_slk_04_codegen/01-mil-sil-pil-hil.md"
+    },
+    {
+      "id": "l02-simulink-test",
+      "title": "Simulink Test: harnesses, test sequences and tests that run themselves",
+      "minutes": 19,
+      "covers": [
+        "Simulink Test: harnesses, test sequences, assessments, baseline and equivalence tests, headless CI runs"
+      ],
+      "file": "cod_slk_04_codegen/02-simulink-test.md"
+    },
+    {
+      "id": "l03-coverage",
+      "title": "Coverage: what your tests never touched",
+      "minutes": 23,
+      "covers": [
+        "Simulink Coverage: decision, condition, MC/DC, lookup-table, signal-range and relational-boundary coverage",
+        "Interpreting missing coverage as a missing test or as dead logic"
+      ],
+      "file": "cod_slk_04_codegen/03-coverage.md"
+    },
+    {
+      "id": "l04-requirements-and-model-advisor",
+      "title": "Requirements and the Model Advisor: every block has a reason",
+      "minutes": 22,
+      "covers": [
+        "Requirements Toolbox: authoring, linking to blocks and tests, traceability matrices, change tracking",
+        "Model Advisor with MAB and JMAAB guidelines and the high-integrity check packs"
+      ],
+      "file": "cod_slk_04_codegen/04-requirements-and-model-advisor.md"
+    },
+    {
+      "id": "l05-polyspace",
+      "title": "Polyspace: finding bugs and proving they are not there",
+      "minutes": 24,
+      "covers": [
+        "Polyspace Bug Finder and Code Prover: proving absence of run-time errors without test cases"
+      ],
+      "file": "cod_slk_04_codegen/05-polyspace.md"
+    },
+    {
+      "id": "l06-coders-targets-and-solver-constraints",
+      "title": "Coders, targets and the rules a model must meet",
+      "minutes": 23,
+      "covers": [
+        "Simulink Coder versus Embedded Coder; the ert.tlc system target file",
+        "Hardware implementation settings: word sizes, endianness, target CPU",
+        "Solver constraints for code generation: fixed-step, discrete, no algebraic loops"
+      ],
+      "file": "cod_slk_04_codegen/06-coders-targets-and-solver-constraints.md"
+    },
+    {
+      "id": "l07-data-interface-and-code-mappings",
+      "title": "The data interface, entry points and code mappings",
+      "minutes": 24,
+      "covers": [
+        "Storage classes and the data interface: ExportedGlobal, ImportedExtern, Volatile, custom classes",
+        "Code mappings: step, initialize and terminate entry points; reusable and reentrant code"
+      ],
+      "file": "cod_slk_04_codegen/07-data-interface-and-code-mappings.md"
+    },
+    {
+      "id": "l08-parameters-fixed-point-and-crl",
+      "title": "Tunable parameters, fixed-point numbers and code replacement",
+      "minutes": 21,
+      "covers": [
+        "Tunable versus inlined parameters; Fixed-Point Designer for MCU targets",
+        "Code replacement libraries for vendor intrinsics"
+      ],
+      "file": "cod_slk_04_codegen/08-parameters-fixed-point-and-crl.md"
+    },
+    {
+      "id": "l09-traceability-and-code-metrics",
+      "title": "Reading generated code, tracing it and measuring it",
+      "minutes": 23,
+      "covers": [
+        "Traceability: generated C comments and the HTML report linking back to blocks",
+        "Code metrics: RAM, ROM and stack; the Code Profile Analyzer"
+      ],
+      "file": "cod_slk_04_codegen/09-traceability-and-code-metrics.md"
+    },
+    {
+      "id": "l10-sil-pil-and-integration",
+      "title": "SIL, PIL and plugging generated code into a real program",
+      "minutes": 22,
+      "covers": [
+        "SIL and PIL as Model block simulation modes; equivalence testing against the model",
+        "Integrating generated code with a hand-written C++ application"
+      ],
+      "file": "cod_slk_04_codegen/10-sil-pil-and-integration.md"
+    },
+    {
+      "id": "l11-legacy-code-and-tool-qualification",
+      "title": "Bringing old C into the model, and trusting your tools",
+      "minutes": 22,
+      "covers": [
+        "S-functions and the Legacy Code Tool for wrapping existing C",
+        "DO Qualification Kit and what qualifying a tool means"
+      ],
+      "file": "cod_slk_04_codegen/11-legacy-code-and-tool-qualification.md"
+    },
+    {
+      "id": "l12-real-time-targets-and-hil",
+      "title": "Real-time targets and HIL: the bench that plays the vehicle",
+      "minutes": 24,
+      "covers": [
+        "Real-time targets and HIL: Speedgoat, dSPACE, OPAL-RT; RCP versus HIL; fault injection"
+      ],
+      "file": "cod_slk_04_codegen/12-real-time-targets-and-hil.md"
     }
   ],
   "cod_sql_01_select": [
@@ -10601,7 +10835,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-mesh-refinement",
       "title": "Mesh refinement from an interpolated-defect error estimate",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "Mesh refinement driven by an interpolated-defect error estimate"
       ],
@@ -10610,7 +10844,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-ilqr-shooting-flavoured",
       "title": "iLQR and DDP as the shooting-flavoured alternative",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "Differential dynamic programming and iLQR as the shooting-flavoured alternative"
       ],
@@ -10645,8 +10879,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l16-tooling",
-      "title": "Tooling: automatic differentiation and the trajectory-optimisation stack",
-      "minutes": 17,
+      "title": "Tooling: automatic differentiation and the trajectory-optimization stack",
+      "minutes": 21,
       "covers": [
         "Tooling: CasADi with IPOPT, GPOPS-II, PSOPT, Dymos/OpenMDAO, PyOMO, ACADO, trajax"
       ],
@@ -10655,7 +10889,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l17-failure-modes",
       "title": "Failure modes: infeasibility, multipliers, ringing and bad constraints",
-      "minutes": 20,
+      "minutes": 26,
       "covers": [
         "Failure modes: infeasible restoration, unbounded multipliers, mesh-induced control ringing, badly posed terminal constraints"
       ],
@@ -10666,7 +10900,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-certification-and-the-problem",
       "title": "Why powered-descent guidance must be convex",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "The certification argument: why onboard guidance demands a solver with a convergence guarantee and a bounded iteration count, and why a general NLP cannot give one",
         "The minimum-fuel powered descent problem and its four non-convexities: the lower thrust bound, mass-depletion dynamics, thrust pointing, and logic-triggered constraints"
@@ -10676,7 +10910,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-lossless-convexification-thrust-bound",
       "title": "Lossless convexification of the thrust bound",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "Why the thrust magnitude constraint rho_min <= ||T|| <= rho_max is non-convex — the feasible set is an annulus with the origin removed",
         "Lossless convexification: the slack variable Gamma with ||T|| <= Gamma and rho_min <= Gamma <= rho_max, and the proof sketch via the maximum principle that the relaxation is tight"
@@ -10686,7 +10920,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-change-of-variables-and-socp",
       "title": "The change of variables, convex mass bounds, and the SOCP",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "The change of variables u = T/m, sigma = Gamma/m, z = ln m, and how it makes the translational dynamics exactly linear",
         "The second-order-expanded mass bounds that keep the transformed thrust bounds convex",
@@ -10697,7 +10931,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-gfold-two-stage-guidance",
       "title": "G-FOLD: the two-stage guidance law, and its flight",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "G-FOLD (Guidance for Fuel-Optimal Large Diverts) and the two-stage minimum-landing-error then minimum-fuel solve",
         "The JPL/Masten Xombie flight demonstrations of G-FOLD and what they proved"
@@ -10707,7 +10941,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-glideslope-velocity-pointing-cones",
       "title": "Glideslope, velocity, and pointing as cones",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "Glideslope, velocity, and thrust-pointing constraints as cones"
       ],
@@ -10716,7 +10950,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-flight-time-and-discretization",
       "title": "Flight time and what discretization preserves",
-      "minutes": 22,
+      "minutes": 18,
       "covers": [
         "Flight time as the one non-convex parameter, and solving it by a line search over an inner SOCP",
         "Discrete-time lossless convexification and what survives discretisation"
@@ -10726,7 +10960,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-successive-convexification",
       "title": "Successive convexification: the idea and its price",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "Successive convexification (SCvx): linearise about a reference, solve, update, repeat"
       ],
@@ -10735,7 +10969,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-trust-regions-virtual-control",
       "title": "Trust regions and virtual control",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "Trust regions and artificial unboundedness; virtual control (virtual buffers) and artificial infeasibility"
       ],
@@ -10744,7 +10978,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-scvx-algorithm-free-final-time",
       "title": "Assembling SCvx, and free final time by dilation",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "The convergence ratio rho and the accept/reject/resize rule",
         "Free-final-time formulation by time dilation, and the notation clash with the thrust slack"
@@ -10754,7 +10988,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-6dof-powered-descent",
       "title": "A 6-DoF powered descent, run end to end",
-      "minutes": 24,
+      "minutes": 28,
       "covers": [
         "6-DoF powered descent with quaternion attitude inside the optimization"
       ],
@@ -10763,7 +10997,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-state-triggered-constraints",
       "title": "State-triggered constraints",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "State-triggered constraints for logic in the loop, and compound STCs"
       ],
@@ -10772,7 +11006,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-gusto-real-time-scvx",
       "title": "GuSTO, and running SCvx in real time",
-      "minutes": 22,
+      "minutes": 26,
       "covers": [
         "GuSTO and the broader sequential convex programming convergence theory",
         "Real-time implementation: solver code generation, iteration bounds, warm starting, and fixed-point considerations"
@@ -10782,7 +11016,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-falcon9-starship-architecture",
       "title": "Where this flies — Falcon 9 and Starship",
-      "minutes": 19,
+      "minutes": 23,
       "covers": [
         "How all of this maps onto a Falcon 9 entry burn / aero phase / landing burn architecture, and onto Starship landing"
       ],
@@ -11395,7 +11629,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-monte-carlo-campaign-and-vv-report",
       "title": "The Monte Carlo campaign and the V&V report",
-      "minutes": 28,
+      "minutes": 26,
       "covers": [
         "Ten thousand dispersed cases in CI, with per-case seeding and bit-exact replay",
         "The written V&V report: requirements, evidence, margin plots, failure analysis and known limitations"
@@ -11415,8 +11649,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l02-star-stories-and-hard-questions",
-      "title": "Behavioural rounds: STAR stories, and the two questions that sting",
-      "minutes": 20,
+      "title": "Behavioral rounds: STAR stories, and the two questions that sting",
+      "minutes": 21,
       "covers": [
         "Behavioural and STAR stories emphasising ownership, speed, and recovery from failure",
         "Answering \"what would you do differently\" and \"what was the hardest bug\" without either arrogance or apology"
@@ -11426,7 +11660,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-fermi-estimation-drills",
       "title": "Fermi estimation, worked at interview pace",
-      "minutes": 25,
+      "minutes": 26,
       "covers": [
         "Fermi estimation drills with vehicle numbers you should already know"
       ],
@@ -11435,7 +11669,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-rocket-equation-and-variable-mass",
       "title": "The rocket equation and the variable-mass equations of motion, derived cold",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "Whiteboard derivations under time pressure: the rocket equation, rigid-body equations of motion under thrust, the Kalman filter update, proportional navigation, Euler equations, the Clohessy-Wiltshire equations"
       ],
@@ -11453,7 +11687,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-euler-equations-and-clohessy-wiltshire",
       "title": "Euler's equations and the Clohessy-Wiltshire equations, derived cold",
-      "minutes": 16,
+      "minutes": 24,
       "covers": [
         "Whiteboard derivations under time pressure: the rocket equation, rigid-body equations of motion under thrust, the Kalman filter update, proportional navigation, Euler equations, the Clohessy-Wiltshire equations"
       ],
@@ -11462,7 +11696,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-deriving-out-loud-and-being-wrong-well",
       "title": "Deriving out loud, and how to be wrong well",
-      "minutes": 25,
+      "minutes": 29,
       "covers": [
         "Deriving out loud: narrating assumptions, stating what you are about to do before doing it, and recovering visibly from an error"
       ],
@@ -11470,8 +11704,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l08-embedded-cpp-coding-rounds",
-      "title": "The embedded-flavoured C++ coding round",
-      "minutes": 20,
+      "title": "The embedded-flavored C++ coding round",
+      "minutes": 23,
       "covers": [
         "C++ coding rounds: the standard algorithmic problems plus embedded-flavoured ones — ring buffers, fixed-point arithmetic, bit manipulation, memory-constrained algorithms, no allocation in the hot path"
       ],
@@ -11480,7 +11714,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-systems-rounds-and-arguing-from-a-trade",
       "title": "Systems and architecture rounds, and arguing from a trade",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "Systems and architecture rounds: design a GNC flight software stack, a Monte Carlo pipeline, an FDIR scheme, a sensor suite for a given mission",
         "Explaining a design decision in terms of a trade rather than a preference"
@@ -11490,7 +11724,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-controls-estimation-dynamics-questions",
       "title": "Controls, estimation and dynamics rounds: the questions that recur",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "Controls, estimation and dynamics rounds: the questions that recur, and the follow-ups that separate memorisation from understanding"
       ],
@@ -11499,7 +11733,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-numbers-resume-and-portfolio",
       "title": "Framing your work with numbers: talks, resume and portfolio",
-      "minutes": 15,
+      "minutes": 18,
       "covers": [
         "Framing self-taught projects as engineering results with numbers: RMSE, margins, run counts, solve times, not adjectives",
         "Resume and portfolio construction around artefacts that can be read: repositories, reports, plots"
@@ -12009,65 +12243,22 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_slk_02_solvers": {
-    "covered": 11,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "The Solver Profiler",
-      "The golden rule for deployable models: fixed-step, cleanly multirate, no algebraic loops"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_slk_03_architecture": {
-    "covered": 1,
+    "covered": 18,
     "total": 18,
-    "complete": false,
-    "missing": [
-      "Enabled, triggered and function-call subsystems; If and Switch Case action subsystems; For Each",
-      "Masking: parameters, icons, callbacks, self-documenting blocks",
-      "Simulink.Bus objects as interface contracts; Bus Creator, Selector, Assignment; nested buses",
-      "Virtual versus non-virtual buses, and why non-virtual buses become C structs",
-      "Model reference: separate compilation, incremental build, interface checking, accelerator modes",
-      "convertToModelReference and the objects it generates",
-      "Variant subsystems, variant models and variant source/sink for flight versus test builds",
-      "Data dictionaries (.sldd) versus the base workspace; per-subsystem dictionaries",
-      "Simulink.Parameter, Simulink.Signal and storage classes",
-      "Libraries and linked blocks; Simulink Projects under source control",
-      "Stateflow: states, hierarchy, transitions, junctions, default transitions",
-      "entry, during and exit actions; condition actions versus transition actions",
-      "Parallel (AND) versus exclusive (OR) decomposition",
-      "Temporal logic: after, before, every, at, duration",
-      "Events versus conditions, and why flight teams often ban events",
-      "Transition evaluation order and guaranteeing mutual exclusivity",
-      "A launch-vehicle mode sequencer and FDIR/safe-mode logic"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_slk_04_codegen": {
-    "covered": 0,
+    "covered": 21,
     "total": 21,
-    "complete": false,
-    "missing": [
-      "The MIL to SIL to PIL to HIL progression and what each step proves",
-      "Simulink Test: harnesses, test sequences, assessments, baseline and equivalence tests, headless CI runs",
-      "Simulink Coverage: decision, condition, MC/DC, lookup-table, signal-range and relational-boundary coverage",
-      "Interpreting missing coverage as a missing test or as dead logic",
-      "Requirements Toolbox: authoring, linking to blocks and tests, traceability matrices, change tracking",
-      "Model Advisor with MAB and JMAAB guidelines and the high-integrity check packs",
-      "Polyspace Bug Finder and Code Prover: proving absence of run-time errors without test cases",
-      "Simulink Coder versus Embedded Coder; the ert.tlc system target file",
-      "Hardware implementation settings: word sizes, endianness, target CPU",
-      "Solver constraints for code generation: fixed-step, discrete, no algebraic loops",
-      "Storage classes and the data interface: ExportedGlobal, ImportedExtern, Volatile, custom classes",
-      "Code mappings: step, initialize and terminate entry points; reusable and reentrant code",
-      "Tunable versus inlined parameters; Fixed-Point Designer for MCU targets",
-      "Code replacement libraries for vendor intrinsics",
-      "Traceability: generated C comments and the HTML report linking back to blocks",
-      "Code metrics: RAM, ROM and stack; the Code Profile Analyzer",
-      "SIL and PIL as Model block simulation modes; equivalence testing against the model",
-      "Integrating generated code with a hand-written C++ application",
-      "S-functions and the Legacy Code Tool for wrapping existing C",
-      "DO Qualification Kit and what qualifying a tool means",
-      "Real-time targets and HIL: Speedgoat, dSPACE, OPAL-RT; RCP versus HIL; fault injection"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_rs_01_basics": {
     "covered": 15,

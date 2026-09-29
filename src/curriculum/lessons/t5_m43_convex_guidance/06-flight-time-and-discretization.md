@@ -1,32 +1,57 @@
 ---
 id: l06-flight-time-and-discretization
 title: Flight time and what discretization preserves
-minutes: 22
+minutes: 18
 covers:
   - Flight time as the one non-convex parameter, and solving it by a line search over an inner SOCP
   - Discrete-time lossless convexification and what survives discretisation
 ---
 
-Every solve in this module so far has quietly taken $t_f$, the flight time, as given — a number the problem builder handed in alongside $\rho_{\min}$ and $I_{sp}$, never something the optimizer itself was asked to choose. That was never an oversight; it was a decision this lesson now explains and works around. Flight time is the one parameter in the whole 3-DoF formulation that resists everything this module has done to buy convexity, and the fix is not a relaxation or a change of variables but a search built entirely out of the machinery already in hand. Closing this lesson also closes a question left open since the first node count was chosen back when the SOCP was assembled: does discretizing a continuous-time guarantee actually keep the guarantee, or only approximate it?
+Carry a heavy bag of groceries up three flights of stairs. If you try to do it in five seconds, you cannot: your legs are not strong enough, however hard you push. If you take five minutes, stopping on every step, your arms ache from holding the bag the whole time. Somewhere in between is the least tiring pace — quick enough that you are not holding the bag forever, slow enough that you are not straining.
 
-## Why flight time cannot join the decision vector
+A landing has the same shape. Every solve in this module so far has been handed the flight time $t_f$ ("t sub f") as a fixed number, alongside $\rho_{\min}$ and $I_{sp}$. The optimizer was never asked to choose it. That was a deliberate decision, and this lesson explains why: flight time is the one number in the whole 3-DoF problem that resists everything this module did to make the problem convex. The fix is not a new relaxation. It is a simple search wrapped around the solver we already have.
 
-Look at the zero-order-hold dynamics this module has been solving all along:
+The lesson then closes a question left open since lesson three first chopped the flight into nodes: does chopping a continuous-time guarantee into a finite set of steps keep the guarantee, or only approximate it?
+
+## Why flight time cannot join the unknowns
+
+Here are the **[[zero-order-hold|zero-order-hold]]** dynamics this module has been solving all along — the control held constant over each step:
 
 $$
 \mathbf{r}_{k+1} = \mathbf{r}_k + \mathbf{v}_k\,\Delta t + \tfrac12(\mathbf{g}+\mathbf{u}_k)\,\Delta t^2, \qquad \mathbf{v}_{k+1} = \mathbf{v}_k + (\mathbf{g}+\mathbf{u}_k)\,\Delta t, \qquad z_{k+1} = z_k - \alpha\sigma_k\,\Delta t,
 $$
 
-with $\Delta t = t_f/N$ for a fixed node count $N$. Every one of these equations is affine in $(\mathbf{r}_k,\mathbf{v}_k,z_k,\mathbf{u}_k,\sigma_k)$ *only because $\Delta t$ is a constant* — a number baked into the coefficients before the solver ever sees the problem. Let $t_f$, and therefore $\Delta t$, become a decision variable, and every term with a $\Delta t$ or $\Delta t^2$ in front of it becomes a product of two unknowns: $\Delta t\,\mathbf{u}_k$, $\Delta t^2\,\mathbf{u}_k$, $\Delta t\,\sigma_k$. That is bilinearity, the exact disease the change-of-variables lesson cured for $\mathbf{T}/m$ — except here there is no single clean substitution available, because $\Delta t$ multiplies *every* step's contribution to *every* later node through the recursion, not one divide in one equation. Introducing $s=1/\Delta t$ or similar tricks moves the nonlinearity around without removing it. Flight time earns its "one non-convex parameter" title honestly: not because anyone failed to find the right substitution, but because none exists for a variable that scales the entire discretization at once.
+with $\Delta t = t_f/N$ for a fixed number of steps $N$.
+
+Every one of these equations is linear in the unknowns $(\mathbf{r}_k,\mathbf{v}_k,z_k,\mathbf{u}_k,\sigma_k)$ *only because $\Delta t$ is a fixed number*. It sits in the coefficients, baked in before the solver ever sees the problem.
+
+Now let $t_f$, and with it $\Delta t$, become an unknown. Every term with $\Delta t$ in front turns into a product of two unknowns: $\Delta t\,\mathbf{u}_k$, $\Delta t^2\,\mathbf{u}_k$, $\Delta t\,\sigma_k$, $\Delta t\,\mathbf{v}_k$. A product of two unknowns is **[[bilinear|bilinear]]** — straight-line in each one alone, but not in the pair. That is the same trouble lesson three cured for $\mathbf{T}/m$.
+
+Here, though, no single substitution cures it. Lesson three's trick worked because $\mathbf{T}/m$ appeared in one place, one way. $\Delta t$ multiplies *every* step's contribution, and through the recursion each state depends on every earlier step. Substitutions such as $s=1/\Delta t$ move the products around without removing them. So flight time earns its title of "the one non-convex parameter" honestly: not because nobody found the right trick, but because a number that stretches the whole time grid at once has none.
 
 ## The line search
 
-What makes this tractable rather than merely inconvenient is that $t_f$ is a single scalar, and *for any fixed value of it*, everything downstream — dynamics, thrust cone, mass bounds, glideslope, pointing — is exactly the convex problem the rest of this module has been solving. So treat $t_f$ as a parameter chosen from *outside* the SOCP: pick a candidate $t_f$, solve the resulting convex problem to its global optimum (with the certificate that entails), read off the optimal cost $J(t_f)$, and adjust the candidate. Every evaluation of $J$ is exact and certified; only the search *over* $t_f$ gives up the guarantees this module has spent five lessons establishing, and it gives up the least amount of guarantee possible, because searching a single real line is about as small a non-convex problem as exists.
+What rescues us is that $t_f$ is a single number. And *for any fixed value of it*, everything else — dynamics, thrust cone, mass bounds, glideslope, pointing — is exactly the convex problem this module already solves.
 
-$J(t_f)$ behaves the way physical intuition suggests it should: unimodal, falling as $t_f$ grows from whatever the shortest physically achievable time is (less aggressive braking needed, less propellant spent fighting the thrust bound) until gravity losses — the vehicle spending longer aloft, burning propellant against gravity the whole time it hovers rather than translates — start to dominate, after which $J(t_f)$ rises again. A function known to be unimodal, evaluated only through expensive black-box calls (each one a full SOCP solve), is exactly the setting **golden-section search** was built for: it brackets the minimum and narrows the bracket by a constant factor — the golden ratio, $\varphi = (\sqrt5-1)/2\approx0.618$ — on every evaluation, using only function values, no derivatives.
+So treat $t_f$ as a dial turned from *outside* the solver:
 
-::: example Golden-section search, verified on a function whose answer is known
-Before trusting a search method on an expensive SOCP-backed cost, check it against a function with a known minimum:
+1. Pick a candidate $t_f$.
+2. Solve the convex problem at that $t_f$ to its global optimum, with the guarantee that brings.
+3. Read off the optimal propellant, $J(t_f)$ ("J of t f").
+4. Choose a better candidate and repeat.
+
+Each evaluation of $J$ is exact and certified. Only the search *over* $t_f$ gives up the guarantees, and it gives up as little as possible, because searching along a single line is about the smallest non-convex problem there is.
+
+What does $J(t_f)$ look like? The grocery bag tells you. Too short, and no trajectory exists at all: the engine cannot brake hard enough. A bit longer, and the vehicle can land, but only by braking hard. Longer still, and the **[[gravity loss|gravity-loss]]** takes over: every extra second in the air is a second of thrust spent holding the vehicle up against gravity instead of steering it. So $J$ falls, bottoms out, and rises. A curve with one dip and no others is called **[[unimodal|unimodal]]**.
+
+For a unimodal function that is expensive to evaluate — each point here is a whole SOCP solve — the classic tool is **golden-section search**. It keeps a bracket $[a,b]$ that contains the minimum, and each new evaluation shrinks the bracket by [[the same factor|golden-ratio]], $\varphi = (\sqrt5-1)/2\approx0.618$ ("phi"). It uses only function values, never slopes.
+
+::: key How flight time is handled in the convex 3-DoF formulation
+Flight time is not a convex variable: the discretization matrices depend on it. Fix $t_f$, solve the SOCP, and run a golden-section search on $t_f$ outside. The cost is unimodal in $t_f$, so a dozen inner solves suffice. Each inner solve is certified; the outer search is not.
+:::
+
+::: example Golden-section search on a function whose answer is known
+Before trusting a search on an expensive cost, test it on one whose minimum you already know: $f(x) = (x-27)^2+5$, smallest at $x = 27$.
 
 ```python
 import numpy as np
@@ -54,90 +79,196 @@ print(xstar, n, f(xstar))
 # 26.993401763077287 12 5.000043536730488
 ```
 
-Twelve function evaluations narrow a $60$-unit bracket to within $0.5$ and land on $x^\star=26.99$ against the true minimiser $27$ — the discrepancy is exactly the requested tolerance, not solver error. The same twelve lines of search logic, with `f` replaced by a function that builds and solves the SOCP at a given $t_f$ and returns the optimal propellant, is the entire outer loop this lesson needs.
+**Step 1: read the loop.** Two interior points $c$ and $d$ sit at $0.382$ and $0.618$ of the way across the bracket. Whichever has the larger value, the minimum cannot lie beyond it, so that end of the bracket is thrown away. The surviving interior point is reused, so each round costs only one new evaluation.
+
+**Step 2: count.** The bracket starts $60$ wide and must shrink below $0.5$, a factor of $120$. Each evaluation shrinks it by $0.618$, and $0.618^{10} = 0.0081 < 1/120 = 0.0083$, so $10$ shrinks do it. Add the $2$ starting evaluations: $12$.
+
+**Step 3: the answer.** $x^\star = 26.99$ against the true $27$ — off by less than the $0.5$ tolerance that was asked for.
+
+**Sanity check.** Replace `f` with a function that builds and solves the landing SOCP at a given $t_f$ and returns the propellant, and these same lines are the entire outer loop this lesson needs.
 :::
 
-::: example Running the search for real, and catching it being misled
-Build a small landing problem — $\mathbf{r}_0=(400,0,600)\,\mathrm{m}$, $\mathbf{v}_0=(-20,5,-30)\,\mathrm{m/s}$, $N=6$ steps, the same Mars-lander constants as every other worked example in this module — and solve it at a sequence of candidate $t_f$ values, checking the true terminal position-and-velocity residual at every single one rather than trusting the reported cost blindly:
+::: example Running the search on a real landing
+Take a small landing: $\mathbf{r}_0=(400,0,600)\,\mathrm{m}$, $\mathbf{v}_0=(-20,5,-30)\,\mathrm{m/s}$, $N=6$ steps, with this module's usual Mars-lander numbers. First, scan $J(t_f)$ to see its shape:
 
-| $t_f\,(\mathrm{s})$ | propellant $(\mathrm{kg})$ | terminal residual | trust this point? |
-| --- | --- | --- | --- |
-| $16.0$ | $95.74$ | $\approx10^{-12}$ | yes |
-| $19.8$ | $118.22$ | $8.12$ | **no** |
-| $21.2$ | $102.60$ | $\approx10^{-16}$ | yes |
-| $22.1$ | $99.72$ | $\approx10^{-17}$ | yes |
-| $22.5$ | $99.47$ | $\approx10^{-21}$ | yes |
-| $23.6$ | $101.77$ | $\approx10^{-22}$ | yes |
-| $25.9$ | $108.03$ | $\approx10^{-24}$ | yes |
-| $32.0$ | $125.62$ | $\approx10^{-12}$ | yes |
+| $t_f\,(\mathrm{s})$ | $20.2$ | $20.4$ | $21.0$ | $22.0$ | $22.5$ | $24$ | $28$ | $32$ | $40$ |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| propellant $(\mathrm{kg})$ | none | $115.07$ | $104.97$ | $99.89$ | $99.49$ | $102.92$ | $114.00$ | $125.63$ | $149.08$ |
 
-Run golden-section search over the bracket $[16,32]$ against this same cost function and it converges, honestly and correctly *given the numbers it was handed*, to $t_f^\star\approx22.5\,\mathrm{s}$ at a cost of $99.47\,\mathrm{kg}$ — a clean local minimum, every point supporting it well converged. But read the full table: $t_f=16.0\,\mathrm{s}$, itself fully converged with a trustworthy residual, costs only $95.74\,\mathrm{kg}$ — *lower* than the "minimum" the search reported. The search was not wrong about the shape it was shown; the one candidate at $t_f=19.8\,\mathrm{s}$ that might have revealed a second, deeper dip between $16$ and $21$ returned from a solve that had not actually converged (a terminal residual of $8.12$, orders of magnitude worse than every neighbouring point), and golden section had no way to know that number was not to be trusted. This is the previous warning made concrete: unimodality was assumed, one bad function evaluation was enough to hide a cheaper region entirely, and only checking the residual at every point — not just admiring the search's own convergence — caught it.
+**Step 1: read the shape.** Below about $20.3\,\mathrm{s}$ there is no trajectory at all — "none" means the solver proved the problem infeasible. Just above that edge the cost is high and falls steeply. It bottoms out near $22.5\,\mathrm{s}$, then climbs steadily.
+
+**Step 2: check the right side against physics.** From $32$ to $40\,\mathrm{s}$ the cost rises $149.08-125.63 = 23.45\,\mathrm{kg}$ in $8\,\mathrm{s}$: about $2.9\,\mathrm{kg}$ per extra second. Simply hovering the $1905\,\mathrm{kg}$ vehicle on Mars burns $1905\times3.7114/(225\times9.80665) = 3.2\,\mathrm{kg/s}$, and a bit less as it gets lighter. So each extra second costs roughly one second of hovering. That is the gravity loss, in numbers.
+
+**Step 3: run the search.** Golden section on the bracket $[16, 32]$ with tolerance $0.1\,\mathrm{s}$, where "no trajectory" counts as a cost of $+\infty$ (infinitely bad). Its first evaluations:
+
+| evaluation | $1$ | $2$ | $3$ | $4$ | $5$ | $6$ |
+| --- | --- | --- | --- | --- | --- | --- |
+| $t_f\,(\mathrm{s})$ | $22.111$ | $25.889$ | $19.777$ | $23.554$ | $21.220$ | $22.663$ |
+| propellant $(\mathrm{kg})$ | $99.72$ | $108.04$ | none | $101.77$ | $102.60$ | $99.70$ |
+
+It ends after $13$ evaluations at $t_f^\star = 22.44\,\mathrm{s}$ and $99.47\,\mathrm{kg}$.
+
+**Step 4: why "none" did no harm.** The infeasible times all lie to the left of the dip. Scoring them as $+\infty$ makes the curve "infinitely high, then the dip, then rising" — still one dip, so golden section throws away the left end and carries on.
+
+**Sanity check.** The count matches the formula from the first example: the bracket shrinks from $16$ to $0.1$, a factor of $160$; $0.618^{11} = 0.005 < 1/160$, so $11$ shrinks plus $2$ starting points is $13$. And $99.47\,\mathrm{kg}$ sits just below the best value in the scan table, $99.49\,\mathrm{kg}$ at $22.5\,\mathrm{s}$, as the true minimum should.
 :::
 
-::: warning The inner solve's guarantees do not transfer to the outer search
-It is tempting to describe the whole two-level procedure as "convex," because every inner call is. It is not, and saying so risks the same certification mistake the opening lesson warned about. Golden-section search on a unimodal function is efficient and well understood, but a function built from *this* module's structure is unimodal by empirical observation and physical argument, not by a proof carrying the same weight as the interior-point iteration bound. A pathological initial condition could in principle produce a $J(t_f)$ with a second local dip — nothing in this lesson rules that out with certainty — so a flight program treats the outer search as a bounded, cheap, well-tested heuristic riding on top of a certified inner solve, and budgets its iteration count from measurement across the dispersed envelope rather than from a convexity proof it does not have.
+::: warning Every evaluation must be checked before the search trusts it
+Golden section believes whatever number it is handed. If an inner solve stops early and returns a propellant from a trajectory that does not actually land — a large terminal residual — the search will treat that wrong number as real and can throw away the part of the bracket holding the true minimum. So wrap the inner solve: check its status and its terminal-state residual every time, and report anything infeasible or unconverged as $+\infty$, never as a number.
 :::
 
-## What discretization actually preserves
+::: warning The inner solve's guarantee does not carry over to the outer search
+It is tempting to call the whole two-level procedure "convex", because every inner call is. It is not, and saying so repeats the certification mistake lesson one warned about. That $J(t_f)$ is unimodal is a physical argument and an observation across many cases, not a proof with the weight of the interior-point iteration bound. An odd starting condition could in principle give a curve with a second dip. So a flight program treats the outer search as a cheap, bounded, well-tested heuristic riding on a certified inner solve, and sets its evaluation budget from measurements across the whole range of expected starting conditions.
+:::
 
-The lossless-convexification theorem was proved in continuous time, via the maximum principle, on the differential equations directly. Every SOCP this module has actually solved is a discrete-time approximation of that continuous problem — a finite set of nodes, zero-order-hold controls, a solver operating on a matrix, not a differential equation. It would be convenient to say the continuous-time proof simply carries over. It does not, automatically: discretizing an optimal control problem and then relaxing its throttle bound is not obviously the same operation as relaxing the continuous throttle bound and then discretizing the result, and nothing proved so far in this module rules out a genuine gap opening up between $\sigma_k$ and $\|\mathbf{u}_k\|$ purely from the act of discretizing finely but not infinitely. This is a real subtlety, treated carefully in the wider literature this module's resources point to rather than argued away here.
+## What discretization actually keeps
 
-What can be said, and checked rather than assumed, is narrower and still decisive for a flight computer, which never gets to run at $N=\infty$ anyway. Every worked trajectory this module has actually solved — the $N=30$ Mars lander that first exhibited the bang–coast–bang structure, the $N=10$ and $N=20$ instances built for G-FOLD's footprint and for the pointing-constraint check — showed a relaxation gap at the level of solver tolerance, $10^{-7}$ to $10^{-10}$, regardless of which of those node counts was used:
+Lesson two proved the relaxation tight in **continuous time**, with the minimum principle applied to differential equations. But every SOCP this module has actually solved is a **discrete-time** version: a finite set of nodes, controls held constant between them, a solver working on matrices.
 
-| lesson | node count $N$ | relaxation gap observed |
-| --- | --- | --- |
-| Lossless convexification of the thrust bound | $30$ | $\approx4\times10^{-10}$ |
-| G-FOLD two-stage guidance | $10$ | $\approx3\times10^{-7}$ (stage 1, at solver's looser tolerance) |
-| Glideslope, velocity, and pointing cones | $10$ | $\approx10^{-9}$ (binding pointing nodes) |
-| Glideslope, velocity, and pointing cones | $20$ | did not converge to full tolerance before this lesson tightened the coarser instance |
+Does the proof simply carry over? Not automatically. Chopping the problem into steps and then relaxing the thrust bound is not obviously the same as relaxing first and chopping afterwards. Nothing proved so far rules out a gap opening between $\sigma_k$ and $\|\mathbf{u}_k\|$ purely because the steps are finite. Discrete-time versions of lossless convexification are a research topic with their own conditions, treated in the tutorial on this module's resource list, and not something to wave away.
 
-Coarsening the discretization by a factor of three, from $N=30$ down to $N=10$, changed the observed gap only by moving it between different multiples of whatever duality-gap tolerance that particular solve was run to — never by opening a gap that looked like genuine discretization error, distinct from ordinary solver tolerance. That is an empirical statement about the sizes this module works with, not a theorem for arbitrarily coarse grids; a single node ($N=1$) spanning an entire burn would clearly be too coarse for the zero-order-hold dynamics to resemble the continuous physics at all, tight relaxation or not. The operationally relevant fact is the one a flight program actually needs: at the node counts a real guidance cycle can afford — this module's real-time-implementation lesson works out precisely how many — the relaxation gap this module has been checking lesson after lesson is not a growing, discretization-driven error term. It is noise at the solver's own convergence floor.
+What we can do — and what a flight computer, which never runs at $N=\infty$, needs — is check. Take lesson two's lander ($t_f=60\,\mathrm{s}$) and solve it with coarser and finer grids:
+
+| steps $N$ | $5$ | $10$ | $15$ | $20$ | $30$ | $60$ |
+| --- | --- | --- | --- | --- | --- | --- |
+| propellant $(\mathrm{kg})$ | $240.513$ | $240.447$ | $240.390$ | $240.387$ | $240.382$ | $240.379$ |
+| largest $\sigma_k-\|\mathbf{u}_k\|$ | $7\times10^{-12}$ | $7\times10^{-12}$ | $2\times10^{-11}$ | $8\times10^{-12}$ | $8\times10^{-12}$ | $2\times10^{-12}$ |
+
+Two separate things are happening, and it pays to keep them apart.
+
+- **The propellant changes with $N$.** Going from $5$ steps to $60$ lowers it by $0.134\,\mathrm{kg}$, settling toward about $240.38\,\mathrm{kg}$. That is ordinary **[[discretization error|discretization-error]]**: a coarse grid forces the thrust to stay constant over long stretches, so it cannot follow the ideal thrust history exactly and pays a little extra.
+- **The relaxation gap does not.** At every $N$, even $5$ steps of $12\,\mathrm{s}$, the largest gap is around $10^{-11}$ — the solver's own precision. The same holds for the other solves in this module: a $100\,\mathrm{s}$ flight on $30$ steps, and the glideslope-and-pointing landing of the last lesson.
+
+So coarsening the grid changed *how good* the answer is, not *whether it is real*. Every one of these discrete solutions is a thrust history the engine can actually fly.
+
+::: key What survives discretization
+The continuous-time tightness proof is not automatically a discrete-time theorem. Checked on this module's problems, from $N=5$ to $N=60$, the relaxation gap $\sigma_k-\|\mathbf{u}_k\|$ stays at solver precision, about $10^{-11}$, while the propellant shows ordinary discretization error. This is an empirical statement at these grid sizes, not a proof for every grid — so a flight implementation checks the gap on every solve.
+:::
+
+Where does that leave the question of grid size? A single step spanning a whole burn would be too coarse for the held-constant thrust to resemble real physics at all, tight relaxation or not. The practical question is the one the real-time lesson later in this module answers: at the node counts a guidance cycle can afford, is the discretization error small enough? The gap check is the separate safety net that says the answer is flyable.
 
 ## Check yourself
 
 ::: check
-Why does introducing a scaled time variable $s=1/\Delta t$ (or any other single rescaling) fail to remove the bilinearity that a free $t_f$ introduces, the way $\mathbf{u}=\mathbf{T}/m$ removed the mass-depletion bilinearity?
+Why does a single rescaling such as $s=1/\Delta t$ fail to remove the bilinearity a free $t_f$ causes, when $\mathbf{u}=\mathbf{T}/m$ removed the mass bilinearity so neatly?
 :::
 
 ::: answer
-The mass-depletion fix worked because $\mathbf{T}/m$ appears in exactly one place with exactly one structure, and a single substitution absorbed it everywhere it occurred. A free $\Delta t$ multiplies *every* dynamics coefficient at *every* step, and because the state at step $k+1$ depends recursively on the state and control at every earlier step, $\Delta t$'s effect compounds through $N$ nested multiplications rather than appearing once. No single new variable can simultaneously linearise $\Delta t\,\mathbf{u}_k$ for every $k$ without also being consistent with how $\Delta t$ enters $\Delta t^2$ terms and the mass equation's own $\Delta t$ factor — there is no analogue of "divide through by $m$" that clears all of these at once, which is precisely why this lesson reaches for a search instead of an algebraic fix.
+The mass fix worked because $\mathbf{T}/m$ appears in one place with one structure, and one substitution absorbed it everywhere. A free $\Delta t$ multiplies *every* coefficient at *every* step: $\Delta t\,\mathbf{v}_k$ and $\Delta t^2\,\mathbf{u}_k$ in the position update, $\Delta t\,\mathbf{u}_k$ in the velocity update, $\Delta t\,\sigma_k$ in the mass update. And because each state depends on all the earlier ones, its effect compounds through the whole recursion. Any single new variable would have to turn all of $\Delta t\,\mathbf{u}_k$, $\Delta t^2\,\mathbf{u}_k$ and $\Delta t\,\sigma_k$ into linear terms at once, for every $k$. There is no "divide through by $m$" that clears them all, which is why this lesson uses a search instead of an algebraic fix.
 :::
 
 ::: check
-A colleague proposes replacing golden-section search with a coarse grid search over ten evenly spaced values of $t_f$, arguing it is simpler to implement. What does this module's certification standard say about that trade?
+A colleague proposes replacing golden section with a grid search over ten evenly spaced values of $t_f$, because it is simpler to code. What does this module's certification standard say about that trade?
 :::
 
 ::: answer
-It is a legitimate engineering choice, not a certification failure, provided its cost and behaviour are characterised the same way golden section's are — the outer search was never claimed to inherit the inner solve's convexity guarantee regardless of which search method is used. The real trade is efficiency for a given resolution: golden section narrows a bracket by a factor of about $0.618$ per evaluation, so reaching a given tolerance on a bracket of a given width takes a number of evaluations logarithmic in the ratio of bracket width to tolerance, while a fixed ten-point grid buys a fixed resolution regardless of how that compares to what is actually needed, and refining it means doubling or more the grid rather than adding a few more evaluations. For a real-time cycle where each evaluation is a full SOCP solve costing tens of milliseconds, that difference is exactly the kind of arithmetic the real-time-implementation lesson later in this module turns into a hard budget.
+It is a legitimate engineering choice, not a certification failure — the outer search never inherited the inner solve's guarantee, whichever method is used — provided its cost and behavior are measured the same way. The real trade is efficiency. Golden section shrinks the bracket by $0.618$ per evaluation, so the evaluations needed grow only with the logarithm of (bracket width ÷ tolerance): $13$ evaluations took a $16\,\mathrm{s}$ bracket down to $0.1\,\mathrm{s}$ in the example. A ten-point grid on the same bracket gives a spacing of $16/9 \approx 1.8\,\mathrm{s}$, and reaching $0.1\,\mathrm{s}$ that way would take about $160$ points. When each evaluation is a full SOCP solve costing tens of milliseconds, that difference is exactly what the real-time lesson turns into a hard budget.
 :::
 
 ::: check
-Suppose a future propulsion system made the mass-depletion equation exactly $\dot m = -\beta$ for a constant $\beta$ (a fixed mass flow rate, independent of thrust magnitude). Would flight time still resist joining the convex decision vector?
+Suppose a future engine made the mass loss exactly $\dot m = -\beta$, a fixed flow rate that does not depend on thrust. Would flight time still resist joining the convex unknowns?
 :::
 
 ::: answer
-Yes, and for a reason that has nothing to do with mass at all. The bilinearity this lesson is about comes from $\Delta t$ multiplying the control in the *translational* dynamics — $\Delta t\,\mathbf{u}_k$ and $\Delta t^2\,\mathbf{u}_k$ in the position and velocity updates — which exists regardless of how mass depletes. Changing the mass-flow law would remove the mass equation's own $\Delta t\,\sigma_k$ term, but the translational recursion's dependence on $\Delta t$ as a multiplier of the control is structural to zero-order-hold discretization itself, not a consequence of this particular propulsion model.
+Yes, for a reason that has nothing to do with mass. The main bilinearity comes from $\Delta t$ multiplying the control in the *motion* equations — $\Delta t\,\mathbf{u}_k$ and $\Delta t^2\,\mathbf{u}_k$ in the velocity and position updates — and that is there however the mass behaves. A fixed flow rate would change the mass equation, but the motion recursion's dependence on $\Delta t$ as a multiplier of the control belongs to the discretization itself, not to this propulsion model.
 :::
 
 ::: check
-The discretization-gap table shows the $N=20$ pointing instance from the previous lesson listed as "did not converge to full tolerance before this lesson tightened it" rather than a clean number. Why include that row at all rather than only reporting the clean successes?
+In the discretization table, the propellant changes by $0.134\,\mathrm{kg}$ between $N=5$ and $N=60$, but the relaxation gap stays near $10^{-11}$. A teammate reads the $0.134\,\mathrm{kg}$ as "the relaxation getting worse on coarse grids". What is wrong with that reading, and what number would actually show the relaxation failing?
 :::
 
 ::: answer
-Because the point of the table is to distinguish a genuine discretization-driven gap from an artifact of an under-run solve, and a row that shows exactly that distinction is more informative than one more clean success would be. The earlier, looser solve of that instance left a visibly larger gap at some nodes; re-running it to a tighter duality gap — not changing $N$ at all — closed most of that gap back down to the same $10^{-9}$ level every other row shows. That is direct evidence the earlier number reflected under-convergence, not a discretization ceiling, which is exactly the distinction this lesson needs to draw and exactly the kind of check a reader should learn to make before blaming a large relaxation gap on discretization when it might only mean the solve needs to run longer.
+The two numbers measure different things. The propellant change is discretization error: with only $5$ steps, the thrust must stay constant for $12\,\mathrm{s}$ at a time, so the best *flyable* thrust history costs a little more than the ideal smooth one. Every one of those solutions is still real, because $\sigma_k = \|\mathbf{u}_k\|$ at every node — the thrust the solver planned is thrust the engine can deliver. The relaxation failing would show up in the other row: a gap $\sigma_k - \|\mathbf{u}_k\|$ far above solver precision at some node, meaning the solver "paid for" more thrust than it pointed anywhere, possibly below the engine's minimum. Before blaming a large gap on the grid, re-run the solve to a tighter tolerance: a gap that shrinks with tolerance was under-convergence, not discretization.
+:::
+
+::: check
+The golden-section run treated the infeasible time $19.777\,\mathrm{s}$ as a cost of $+\infty$. Would the same trick still work if the infeasible times were in the *middle* of the bracket, with feasible times on both sides?
+:::
+
+::: answer
+Not safely. Golden section assumes one dip. Scoring infeasible points as $+\infty$ works when they sit together at one end, as here: the curve is "infinitely high, then the dip, then rising", which is still one dip. If an infeasible stretch sat in the middle, with a feasible region on each side, the curve would have two separate dips, and golden section could discard the one holding the better answer. A flight program would first need to establish where the feasible times lie — for a landing, the infeasible times are the too-short ones, which is why they gather at the left end.
 :::
 
 ## Summary
 
-| Object | Statement |
+| Idea | Statement |
 | --- | --- |
-| Why $t_f$ resists convexity | $\Delta t=t_f/N$ multiplies $\mathbf{u}_k$, $\sigma_k$ throughout the recursive dynamics; free $t_f$ makes every one of those products bilinear, with no single clean substitution |
-| The fix | Fix $t_f$, solve the certified convex SOCP, read $J(t_f)$; search over $t_f$ from outside using function values only |
-| Shape of $J(t_f)$ | Unimodal in practice: falling as aggressive-braking cost eases, rising again as gravity losses accumulate over a longer burn |
-| Golden-section search | Narrows a bracket by $\varphi\approx0.618$ per evaluation; verified on $f(x)=(x-27)^2+5$: $12$ evaluations, $x^\star=26.99$ against true $27$ |
-| What the outer search does *not* inherit | A convexity guarantee; treated as a bounded, tested heuristic on top of a certified inner solve, not as convex itself |
-| Discrete vs. continuous tightness | The continuous-time PMP proof is not automatically a discrete-time theorem; this module checks rather than assumes |
-| What was actually checked | Every worked trajectory in this module, $N=10$ to $N=30$, showed relaxation gaps at solver tolerance ($10^{-7}$–$10^{-10}$), not a growing discretization residual |
-| The honest limit | An empirical statement at the node counts this module uses, not a proof for arbitrarily coarse grids |
+| Why $t_f$ resists convexity | $\Delta t=t_f/N$ multiplies $\mathbf{u}_k$, $\sigma_k$, $\mathbf{v}_k$ throughout the recursive dynamics; a free $t_f$ makes all of them bilinear, with no single substitution |
+| The fix | Fix $t_f$, solve the certified SOCP, read $J(t_f)$; search over $t_f$ from outside using values only |
+| Shape of $J(t_f)$ | Infeasible when too short; falls steeply, bottoms out, then rises about one hover-second of propellant per extra second (gravity loss) |
+| Golden section | Shrinks the bracket by $\varphi\approx0.618$ per evaluation; test function: $12$ evaluations, $x^\star=26.99$ against $27$ |
+| Real search | $[16,32]\,\mathrm{s}$, tolerance $0.1\,\mathrm{s}$: $13$ evaluations, $t_f^\star=22.44\,\mathrm{s}$, $99.47\,\mathrm{kg}$ |
+| Evaluation hygiene | Infeasible or unconverged inner solves are scored $+\infty$, never as a number |
+| Outer search | A tested heuristic on top of a certified inner solve, not convex itself |
+| Discrete vs continuous | The continuous proof is not automatically a discrete theorem; check the gap on every solve |
+| What was checked | $N=5$ to $60$: gap about $10^{-11}$; propellant $240.513 \to 240.379\,\mathrm{kg}$ (discretization error) |
 
-The 3-DoF convex formulation is now complete end to end: dynamics, thrust bound, mass bounds, glideslope, velocity, pointing, and flight time, all either exactly convex or handled by a bounded, certified-inner-loop search. The next lesson turns to the genuinely non-convex parts this formulation cannot reach — a rotating, attitude-controlled 6-DoF vehicle — and introduces the iterative machinery, successive convexification, built to handle what lossless convexification cannot.
+The 3-DoF convex formulation is now complete end to end: dynamics, thrust bound, mass bounds, glideslope, speed, pointing and flight time, each either exactly convex or handled by a search around a certified inner solve. The next lesson turns to what this formulation cannot reach — a rotating, attitude-controlled 6-DoF vehicle — and introduces successive convexification, built for what lossless convexification cannot do.
+
+::: context zero-order-hold Holding the control steady
+A **zero-order hold** keeps a signal constant from one sample to the next, like a staircase. Real flight computers command the engine this way: a new thrust every cycle, held until the next. With the thrust held, the motion over a step can be written exactly — the $\tfrac12\Delta t^2$ term is the familiar distance formula for constant acceleration — which is why these update equations are exact for a held control, not approximations. The name comes from signal processing: "zero order" because the hold uses a polynomial of degree zero, a constant.
+:::
+
+::: context bilinear Straight in each, curved together
+A function is **bilinear** when it is a straight line in each variable separately but not in both together. $f(a,b) = ab$ is the classic case. Hold $b=2$ and $f = 2a$, a line. Hold $a=3$ and $f=3b$, a line. But along the path from $(0,0)$ to $(2,2)$ the value goes $0$, $1$, $4$ — a curve. Convex solvers need constraints that are straight (or bowl-shaped) in all the unknowns at once, so a bilinear equality breaks convexity.
+:::
+
+::: context gravity-loss Paying to fight gravity
+**Gravity loss** is the part of a burn spent holding a vehicle up against gravity instead of changing its speed. A rocket hovering in place burns propellant and gains nothing. Lingering in the air is therefore expensive, which is why the cost curve rises for long flight times, and why real landing burns, such as a Falcon 9 booster's, are kept short and hard.
+:::
+
+::: context unimodal One dip only
+A **unimodal** function has exactly one low point: it goes down, then up, with no second dip. Here is the landing's actual cost curve from the example, drawn to scale. Left of about $20.3\,\mathrm{s}$ there is no trajectory at all; the minimum sits near $22.4\,\mathrm{s}$.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <rect x="50" y="15" width="4.2" height="145" fill="#f2b880"/>
+  <line x1="50" y1="160" x2="335" y2="160" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="50" y1="160" x2="50" y2="15" stroke="#1f2a44" stroke-width="1.5"/>
+  <polyline points="55.6,108.9 58.4,118.1 61.2,126.8 64.0,134.6 66.8,140.2 69.6,144.4 72.4,145.6 75.2,146.6 78.0,147.6 85.0,148.6 92.0,146.1 106.0,139.9 134.0,126.0 162.0,111.6 218.0,82.0 274.0,52.2 330.0,22.3" fill="none" stroke="#1d6fd1" stroke-width="2.5"/>
+  <circle cx="84.2" cy="148.6" r="4" fill="#b4232c"/>
+  <text x="90" y="170" font-size="11" fill="#b4232c">22.4 s, 99.5 kg</text>
+  <text x="50" y="186" font-size="11" text-anchor="middle" fill="#1f2a44">20</text>
+  <text x="190" y="186" font-size="11" text-anchor="middle" fill="#1f2a44">30</text>
+  <text x="330" y="186" font-size="11" text-anchor="middle" fill="#1f2a44">40 s</text>
+  <text x="44" y="151" font-size="11" text-anchor="end" fill="#1f2a44">100</text>
+  <text x="44" y="87" font-size="11" text-anchor="end" fill="#1f2a44">125</text>
+  <text x="44" y="24" font-size="11" text-anchor="end" fill="#1f2a44">150</text>
+  <text x="60" y="30" font-size="11" fill="#1f2a44">propellant (kg)</text>
+  <text x="200" y="120" font-size="11" fill="#1d6fd1">J(tf)</text>
+</svg>
+```
+
+The orange strip marks the times with no possible landing.
+:::
+
+::: context golden-ratio Why 0.618
+Golden-section search places its two test points so that, whichever end is thrown away, the surviving test point sits exactly where a test point belongs in the new, smaller bracket. That only works for one shrink factor, $\varphi = (\sqrt5-1)/2 = 0.618\ldots$, which satisfies $\varphi^2 = 1-\varphi$. It is the reciprocal of the famous golden ratio $1.618$, the number Greek geometers studied in dividing a line.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <line x1="30" y1="40" x2="330" y2="40" stroke="#1f2a44" stroke-width="3"/>
+  <line x1="30" y1="32" x2="30" y2="48" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="330" y1="32" x2="330" y2="48" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="144.6" cy="40" r="5" fill="#1d6fd1"/>
+  <circle cx="215.4" cy="40" r="5" fill="#b4232c"/>
+  <text x="30" y="24" font-size="11" text-anchor="middle" fill="#1f2a44">a</text>
+  <text x="330" y="24" font-size="11" text-anchor="middle" fill="#1f2a44">b</text>
+  <text x="144.6" y="24" font-size="11" text-anchor="middle" fill="#1d6fd1">c</text>
+  <text x="215.4" y="24" font-size="11" text-anchor="middle" fill="#b4232c">d</text>
+  <line x1="30" y1="85" x2="215.4" y2="85" stroke="#1f2a44" stroke-width="3"/>
+  <line x1="30" y1="77" x2="30" y2="93" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="215.4" y1="77" x2="215.4" y2="93" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="100.8" cy="85" r="5" fill="#8fb8f0"/>
+  <circle cx="144.6" cy="85" r="5" fill="#1d6fd1"/>
+  <text x="223" y="89" font-size="11" fill="#1f2a44">next bracket, if f(c) &lt; f(d)</text>
+  <text x="144.6" y="108" font-size="11" text-anchor="middle" fill="#1d6fd1">old c reused</text>
+</svg>
+```
+
+Drawn to scale: in the top bracket $c$ and $d$ sit at $0.382$ and $0.618$ of the width; in the next bracket the old $c$ lands exactly at its $0.618$ point.
+:::
+
+::: context discretization-error Coarse grids cost a little
+**Discretization error** is the difference between the answer on a finite grid and the answer the continuous problem would give. With thrust held constant for $12\,\mathrm{s}$ at a time, the vehicle cannot follow the ideal thrust history exactly, so the best it can do costs slightly more. Refine the grid and the error shrinks, as in the table. It is a different kind of error from the relaxation gap: discretization error makes the answer slightly worse; a relaxation gap would make it not flyable at all.
+:::

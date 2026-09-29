@@ -92,9 +92,9 @@ Transcribe the **identical physical problem** — same dynamics, same targets, s
 | Converged? | Yes | No — iteration limit reached |
 | Final constraint violation | about $10^{-13}$ | $2.6\times10^{-5}$ |
 | Wall time | about $1.7\,\mathrm{s}$ | $57.4\,\mathrm{s}$ (300 iterations, still not done) |
-| Reported $t_f$ | $12.372090$ (correct to the digits shown) | $31\,941.5\,\mathrm{s}$ |
+| Reported $t_f$ | $12.372081$ (correct to the digits shown) | $31\,941.5\,\mathrm{s}$ |
 
-**Read the last row.** The correct answer is $12.372090 \times 927.64 \approx 11\,477\,\mathrm{s}$. The raw-SI run reports $31\,941.5\,\mathrm{s}$, which is $31\,941.5/11\,477 \approx 2.78$ times too long. Nearly three times wrong.
+**Read the last row.** The correct answer is $12.372081 \times 927.64 \approx 11\,477\,\mathrm{s}$. The raw-SI run reports $31\,941.5\,\mathrm{s}$, which is $31\,941.5/11\,477 \approx 2.78$ times too long. Nearly three times wrong.
 
 **Look at the matrix.** Build the constraint Jacobian at the matching starting guess in each set of units (66 rows: 60 defects plus 6 boundary conditions; 85 columns: 63 states, 21 steering angles and $t_f$) and compute its condition number:
 

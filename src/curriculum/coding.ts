@@ -7855,7 +7855,7 @@ export const CODING: Module[] = [
         id: 'mat01_ex2',
         title: 'A validated toolbox function',
         prompt:
-          'Write rms_per_axis(data, opts) taking an N-by-3 matrix and returning a 1-by-3 row of per-axis RMS values, using an arguments block to validate that data is a numeric N-by-3 matrix and that an optional Weights vector, if given, is positive and length N. It must return zeros(1,3) for an empty input rather than erroring. Expected: rms_per_axis([3 4 0; 0 0 0]) returns [2.1213 2.8284 0] to four decimals.',
+          'Write rms_per_axis(data, opts) taking an N-by-3 matrix and returning a 1-by-3 row of per-axis RMS values, using an arguments block to validate that data is a numeric N-by-3 matrix and that an optional Weights vector, if given, is positive and length N. It must return zeros(1,3) for an empty 0-by-3 input rather than erroring. Expected: rms_per_axis([3 4 0; 0 0 0]) returns [2.1213 2.8284 0] to four decimals.',
         kind: 'code',
         lang: 'matlab',
         starter:
@@ -8164,7 +8164,7 @@ export const CODING: Module[] = [
         id: 'mat02_c5',
         front: 'What is a non-minimum-phase zero and why does a flexible booster have one?',
         back:
-          'A zero in the right half plane, which adds phase lag while increasing gain and puts a hard limit on achievable bandwidth. Sensor placement relative to a flexible mode node can invert the initial response, producing exactly this.',
+          'A zero in the right half plane, which adds phase lag while increasing gain and puts a hard limit on achievable bandwidth. Sensor placement relative to the mode shape of a flexible mode can invert the initial response, producing exactly this.',
       },
       {
         id: 'mat02_c6',
@@ -8188,7 +8188,7 @@ export const CODING: Module[] = [
         id: 'mat02_c9',
         front: 'COESA atmosphere: what is its validity limit?',
         back:
-          'Up to 86 km geopotential altitude. Above that use NRLMSISE-00 or a Jacchia-class model, since COESA simply has no data there and will extrapolate nonsense.',
+          'Up to 86 km geometric altitude (84.852 km geopotential). Above that use NRLMSISE-00 or a Jacchia-class model, since COESA simply has no data there and will extrapolate nonsense.',
       },
       {
         id: 'mat02_c10',
@@ -8231,7 +8231,7 @@ export const CODING: Module[] = [
       {
         id: 'mat02_q2',
         q: 'Which MATLAB call returns rise time, overshoot and settling time as a struct?',
-        choices: ['margin(L)', 'stepinfo(step(T))', 'damp(T)', 'allmargin(L)'],
+        choices: ['margin(L)', 'stepinfo(T)', 'damp(T)', 'allmargin(L)'],
         answer: 1,
         explain:
           'stepinfo summarises a step response into requirement-checkable numbers. margin and allmargin are frequency-domain, damp reports pole damping and frequency.',
@@ -8375,7 +8375,7 @@ export const CODING: Module[] = [
         id: 'slk01_ex1',
         title: 'Mass-spring-damper against the analytic solution',
         prompt:
-          'Build a second-order mass-spring-damper with two Integrator blocks, a Gain for stiffness and a Gain for damping, driven by a unit step. Use m = 1, c = 0.4, k = 4. Log the output with To Workspace, then in MATLAB compute the analytic step response of the same transfer function and report the maximum absolute difference. Expected: with a tight solver tolerance the difference is below 1e-6, the damped natural frequency is about 1.99 rad/s, and the first peak is about 1.73.',
+          'Build a second-order mass-spring-damper with two Integrator blocks, a Gain for stiffness and a Gain for damping, driven by a unit step. Use m = 1, c = 0.4, k = 4. Log the output with To Workspace, then in MATLAB compute the analytic step response of the same transfer function and report the maximum absolute difference. Expected: with a tight solver tolerance the difference is below 1e-6, the damped natural frequency is about 1.99 rad/s, and the first peak is about 0.432, which is 1.73 times the 0.25 steady state.',
         kind: 'code',
         lang: 'simulink',
         starter:
@@ -8621,9 +8621,9 @@ export const CODING: Module[] = [
         kind: 'code',
         lang: 'simulink',
         starter:
-          'mdl = "fixedstep_demo";\nsteps = [0.02 0.01 0.005 0.002 0.001 0.0005];\nfor s = ["ode1" "ode4"]\n    for h = steps\n        % TODO: set_param solver and FixedStep, sim, record max|y|\n    end\nend\n',
+          'mdl = "fixedstep_demo";\nsteps = [0.02 0.012 0.01 0.005 0.002 0.001 0.0005];\nfor s = ["ode1" "ode4"]\n    for h = steps\n        % TODO: set_param solver and FixedStep, sim, record max|y|\n    end\nend\n',
         solution:
-          'mdl = "fixedstep_demo";\nsteps = [0.02 0.01 0.005 0.002 0.001 0.0005];\nresult = strings(0);\n\nfor s = ["ode1" "ode4"]\n    for h = steps\n        set_param(mdl, "SolverType", "Fixed-step", "Solver", s, ...\n                       "FixedStep", num2str(h), "StopTime", "5");\n        out = sim(mdl);\n        y = out.yout{1}.Values.Data;\n        ok = all(isfinite(y)) && max(abs(y)) < 10;\n        result(end+1) = sprintf("%s h=%.4f -> %s", s, h, string(ok)); %#ok<SAGROW>\n    end\nend\ndisp(result);\n\n% Explicit Euler is stable only while |h * lambda| is roughly below 2, so a\n% 200 rad/s eigenvalue needs h below about 0.01 s just to be stable, and far\n% smaller to be accurate. ode4 has a larger stability region and fourth-order\n% accuracy, so it tolerates a much larger step at the same error.\n',
+          'mdl = "fixedstep_demo";\nsteps = [0.02 0.012 0.01 0.005 0.002 0.001 0.0005];\nresult = strings(0);\n\nfor s = ["ode1" "ode4"]\n    for h = steps\n        set_param(mdl, "SolverType", "Fixed-step", "Solver", s, ...\n                       "FixedStep", num2str(h), "StopTime", "5");\n        out = sim(mdl);\n        y = out.yout{1}.Values.Data;\n        ok = all(isfinite(y)) && max(abs(y)) < 10;\n        result(end+1) = sprintf("%s h=%.4f -> %s", s, h, string(ok)); %#ok<SAGROW>\n    end\nend\ndisp(result);\n\n% Explicit Euler is stable only while |h * lambda| is roughly below 2, so a\n% 200 rad/s eigenvalue needs h below about 0.01 s just to be stable, and far\n% smaller to be accurate. ode4 has a larger stability region and fourth-order\n% accuracy, so it tolerates a much larger step at the same error.\n',
         hours: 3,
       },
       {
@@ -8652,7 +8652,7 @@ export const CODING: Module[] = [
         id: 'slk02_c3',
         front: 'What is zero-crossing detection and why does Saturation need it?',
         back:
-          'The solver watches sign changes of designated functions and shortens the step to land on the crossing. For a Saturation block the crossing is the moment the input reaches the limit; without it the solver steps over the corner and smears a discontinuity into the solution.',
+          'A variable-step solver watches sign changes of designated functions and shortens the step to land on the crossing (fixed-step detection keeps the grid). For a Saturation block the crossing is the moment the input reaches the limit; without it the solver steps over the corner and smears a discontinuity into the solution.',
       },
       {
         id: 'slk02_c4',
@@ -8882,7 +8882,7 @@ export const CODING: Module[] = [
         id: 'slk03_ex2',
         title: 'Launch-vehicle mode sequencer in Stateflow',
         prompt:
-          'Build a Stateflow chart with the states PRELAUNCH, LIFTOFF, PITCHOVER, GRAVITY_TURN, MECO, STAGE_SEP, COAST, ENTRY_BURN and LANDING_BURN, plus a parallel ABORT supervisor. Use conditions rather than events, add temporal logic where a minimum dwell time is required, and prove two properties: every state is reachable from PRELAUNCH, and no state has two simultaneously true outgoing transition conditions. Expected: a coverage run reaching 100 percent state and transition coverage, plus a written argument for mutual exclusivity of each transition set.',
+          'Build a Stateflow chart with the states PRELAUNCH, LIFTOFF, PITCHOVER, GRAVITY_TURN, MECO, STAGE_SEP, COAST, ENTRY_BURN, DESCENT (the unpowered fall between the burns) and LANDING_BURN, plus a parallel ABORT supervisor. Use conditions rather than events, add temporal logic where a minimum dwell time is required, and prove two properties: every state is reachable from PRELAUNCH, and no state has two simultaneously true outgoing transition conditions. Expected: coverage runs (the nominal flight plus one test per failure path) reaching 100 percent state and transition coverage, plus a written argument for mutual exclusivity of each transition set.',
         kind: 'build',
         hours: 6,
       },
@@ -8922,7 +8922,7 @@ export const CODING: Module[] = [
         id: 'slk03_c6',
         front: 'Parallel versus exclusive states, with a spacecraft example',
         back:
-          'Exclusive (OR): the vehicle is in exactly one flight phase at a time. Parallel (AND): a thermal supervisor, a power supervisor and a fault monitor all run simultaneously alongside the phase machine.',
+          'Exclusive (OR): the vehicle is in exactly one flight phase at a time. Parallel (AND): a thermal supervisor, a power supervisor and a fault monitor are all active alongside the phase machine, executing one after another in execution order each step.',
       },
       {
         id: 'slk03_c7',
@@ -9182,7 +9182,7 @@ export const CODING: Module[] = [
         id: 'slk04_c4',
         front: 'Name three model constructs that block ERT code generation',
         back:
-          'Continuous states with a variable-step solver; algebraic loops; and blocks with no code-generation support such as the Interpreted MATLAB Function, scopes with certain settings, and unbounded variable-size signals.',
+          'Continuous states with a variable-step solver; algebraic loops; and blocks with no code-generation support such as the Interpreted MATLAB Function, and unbounded variable-size signals.',
       },
       {
         id: 'slk04_c5',
@@ -9236,7 +9236,7 @@ export const CODING: Module[] = [
         id: 'slk04_c13',
         front: 'What does tool qualification mean, and why does it matter?',
         back:
-          'Under DO-330 and DO-178C, if you rely on a tool to replace or reduce a verification activity, you must show the tool does its job correctly. A qualification kit supplies the evidence so that, for example, Embedded Coder output does not have to be re-verified from scratch.',
+          'Under DO-330 and DO-178C, if you rely on a tool to replace or reduce a verification activity, you must show the tool does its job correctly. A qualification kit supplies the evidence; in practice teams qualify the verification tools that check Embedded Coder output (code inspection, SIL equivalence tests, coverage) rather than the code generator itself.',
       },
       {
         id: 'slk04_c14',

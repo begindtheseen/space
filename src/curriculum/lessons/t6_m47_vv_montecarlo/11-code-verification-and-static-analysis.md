@@ -47,7 +47,7 @@ Think of a lamp wired to several switches. You want proof that each switch reall
 MC-DC is the coverage level required by **[[DO-178C|do-178c]]**, the aviation software standard, at its highest criticality level. It costs about $N+1$ tests for $N$ conditions (never more than $2N$), instead of the $2^N$ a full table of every combination needs. The saving comes because one well-chosen test can serve in the pairs of several conditions at once.
 
 ::: key
-MC-DC (modified condition/decision coverage): each condition in a compound decision must be shown to independently change the outcome, by a pair of tests that differ only in that condition. Costs about $N+1$ tests for $N$ conditions instead of $2^N$. Required at the highest DO-178C level. A test set that satisfies branch coverage can satisfy MC-DC for none of its conditions.
+MC-DC (modified condition/decision coverage): each condition in a compound decision must be shown to independently change the outcome, by a pair of tests that differ only in that condition. Costs between $N+1$ and $2N$ tests for $N$ conditions instead of $2^N$. Required at the highest DO-178C level. A test set that satisfies branch coverage can satisfy MC-DC for none of its conditions.
 :::
 
 ::: example A fault-detection trip, checked by hand

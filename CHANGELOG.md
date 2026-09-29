@@ -8,6 +8,20 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.1.7
+
+**Every coding course and nearly every module is now in plain words.** The last courses, C++
+expert and C++ projects, are rewritten one idea at a time with notes in every lesson, and their
+examples never hand you the answer. The career modules (recruiter screens, the project
+presentation, the domain round, first-principles questions and behavioural stories), the rest of
+guidance and trajectory optimisation, the capstone, interview prep and the Simulink modules are
+rewritten too, with context notes throughout. Four lessons on proportional navigation keep their
+original text for now.
+
+**More fixes to flashcards and quizzes.** About forty-five cards, questions and exercises are
+corrected, from which way the primer vector points to what "three sigma" covers, when a
+bi-elliptic transfer beats a Hohmann, and how Simulink solvers and Stateflow states really run.
+
 ## 1.1.6
 
 **Fixes from a careful check of the lessons.** A C++ lesson that could not compile now does (it was

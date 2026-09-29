@@ -31,7 +31,7 @@ Such a number is a **zero-crossing function**, a signal chosen so that the event
 3. **Land and restart.** The solver takes a step to just before the crossing and another to just after it. There the block changes its **[[mode|mode]]** (the Saturation switches from "passing through" to "clipped"), and the solver resets and carries on from the event.
 
 ::: key
-Zero-crossing detection: the solver watches sign changes of designated functions and shortens the step to land on the crossing. For a Saturation block the crossing is the moment the input reaches the limit; without it the solver steps over the corner and smears a discontinuity into the solution.
+Zero-crossing detection: a variable-step solver watches sign changes of designated functions and shortens the step to land on the crossing (fixed-step detection keeps the grid). For a Saturation block the crossing is the moment the input reaches the limit; without it the solver steps over the corner and smears a discontinuity into the solution.
 :::
 
 Why does "smearing" matter so much? Every solver from lesson 2 is built on the assumption that the model is smooth inside a step. A Runge–Kutta formula samples the slope at a few points and fits a smooth curve through them. If a corner sits inside the step, the curve is wrong on one side of it, and the method's high order is lost.

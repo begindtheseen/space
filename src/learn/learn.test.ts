@@ -416,8 +416,8 @@ describe('the streak', () => {
  * header, and this list only ever shrinks. A course not on it, every new
  * course included, is held to the rule from the start.
  */
-const WRITTEN_BEFORE_NOTES = new Set([
-  'cpp-expert', 'cpp-projects',
+const WRITTEN_BEFORE_NOTES = new Set<string>([
+
 ])
 const LEARN_NOTES_MIN = 3
 const LEARN_NOTES_MAX = 10

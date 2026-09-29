@@ -42,7 +42,7 @@ Two special cases come up so often that they have their own names, after the **[
 - A **Lagrange problem** has no terminal cost, $\phi \equiv 0$. Only the gas gauge counts: $J = \int_{t_0}^{t_f} L\, dt$. Minimum control effort, $L = \mathbf{u}^\top\mathbf{R}\mathbf{u}$ (a weighted sum of squares of the knobs, with $\mathbf{R}$ a matrix of weights), is Lagrange. So is minimum propellant written as $L = T/c$, where $T$ is the thrust in newtons and $c$ is the engine's **[[effective exhaust velocity|exhaust-velocity]]** in meters per second: $T/c$ is the propellant burned per second, in kg/s.
 
 ::: key The Bolza cost functional
-$J = \phi(\mathbf{x}(t_f), t_f) + \int_{t_0}^{t_f} L(\mathbf{x}, \mathbf{u}, t)\, dt$. Mayer: $L \equiv 0$, terminal term only. Lagrange: $\phi \equiv 0$, integral only. Bolza is the general case; the other two are the special cases you get by zeroing one term. Any one form converts to any other by adding a state whose derivative is $L$.
+$J = \phi(\mathbf{x}(t_f), t_f) + \int_{t_0}^{t_f} L(\mathbf{x}, \mathbf{u}, t)\, dt$. Mayer: $L \equiv 0$, terminal term only. Lagrange: $\phi \equiv 0$, integral only. Bolza is the general case; the other two are the special cases you get by zeroing one term. Bolza or Lagrange converts to Mayer by adding a state whose derivative is $L$; Mayer converts to Lagrange with $L = (\partial\phi/\partial\mathbf{x})^\top\mathbf{f} + \partial\phi/\partial t$.
 :::
 
 Here is the idea to hold onto. Bolza, Mayer and Lagrange do not change *which* flight is best. They are three ways of writing down the same number $J$ for the same flight, like writing a price as "\$12" or "twelve dollars". The reason to care is practical: which form is easiest to derive the optimality conditions from, and which form a computer handles most cleanly.
@@ -175,13 +175,13 @@ $$
 Engineers rarely do this by hand: it swaps one clean number at the end for more bookkeeping, not less. But it proves the point. Bolza, Mayer and Lagrange are three spellings of the same quantity, and a problem is never stuck in one form.
 
 ::: example Minimum time is Mayer and Lagrange at once
-A later lesson solves a low-thrust transfer from a circular orbit of radius $r_0 = 7000\,\mathrm{km}$ to one of radius $r_1 = 9000\,\mathrm{km}$, in minimum time. The answer is $t_f = 11\,475.17\,\mathrm{s}$. Divide by $3600$ seconds per hour: that is $3.1875\,\mathrm{hr}$.
+A later lesson solves a low-thrust transfer from a circular orbit of radius $r_0 = 7000\,\mathrm{km}$ to one of radius $r_1 = 9000\,\mathrm{km}$, in minimum time. The answer is $t_f = 11\,475.16\,\mathrm{s}$. Divide by $3600$ seconds per hour: that is $3.1875\,\mathrm{hr}$.
 
-**As Mayer:** $\phi = t_f$, so $J = t_f = 11\,475.17\,\mathrm{s}$ directly. No integral at all.
+**As Mayer:** $\phi = t_f$, so $J = t_f = 11\,475.16\,\mathrm{s}$ directly. No integral at all.
 
 **As Lagrange:** $L = 1$, so $J = \int_0^{t_f} 1\, dt = t_f$. The area under a flat line of height $1$ and width $t_f$ is $t_f$: the [[same number again|area-is-time]]. Here the trip meter is the clock itself: $\dot x_{n+1} = 1$ and $x_{n+1}(0) = 0$, so $x_{n+1}(t) = t$ at every instant. This is the simplest possible running cost, and a handy check on your augmentation code before you try it on one that is not trivial.
 
-**What the cost does not see.** The same transfer burns propellant while it steers. Thrust is $T_{\max} = 100\,\mathrm{N}$ and $c = 1800 \times 9.80665 = 17\,651.97\,\mathrm{m/s}$. The mass drops at $100 / 17\,651.97 = 0.005665\,\mathrm{kg/s}$, and over $11\,475.17\,\mathrm{s}$ that is $65.008\,\mathrm{kg}$. Out of a $1200\,\mathrm{kg}$ spacecraft, $65.008/1200 = 5.42\,\%$. A few percent of the vehicle for a modest orbit raise with an efficient engine is reasonable. Notice that this number is not part of the minimum-time cost at all. It falls out because mass is carried as a state alongside $r$, $v_r$ and $v_t$, no matter what $J$ penalizes. That is exactly why you carry mass as a state rather than as an afterthought.
+**What the cost does not see.** The same transfer burns propellant while it steers. Thrust is $T_{\max} = 100\,\mathrm{N}$ and $c = 1800 \times 9.80665 = 17\,651.97\,\mathrm{m/s}$. The mass drops at $100 / 17\,651.97 = 0.005665\,\mathrm{kg/s}$, and over $11\,475.16\,\mathrm{s}$ that is $65.008\,\mathrm{kg}$. Out of a $1200\,\mathrm{kg}$ spacecraft, $65.008/1200 = 5.42\,\%$. A few percent of the vehicle for a modest orbit raise with an efficient engine is reasonable. Notice that this number is not part of the minimum-time cost at all. It falls out because mass is carried as a state alongside $r$, $v_r$ and $v_t$, no matter what $J$ penalizes. That is exactly why you carry mass as a state rather than as an afterthought.
 :::
 
 ::: note Why any split of the cost gives the same answer

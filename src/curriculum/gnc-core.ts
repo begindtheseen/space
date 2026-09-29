@@ -6907,13 +6907,13 @@ Deliver a one-page contingency note with the reachable-orbit envelope against fa
         q: 'Where does the linear tangent steering law come from?',
         choices: [
           'It is an empirical fit to Saturn V flight data',
-          'From the Euler-Lagrange conditions for the minimum-propellant flat-Earth vacuum ascent problem: the primer vector (the velocity costate) obeys a linear differential equation with constant gravity, so its components are linear in time, and the optimal thrust direction is along it — giving tan(pitch) = A + B*t',
+          'From the Euler-Lagrange conditions for the minimum-propellant flat-Earth vacuum ascent problem: the primer vector (the velocity costate) obeys a linear differential equation with constant gravity, so its components are linear in time, and the optimal thrust direction is along it (along -lambda_v under the minimum-principle sign convention) — giving tan(pitch) = A + B*t',
           'From the requirement that angle of attack stay zero through the atmosphere',
           'From linearising proportional navigation about a nominal ascent trajectory',
         ],
         answer: 1,
         explain:
-          'For the minimum-fuel problem, Pontryagin says thrust points along the primer vector, the costate of velocity. With constant gravity and no atmosphere the costate equations give lambda_v_dot = -lambda_r and lambda_r_dot = 0, so lambda_v is linear in time. Taking the ratio of the components of a vector whose components are linear in time gives a tangent that is linear in time — hence the name. The approximation breaks when gravity is not constant over the arc, which is why real implementations such as PEG and UPFG re-converge every cycle with an updated gravity estimate rather than trusting one open-loop solve.',
+          'For the minimum-fuel problem, Pontryagin says thrust points along the primer vector, the costate of velocity (along -lambda_v under the minimum-principle sign convention). With constant gravity and no atmosphere the costate equations give lambda_v_dot = -lambda_r and lambda_r_dot = 0, so lambda_v is linear in time. Taking the ratio of the components of a vector whose components are linear in time gives a tangent that is linear in time — hence the name. The approximation breaks when gravity is not constant over the arc, which is why real implementations such as PEG and UPFG re-converge every cycle with an updated gravity estimate rather than trusting one open-loop solve.',
         b: 1.7,
         bloom: 'analyze',
       },
@@ -6988,7 +6988,7 @@ Deliver a one-page contingency note with the reachable-orbit envelope against fa
       {
         id: 'c_m41_primer',
         front: 'Primer vector',
-        back: 'The costate of velocity. Pontryagin says optimal thrust points along it, and its magnitude determines the throttle switching structure for a bounded-thrust problem.',
+        back: 'The costate of velocity. Pontryagin says optimal thrust points along it (along -lambda_v under the minimum-principle sign convention), and its magnitude determines the throttle switching structure for a bounded-thrust problem.',
       },
       {
         id: 'c_m41_peg',
@@ -7039,7 +7039,7 @@ Deliver a one-page contingency note with the reachable-orbit envelope against fa
       {
         id: 'c_m41_engine_out',
         front: 'Engine-out behaviour of explicit guidance',
-        back: 'Recompute tgo with the reduced thrust and mass flow, re-solve the steering, burn longer on a flatter profile. No special case in the algorithm — the work is in the reserve and fallback-target decision logic.',
+        back: 'Recompute tgo with the reduced thrust and mass flow, re-solve the steering, burn longer on a gentler acceleration profile (slower velocity build-up). No special case in the algorithm — the work is in the reserve and fallback-target decision logic.',
       },
       {
         id: 'c_m41_aborts',

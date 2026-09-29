@@ -47,7 +47,7 @@ For a Gaussian, $P(|X-\mu|\leq3\sigma) = \operatorname{erf}(3/\sqrt2) = 99.730\%
 :::
 
 ::: key Three sigma vs the 99.73rd percentile
-Equal only for a Gaussian. Closed-loop outputs pushed through saturations and mode logic are skewed and heavy-tailed, so quote the observed percentile from the sample, not mean plus three standard deviations.
+Equal only for a Gaussian, and then only as the two-sided band mean +/- 3 sigma (one-sided, mean + 3 sigma is the 99.865th percentile). Closed-loop outputs pushed through saturations and mode logic are skewed and heavy-tailed, so quote the observed percentile from the sample, not mean plus three standard deviations.
 :::
 
 ## One skewed shape, read from both ends

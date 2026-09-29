@@ -277,7 +277,7 @@ The software engineer Barry Boehm put the distinction in two short questions in 
 :::
 
 ::: context cep The circle that holds half the landings
-**CEP** stands for **circular error probable**. Draw a circle around the target just big enough to hold half of all the landing points. Its radius is the CEP. So "CEP of 4.2 m" means half the simulated landings were within 4.2 m of the target — and, importantly, half were not.
+**CEP** stands for **circular error probable**. Draw a circle around the target exactly big enough to hold half of all the landing points. Its radius is the CEP. So "CEP of 4.2 m" means half the simulated landings were within 4.2 m of the target — and, importantly, half were not.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
@@ -302,5 +302,5 @@ Here 5 of the 10 points sit inside the circle. A CEP alone hides the far-off cas
 :::
 
 ::: context percentile Why the odd number 99.87
-A **percentile** says what fraction of results fall below a value: the 99.87th-percentile error is the error that 99.87% of cases beat. The strange number is not random. For a bell-shaped (Gaussian) spread, 99.87% of results lie below the average plus three **standard deviations** — the "3-sigma" level engineers use as a standard bar for rare events. In ten thousand cases, about 13 or 14 would land beyond it. Quoting it tells the panel you looked at the tail, not just the middle.
+A **percentile** says what fraction of results fall below a value: the 99.87th-percentile error is the error that 99.87% of cases beat. The strange number is not random. For a bell-shaped (Gaussian) spread, 99.87% of results lie below the average plus three **standard deviations** — the "3-sigma" level engineers use as a standard bar for rare events. In ten thousand cases, about 13 or 14 would land beyond it. Quoting it tells the panel you looked at the tail, not only the middle.
 :::

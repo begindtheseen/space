@@ -51,12 +51,8 @@ const KINDS = ['example', 'key', 'check', 'answer', 'note', 'warning', 'video', 
  * listed module to the rule for a run, while its rewrite is in progress.
  */
 const WRITTEN_BEFORE_NOTES = new Set<string>([
-  // Career
-  'car_09_screens', 'car_10_past_project_presentation', 'car_11_domain_round', 'car_12_first_principles',
-  'car_13_behavioral_star',
   // Tiers 5–7
-  't5_m40_guidance_fundamentals', 't5_m42_trajectory_optimization', 't5_m43_convex_guidance',
-  't7_m48_capstone', 't7_m49_interview_prep',
+  't5_m40_guidance_fundamentals', 't7_m49_interview_prep',
 ])
 const hasMarker = (d: string) => fs.existsSync(path.join(dir, d, '.plain-voice'))
 const NOTES_REQUIRED = new Set<string>([

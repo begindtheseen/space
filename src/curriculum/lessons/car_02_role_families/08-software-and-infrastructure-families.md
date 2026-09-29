@@ -40,7 +40,7 @@ Some postings carry the more specific title **GNC Software Engineer, Operations 
 The likely reason has the same shape as the navigation family's. Automating a judgment call that a human operator makes today — for instance, deciding whether a wiggle in **[[telemetry|telemetry]]** (the stream of measurements a vehicle sends home) really needs someone to step in, or is normal variation — can shade from plain tooling into something closer to applied research. The hiring bar at that end of the family reflects it.
 
 ::: key
-Software Engineer, GNC (Starship) and GNC Software Engineer, Operations Automation: building the analysis tools, pipelines, and automation the GNC engineers depend on to run and review their own work, rather than deriving that work directly. Weights software engineering skill heavily relative to domain theory, which makes it one of the more accessible entry points.
+Software Engineer, GNC (Starship) and GNC Software Engineer, Operations Automation: building the analysis tools, pipelines, and automation the GNC engineers depend on to run and review their own work, rather than deriving that work directly. Weights software engineering skill heavily relative to domain theory, which makes it one of the more accessible entry points (specialist Operations Automation roles excepted).
 :::
 
 ::: example A dashboard that quietly lies
