@@ -60,9 +60,9 @@ async function runWasm(id: string, program: string, stdin: string): Promise<Lear
   return { stdout: r.stdout, stderr: r.stderr, error: r.code === 0 ? null : r.stderr.trim().split('\n').pop() || `exit ${r.code}`, ms: 0 }
 }
 
-function exec(cmd: string, args: string[], stdin: string, ms: number): Promise<{ code: number | null; stdout: string; stderr: string }> {
+function exec(cmd: string, args: string[], stdin: string, ms: number, cwd?: string): Promise<{ code: number | null; stdout: string; stderr: string }> {
   return new Promise((resolve) => {
-    const p = spawn(cmd, args, { stdio: ['pipe', 'pipe', 'pipe'] })
+    const p = spawn(cmd, args, { stdio: ['pipe', 'pipe', 'pipe'], ...(cwd ? { cwd } : {}) })
     let stdout = ''
     let stderr = ''
     const timer = setTimeout(() => p.kill('SIGKILL'), ms)
@@ -143,7 +143,10 @@ export async function run(lesson: LearnLesson, code: string): Promise<LearnRun> 
     writeFileSync(src, program)
     const built = await exec('clang++', ['-std=c++20', '-O1', '-w', '-fno-exceptions', src, '-o', bin], '', 120_000)
     if (built.code !== 0) return { stdout: '', stderr: built.stderr, error: built.stderr || 'did not compile', ms: 0 }
-    const r = await exec(bin, [], lesson.stdin ?? '', 20_000)
+    // Each run starts in an empty folder of its own, as in the app: files a program writes stay there.
+    const folder = join(dir, `f${id}`)
+    mkdirSync(folder)
+    const r = await exec(bin, [], lesson.stdin ?? '', 20_000, folder)
     return { stdout: r.stdout, stderr: r.stderr, error: r.code === 0 ? null : `exit ${r.code}`, ms: 0 }
   }
   if (lesson.lang === 'sql') {
