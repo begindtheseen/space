@@ -12121,7 +12121,9 @@ int main() {
 --- ask
 What happens with these two lines?
 
-```cpp
+```cpp error
+#include <iostream>
+
 constexpr int sq(int x) { return x * x; }
 consteval int cube(int x) { return x * x * x; }
 
