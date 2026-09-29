@@ -5759,6 +5759,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "DO Qualification Kit and what qualifying a tool means"
       ],
       "file": "cod_slk_04_codegen/11-legacy-code-and-tool-qualification.md"
+    },
+    {
+      "id": "l12-real-time-targets-and-hil",
+      "title": "Real-time targets and HIL: the bench that plays the vehicle",
+      "minutes": 24,
+      "covers": [
+        "Real-time targets and HIL: Speedgoat, dSPACE, OPAL-RT; RCP versus HIL; fault injection"
+      ],
+      "file": "cod_slk_04_codegen/12-real-time-targets-and-hil.md"
     }
   ],
   "cod_sql_01_select": [
@@ -12246,12 +12255,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_slk_04_codegen": {
-    "covered": 20,
+    "covered": 21,
     "total": 21,
-    "complete": false,
-    "missing": [
-      "Real-time targets and HIL: Speedgoat, dSPACE, OPAL-RT; RCP versus HIL; fault injection"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_rs_01_basics": {
     "covered": 15,
