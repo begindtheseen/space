@@ -77,7 +77,10 @@ export function Home() {
       <Hero name={state.settings.displayName} readiness={readiness} streakDays={days} />
 
       <div className="page">
-        {!state.settings.onboarded ? (
+        {/* Until she reads her first curriculum lesson, the briefing is the way in. */}
+        {!Object.keys(state.read).length ? (
+          <BriefingCard />
+        ) : !state.settings.onboarded ? (
           <Welcome onDismiss={() => setState((s) => setOnboarded(s))} />
         ) : null}
 
@@ -156,6 +159,38 @@ function greeting(d: Date = new Date()): string {
   if (h < 12) return 'Good morning'
   if (h < 18) return 'Good afternoon'
   return 'Good evening'
+}
+
+/* ── Mission briefing ────────────────────────────────────────────────────── */
+
+/**
+ * Shown until the first curriculum lesson is read: the one card on the
+ * dashboard that says where to begin, and why the curriculum is worth it.
+ */
+function BriefingCard() {
+  return (
+    <Card index={0} className="home-brief" style={{ marginBottom: 'var(--gap)' }}>
+      <div className="home-brief__in">
+        <Tile size={46} radius={12} color="var(--accent)" lit>
+          <IconCompass size={22} />
+        </Tile>
+        <div className="grow">
+          <div className="eyebrow-dim" style={{ color: 'var(--accent)' }}>
+            Start here · about five minutes
+          </div>
+          <h2 className="home-brief__title">Your mission briefing</h2>
+          <p className="home-brief__sub">
+            What ORBIT will teach you, how the coding you already do fits in, what a lesson feels like, and where to
+            begin.
+          </p>
+        </div>
+        <Button variant="primary" size="lg" onClick={() => navigate('/briefing')}>
+          Start the briefing
+          <IconArrowRight size={15} />
+        </Button>
+      </div>
+    </Card>
+  )
 }
 
 /* ── First-run welcome ───────────────────────────────────────────────────── */

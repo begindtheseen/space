@@ -17,6 +17,7 @@ const ModulePage = lazy(() => import('@/pages/Module').then((m) => ({ default: m
 const Review = lazy(() => import('@/pages/Review').then((m) => ({ default: m.Review })))
 const Track = lazy(() => import('@/pages/Track').then((m) => ({ default: m.Track })))
 const Learn = lazy(() => import('@/pages/Learn').then((m) => ({ default: m.Learn })))
+const Briefing = lazy(() => import('@/pages/Briefing').then((m) => ({ default: m.Briefing })))
 const Playground = lazy(() => import('@/pages/Playground').then((m) => ({ default: m.Playground })))
 const Focus = lazy(() => import('@/pages/Focus').then((m) => ({ default: m.Focus })))
 const Bench = lazy(() => import('@/pages/Bench').then((m) => ({ default: m.Bench })))
@@ -118,6 +119,8 @@ function Page({ path, segments }: { path: string; segments: string[] }) {
       return <Guide />
     case 'placement':
       return <Placement />
+    case 'briefing':
+      return <Briefing />
     default:
       return <NotFound path={path} />
   }

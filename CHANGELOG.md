@@ -8,6 +8,16 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.1.9
+
+**Start here: your mission briefing.** A new, five-minute briefing explains what ORBIT is for
+before you begin: the three questions every rocket's code answers, how the coding you do in Learn
+to code turns into the code that flies, the route from Basecamp to a capstone where you fly a rocket
+of your own, what a lesson feels like (with a real note to tap and Explain to try), how flashcards
+and reviews make it stick, and the two ways to begin. You can pick a pace for your first week on
+the way. The dashboard and Learn to code point to it until you read your first lesson, and it is
+always a click away from the Guide.
+
 ## 1.1.8
 
 **Run only appears on code that can run.** A lesson that builds a program up line by line used to

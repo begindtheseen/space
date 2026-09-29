@@ -276,6 +276,11 @@ export function Guide() {
         </div>
       </div>
 
+      <a className="guide-brief" href="#/briefing">
+        New here? Start with the mission briefing: what ORBIT teaches, what a lesson feels like, and where to begin.
+        <IconArrowRight size={14} />
+      </a>
+
       <Card index={0} style={{ marginBottom: 'var(--gap)' }}>
         <nav className="guide-index" aria-label="Sections of this guide">
           {SECTIONS.map((s, i) => (
