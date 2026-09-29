@@ -738,19 +738,19 @@ Row by row means: skip `y` whole rows, each `width` cells long, then step `x` mo
 --- task
 In Conway's Game of Life, a board of cells is either alive (`'#'`) or dead (`'.'`). Every generation, all cells change **at the same time**, by these rules:
 
-- A live cell with 2 or 3 live neighbours stays alive. Any other live cell dies.
-- A dead cell with exactly 3 live neighbours comes alive. Any other dead cell stays dead.
+- A live cell with 2 or 3 live neighbors stays alive. Any other live cell dies.
+- A dead cell with exactly 3 live neighbors comes alive. Any other dead cell stays dead.
 
-A cell's neighbours are the 8 cells around it. This board **wraps around**: the row above row 0 is the last row, the row below the last row is row 0, and the same for columns, like the edges of a screen in an old arcade game.
+A cell's neighbors are the 8 cells around it. This board **wraps around**: the row above row 0 is the last row, the row below the last row is row 0, and the same for columns, like the edges of a screen in an old arcade game.
 
 Write `class Life`, which keeps its cells in one `std::vector<char>`, row by row. No `main`.
 
 - `Life(std::initializer_list<std::string> rows)`: the board from strings, one per row, all the same length (at least 3 rows and 3 columns).
-- `int neighbours(std::size_t r, std::size_t c) const`: how many of the 8 neighbours of `(r, c)` are alive.
+- `int neighbors(std::size_t r, std::size_t c) const`: how many of the 8 neighbors of `(r, c)` are alive.
 - `Life step() const`: a **new** board, one generation later. The board it was called on does not change.
 - `std::vector<std::string> rows() const`: the board as strings, one per row.
 
-On the 4 × 4 board `"#..#"`, `"...."`, `"...."`, `"#..#"`, the four corners touch each other across the edges, so `neighbours(0, 0)` is 3.
+On the 4 × 4 board `"#..#"`, `"...."`, `"...."`, `"#..#"`, the four corners touch each other across the edges, so `neighbors(0, 0)` is 3.
 --- starter
 #include <cstddef>
 #include <initializer_list>
@@ -761,7 +761,7 @@ class Life {
 public:
     Life(std::initializer_list<std::string> rows) {}
 
-    int neighbours(std::size_t r, std::size_t c) const { return 0; }
+    int neighbors(std::size_t r, std::size_t c) const { return 0; }
 
     Life step() const { return *this; }
 
@@ -786,7 +786,7 @@ public:
         }
     }
 
-    int neighbours(std::size_t r, std::size_t c) const {
+    int neighbors(std::size_t r, std::size_t c) const {
         int n = 0;
         for (std::size_t dr = 0; dr < 3; ++dr) {
             for (std::size_t dc = 0; dc < 3; ++dc) {
@@ -804,7 +804,7 @@ public:
         Life next = *this;
         for (std::size_t r = 0; r < rows_; ++r) {
             for (std::size_t c = 0; c < cols_; ++c) {
-                int n = neighbours(r, c);
+                int n = neighbors(r, c);
                 bool alive = cells_[r * cols_ + c] == '#';
                 next.cells_[r * cols_ + c] = (n == 3 || (alive && n == 2)) ? '#' : '.';
             }
@@ -832,11 +832,11 @@ Store it exactly like your `Matrix`: two sizes and one flat vector, filled row b
 --- hint
 For wrapping, `(r - 1) % rows` goes wrong, because with `std::size_t` the value `0 - 1` is a gigantic number. Add the size first: `(r + rows - 1) % rows` is the row above, and `(r + 1) % rows` the row below. Columns work the same way.
 --- hint
-"At the same time" means `step` must read only the old board. Make the new board as a copy of `*this`, then write each new cell into the copy, while counting neighbours on the unchanged original.
+"At the same time" means `step` must read only the old board. Make the new board as a copy of `*this`, then write each new cell into the copy, while counting neighbors on the unchanged original.
 --- check test | A blinker turns on its side and back
 [] { Life b{".....", "..#..", "..#..", "..#..", "....."}; Life s = b.step(); return s.rows() == std::vector<std::string>{".....", ".....", ".###.", ".....", "....."} && s.step().rows() == b.rows(); }()
---- check test | Neighbours count across the edges
-[] { Life b{"#..#", "....", "....", "#..#"}; return b.neighbours(0, 0) == 3 && b.neighbours(3, 3) == 3 && b.neighbours(1, 1) == 1 && b.neighbours(0, 1) == 2 && b.step().rows() == b.rows(); }()
+--- check test | Neighbors count across the edges
+[] { Life b{"#..#", "....", "....", "#..#"}; return b.neighbors(0, 0) == 3 && b.neighbors(3, 3) == 3 && b.neighbors(1, 1) == 1 && b.neighbors(0, 1) == 2 && b.step().rows() == b.rows(); }()
 --- check test | step leaves the old board alone
 [] { Life b{".....", "..#..", "..#..", "..#..", "....."}; Life s = b.step(); return b.rows() == std::vector<std::string>{".....", "..#..", "..#..", "..#..", "....."} && s.rows() != b.rows(); }()
 --- check test | Wrapping on a board that is not square
@@ -4248,9 +4248,9 @@ std::has_virtual_destructor_v<Account> && std::is_polymorphic_v<Account>
 
 +++ practice | A fuel tank that keeps its rules
 --- task
-Write `class FuelTank`, which measures fuel in whole millilitres, in `long long`s. No `main`.
+Write `class FuelTank`, which measures fuel in whole milliliters, in `long long`s. No `main`.
 
-- `explicit FuelTank(long long capacity)`: an empty tank that holds at most `capacity` millilitres.
+- `explicit FuelTank(long long capacity)`: an empty tank that holds at most `capacity` milliliters.
 - `long long level() const`, `long long capacity() const`, and `long long room() const`, which is how much more would fit.
 - `bool fill(long long ml)` adds fuel. It returns `false` and changes nothing unless `ml > 0` and the fuel fits: the tank may become exactly full, never more.
 - `bool draw(long long ml)` takes fuel out. It returns `false` and changes nothing unless `ml > 0` and there is at least that much in the tank.
@@ -8004,7 +8004,7 @@ std::optional<Transaction> last_for(const std::vector<Transaction>& log, int id,
     return std::nullopt;
 }
 --- hint
-The most recent is the last one, so walk the log backwards and stop at the first match. With `std::size_t`, count down safely the way the trimming loop in the text-statistics lessons does: start at `log.size()` and look at `[i - 1]` while `i > 0`.
+The most recent is the last one, so walk the log backwards and stop at the first match. A `std::size_t` can never go below 0, so `i >= 0` would always be true. Count down safely instead: start at `log.size()` and look at `log[i - 1]` while `i > 0`.
 --- hint
 Skip what does not count with `continue`: transactions that do not involve `id`, and failed ones when `only_ok` is set. And refuse `id <= 0` before the loop, or a question about "account 0" would match every deposit.
 --- check test | The newest one wins
@@ -8850,7 +8850,7 @@ Here are the three rules, in order:
 2. **Lowercase** what is left. `"The"` becomes `"the"`.
 3. If **nothing** is left, skip it. The "word" `--` is all punctuation, so it trims down to the empty string `""`, and it is not counted at all.
 
-Put these rules in their own function, `normalize`. It has one job, you can test it on its own, and the next two lessons use it again. (The word is spelled "normalize" in British English; the code uses the American spelling, as C++ programmers usually do.)
+Put these rules in their own function, `normalize`. It has one job, you can test it on its own, and the next two lessons use it again. (British English often spells the word "normalise"; the code uses the American spelling, as C++ programmers usually do.)
 
 ### Is it a letter or a digit?
 
@@ -11504,15 +11504,15 @@ build_order({{"c", "z"}, {"a", "z"}, {"b", "y"}}) == std::vector<std::string>{"a
 --- check test | Repeated rules, and no rules at all
 build_order({{"a", "b"}, {"a", "b"}}) == std::vector<std::string>{"a", "b"} && build_order({}) == std::vector<std::string>{}
 
-+++ practice | A job queue where jobs can be cancelled
++++ practice | A job queue where jobs can be canceled
 --- task
-A `std::priority_queue` cannot remove an element from the middle. A common trick is **lazy deletion**: leave a cancelled job in the queue, remember that it is dead, and throw it away when it reaches the top. Write `class JobQueue`. No `main`.
+A `std::priority_queue` cannot remove an element from the middle. A common trick is **lazy deletion**: leave a canceled job in the queue, remember that it is dead, and throw it away when it reaches the top. Write `class JobQueue`. No `main`.
 
 - `bool add(const std::string& name, int priority)`: adds a waiting job. Returns `false`, adding nothing, if a job with that name is already waiting.
 - `bool cancel(const std::string& name)`: the waiting job with that name will never run. Returns `false` if no job with that name is waiting.
 - `std::optional<std::string> next()`: removes and returns the waiting job with the highest priority; on a tie, the one added first. `std::nullopt` when no job is waiting.
 - `std::size_t size() const`: how many jobs are waiting.
-- A cancelled name may be added again, with a new priority. It then counts as added at that moment, and its old, cancelled entry must never come out.
+- A canceled name may be added again, with a new priority. It then counts as added at that moment, and its old, canceled entry must never come out.
 
 All four must be fast: the checks make 200,000 calls. Include `<queue>` and `<unordered_map>`.
 --- starter
@@ -11582,12 +11582,12 @@ private:
 --- hint
 Give every added job a ticket number from a counter. Keep an `std::unordered_map` from each **waiting** name to its current ticket. `size()` is then simply that map's size, and `cancel` just erases the name from it.
 --- hint
-In `next`, pop entries until you find a live one. An entry is live only if its name is in the map **and** the map's ticket for that name is this entry's ticket: an old entry for a name that was cancelled and added again has an older ticket, so it is thrown away.
+In `next`, pop entries until you find a live one. An entry is live only if its name is in the map **and** the map's ticket for that name is this entry's ticket: an old entry for a name that was canceled and added again has an older ticket, so it is thrown away.
 --- check test | Highest priority first, ties in the order added
 [] { JobQueue q; q.add("a", 1); q.add("b", 5); q.add("c", 5); auto x = q.next(); auto y = q.next(); auto z = q.next(); return x == "b" && y == "c" && z == "a" && !q.next(); }()
---- check test | Cancelled jobs never come out
+--- check test | Canceled jobs never come out
 [] { JobQueue q; q.add("a", 3); q.add("b", 9); q.add("c", 1); bool ok = q.cancel("b"); bool size_ok = q.size() == 2; auto x = q.next(); auto y = q.next(); return ok && size_ok && x == "a" && y == "c" && !q.next() && q.size() == 0; }()
---- check test | Refusals: a name twice, unknown or cancelled twice
+--- check test | Refusals: a name twice, unknown or canceled twice
 [] { JobQueue q; bool a = q.add("x", 1); bool again = q.add("x", 7); bool unknown = q.cancel("y"); bool first = q.cancel("x"); bool twice = q.cancel("x"); return a && !again && !unknown && first && !twice && q.size() == 0 && !q.next(); }()
 --- check test | Added again after a cancel: the old entry is dead
 [] { JobQueue q; q.add("x", 9); q.add("y", 5); q.cancel("x"); q.add("x", 1); auto a = q.next(); auto b = q.next(); auto c = q.next(); return a == "y" && b == "x" && !c; }()
@@ -14432,7 +14432,7 @@ A chess knight stands on a phone keypad and dials a number by hopping. The keypa
 
 A knight moves in an L shape, which on this keypad allows exactly these hops: from 0 to 4 or 6; from 1 to 6 or 8; from 2 to 7 or 9; from 3 to 4 or 8; from 4 to 0, 3 or 9; from 5 nowhere; from 6 to 0, 1 or 7; from 7 to 2 or 6; from 8 to 1 or 3; from 9 to 2 or 4.
 
-Write `long long knight_numbers(unsigned long long n)`: how many different numbers of exactly `n` digits the knight can dial, starting on any key, where each next digit is one hop from the one before. Return the count **modulo 1,000,000,007**. No `main`.
+Write `long long knight_numbers(unsigned long long n)`: how many different sequences of exactly `n` digits the knight can dial, starting on any key (so a sequence may start with 0), where each next digit is one hop from the one before. Return the count **modulo 1,000,000,007**. No `main`.
 
 - `n` = 1 gives 10 (any single key), `n` = 2 gives 20, `n` = 3 gives 46. `n` = 0 gives 0.
 - `n` can be as large as 10¹⁸, so the answer must take about log₂ n steps.
