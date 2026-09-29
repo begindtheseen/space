@@ -286,7 +286,7 @@ Equal weights are not the RK4 weights $1, 2, 2, 1$ over $6$. Many wrong formulas
 :::
 
 ::: check
-You need the error at $t = 2$ on the decay problem below $10^{-9}$. From the table in this lesson (RK4 errors $1.154 \times 10^{-6}$, $6.636 \times 10^{-8}$, $3.978 \times 10^{-9}$, $2.435 \times 10^{-10}$ at $n = 20, 40, 80, 160$), what is the smallest of those $n$ that works, and how many calls to $f$ does it cost?
+You need the error at $t = 2$ on the decay problem below $10^{-9}$. The step-halving run in this lesson printed only the ratios. The RK4 errors behind them are $1.154 \times 10^{-6}$, $6.636 \times 10^{-8}$, $3.978 \times 10^{-9}$, $2.435 \times 10^{-10}$ at $n = 20, 40, 80, 160$. What is the smallest of those $n$ that works, and how many calls to $f$ does it cost?
 :::
 
 ::: answer
@@ -311,7 +311,7 @@ $n = 80$ gives $3.978 \times 10^{-9}$, which is above $10^{-9}$. $n = 160$ gives
 Next lesson runs two methods of different order side by side inside one step, uses their difference to estimate the error as it goes, and lets the integrator choose its own step size.
 
 ::: context runge-kutta-history Two German mathematicians, six years apart
-Carl Runge published the first methods of this kind in 1895, while studying how to solve differential equations more accurately than Euler. Martin Kutta extended the idea in 1901 and gave the four-stage method that is now called classic RK4. The family has kept their joint name ever since: any method that samples the slope at several points inside one step and blends the results is a Runge-Kutta method.
+Carl Runge published the first methods of this kind in 1895, while studying how to solve differential equations more accurately than Euler. Martin Wilhelm Kutta extended the idea in 1901 and gave the four-stage method that is now called classic RK4. The family has kept their joint name ever since: any method that samples the slope at several points inside one step and blends the results is a Runge-Kutta method.
 :::
 
 ::: context butcher-tableau The Butcher tableau

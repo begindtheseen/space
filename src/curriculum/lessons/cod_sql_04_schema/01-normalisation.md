@@ -436,7 +436,7 @@ The fix is lost at the next hourly rebuild, because `reading_flat` is recreated 
 The `reading` table you built is the start of a pattern analytics teams use everywhere: one big table of measurements surrounded by small tables that describe them. Next lesson gives that shape its name — the star schema — and asks what kind of key each of those small tables should have.
 
 ::: context codd Where "normal form" comes from
-The relational database was proposed by Edgar F. Codd, a mathematician at IBM, in a 1970 paper. That paper already asked for tables with no lists inside cells, which became first normal form. In 1971 he defined second and third normal form, and in 1974 he and Raymond Boyce tightened the third into "Boyce-Codd normal form". "Normal" is used the way mathematicians use it: a standard, tidy shape that everything can be rewritten into. The British spelling "normalization" and the American "normalization" name the same thing.
+The relational database was proposed by Edgar F. Codd, a mathematician at IBM, in a 1970 paper. That paper already asked for tables with no lists inside cells, which became first normal form. In 1971 he defined second and third normal form, and in 1974 he and Raymond Boyce tightened the third into "Boyce-Codd normal form". "Normal" is used the way mathematicians use it: a standard, tidy shape that everything can be rewritten into. The British spelling "normalisation" and the American "normalization" name the same thing.
 :::
 
 ::: context inclination The tilt of an orbit
