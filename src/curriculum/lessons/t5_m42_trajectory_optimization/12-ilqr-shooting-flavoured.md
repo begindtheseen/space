@@ -6,20 +6,15 @@ covers:
   - Differential dynamic programming and iLQR as the shooting-flavoured alternative
 ---
 
-Think about learning a bike route by riding it. You ride once and it goes badly. Afterward you sit at the finish and think *backward*: "At the last corner I should have leaned more. At the corner before that, I should have come in slower — and if I had drifted a little wide there, I should have steered back this much." Then you ride again. You follow the improved plan, but you do not follow it blindly: whenever you notice you have drifted off it, you steer back. Ride, review backward, ride again with corrections. After a few rounds the route is smooth.
+Think about learning a bike route by riding it. The first ride goes badly. At the finish you think *backward*: "At the last corner I should have leaned more. At the corner before, I should have come in slower — and if I had drifted wide there, I should have steered back this much." Then you ride again, following the improved plan but steering back whenever you drift off it. Ride, review backward, ride again with corrections. After a few rounds the route is smooth.
 
 That loop is a real trajectory optimizer. Its name is **iLQR** — the **iterative linear quadratic regulator**, a method that improves a whole control history by repeating a backward review and a forward ride. Its older sibling is **DDP** — **[[differential dynamic programming|ilqr-name]]**, the same loop with a more careful review. The optimal control module derived both in full. This lesson places them on the map this module has been drawing.
 
-Here is the surprise. Every iteration of iLQR simulates the real nonlinear dynamics forward from a control sequence. That is exactly what a shooting method does. Yet iLQR does not inherit the brittleness that made indirect shooting (lesson four) so hard to start. By the end of this lesson you will know why, you will have watched it solve a rocket ascent from a lazy guess, and you will know what collocation still does better.
+Here is the surprise. Every iteration of iLQR simulates the real nonlinear dynamics forward, exactly as a shooting method does. Yet it does not inherit the brittleness that made indirect shooting (lesson four) so hard to start. This lesson shows why, solves a rocket ascent from a lazy guess, and says what collocation still does better.
 
 ## Where iLQR sits on the map
 
-So far this module has met four ways to turn an optimal control problem into numbers:
-
-- **Indirect shooting** (lesson four): guess the starting costates, integrate states and costates forward, and adjust the guess until the end conditions hold.
-- **Direct single and multiple shooting** (lesson seven): make the controls the unknowns, simulate forward, and let a nonlinear-program solver adjust the controls.
-- **Collocation** (lesson eight): make states *and* controls the unknowns, and tie them together with defect constraints.
-- **Pseudospectral** methods (lessons nine and ten): collocation with one high-degree polynomial per phase.
+So far this module has met indirect shooting (guess the starting costates, integrate forward, fix the guess), direct shooting (the controls are the unknowns, a nonlinear-program solver adjusts them), and collocation and pseudospectral methods (states *and* controls are unknowns, tied together by defect constraints).
 
 iLQR works in discrete time. The flight is cut into $N$ steps of length $\Delta t$ (read "delta t"). The unknowns are only the controls $\mathbf{u}_0, \dots, \mathbf{u}_{N-1}$, one per step. The states are never unknowns: they are always computed by running the dynamics forward from the known start $\mathbf{x}_0$. That forward simulation is called a **[[rollout|rollout]]** — run the model forward with a given control sequence and record where it goes.
 
@@ -33,7 +28,7 @@ $$
 
 The **stage cost** $\ell$ (read "ell") is the charge for each step. The **terminal cost** $\ell_f$ ("ell sub f") is the charge for where you end up. Here $\mathbf{f}$ is the one-step map: give it this step's state and control, and it returns the next state. This is a Bolza problem from lesson one, written in discrete time.
 
-Two things are missing compared with collocation. There are no defect constraints, because every trajectory is simulated exactly. And there is no general-purpose solver: iLQR does its own linear algebra, step by step. It also has a limit built in. The end conditions are *soft* — a penalty in $\ell_f$ for missing the target — not hard equations the answer must satisfy.
+Compared with collocation, there are no defect constraints, because every trajectory is simulated exactly, and no general-purpose solver: iLQR does its own linear algebra, step by step. It also has a limit built in. The end conditions are *soft* — a penalty in $\ell_f$ for missing — not hard equations.
 
 ## One iteration, in two sweeps
 
@@ -71,7 +66,7 @@ $$
 \mathbf{K} = -\mathbf{Q}_{uu}^{-1}\mathbf{Q}_{ux}.
 $$
 
-Little $\mathbf{k}$ is the **feedforward** correction: "change the plan by this much". Big $\mathbf{K}$ is the **feedback gain**: "and if you find yourself off the plan by $\delta\mathbf{x}$, steer back by $\mathbf{K}\,\delta\mathbf{x}$". Then the value slope and curvature are updated for step $k$, and the sweep moves one step earlier, all the way to $k = 0$. Those updates are the discrete Riccati recursion of the LQR module, applied to a linearization about the nominal.
+Little $\mathbf{k}$ is the **feedforward** correction: "change the plan by this much". Big $\mathbf{K}$ is the **feedback gain**: "if you find yourself off the plan by $\delta\mathbf{x}$, steer back by $\mathbf{K}\,\delta\mathbf{x}$". Then $V_x$ and $V_{xx}$ are updated for step $k$ — the discrete Riccati recursion of the LQR module, for a linearization about the nominal — and the sweep moves one step earlier, down to $k = 0$.
 
 ### DDP or iLQR: one choice
 
@@ -93,7 +88,7 @@ $$
 
 The hat marks the new candidate (read "x hat"). The number $\alpha$ ("alpha") between $0$ and $1$ is the **step length**: how much of the proposed change to take. Try $\alpha = 1$. If the new cost is not lower, halve $\alpha$ and try again. That loop is the **line search**. If the backward pass meets a $\mathbf{Q}_{uu}$ that is not positive — a saddle instead of a bowl — add a small number $\mu$ ("mu") to it before dividing. That is **regularization**.
 
-Two details matter. The rollout always uses the real nonlinear model, so every candidate is a trajectory the vehicle could actually fly. And the feedback term is never scaled by $\alpha$: its job is to keep the new ride close to the old one, where the quadratic model was built.
+Two details matter. The rollout uses the real nonlinear model, so every candidate is a trajectory the vehicle could fly. And the feedback term is never scaled by $\alpha$: its job is to keep the new ride close to the old one, where the quadratic model was built.
 
 ::: example An ascent from a lazy guess
 **The vehicle.** A $1000\,\mathrm{kg}$ rocket starts at rest on flat ground under Earth gravity, $g = 9.80665\,\mathrm{m/s^2}$. Its engine gives a constant $T = 15\,000\,\mathrm{N}$ with $I_{sp} = 300\,\mathrm{s}$, so $c = 300 \times 9.80665 = 2942.0\,\mathrm{m/s}$. It burns for $50\,\mathrm{s}$, dropping $15\,000/2942.0 \times 50 = 254.93\,\mathrm{kg}$, so it burns out at $745.07\,\mathrm{kg}$.
@@ -116,7 +111,7 @@ In words: missing the altitude by $100\,\mathrm{m}$, or either speed by $10\,\ma
 
 **Step 3: read the answer.** The pitch starts at $13.1^\circ$, reaches $29.2^\circ$ halfway, and ends at $72.7^\circ$: a smooth pitch-over, tipping steadily toward horizontal, which is what real ascents do. Burnout lands at $h = 5989.63\,\mathrm{m}$, $v_x = 478.70\,\mathrm{m/s}$, $v_h = 176.27\,\mathrm{m/s}$.
 
-**Sanity check.** Every one of those $14$ iterates was a full rollout of the real dynamics, so every one is a trajectory you could plot and fly. And the answer is close to the target but not on it — the soft cost at work, as a question below explores.
+**Sanity check.** Every one of those $14$ iterates was a full rollout of the real dynamics, a trajectory you could plot and fly. The answer is close to the target but not on it — the soft cost at work.
 :::
 
 Here is the whole solver. It is short because iLQR does its own linear algebra: one scalar division per step, since the control is a single number.
@@ -187,13 +182,11 @@ print(np.round(Vx0, 5))
 
 The last line prints $V_x$ at the start of the flight. Hold on to it; it comes back soon.
 
-How much do DDP's extra terms change things here? Run the same ascent from the same guess with the second-derivative terms kept. DDP creeps at first — $67.29 \to 50.01 \to 38.27 \to 33.34 \to 16.32 \to \dots$ — and needs $7$ iterations to get within $1\,\%$ of the answer, where iLQR needed $2$. Near the end it is quicker, and it meets the tight stopping test $3$ iterations sooner. Both land on the same cost, $11.7399$. That is the usual pattern, and the usual reason engineers pick iLQR: the early iterations are where the time goes.
+What do DDP's extra terms change? Run the same ascent from the same guess with them kept. DDP creeps at first — $67.29 \to 50.01 \to 38.27 \to 33.34 \to 16.32 \to \dots$ — and needs $7$ iterations to get within $1\,\%$ of the answer, where iLQR needed $2$. Near the end it is quicker, meeting the tight stopping test $3$ iterations sooner, at the same cost, $11.7399$. That is the usual pattern, and why engineers usually pick iLQR: the early iterations are where the time goes.
 
 ## Why it is not brittle
 
-Remember what made indirect shooting fragile. Lesson four guessed the costates at $t_0$ and integrated them *forward* along with the states. A tiny error in the guess grew along the way. For the orbit transfer, the guess had to be right to about four significant figures before Newton's method could even begin — and a costate has no physical feel you could guess from.
-
-iLQR avoids all three parts of that trap.
+Remember what made indirect shooting fragile. Lesson four guessed the costates at $t_0$ and integrated them *forward* with the states, and a tiny error in the guess grew along the way. For the orbit transfer the guess had to be right to about four significant figures, and a costate has no physical feel you could guess from. iLQR avoids every part of that trap.
 
 - **It never guesses a price.** Its price, the value slope $V_x$, starts at the end, where the terminal cost gives it exactly: $V_x(N) = \partial\ell_f/\partial\mathbf{x}$.
 - **It carries the price backward.** That is the direction in which a costate equation behaves well, as the note below explains. Shooting forces it to run the other way.
@@ -205,19 +198,19 @@ It is shooting: every iterate is a forward-simulated, dynamically feasible traje
 
 The feedback is not decoration. Take it out of the code above — use $\hat{\mathbf{u}}_k = \bar{\mathbf{u}}_k + \alpha\mathbf{k}_k$ with no $\mathbf{K}$ term — and the very first iteration fails. Not one of twenty halvings of $\alpha$ lowers the cost. The reason: $\mathbf{k}$ was computed *assuming* the feedback would be applied. On its own, replayed open loop, it points uphill. (Its dot product with the true gradient of the cost is $+93.8$, positive, so it increases the cost.)
 
-The basin is wide too. Start from a constant pitch of $0^\circ$, $45^\circ$, $60^\circ$, $90^\circ$, $120^\circ$ or even $180^\circ$ — the engine pointing straight down — and iLQR lands on the same answer, $11.7399$, every time, in $14$ to $33$ iterations.
+The basin is wide too. From a constant pitch of $0^\circ$, $45^\circ$, $60^\circ$, $90^\circ$, $120^\circ$, even $180^\circ$ (engine pointing straight down), iLQR lands on the same $11.7399$ in $14$ to $33$ iterations.
 
 ::: note Why backward is the safe direction for a price
 Take the simplest dynamics, $\dot{x} = a\,x$ with one state. The costate equation from lesson two is $\dot{\lambda} = -\partial H/\partial x = -a\,\lambda$. Its solution is $\lambda(t) = \lambda(t_f)\,e^{a(t_f - t)}$.
 
 Suppose the state is strongly damped, $a = -2\,\mathrm{s^{-1}}$. Forward in time, the state shrinks like $e^{-2t}$: well behaved. The costate is the mirror image. Integrated *forward* from a guessed $\lambda(0)$, it grows like $e^{+2t}$, so any error in the guess is multiplied by $e^{2t_f}$ — about $2.2\times10^{4}$ after $5\,\mathrm{s}$. Integrated *backward* from $t_f$, it shrinks like $e^{-2(t_f - t)}$, and errors shrink with it.
 
-With many states the same thing happens mode by mode: a mode that decays forward for the state grows forward for the costate. So the costate is well behaved exactly in the direction the state is not, and the other way round. Shooting runs both forward, so whichever one is unstable blows up. iLQR runs each in its own safe direction: states forward in the rollout, prices backward in the backward pass.
+With many states the same happens mode by mode: a mode that decays forward for the state grows forward for the costate. Shooting runs both forward, so whichever is unstable blows up. iLQR runs each in its safe direction: states forward in the rollout, prices backward in the backward pass.
 :::
 
 ## The value slope really is the costate
 
-The optimal control module said that the value slope $V_x$ carried backward by iLQR *is* the costate, and that at convergence it satisfies Pontryagin's conditions. Lesson ten checked a direct method's multipliers against a costate. Now check iLQR the same way.
+The optimal control module claimed that iLQR's value slope $V_x$ *is* the costate, satisfying Pontryagin's conditions at convergence. Lesson ten checked a direct method's multipliers against a costate; now check iLQR the same way.
 
 ::: note Why it has to be true
 Write the discrete Hamiltonian at step $k$ as $H_k = \ell(\mathbf{x}_k,\mathbf{u}_k) + \boldsymbol{\lambda}_{k+1}^\top\mathbf{f}(\mathbf{x}_k,\mathbf{u}_k)$. The discrete version of lesson two's conditions is: $\boldsymbol{\lambda}_N = \partial\ell_f/\partial\mathbf{x}$, then $\boldsymbol{\lambda}_k = \boldsymbol{\ell}_x + \mathbf{f}_x^\top\boldsymbol{\lambda}_{k+1}$ going backward, and $\partial H_k/\partial\mathbf{u} = \boldsymbol{\ell}_u + \mathbf{f}_u^\top\boldsymbol{\lambda}_{k+1} = \mathbf{0}$ at every step.
@@ -232,7 +225,7 @@ The converged ascent printed $V_x(0) = (0,\ -0.00104,\ -0.01299,\ +0.01086,\ -0.
 
 **Step 2: altitude, by hand.** Starting $1\,\mathrm{m}$ higher changes nothing about the flight except that burnout is $1\,\mathrm{m}$ higher too. So the price is the slope of the terminal cost in $h$: the weight times the miss, $10^{-4}\times(5989.63 - 6000) = 10^{-4}\times(-10.37) = -0.001037$. That matches the printed $-0.00104$. Negative, because burnout is short of the target, so a head start helps.
 
-**Step 3: vertical speed, by hand.** Starting with $1\,\mathrm{m/s}$ more upward speed adds $1\,\mathrm{m/s}$ to burnout $v_h$ and, over $50\,\mathrm{s}$, $50\,\mathrm{m}$ to burnout altitude. Its price is $0.01\times6.27 + 10^{-4}\times(-10.37)\times50 = 0.0627 - 0.0519 = +0.0109$. That matches $+0.01086$. Positive: burnout is already $6.27\,\mathrm{m/s}$ too fast upward, and that outweighs the altitude help.
+**Step 3: vertical speed, by hand.** Starting with $1\,\mathrm{m/s}$ more upward speed adds $1\,\mathrm{m/s}$ to burnout $v_h$ and, over $50\,\mathrm{s}$, $50\,\mathrm{m}$ to burnout altitude. Its price is $0.01\times6.272 + 10^{-4}\times(-10.372)\times50 = 0.06272 - 0.05186 = 0.01086$. That matches the printed $+0.01086$. Positive: burnout is already $6.27\,\mathrm{m/s}$ too fast upward, and that outweighs the altitude help.
 
 **Step 4: mass, by brute force.** No hand formula gives the mass price, because extra mass changes the acceleration all the way up. So re-solve the whole problem. Start from $m_0 = 1000.01\,\mathrm{kg}$ and from $999.99\,\mathrm{kg}$, run the complete iLQR solve from the lazy $30^\circ$ guess each time, and take the central difference of the two final costs:
 
@@ -242,18 +235,14 @@ $$
 V_x(0)_{[m]} = -0.0193685 .
 $$
 
-They agree to about four parts in a million. One number came from the value-slope bookkeeping inside a single solve. The other came from two complete black-box re-solves that never looked at $V_x$ at all.
+They agree to about four parts in a million. One number came from bookkeeping inside a single solve; the other from two black-box re-solves that never looked at $V_x$. (The nudge must be small: $\pm1\,\mathrm{kg}$ gives $-0.01822$, six percent off, because the best cost bends as $m_0$ changes.)
 
 **Sanity check.** A heavier rocket accelerates less, so it burns out slower. Here burnout is too fast upward, so slowing down helps and the mass price is negative. That fits.
 :::
 
-::: warning The step size in a re-solve check matters
-Try the same mass check with a nudge of $\pm 1\,\mathrm{kg}$ and you get $-0.01822$, six percent off. The best cost bends noticeably as $m_0$ changes, and a big nudge measures the bend along with the slope. $\pm 0.1\,\mathrm{kg}$ gives $-0.019357$; $\pm 0.01\,\mathrm{kg}$ gives the match above. Shrink the nudge until the answer stops changing — but not so far that solver noise takes over, as lesson ten warned.
-:::
-
 ## What collocation still buys
 
-None of this makes iLQR a replacement for direct transcription. It is the useful member of the shooting family, not a cure for everything. Put the two side by side.
+None of this makes iLQR a replacement for direct transcription. Put the two side by side.
 
 | | iLQR / DDP | Collocation NLP |
 | --- | --- | --- |
@@ -265,14 +254,14 @@ None of this makes iLQR a replacement for direct transcription. It is the useful
 | Work per iteration | Grows linearly with $N$ | Linear too, but only if a sparse solver finds the band |
 | Returns a feedback policy? | Yes, the gains $\mathbf{K}_k$ | No, only the plan |
 
-The first gap is hard constraints. Suppose the pitch must stay within a gimbal limit, or the dynamic pressure below a ceiling. A collocation NLP adds one inequality at each node and hands it to the same solver. iLQR has no place for it in the backward pass. The fixes — a small box-constrained quadratic program at every step (control-limited DDP), an **[[augmented Lagrangian|augmented-lagrangian]]** wrapper around the whole solve, or a squashing function that maps an unbounded variable into the allowed range — each add their own iterations or their own distortion near the bound. That is the concrete version of the argument this module's exercises ask you to make: in a direct method, constraints are added declaratively, not re-derived.
+The biggest gap is hard constraints: a gimbal limit on the pitch, a ceiling on dynamic pressure. A collocation NLP adds one inequality per node and hands it to the same solver. iLQR has no place for it in the backward pass. The fixes — a small box-constrained quadratic program at every step (control-limited DDP), an **[[augmented Lagrangian|augmented-lagrangian]]** wrapper around the whole solve, or a squashing function that maps an unbounded variable into the allowed range — each add iterations or distort the answer near the bound. That is the concrete version of the argument this module's exercises ask for: in a direct method, constraints are added declaratively, not re-derived.
 
-The advantages are real too. The backward pass handles the step-by-step structure directly, so each iteration costs work proportional to $N$ with no sparse matrix to factor. It returns the gains $\mathbf{K}_k$, a ready-made feedback law around the plan. And because it warm-starts naturally from the last solution, it is the standard engine for **[[model predictive control|mpc]]**, where the problem is re-solved many times a second on board. The **[[trajax|trajax]]** library on this module's tools list is built around it.
+The advantages are real too. Each iteration costs work proportional to $N$ with no sparse matrix to factor. The gains $\mathbf{K}_k$ are a ready-made feedback law around the plan. And a warm start from the last solution is natural, which makes iLQR a standard engine for **[[model predictive control|mpc]]**, where the problem is re-solved many times a second on board. The **[[trajax|trajax]]** library on this module's tools list is built around it.
 
 ::: warning A converged iLQR solve is a local answer
 The ascent converged from $30^\circ$ and from many other guesses, but not from every one. Start from $\theta = -30^\circ$ — leaning backward — and iLQR runs $59$ iterations, the cost falling at every one, and stops at $127.74$: eleven times worse than $11.7399$. The last eight pitch angles of that answer are $361^\circ, 363^\circ, 366^\circ, 83^\circ, 87^\circ, 382^\circ, 94^\circ, 397^\circ$. An angle of $361^\circ$ points the same way as $1^\circ$, but the penalty $\tfrac12\theta^2$ does not know that, and the plan is stuck between **[[wound-up angles|angle-wrap]]**. Start from $150^\circ$ and it stops at $749.70$ for the same reason.
 
-Nothing in the convergence log flags either one. iLQR carries every caveat of any gradient method on a nonconvex problem: no certificate, no global optimum, an answer that depends on the guess. Its basin is wide because the backward pass corrects a bad guess iteration by iteration — but wide is not everywhere. Plot the answer and ask whether it looks like something a vehicle would fly.
+Nothing in the convergence log flags either one. Like any gradient method on a nonconvex problem, iLQR gives no certificate and no global optimum, and its answer depends on the guess. Its basin is wide, but wide is not everywhere. Plot the answer and ask whether a vehicle would fly it.
 :::
 
 ## Check yourself
@@ -282,9 +271,9 @@ Direct single shooting and iLQR both simulate the nonlinear dynamics forward fro
 :::
 
 ::: answer
-Direct single shooting measures how the end state depends on an early control by chaining that effect through the whole horizon, with no correction along the way. Whatever the raw forward dynamics do to a small change — including growing it — shows up in the sensitivities, and the solver has to work with those numbers directly.
+Direct single shooting measures how the end state depends on an early control by chaining that effect through the whole horizon, with no correction along the way. Whatever the forward dynamics do to a small change — including growing it — lands in the sensitivities the solver must use.
 
-iLQR's forward rollout applies a feedback correction $\mathbf{K}_k(\hat{\mathbf{x}}_k - \bar{\mathbf{x}}_k)$ at every step. Those gains come from a backward pass that has already worked out how the rest of the flight should respond. So a deviation that appears at step $k$ is pulled back toward the nominal at step $k+1$ instead of being left to compound. The backward pass itself starts from the exactly known terminal price and runs in the direction where prices are well behaved. The forward simulation is the same mechanism in both methods; the stabilizing backward correction is the whole difference.
+iLQR's rollout applies a feedback correction $\mathbf{K}_k(\hat{\mathbf{x}}_k - \bar{\mathbf{x}}_k)$ at every step, from a backward pass that has already worked out how the rest of the flight should respond. A deviation at step $k$ is pulled back at step $k+1$ instead of compounding. And the backward pass starts from the exactly known terminal price and runs in the direction where prices are well behaved. The forward simulation is the same in both; the stabilizing backward correction is the difference.
 :::
 
 ::: check
@@ -294,7 +283,7 @@ The ascent's converged burnout altitude was $5989.63\,\mathrm{m}$, not the $6000
 ::: answer
 No. The target was a soft penalty in $\ell_f$, not a hard equation. The converged answer is the point where getting any closer to the target would cost more in steering (the $\tfrac12\theta^2$ term) than it saves in terminal penalty. With these weights, a $10.37\,\mathrm{m}$ altitude miss costs only $\tfrac12(10.37/100)^2 = 0.0054$, so it is not worth bending the pitch program further to close it.
 
-The evidence of convergence is elsewhere: the cost fell at every iteration and then stopped changing to twelve digits, and the value slope matched two independent checks. To land exactly on the target you would either raise the terminal weights (the miss shrinks roughly in proportion, but the problem gets stiffer and slower), or switch to a method that enforces a hard terminal constraint, such as collocation or an augmented-Lagrangian iLQR.
+The evidence of convergence is elsewhere: the cost stopped changing to twelve digits, and the value slope passed independent checks. To land exactly on target, raise the terminal weights (the miss shrinks, but the problem gets stiffer and slower) or use a method with a hard terminal constraint, such as collocation or an augmented-Lagrangian iLQR.
 :::
 
 ::: check
@@ -304,7 +293,7 @@ Suppose the ascent needs a hard limit $|\theta| \le \theta_{\max}$ from the engi
 ::: answer
 In collocation, the change is one line: add $-\theta_{\max} \le \theta_k \le \theta_{\max}$ as a bound at every node. The same NLP solver that already handles every other constraint handles it. The defect equations do not change at all.
 
-In iLQR, the closed-form step $\mathbf{k} = -\mathbf{Q}_{uu}^{-1}\mathbf{Q}_u$ is no longer right whenever it would push $\theta$ past the bound. Control-limited DDP replaces it with a small box-constrained quadratic program solved at every step of every backward pass, and the feedback gain for a control sitting on its bound must be set to zero, since that control can no longer respond. Alternatively you wrap the whole solve in an augmented Lagrangian, or replace $\theta$ by a squashed variable such as $\theta_{\max}\tanh(s)$. The constraint is native to one formulation and bolted onto the other.
+In iLQR, the closed-form step $\mathbf{k} = -\mathbf{Q}_{uu}^{-1}\mathbf{Q}_u$ is wrong whenever it would push $\theta$ past the bound. Control-limited DDP replaces it with a small box-constrained quadratic program at every step of every backward pass, and zeroes the feedback gain of a control sitting on its bound. The alternatives are an augmented-Lagrangian wrapper, or a squashed variable such as $\theta = \theta_{\max}\tanh(s)$. The constraint is native to one formulation and bolted onto the other.
 :::
 
 ::: check
@@ -312,9 +301,9 @@ The mass price $V_x(0)_{[m]} = -0.0193685$ matched a re-solved finite difference
 :::
 
 ::: answer
-The theory is a statement about the algorithm's own bookkeeping: at convergence $\mathbf{Q}_u = \mathbf{0}$ and the value-slope recursion becomes the costate recursion. That is correct, but a bug in the Jacobians, a sign slip, or an unconverged run would corrupt the bookkeeping and the theory together, and nothing inside the solve would notice.
+The theory is about the algorithm's own bookkeeping: at convergence $\mathbf{Q}_u = \mathbf{0}$ and the value-slope recursion becomes the costate recursion. A wrong Jacobian, a sign slip or an unconverged run would corrupt the bookkeeping, and nothing inside the solve would notice.
 
-The finite difference treats the whole iLQR solve as a black box. It changes only the input ($m_0$), reads only the output (the best cost), and never sees $V_x$, $\mathbf{K}_k$ or any other internal quantity. If the two agree, the real optimized cost responds to the change exactly as $V_x$ predicted. That is a check against the problem itself, not against the algorithm's opinion of itself — the stronger kind of check this module has used throughout.
+The finite difference treats the whole solve as a black box. It changes only the input ($m_0$), reads only the output (the best cost), and never sees $V_x$ or $\mathbf{K}_k$. If the two agree, the real optimized cost responds exactly as $V_x$ predicted. That is a check against the problem itself, not against the algorithm's opinion of itself.
 :::
 
 ::: check
