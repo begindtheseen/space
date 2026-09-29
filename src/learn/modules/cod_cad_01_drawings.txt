@@ -1,0 +1,971 @@
+@track python
+@course mod-cod_cad_01_drawings
+@module cod_cad_01_drawings
+@title Engineering drawing literacy: practice and test
+
+=== cad01-l01 | Practice: Looking at a part straight on
+--- for
+l01-orthographic-projection
+
++++ question | The height from two views
+--- ask
+A drawing of a reaction-wheel housing shows only two views of it, with no dimensions yet. The top view measures 140 mm across the sheet and 55 mm up the sheet. The right-side view measures 55 mm across and 35 mm up. The drawing is full size.
+
+How tall is the housing, in millimeters? Type the number.
+--- answer
+35
+35 mm
+35mm
+--- why
+The top view looks straight down, so it shows width (across) and depth (up the sheet): the housing is 140 mm wide and 55 mm deep. The right-side view shows depth (across) and height (up): 55 mm and 35 mm. The 55 mm that appears in both is the shared size, the depth, which is a good check that you have named the views correctly. That leaves 35 mm as the height. Every view shows exactly two of the three sizes, so two well-chosen views are enough to find all three.
+
++++ question | What sits to the left
+--- ask
+A drawing shows the front view, a view directly above it and a view directly to its left. The view above is labelled as the view looking down on the top of the part. The drawing is consistent with one of the two projection conventions. What does the view to the left of the front view show?
+--- choice
+The part seen from its right side, because a side view always goes on the side opposite to the one it was looked at from.
+--- choice correct
+The part seen from its left side. A top view above the front view means third angle, and in third angle every view sits on the side you looked from.
+--- choice
+The part seen from its bottom, rotated a quarter turn to fit beside the front view.
+--- choice
+It cannot be the left side: a third-angle drawing only ever uses the front, top and right-side views.
+--- why
+The top view tells you the convention before you ever look at the symbol. In first angle a view looked at from above lands below the front view, so a top view above it means third angle. Third angle puts each view on the side you looked from, so the view on the left was seen from the left. Seen from the right, it would only sit on the left in first angle. Drafters pick whichever principal views describe the part best, so a left-side view is allowed whenever it shows more, for example with fewer hidden lines.
+
++++ question | The far edge of a side view
+--- ask
+A plate is 72 mm deep, front to back. The drawing is in first angle, so its right-side view sits to the left of the front view. In that right-side view, a hole's center is 18 mm from the edge of the view that is **farthest** from the front view.
+
+How far is the hole's center from the plate's front face, in millimeters? Type the number.
+--- answer
+18
+18 mm
+18mm
+--- why
+In first angle, the edge of a side view nearest the front view is the part's back face ("near edges are far faces"). So the edge farthest from the front view is the front face, and the hole is 18 mm behind the front face, which is $72 - 18 = 54$ mm in front of the back face. A reader who assumed third angle would take the far edge to be the back face and put the hole 18 mm from the back, which is 54 mm from the front: a 36 mm mirror error.
+
++++ question | A symbol drawn the other way round
+--- ask
+A drawing's projection symbol is drawn with the two circles on the **left** and the trapezoid on the **right**. The trapezoid's wide end is the end next to the circles. Which convention is this?
+--- choice
+Third angle, because the circles sit on the left, which is where the third-angle symbol usually has its trapezoid.
+--- choice correct
+First angle. Two solid circles are the view from the cone's narrow end, which here is on the right, and that view is placed on the left: the opposite side.
+--- choice
+Third angle, because the circles view sits on the same side as the cone's wide end.
+--- choice
+Neither: a symbol with the circles on the left is not a valid symbol, so the drawing must be rejected.
+--- why
+Work it out instead of matching a picture. Two solid concentric circles come from looking at the cone from its narrow end; from the wide end the small circle would be hidden behind the big face. The wide end is next to the circles, so the narrow end points right, and the end view was looked at from the right. It is drawn on the left, the side you did not look from, which is first angle. The short rule survives any layout: if the wide end faces the circles it is first angle, and if the trapezoid tapers toward the circles it is third angle.
+
++++ question | A drawing that disagrees with itself
+--- ask
+You check a supplier's drawing before it is released. The projection symbol's trapezoid tapers toward the circles. The view that shows the part as seen from its right side is drawn to the **left** of the front view. What should you do?
+--- choice
+Nothing. Side views may go on either side of the front view in third angle, as long as they are in line with it.
+--- choice
+Trust the layout over the symbol, read the drawing as first angle, and carry on.
+--- choice correct
+Send it back. The symbol says third angle but the right-side view is placed first-angle, so one of them is wrong, and a reader cannot know which.
+--- choice
+Trust the symbol, read the drawing as third angle, and treat the view on the left as the left-side view.
+--- why
+A trapezoid tapering toward the circles means third angle, where a view from the right goes on the right. A right-side view on the left is first-angle placement. The drawing contradicts itself, and either guess could produce the mirror image of the real part, which would look perfectly sensible. Views that disagree with the symbol are a defect for the drafter to fix, not a puzzle for the reader to settle.
+
++++ question | A tilted boresight, read mirrored
+--- ask
+A star-tracker bracket's drawing is in first angle, but an engineer reads it as if it were third angle. In the right-side view, the tracker's boresight (its line of sight) is drawn tilted 15 degrees from vertical, leaning toward the edge of the view nearest the front view.
+
+What is the angle between the direction the engineer believes the boresight points and the direction it really points? Type the number of degrees.
+--- answer
+30
+30°
+30 degrees
+30 deg
+--- why
+The right-side view shows depth and height, so the tilt is a lean toward the front or the back. In first angle the edge nearest the front view is the back face, so the boresight really leans 15 degrees toward the back. Read as third angle, that edge becomes the front face, and the engineer believes it leans 15 degrees toward the front. One direction is 15 degrees one side of vertical and the other is 15 degrees the other side, so they differ by $15 + 15 = 30$ degrees. A projection mix-up does not add a small error; it mirrors the geometry, and a sensor axis that should lean one way leans the other.
+
+=== cad01-l02 | Practice: The views on a sheet
+--- for
+l02-the-views-on-a-sheet
+
++++ question | Finding the tilt from two views
+--- ask
+A sloped mounting face shows its true length of 60.0 mm in an auxiliary view. In the top view, the same length measures 42.0 mm. By how many degrees is the face tilted from the top view's picture plane? Round to the nearest degree and type the number.
+--- answer
+46
+46°
+46 degrees
+46 deg
+--- why
+A tilted length is seen as $L\cos\theta$, so $\cos\theta = 42.0 / 60.0 = 0.7$, and $\theta = \arccos 0.7 \approx 45.6$ degrees, which rounds to 46. The auxiliary view gives the true length because it looks square to the face; the top view gives the shortened one. Going backwards like this is also a handy check when you meet a foreshortened face: the ratio of seen length to true length tells you how steep it is.
+
++++ question | The jogs in an offset section
+--- ask
+A cutting-plane line on a top view turns two right angles so that it passes through three holes that are not in a straight line. How does the matching section view show the places where the cutting plane turned?
+--- choice
+As thin continuous lines across the hatching, one at each turn.
+--- choice
+As phantom lines, because they show where the cut used to be.
+--- choice correct
+It does not show them. The section is drawn as if the whole cut were one flat plane.
+--- choice
+It cannot: a section needs a straight cutting plane, so the drafter must draw three separate sections.
+--- why
+This is an offset section. The jogs are only a trick for reaching several features with one cut; there is no edge on the real part where the imaginary saw changed direction. Drawing a line there would show an edge that does not exist. So the jogs appear only on the cutting-plane line in the other view, and the section itself is drawn as one flat cut.
+
++++ question | Arrows pointing down the page
+--- ask
+A cutting-plane line runs straight across the front view of a housing, parallel to the top edge, halfway up. Its arrows point down the page, and its ends are lettered E. What does SECTION E-E show?
+--- choice
+The lower half is thrown away and you look up at the underside of the upper half.
+--- choice correct
+The upper half is thrown away and you look down at the cut face of the lower half, like a top view with the part sliced open.
+--- choice
+You look at the part from the front, with the cut face hatched along the line.
+--- choice
+The arrows show which half is kept, so the section shows the lower half seen from below.
+--- why
+In a front view, down the page is down on the real part. The arrows give the direction of sight, so you look downward. The piece on the tail side of the arrows, above the line, is the one imagined removed, and you look at the cut surface of the lower half. The result shows what a top view would show if the part had been sawn open halfway up: the internal shapes at that height, with the cut material hatched.
+
++++ question | A groove seen through a magnifying glass
+--- ask
+The main views of a shaft are drawn at half size. An O-ring groove is circled and shown again in DETAIL F, SCALE 5:1. In the detail view the groove is drawn 12 mm wide on the paper. It has no dimension yet.
+
+How wide is the real groove, in millimeters? Type the number.
+--- answer
+2.4
+2.40
+2.4 mm
+2.4mm
+--- why
+A detail view carries its own scale, and it replaces the sheet's scale for that view. At 5:1 the detail is drawn five times real size, so the real width is $12 \div 5 = 2.4$ mm. The half-size main views do not come into it; using them as well would give a wrong 4.8 mm. The deeper point is that the groove should carry a written dimension, which would read 2.4 whatever the scale of the view.
+
++++ question | A line where there is no edge
+--- ask
+A drafter draws a half section of a round, symmetric cap. The left half shows the outside and the right half shows the hatched inside. Where the two halves meet, the drafter draws a thick continuous line, and on the outside half the drafter adds dashed lines for the inner bore. What is wrong?
+--- choice
+Nothing. A half section needs a thick line to separate the inside from the outside.
+--- choice correct
+The halves should meet at a centerline, because there is no real edge there, and the hidden lines should be left out, because the hatched half already shows the inside.
+--- choice
+The hatching should cover both halves, because a section always hatches every surface in the view.
+--- choice
+A half section is the wrong view for a cap: the drafter should have used a broken-out section.
+--- why
+A half section removes a quarter of a symmetric part, so one side of the axis shows the outside and the other the inside. The axis is not an edge you could touch, so it is drawn as a centerline, not a thick visible line; a thick line would tell the reader there is a step in the material. Hidden lines are left off because the whole point of the section is to show the inside as clear visible outlines. The half section is exactly the right choice here: one view gives both the outside and the inside.
+
++++ question | Two views the drafter still owes you
+--- ask
+A star-tracker bracket's drawing has a front view, a top view and a right-side view. Inside the bracket is a stepped bore, and the right-side view is a tangle of overlapping dashed lines. The tracker bolts to a flat face that appears in the front view as a straight edge sloping at 30 degrees, and in the top and right-side views as a squashed shape with oval holes. The inspector must check the bore's steps and the hole pattern on the sloped face. Which two views should the drafter add?
+--- choice correct
+A section through the bore, and an auxiliary view projected from the front view at right angles to the sloping edge.
+--- choice
+A section through the bore, and an auxiliary view projected from the top view, because the top view shows the face's holes.
+--- choice
+A detail view of the sloped face at SCALE 2:1, and an isometric view of the bore.
+--- choice
+A broken-out section of the sloped face, and a detail view of the bore.
+--- why
+The bore is an internal shape hidden behind material, so it needs a section, which turns the dashed tangle into clear hatched outlines. The sloped face needs an auxiliary view, projected from the view in which the face appears as an edge, which is the front view, looking square to it. Only that view shows the face and its round holes at true size. Projecting from the top view would still look at the face at a slant. A detail view only enlarges a region; it magnifies the foreshortening but does not remove it. An isometric is a reference picture, never a view to inspect from.
+
+=== cad01-l03 | Practice: The lines on a drawing, and its scale
+--- for
+l03-lines-and-scales
+
++++ question | An outline that is not the part
+--- ask
+On a drawing of a reaction-wheel bracket, a rectangle is drawn against one face of the bracket in thin lines made of one long dash, then two short dashes, then a long dash again. There is no dimension on it. What is it?
+--- choice
+A centerline pattern marking the axis of the wheel.
+--- choice correct
+A phantom line: most likely the neighboring part the bracket bolts to, shown to help you see where the bracket goes. It is not part of the bracket.
+--- choice
+A hidden flange on the back of the bracket, drawn with a special dash because it is thin.
+--- choice
+A cutting-plane line for a section that has not been drawn yet.
+--- why
+Count the short dashes: one between the long dashes is a centerline, two is a phantom line. Phantom lines show things that are not part of the object in its drawn position: an adjacent part, an alternate position of a moving part, or a repeated feature. A hidden edge would be thin short dashes, and a cutting-plane line is thick and ends in arrows. Mistaking this outline for part of the bracket would have the shop machine a flange that does not exist.
+
++++ question | The number on a half-size view
+--- ask
+On a view drawn at 1:2, the distance between two mounting holes is drawn 45 mm long on the paper. What number is written on that dimension, in millimeters? Type the number.
+--- answer
+90
+90 mm
+90mm
+--- why
+A dimension always gives the real size, whatever the scale. At 1:2 the drawing is half the size of the part, so a 45 mm line on paper stands for $45 \times 2 = 90$ mm on the part, and the dimension reads 90. Writing 45 would confuse the picture with the part. Writing 180 comes from applying the scale the wrong way round: the first number of the ratio is the drawing.
+
++++ question | A long-short-long line through a hatched view
+--- ask
+A view of a round pulley has hatching on the right side of its axis and none on the left, where the outside of the pulley is shown. The two sides meet along a thin line of long and short dashes: long, short, long. What view is this, and what is that line?
+--- choice
+A full section, and the line is the cutting-plane line.
+--- choice
+A broken-out section, and the line is a break line.
+--- choice correct
+A half section, and the line is a centerline, the pulley's axis of symmetry.
+--- choice
+An offset section, and the line is a phantom line where the cut jogged.
+--- why
+Outside on one side and hatched inside on the other is a half section, used for symmetric parts. The line where the halves meet is thin long-short-long, which is a centerline: it marks the axis, not an edge. A cutting-plane line would be thick, sit in a different view and end in arrows. A break line is freehand and wavy. A phantom line has two short dashes, and the jogs of an offset section are not drawn at all.
+
++++ question | Shrunk twice on the printer
+--- ask
+A drawing was made full size (1:1) on an A2 sheet. Someone prints it on A4 paper with the printer set to "fit to page". A technician measures an undimensioned slot on the printout with a ruler: 35 mm. Before the designer can add the missing dimension, she wants an estimate.
+
+What real length does that 35 mm correspond to, in millimeters? Type the number.
+--- answer
+70
+70 mm
+70mm
+--- why
+Each step down the A-series multiplies every length by $1/\sqrt{2}$. A2 to A4 is two steps, so the printout is $\frac{1}{\sqrt{2}} \times \frac{1}{\sqrt{2}} = \frac{1}{2}$ of the true drawing. Undo the printer: $35 \div 0.5 = 70$ mm on the A2 sheet, and at 1:1 that is 70 mm on the part. The naive answer, 35 mm, is off by half. The arithmetic is only an estimate, because paper, printers and drafters all distort; the real fix is the written dimension, which is why drawings say DO NOT SCALE DRAWING.
+
++++ question | A section that shows one piece of metal
+--- ask
+A section view cuts through a bolted joint: two plates clamped by a bolt. The drafter hatched both plates with thin lines at 45 degrees, in the same direction and spacing, so that the hatching runs straight across from one plate to the other. What is the problem?
+--- choice
+The hatching should be thick, so that it stands out from the outline.
+--- choice
+Hatching should only be used for one part per section; the second plate should be left blank.
+--- choice correct
+The two plates look like one solid piece. Touching parts in a section are hatched in different directions so the boundary between them shows.
+--- choice
+Hatching must always be at 30 degrees, never 45.
+--- why
+Section lines are thin, parallel and usually at 45 degrees. That is fine here. The mistake is using the same direction on two parts that touch: with the lines running straight across, the reader cannot see where one plate ends and the other begins, which is exactly what the section was drawn to show. One plate goes at 45 degrees and the other at 135. The thin weight is also right: hatching is a fill and must never compete with the thick outline.
+
++++ question | A clearance nobody dimensioned
+--- ask
+A gimbal drawing at 1:10 shows the engine nozzle in phantom lines at the end of its travel. On the printout, the gap between the phantom nozzle and the nearest structure measures 1.8 mm with a ruler. No dimension gives that gap. You need the clearance to set the gimbal's software travel limit. What do you do?
+--- choice
+Use 1.8 mm, because the phantom outline is drawn at the true position.
+--- choice
+Use 18 mm, the measured gap times the scale, and set the limit from it.
+--- choice
+Use 0.18 mm, the measured gap divided by the scale.
+--- choice correct
+Treat about 18 mm only as a rough hint, and ask for the clearance as a written dimension, or a check in the released definition, before setting the limit.
+--- why
+The phantom outline is exactly the right line to look at: it shows the nozzle at the end of its swing. But a gap measured on paper is not a requirement anybody is bound to. The print may have been resized, the drafter may have drawn out of proportion, and even a perfect 1:10 print gives only a picture. A travel limit protects the nozzle from hitting the structure, so it has to rest on a controlled number. Ask the designer to dimension the clearance.
+
+=== cad01-l04 | Practice: The title block, revisions and why the drawing is the law
+--- for
+l04-title-block-and-revisions
+
++++ question | One more decimal place
+--- ask
+A title block's tolerance block reads: one-place decimals $\pm 0.25$ mm, two-place decimals $\pm 0.05$ mm. The drawing shows one slot as 18.5 and another as 18.50, neither with its own tolerance.
+
+How many times wider is the band of acceptable sizes for the 18.5 slot than for the 18.50 slot? Type the number.
+--- answer
+5
+5x
+5 times
+five
+--- why
+18.5 has one decimal place, so it gets $\pm 0.25$: 18.25 to 18.75, a band 0.50 mm wide. 18.50 has two decimal places, so it gets $\pm 0.05$: 18.45 to 18.55, a band 0.10 mm wide. $0.50 / 0.10 = 5$. The two numbers are the same size, but writing the extra zero is a promise five times tighter, and a much harder machining job. On a drawing, trailing zeros are not decoration.
+
++++ question | Same shape, stronger metal
+--- ask
+A bracket's geometry stays exactly the same, but its material changes from aluminum 6061-T6 to the stronger 7075-T73, because a new mission puts higher loads on it. Old brackets are still on the stores shelf. Should the change get a new revision letter or a new part number?
+--- choice
+A new revision letter, because the shape and the bolt pattern are unchanged, so the part still fits.
+--- choice correct
+A new part number, because function changed: an old bracket would still fit, and would be accepted into assemblies that need the stronger one.
+--- choice
+Neither. A material change is written in the notes, so the drawing keeps its letter.
+--- choice
+A new revision letter, and the old brackets are thrown away so nobody can mix them up.
+--- why
+Form, fit and function asks whether the new part and the old one can replace each other everywhere. Fit is unchanged, but function is not: an old 6061 bracket cannot carry the new loads. With the same part number, a mechanic could take an old bracket off the shelf, bolt it on perfectly, and fly a bracket that fails. A new part number keeps the two apart. Either way the change goes through a change order; what decides between a letter and a number is only whether the part stays interchangeable.
+
++++ question | A dimension on a half-size view
+--- ask
+A drawing's title block says SCALE 1:2 and gives one-place decimals as $\pm 0.3$ mm. A slot is dimensioned 42.6 with no tolerance of its own. On the paper, the slot's lines are 21.3 mm apart.
+
+What is the largest slot width the inspector will accept, in millimeters? Type the number.
+--- answer
+42.9
+42.90
+42.9 mm
+42.9mm
+--- why
+The written dimension is the real size, whatever the scale, so the slot is nominally 42.6 mm; the 21.3 mm on paper is just the picture at half size. 42.6 has one decimal place, so the one-place rule gives $\pm 0.3$, and the largest acceptable width is $42.6 + 0.3 = 42.9$ mm. Applying the tolerance to the drawn size (21.6) or doubling the dimension (85.5) are both ways of reading the scale into a number that never needed it.
+
++++ question | Two letters past W
+--- ask
+A drawing is at revision W. Two more changes are approved and released, one after the other. What is the revision letter after the second change? Type it.
+--- answer
+AA
+rev AA
+revision AA
+--- why
+After W the next letter would be X, but X is skipped, so the first change is Y. After Y the next letter would be Z, which is also skipped, and after Y the letters double up. So the second change is AA. The skipped letters (I, O, Q, S, X and Z) are the ones easy to mistake for numbers or for each other.
+
++++ question | Analyzing the wrong bracket
+--- ask
+A flight bracket, serial number 009, showed a crack in a later inspection of a sister unit. The drawing is now at revision E. An engineer runs a stress analysis of serial 009 using the rev E drawing. The build records show that serial 009 was built to revision C and that a material review board approved it "use as is" with one hole 0.2 mm oversize. What is wrong with the analysis?
+--- choice
+Nothing. The latest revision is always the best description of the hardware.
+--- choice
+It should use revision A, the original release, because that is what the design was qualified to.
+--- choice correct
+It should use revision C together with the approved departure: that is what serial 009 was actually made to, its as-built configuration.
+--- choice
+It should use revision E, but with every hole increased by 0.2 mm to be safe.
+--- why
+Drawings keep being revised after parts are made, and a part keeps the revision it was built to. Serial 009 is a rev C part with one recorded departure, so that is the geometry to analyze. Rev E describes parts built later, and rev A describes parts built earlier. Applying the oversize hole everywhere invents a part that never existed. Traceability from serial number to revision to departures is exactly what configuration management is for.
+
++++ question | Counting to AC
+--- ask
+A drawing is at revision AC. Its first release was revision A, and every release since then used the next allowed letter. How many releases has the drawing had, including the first one and AC? Type the number.
+--- answer
+23
+twenty-three
+twenty three
+--- why
+From A to Y there are 25 letters, but I, O, Q, S and X are skipped, leaving 20: A B C D E F G H J K L M N P R T U V W Y. Z is skipped too, so the letters then double up: AA, AB and AC are three more. $20 + 3 = 23$. A letter's position in the alphabet overstates the count as soon as it passes H.
+
+=== cad01-l05 | Practice: Assemblies, parts lists and the notes that go with them
+--- for
+l05-assemblies-boms-and-notes
+
++++ question | The same screw at two levels
+--- ask
+A panel assembly's BOM lists: find 1, one panel; find 2, three tracker-bracket assemblies; find 3, eight screws, part number 400-6010. Each tracker-bracket assembly's own BOM lists one bracket and four screws, also part number 400-6010. The program builds two spacecraft, each with one panel assembly.
+
+How many screws of part number 400-6010 are needed, before spares? Type the number.
+--- answer
+40
+40 screws
+--- why
+Quantities are per one parent, so multiply down the tree. Each panel assembly holds 8 screws directly, plus $3 \times 4 = 12$ inside its tracker-bracket assemblies: 20 in all. Two spacecraft: $20 \times 2 = 40$. Reading only the top-level BOM gives 16, and forgetting the second spacecraft gives 20. The same part number can appear at several levels, and each appearance counts.
+
++++ question | REF on a parts list
+--- ask
+The BOM of a tracker-bracket assembly lists the spacecraft panel as find 6, with REF in the quantity column. What does that tell the stores clerk who kits the parts for one tracker-bracket assembly?
+--- choice
+Put in one panel, because REF stands for "one, for reference".
+--- choice
+Put in as many panels as the assembly needs, as with AR.
+--- choice correct
+Put in no panel. It is shown for context only; this assembly does not supply it.
+--- choice
+Order a panel to the reference drawing, because REF items are bought rather than made.
+--- why
+REF means reference only: the panel is drawn and listed so you can see where the bracket goes, but it is not part of what this assembly delivers. It will be supplied by the higher-level assembly that joins the two. Counting REF lines when you order is how a program ends up with a stack of spare panels. AR, "as required", is different: it is a real item used in a quantity nobody can fix in advance.
+
++++ question | A screw from a new supplier
+--- ask
+On a released assembly drawing, find 3 is SCREW, CAP, M5 X 16, part number 400-5012. The screw is replaced by an equivalent, fully interchangeable screw with part number 400-5190. What happens on the assembly drawing?
+--- choice
+Find 3 is retired and the new screw becomes find 6, and the assembly gets a new part number.
+--- choice correct
+Find 3 stays find 3 and points at the same balloons; the part number in its BOM row changes, released as a new revision of the assembly drawing.
+--- choice
+Nothing. Find numbers are stable, so the drawing does not change at all.
+--- choice
+The balloons are redrawn with 400-5190 written inside them.
+--- why
+The find number is the stable handle: work instructions, inspection sheets and purchase orders that say "find 3" still point at the right row. The part number in that row does change, and a released drawing only changes through a new revision. Because the new screw is interchangeable, the assembly still passes form, fit and function, so it keeps its part number. Balloons carry find numbers, never part numbers.
+
++++ question | Panels at two levels
+--- ask
+A star-tracker assembly's BOM: find 1, the spacecraft panel, quantity REF; find 2, two brackets; find 3, eight screws. The spacecraft's top-level BOM: find 7, the spacecraft panel (same part number), quantity 1; find 8, the star-tracker assembly, quantity 1.
+
+How many of that panel does one spacecraft need? Type the number.
+--- answer
+1
+one
+1 panel
+--- why
+The panel appears twice, but only one line supplies it. On the star-tracker assembly it is REF, shown for context and never counted. The top level lists it as quantity 1, and that is the real one. Multiplying down the tree applies to counted quantities; a REF line contributes nothing to the total.
+
++++ question | A kit list built from the picture
+--- ask
+A planner writes a kit list for three wheel-mount assemblies. On the drawing, the bracket (find 1) has balloons in three different views, and the six screws (find 3) share one balloon. The planner lists 9 brackets and 3 screws. The BOM says one bracket and six screws per assembly. What went wrong?
+--- choice
+Nothing: each balloon is one piece, so the counts are right for three assemblies.
+--- choice
+Only the screws are wrong; one balloon per view does mean one bracket per view.
+--- choice correct
+The counts came from balloons instead of the BOM. It should be $1 \times 3 = 3$ brackets and $6 \times 3 = 18$ screws.
+--- choice
+The screws should have six balloons, so the drawing must go back to the drafter first.
+--- why
+A balloon names an item; it does not count it. An item can be ballooned once in each view where it helps, and six identical screws get one balloon. The quantity lives only in the BOM, per one assembly, and you multiply by the number of assemblies. The planner's list would have left the build 15 screws short and 6 brackets over.
+
++++ question | Three rules for one edge
+--- ask
+A valve body's general note 4 says BREAK ALL SHARP EDGES 0.2 TO 0.5. Flag note 3 says EDGE MUST REMAIN SHARP, 0.1 MAX BREAK, and its flag sits at four edges around a sealing groove. One of those four edges also carries its own callout, R1.0, written right at the edge. What must that edge be?
+--- choice
+Sharp, 0.1 maximum, because a flag note always overrides everything else on the drawing.
+--- choice
+Broken 0.2 to 0.5, because general notes apply everywhere.
+--- choice correct
+A 1.0 mm radius, because a callout written at the feature is the most specific instruction and wins over both notes.
+--- choice
+It cannot be decided; the drawing contradicts itself and must go back.
+--- why
+Authority runs from specific to general: a callout at the feature, then a flag note at the features carrying its flag, then a general note everywhere else. So this edge follows its own R1.0. The other three flagged edges follow flag note 3, and every unflagged edge follows general note 4. A checker might still ask whether R1.0 on a sealing edge is intended, but the reading of the drawing is not ambiguous.
+
+=== cad01-l06 | Practice: Tolerances and fits
+--- for
+l06-tolerances-and-fits
+
++++ question | An unequal band
+--- ask
+A bore is dimensioned 40.00, plus 0.08, minus 0.03 mm. What is its tolerance, in millimeters? Type the number.
+--- answer
+0.11
+.11
+0.11 mm
+0.11mm
+--- why
+The limits are $40.00 + 0.08 = 40.08$ and $40.00 - 0.03 = 39.97$, so the tolerance, the width of the band, is $40.08 - 39.97 = 0.11$ mm. Directly: $T = a + b = 0.08 + 0.03$. It is an unequal bilateral tolerance, and its band is wider than either number on its own, because the two sides add.
+
++++ question | Limits back into plus and minus
+--- ask
+A pin is limit-dimensioned 15.012 over 14.994. The designer wants to rewrite it with a nominal of 15.000 and a plus and a minus amount, allowing exactly the same sizes. What should it say?
+--- choice
+15.000 $\pm 0.009$
+--- choice correct
+15.000, plus 0.012, minus 0.006
+--- choice
+15.000, plus 0.006, minus 0.012
+--- choice
+15.000, plus 0.018, minus 0
+--- why
+Keep the two limits and measure each from the new nominal: $15.012 - 15.000 = 0.012$ above and $15.000 - 14.994 = 0.006$ below. The tolerance is $0.012 + 0.006 = 0.018$ mm either way. $\pm 0.009$ has the same band width, but centered on 15.000 it runs from 14.991 to 15.009, a different set of sizes. Plus 0.018 minus 0 also has the right width in the wrong place. A tolerance form is only equivalent if both limits match.
+
++++ question | A pin against the default
+--- ask
+A title block gives two-place decimals as $\pm 0.1$ mm. A hole is dimensioned 10.00 with no tolerance of its own. The pin that goes into it is dimensioned $9.90 \pm 0.02$ at the feature. What kind of fit is this?
+--- choice
+A clearance fit, because the pin's nominal size is smaller than the hole's.
+--- choice correct
+A transition fit: the loosest pair has 0.22 mm of clearance and the tightest has 0.02 mm of interference.
+--- choice
+An interference fit, because the pin's tolerance is tighter than the hole's.
+--- choice
+It cannot be classified, because the hole has no tolerance.
+--- why
+The hole does have a tolerance: the default. 10.00 has two places, so it is 9.90 to 10.10. The pin is 9.88 to 9.92. Loosest: $10.10 - 9.88 = 0.22$ mm. Tightest: $9.90 - 9.92 = -0.02$ mm, an overlap. One positive and one negative is a transition fit. Comparing nominal sizes says nothing about the fit; only the limits do, and a dimension with no tolerance written beside it still has one.
+
++++ question | Touching at worst
+--- ask
+A hole is 25.000 to 25.021 mm, and its shaft is 24.980 to 25.000 mm. What kind of fit is this?
+--- choice correct
+A clearance fit: the tightest pair has exactly zero clearance, so at worst the parts touch.
+--- choice
+A transition fit, because the tightest pair has no gap.
+--- choice
+An interference fit, because the biggest shaft equals the smallest hole.
+--- choice
+None of the three: a fit with a zero limit is undefined.
+--- why
+Loosest: $25.021 - 24.980 = 0.041$ mm. Tightest: $25.000 - 25.000 = 0$. A clearance fit needs $c_{\min} \ge 0$: even the tightest pair has a gap or, at worst, just touches. There is never an overlap, so no pair needs force. A transition fit needs a negative $c_{\min}$. Fits like this one, with the shaft's upper limit at the nominal size, are common for parts that must slide with as little play as possible.
+
++++ question | The interference that came out too small
+--- ask
+A hole is 30.000 to 30.021 mm, and a shaft pressed into it is 30.035 to 30.048 mm. A colleague writes:
+
+"$c_{\max} = 30.021 - 30.048 = -0.027$ and $c_{\min} = 30.000 - 30.035 = -0.035$, so the interference runs from 0.027 to 0.035 mm."
+
+What is wrong?
+--- choice
+Nothing: both results are negative, so it is an interference fit with those limits.
+--- choice
+The signs are backwards: interference fits have positive clearances.
+--- choice correct
+He paired max with max and min with min. The loosest pair is the biggest hole with the smallest shaft, $30.021 - 30.035 = -0.014$, and the tightest is $30.000 - 30.048 = -0.048$, so the interference runs from 0.014 to 0.048 mm.
+--- choice
+He should have used the nominal sizes, which give zero interference.
+--- why
+Loose is big hole with small shaft; tight is small hole with big shaft. Pairing max with max and min with min gives two numbers that are neither extreme, here a range of 0.027 to 0.035 when the truth is 0.014 to 0.048. It is still an interference fit either way, but the press force, the stress in the hub and whether the joint can carry its torque all depend on the real extremes, which are much wider.
+
++++ question | Heating a hub to slip it on
+--- ask
+An aluminum hub has a bore of 50.000 to 50.025 mm. It is shrink-fitted onto a steel shaft of 50.043 to 50.059 mm. Aluminum grows by about $23 \times 10^{-6}$ of its size per degree Celsius. To assemble any pair by hand, the heated bore must be at least 0.010 mm bigger than the shaft. Only the hub is heated.
+
+By how many degrees Celsius must the hub be heated, at least, so that every pair assembles? Type the number.
+--- answer
+60
+60°C
+60 °C
+60 degrees
+60 C
+--- why
+The hardest pair is the smallest bore with the biggest shaft: the interference is $50.059 - 50.000 = 0.059$ mm. Add the 0.010 mm needed to slip it on: the bore must grow by 0.069 mm. It grows by $50 \times 23 \times 10^{-6} = 0.00115$ mm per degree, so $0.069 / 0.00115 = 60$ degrees. Designing for the typical pair would leave the tightest ones stuck halfway, and a half-fitted hub that cools in place is a scrapped part.
+
+=== cad01-l07 | Practice: Tolerance stack-up — worst case and root-sum-square
+--- for
+l07-tolerance-stack-up
+
++++ question | The smallest gap
+--- ask
+A housing's inside length is $40.0 \pm 0.08$ mm. Inside it, end to end, sit three parts: $12.0 \pm 0.03$, $15.5 \pm 0.04$ and $12.2 \pm 0.05$ mm. What is the smallest the gap at the end can be, worst case, in millimeters? Type the number.
+--- answer
+0.1
+0.10
+.1
+0.1 mm
+0.10 mm
+--- why
+The nominal gap is $40.0 - 12.0 - 15.5 - 12.2 = 0.3$ mm. Worst case adds every tolerance: $0.08 + 0.03 + 0.04 + 0.05 = 0.20$ mm. The smallest gap is $0.3 - 0.20 = 0.10$ mm: a small housing with three fat parts. It stays positive, so every assembly whose parts pass inspection will close, with no exceptions.
+
++++ question | One tolerance that dominates
+--- ask
+Three parts sit in a chain with tolerances $\pm 0.03$, $\pm 0.04$ and $\pm 0.12$ mm. What is the root-sum-square stack-up, in millimeters? Type the number.
+--- answer
+0.13
+.13
+0.13 mm
+0.13mm
+±0.13
+--- why
+Square each: $0.0009 + 0.0016 + 0.0144 = 0.0169$, and $\sqrt{0.0169} = 0.13$ mm. Worst case would be 0.19 mm. The two small tolerances add only 0.01 mm to the largest one, because squaring makes small numbers tiny. So tightening the 0.03 and 0.04 parts would buy almost nothing; if the stack is too big, the 0.12 part is the one to work on.
+
++++ question | A stack of unequal tolerances
+--- ask
+A housing's inside depth is 50.00, plus 0.10, minus 0 mm. Two identical spacers sit in it, each $24.90 \pm 0.05$ mm. What is the largest the gap can be, worst case, in millimeters? Type the number.
+--- answer
+0.4
+0.40
+.4
+0.4 mm
+0.40 mm
+--- why
+With unequal tolerances, work from the limits. The gap is largest with the biggest housing and the smallest spacers: $50.10 - 2 \times 24.85 = 50.10 - 49.70 = 0.40$ mm. The smallest gap is $50.00 - 2 \times 24.95 = 0.10$ mm. The nominal gap, $50.00 - 49.80 = 0.20$ mm, is not in the middle of that range, because the housing's tolerance points only one way. Adding tolerances to a nominal works for $\pm$ callouts; for anything else, go back to limits.
+
++++ question | Baseline does not make the spacing tight
+--- ask
+Four holes sit in a row. Each is dimensioned directly from datum A: holes 1 to 4 at 20, 40, 60 and 80 mm, each $\pm 0.05$ mm. Worst case, by how much, plus or minus, can the distance between hole 1 and hole 4 vary from its nominal 60 mm? Type the number in millimeters.
+--- answer
+0.1
+0.10
+.1
+0.1 mm
+0.10 mm
+±0.1
+±0.10
+--- why
+Baseline dimensioning keeps each hole within $\pm 0.05$ of the datum. But the distance between two holes runs through two dimensions: hole 4's and hole 1's. If hole 4 is 0.05 far and hole 1 is 0.05 near, the spacing is 0.10 long. So the spacing is $60 \pm 0.10$. Baseline avoids piling up errors relative to the datum; it does not make the spacing between two features as tight as one dimension. If the spacing is what matters, dimension one hole from the other.
+
++++ question | Root-sum of the wrong thing
+--- ask
+An engineer combines three tilt tolerances, $\pm 20$, $\pm 20$ and $\pm 40$ arcseconds, by root-sum-square and writes: "$\sqrt{20 + 20 + 40} = \sqrt{80} \approx 8.9$ arcseconds." What is wrong?
+--- choice
+Nothing. That is the RSS rule, and it shows how much RSS saves over worst case.
+--- choice
+RSS must not be used for angles, only for lengths.
+--- choice correct
+He took the root of the plain sum. Each tolerance must be squared first: $\sqrt{400 + 400 + 1600} \approx 49$ arcseconds. His answer is smaller than the largest single tolerance, which RSS can never be.
+--- choice
+He should have divided by three first, because RSS is an average.
+--- why
+Square, sum, root: $20^2 + 20^2 + 40^2 = 2400$, and $\sqrt{2400} \approx 49$ arcseconds. The sanity check catches the slip at once: the stack can never be smaller than its largest contributor, 40, or bigger than the worst case, 80. Also, $\sqrt{80}$ has units of the square root of arcseconds, which is meaningless. The whole method is about adding squares, as variances add.
+
++++ question | A thruster pushed off its line
+--- ask
+A 10 N thruster sits 1.2 m from the center of mass. Three parts set its direction, and their drawings allow tilts of 0.10, 0.15 and 0.20 degrees. With only three contributors, use the worst-case stack. Take $\sin 0.45^\circ \approx 0.00785$.
+
+What disturbance torque can the tilt create, in newton-meters? Round to two significant figures and type the number.
+--- answer
+0.094
+0.094 N m
+0.094 Nm
+0.094 N·m
+0.0942
+--- why
+Worst case adds the tilts: $0.10 + 0.15 + 0.20 = 0.45$ degrees. The sideways part of the thrust is $10 \times 0.00785 = 0.0785$ N, and the torque is that force times the lever arm: $0.0785 \times 1.2 \approx 0.094$ N·m. The controller has to supply that much counter-torque whenever the thruster fires. Unlike a star-tracker tilt, this error shows up in the motion, so feedback sees it and fights it, at the cost of control authority.
+
+=== cad01-l08 | Practice: Surface finish, welds, fasteners and materials
+--- for
+l08-finishes-welds-and-fasteners
+
++++ question | Ra from six heights
+--- ask
+A profilometer records six heights along a bearing seat, in micrometers measured from the mean line: +0.9, −0.5, +0.3, −1.1, +0.6, −0.2. What is Ra, in micrometers? Type the number.
+--- answer
+0.6
+0.60
+.6
+0.6 µm
+0.6 um
+0.6 μm
+--- why
+Drop the signs and average: $0.9 + 0.5 + 0.3 + 1.1 + 0.6 + 0.2 = 3.6$, and $3.6 / 6 = 0.6$ micrometers. The signed heights add to zero, which confirms they were measured from the mean line; averaging them with their signs would always give zero. That is why Ra uses sizes without signs.
+
++++ question | A bar, a number and a mark
+--- ask
+A face on a gimbal housing carries the check-mark finish symbol with a bar closing the top of its short leg, the number 0.8 above it, and the mark $\perp$ at its lower right. What does it require?
+--- choice
+Leave the face as cast, with Ra at most 0.8 micrometers and tool marks at right angles to it.
+--- choice correct
+Machine the face to Ra 0.8 micrometers or smoother, with the tool marks perpendicular to the edge the symbol touches.
+--- choice
+Any process, with a coating 0.8 micrometers thick applied at right angles to the edge.
+--- choice
+Machine the face flat to within 0.8 mm, and check it with a square.
+--- why
+The bar says material must be removed by machining; a circle in the V would forbid it. The number is the maximum Ra in micrometers. The $\perp$ is the lay, the direction of the tool marks: perpendicular to the edge the symbol points at. A finish symbol never gives a coating (that is a note naming a process specification), and roughness is not flatness: a face can be smooth and still bowed.
+
++++ question | A joint that slipped
+--- ask
+A sensor bracket's bolts were under-torqued, so the joint has too little preload. During a vibration test, one of its two feet slips 5 micrometers sideways relative to the other, and the feet are 40 mm apart. About how much does that tilt the sensor, in arcseconds? Round to the nearest whole number and type it.
+--- answer
+26
+26 arcsec
+26 arcseconds
+26"
+--- why
+5 micrometers is 0.005 mm. Small angle: $0.005 / 40 = 0.000125$ rad. Times 57.3 gives about 0.00716 degrees, and times 3600 about 26 arcseconds. That is a large error for a sensor that measures to a few arcseconds, caused by a slip far thinner than a hair. It is why the installation torque on a drawing matters to a GNC engineer: torque sets preload, and preload keeps the joint from slipping.
+
++++ question | The right alloy in the wrong temper
+--- ask
+A drawing calls for MATERIAL: ALUMINUM ALLOY 6061-T6 PER AMS 4027. A supplier's brackets pass every dimensional check, and every finish check. The material certification that came with the bar shows 6061-O. What is the status of the brackets?
+--- choice
+Conforming, because the alloy number 6061 matches the drawing and every dimension is in tolerance.
+--- choice correct
+Nonconforming. The temper is part of the requirement, and 6061-O is annealed and much weaker than 6061-T6, even though the parts look identical.
+--- choice
+Conforming, as long as the brackets are painted to hide the difference.
+--- choice
+Nonconforming only if the brackets are also out of tolerance.
+--- why
+A material callout has three parts: the alloy, the temper and the specification, and all three are requirements. The temper sets the heat treatment, and 6061-O is far weaker than 6061-T6. No dimensional check can see this, which is why the certification, traced back to the specification on the drawing, is part of acceptance. The parts go to a material review board, and with a strength shortfall that large they are almost certainly scrapped or re-heat-treated.
+
++++ question | Bolts ordered to a nut's class
+--- ask
+A purchase request for a bracket's bolts reads BOLT, 3/8-16 UNC-2B. What is wrong with it?
+--- choice
+Nothing: 2B is the general-purpose class for any fastener.
+--- choice
+UNC is only for nuts; a bolt must be UNF.
+--- choice correct
+B marks an internal thread, as in a nut or a tapped hole. A bolt is external, so it should be 2A.
+--- choice
+16 threads per inch is too coarse for a 3/8-inch bolt, so the 16 must be a typing error.
+--- why
+In Unified inch threads the letter says which side: A is external, B internal. The number, class 2, is general purpose. 2A and 2B are a matched pair, one for the bolt and one for the hole it screws into. Ordering a bolt to 2B asks for gauges and limits meant for a hole. 3/8-16 UNC is the standard coarse thread for that size, so the rest of the callout is fine.
+
++++ question | A fillet on both sides
+--- ask
+A weld symbol joins a thruster bracket to a plate. Fillet triangles are drawn both above and below the reference line. Each triangle has 8 to its left and 60 to its right, in millimeters, and there is no circle and no flag. Take the throat as 0.707 times the leg, and an allowed shear stress of 90 MPa on the throat area.
+
+What load can the welds carry, in kilonewtons? Round to the nearest whole number and type it.
+--- answer
+61
+61 kN
+61kN
+61.1
+61.1 kN
+--- why
+Triangles on both sides of the line mean a fillet on the arrow side and one on the other side: two welds. Each has 8 mm legs, so a throat of $0.707 \times 8 \approx 5.66$ mm, and each is 60 mm long. The throat area is $5.66 \times 60 \times 2 \approx 679$ mm². At 90 MPa, which is 90 N per square millimeter, the load is $679 \times 90 \approx 61\,100$ N, about 61 kN. Reading only one side would halve the answer; so would forgetting that the load is carried through the throat, not the leg.
+
+=== cad01-l09 | Practice: Drawing standards, model-based definition and export control
+--- for
+l09-standards-mbd-and-export-control
+
++++ question | Which rule book
+--- ask
+Your team argues about whether the document for a bought inertial measurement unit should be a specification control drawing or a source control drawing. Which ASME standard settles which kind of drawing to use?
+--- choice
+ASME Y14.5, because it covers dimensioning and tolerancing.
+--- choice correct
+ASME Y14.24, which defines the types of engineering drawings and when each is used.
+--- choice
+ASME Y14.41, because a bought unit is usually defined by a model.
+--- choice
+ASME Y14.100, because it is the only standard that mentions purchased items.
+--- why
+Y14.24 is the standard for drawing types: detail, assembly, installation, interface control, specification control, source control and more. Y14.100 is the umbrella of general drawing practices and points to the others. Y14.41 is about defining a part with an annotated model, and Y14.5 is about dimensions and tolerances. Knowing which book answers which question is part of reading drawings professionally.
+
++++ question | A bought unit with an extra hole
+--- ask
+Your team buys a standard sun sensor from a catalog, then drills one extra mounting hole in its base so it fits your bracket. Which kind of drawing defines the part you actually install?
+--- choice
+A detail drawing, because your shop machined it.
+--- choice
+A source control drawing, because it comes from one supplier.
+--- choice correct
+An altered item drawing, which defines a purchased item and the change you make to it.
+--- choice
+An interface control drawing, because the new hole is on the interface.
+--- why
+The sensor's insides are not yours to define, so a detail drawing is wrong: you cannot give every dimension. A source control drawing says who may supply an item, not how you modify it. An altered item drawing references the purchased item and defines exactly what is changed, and the altered part gets its own identity so nobody confuses it with the unmodified catalog unit. An ICD would define the boundary between two teams' designs, not this part.
+
++++ question | Five points against a profile band
+--- ask
+An MBD bracket model carries the general note "all surfaces not otherwise toleranced: profile 0.3 relative to datums A, B, C". A CMM probes five points on undimensioned surfaces. Their deviations from the model's surface are +0.12, −0.15, +0.16, −0.04 and +0.149 mm.
+
+How many of the five points fail? Type the number.
+--- answer
+1
+one
+--- why
+Profile 0.3 is a band 0.3 mm wide centered on the model's surface, so each point may be up to 0.15 mm either side. +0.12, −0.04 and +0.149 are inside. −0.15 is exactly on the limit, and a size on its limit is in tolerance. Only +0.16 is outside. One failing point is enough to make the part nonconforming. The general note is what makes these undimensioned surfaces checkable at all.
+
++++ question | A green-card holder at your desk
+--- ask
+A colleague asks to look at your ITAR-controlled star-tracker interface drawing. She is a citizen of another country and holds a US green card: she is a lawful permanent resident. You are in your office in the US. Is showing it to her a deemed export?
+--- choice
+Yes, because she is not a US citizen.
+--- choice correct
+No. A lawful permanent resident counts as a US person under these rules, so showing her the data is not an export, though your company's own need-to-know rules still apply.
+--- choice
+No, because a deemed export only happens when data leaves the building.
+--- choice
+Yes, unless the drawing has no export-control marking.
+--- why
+The test is legal status: US citizens, lawful permanent residents and people with certain protected status are US persons. A deemed export is showing controlled data to someone who is not a US person, even inside the US, so it can happen without anything leaving the building. The marking does not decide anything: the content is controlled whether it is marked or not. When in doubt, ask the export-control office rather than deciding yourself.
+
++++ question | Just a screenshot
+--- ask
+An engineer takes a screenshot of part of an ITAR-controlled bracket model, crops out the export legend, and pastes it into a public online forum to ask about a meshing problem. He says: "It's only a screenshot, not the CAD file, and it has no marking on it." What is wrong with his reasoning?
+--- choice
+Nothing. Only complete CAD files and signed drawings count as technical data.
+--- choice
+Only the cropping was wrong; with the legend left in, the post would be fine.
+--- choice correct
+The screenshot still shows controlled technical data, and the control comes from the content, not the marking. Posting it where people who are not US persons can see it can be an unauthorized export.
+--- choice
+It is only a problem if someone outside the US actually downloads the image.
+--- why
+Export control covers technical data in any form: a model, a drawing, a photo of a whiteboard or a screenshot. The legend warns; it does not create the control, so cropping it off changes nothing except hiding the warning. A public forum is open to people anywhere, so posting is making the data available to them. The safe habit is to treat everything from a controlled program as controlled and to ask the export-control office before sharing.
+
++++ question | Rock from a flatness tolerance
+--- ask
+An interface control drawing for a star tracker allows its mounting face a flatness of 0.005 mm, and the tracker's mounting feet are 100 mm apart. About how much tilt, in arcseconds, can that flatness allow? Round to the nearest whole number and type it.
+--- answer
+10
+10 arcsec
+10 arcseconds
+10"
+--- why
+Treat the flatness as the largest height difference between two feet: $0.005 / 100 = 0.00005$ rad. Times 57.3 gives about 0.00286 degrees, and times 3600 about 10.3 arcseconds. That single line on the ICD becomes a line in the attitude error budget, which is exactly why interface control drawings are guarded so carefully: changing one number changes both teams' designs and the pointing accuracy.
+
+=== cad01-test | Engineering drawing literacy: module test
+--- teach
+The test covers the whole module: projection and views, lines and scales, the title block and revisions, assemblies and notes, tolerances and fits, stack-ups and datums, finishes, welds, threads and materials, and standards, model-based definition and export control. Most questions combine two or more lessons, and several ask you to compute a limit, a fit or a stack-up from the drawing's own numbers. To get ready, redo the practice questions of the lessons that felt hard, and keep paper and a calculator at hand.
+--- gate
+questions 13
+minutes 28
+
++++ question | A side view on a half-size sheet
+--- ask
+A drawing's title block says SCALE 1:2, and its projection symbol's wide end faces the circles. The part is 50 mm deep, front to back. The right-side view sits to the left of the front view. In it, a hole's center is dimensioned 14 from the edge of the view nearest the front view.
+
+How far is the hole's center from the part's front face, in millimeters? Type the number.
+--- answer
+36
+36 mm
+36mm
+--- why
+A wide end facing the circles means first angle, which also agrees with the right-side view being on the left. In first angle, the edge of a side view nearest the front view is the back face, so the hole is 14 mm from the back and $50 - 14 = 36$ mm from the front. The scale does not come into it: the dimension 14 is already a real size. Reading it as third angle gives 14, and applying the scale gives 28 or 72; each is a different wrong part.
+
++++ question | The tightest tolerance on the sheet
+--- ask
+A bracket drawing's tolerance block gives one-place decimals as $\pm 0.3$ mm. The drawing carries four callouts:
+
+- a slot, 32.5, with no tolerance of its own;
+- a boss, 12.00, plus 0.02, minus 0;
+- a pin, $8.00 \pm 0.015$;
+- a bore, limit-dimensioned 20.021 over 20.000.
+
+Which feature has the tightest tolerance?
+--- choice
+The pin, because 0.015 is the smallest number on the sheet.
+--- choice correct
+The boss: its band is 0.020 mm wide.
+--- choice
+The bore: its band is 0.021 mm wide.
+--- choice
+The slot, because a dimension with no tolerance must be exact.
+--- why
+Convert every callout to a band width. Slot: the default $\pm 0.3$, so 0.6 mm. Boss: $0.02 + 0 = 0.020$ mm. Pin: $\pm 0.015$ is a band of 0.030 mm, twice the number after the sign. Bore: $20.021 - 20.000 = 0.021$ mm. The boss wins by a thousandth. The slot has the loosest band of all: a dimension with no tolerance written beside it takes the title block's default, it is not exact.
+
++++ question | How tight the tightest pair is
+--- ask
+A 16 mm hole is 16.000 to 16.018 mm. Its shaft is 16.012 to 16.023 mm. What is the maximum interference, in millimeters? Type the number.
+--- answer
+0.023
+.023
+0.023 mm
+0.023mm
+--- why
+The tightest pair is the smallest hole with the biggest shaft: $c_{\min} = 16.000 - 16.023 = -0.023$ mm, an interference of 0.023 mm. The loosest pair, $16.018 - 16.012 = 0.006$ mm, still has a gap, so this is a transition fit: good for locating, like a dowel, and assembled with light force, but not to be relied on to carry torque.
+
++++ question | A gap that must never close
+--- ask
+A separation joint's housing is $36.00 \pm 0.08$ mm deep. Inside it sit three parts end to end: $10.0 \pm 0.04$, $14.5 \pm 0.04$ and $11.2 \pm 0.02$ mm. The gap left at the end must stay open on every unit, or the joint may not release. What is the smallest gap by worst case, and by root-sum-square?
+--- choice correct
+0.12 mm by worst case and 0.20 mm by RSS; because the gap must never close, the 0.12 mm worst-case figure is the one that counts.
+--- choice
+0.21 mm by worst case and 0.20 mm by RSS, so the two methods agree and either can be quoted.
+--- choice
+0.12 mm by worst case and 0.29 mm by RSS; RSS shows the design has plenty of margin.
+--- choice
+0.20 mm by worst case and 0.12 mm by RSS, so worst case is the optimistic one.
+--- why
+The nominal gap is $36.00 - 10.0 - 14.5 - 11.2 = 0.30$ mm. Worst case: $0.08 + 0.04 + 0.04 + 0.02 = 0.18$, so the gap can be as small as 0.12 mm. RSS: $\sqrt{0.0064 + 0.0016 + 0.0016 + 0.0004} = \sqrt{0.01} = 0.10$, so 0.20 mm. The 0.29 comes from forgetting the square root, and 0.21 from halving the worst-case sum as if $\pm$ were a total band. A separation joint is safety-critical and has only four contributors, so you quote worst case, which here still guarantees an open gap.
+
++++ question | Not a reason to reject
+--- ask
+An inspector reviews a machined bracket against its released drawing. Which one of these findings does **not** make the part nonconforming?
+--- choice
+A face with the machining finish symbol and 1.6 measures Ra 1.9 micrometers.
+--- choice correct
+A hole dimensioned 8.00, plus 0.03, minus 0, measures exactly 8.03 mm.
+--- choice
+General note 5 says to mark the part number and revision, and the part carries only the part number.
+--- choice
+The drawing calls for 6061-T6 per AMS 4027, and the bar's certification says 6061-T4.
+--- why
+A size exactly on its limit is in tolerance, so 8.03 passes. Everything else fails a requirement on the drawing: Ra 1.9 is rougher than the 1.6 maximum; a general note is a requirement checked like a dimension; and the temper is part of the material callout. A part misses its legal definition if it misses any single requirement, whether that requirement is a dimension, a symbol, a note or a specification.
+
++++ question | A spare swapped in at the pad
+--- ask
+A spacecraft's tracker bracket, serial 007, was built to revision D and installed. Revision E, released later, enlarged a lightening hole; the part stayed interchangeable, so it kept its part number. Two days before launch, serial 007 is damaged, and serial 012, built to revision E, is fitted instead and flies. What must the records show?
+--- choice
+Nothing new: the part number did not change, so the configuration did not change.
+--- choice
+The as-designed configuration changes from revision D to revision E.
+--- choice correct
+The as-flown configuration has serial 012 at revision E, not serial 007 at revision D, so any later analysis of the flight uses the rev E geometry.
+--- choice
+The swap is not allowed: a revision change always needs a new part number.
+--- why
+Interchangeable parts share a part number, which is exactly why a record of serial numbers and revisions is needed: the part number alone cannot tell you which geometry flew. Here the as-built record of the original installation said serial 007, rev D, but what flew was serial 012, rev E. As-designed did not change at the pad; the latest drawing was already rev E. An anomaly investigation starts from the as-flown record, so a late swap that is not recorded sends it to analyze the wrong bracket.
+
++++ question | Three releases after P
+--- ask
+A drawing is at revision P. Three more changes are approved and released, one after the other. What is the revision letter after the third change? Type it.
+--- answer
+U
+rev U
+revision U
+--- why
+After P comes R, because Q is skipped. After R comes T, because S is skipped. After T comes U. Q and S are skipped because they are easy to confuse with O and 5. Counting three letters on from P in the plain alphabet would give S, a letter that is never used.
+
++++ question | Why an MBD model needs a default band
+--- ask
+A 2D drawing can leave a surface with no dimension at all. Why does a model released under model-based definition usually carry a general note such as "all surfaces not otherwise toleranced: profile 0.2 relative to datums A, B, C"?
+--- choice
+Because a CMM cannot read dimensions, only notes.
+--- choice correct
+Because every surface of a model has an exact nominal position, and without a default tolerance every surface nobody toleranced would have to be perfect, which no part can be.
+--- choice
+Because export law requires a general note on every released model.
+--- choice
+Because the surfaces of a CAD model are only approximate, so the note warns the shop not to trust them.
+--- why
+On a drawing, a size nobody wrote is simply not specified. In a model, every surface has an exact place, and the model is the authoritative definition, so the question "how far may this surface be from its place?" must have an answer everywhere. The general note gives it, and it also makes every surface checkable on a CMM against the exact model. Under MBD, authority moves from the 2D sheet into the annotated model, and with it the duty to tolerance everything.
+
++++ question | Screws on a star-tracker program
+--- ask
+A star-tracker assembly's BOM: find 1, bracket, quantity 1; find 2, star tracker, quantity 1; find 3, screw 400-4020, quantity 6; find 4, spacecraft panel, quantity REF; find 5, shim, quantity AR. The spacecraft's top-level BOM lists: two star-tracker assemblies, and ten screws 400-4020 used directly on the panel.
+
+How many screws 400-4020 are needed for three spacecraft, before spares? Type the number.
+--- answer
+66
+66 screws
+--- why
+Per spacecraft: two assemblies with 6 screws each, $2 \times 6 = 12$, plus the 10 used directly, so 22. Three spacecraft: $22 \times 3 = 66$. The REF panel is not counted here at all, and the AR shims cannot be counted from the BOM; they are ordered as stock. Quantities multiply down the tree, and the same part number at two levels adds up.
+
++++ question | A cut inside an outside view
+--- ask
+An ordinary outside view of a bracket has one small region bounded by a thin, wavy freehand line. Inside that region are thin parallel lines at 45 degrees and the outline of a threaded hole's full depth. Beside the bracket, a connector is outlined in thin lines of one long dash and two short dashes. How do you read the view?
+--- choice
+A half section of the bracket, and the connector is a hidden part inside it.
+--- choice correct
+A broken-out section showing the threaded hole's depth, and the connector is a neighboring part shown for context, not part of this bracket.
+--- choice
+A detail view of the hole, and the connector is the part's centerline.
+--- choice
+A full section of the hole, and the connector is an alternate position of the bracket.
+--- why
+A local region of hatching inside a freehand break line, within an otherwise outside view, is a broken-out section: it shows one internal feature without cutting the whole part. A half section would split the view along a centerline. Two short dashes between long ones make a phantom line, used here for an adjacent part; a centerline has only one short dash, and a hidden part would be drawn with short dashes. The connector is on another drawing, and machining it into the bracket would be a costly misreading.
+
++++ question | A sloped face from above
+--- ask
+In the front view of a bracket, a flat mounting face appears as a straight edge 50 mm long, sloping at 30 degrees above the horizontal. How long does the face appear, measured along the slope's direction, in the top view? Round to one decimal place and type the number in millimeters.
+--- answer
+43.3
+43.30
+43.3 mm
+43.3mm
+--- why
+A face seen edge-on shows its true length along the slope, so the face really is 50 mm long up its slope. The top view looks straight down, and the face is tilted 30 degrees from that view's picture plane, so it appears $50 \cos 30^\circ \approx 50 \times 0.866 = 43.3$ mm long. Its width, into the page in the front view, is not foreshortened in the top view. That is why an inspector measures the face in an auxiliary view projected from the front view, where it shows at true size.
+
++++ question | Which error the loop can see
+--- ask
+A spacecraft has two mounting errors. A thruster is tilted $0.3^\circ$ off its intended line, and the star tracker is tilted 60 arcseconds from where the flight software believes it is. What happens to each?
+--- choice
+The attitude filter estimates and removes both, because both are fixed biases.
+--- choice correct
+The thruster tilt makes a disturbance torque that shows up in the motion, so feedback fights it; the tracker tilt becomes an attitude-knowledge error that no filter can see, removed only by measuring the alignment or by an independent reference.
+--- choice
+The tracker tilt shows up as a torque the controller fights; the thruster tilt only matters to the navigation filter.
+--- choice
+Neither matters, because both are below one degree.
+--- why
+A tilted thruster pushes partly sideways, so the vehicle actually turns, and the control loop sees and counters it, at the cost of authority and propellant. A tilted tracker changes nothing in the motion; it shifts every reading by the same fixed amount, and the filter, trusting its best sensor, reports a wrong attitude with confidence. Control errors can be fought; knowledge errors must be designed out, measured after assembly or calibrated against a second reference.
+
++++ question | Ra from the wrong zero
+--- ask
+A profilometer records six heights along a sealing face, in micrometers. They are measured from the stylus's starting level, **not** from the mean line: 2.0, 1.0, 3.0, 2.0, 1.5, 2.5. What is Ra, in micrometers? Type the number.
+--- answer
+0.5
+0.50
+.5
+0.5 µm
+0.5 um
+0.5 μm
+--- why
+Ra is measured from the mean line, so find it first: $(2.0 + 1.0 + 3.0 + 2.0 + 1.5 + 2.5) / 6 = 12 / 6 = 2.0$. The heights from the mean line are 0, −1.0, +1.0, 0, −0.5 and +0.5, which add to zero as they must. Drop the signs and average: $3.0 / 6 = 0.5$ micrometers. Averaging the raw readings gives 2.0, which only says where the stylus started, not how rough the surface is.
+
++++ question | A weld and a thread on one mount
+--- ask
+A sensor-mount drawing carries a weld symbol with a fillet triangle below the reference line, 5 to its left and a small circle where the arrow meets the line. The mount's tapped holes are called out M6-6H. Which reading is right?
+--- choice
+A 5 mm fillet on the other side of the joint, all around; external M6 threads with any pitch the shop prefers.
+--- choice correct
+A 5 mm fillet on the arrow side, all around the joint; internal M6 threads with the standard coarse pitch.
+--- choice
+A 5 mm fillet on the arrow side, made in the field; internal M6 threads, fine pitch.
+--- choice
+A 5 mm long fillet on the arrow side; external M6 threads, class 6.
+--- why
+Below the reference line means the arrow side (US convention); the circle means weld all around; a field weld would be a flag, not a circle. The number left of the triangle is the leg size, not the length, which would sit to the right. M6-6H is an ISO metric thread of 6 mm major diameter; with no pitch written it is the standard coarse pitch, not any pitch; and the capital H marks an internal thread, as in a tapped hole.
+
++++ question | A model sent abroad in a neutral file
+--- ask
+Your company must send an ITAR-controlled bracket model to a supplier in another country, which uses a different CAD program. A colleague suggests exporting it as STEP AP242 with semantic PMI. Which statement is right?
+--- choice
+STEP is a neutral international format, so a STEP file is not controlled technical data and needs no authorization.
+--- choice
+Only the geometry is controlled, so sending the PMI separately as a PDF keeps it legal.
+--- choice correct
+STEP AP242 with semantic PMI carries the shape and machine-readable tolerances, but the file is still controlled technical data: it needs an export authorization, and the marking belongs in the model and its metadata.
+--- choice
+Semantic PMI is removed by STEP export, so the supplier will need the 2D drawing anyway.
+--- why
+Control follows the content, not the file format: the same bracket described in any format is the same controlled data, and sending it abroad is an export that needs authorization. AP242 is the right format for the engineering job, because it carries semantic PMI that the supplier's software can read, so tolerances are not retyped. In an MBD workflow the export marking travels in the model and its metadata, and the data management system limits who can open it.
+
++++ question | Two holes at the ends of a chain
+--- ask
+Five holes sit in a row. Hole 1 is dimensioned from datum A, and each later hole is dimensioned from the one before it, every dimension $\pm 0.03$ mm. The star tracker's two locating pins go into holes 2 and 5. Worst case, by how much, plus or minus, can the distance between holes 2 and 5 vary from its nominal? Type the number in millimeters.
+--- answer
+0.09
+.09
+0.09 mm
+0.09mm
+±0.09
+--- why
+With chain dimensioning, the distance from hole 2 to hole 5 runs through three links: 2 to 3, 3 to 4 and 4 to 5. Worst case adds them: $3 \times 0.03 = 0.09$ mm. Hole 1's dimension from datum A is not in that chain, so it does not count. If the pin spacing is what matters, the designer should dimension hole 5 directly from hole 2, which gives $\pm 0.03$. Choosing which dimensions to chain, and from which datum, is how a designer keeps the stack-ups that matter short.
