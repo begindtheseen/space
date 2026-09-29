@@ -1,0 +1,1290 @@
+@track python
+@course mod-cod_ops_01_docker
+@module cod_ops_01_docker
+@title Docker and reproducible environments: practice and test
+
+=== ops01-l01 | Practice: Images, containers and layers
+--- for
+l01-images-containers-and-layers
+
++++ question | What docker diff reports for an edited file
+--- ask
+The image `gnc-sim:2.0` contains the file `/etc/sim.conf`, added in its second layer. You start a container named `edit` from it, and the container appends one line to that file, then exits:
+
+```bash
+docker run --name edit gnc-sim:2.0 sh -c 'echo "cases = 500" >> /etc/sim.conf'
+docker diff edit
+```
+
+What does `docker diff edit` print?
+--- choice
+`A /etc/sim.conf`
+--- choice
+`D /etc/sim.conf` and then `A /etc/sim.conf`
+--- choice
+Nothing, because the line was written into the image's second layer.
+--- choice correct
+`C /etc` and `C /etc/sim.conf`
+--- why
+The file already existed in the image, so it was changed, not added: `C`. Its folder `/etc` also shows `C`, because something inside it changed. Behind the scenes the union filesystem copied the whole file up into the container's writable layer and edited the copy (copy-on-write). The second layer still holds the old file, untouched, and every new container from `gnc-sim:2.0` sees the old version. `A` would mean a path the image never had, and `D` a path the container removed.
+
++++ question | A time step that comes back
+--- ask
+An image has two layers that both hold `/etc/sim.conf`. The lower layer's copy reads `dt = 0.1`; the upper layer's copy reads `dt = 0.05`. You run:
+
+```bash
+docker run --name a gnc-sim:2.1 sh -c 'echo "dt = 0.02" > /etc/sim.conf'
+docker rm a
+docker run --rm gnc-sim:2.1 cat /etc/sim.conf
+```
+
+What does the last command print?
+--- answer
+dt = 0.05
+dt=0.05
+0.05
+--- why
+Two rules decide it. First, the top layer wins: of the two read-only copies, a container sees the upper one, `dt = 0.05`. Second, the edit to `dt = 0.02` went into container `a`'s writable layer only, and `docker rm a` destroyed that layer. The new container starts with a fresh, empty writable layer over the unchanged image, so it sees `dt = 0.05` again. The lower copy, `dt = 0.1`, is still stored in the image, hidden under the upper one.
+
++++ question | The virtual size of a container
+--- ask
+`docker history` for an image lists these layers, newest at the top:
+
+```text
+CREATED BY                                                    SIZE
+CMD ["python3", "/app/run.py"]                                0B
+RUN /bin/sh -c rm /data/raw.bin                               0B
+COPY run.py /app/                                             12.3kB
+RUN /bin/sh -c mkdir /data && head -c 250000000 /dev/urandom… 250MB
+RUN /bin/sh -c set -eux; … (installs Python)                  41.4MB
+# debian.sh --arch 'amd64' out/ 'trixie' …                    87.6MB
+```
+
+A container from this image has written 4 MB of logs, and `docker ps -s` shows its size as `4MB (virtual … MB)`. What is the virtual size, in megabytes, to the nearest whole number?
+--- answer
+383
+383 MB
+383MB
+383.0
+383.0 MB
+383.0MB
+--- why
+The virtual size is the writable layer plus every image layer underneath: $87.6 + 41.4 + 250 + 0.0123 + 4 \approx 383$ MB. The trap is the `rm /data/raw.bin` row. It added only a whiteout marker, 0 B, and could not take anything away from the 250 MB layer below it, which is read-only. The container cannot see `/data/raw.bin`, yet the image still stores and ships all 250 MB of it.
+
++++ question | The kernel version on a Mac
+--- ask
+On a MacBook with Docker Desktop installed, you run:
+
+```bash
+docker run --rm debian:bookworm-slim uname -r
+```
+
+Which kernel version does it print?
+--- choice
+The version of macOS's own kernel, because a container shares its host's kernel.
+--- choice
+The kernel that Debian 12 ships, because the image is Debian 12.
+--- choice correct
+The version of the Linux kernel running inside Docker Desktop's small hidden virtual machine.
+--- choice
+Nothing: containers cannot run on macOS, so the command fails.
+--- why
+A container has no kernel of its own; it runs on whatever Linux kernel is underneath it. An image only brings the files above the kernel, so Debian's own kernel version never appears. A Linux container needs a Linux kernel, and macOS's kernel is not Linux, so Docker Desktop runs a small hidden Linux virtual machine and starts every container inside it. `uname -r` therefore reports that virtual machine's kernel.
+
++++ question | Shrinking an image from inside a container
+--- ask
+The image `wind-db:3` is 1.9 GB, most of it a raw wind archive in `/opt/archive`. To make it smaller, a colleague runs:
+
+```bash
+docker run -d --name tidy wind-db:3 sleep 600
+docker exec tidy rm -rf /opt/archive
+docker images wind-db
+```
+
+The image is still 1.9 GB. Why?
+--- choice
+`docker images` shows a stale size; it updates after the container stops.
+--- choice
+`rm` inside a container needs `sudo`, so nothing was deleted.
+--- choice correct
+The deletion happened in the container's writable layer. The image's layers are read-only and never change, so the image cannot shrink; the container's layer only gained whiteout markers.
+--- choice
+The image shrinks only when the container `tidy` is removed with `docker rm`.
+--- why
+An image is immutable. Everything a container does, including deleting, is recorded in its own writable layer: here, whiteout markers that hide `/opt/archive` from that one container. The 1.9 GB still sits in the image's layers, and every other container from `wind-db:3` still sees the archive. Removing the container throws the whiteouts away and changes nothing else. The only way to a smaller image is to build a new one that never contained the archive.
+
++++ question | A Monte Carlo that stopped with 137
+--- ask
+You start a dispersion run with a memory cap:
+
+```bash
+docker run --name mc --memory 512m mc-image:1.0 --cases 200000
+```
+
+After a minute, `docker ps -a` shows `Exited (137)`. The program has no bug, but it needs about 2 GB for this many cases. What happened?
+--- choice
+The container's pid namespace ran out of process numbers, so the program could not continue.
+--- choice correct
+The control group (cgroup) that Docker set up capped memory at 512 MB. When the program went over, the kernel killed it with SIGKILL, and 137 is 128 + 9, the code for death by signal 9.
+--- choice
+The image is corrupt: exit code 137 means a layer failed its digest check.
+--- choice
+The writable layer filled up, because a container can only store 512 MB of files.
+--- why
+Namespaces decide what a process can see; cgroups decide how much it can use. `--memory 512m` puts the process in a control group with a 512 MB memory budget, and the kernel enforces it by killing the process outright. A shell reports a process killed by signal N as exit code 128 + N, so SIGKILL (9) gives 137. The fix is a larger cap or fewer cases per run, not a different image.
+
+=== ops01-l02 | Practice: Writing a Dockerfile
+--- for
+l02-writing-a-dockerfile
+
++++ question | The status server on another port
+--- ask
+The image `status:0.1.0` ends with:
+
+```dockerfile
+ENTRYPOINT ["python3", "-m", "http.server"]
+CMD ["8000"]
+```
+
+You start it with:
+
+```bash
+docker run -d status:0.1.0 9000 --bind 127.0.0.1
+```
+
+Type the full command the container runs.
+--- answer
+python3 -m http.server 9000 --bind 127.0.0.1
+--- why
+The container runs the `ENTRYPOINT` followed by the arguments. Arguments typed after the image name replace the whole `CMD`, so `8000` is gone and `9000 --bind 127.0.0.1` takes its place, while `python3 -m http.server` stays. The default port only applies when you type no arguments at all.
+
++++ question | Which values reach the container
+--- ask
+Here is a Dockerfile:
+
+```dockerfile
+FROM python:3.12-slim
+ARG MODEL=j2
+ENV GRAVITY_MODEL=${MODEL}
+ARG CASES=100
+RUN echo "$MODEL $CASES" > /build.txt
+CMD ["sh", "-c", "echo $GRAVITY_MODEL $MODEL $CASES; cat /build.txt"]
+```
+
+You build it with `docker build -t grav --build-arg CASES=5000 .` and run `docker run --rm grav`. What are the two lines it prints?
+--- choice
+`j2 j2 5000`, then `j2 5000`
+--- choice correct
+`j2`, then `j2 5000`
+--- choice
+`j2`, then `j2 100`
+--- choice
+An empty line, then `j2 5000`
+--- why
+Build arguments exist only while the image is being built. The `RUN` step saw `MODEL=j2` (the default) and `CASES=5000` (from `--build-arg`), and froze `j2 5000` into `/build.txt`. At run time neither `MODEL` nor `CASES` is set, so the shell drops them and `echo` prints only `$GRAVITY_MODEL`, which is `j2`: the `ENV` line copied the argument's value into the image, and `ENV` values survive into every container.
+
++++ question | A user id the folder does not trust
+--- ask
+Your host account is uid 1000. The folder `results` on the host belongs to you, and `ls -ld results` shows `drwxr-xr-x`. The Dockerfile of the image `mc:2.0` contains:
+
+```dockerfile
+RUN useradd --uid 1001 --create-home sim
+USER sim
+```
+
+You run `docker run --rm -v "$PWD/results:/out" mc:2.0`, and the program tries to write `/out/run1.csv`. What happens?
+--- choice
+The file is written, owned by uid 1001 on the host.
+--- choice
+The file is written, owned by uid 1000, because the folder belongs to uid 1000.
+--- choice correct
+The write fails with "Permission denied": to the host folder, uid 1001 is "others", and others have only read and execute permission.
+--- choice
+The file is written, owned by root, because Docker's daemon runs as root.
+--- why
+A bind mount is the host's own folder, so the host's permission rules apply to the container process's uid, a plain number. `drwxr-xr-x` gives write permission to the owner, uid 1000, only. Uid 1001 is not the owner and not in the group, so it falls under "others", who may list the folder but not create files in it. Matching the uid (`useradd --uid 1000`) or running with `--user "$(id -u):$(id -g)"` fixes it.
+
++++ question | Flags for an image with only a CMD
+--- ask
+An image was built from:
+
+```dockerfile
+FROM python:3.12-slim
+WORKDIR /app
+COPY apogee.py .
+CMD ["python3", "apogee.py", "--alt", "3000", "--speed", "250"]
+```
+
+It has no `ENTRYPOINT`. What happens when you run `docker run --rm apogee:cmdonly --alt 1000 --speed 300`?
+--- choice
+It runs `python3 apogee.py --alt 1000 --speed 300`.
+--- choice
+It runs `python3 apogee.py --alt 3000 --speed 250 --alt 1000 --speed 300`.
+--- choice
+It ignores the flags and prints the default apogee, 6187 m.
+--- choice correct
+It fails: the flags replace the whole `CMD`, so Docker tries to start a program called `--alt`, which does not exist.
+--- why
+With no `ENTRYPOINT`, the `CMD` is the entire command, program included. Arguments after the image name replace all of `CMD`, so the command becomes `--alt 1000 --speed 300`, and Docker reports that the executable `--alt` cannot be found. This is exactly why the tool belongs in `ENTRYPOINT` and only its default flags in `CMD`: then typed flags replace the flags and the program stays.
+
++++ question | A health check that always fails
+--- ask
+A team adds this line to the status-page image from the lesson, which is built `FROM python:3.12-slim`:
+
+```dockerfile
+HEALTHCHECK --interval=10s --timeout=3s --retries=3 \
+  CMD ["curl", "-f", "http://localhost:8000/"]
+```
+
+The page loads fine in a browser, yet `docker ps` soon shows `(unhealthy)` and stays that way. What is the bug?
+--- choice
+`--retries=3` is too few; a server needs at least 10 tries to report healthy.
+--- choice correct
+The slim image has no `curl`. The test command cannot even start, which counts as a failure every time, so after three in a row the container is marked unhealthy.
+--- choice
+A `HEALTHCHECK` cannot use `localhost`; it must use the host's address.
+--- choice
+The `CMD` inside `HEALTHCHECK` replaced the container's own `CMD`, so the server never started.
+--- why
+Docker runs the health test inside the container, with only the programs the image contains. Any non-zero result counts as a failure, including "program not found". The slim Python image has no `curl`, which is why the lesson's check fetched the page with a one-line Python script instead. The `CMD` inside a `HEALTHCHECK` line is only the test; it does not touch the container's own `CMD`, which is why the page still loads.
+
++++ question | The one Dockerfile that meets every requirement
+--- ask
+You need an image for `mc.py` that meets four requirements:
+
+1. `docker run mc:1.0` runs `python3 /app/mc.py --cases 100`.
+2. `docker run mc:1.0 --cases 5 --seed 3` runs `python3 /app/mc.py --cases 5 --seed 3`.
+3. The program runs as uid 1000.
+4. The program reads its version from the environment variable `MC_VERSION`, set at build time with `--build-arg MC_VERSION=1.0`.
+
+Each file starts with `FROM python:3.12-slim`, `WORKDIR /app` and `COPY mc.py .`. The rest:
+
+```dockerfile
+# A
+ARG MC_VERSION=dev
+RUN useradd --uid 1000 sim
+USER sim
+ENTRYPOINT ["python3", "/app/mc.py"]
+CMD ["--cases", "100"]
+
+# B
+ARG MC_VERSION=dev
+ENV MC_VERSION=${MC_VERSION}
+USER sim
+RUN useradd --uid 1000 sim
+ENTRYPOINT ["python3", "/app/mc.py"]
+CMD ["--cases", "100"]
+
+# C
+ARG MC_VERSION=dev
+ENV MC_VERSION=${MC_VERSION}
+RUN useradd --uid 1000 sim
+USER sim
+ENTRYPOINT python3 /app/mc.py --cases 100
+
+# D
+ARG MC_VERSION=dev
+ENV MC_VERSION=${MC_VERSION}
+RUN useradd --uid 1000 sim
+USER sim
+ENTRYPOINT ["python3", "/app/mc.py"]
+CMD ["--cases", "100"]
+```
+
+Which one meets all four?
+--- choice
+A
+--- choice
+B
+--- choice
+C
+--- choice correct
+D
+--- why
+A never copies the build argument into an `ENV`, so `MC_VERSION` is gone when the container runs (requirement 4). B switches to `sim` before the user exists, so the `useradd` step runs as a user that is not there and the build fails; only root may add users anyway. C uses the shell form, which Docker runs as `/bin/sh -c "…"`, so arguments typed after the image name are ignored (requirement 2). D does each thing in the right order: argument into `ENV`, create the user as root, switch to it, the tool in exec-form `ENTRYPOINT`, and its default flags in `CMD`.
+
+=== ops01-l03 | Practice: Fast rebuilds and slim images
+--- for
+l03-fast-rebuilds-and-slim-images
+
++++ question | An edit to the data folder
+--- ask
+A telemetry replay image is built from:
+
+```dockerfile
+FROM python:3.12-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY data/ ./data/
+COPY src/ ./src/
+ENTRYPOINT ["python3", "src/replay.py"]
+```
+
+The build log numbers six steps, from `[1/6] FROM` to `[6/6] COPY src/ ./src/`. After one full build, you edit only `data/wind_profile.csv` and build again. How many of the six steps run again instead of showing `CACHED`?
+--- answer
+2
+two
+--- why
+`FROM`, `WORKDIR`, `COPY requirements.txt` and the `pip install` are unchanged and sit below the edit, so they come from the cache. `COPY data/` misses, because the checksum of the files it copies changed. Then the cascade: `COPY src/` runs again even though nothing in `src/` changed, because its parent layer is new. That makes 2. The install step stays cached because it sits below the data copy, which is the whole point of the ordering.
+
++++ question | A build id that does not change
+--- ask
+Here is a Dockerfile:
+
+```dockerfile
+FROM python:3.12-slim
+RUN python3 -c "import secrets; print(secrets.token_hex(4))" > /build_id
+ENTRYPOINT ["cat", "/build_id"]
+```
+
+You build it as `stamp:1`, and `docker run --rm stamp:1` prints `5e0c9a1f`. Without changing any file, you run `docker build -t stamp:1 .` again on the same machine, then `docker run --rm stamp:1`. What does it print?
+--- choice
+A new random id, because a `RUN` step runs again on every build.
+--- choice
+`5e0c9a1f` again, but only if you add `--no-cache` to the build.
+--- choice
+A new random id, because `ENTRYPOINT` runs the `RUN` step again when the container starts.
+--- choice correct
+`5e0c9a1f` again, because the `RUN` step's text and parent layer are unchanged, so the build reuses the cached layer.
+--- why
+The cache decides by the instruction's text and its parent layer; it never runs a step to see whether the result would differ. Same text, same parent, so the old layer, with the old id in it, is reused. `docker build --no-cache` is what forces the step to run and draw a new id. The same effect is why an unpinned `pip install` stays at last month's versions on a machine with a warm cache, while a fresh build machine gets today's.
+
++++ question | Results files and a notes file
+--- ask
+A project uses this order (version A from the lesson):
+
+```dockerfile
+FROM python:3.12-slim
+WORKDIR /app
+COPY . .
+RUN pip install --no-cache-dir -r requirements.txt
+ENTRYPOINT ["python3", "dispersion.py"]
+```
+
+Its `.dockerignore` contains the line `results/`. You make two changes, rebuilding after each: first a simulation run writes three new files into `results/`; then you edit `notes.md` in the project folder. What happens to the `pip install` step?
+--- choice correct
+It stays cached after the new results, because ignored files never reach the build context; it runs again after the `notes.md` edit, because that file changes what `COPY . .` copies.
+--- choice
+It runs again both times, because both changes are inside the project folder.
+--- choice
+It stays cached both times, because `requirements.txt` did not change.
+--- choice
+It runs again after the new results, because the context got bigger; it stays cached after the `notes.md` edit, because Markdown files are skipped.
+--- why
+`.dockerignore` removes paths from the build context before anything is sent, so the results files cannot affect `COPY . .` at all. `notes.md` is not ignored, so editing it changes the checksum of what `COPY . .` copies, the step misses, and the install above it in the cascade runs again. The cache does not know the install only reads `requirements.txt`; the lasting fix is to copy the manifest and install before `COPY . .`.
+
++++ question | Which edit breaks the copy's cache
+--- ask
+A Dockerfile has the step `COPY src/ ./src/`. After a full build, you make one of these changes and rebuild. Which one makes that step miss the cache?
+--- choice
+`touch src/main.py`, which updates the file's modification time and nothing else.
+--- choice correct
+`chmod +x src/run.sh`, which makes the script executable without changing its contents.
+--- choice
+`git commit` of the files in `src/`, which records them in `.git` but leaves them unchanged.
+--- choice
+Editing `README.md` at the top of the project, outside `src/`.
+--- why
+The checksum behind a `COPY` covers each file's contents, name and permissions, but not its modification time. `chmod +x` changes the permissions, so the step misses even though no byte of the script changed. `touch` changes only the time, a commit changes only `.git`, which is outside `src/`, and `README.md` is not part of this copy at all.
+
++++ question | Built fine, missing a file at run time
+--- ask
+A project's `.dockerignore` reads:
+
+```text
+.git
+results/
+data/
+```
+
+The `data/` line was added to keep 3 GB of raw flight logs out of the build. The Dockerfile ends with `COPY . .`, and the build succeeds. But the container stops at once with `FileNotFoundError: data/atmosphere.csv`, a 40 kB table the simulation needs. What is wrong?
+--- choice
+`COPY` cannot copy `.csv` files, so the table must be added with `RUN`.
+--- choice
+The container runs as a non-root user that may not read `data/`.
+--- choice
+The file was copied, but a later layer deleted it with a whiteout.
+--- choice correct
+`data/` in `.dockerignore` removed the whole folder from the build context, including the table, and `COPY . .` silently copies only what the context holds.
+--- why
+The builder only ever sees the build context, and `.dockerignore` decides what the context holds. `COPY . .` copies "everything that was sent", so an ignored file is not an error, it is simply absent. Narrow the pattern to what really should stay out, such as `data/raw/`, or add an exception line after it, `!data/atmosphere.csv`. Then run the final image once before trusting it.
+
++++ question | A C++ edit in a two-stage build
+--- ask
+A project builds a C++ propagator and ships it with a Python analysis layer:
+
+```dockerfile
+FROM gcc:14 AS build
+WORKDIR /src
+COPY cpp/ .
+RUN g++ -O2 -o propagate propagate.cpp
+
+FROM python:3.12-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY --from=build /src/propagate /usr/local/bin/propagate
+COPY analysis/ ./analysis/
+ENTRYPOINT ["python3", "analysis/run.py"]
+```
+
+After one full build, you edit `cpp/propagate.cpp` so that it prints one more column, and rebuild. Which steps run again?
+--- choice
+Only the build stage's `COPY cpp/ .` and `RUN g++`; the final stage comes from the cache, because it is a separate stage.
+--- choice correct
+The build stage's `COPY cpp/ .` and `RUN g++`, then the final stage's `COPY --from=build` and `COPY analysis/`. The `pip install` stays cached.
+--- choice
+Every step of the final stage, including `pip install`, because the stage it copies from changed.
+--- choice
+The build stage's two steps and the final stage's `COPY --from=build`; `COPY analysis/` stays cached because `analysis/` did not change.
+--- why
+Each stage has its own chain of layers. In the final stage, `WORKDIR`, `COPY requirements.txt` and `pip install` depend only on their own parents, which did not change, so they are cached. `COPY --from=build` copies a new program, so it misses, and from there the cascade reruns `COPY analysis/` too, because its parent layer is new. Putting the cross-stage copy below the slow install is what keeps a C++ edit from reinstalling the Python packages.
+
+=== ops01-l04 | Practice: Choosing a base image
+--- for
+l04-choosing-a-base-image
+
++++ question | Where a wheel fits
+--- ask
+A wheel is named:
+
+```text
+h5py-3.16.0-cp312-cp312-musllinux_1_2_aarch64.whl
+```
+
+`aarch64` is the name Linux uses for 64-bit ARM processors. On which of these would pip install it?
+--- choice
+`python:3.12-slim` on an x86-64 server.
+--- choice
+`python:3.12-alpine` on an x86-64 server.
+--- choice correct
+`python:3.12-alpine` on a 64-bit ARM machine.
+--- choice
+`python:3.12-slim` on a 64-bit ARM machine.
+--- choice
+`python:3.13-alpine` on a 64-bit ARM machine.
+--- why
+Every field of the label has to fit. `cp312` needs CPython 3.12, which rules out 3.13. `musllinux_1_2` needs musl 1.2 or newer, which only the Alpine images have; the slim images carry glibc, and a musllinux wheel is never on their list. `aarch64` needs a 64-bit ARM processor, which rules out the x86-64 servers.
+
++++ question | A newer glibc floor
+--- ask
+A package publishes only one wheel, `fastkep-0.9.0-cp312-cp312-manylinux_2_39_x86_64.whl`, plus its source. Consider five images, all on x86-64:
+
+- Python 3.12 on Debian 12, glibc 2.36
+- Python 3.12 on Debian 13, glibc 2.41
+- Python 3.12 on Ubuntu 24.04, glibc 2.39
+- Python 3.12 on Alpine, musl 1.2.6
+- Python 3.11 on Debian 13, glibc 2.41
+
+On how many of them does pip install that wheel instead of falling back to the source? Type the number.
+--- answer
+2
+two
+--- why
+`manylinux_2_39` means glibc 2.39 or newer. Debian 13 (2.41) and Ubuntu 24.04 (exactly 2.39) qualify. Debian 12's 2.36 is too old, Alpine has musl instead of glibc, and the Python 3.11 image fails the `cp312` field. On the other three, pip downloads the source and tries to compile it.
+
++++ question | A glibc program on Alpine
+--- ask
+To make the image as small as possible, a teammate changes the final stage of a two-stage C++ build:
+
+```dockerfile
+FROM gcc:14 AS build
+WORKDIR /src
+COPY src/ .
+RUN g++ -O2 -o period period.cpp
+
+FROM alpine:3.22
+COPY --from=build /src/period /usr/local/bin/period
+ENTRYPOINT ["period"]
+```
+
+The build succeeds and `ls -l /usr/local/bin/period` inside the image shows the file. But starting the container fails at once with `exec /usr/local/bin/period: no such file or directory`. Why?
+--- choice
+`COPY --from` lost the file's execute permission.
+--- choice
+Alpine cannot run C++ programs.
+--- choice correct
+The program was compiled in a Debian image against glibc. Alpine has only musl, so the glibc loader and libraries the program asks for do not exist there.
+--- choice
+The `ENTRYPOINT` must give the full path `/usr/local/bin/period`.
+--- why
+A compiled program records which C library it was built against and which loader should start it; for a glibc program that loader is a file like `/lib64/ld-linux-x86-64.so.2`. Alpine has none of those files, so the kernel cannot start the program, and the "no such file" in the message is about the missing loader, not the program. Use a final stage on the same distribution release as the build stage, here `debian:trixie-slim`.
+
++++ question | Which direction breaks
+--- ask
+Glibc keeps old interfaces working in newer versions. Debian 12 ("bookworm") has glibc 2.36; Debian 13 ("trixie") has glibc 2.41. Which of these combinations fails?
+--- choice
+A wheel tagged `manylinux_2_28_x86_64` installed on bookworm.
+--- choice correct
+A program compiled on trixie, copied into a `debian:bookworm-slim` final stage and run there.
+--- choice
+A program compiled on bookworm, copied into a `debian:trixie-slim` final stage and run there.
+--- choice
+A wheel tagged `manylinux_2_17_x86_64` installed on trixie.
+--- why
+Building against an older C library and running on a newer one works, because the newer one still provides every old interface. That is the whole idea behind manylinux wheels, which are built on old systems on purpose. The reverse fails: a program built on trixie may use interfaces that bookworm's older libraries do not have yet, and the loader refuses to start it, with an error such as "version `GLIBCXX_3.4.32' not found".
+
++++ question | A forty-minute build
+--- ask
+A Dockerfile reads:
+
+```dockerfile
+FROM python:3.12-alpine
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+```
+
+and `requirements.txt` pins `numpy==2.5.3`, `scipy==1.18.1` and `casadi==3.8.1`. The build fails with "Broken toolchain: cannot link a simple C program" while building CasADi. Which change is the right fix?
+--- choice correct
+Change the first line to `FROM python:3.12-slim-bookworm`.
+--- choice
+Add `RUN apk add build-base gfortran openblas-dev` before the `pip install` line.
+--- choice
+Add `--only-binary=:all:` to the `pip install` line.
+--- choice
+Pin an older NumPy, because NumPy is the package without an Alpine wheel.
+--- why
+CasADi publishes manylinux wheels but no musllinux wheel, so on Alpine pip falls back to compiling it from source, and the image has no compiler. Adding compilers with `apk` can eventually make it build, but slowly, fragilely, and possibly against a different math library than the one everyone tests. `--only-binary=:all:` only makes the build fail sooner. NumPy and SciPy do have Alpine wheels here. A Debian slim base, with the release named in the tag, gets a ready wheel for every package.
+
++++ question | Switching floors under a regression test
+--- ask
+Your team's regression test compares the SHA-256 hash of a Monte Carlo output file with a stored hash, and it passes on `python:3.12-slim`. Someone checks that every pinned package has a musllinux wheel and proposes switching to `python:3.12-alpine` to save about 17% of the image size. Will the stored hash still match?
+--- choice
+Yes: the package versions are the same, so the numbers must be the same.
+--- choice correct
+It is not guaranteed. musl's math library is a separate implementation from glibc's, and the musllinux wheels are separate builds, possibly with a different BLAS. Rerun the validation cases and treat any change as a deliberate new baseline.
+--- choice
+No: NumPy does not run on Alpine at all, so the test will crash.
+--- choice
+Only if the host machine also runs Alpine, because the kernel does the math.
+--- why
+Same versions do not mean same machine code underneath. `sin`, `exp` and friends come from the C library, and two good libraries may round a hard case differently in the last place. Matrix routines depend on the BLAS the wheel was built with. Either can change the last digits, and a hash notices every one. The kernel does none of this arithmetic. A base-image change is a platform change and needs the same validation as any other.
+
+=== ops01-l05 | Practice: Volumes, networks and compose
+--- for
+l05-volumes-networks-and-compose
+
++++ question | Three kinds of data, three homes
+--- ask
+A developer's machine runs three containers. For each, pick where the data should live:
+
+1. The simulator's source code, which you edit in your editor on the host and compile inside the container.
+2. PostgreSQL's data files for a telemetry database.
+3. A mission configuration file the simulator must read but must never change.
+
+Which assignment is right?
+--- choice
+1: named volume; 2: bind mount of `$PWD/pgdata`; 3: bind mount.
+--- choice
+1: copied into the image with `COPY`; 2: the container's writable layer; 3: named volume.
+--- choice
+1: bind mount; 2: the container's writable layer; 3: bind mount with `:ro`.
+--- choice correct
+1: bind mount of the source folder; 2: named volume; 3: bind mount with `:ro`.
+--- why
+Source code belongs to the host: a bind mount lets your editor and the container share one copy, with host ownership and layout. A database wants a private place it owns, kept across restarts and upgrades and deleted only on request, which is a named volume. The writable layer dies with the container, so it is no home for data. Configuration that must not change is mounted read-only, so a bug cannot damage it.
+
++++ question | The address for a published dashboard
+--- ask
+You start Grafana with:
+
+```bash
+docker run -d --name dash -p 127.0.0.1:8081:3000 grafana/grafana:11.6.0
+```
+
+Grafana listens on port 3000 inside the container. Type the address you open in a browser on the same machine.
+--- answer
+http://127.0.0.1:8081
+http://127.0.0.1:8081/
+127.0.0.1:8081
+http://localhost:8081
+http://localhost:8081/
+localhost:8081
+--- why
+Read `-p 127.0.0.1:8081:3000` left to right: host address, host port, container port. Docker forwards traffic that reaches the host's loopback address on port 8081 to port 3000 inside the container. Port 3000 on the host is not published at all, and because the mapping names 127.0.0.1, nobody on another machine can open it.
+
++++ question | A data source that points at itself
+--- ask
+In a compose stack, the services `db` (PostgreSQL, no `ports`) and `dashboard` (Grafana, `ports: ["127.0.0.1:3000:3000"]`) share the project's network. In Grafana's web page you add a PostgreSQL data source with host `localhost:5432`, and the connection is refused. What is wrong?
+--- choice
+PostgreSQL must publish port 5432 before any other container can reach it.
+--- choice
+Grafana must be given the database container's IP address, because names only work on the host.
+--- choice
+The dashboard's port is bound to 127.0.0.1, so it can only make connections to itself.
+--- choice correct
+Inside the dashboard container, `localhost` means the dashboard container itself, where nothing listens on 5432. The data source should use the service name, `db:5432`.
+--- why
+Every container has its own network stack, so `localhost` inside a container is that container, not the host and not its neighbors. On a compose network, Docker's name service answers each service name with the container's current address, so `db` works and keeps working when the database container is recreated. Container-to-container traffic needs no publishing, and the dashboard's own port mapping only controls who can reach Grafana from outside.
+
++++ question | A database that came up empty
+--- ask
+On Monday you start a stack with `docker compose -p flightlog up -d`, and its simulation writes rows into PostgreSQL, whose data sits in the named volume `dbdata`. You run `docker compose -p flightlog down`. On Tuesday, in the same folder, you start it with `docker compose -p flighttest up -d`, and the table is empty. Why?
+--- choice correct
+Compose names a project's volumes after the project. Monday's data is in `flightlog_dbdata`; Tuesday's project `flighttest` got a new, empty volume, `flighttest_dbdata`.
+--- choice
+`down` deleted the named volume along with the containers.
+--- choice
+Named volumes only last until the machine is restarted.
+--- choice
+PostgreSQL wipes its data folder whenever its container is recreated.
+--- why
+`down` keeps named volumes; only `down -v` removes them. But compose prefixes the project name onto the volumes and the network it creates, which is how two projects on one machine avoid sharing data by accident. A different `-p` name is a different project with its own volume. `docker volume ls` would show both, and Monday's rows are safe in `flightlog_dbdata`.
+
++++ question | Results that never reached the host
+--- ask
+You want a simulation's CSV files in the folder `results` of your project, and run:
+
+```bash
+docker run --rm -v results:/out mc:1.0
+```
+
+The program reports it wrote `/out/run1.csv`, but the `results` folder on the host stays empty. What went wrong?
+--- choice
+The container ran as root, so its files are hidden from your account.
+--- choice correct
+`results` has no leading `/`, so Docker read it as the name of a named volume. It created a volume called `results` inside its own storage, and the file is there.
+--- choice
+Bind mounts are read-only unless you add `:rw`.
+--- choice
+The file went into the container's writable layer, and `--rm` deleted it.
+--- why
+In `-v source:target`, a source that starts with `/` is a host path, which makes a bind mount. Anything else is a volume name, and Docker quietly creates that volume if it does not exist. The file is safe in the volume `results`, but not where you looked. Write the host path in full, `-v "$PWD/results:/out"`.
+
++++ question | Which connections go through
+--- ask
+A compose file declares four services:
+
+```yaml
+services:
+  sim:
+    build: ./sim
+  db:
+    image: postgres:16-bookworm
+  dashboard:
+    image: grafana/grafana:11.6.0
+    ports:
+      - "3000:3000"
+  docs:
+    image: nginx:1.27
+    ports:
+      - "127.0.0.1:8000:80"
+```
+
+PostgreSQL listens on 5432 and nginx on 80, inside their containers. How many of these six connections succeed?
+
+1. The `sim` container connects to `db:5432`.
+2. A teammate's laptop on the office network opens `http://your-machine:3000`.
+3. A teammate's laptop opens `http://your-machine:8000`.
+4. A program on your host connects to `127.0.0.1:5432`.
+5. The `dashboard` container connects to `localhost:5432`.
+6. A browser on your host opens `http://127.0.0.1:8000`.
+--- answer
+3
+three
+--- why
+1 works: the services share the project network, and `db` resolves by name, with no publishing needed. 2 works: `3000:3000` has no address prefix, so it binds on 0.0.0.0, every interface of your machine. 3 fails: port 8000 is bound to loopback only. 4 fails: `db` publishes nothing, so no host port leads to it. 5 fails: `localhost` inside the dashboard container is the dashboard itself. 6 works: host loopback port 8000 is forwarded to nginx's port 80. That is 1, 2 and 6.
+
+=== ops01-l06 | Practice: Registries, tags and digests
+--- for
+l06-registries-tags-and-digests
+
++++ question | The full name behind a short one
+--- ask
+A compose file says `image: grafana/grafana`, with no tag. Which full reference does Docker pull?
+--- choice
+`docker.io/library/grafana/grafana:latest`
+--- choice
+`docker.io/grafana/grafana` at its newest version number, such as `11.6.0`
+--- choice
+`ghcr.io/grafana/grafana:latest`
+--- choice correct
+`docker.io/grafana/grafana:latest`
+--- why
+Docker fills in what you leave out. No registry means Docker Hub, `docker.io`. The `library/` namespace is only added for official images named with one word, like `python`; `grafana/grafana` already names its namespace, `grafana`. No tag means `latest`, which is only a default name, not a promise of the newest version. For anything automated, write a real tag, and better a digest.
+
++++ question | A name that can never move
+--- ask
+Which of these references can only ever name one exact image?
+--- choice
+`python:3.12.14-slim-bookworm`, because it names the Python patch and the Debian release.
+--- choice
+`ghcr.io/gnc-team/landing-mc:git-3f9c2ab`, because it names a git commit.
+--- choice correct
+`python@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e`
+--- choice
+`python:latest`, because it always means the same thing: the newest image.
+--- why
+Every tag is a row in the registry's table, and a push can rewrite it. `3.12.14-slim-bookworm` is still rebuilt for security fixes. A git-commit tag is stable only as long as your team never pushes it twice, which is a habit, not a guarantee. A digest is computed from the image's content, so different bytes would have a different digest; nobody can point it at anything else.
+
++++ question | A wheel on CI, a compile on the laptop
+--- ask
+The same commit is built on your laptop and on a fresh CI machine. The Dockerfile starts `FROM python:3.12-slim` and installs a lockfile that pins `fastkep==0.9.0`, which publishes only a `manylinux_2_39_x86_64` wheel and its source. CI installs the wheel in seconds; on your laptop pip downloads the source and fails for lack of a compiler. Your laptop last pulled `python:3.12-slim` long ago. What explains it?
+--- choice correct
+The build used your laptop's old local copy of the tag, made when it still meant Debian 12 with glibc 2.36; CI pulled the tag's current image, Debian 13 with glibc 2.41. Only glibc 2.39 or newer accepts that wheel.
+--- choice
+The lockfile resolved differently on the two machines.
+--- choice
+Your laptop's kernel is older, and the kernel decides which wheels fit.
+--- choice
+CI has a compiler installed on the host, and builds use the host's tools.
+--- why
+A local copy of a tag is used as is; nothing checks the registry unless you pull. So one line, `FROM python:3.12-slim`, meant two different floors on two machines. The wheel's `manylinux_2_39` label needs glibc 2.39 or newer, so pip on the old floor fell back to source. Pinning `FROM` by digest makes both machines start from the same bytes, and a deliberate digest update moves both at once.
+
++++ question | A line added to the lockfile by hand
+--- ask
+A Dockerfile installs with `pip install --no-cache-dir --require-hashes -r requirements.lock`. A teammate needs pandas and appends this one line to `requirements.lock` by hand:
+
+```text
+pandas==3.0.6
+```
+
+What happens on the next build, and what is the right way to add pandas?
+--- choice
+pandas installs normally; hashes are only checked for packages that already had them.
+--- choice
+pandas installs, but pip prints a warning to add a hash later.
+--- choice correct
+The install fails: with `--require-hashes`, every package needs a hash, and pandas' own dependencies are not listed at all. Add pandas to the short wish list, regenerate the lock with `uv pip compile … --generate-hashes`, and commit both files.
+--- choice
+The install fails because `==` pins are not allowed in a lockfile.
+--- why
+Hash-checking mode is all or nothing: pip refuses any package without a matching hash, and any package not in the list, including the dependencies pandas pulls in. That strictness is the point: nothing unreviewed enters the image. The lock is generated, not typed, so change `requirements.in`, rerun the tool that resolves the full list with hashes, and review the diff.
+
++++ question | Two runners, one tag, two answers
+--- ask
+A pipeline runs `docker run landing-mc:1.0.0` on two build machines, and their output files differ. On each machine you run `docker image inspect landing-mc:1.0.0 --format '{{json .RepoDigests}}'` and get two different digests. What is the most likely story, and the fix?
+--- choice
+SHA-256 produced a different digest for the same image on each machine; use a stronger hash.
+--- choice
+The two machines have different kernels, which changes the image's digest.
+--- choice
+Digests differ from machine to machine by design; only the tag identifies an image.
+--- choice correct
+Someone pushed a different image under the tag `1.0.0`. One machine pulled the new image and the other still used its older local copy. Run the image by digest, and make the registry refuse a second push of a released tag.
+--- why
+A digest is computed from the content, so two different digests mean two different images, whatever the tag says. A tag moves silently when pushed over, and a machine keeps whatever it pulled last. Referencing `landing-mc@sha256:…` in the pipeline removes the question, and immutable tags in the registry stop the silent overwrite in the first place.
+
++++ question | A digest that no longer pulls
+--- ask
+A 2026 results record says `image = registry.example/gnc/landing-mc@sha256:d71b…`. In 2031 an investigator runs that exact reference and the registry answers "manifest unknown". Meanwhile the tag `1.0.0` was pushed over twice. What went wrong, and what should have been done in 2026?
+--- choice
+The digest was mistyped; digests expire after a few years and must be renewed.
+--- choice
+Nothing can be done: rebuild the Dockerfile from git, which gives the same digest.
+--- choice correct
+Once no tag pointed at the old image, the registry's retention rule deleted it. The team should have pushed the exact image to a registry it controls with no such rule, and saved it with `docker save … -o image.tar` next to the results.
+--- choice
+The record should have held the tag `1.0.0` instead, because tags are kept forever.
+--- why
+A digest names bytes; it does not keep them. Registries are not archives, and many delete images that no tag points at any more. Rebuilding from the Dockerfile years later rarely gives the same bytes, because mirrors, package indexes and timestamps change. So the archived image itself is the evidence: in storage you control, and as a saved file for the runs that matter most.
+
+=== ops01-l07 | Practice: Dev containers and Kubernetes
+--- for
+l07-dev-containers-and-kubernetes
+
++++ question | A server to start every morning
+--- ask
+Your team's dev container should start a local telemetry replay server every time the container starts, including after a laptop reboot. Which `devcontainer.json` key is the place for the command that starts it?
+--- choice
+`postCreateCommand`
+--- choice correct
+`postStartCommand`
+--- choice
+`forwardPorts`
+--- choice
+`containerEnv`
+--- why
+`postCreateCommand` runs once, right after the container is first created, which suits installing dependencies. A server has to be started again every time the container starts, which is what `postStartCommand` does. `forwardPorts` only makes the server's port reachable from your browser, and `containerEnv` only sets environment variables.
+
++++ question | How many pods fit on a node
+--- ask
+A node has 2 CPU cores and 4 Gi of memory that no pod has reserved yet. Each decoder pod requests `cpu: 750m` and `memory: 1Gi`. How many decoder pods can the scheduler place on this node? Type the number.
+--- answer
+2
+two
+--- why
+`750m` is 0.75 of a core. Two pods reserve 1.5 cores, and a third would need 2.25 cores, more than the 2 available. Memory would allow four pods, since each asks 1 Gi of 4 Gi. The scheduler needs both to fit, so CPU is the limit: 2 pods. The rest wait for another node.
+
++++ question | A Service you cannot reach from your desk
+--- ask
+A Service named `telemetry-decoder` has no `type` line, so it is the default kind. Programs inside the cluster reach it fine by name. From your laptop, outside the cluster, nothing answers. Which docker compose situation is the closest match?
+--- choice correct
+A compose service with no `ports` section: other services on the project network reach it by name, but nothing outside Docker's network can.
+--- choice
+A compose service published with `ports: ["0.0.0.0:80:8080"]`.
+--- choice
+A compose service whose health check is failing.
+--- choice
+A compose service that uses a bind mount instead of a named volume.
+--- why
+The default Service kind, ClusterIP, gives the pods one stable name and address, but only inside the cluster, just as an unpublished compose service is reachable only on its own network. To let traffic in from outside, a Service uses the NodePort or LoadBalancer kind, much as compose uses `ports`.
+
++++ question | A Service with a typo in its selector
+--- ask
+A Deployment's selector and pod template both use the label `app: telem-decoder`, and its three pods run and pass their probes. The Service in front of them was written with the selector `app: telemetry-decoder`. `kubectl apply` accepts both objects without an error. What happens when another program connects to the Service by name?
+--- choice
+It reaches the decoder pods, because the Service and the Deployment have the same `metadata.name`.
+--- choice correct
+Nothing answers: the Service matches no pods, so it has nowhere to send the connection.
+--- choice
+Kubernetes renames the pods' labels to match the Service.
+--- choice
+`kubectl apply` would have refused the Service, so this cannot happen.
+--- why
+A Service finds its pods only by label; it never looks at the Deployment's name. With no pod carrying `app: telemetry-decoder`, the Service is legal but useless. Kubernetes refuses a Deployment whose own selector does not match its template, because that object is broken on its own, but a Service and a Deployment are separate objects and nothing checks that they agree. Comparing the two label values is the first thing to do when a Service goes quiet.
+
++++ question | Pods restarted in a loop
+--- ask
+A decoder spends 90 seconds loading a star catalog before it answers on `/healthz`. Its Deployment has:
+
+```yaml
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8080
+```
+
+and no other probe. `kubectl describe pod` shows each pod being restarted about every 40 seconds, forever. What is the fix?
+--- choice correct
+Check "not ready yet" with a `readinessProbe`, which keeps traffic away until the pod answers, and give any liveness probe enough time before its first check.
+--- choice
+Raise `replicas` from 3 to 6, so some pods survive.
+--- choice
+Raise the memory limit, because the restarts are the kernel killing the pod.
+--- choice
+Pin the image by digest.
+--- why
+A liveness probe says "restart this container if it stops answering". Here the program is not stuck, only busy loading, but the probe fails before it can finish, so it is restarted and starts loading again, forever. A readiness probe asks a different question, "may this pod get traffic yet?", and failing it causes no restart. Mixing the two up is a classic cause of restart loops.
+
++++ question | Same image, different last digits
+--- ask
+Two teammates use the same dev container, pinned by digest. Both run the same seeded matrix-heavy test, and the last digits of one sum differ. The only difference is that one laptop has 8 cores and the other 16. Which change to `devcontainer.json` most directly removes the difference?
+--- choice
+Add `"forwardPorts": [8050]`.
+--- choice
+Set `"remoteUser": "root"`.
+--- choice correct
+Add `"containerEnv": { "OMP_NUM_THREADS": "1" }`.
+--- choice
+Move the `pip install` from `postCreateCommand` to `postStartCommand`.
+--- why
+Math libraries split big sums across as many threads as there are cores, unless told otherwise. A different number of threads adds the numbers in a different order, and floating-point addition rounds differently in a different order. Fixing the thread count in `containerEnv` makes every teammate's container add in the same order. The image was already pinned, and the other keys have nothing to do with arithmetic.
+
+=== ops01-l08 | Practice: Podman, Nix, Spack, conda-lock and uv
+--- for
+l08-alternatives-podman-nix-spack-conda-uv
+
++++ question | Writing a Spack spec
+--- ask
+You need HDF5 version 1.14.3 with its Fortran interface turned on, without MPI, compiled with GCC 13. Which Spack spec says exactly that?
+--- choice correct
+`hdf5@1.14.3 +fortran ~mpi %gcc@13`
+--- choice
+`hdf5%1.14.3 +fortran ~mpi @gcc@13`
+--- choice
+`hdf5@1.14.3 ~fortran +mpi %gcc@13`
+--- choice
+`hdf5@1.14.3 +fortran ^mpi %gcc@13`
+--- why
+`@` is "at version", `+` is "with" a variant, `~` is "without", and `%` is "compiled with". The second choice swaps `@` and `%`. The third turns Fortran off and MPI on, the opposite of what you need. `^` means "depending on", so `^mpi` would ask for an MPI dependency instead of turning MPI off.
+
++++ question | A web server's uid, rootless
+--- ask
+User `ana` has uid 1002 on the host, and `/etc/subuid` contains:
+
+```text
+ana:200000:65536
+```
+
+In a rootless Podman container that `ana` started, a web server runs as uid 33 and writes a file into a bind-mounted folder. Which uid owns the file on the host? Type the number.
+--- answer
+200032
+--- why
+Rootless Podman maps container uid 0 to `ana` herself, uid 1002, and container uids 1 to 65,536 onto her range, starting at 200,000. So container uid 1 is host uid 200,000, and container uid 33 is $200\,000 + 33 - 1 = 200\,032$. Container root, uid 0, would have written a file owned by 1002, which is why rootless containers do not leave root-owned files behind.
+
++++ question | Hashes of inputs, hashes of outputs
+--- ask
+A Nix store path and a Docker image digest both carry a hash. Suppose the same fully pinned recipe is built twice, on two different days. Which statement is right?
+--- choice
+Both hashes are guaranteed to come out the same, because both are computed from the recipe.
+--- choice correct
+The Nix store path is computed from the build's inputs, so the same pinned inputs give the same path. The image digest is computed from the finished bytes, so a rebuild that differs in anything, even a timestamp, gets a new digest.
+--- choice
+The image digest is computed from the Dockerfile's text, so it stays the same; the Nix path changes on every build.
+--- choice
+Neither hash says anything about content; both are random ids.
+--- why
+Nix hashes the derivation: the source, the compiler, the flags and every dependency's own store path. That is why a machine can fetch a ready result from a shared cache by hash. A Docker digest fingerprints what was actually built, which is why the archived image, not a rebuild, is the record to rerun. Both are content-addressed; they fingerprint different things.
+
++++ question | A new teammate on Windows
+--- ask
+A team's `environment.yml` lists `platforms: [linux-64, osx-arm64]`, and `conda-lock.yml` was generated from it and committed. A new teammate on a Windows laptop (platform `win-64`) runs `conda-lock install -n gnc-sim conda-lock.yml`. What should the team expect?
+--- choice
+It installs the `linux-64` packages, because they are the closest match.
+--- choice
+It works, because conda packages hold only Python code and fit every platform.
+--- choice correct
+The lockfile has no `win-64` section, so there is nothing exact to install. Someone adds `win-64` to `platforms`, re-runs conda-lock, reviews the new lockfile and commits it.
+--- choice
+conda-lock converts the Mac packages to Windows ones during the install.
+--- why
+conda-lock solves the environment once for each listed platform and writes a separate exact package list for each, because each platform needs its own compiled files, such as its own C++ runtime and OpenMP library. A platform that was never solved has no list. That differs from `uv.lock`, which is one universal file listing a wheel for every supported system.
+
++++ question | A short name in a CI script
+--- ask
+A CI job that used Docker is switched to Podman by replacing `docker` with `podman`. The line
+
+```bash
+podman run --rm debian:bookworm-slim ./run_tests.sh
+```
+
+now stops, where it used to work, because Podman cannot decide where to pull `debian:bookworm-slim` from. What is the right fix?
+--- choice
+Run the job as root, because rootless Podman cannot pull images.
+--- choice correct
+Write the full reference, `docker.io/library/debian:bookworm-slim`, and pin it by digest as well.
+--- choice
+Start a Docker daemon next to Podman, so that Podman can ask it.
+--- choice
+Replace `--rm` with a manual `podman rm` at the end.
+--- why
+Docker assumes Docker Hub for a short name. Podman reads a list of registries from its configuration and, when a short name could come from more than one, asks which you meant, or refuses when there is no one to ask, as in a script. A full name leaves nothing to guess, and a digest pins the exact bytes, which a pipeline needs anyway.
+
++++ question | Choosing a setup for bit-identical reruns
+--- ask
+A GNC team wants a seeded Monte Carlo to give byte-identical output on every laptop and on CI, now and years from now. Everyone uses x86-64 Linux machines. Which setup gets closest?
+--- choice
+A `uv.lock` with hashes, installed with `uv sync --locked` directly on each person's own Linux distribution.
+--- choice
+An image `FROM python:3.12-slim`, with `uv sync --locked` inside it.
+--- choice correct
+An image pinned by digest on Debian slim, with `uv sync --locked` inside it, the seed and the input data versions recorded, and the thread count fixed.
+--- choice
+An image pinned by digest, with a conda `environment.yml` that lists `numpy=2.2` and `scipy`.
+--- why
+Each piece pins a different layer. A lockfile alone leaves the C library and system packages to each machine. A tag moves, so the floor under the lockfile drifts. A plain `environment.yml` is a wish with ranges, solved again on every build. The digest pins the operating-system layer, the lockfile pins every package with its hash, and the seed, the recorded inputs and a fixed thread count cover what neither can.
+
+=== ops01-test | Docker and reproducible environments: module test
+--- teach
+The test covers the whole module: layers and containers, Dockerfile instructions, the build cache and multi-stage builds, base images and wheels, volumes, networks and compose, tags, digests and lockfiles, dev containers and Kubernetes, and the other tools that pin an environment. Most questions combine two or more lessons: you predict what Docker will do, find why a setup fails, or pick the real reason. To get ready, redo the practice questions of the lessons that felt hard, and trace each Dockerfile, mapping and command by hand before you answer.
+--- gate
+questions 13
+minutes 28
+
++++ question | Eight bytes in a big file
+--- ask
+The image `ephem:2026` has a layer holding the 1.5 GB planetary ephemeris file `/data/de440.bsp`. A container opens that file and overwrites 8 bytes of its header. Afterwards, about how big is the container's writable layer, as `docker ps -s` reports it?
+--- choice
+About 8 bytes: only the changed bytes are stored.
+--- choice
+0 B: the change is written into the image's layer.
+--- choice
+Nothing is written: files that come from the image are read-only inside a container, so the write fails.
+--- choice correct
+About 1.5 GB: before the first change, the whole file is copied up into the writable layer, and the change is made to the copy.
+--- why
+Copy-on-write works on whole files. The layer that holds the file is read-only, so the first write copies the entire file up into the container's writable layer, then changes the copy. The container now carries its own 1.5 GB copy, while the image and every other container still share the original. A container that must change a big input file is better served by a volume or a bind mount.
+
++++ question | An image five times too big
+--- ask
+A two-stage build for a CMake project:
+
+```dockerfile
+FROM gcc:14 AS build
+RUN apt-get update && apt-get install -y cmake
+WORKDIR /src
+COPY . .
+RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build
+
+FROM debian:trixie-slim
+RUN useradd --uid 1000 sim
+COPY --from=build /src/build/ /opt/sim/
+USER sim
+ENTRYPOINT ["/opt/sim/orbitprop"]
+```
+
+The program runs, and `which g++ gcc cc` finds nothing in the final image. But the image is about 600 MB, where you expected about 120 MB. Where does the extra size come from?
+--- choice
+The `apt-get install -y cmake` line puts CMake into the final image.
+--- choice
+`debian:trixie-slim` is the wrong base; a runtime stage needs `gcc:14`.
+--- choice correct
+`COPY --from=build /src/build/ /opt/sim/` copies the whole build folder: object files, CMake's cache and anything else the build left there. Copy only the program, `/src/build/orbitprop`.
+--- choice
+The build stage should end with `RUN rm -rf build/CMakeFiles` to delete the object files.
+--- why
+Only what the final stage copies ends up in the shipped image, so the build stage's size does not matter, CMake included. Here the copy took far more than the program. Deleting the object files in the build stage would shrink what gets copied, but it is a patch: the next build tool that leaves files in `build/` brings the problem back. Copying just the one file says exactly what ships, which is the point of a multi-stage build.
+
++++ question | A Python edit that recompiles C++
+--- ask
+A project's Dockerfile:
+
+```dockerfile
+FROM gcc:14 AS build
+WORKDIR /src
+COPY . .
+RUN g++ -O2 -o propagate cpp/propagate.cpp
+
+FROM python:3.12-slim
+WORKDIR /app
+COPY requirements.lock .
+RUN pip install --no-cache-dir --require-hashes -r requirements.lock
+COPY --from=build /src/propagate /usr/local/bin/propagate
+COPY analysis/ ./analysis/
+ENTRYPOINT ["python3", "analysis/run.py"]
+```
+
+In the real project the `g++` step takes six minutes, and it runs again every time someone edits only `analysis/plot.py`. Which change fixes that?
+--- choice correct
+In the build stage, replace `COPY . .` with `COPY cpp/ ./cpp/`.
+--- choice
+Move `COPY --from=build` below `COPY analysis/` in the final stage.
+--- choice
+Build with `docker build --no-cache`.
+--- choice
+Add `analysis/` to `.dockerignore`.
+--- why
+The build stage's `COPY . .` copies `analysis/` too, so a Python edit changes its checksum and the cascade reruns the compile. Copying only `cpp/` makes the compile depend on the C++ sources alone. Moving the cross-stage copy only reorders the final stage; the build stage still reruns. `--no-cache` rebuilds everything. Ignoring `analysis/` would remove it from the build context, and the final stage's `COPY analysis/` would fail.
+
++++ question | A variable in the exec form
+--- ask
+An image is built from:
+
+```dockerfile
+FROM debian:trixie-slim
+ENV APP_VERSION=1.2.0
+ENTRYPOINT ["echo", "version", "$APP_VERSION"]
+CMD ["--dry-run"]
+```
+
+What does `docker run --rm img` print?
+--- choice
+`version 1.2.0 --dry-run`
+--- choice correct
+`version $APP_VERSION --dry-run`
+--- choice
+`version 1.2.0`
+--- choice
+`version --dry-run`
+--- why
+In the exec form, Docker starts the program directly and hands it each string exactly as written; there is no shell. Replacing `$APP_VERSION` with its value is a shell's job, so `echo` receives the literal text `$APP_VERSION` and prints it. The variable is set in the container, and a program that reads its environment would see 1.2.0. The default `CMD` is appended because no arguments were typed. If you need the shell's expansion, run a shell yourself, for example `["sh", "-c", "echo version $APP_VERSION"]`.
+
++++ question | A token for uploading results
+--- ask
+A simulation image needs no secret to build, but the running program needs an upload token. Which approach keeps the token out of the image for good?
+--- choice
+`ARG UPLOAD_TOKEN`, built with `--build-arg UPLOAD_TOKEN=…`, followed by `RUN echo "$UPLOAD_TOKEN" > /app/token`.
+--- choice
+`ENV UPLOAD_TOKEN=…` in the Dockerfile.
+--- choice
+Let `COPY . .` bring in the project's `.env` file, and delete it with `RUN rm .env` in the next step.
+--- choice correct
+List `.env` in `.dockerignore` and `.gitignore`, and have compose pass the token as an `environment:` value read from that git-ignored `.env` file when the container starts.
+--- why
+The first choice records the value in the image history, and the file holds it too. An `ENV` value is stored in the image's settings for anyone who pulls it to read. The `rm` only adds a whiteout; the `.env` file's bytes stay in the `COPY` layer below. Only the last choice never lets the token reach the build: `.dockerignore` keeps the file out of the context, and compose hands the value to the container at run time.
+
++++ question | Which wheel pip picks
+--- ask
+Pip runs in `python:3.12-slim-bookworm` (Debian 12, glibc 2.36) on an x86-64 machine. The package `kepler` 2.1.0 publishes these wheels. Which one does pip install?
+--- choice
+`kepler-2.1.0-cp313-cp313-manylinux_2_28_x86_64.whl`
+--- choice
+`kepler-2.1.0-cp312-cp312-musllinux_1_2_x86_64.whl`
+--- choice
+`kepler-2.1.0-cp312-cp312-manylinux_2_39_x86_64.whl`
+--- choice
+`kepler-2.1.0-cp312-cp312-manylinux_2_28_aarch64.whl`
+--- choice correct
+`kepler-2.1.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl`
+--- why
+Every field must fit. `cp313` is for Python 3.13. `musllinux` needs musl, and this image has glibc. `manylinux_2_39` needs glibc 2.39 or newer, and bookworm has 2.36. `aarch64` is for 64-bit ARM. The last wheel is for CPython 3.12 on x86-64 with glibc 2.28 or newer, and 2.36 is newer, so pip takes it.
+
++++ question | Two lines a reviewer should change
+--- ask
+A pull request adds this compose file:
+
+```yaml
+services:
+  db:
+    image: postgres:16-bookworm
+    environment:
+      POSTGRES_USER: sim
+      POSTGRES_PASSWORD: dev-only-password
+      POSTGRES_DB: telemetry
+    ports:
+      - "5432:5432"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sim -d telemetry"]
+      interval: 2s
+      retries: 15
+  sim:
+    build: ./sim
+    environment:
+      DATABASE_URL: postgresql://sim:dev-only-password@localhost:5432/telemetry
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  dbdata:
+```
+
+`sim` fails with "connection refused". Which pair of changes should the reviewer ask for?
+--- choice correct
+In `DATABASE_URL`, replace `localhost` with `db`; and remove the `ports` section of `db`, or bind it as `127.0.0.1:5432:5432` if a person on this machine really needs it.
+--- choice
+Add `ports: ["5432:5432"]` to `sim` as well, and replace the named volume with a bind mount.
+--- choice
+Replace `localhost` with the database container's current IP address, and keep the `ports` section so `sim` can use it.
+--- choice
+Replace `localhost` with `0.0.0.0`, and keep the `ports` section so the published port can be reached.
+--- why
+Inside the `sim` container, `localhost` is `sim` itself. The service name `db` resolves on the project network, and container-to-container traffic needs no publishing. The `5432:5432` line binds on 0.0.0.0, putting the database on every network the machine is on, office Wi-Fi included. An IP address can change whenever the container is recreated, and 0.0.0.0 is not an address you connect to.
+
++++ question | Rows after a week of restarts
+--- ask
+A compose project's `sim` service creates the table if it does not exist, inserts 10 rows, and exits. The database keeps its data in a named volume. You run these commands in order:
+
+```bash
+docker compose -p mc up -d
+docker compose -p mc down
+docker compose -p mc build sim     # rebuilt after a small fix; it still inserts 10 rows
+docker compose -p mc up -d
+docker compose -p mc down -v
+docker compose -p mc up -d
+docker compose -p mc down
+docker compose -p mc up -d
+```
+
+How many rows does the table hold at the end? Type the number.
+--- answer
+20
+twenty
+--- why
+Each `up` creates a new `sim` container, which inserts 10 rows. `down` removes the containers and the network but keeps the named volume, so rows pile up: 10 after the first `up`, 20 after the second. Rebuilding the image changes nothing in the volume. `down -v` deletes the volume, so the third `up` starts from an empty database: 10. The last `down` keeps it, and the fourth `up` adds 10 more: 20.
+
++++ question | Same digest, different hash
+--- ask
+CI, an x86-64 Linux server, and a colleague's Mac with Apple silicon (64-bit ARM) both run `landing-mc@sha256:f0c1…`, where the digest is the image's multi-platform index. Seed and inputs are identical. The two output files have different SHA-256 hashes. How is that possible?
+--- choice correct
+The index digest leads each machine to its own platform image, one for amd64 and one for arm64, with separately compiled libraries, running on a different kind of processor. A bit-exact match is only promised on the same platform.
+--- choice
+It is not possible: the same digest means the same bytes on every machine, so the inputs must differ.
+--- choice
+Docker Desktop's hidden virtual machine runs a different Linux kernel, and the kernel computes the floating-point results.
+--- choice
+The Mac pulled a newer image, because the tag had moved.
+--- why
+A multi-platform index is a list with one exact image per platform, each named by its own digest. Pinning the index fixes what each platform gets, but the amd64 and arm64 images are different builds of every compiled library, run on different processors. That is why results records name the machine type, and why a bit-exact comparison is made on the same processor family. No tag is involved here, and the kernel does not do the arithmetic.
+
++++ question | A rerun on a bigger server
+--- ask
+In 2031, an investigator reruns a 2026 case on an x86-64 server, as the original was. The results record gave the image digest, the seed and the input versions, and all three are used exactly. The output differs in the last digits. The new server has four times as many cores; the record says nothing about threads. What should be checked first?
+--- choice
+Whether the digest was recomputed; pull the tag instead.
+--- choice
+The kernel version, because the new host's newer kernel changes floating-point results.
+--- choice
+The seed, because random seeds are not stable across years.
+--- choice correct
+The thread count: the program's parallel sums split the work across more threads on the new server and add in a different order. Rerun with the original thread count, and record it from now on.
+--- why
+A digest, a seed and versioned inputs pin the software, the randomness and the data. What they cannot pin is how the run was executed. A parallel reduction adds numbers in an order that depends on how many threads share the work, and floating-point addition is not associative. This is why a reproducible record also names the thread count and the machine type. The kernel does not do the program's arithmetic, and a seed produces the same stream from the same pinned code.
+
++++ question | What satisfies an auditor
+--- ask
+A configuration-management auditor asks: "For result R-2026-114, exactly which software produced it, and can you produce that software again?" Which answer satisfies the requirement?
+--- choice
+"We use Docker, so our results are reproducible."
+--- choice
+"The Dockerfile is in git, so we can rebuild the image whenever needed."
+--- choice correct
+"The run record gives the image digest, the seed and the input data versions. The exact image is stored in our own registry and saved as a file with the results. Anyone can pull it by digest and check that it is the same bytes."
+--- choice
+"We tag the image `latest` after every successful test, so the latest image is always the tested one."
+--- why
+Configuration management needs an identity for the exact configuration item and a way to get it back. A digest is that identity: it cannot drift, and anyone can verify it. The archived copy is what makes it retrievable, because a rebuild years later rarely gives the same bytes and a public registry may delete old images. The seed and input versions complete the record. A Dockerfile explains the image, and `latest` is a moving pointer.
+
++++ question | One pod that decodes differently
+--- ask
+A Deployment has run three decoder pods for months, with `image: ghcr.io/example-gnc/telemetry-decoder:latest`. Last night a node failed, and its pod was recreated on another node. Since then, one pod in three decodes some frames differently. What is the most likely cause?
+--- choice
+The Service sends frames to the wrong pods after a node failure.
+--- choice correct
+The new pod pulled whatever image `latest` points at today, a newer build, while the other two still run the image from months ago.
+--- choice
+A rolling update always moves all pods to the same version, so a hardware fault must be corrupting the frames.
+--- choice
+The readiness probe changes how a pod decodes frames.
+--- why
+Kubernetes keeps pods running; it does not pin anything. The older pods pulled `latest` months ago, and the recreated one pulled it last night. Nobody deployed anything, yet the Deployment now runs two different builds at once. Pin `image:` by digest, as for a pipeline, and change it only in a reviewed commit, so a rescheduled pod gets exactly the same image as its siblings.
+
++++ question | Unhealthy for three hours
+--- ask
+A status container started with `docker run -d` has shown `Up 3 hours (unhealthy)` in `docker ps`, and nobody restarted it. The same image in Kubernetes, with a liveness probe that makes the same request, is restarted within a minute when it hangs. What explains the difference?
+--- choice correct
+Docker's `HEALTHCHECK` only reports the status; with default settings nothing acts on it. A Kubernetes liveness probe is acted on: the container is restarted when the probe fails.
+--- choice
+The `HEALTHCHECK` must be broken, because Docker always restarts an unhealthy container.
+--- choice
+Kubernetes restarts every pod once a minute, whether it is healthy or not.
+--- choice
+Docker restarts unhealthy containers only when they run as root.
+--- why
+"Unhealthy" is a report: the process is alive but its test fails. On its own, Docker records the status and waits for something to act on it; compose can use it to hold back dependent services, and Kubernetes' liveness probe restarts the container. A readiness probe would instead keep traffic away from the pod without restarting it.
+
++++ question | A dev container to review
+--- ask
+A pull request adds this `.devcontainer/devcontainer.json`:
+
+```jsonc
+{
+  "name": "gnc-sim",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12-bookworm",
+  "remoteUser": "vscode",
+  "containerEnv": {
+    "OMP_NUM_THREADS": "1",
+    "TELEMETRY_API_TOKEN": "tlm_8f2c41d09a"
+  },
+  "postStartCommand": "pip install --user numpy scipy"
+}
+```
+
+Which set of three changes should the reviewer ask for?
+--- choice correct
+Pin the image by digest; remove the token from the file, since it is committed to git; install from a pinned `requirements-dev.txt` in `postCreateCommand`.
+--- choice
+Set `remoteUser` to `root`; remove `OMP_NUM_THREADS`; switch to an Alpine image to make it smaller.
+--- choice
+Add `forwardPorts`; rename the container; add more VS Code extensions.
+--- choice
+Pin the image by digest; move `OMP_NUM_THREADS` into `postStartCommand`; keep the token, since dev containers are private.
+--- why
+The tag moves, so teammates who join months apart get different images; a digest fixes that. `devcontainer.json` is committed, so everyone who can read the repository can read the token. `pip install numpy scipy` without versions installs whatever is newest, and `postStartCommand` repeats it at every start; pinned versions in `postCreateCommand` install the same packages once. `remoteUser: vscode` and the fixed thread count are good as they are, and Alpine brings back the musl trap.
+
++++ question | The same image under rootless Podman
+--- ask
+An image's Dockerfile contains `RUN useradd --uid 1000 sim` and `USER sim`. On the host, user `ana` has uid 1000, and `/etc/subuid` contains `ana:100000:65536`. She runs the image with rootless Podman, with a bind-mounted folder, and the program writes a file into it. Which uid owns that file on the host? Type the number.
+--- answer
+100999
+--- why
+Rootless Podman maps container uid 0 to `ana`'s own uid, 1000, and container uids 1 to 65,536 onto her range from 100,000. The program runs as container uid 1000, not 0, so it lands at $100\,000 + 1000 - 1 = 100\,999$. Under rootful Docker the same file would belong to uid 1000, which happens to be `ana`. Under rootless Podman, the image's `USER` line is what gives her a file she does not own; running the container as its root, or with Podman's options for keeping her own id, would give her 1000.
+
++++ question | What each tool pins
+--- ask
+Which statement is true?
+--- choice correct
+A Nix package gets a different store path when a dependency three levels below it is patched, even if the package's own version number is unchanged.
+--- choice
+`uv.lock` pins the C library too, because it lists the exact wheel file for each system.
+--- choice
+Podman needs its own image format, so Docker images must be converted first.
+--- choice
+`conda-lock.yml` holds one list of packages that installs on every platform.
+--- why
+A Nix store hash covers every build input, including the store paths of all dependencies, so a change anywhere below a package changes its path. `uv.lock` pins Python packages; each wheel still loads whatever C library the machine provides. Podman runs the same OCI images from the same registries. conda-lock writes a separate exact list per platform.
