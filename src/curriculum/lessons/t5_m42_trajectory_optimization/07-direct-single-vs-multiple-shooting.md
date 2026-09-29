@@ -144,7 +144,7 @@ Now push the idea to its limit. Make *every* mesh interval its own segment, of l
 The toy problem was chosen to have a growing mode. Real problems vary, and the honest way to decide is to measure.
 
 ::: example The orbit transfer, honestly graded
-Take the minimum-time orbit transfer of the shooting lessons: $7000\,\mathrm{km}$ to $9000\,\mathrm{km}$, $100\,\mathrm{N}$ of thrust on a $1200\,\mathrm{kg}$ spacecraft, controlled by the steering angle $\beta$ ("beta", the angle of the thrust away from the direction of travel). Set it up as direct single shooting with $40$ values $\beta_0, \dots, \beta_{39}$, each held for one fortieth of $t_f = 12.370316$ nondimensional time units (the optimal flight time from the shooting lesson).
+Take the minimum-time orbit transfer of the shooting lessons: $7000\,\mathrm{km}$ to $9000\,\mathrm{km}$, $100\,\mathrm{N}$ of thrust on a $1200\,\mathrm{kg}$ spacecraft, controlled by the steering angle $\beta$ ("beta", the angle of the thrust away from the direction of travel). Set it up as direct single shooting with $40$ values $\beta_0, \dots, \beta_{39}$, each held for one fortieth of $t_f = 12.370307$ nondimensional time units (the optimal flight time from the shooting lesson).
 
 **Step 1: pick a candidate.** Use the simplest one a person would write down: $\beta_k = 0$ for every $k$, thrust always pointed along the direction of travel.
 
