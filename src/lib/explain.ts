@@ -24,6 +24,8 @@ export interface ExplainSeed {
   selection: string
   /** The paragraph (or list item, or note) they sit in. */
   paragraph: string
+  /** The highlight came from code or terminal text, so a word like `sort` there is a command. */
+  inCode?: boolean
 }
 
 /** A lesson Explain may quote from. */
