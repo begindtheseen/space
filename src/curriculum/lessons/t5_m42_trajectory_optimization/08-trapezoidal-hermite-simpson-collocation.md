@@ -168,7 +168,7 @@ This is why doubling the node count on a Hermite-Simpson mesh is usually cheaper
 ## The orbit transfer, this time without a costate
 
 ::: example The minimum-time transfer, solved from straight lines
-The shooting lesson's transfer: $r_0 = 7000\,\mathrm{km}$ to $r_1 = 9000\,\mathrm{km}$, $T_{\max} = 100\,\mathrm{N}$, $I_{sp} = 1800\,\mathrm{s}$, minimum time. Indirect shooting needed a converged costate before it could even take a step, and only $5$ of $25$ random costate guesses led anywhere.
+The shooting lesson's transfer: $r_0 = 7000\,\mathrm{km}$ to $r_1 = 9000\,\mathrm{km}$, $T_{\max} = 100\,\mathrm{N}$, $I_{sp} = 1800\,\mathrm{s}$, minimum time. Indirect shooting needed a converged costate before it could even take a step, and only $11$ of $25$ random costate guesses led anywhere.
 
 **Step 1: transcribe.** Three states $(r, v_r, v_t)$ at each node, one control (the steering angle $\beta$) at each node, and the free final time $t_f$ as one more unknown. Hermite-Simpson defects on $N$ equal segments, plus the known start and end states as boundary constraints. With $N = 20$ that is $63 + 21 + 1 = 85$ unknowns and $60 + 6 = 66$ equality constraints.
 
