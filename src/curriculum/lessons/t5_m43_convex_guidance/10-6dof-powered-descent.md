@@ -10,7 +10,7 @@ Imagine a leaf blower strapped to your back, pointing straight down through your
 
 Every earlier landing in this module skipped that problem. It treated the thrust as an arrow the optimizer could point anywhere, at any instant, inside the cones of lesson 5. A real rocket is the person with the leaf blower. Its engine is bolted to the airframe, so the thrust points where the vehicle points, and turning the vehicle is itself a motion with its own speed limits.
 
-A model that tracks both kinds of motion is called **[[6-DoF|six-dof-name]]** — six **degrees of freedom**, meaning six independent ways the vehicle can move: three ways to slide (up–down, left–right, forward–back) and three ways to turn. This lesson puts the turning inside the optimization and runs the whole successive-convexification loop of lessons 7 to 9 on it, from a deliberately bad first guess. It reports what really happened in the run, including the parts that did not go cleanly. This module has spent a long time insisting on honest numbers over reassuring ones, and it should not stop at the one lesson where the numbers are hardest to get.
+A model that tracks both kinds of motion is called **[[6-DoF|six-dof-name]]** — six **degrees of freedom**, meaning six independent ways the vehicle can move: three ways to slide (up–down, left–right, forward–back) and three ways to turn. This lesson puts the turning inside the optimization and runs the whole successive-convexification loop of lessons 7 to 9 on it, from a deliberately bad first guess. It reports what really happened in the run, including the parts that did not go cleanly.
 
 ## Fourteen numbers for the state
 
@@ -104,7 +104,7 @@ The squared length is $\mathbf{q}^\top\mathbf{q}$. Its rate of change is $2\math
 
 ## Two simplifications, stated up front
 
-This model is honestly 6-DoF. Attitude and rate are real states, and the thrust direction really depends on the attitude through the nonlinear $\mathbf{R}(\mathbf{q})$. But two shortcuts keep the bookkeeping to what the lesson needs, and it is better to name them now than to discover them later.
+This model is honestly 6-DoF: attitude and rate are real states, and the thrust direction really depends on them. But two shortcuts keep the bookkeeping small, and it is better to name them now.
 
 - **The engine is fixed along the body axis.** There is no separate **[[gimbal|gimbal]]** deflection on top of the attitude, so attitude alone steers the thrust. A real vehicle usually adds a few degrees of gimbal. That changes the size of the control vector, not the structure of the problem.
 - **Angular acceleration is commanded directly.** A real actuator (thrusters, or the torque from a gimballed engine) produces a torque, and the vehicle's inertia turns torque into angular acceleration. This model skips that step.
@@ -123,7 +123,7 @@ The vehicle starts tilted, sliding and turning:
 
 It must reach the origin at rest, upright and not turning: $\mathbf{r}_N = \mathbf{0}$, $\mathbf{v}_N = \mathbf{0}$, $\mathbf{q}_N = (1, 0, 0, 0)$, $\boldsymbol{\omega}_N = \mathbf{0}$. The flight is cut into $N = 4$ to $6$ steps of $2\,\mathrm{s}$. The thrust bounds are convexified as before, and there is a bound on the commanded angular acceleration. The time step is fixed here; making the flight time free is the dilation trick of lesson 9, and it adds one more column to the same Jacobians.
 
-The first reference for SCvx is the simplest one that has no right to be good. Position, velocity and body rate go in straight lines from start to target. Attitude slides toward upright and is renormalised. Thrust is held at a constant, roughly hovering value the whole way. It is a **straight-line guess** — easy to write, and not a trajectory any real vehicle could fly.
+The first reference for SCvx is a **straight-line guess**, the simplest one with no right to be good: position, velocity and body rate go in straight lines from start to target, attitude slides toward upright (renormalised), and thrust stays at a constant, roughly hovering value. No real vehicle could fly it.
 
 ## What the linear model forgets
 
@@ -165,7 +165,7 @@ Run the $N = 6$ case with a generous starting trust region: $\Delta_{\mathbf{x}}
 **The outcome.** Two iterations, two honest rejections. In that run the radius kept shrinking and fell from $40$ to below $2$ before a step was accepted.
 :::
 
-This is not a failure of the method. It is the method working as designed on a hard first reference. At $\Delta_{\mathbf{x}} = 40$, the straight-line guess is a poor local model of dynamics coupled through $\mathbf{R}(\mathbf{q})$. The table above shows why: the error grows with the square of the distance from the reference, and $40$ units of state deviation is far past where it stays small. The trust-region rule's whole job is to notice this and correct for it with no human in the loop. On this run it did.
+This is not a failure of the method. It is the method working as designed on a hard first reference. The tilt table shows why: the linearisation error grows with the square of the distance from the reference, and $40$ units of state deviation is far past where it stays small. The trust-region rule's whole job is to notice this and correct it with no human in the loop. On this run it did.
 
 ::: example Necessary, and visibly not sufficient
 A second, smaller run uses $N = 4$ and a gentler start (smaller tilt, shorter reach). It accepts on its very first iteration. The virtual control falls to $3.7 \times 10^{-4}$ — essentially zero, the signal lessons 7 and 8 said to watch for.
@@ -178,20 +178,14 @@ So: **virtual control near zero is necessary for trusting an iterate, and this r
 :::
 
 ::: warning What "the solve took 70 seconds" does and does not mean
-None of these times is a flight timing claim. The teaching solver re-factors a full dense matrix from scratch at every Newton step, runs uncompiled, and shares its machine with other jobs — every choice that real-time flight code rules out.
+None of these times is a flight timing claim. The teaching solver re-factors a full dense matrix at every Newton step, runs uncompiled, and shares its machine — every choice real-time flight code rules out.
 
-What the numbers *do* show honestly is how much the Newton-step count swings with how well-posed a particular linearisation is: $10$ steps for an easy subproblem, $758$ for a harder one in this lesson's runs. That matters. It means an SCvx subproblem's cost is not the steady, nearly data-independent number a single convex SOCP solve gives you. Lesson 12 works out what a sparse, code-generated version of this subproblem costs and sets it against a real guidance cycle. The gap between that number and these raw seconds is the whole argument for doing that engineering before any of this flies.
+What the numbers *do* show honestly is how much the Newton-step count swings with how well-posed a linearisation is: $10$ steps for an easy subproblem, $758$ for a harder one in this lesson's runs. So an SCvx subproblem's cost is not the steady, nearly data-independent number a single convex SOCP solve gives you. Lesson 12 works out what a sparse, code-generated version costs against a real guidance cycle.
 :::
 
 ## Reading the run as a whole
 
-Put the pieces together the way a flight program reads the log of a **[[dispersion campaign|dispersion-campaign]]**, not one lucky case.
-
-In the $N = 6$ run, two iterations rejected a reference that was too far from any dynamically consistent trajectory to trust. They did so at a real, measured cost: tens of seconds and many Newton steps for the first, rejected, attempt.
-
-In the $N = 4$ run, the first iteration was accepted with virtual control at noise level. It still needed the independent true-dynamics check, because that check caught a large leftover error the virtual-control number alone would have missed.
-
-Neither run is a finished, polished landing. Both are the kind of evidence a certification argument for this method has to be built from. Not "it worked", but a record of what each safeguard caught, with the numbers to show it.
+Read these runs the way a flight program reads the log of a **[[dispersion campaign|dispersion-campaign]]**, not as one lucky case. In the $N = 6$ run, the trust-region test refused a reference too far from any flyable trajectory, at a real, measured cost. In the $N = 4$ run, a step with virtual control at noise level still needed the true-dynamics check, which caught a large error the virtual-control number missed. Neither run is a finished landing. Both are the kind of evidence a certification argument has to be built from: not "it worked", but a record of what each safeguard caught, with numbers.
 
 ::: key What this run demonstrates
 Successive convexification's safeguards are not decorative. In a real 6-DoF solve, the trust-region test rejected two genuinely bad steps from a deliberately naive reference, at a cost in Newton steps and time that varied by nearly two orders of magnitude between easy and hard subproblems. And an accepted step with near-zero virtual control still carried a large true-dynamics error ($74.8$), confirming that virtual control is a necessary, not sufficient, signal.
@@ -234,9 +228,9 @@ A propagation code steps the attitude $20$ times with $\Delta t = 2\,\mathrm{s}$
 :::
 
 ::: answer
-Each step multiplies the length by $\sqrt{1 + (\Delta t\,\|\boldsymbol{\omega}\|/2)^2} = \sqrt{1 + 0.015^2} \approx 1.000112$. After $20$ steps the length is about $1.000112^{20} \approx 1.0023$.
+Each step multiplies the length by $\sqrt{1 + (\Delta t\,\|\boldsymbol{\omega}\|/2)^2} = \sqrt{1 + 0.015^2} \approx 1.0001125$. After $20$ steps the length is about $1.0001125^{20} \approx 1.00225$.
 
-$\mathbf{R}(\mathbf{q})$ is built from products of two quaternion components, so it scales with the length squared. The thrust arrow comes out about $1.0045$ times too long — roughly half a percent of phantom thrust that the vehicle does not have. Renormalising after every step removes it.
+Written in its all-quadratic form, every entry of $\mathbf{R}(\mathbf{q})$ is a product of two quaternion components, so the matrix scales with the length squared. The thrust arrow comes out about $1.0045$ times too long ($1.00225^2 \approx 1.0045$) — roughly half a percent of phantom thrust that the vehicle does not have. Renormalising after every step removes it.
 :::
 
 ::: check
@@ -299,6 +293,28 @@ Three angles (roll, pitch, yaw) can describe any attitude, so why carry four num
 The **ground frame** is fixed to the landing site: $z$ up, $x$ downrange. The **body frame** is glued to the vehicle and turns with it: its $z$ axis runs up through the engine's thrust line. The engine always pushes along body $+z$, but gravity and the target are described in the ground frame. The rotation matrix $\mathbf{R}(\mathbf{q})$ is the translator between the two.
 :::
 
+::: context renormalise Pulling the quaternion back to length 1
+To **renormalise** means to divide a vector by its own length, so it has length exactly $1$ again. The picture: a sphere of radius $1$ holds every valid attitude. A straight-line step slides off along the tangent, a little outside the sphere. Renormalising pulls it straight back in toward the center until it lands on the surface. It changes the direction by a hair and the length back to exactly $1$.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <path d="M 30 160 A 140 140 0 0 1 310 160" fill="none" stroke="#1d6fd1" stroke-width="2"/>
+  <line x1="170" y1="160" x2="170" y2="20" stroke="#6c7a93" stroke-width="1" stroke-dasharray="3 3"/>
+  <circle cx="170" cy="20" r="4" fill="#1f2a44"/>
+  <line x1="170" y1="20" x2="270" y2="20" stroke="#b4232c" stroke-width="2"/>
+  <circle cx="270" cy="20" r="4" fill="#b4232c"/>
+  <line x1="270" y1="20" x2="170" y2="160" stroke="#6c7a93" stroke-width="1" stroke-dasharray="3 3"/>
+  <circle cx="251.4" cy="46.0" r="4" fill="#1d6fd1"/>
+  <text x="120" y="16" font-size="12" fill="#1f2a44">q now</text>
+  <text x="276" y="18" font-size="12" fill="#b4232c">after a step</text>
+  <text x="262" y="60" font-size="12" fill="#1d6fd1">renormalised</text>
+  <text x="100" y="150" font-size="12" fill="#1d6fd1">unit sphere, |q| = 1</text>
+</svg>
+```
+
+The step in the picture is exaggerated so it can be seen; its length error is about $0.23$, while the lesson's real step drifts by about $0.0001$ — some $2000$ times less.
+:::
+
 ::: context gimbal Swivelling the engine
 A **gimbal** is a pivot mount that lets an engine swivel a few degrees in two directions, so the thrust can point slightly away from the body axis. It is how most rockets steer: a Falcon 9 booster's engines gimbal. Swivelling the thrust off the center of mass also makes a torque that turns the vehicle, which is why a real model couples gimbal angle, attitude and angular acceleration. This lesson leaves the gimbal out and lets attitude do all the aiming.
 :::
@@ -331,26 +347,4 @@ Each SCvx subproblem is a convex cone program, solved here by a **barrier method
 
 ::: context dispersion-campaign Thousands of landings, not one
 A **dispersion campaign**, also called a Monte Carlo campaign, runs the guidance on thousands of simulated flights, each starting from slightly different conditions drawn at random: position, velocity, mass, wind, engine performance. Engineers then study the whole log — the worst case, the failures, what each safeguard caught — instead of the one flight that happened to look good. Flight programs base their confidence on these campaigns, and lesson 12 uses them to size an iteration cap.
-:::
-
-::: context renormalise Pulling the quaternion back to length 1
-To **renormalise** means to divide a vector by its own length, so it has length exactly $1$ again. The picture: a sphere of radius $1$ holds every valid attitude. A straight-line step slides off along the tangent, a little outside the sphere. Renormalising pulls it straight back in toward the center until it lands on the surface. It changes the direction by a hair and the length back to exactly $1$.
-
-```svg
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
-  <path d="M 60 160 A 140 140 0 0 1 300 88" fill="none" stroke="#1d6fd1" stroke-width="2"/>
-  <line x1="170" y1="160" x2="170" y2="20" stroke="#6c7a93" stroke-width="1" stroke-dasharray="3 3"/>
-  <circle cx="170" cy="20" r="4" fill="#1f2a44"/>
-  <line x1="170" y1="20" x2="270" y2="20" stroke="#b4232c" stroke-width="2"/>
-  <circle cx="270" cy="20" r="4" fill="#b4232c"/>
-  <line x1="270" y1="20" x2="170" y2="160" stroke="#6c7a93" stroke-width="1" stroke-dasharray="3 3"/>
-  <circle cx="251.4" cy="46.0" r="4" fill="#1d6fd1"/>
-  <text x="120" y="16" font-size="12" fill="#1f2a44">q now</text>
-  <text x="276" y="18" font-size="12" fill="#b4232c">after a step</text>
-  <text x="262" y="60" font-size="12" fill="#1d6fd1">renormalised</text>
-  <text x="70" y="130" font-size="12" fill="#1d6fd1">|q| = 1</text>
-</svg>
-```
-
-The step in the picture is exaggerated so it can be seen; the lesson's real step is about $10\,000$ times smaller in drift.
 :::
