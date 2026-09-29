@@ -3,6 +3,7 @@ import { markPracticed, recordRetest, updateGate } from '@/engine/apply'
 import { migrateState, newLearnerState } from '@/engine/state'
 import { LessonFormatError, answerMatches, parseTrack } from './parse'
 import {
+  choiceOrder,
   GATE_COOLDOWN_MS,
   RETEST_DAYS,
   answerInSitting,
@@ -19,6 +20,7 @@ import {
   sittingPassed,
   startSitting,
 } from './practice'
+import type { LearnQuestion } from './types'
 
 const problem = (tag: string, n: number) => `+++ ${tag} | Problem ${n}
 --- task
@@ -190,5 +192,29 @@ describe('mastery', () => {
     const bad = migrateState({ ...JSON.parse(JSON.stringify(s)), learnGates: { x: { sittings: [{ startedAt: 'nope' }] } }, learnRetests: { y: { step: 'a' } } }, t0)
     expect(bad.learnGates).toEqual({ x: { sittings: [] } })
     expect(bad.learnRetests).toEqual({})
+  })
+})
+
+describe('choice order', () => {
+  const q = (texts: string[]): LearnQuestion => ({ id: 'q', title: 't', ask: 'a', why: 'w', choices: texts.map((text, i) => ({ text, correct: i === 0 })) })
+  it('is a shuffle of every choice, different from run to run', () => {
+    const question = q(['a', 'b', 'c', 'd'])
+    const orders = new Set<string>()
+    for (let seed = 1; seed <= 40; seed++) {
+      let x = (seed * 2654435761) >>> 0
+      const random = () => {
+        x ^= x << 13
+        x ^= x >>> 17
+        x ^= x << 5
+        return (x >>> 0) / 4294967296
+      }
+      const order = choiceOrder(question, random)
+      expect([...order].sort()).toEqual([0, 1, 2, 3])
+      orders.add(order.join(''))
+    }
+    expect(orders.size).toBeGreaterThan(10)
+  })
+  it('keeps the written order when a choice points at the others', () => {
+    expect(choiceOrder(q(['a', 'b', 'All of the above']), () => 0)).toEqual([0, 1, 2])
   })
 })

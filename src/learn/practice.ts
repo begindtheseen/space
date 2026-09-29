@@ -16,7 +16,7 @@
    Everything here is plain functions over the learner state; the page draws
    them and the grader runs a problem exactly as it runs a lesson.
    ========================================================================== */
-import type { LearnExercise, LearnLesson, LearnTrack } from './types'
+import type { LearnExercise, LearnLesson, LearnQuestion, LearnTrack } from './types'
 
 /** A practice or gate problem as a lesson of its own, so the runner and the grader need nothing new. */
 export function asLesson(lesson: LearnLesson, ex: LearnExercise): LearnLesson {
@@ -286,4 +286,21 @@ export function lockedBy(
     if (gate && !passed[gate.id] && !credited(t)) return { track: t, gate }
   }
   return undefined
+}
+
+/** A choice that points at the others ("all of the above"): its question keeps the written order. */
+const POSITIONAL = /\b(?:all|none|both|neither) of (?:the )?(?:above|below|these|those|them)\b/i
+
+/**
+ * The order to show a question's choices in: shuffled afresh each time the question is shown, so a
+ * right answer is recognised, not remembered by where it sits. Indexes are into `q.choices`.
+ */
+export function choiceOrder(q: LearnQuestion, random: () => number = Math.random): number[] {
+  const order = (q.choices ?? []).map((_, i) => i)
+  if ((q.choices ?? []).some((c) => POSITIONAL.test(c.text))) return order
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1))
+    ;[order[i], order[j]] = [order[j]!, order[i]!]
+  }
+  return order
 }

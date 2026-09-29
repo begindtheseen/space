@@ -27,6 +27,7 @@ import {
   RETEST_DAYS,
   RETEST_RUNS,
   asLesson,
+  choiceOrder,
   courseMastered,
   dueRetests,
   answerInSitting,
@@ -142,6 +143,8 @@ export function QuestionCard({
 }) {
   const [picked, setPicked] = useState<number[]>([])
   const [typed, setTyped] = useState('')
+  // A fresh order each time the question is shown: the answer is recognised, not remembered by place.
+  const [order] = useState(() => choiceOrder(q))
   const multi = (q.choices?.filter((c) => c.correct).length ?? 0) > 1
   // A gate's review after the sitting only shows: nothing can be answered there.
   const locked = exam ? reveal || result !== undefined : result === true
@@ -160,7 +163,7 @@ export function QuestionCard({
       {q.choices ? (
         <div className="lm-q__choices" role={multi ? 'group' : 'radiogroup'}>
           {multi ? <div className="lm-practice__locked">More than one is right: pick every one.</div> : null}
-          {q.choices.map((c, i) => (
+          {order.map((i) => ({ c: q.choices![i]!, i })).map(({ c, i }) => (
             <label key={i} className="lm-q__choice" data-right={reveal && c.correct ? 'true' : undefined}>
               <input
                 type={multi ? 'checkbox' : 'radio'}
