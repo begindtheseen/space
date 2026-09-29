@@ -293,10 +293,10 @@ A converter can only output whole steps. As the true signal rises smoothly, the 
   <polyline points="30,150 60,150 60,126 120,126 120,102 180,102 180,78 240,78 240,54 300,54 300,30 330,30" fill="none" stroke="#1d6fd1" stroke-width="2.5"/>
   <g font-size="11" fill="#1f2a44">
     <text x="200" y="120">true signal</text>
-    <text x="120" y="95">converter output</text>
+    <text x="125" y="142">converter output</text>
     <text x="336" y="165" text-anchor="end">time</text>
   </g>
-  <line x1="306" y1="54" x2="306" y2="30" stroke="#b4232c" stroke-width="2"/>
+  <line x1="318" y1="54" x2="318" y2="30" stroke="#b4232c" stroke-width="2"/>
   <text x="252" y="22" font-size="11" fill="#b4232c">one step q</text>
   <text x="40" y="22" font-size="11" fill="#6c7a93">error stays within ±q/2</text>
 </svg>
@@ -330,10 +330,10 @@ For $n = 2$, the rule gives $2 \times 2 + 1 = 5$ points: one at the mean, and a 
   </g>
   <g font-size="11" fill="#1f2a44">
     <text x="190" y="101">mean</text>
-    <text x="282" y="80">+ direction 1</text>
-    <text x="4" y="80">− direction 1</text>
-    <text x="190" y="36">+ direction 2</text>
-    <text x="190" y="150">− direction 2</text>
+    <text x="296" y="80">+ axis 1</text>
+    <text x="66" y="80" text-anchor="end">− axis 1</text>
+    <text x="190" y="36">+ axis 2</text>
+    <text x="190" y="150">− axis 2</text>
   </g>
 </svg>
 ```
