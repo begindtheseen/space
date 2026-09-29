@@ -5621,6 +5621,34 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Parallel (AND) versus exclusive (OR) decomposition"
       ],
       "file": "cod_slk_03_architecture/09-actions-and-decomposition.md"
+    },
+    {
+      "id": "l10-temporal-logic-and-events",
+      "title": "Temporal logic and events",
+      "minutes": 24,
+      "covers": [
+        "Temporal logic: after, before, every, at, duration",
+        "Events versus conditions, and why flight teams often ban events"
+      ],
+      "file": "cod_slk_03_architecture/10-temporal-logic-and-events.md"
+    },
+    {
+      "id": "l11-transition-order-and-mutual-exclusivity",
+      "title": "Transition order and mutually exclusive guards",
+      "minutes": 20,
+      "covers": [
+        "Transition evaluation order and guaranteeing mutual exclusivity"
+      ],
+      "file": "cod_slk_03_architecture/11-transition-order-and-mutual-exclusivity.md"
+    },
+    {
+      "id": "l12-mode-sequencer-and-fdir",
+      "title": "A launch-vehicle mode sequencer with fault protection",
+      "minutes": 23,
+      "covers": [
+        "A launch-vehicle mode sequencer and FDIR/safe-mode logic"
+      ],
+      "file": "cod_slk_03_architecture/12-mode-sequencer-and-fdir.md"
     }
   ],
   "cod_slk_04_codegen": [
@@ -5651,6 +5679,86 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Interpreting missing coverage as a missing test or as dead logic"
       ],
       "file": "cod_slk_04_codegen/03-coverage.md"
+    },
+    {
+      "id": "l04-requirements-and-model-advisor",
+      "title": "Requirements and the Model Advisor: every block has a reason",
+      "minutes": 22,
+      "covers": [
+        "Requirements Toolbox: authoring, linking to blocks and tests, traceability matrices, change tracking",
+        "Model Advisor with MAB and JMAAB guidelines and the high-integrity check packs"
+      ],
+      "file": "cod_slk_04_codegen/04-requirements-and-model-advisor.md"
+    },
+    {
+      "id": "l05-polyspace",
+      "title": "Polyspace: finding bugs and proving they are not there",
+      "minutes": 24,
+      "covers": [
+        "Polyspace Bug Finder and Code Prover: proving absence of run-time errors without test cases"
+      ],
+      "file": "cod_slk_04_codegen/05-polyspace.md"
+    },
+    {
+      "id": "l06-coders-targets-and-solver-constraints",
+      "title": "Coders, targets and the rules a model must meet",
+      "minutes": 23,
+      "covers": [
+        "Simulink Coder versus Embedded Coder; the ert.tlc system target file",
+        "Hardware implementation settings: word sizes, endianness, target CPU",
+        "Solver constraints for code generation: fixed-step, discrete, no algebraic loops"
+      ],
+      "file": "cod_slk_04_codegen/06-coders-targets-and-solver-constraints.md"
+    },
+    {
+      "id": "l07-data-interface-and-code-mappings",
+      "title": "The data interface, entry points and code mappings",
+      "minutes": 24,
+      "covers": [
+        "Storage classes and the data interface: ExportedGlobal, ImportedExtern, Volatile, custom classes",
+        "Code mappings: step, initialize and terminate entry points; reusable and reentrant code"
+      ],
+      "file": "cod_slk_04_codegen/07-data-interface-and-code-mappings.md"
+    },
+    {
+      "id": "l08-parameters-fixed-point-and-crl",
+      "title": "Tunable parameters, fixed-point numbers and code replacement",
+      "minutes": 21,
+      "covers": [
+        "Tunable versus inlined parameters; Fixed-Point Designer for MCU targets",
+        "Code replacement libraries for vendor intrinsics"
+      ],
+      "file": "cod_slk_04_codegen/08-parameters-fixed-point-and-crl.md"
+    },
+    {
+      "id": "l09-traceability-and-code-metrics",
+      "title": "Reading generated code, tracing it and measuring it",
+      "minutes": 23,
+      "covers": [
+        "Traceability: generated C comments and the HTML report linking back to blocks",
+        "Code metrics: RAM, ROM and stack; the Code Profile Analyzer"
+      ],
+      "file": "cod_slk_04_codegen/09-traceability-and-code-metrics.md"
+    },
+    {
+      "id": "l10-sil-pil-and-integration",
+      "title": "SIL, PIL and plugging generated code into a real program",
+      "minutes": 22,
+      "covers": [
+        "SIL and PIL as Model block simulation modes; equivalence testing against the model",
+        "Integrating generated code with a hand-written C++ application"
+      ],
+      "file": "cod_slk_04_codegen/10-sil-pil-and-integration.md"
+    },
+    {
+      "id": "l11-legacy-code-and-tool-qualification",
+      "title": "Bringing old C into the model, and trusting your tools",
+      "minutes": 22,
+      "covers": [
+        "S-functions and the Legacy Code Tool for wrapping existing C",
+        "DO Qualification Kit and what qualifying a tool means"
+      ],
+      "file": "cod_slk_04_codegen/11-legacy-code-and-tool-qualification.md"
     }
   ],
   "cod_sql_01_select": [
@@ -12132,37 +12240,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_slk_03_architecture": {
-    "covered": 14,
+    "covered": 18,
     "total": 18,
-    "complete": false,
-    "missing": [
-      "Temporal logic: after, before, every, at, duration",
-      "Events versus conditions, and why flight teams often ban events",
-      "Transition evaluation order and guaranteeing mutual exclusivity",
-      "A launch-vehicle mode sequencer and FDIR/safe-mode logic"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_slk_04_codegen": {
-    "covered": 4,
+    "covered": 20,
     "total": 21,
     "complete": false,
     "missing": [
-      "Requirements Toolbox: authoring, linking to blocks and tests, traceability matrices, change tracking",
-      "Model Advisor with MAB and JMAAB guidelines and the high-integrity check packs",
-      "Polyspace Bug Finder and Code Prover: proving absence of run-time errors without test cases",
-      "Simulink Coder versus Embedded Coder; the ert.tlc system target file",
-      "Hardware implementation settings: word sizes, endianness, target CPU",
-      "Solver constraints for code generation: fixed-step, discrete, no algebraic loops",
-      "Storage classes and the data interface: ExportedGlobal, ImportedExtern, Volatile, custom classes",
-      "Code mappings: step, initialize and terminate entry points; reusable and reentrant code",
-      "Tunable versus inlined parameters; Fixed-Point Designer for MCU targets",
-      "Code replacement libraries for vendor intrinsics",
-      "Traceability: generated C comments and the HTML report linking back to blocks",
-      "Code metrics: RAM, ROM and stack; the Code Profile Analyzer",
-      "SIL and PIL as Model block simulation modes; equivalence testing against the model",
-      "Integrating generated code with a hand-written C++ application",
-      "S-functions and the Legacy Code Tool for wrapping existing C",
-      "DO Qualification Kit and what qualifying a tool means",
       "Real-time targets and HIL: Speedgoat, dSPACE, OPAL-RT; RCP versus HIL; fault injection"
     ]
   },
