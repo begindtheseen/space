@@ -1287,7 +1287,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-gaps-and-missing-stories",
       "title": "The story you do not have, and the background you do",
-      "minutes": 23,
+      "minutes": 22,
       "covers": [
         "honesty about gaps, career changes and a self-taught background",
         "what to do when you do not have a story for a theme"
@@ -1306,7 +1306,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-intensity-pace-and-your-decision",
       "title": "Intensity, pace, and the decision you are also making",
-      "minutes": 23,
+      "minutes": 22,
       "covers": [
         "intensity and pace as a real tradeoff to evaluate before you accept, not after",
         "cultural fit as a two-way assessment"
