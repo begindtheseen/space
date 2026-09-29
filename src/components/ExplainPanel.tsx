@@ -10,12 +10,12 @@
    ========================================================================== */
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { IconBook, IconSpark, IconTerminal, IconX } from '@/components/icons'
+import { IconBook, IconCode, IconSpark, IconTerminal, IconX } from '@/components/icons'
 import { Chip } from '@/components/ui'
 import { searchLessons } from '@/curriculum/lessons'
 import { moduleById } from '@/curriculum'
 import { useLearner } from '@/hooks/useLearner'
-import { commandByName, matchCommand, type CommandMatch } from '@/lib/commands'
+import { entryByName, kindLabel, langOf, loadReference, matchCommand, refLang, type CommandMatch, type Reference } from '@/lib/commands'
 import { claimCtx, holdCtxOpen, onCtxClaimed } from '@/lib/ctxBus'
 import {
   matchCards,
@@ -76,14 +76,15 @@ function NoteSource({ r }: { r: RankedNote }) {
  * reach for it, the flags the lessons use (the ones in her highlight lit up),
  * and an example. "See also" swaps the card to a related command.
  */
-function CommandCard({ match, onSee }: { match: CommandMatch; onSee: (name: string) => void }) {
+function CommandCard({ match, reference, onSee }: { match: CommandMatch; reference: Reference; onSee: (name: string) => void }) {
   const { ref, flags } = match
   const lit = new Set(flags.map(([f]) => f))
-  const also = (ref.seeAlso ?? []).filter((n) => commandByName(n))
+  const shell = langOf(ref) === 'shell'
+  const also = (ref.seeAlso ?? []).filter((n) => entryByName(reference, n, langOf(ref)))
   return (
-    <section className="explain__cmd" aria-label={`The ${ref.name} command`}>
+    <section className="explain__cmd" aria-label={`${kindLabel(ref)}: ${ref.name}`}>
       <div className="explain__label">
-        <IconTerminal size={12} /> Command
+        {shell ? <IconTerminal size={12} /> : <IconCode size={12} />} {kindLabel(ref)}
       </div>
       <h3 className="explain__cmd-name">
         <code>{ref.name}</code>
@@ -96,7 +97,7 @@ function CommandCard({ match, onSee }: { match: CommandMatch; onSee: (name: stri
       <Markdown className="ctx-panel__body">{ref.when}</Markdown>
       {ref.flags?.length ? (
         <>
-          <div className="explain__cmd-part">Flags you will see</div>
+          <div className="explain__cmd-part">{shell ? 'Flags you will see' : 'Parts you will see'}</div>
           <dl className="explain__flags">
             {ref.flags.map(([f, meaning]) => (
               <div key={f} data-lit={lit.has(f) || undefined}>
@@ -111,7 +112,7 @@ function CommandCard({ match, onSee }: { match: CommandMatch; onSee: (name: stri
       ) : null}
       <div className="explain__cmd-part">Example</div>
       <pre className="explain__example">
-        <code>$ {ref.example.command}</code>
+        <code>{shell ? `$ ${ref.example.command}` : ref.example.command}</code>
       </pre>
       <Markdown className="ctx-panel__body">{ref.example.says}</Markdown>
       {also.length ? (
@@ -132,12 +133,15 @@ export function ExplainPanel({
   seed,
   here,
   extra,
+  lang,
   onClose,
 }: {
   seed: ExplainSeed
   here: LibraryLesson
   /** More lessons to quote from, e.g. the Learn to code lessons she has passed in this course. */
   extra?: LibraryLesson[]
+  /** The language of the lesson she is in (a Learn to code course), when there is one. */
+  lang?: string
   onClose: () => void
 }) {
   const { state } = useLearner()
@@ -145,10 +149,22 @@ export function ExplainPanel({
   // A "see also" press shows another command's card in place of this one.
   const [seeing, setSeeing] = useState<string | null>(null)
   useEffect(() => setSeeing(null), [seed])
+  const [reference, setReference] = useState<Reference | null>(null)
+  useEffect(() => {
+    let alive = true
+    loadReference()
+      .then((r) => alive && setReference(r))
+      .catch(() => {})
+    return () => {
+      alive = false
+    }
+  }, [])
   const command = useMemo<CommandMatch | null>(() => {
-    const other = seeing ? commandByName(seeing) : undefined
-    return other ? { ref: other, flags: [] } : matchCommand(seed.selection, seed.inCode)
-  }, [seed, seeing])
+    if (!reference) return null
+    const where = refLang(seed.lang) ?? refLang(lang)
+    const other = seeing ? entryByName(reference, seeing, where) : undefined
+    return other ? { ref: other, flags: [] } : matchCommand(reference, seed.selection, { inCode: seed.inCode, lang: where })
+  }, [seed, seeing, reference, lang])
   const [failed, setFailed] = useState(false)
   const ref = useRef<HTMLElement | null>(null)
   // Read once per highlight: marking a lesson read while the panel is open should not reshuffle it.
@@ -200,7 +216,7 @@ export function ExplainPanel({
   }, [seed, here, extra])
 
   const [best, ...more] = found?.notes ?? []
-  const empty = found && !command && !best && !found.cards.length && !found.passages.length
+  const empty = found && reference && !command && !best && !found.cards.length && !found.passages.length
   const taughtIn = empty ? searchLessons(seed.selection, (id) => moduleById(id)?.title, 3) : []
 
   return createPortal(
@@ -222,6 +238,7 @@ export function ExplainPanel({
       {command ? (
         <CommandCard
           match={command}
+          reference={reference!}
           onSee={(name) => {
             setSeeing(name)
             ref.current?.scrollTo({ top: 0 })

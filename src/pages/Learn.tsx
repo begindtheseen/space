@@ -661,7 +661,7 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
         </div>
       </article>
       <SelectionAsk container={textRef} onAsk={setAsking} />
-      {asking ? <ExplainPanel seed={asking} here={here} extra={passedHere} onClose={closeAsk} /> : null}
+      {asking ? <ExplainPanel seed={asking} here={here} extra={passedHere} lang={lesson.lang} onClose={closeAsk} /> : null}
     </div>
   )
 }

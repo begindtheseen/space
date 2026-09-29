@@ -8,6 +8,16 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.1.12
+
+- Explain now knows every keyword, built-in and library name the Python, C++ and SQL lessons use,
+  not just terminal commands: `print`, `len`, `for`, `def`, `np.linalg.norm`, `std::vector`,
+  `#include <cmath>`, `SELECT`, `GROUP BY`, `COUNT` and about 1,500 more. Highlight one and the card
+  shows its description word for word from the official documentation, when you would use it, the
+  parts the lessons use, and an example.
+- It reads the word in the language of the lesson you are in, so `for` in a Python lesson is
+  Python's `for` and in a C++ lesson it is C++'s.
+
 ## 1.1.11
 
 - Explain knows every command ORBIT teaches, from `pwd` and `cp` to `git bisect`, `awk`, `docker

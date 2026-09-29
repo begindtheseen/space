@@ -1,19 +1,30 @@
-/** One command ORBIT teaches, as Explain shows it. */
+/** The language a reference entry belongs to. Terminal and git commands are `shell`. */
+export type CommandLang = 'shell' | 'python' | 'cpp' | 'sql'
+
+/** One command, keyword or library name ORBIT teaches, as Explain shows it. */
 export interface CommandRef {
-  /** Exactly as typed: `cp`, `git commit`, `docker run`, `if`, `[[`. */
+  /**
+   * Exactly as written: `cp`, `git commit`, `print`, `numpy.linalg.norm`,
+   * `str.split`, `std::vector`, `<vector>`, `#include`, `GROUP BY`, `COUNT`.
+   */
   name: string
-  /** Other spellings of the same command, e.g. `[` for `test`. */
+  /** Other spellings of the same thing: `[` for `test`, `split` for `str.split`, `vector` for `std::vector`. */
   aliases?: string[]
-  kind: 'file' | 'text' | 'system' | 'builtin' | 'keyword' | 'git' | 'build'
-  /** The command's own one-line description, word for word from its manual or built-in help. */
+  /** Which language it belongs to; leave out for terminal and git commands. */
+  lang?: CommandLang
+  kind:
+    | 'file' | 'text' | 'system' | 'builtin' | 'keyword' | 'git' | 'build'
+    | 'function' | 'type' | 'class' | 'module' | 'method' | 'constant' | 'exception'
+    | 'header' | 'directive' | 'macro' | 'library' | 'clause'
+  /** Its own description, word for word from the official documentation named in `source`. */
   official: string
-  /** Where `official` comes from, e.g. "cp manual page (GNU coreutils)". */
+  /** Where `official` comes from, e.g. "cp manual page (GNU coreutils)" or "Python built-in docstring". */
   source: string
   /** When you reach for it, in plain words. */
   when: string
-  /** The flags ORBIT teaches, each in a few words. */
-  flags?: [flag: string, meaning: string][]
+  /** The flags, arguments or parts ORBIT's lessons use, each in a few words. */
+  flags?: [part: string, meaning: string][]
   example: { command: string; says: string }
-  /** Related commands that are also in the reference. */
+  /** Related entries that are also in the reference. */
   seeAlso?: string[]
 }
