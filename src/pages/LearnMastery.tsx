@@ -153,7 +153,8 @@ export function QuestionCard({
   const ready = q.choices ? picked.length > 0 : typed.trim() !== ''
   return (
     <div className="lm-q" data-result={result === undefined ? undefined : result ? 'right' : 'wrong'}>
-      <div className="lm-practice__title">{q.title}</div>
+      {/* A title can hint at the answer ("One arrow too few"): in an exam it waits for the review. */}
+      <div className="lm-practice__title">{exam && !reveal ? 'Question' : q.title}</div>
       <Markdown>{q.ask}</Markdown>
       {q.choices ? (
         <div className="lm-q__choices" role={multi ? 'group' : 'radiogroup'}>
