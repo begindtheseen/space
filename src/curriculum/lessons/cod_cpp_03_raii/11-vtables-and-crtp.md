@@ -17,7 +17,7 @@ The measurement brings a surprise. The lookup itself is cheap. What costs you is
 
 For every class that has virtual functions, the compiler builds one table in the program's read-only data. It is called the **[[vtable|vtable-name]]**, short for virtual function table: a list of addresses, one slot per virtual function, pointing at the version that class uses. `Gain` gets one vtable. `Offset` gets another. There is one per class, not one per object.
 
-Each object then carries one hidden member, the **vptr** — "v-pointer", the address of its class's vtable. The constructor writes it. That hidden pointer is why `sizeof(Sensor)` was 16 last lesson and not 8.
+Each object then carries one hidden member, the **vptr** — "v-pointer", the address of its class's vtable. The constructor writes it. That hidden pointer is why `sizeof(Sensor)` was 16 last lesson on a typical 64-bit laptop (8 in ORBIT's 32-bit build), and not just the 4 bytes of its one `int`.
 
 A virtual call `f.apply(x)` becomes three steps:
 
@@ -50,7 +50,7 @@ struct Offset : Filter {
     double apply(double x) const override { return x + b; }
 };
 
-std::uintptr_t first_word(const void* obj) {     // read the object's first 8 bytes
+std::uintptr_t first_word(const void* obj) {     // read the object's first word: its vptr
     std::uintptr_t w;
     std::memcpy(&w, obj, sizeof w);
     return w;
@@ -87,6 +87,8 @@ Read it line by line.
 - `PlainGain` has one `double` and no virtual functions: 8 bytes. `Gain` has the same `double` plus the vptr: 16 bytes. That extra pointer is the per-object cost.
 - `g1` and `g2` start with the same 8 bytes. Both are `Gain`s, so both point at `Gain`'s one vtable. Their `k` values differ; their vptrs do not.
 - `o1` starts with a different address. It is an `Offset`, with its own vtable.
+
+ORBIT's Run button builds 32-bit WebAssembly, where a pointer is 4 bytes, so its output differs in the details. `sizeof(Gain)` is still 16 there: a 4-byte vptr, 4 bytes of padding so the `double` starts on an 8-byte boundary, then `k`. The first words are small numbers such as `0x101d0`, and the two `Gain`s still share theirs.
 - The chain applied gain 2, offset 1, gain 3: $(5 \times 2 + 1) \times 3 = 33$. Each call found the right function through the pointer.
 
 The exact addresses change on every run, because Linux loads programs at a random base address. The pattern stays: same class, same vptr. The two vtables sit `0x50 - 0x28` = 40 bytes apart. The symbol table (`nm -S`) confirms each vtable is 40 bytes long — five 8-byte entries under the **[[Itanium C++ ABI|itanium-abi]]** rules g++ follows: two bookkeeping entries, two destructor slots, and `apply`. The vptr points just past the bookkeeping, at the first function slot. You can see [[the whole layout drawn out|vtable-picture]] in the note.
@@ -113,7 +115,7 @@ _Z8run_onceRK6Filterd:
 
 There are three costs, and they are very different sizes.
 
-**One pointer per object.** Eight bytes on a 64-bit machine, plus any padding it causes. For a few dozen sensor objects, nothing. For a million small particles in a simulation, 8 MB of vptrs, and fewer objects per **[[cache line|cache-line]]**.
+**One pointer per object.** Eight bytes on a 64-bit machine (four in ORBIT's 32-bit build), plus any padding it causes. For a few dozen sensor objects, nothing. For a million small particles in a simulation, 8 MB of vptrs, and fewer objects per **[[cache line|cache-line]]**.
 
 **An indirect call per invocation.** Modern processors guess where a jump will go before they know, using a **[[branch predictor|branch-predictor]]**. When one loop calls the same class's function every time, the guess is right nearly every time and the indirect call costs about as much as a direct one. When the objects in a list are mixed kinds in random order, the guess is often wrong, and each wrong guess throws away work the processor had started.
 
@@ -400,7 +402,7 @@ A `struct Waypoint { double lat, lon, alt; };` is 24 bytes. You add one virtual 
 :::
 
 ::: answer
-The object gains one vptr of 8 bytes. Three `double`s are 24 bytes, plus 8 is 32, and 32 is already a multiple of the 8-byte alignment, so there is no extra padding: `sizeof(Waypoint)` becomes 32. An array of 100,000 grows by $100{,}000 \times 8 = 800{,}000$ bytes, about 0.8 MB, all of it copies of the same vptr. The vtable itself is shared, so it adds only a few dozen bytes once. A data record like a waypoint should not have virtual functions; this is one reason why.
+The object gains one vptr of 8 bytes. Three `double`s are 24 bytes, plus 8 is 32, and 32 is already a multiple of the 8-byte alignment, so there is no extra padding: `sizeof(Waypoint)` becomes 32. An array of 100,000 grows by $100{,}000 \times 8 = 800{,}000$ bytes, about 0.8 MB, all of it copies of the same vptr. The vtable itself is shared, so it adds only a few dozen bytes once. A data record like a waypoint should not have virtual functions; this is one reason why. (ORBIT's 32-bit build prints 32 too: a 4-byte vptr, then 4 bytes of padding before the first `double`, so the array grows by the same 800,000 bytes.)
 :::
 
 ::: check
@@ -440,7 +442,7 @@ Why can the CRTP base safely use `static_cast<const Derived&>(*this)`, when the 
 | Idea | Meaning | Rule or fact |
 | --- | --- | --- |
 | vtable | one table per class of virtual-function addresses | lives in read-only data; 40 bytes for `Gain` here |
-| vptr | hidden pointer in each object to its class's vtable | 8 bytes per object on a 64-bit machine |
+| vptr | hidden pointer in each object to its class's vtable | 8 bytes per object on a 64-bit machine, 4 in ORBIT |
 | virtual call | load vptr, load slot, indirect call | `mov rax, [rdi]` then `jmp [rax+16]` |
 | cost of dispatch | pointer per object, indirect call, lost inlining | lost inlining is usually the biggest part |
 | measured (one machine, `-O2`) | virtual 1.78, CRTP 0.37, not-inlined direct 1.42 ns/call | indirect part about 0.36 ns; lost inlining about 1.05 ns |

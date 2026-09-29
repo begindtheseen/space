@@ -168,7 +168,7 @@ C++20 added a direct way to say what a template needs. A **[[concept|concepts-hi
 
 Many are thin wrappers over last lesson's traits: in g++'s library, `std::floating_point` is one line, `std::is_floating_point_v<T>`. What is new is where and how the question is asked.
 
-A template states its requirement with a **requires-clause**: the keyword `requires` followed by a condition built from concepts. There are four spellings, all meaning the same thing:
+A template states its requirement with a **requires-clause**: the keyword `requires` followed by a condition built from concepts. There are four spellings. The first three put the same requirement on the same function; the fourth is almost the same:
 
 ```cpp
 template <typename T> requires std::floating_point<T> T f1(T x);   // requires-clause after the parameter list
@@ -177,7 +177,7 @@ template <std::floating_point T> T f3(T x);                        // the concep
 std::floating_point auto f4(std::floating_point auto x);           // abbreviated: "any floating-point x"
 ```
 
-Read `template <std::floating_point T>` as "for any floating-point type `T`", and `std::floating_point auto x` as "`x`, of any floating-point type". The requirement is part of the template's **interface**, the part a caller sees. A template whose requirement is not met is removed from overload resolution, as with SFINAE, but now the compiler knows *which requirement* failed and can say so.
+Read `template <std::floating_point T>` as "for any floating-point type `T`", and `std::floating_point auto x` as "`x`, of any floating-point type". The "almost" is the return type. `f1` to `f3` return exactly the `T` they were given. In `f4`, the `std::floating_point auto` in front is a separate placeholder: the return type is worked out from the `return` statement in the body, and only checked to be *some* floating-point type. With a body of `return x * 2.0;`, `f3(1.0f)` returns a `float` but `f4(1.0f)` returns a `double`. The requirement is part of the template's **interface**, the part a caller sees. A template whose requirement is not met is removed from overload resolution, as with SFINAE, but now the compiler knows *which requirement* failed and can say so.
 
 ::: key
 Concepts express requirements directly and readably, produce diagnostics naming the failed requirement, participate in overload resolution with a clear subsumption ordering, and can be reused by name. `enable_if` hid the intent in the return type and produced unreadable errors.

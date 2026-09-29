@@ -169,7 +169,7 @@ private:
 
 **The copy assignment** also has to free the target's old block and survive `a = a`. Look at the order: build the new block *first*, fill it, and only then free the old one. If `new` throws `std::bad_alloc`, nothing has changed yet. The guard `if (this != &other)`, read "if this is not the address of other", skips self-assignment.
 
-**The move constructor** takes the pointer and leaves `nullptr` behind. `std::exchange(other.data_, nullptr)` means "give me the old value, and set it to `nullptr`" in one step. Only 8 bytes of pointer change hands. It is `noexcept`, so `std::vector` will use it (lesson 05).
+**The move constructor** takes the pointer and leaves `nullptr` behind. `std::exchange(other.data_, nullptr)` means "give me the old value, and set it to `nullptr`" in one step. Only one pointer changes hands: 8 bytes on a typical 64-bit laptop, 4 in ORBIT's in-browser build, which is 32-bit WebAssembly. It is `noexcept`, so `std::vector` will use it (lesson 05).
 
 **The move assignment** frees what it holds, then steals. Nothing in it can fail, so it is `noexcept` too.
 
@@ -224,7 +224,7 @@ Sanity check: count the blocks. Allocated: `a`'s constructor, `b`'s copy constru
 :::
 
 ::: warning Cheap moves do not make the heap version faster
-The heap version moves 8 bytes instead of 72, but every *construction* costs a trip to the **[[heap allocator|allocator-cost]]**. For nine numbers the by-value `Matrix3` wins. Moving pays off when the resource is big and separate, like a 10,000-sample buffer.
+The heap version moves one pointer (8 bytes on a typical 64-bit laptop) instead of 72 bytes, but every *construction* costs a trip to the **[[heap allocator|allocator-cost]]**. For nine numbers the by-value `Matrix3` wins. Moving pays off when the resource is big and separate, like a 10,000-sample buffer.
 :::
 
 ## Copy assignment is where the bugs hide
@@ -403,10 +403,10 @@ Put the two versions side by side:
 | | `Matrix3` (by value) | `HeapMatrix3` (heap) |
 | --- | --- | --- |
 | special members written | zero | five (or four plus swap) |
-| `sizeof` | 72 bytes | 8 bytes, plus a 72-byte heap block |
+| `sizeof` | 72 bytes | one pointer (8 bytes on a 64-bit laptop, 4 in ORBIT), plus a 72-byte heap block |
 | construct | no allocation | one `new[]` |
 | copy | copy 72 bytes | `new[]` plus copy 72 bytes |
-| move | copy 72 bytes | copy an 8-byte pointer |
+| move | copy 72 bytes | copy one pointer |
 | bugs possible in ownership code | none written | every line you wrote |
 
 For a small, fixed-size value, the rule of zero wins on speed, simplicity and safety. It also fits a rule most flight software follows: **[[no dynamic allocation after initialization|no-heap-after-init]]**.
@@ -449,7 +449,7 @@ Yes to both. The generated copy assignment copies the `std::array`, which assign
 :::
 
 ::: check
-The by-value `Matrix3` is 72 bytes. The heap version's move constructor moves only 8 bytes. A teammate argues the heap version is therefore better for passing matrices around a 1 kHz attitude loop. Give two reasons they are wrong.
+The by-value `Matrix3` is 72 bytes. The heap version's move constructor moves only one pointer, 8 bytes on a typical 64-bit laptop. A teammate argues the heap version is therefore better for passing matrices around a 1 kHz attitude loop. Give two reasons they are wrong.
 :::
 
 ::: answer

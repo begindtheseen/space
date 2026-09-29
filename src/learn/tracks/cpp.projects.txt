@@ -11910,6 +11910,8 @@ r.then("boil").then("stir").then("serve");
 
 **`operator[]` with a string key.** A `std::map`'s `[]` finds the value for a key, or inserts a default one if the key is missing, and returns a reference you can assign through (the `std::map` lesson). Your `Json` can pass the job straight on to the map inside it, and a missing key then becomes a null value.
 
+But what if the value is a number, or an array? There is no map to pass the job to, and `std::get_if` gives back `nullptr`. Following that pointer would be undefined behavior. The spec's answer is a spare: a `static` local `Json`, which lives for the whole program, set back to null and returned whenever `[]` is used on the wrong kind. The caller gets a harmless null to look at or write into, and the real value never changes.
+
 **Looking without inserting.** Because `[]` inserts, a `const` object cannot use it. The spec's `get` answers "is there such a member?" without changing anything: it returns a **pointer** to the member, or `nullptr` if there is none. A pointer can say "nothing", which a reference cannot. `find` on a map returns an iterator, and `&it->second` is the address of the value it points to.
 
 ### Tool 6: printing, one kind at a time
@@ -12046,8 +12048,8 @@ Write `class Json` to this specification. No `main`.
 
 **Changing**
 
-- `Json& push_back(Json v)` appends `v` to an array. A null value becomes an empty array first. It returns `*this`, so calls chain.
-- `Json& operator[](const std::string& key)` returns the member with that key, inserting a null member if it is missing. A null value becomes an empty object first.
+- `Json& push_back(Json v)` appends `v` to an array. A null value becomes an empty array first. Any other kind is left unchanged. It returns `*this`, so calls chain.
+- `Json& operator[](const std::string& key)` returns the member with that key, inserting a null member if it is missing. A null value becomes an empty object first. Any other kind (a boolean, number, string or array) is left unchanged, and the call returns a reference to a spare null value that belongs to no document. The spare is reset to null on every such call, so writing through it changes nothing.
 - `const Json* get(const std::string& key) const` returns a pointer to the member with that key, or `nullptr` if this is not an object or has no such key. It never inserts.
 
 **Printing**
@@ -12131,7 +12133,10 @@ public:
 
     Json& operator[](const std::string& key) {
         if (is_null()) value_ = Object{};
-        return (*std::get_if<Object>(&value_))[key];
+        if (auto* o = std::get_if<Object>(&value_)) return (*o)[key];
+        static Json spare;          // any other kind: a throwaway null, part of no document
+        spare = Json();
+        return spare;
     }
 
     const Json* get(const std::string& key) const {
@@ -12230,6 +12235,8 @@ Json::array().dump() == "[]" && Json::object().dump() == "{}" && Json::array().p
 [] { Json doc = Json::object(); doc["k"] = 7; const Json& c = doc; const Json* k = c.get("k"); return k && k->dump() == "7" && c.get("missing") == nullptr && doc.size() == 1 && Json(5).get("k") == nullptr && Json(5).size() == 0; }()
 --- check test | A big array dumps quickly
 [] { Json a = Json::array(); for (int i = 0; i < 20000; ++i) a.push_back(i % 10); std::string d = a.dump(); return a.size() == 20000 && d.size() == 2 + 20000 + 19999 && d.substr(0, 8) == "[0,1,2,3"; }()
+--- check test | Indexing a value that is not an object changes nothing
+[] { Json n(5); n["k"] = 1; Json a = Json::array(); a.push_back(2); Json& r = a["k"]; bool fresh = r.is_null(); r = "lost"; return n.dump() == "5" && a.dump() == "[2]" && fresh && a["again"].is_null() && Json(true)["x"].is_null(); }()
 
 +++ practice | A spreadsheet cell
 --- task
@@ -12670,7 +12677,10 @@ public:
 
     Json& operator[](const std::string& key) {
         if (is_null()) value_ = Object{};
-        return (*std::get_if<Object>(&value_))[key];
+        if (auto* o = std::get_if<Object>(&value_)) return (*o)[key];
+        static Json spare;          // any other kind: a throwaway null, part of no document
+        spare = Json();
+        return spare;
     }
 
     std::string dump() const {
@@ -12797,7 +12807,10 @@ public:
 
     Json& operator[](const std::string& key) {
         if (is_null()) value_ = Object{};
-        return (*std::get_if<Object>(&value_))[key];
+        if (auto* o = std::get_if<Object>(&value_)) return (*o)[key];
+        static Json spare;          // any other kind: a throwaway null, part of no document
+        spare = Json();
+        return spare;
     }
 
     std::string dump() const {

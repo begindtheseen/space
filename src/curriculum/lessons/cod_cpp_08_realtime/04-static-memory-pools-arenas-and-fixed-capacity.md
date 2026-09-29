@@ -246,7 +246,7 @@ released slot 1
 acquire 5 -> slot 1, seq 5, altitude 5000 m
 ```
 
-Check the size. A `Telemetry` is three 4-byte fields, $3 \times 4 = 12$ bytes. A `Slot` must hold either 12 bytes or an 8-byte pointer, and the pointer needs an address that is a multiple of 8, so the slot rounds up from 12 to the next multiple of 8, which is 16. Four slots take $4 \times 16 = 64$ bytes, and the `free_` pointer adds 8: $64 + 8 = 72$. That matches the output, and there is no hidden header anywhere — the pool *is* its storage.
+Check the size. That output is from a typical 64-bit laptop, where a pointer is 8 bytes. A `Telemetry` is three 4-byte fields, $3 \times 4 = 12$ bytes. A `Slot` must hold either 12 bytes or an 8-byte pointer, and the pointer needs an address that is a multiple of 8, so the slot rounds up from 12 to the next multiple of 8, which is 16. Four slots take $4 \times 16 = 64$ bytes, and the `free_` pointer adds 8: $64 + 8 = 72$. ORBIT's Run button builds 32-bit WebAssembly, where a pointer is 4 bytes and needs only a multiple of 4. There the slot is just the 12 bytes of a `Telemetry`, so the pool is $4 \times 12 + 4 = 52$ bytes, and the first line reads `sizeof(pool) = 52`. Either way the sum matches the output, and there is no hidden header anywhere — the pool *is* its storage.
 
 Four acquires take slots 0 to 3 in the order start-up chained them. The fifth finds `free_` null and gets `nullptr` — a clear, testable answer. Releasing message 1 pushes slot 1 onto the head of the chain, so the next acquire gets slot 1 back.
 :::

@@ -38,7 +38,7 @@ Two kinds of time matter. **Wall-clock time** is what a stopwatch on the [[wall|
 Here is the program this lesson follows. It moves a satellite around a 400 km circular orbit in steps of 0.1 s, a million steps in all. After each step it keeps the newest radius in a window of the last 4,096 values, and checks how fast the radius is changing using the two newest samples. For a circular orbit that rate should stay close to zero.
 
 ```cpp
-// climb.cpp: propagate a circular low Earth orbit for 1,000,000 steps and
+// propagate.cpp: step a circular low Earth orbit for 1,000,000 steps and
 // keep the last 4096 radii for a "rate of change of radius" check.
 #include <cmath>
 #include <cstdio>
@@ -82,8 +82,8 @@ int main() {
 ```
 
 ```text
-$ g++ -O2 -g -fno-omit-frame-pointer -o climb climb.cpp
-$ ./climb
+$ g++ -O2 -g -fno-omit-frame-pointer -o propagate propagate.cpp
+$ ./propagate
 largest radial rate: 0.4347 m/s
 ```
 
@@ -95,10 +95,10 @@ The build flags matter. `-O2` turns on optimization, because timing an unoptimiz
 
 The shell's `time` command runs a program once, and one run can be off by a lot if something else was busy. **hyperfine** is a command-line benchmarking tool, written in Rust, that runs a command many times and reports the average and the spread. `--warmup 2` does two untimed runs first, so files and caches are warm. `--runs 20` sets the number of timed runs.
 
-::: example Baseline for climb
+::: example Baseline for propagate
 ```text
-$ hyperfine --warmup 2 --runs 20 ./climb
-Benchmark 1: ./climb
+$ hyperfine --warmup 2 --runs 20 ./propagate
+Benchmark 1: ./propagate
   Time (mean ± σ):     930.9 ms ±  92.7 ms    [User: 929.2 ms, System: 1.4 ms]
   Range (min … max):   883.2 ms … 1320.7 ms    20 runs
 
@@ -123,8 +123,8 @@ Time the same build, on the same input and computer, one after the other. A lapt
 A stopwatch says how long. It does not say *why*. For that, Linux has **perf**, the standard profiler that comes with the Linux kernel. Its simplest mode, `perf stat`, runs a program and reads the processor's **hardware counters**: tiny counters built into the chip that count events such as clock ticks and finished instructions.
 
 ```text
-$ perf stat ./climb
-$ perf stat -e cycles,instructions,cache-references,cache-misses,branches,branch-misses ./climb
+$ perf stat ./propagate
+$ perf stat -e cycles,instructions,cache-references,cache-misses,branches,branch-misses ./propagate
 ```
 
 The first line prints a default set of counters; the second, with `-e` for "events", picks which to count. perf prints one line per counter, with a helpful ratio after a `#` sign.
@@ -164,7 +164,7 @@ Linux controls who may read the counters through a setting called [[perf_event_p
 `perf stat` gives totals. To learn *which function* is hot, you **sample**: `perf record` interrupts the program many times per second and notes where it was, including the chain of calls that got there. Where the program is found most often is where it spends most of its time.
 
 ```text
-$ perf record -g ./climb          # sample, with call stacks (-g); writes perf.data
+$ perf record -g ./propagate          # sample, with call stacks (-g); writes perf.data
 $ perf report                     # interactive table, hottest first
 $ perf report --no-children       # sort by time spent in each function itself
 ```
@@ -173,8 +173,8 @@ $ perf report --no-children       # sort by time spent in each function itself
 
 You can do the same thing slowly with gdb: attach, print the backtrace, detach, repeat. That trick, the [[poor man's profiler|poor-mans-profiler]], shows that sampling has no magic in it.
 
-::: example Sixty samples of climb
-The call stack of a long-running `climb` was sampled 60 times, a fifth of a second apart, and identical stacks were counted. Written from the outermost call to the innermost, with the library's long template names shortened:
+::: example Sixty samples of propagate
+The call stack of a long-running `propagate` was sampled 60 times, a fifth of a second apart, and identical stacks were counted. Written from the outermost call to the innermost, with the library's long template names shortened:
 
 ```text
 56  main ; std::vector<double> copy constructor ; ... ; __memcpy_avx512_unaligned_erms
@@ -209,13 +209,13 @@ A **flame graph** turns all the sampled stacks into one picture. Here is how to 
 You make one from a perf recording with the free FlameGraph scripts by Brendan Gregg, who invented the picture:
 
 ```text
-$ perf record -F 99 -g ./climb
+$ perf record -F 99 -g ./propagate
 $ perf script > out.perf
 $ ./stackcollapse-perf.pl out.perf > out.folded
-$ ./flamegraph.pl out.folded > climb.svg
+$ ./flamegraph.pl out.folded > propagate.svg
 ```
 
-`-F 99` asks for 99 samples per second, an odd number so sampling does not march in step with anything that repeats 100 times a second. The middle script **folds** each stack into one line, like the sixty-sample list above; the last draws an SVG you open in a web browser. For `climb`, the [[flame graph|flame-graph-picture]] is one enormous tower over the vector copy, with a sliver for `step` at the edge.
+`-F 99` asks for 99 samples per second, an odd number so sampling does not march in step with anything that repeats 100 times a second. The middle script **folds** each stack into one line, like the sixty-sample list above; the last draws an SVG you open in a web browser. For `propagate`, the [[flame graph|flame-graph-picture]] is one enormous tower over the vector copy, with a sliver for `step` at the edge.
 
 ::: warning A flame graph is not a timeline
 Two boxes side by side did not necessarily run one after the other. They are sorted by name. If you need "what happened when", you need a trace, which records time stamps, not a profile.
@@ -235,18 +235,18 @@ One line changes, and the output is the same, `largest radial rate: 0.4347 m/s`.
 hyperfine with two commands runs both and compares them:
 
 ```text
-$ hyperfine --warmup 2 ./climb ./climb_ref
-Benchmark 1: ./climb
+$ hyperfine --warmup 2 ./propagate ./propagate_ref
+Benchmark 1: ./propagate
   Time (mean ± σ):     935.5 ms ±  96.5 ms    [User: 933.7 ms, System: 1.6 ms]
   Range (min … max):   895.3 ms … 1209.8 ms    10 runs
 
-Benchmark 2: ./climb_ref
+Benchmark 2: ./propagate_ref
   Time (mean ± σ):      32.6 ms ±   0.4 ms    [User: 31.3 ms, System: 1.3 ms]
   Range (min … max):    31.9 ms …  33.6 ms    90 runs
 
 Summary
-  ./climb_ref ran
-   28.67 ± 2.98 times faster than ./climb
+  ./propagate_ref ran
+   28.67 ± 2.98 times faster than ./propagate
 ```
 
 The ratio of the means is $935.5 / 32.6 \approx 28.7$, matching the summary line.
@@ -488,7 +488,7 @@ Say you track 10,000 debris objects, each with a position, a velocity and a name
 The sixty samples in this lesson were taken the slow, simple way: start the program, and sixty times attach gdb with `gdb -p <pid> -batch -ex bt`, save the backtrace, and wait a fifth of a second. Counting identical backtraces gives a profile. The trick has been passed around for years under the name "poor man's profiler", and it works on any machine where gdb works, even when perf is not available. perf does the same thing thousands of times per second with much less disturbance, which is why it is the tool of choice when you have it.
 :::
 
-::: context flame-graph-picture The flame graph for climb
+::: context flame-graph-picture The flame graph for propagate
 Drawn from the sixty samples: 56 in memcpy, 1 in malloc, 2 freeing the copy, 1 in `step`. Each sample is the same width, so memcpy's box is 56/60 of the full width. `step` gets a sliver at the right, because "step" sorts after "std". The wide flat top of memcpy is the signature of a hotspot: a box with nothing above it is doing the work itself.
 
 ```svg

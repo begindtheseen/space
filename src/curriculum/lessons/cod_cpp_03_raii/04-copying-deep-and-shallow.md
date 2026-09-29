@@ -382,7 +382,7 @@ Safe order (allocate, copy, free, adopt): the exception leaves on the first step
 :::
 
 ::: answer
-`Buffer(500)` is one temporary that allocates `500 × 8 = 4,000` bytes. The vector then copy-constructs three elements from it, each allocating its own 4,000 bytes, so `3 × 4,000 = 12,000` more. Total: `4,000 + 12,000 = 16,000` bytes in four allocations. When the line ends the temporary is destroyed and frees its 4,000 bytes, leaving 12,000 bytes owned by the vector's three elements. (The vector's own array of three `Buffer` objects is a fifth allocation, but it holds only the pointers and sizes, not the samples.)
+`Buffer(500)` is one temporary that allocates `500 × 8 = 4,000` bytes. The vector then copy-constructs three elements from it, each allocating its own 4,000 bytes, so `3 × 4,000 = 12,000` more. That is `4,000 + 12,000 = 16,000` bytes of samples, in four allocations. There is one more: the vector's own array of three `Buffer` objects, which holds only their sizes and pointers, not the samples. On a typical 64-bit laptop each `Buffer` is 16 bytes, so that fifth allocation is 48 bytes, and the full total is `16,000 + 48 = 16,048` bytes in five allocations. (ORBIT's in-browser build is 32-bit, where a `Buffer` is 8 bytes, so there the total is `16,000 + 24 = 16,024`.) When the line ends the temporary is destroyed and frees its 4,000 bytes, leaving 12,000 bytes of samples owned by the vector's three elements.
 :::
 
 ## Summary

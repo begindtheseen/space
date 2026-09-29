@@ -119,11 +119,13 @@ Read it step by step.
 
 **Only the 16-bit version failed.** The average of four samples of $20000$ should be $20000$, and for `float` and `double` it is. For `short` it came out as $3616$.
 
-**Where does 3616 come from?** The running sum is kept in a variable of type `T`. Four samples of $20000$ add up to $80000$. But a 16-bit integer holds only whole numbers from $-32768$ to $32767$ — there are $2^{16} = 65536$ possible values. When C++20 squeezes $80000$ into a `short`, it keeps the remainder after removing whole multiples of $65536$, a **[[wraparound|sixteen-bit-wrap]]**:
+**Where does 3616 come from?** The running sum is kept in a variable of type `T`. But a 16-bit integer holds only whole numbers from $-32768$ to $32767$ — there are $2^{16} = 65536$ possible values. Each `sum += at(i)` does the addition in `int` and then squeezes the result back into a `short`. When the result does not fit, C++20 keeps the remainder after removing whole multiples of $65536$, a **[[wraparound|sixteen-bit-wrap]]**. Follow the sum. The first sample gives $20000$, which fits. The second gives $40000$, which does not, so it wraps to $40000 - 65536 = -25536$. The third gives $-25536 + 20000 = -5536$, and the fourth $-5536 + 20000 = 14464$:
 
 $$
-80000 - 65536 = 14464, \qquad 14464 \div 4 = 3616.
+20000 \;\to\; -25536 \;\to\; -5536 \;\to\; 14464, \qquad 14464 \div 4 = 3616.
 $$
+
+The sum ends at $14464$, which is the true total $80000$ minus one $65536$: it went wrong on the second push, long before the last.
 
 The test's number matches the arithmetic exactly, so we understand the failure completely.
 
@@ -507,7 +509,7 @@ Many sensors produce a voltage, and an analog-to-digital converter turns that vo
 :::
 
 ::: context sixteen-bit-wrap The odometer that rolls over
-A 16-bit integer is like a car odometer with a fixed number of wheels: after the largest value it rolls round to the smallest. A signed 16-bit value runs from $-32768$ to $32767$, which is $65536$ values in all. Since C++20, converting a too-big integer into a smaller signed type is defined to keep the value modulo $2^{16}$, so $80000$ becomes $80000 - 65536 = 14464$. Before C++20 the result was left up to each compiler. Either way, the sum is wrong.
+A 16-bit integer is like a car odometer with a fixed number of wheels: after the largest value it rolls round to the smallest. A signed 16-bit value runs from $-32768$ to $32767$, which is $65536$ values in all. Since C++20, converting a too-big integer into a smaller signed type is defined to keep the value modulo $2^{16}$, so $40000$ becomes $40000 - 65536 = -25536$. In the ring buffer that happened on the second addition; the two additions after it carried on from there, and the sum ended where $80000$ would have landed if squeezed in all at once: $80000 - 65536 = 14464$. Before C++20 the result was left up to each compiler. Either way, the sum is wrong.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">

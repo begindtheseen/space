@@ -283,7 +283,7 @@ int main() {
 }
 ```
 
-With the `Sensor` and `Imu` classes from the first example (plus `#include <vector>`), the output is:
+With the `Sensor` and `Imu` classes from the first example (plus `#include <vector>`), the output on a typical 64-bit laptop is:
 
 ```text
 sizeof(Sensor) = 16, sizeof(Imu) = 24
@@ -293,12 +293,12 @@ sizeof(Sensor) = 16, sizeof(Imu) = 24
   in vector:    generic sensor reads 0.00
 ```
 
-The sizes tell the story first. A `Sensor` is 16 bytes: an 8-byte hidden pointer, the 4-byte `id_`, and 4 bytes of padding. An `Imu` is 24: the same 16, plus the 8-byte `accel_`. A 16-byte box cannot hold a 24-byte object. Something must be dropped, and it is `accel_`.
+The sizes tell the story first. A `Sensor` is 16 bytes: an 8-byte hidden pointer, the 4-byte `id_`, and 4 bytes of padding. An `Imu` is 24: the same 16, plus the 8-byte `accel_`. A 16-byte box cannot hold a 24-byte object. Something must be dropped, and it is `accel_`. (ORBIT's in-browser build is 32-bit WebAssembly, where a pointer is 4 bytes, so Run prints `sizeof(Sensor) = 8, sizeof(Imu) = 16`: a 4-byte hidden pointer and the 4-byte `id_`, then the 8-byte `accel_`. The numbers differ; the story does not.)
 
 Only the reference kept the `Imu`. The by-value parameter, the declaration `Sensor copy = imu;` and the `std::vector<Sensor>` each built a fresh `Sensor` from the base part. Each one then honestly reported what it is: a generic sensor reading 0.00. Sanity check: the id survived in all four, because `id_` lives in the base part. Only the derived part vanished.
 :::
 
-The vector line is the one that hurts in real code. `std::vector<Sensor>` stores `Sensor` objects, all 16 bytes each, side by side. It cannot store an `Imu`. A container of mixed sensor kinds must hold pointers or references to objects that live elsewhere — `std::vector<Sensor*>`, or `std::vector<std::unique_ptr<Sensor>>` — or use a different tool altogether, which lesson 12 shows.
+The vector line is the one that hurts in real code. `std::vector<Sensor>` stores `Sensor` objects, each exactly `sizeof(Sensor)` bytes, side by side. It cannot store an `Imu`. A container of mixed sensor kinds must hold pointers or references to objects that live elsewhere — `std::vector<Sensor*>`, or `std::vector<std::unique_ptr<Sensor>>` — or use a different tool altogether, which lesson 12 shows.
 
 ::: warning Slicing through assignment
 Assignment slices too, and this one damages an existing object. With `Imu a(1, 9.81), b(2, 3.71);` and `Sensor& ra = a;`, the line `ra = b;` calls `Sensor::operator=`. It copies `b`'s base part into `a`'s base part and leaves `a`'s `accel_` alone. Run it and `a` comes out with `id = 2` and `accel = 9.81` — half of one IMU glued to half of another.
@@ -374,7 +374,7 @@ Why does `std::vector<Sensor>` slice, but `std::vector<std::unique_ptr<Sensor>>`
 :::
 
 ::: answer
-A `std::vector<Sensor>` stores actual `Sensor` objects, each exactly `sizeof(Sensor)` bytes, in one row of memory. Pushing an `Imu` copies it into one of those `Sensor`-sized slots, so only the base part fits. A `std::vector<std::unique_ptr<Sensor>>` stores pointers, each 8 bytes. The `Imu` itself lives on the heap at its full size, and the vector only holds its address, so nothing is copied or cut. For this to be safe, `Sensor` needs a public virtual destructor. When the `unique_ptr` is destroyed it runs `delete` on a `Sensor*`, and without a virtual destructor that is undefined behavior and `~Imu` never runs.
+A `std::vector<Sensor>` stores actual `Sensor` objects, each exactly `sizeof(Sensor)` bytes, in one row of memory. Pushing an `Imu` copies it into one of those `Sensor`-sized slots, so only the base part fits. A `std::vector<std::unique_ptr<Sensor>>` stores pointers, each 8 bytes on a typical 64-bit laptop (4 in ORBIT's 32-bit build). The `Imu` itself lives on the heap at its full size, and the vector only holds its address, so nothing is copied or cut. For this to be safe, `Sensor` needs a public virtual destructor. When the `unique_ptr` is destroyed it runs `delete` on a `Sensor*`, and without a virtual destructor that is undefined behavior and `~Imu` never runs.
 :::
 
 ::: check
@@ -403,7 +403,7 @@ It stops anyone from deriving from the class: `class Special : public Imu` becom
 Every virtual call in this lesson worked by magic: the object "knew" its type. The next lesson opens the box — the hidden pointer and the table it points at — and measures what a virtual call really costs in a hot loop, against a template trick that gets the same structure for free.
 
 ::: context base-subobject What an Imu looks like in memory
-With g++ on a 64-bit Linux machine, the `Imu` from the first example is 24 bytes. The first 16 bytes are its `Sensor` part, laid out exactly as a stand-alone `Sensor` would be. The last 8 are what `Imu` adds.
+With g++ on a 64-bit Linux machine, the `Imu` from the first example is 24 bytes. The first 16 bytes are its `Sensor` part, laid out exactly as a stand-alone `Sensor` would be. The last 8 are what `Imu` adds. (In ORBIT's 32-bit build the hidden pointer is 4 bytes and no padding is needed, so the `Sensor` part is 8 bytes and the whole `Imu` is 16.)
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
@@ -453,7 +453,7 @@ In `const Sensor& s = imu;`, the name `s` has static type `Sensor` forever: that
 :::
 
 ::: context vptr-bridge The hidden pointer, briefly
-That extra 8 bytes in `sizeof(Sensor)` is the hidden pointer, usually called the vptr. It points at a table built by the compiler, one per class, that lists the addresses of that class's virtual functions. A virtual call loads the vptr, looks up the right slot, and calls whatever address is there. Lesson 11 draws the table, reads the machine code for a virtual call, and times it against a direct call.
+Part of `sizeof(Sensor)` is that hidden pointer, usually called the vptr: 8 bytes on a typical 64-bit laptop, 4 in ORBIT's 32-bit build. It points at a table built by the compiler, one per class, that lists the addresses of that class's virtual functions. A virtual call loads the vptr, looks up the right slot, and calls whatever address is there. Lesson 11 draws the table, reads the machine code for a virtual call, and times it against a direct call.
 :::
 
 ::: context contextual-keyword Why override is not a reserved word
@@ -477,7 +477,7 @@ F Prime is NASA JPL's open-source flight software framework, flown on the Ingenu
 :::
 
 ::: context slicing-picture Where the missing bytes went
-Copying an `Imu` into a `Sensor` runs `Sensor`'s copy constructor, which copies the `id_` (and sets up a fresh `Sensor` hidden pointer). The `accel_` bytes have nowhere to go.
+Copying an `Imu` into a `Sensor` runs `Sensor`'s copy constructor, which copies the `id_` (and sets up a fresh `Sensor` hidden pointer). The `accel_` bytes have nowhere to go. (The sizes drawn are a typical 64-bit laptop's; in ORBIT's 32-bit build they are 16 and 8.)
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 140" font-family="Inter, Arial, sans-serif">

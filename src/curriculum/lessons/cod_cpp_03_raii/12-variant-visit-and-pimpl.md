@@ -237,7 +237,7 @@ private:
 };
 ```
 
-`struct Impl;` says "a struct called `Impl` exists" without saying what is in it. That makes `Impl` an **[[incomplete type|incomplete-type]]** in the header: the compiler knows its name, not its size. You cannot make an `Impl` object with only that, but you can hold a pointer to one, because every pointer is 8 bytes. The `std::unique_ptr` from the last module owns it and deletes it.
+`struct Impl;` says "a struct called `Impl` exists" without saying what is in it. That makes `Impl` an **[[incomplete type|incomplete-type]]** in the header: the compiler knows its name, not its size. You cannot make an `Impl` object with only that, but you can hold a pointer to one, because a pointer's size does not depend on what it points to: 8 bytes on a typical 64-bit laptop, 4 in ORBIT's in-browser build, which is 32-bit WebAssembly. The `std::unique_ptr` from the last module owns it and deletes it.
 
 ```cpp
 // recorder.cpp
@@ -301,7 +301,7 @@ g++ main.o recorder.o -o app
 3 samples, sizeof(Recorder) = 8
 ```
 
-Both files compiled, then linked. `sizeof(Recorder)` is 8: the object is one pointer.
+Both files compiled, then linked. `sizeof(Recorder)` is 8 on this 64-bit laptop: the object is one pointer. (In ORBIT's 32-bit build that one pointer, and so the `Recorder`, is 4 bytes.)
 
 Now add a private member, `double max_alt_m = 0.0;`, to `Impl` in `recorder.cpp`, and run `make` again:
 
@@ -456,7 +456,7 @@ A type is incomplete when the compiler has seen its name but not its definition.
 :::
 
 ::: context abi-stability Why a size change breaks compiled code
-When `main.cpp` is compiled, the size of `Recorder` and the offset of each member are baked into its machine code: how much stack space to reserve, where to find each field. If a library later ships a `Recorder` with one more private member, old compiled callers still reserve the old size and read the old offsets, and memory is silently corrupted. That is an ABI break. With PIMPL, the only thing callers ever see is one pointer, so the library's insides can change without breaking them.
+When `main.cpp` is compiled, the size of `Recorder` and the offset of each member are baked into its machine code: how much stack space to reserve, where to find each field. If a library later ships a `Recorder` with one more private member, old compiled callers still reserve the old size and read the old offsets, and memory is silently corrupted. That is an ABI break. With PIMPL, the only thing callers ever see is one pointer (8 bytes on a typical 64-bit laptop, as drawn; 4 in ORBIT's 32-bit build), so the library's insides can change without breaking them.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">

@@ -380,7 +380,7 @@ A **[[vector grows|vector-growth]]** by allocating a bigger buffer, moving its e
 
 int main() {
     std::vector<int> faults = {3, 7};
-    faults.shrink_to_fit();                  // capacity is exactly 2
+    faults.shrink_to_fit();                  // asks for capacity 2: a request, not a promise
     for (int code : faults) {
         if (code == 3) faults.push_back(99); // grows: the loop's iterator dangles
         std::printf("fault %d\n", code);
@@ -403,7 +403,7 @@ freed by thread T0 here:
     #7 0x5624a446587d in main l03_iter_bug.cpp:8
 ```
 
-The freed region is 8 bytes: two `int`s, the old buffer. The bad read is 4 bytes inside it — the second element, which the loop was about to visit. And the frame name `_M_realloc_insert` says it plainly: the free happened because `push_back` had to reallocate. Library frames look scary, but you only need to find the first line that is *your* file.
+The freed region is 8 bytes: two `int`s, the old buffer. So here the capacity really was 2, although `shrink_to_fit` only asks, and the standard lets a library keep a bigger buffer. The bad read is 4 bytes inside it — the second element, which the loop was about to visit. And the frame name `_M_realloc_insert` says it plainly: the free happened because `push_back` had to reallocate. Library frames look scary, but you only need to find the first line that is *your* file.
 
 The fix: never grow a container while looping over it. Collect the additions, then append after the loop.
 
