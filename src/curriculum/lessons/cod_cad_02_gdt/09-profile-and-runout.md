@@ -28,7 +28,7 @@ The zone is made of two surfaces, one just outside the true profile and one just
 What profile controls depends on the datums in its frame. This is the part that makes it so powerful:
 
 - **With a full datum reference frame** (A, B, C), the zone is locked in place on the part. The surface must have the right **shape** (form), the right **tilt** (orientation) and be in the right **place** (location). One frame controls all three.
-- **With fewer datums**, the zone is fixed only in the ways those datums can fix it. With datum A alone, the zone must stay square to A and at its basic distance from A, but it may still slide sideways along A and turn about A's normal. Form, orientation and part of the location are controlled.
+- **With fewer datums**, the zone is fixed only in the ways those datums can fix it. With datum A alone, the zone must keep its basic orientation and its basic distance to A, but it may still slide sideways along A and turn about A's normal. Form, orientation and part of the location are controlled.
 - **With no datums at all**, the zone may slide and tilt to fit. Only the shape — and its size, for a closed shape — is controlled.
 
 So profile is like a Swiss Army knife. With datums it can do the job of flatness, parallelism and position together, on a surface of any shape.

@@ -150,7 +150,7 @@ A pin is $\varnothing\,10.00$ to $10.10\,\mathrm{mm}$. It is made at a diameter 
 **Sanity check.** At $10.10$ the room is zero and the pin must be perfect; at $10.00$ it is $0.10$. The allowed bend grows as the pin gets thinner, which is what "the envelope is fixed" means.
 :::
 
-That last step shows the design logic. A form control on a feature of size is useful only when it is *tighter* than the size tolerance. A circularity of $0.2$ on a pin whose size range is $0.1$ adds nothing, because Rule #1 already holds it tighter.
+That last step shows the design logic. A surface form control on a feature of size is useful only when it is *tighter* than the size tolerance. A circularity of $0.2$ on a pin whose size range is $0.1$ adds nothing, because Rule #1 already holds it tighter. The one exception is straightness of the axis, written with ⌀ in the frame: it replaces Rule #1's perfect-form envelope for that feature, so it may be larger than the size tolerance and let the pin bend beyond its maximum-material boundary, up to its virtual condition.
 
 ::: warning Rule #1 does not cover flatness of a plain face
 Rule #1 applies to **features of size** — things with two opposed surfaces you can measure across, like a pin, a hole or the thickness of a plate. A single face on its own, like a bracket's mounting face, has no size to hang an envelope on. If it must be flat, the drawing must say so with a flatness frame.
