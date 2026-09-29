@@ -1,7 +1,7 @@
 @track python
 @course cs-dsa2
 @subject Computer Science
-@requires cs-dsa1
+@requires cs-dsa1 cs-disc
 @level advanced
 @title DSA II
 @name Data Structures and Algorithms II: shortest paths, greedy, dynamic programming, strings, range queries, flows and hardness

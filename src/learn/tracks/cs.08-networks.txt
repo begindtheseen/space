@@ -1,7 +1,7 @@
 @track python
 @course cs-net
 @subject Computer Science
-@requires cs-dsa2
+@requires cs-dsa2 cs-disc
 @level advanced
 @title Computer Networks
 @name Computer Networks: from bits on a wire to TCP, DNS, HTTP and TLS
