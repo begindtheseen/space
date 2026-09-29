@@ -88,9 +88,9 @@ def python(text, block):
 # vim/sed/tmux keys, `init` for `git init`, jq's `select()`, `systemctl enable`, `free` memory, tmux's `watch`
 # window, getopts' `opt` variable, ssh -G's `hostname` line, a `script.sh`, C++'s `sum +=`, Nix's `let … in`,
 # a Kubernetes `kind:`, shellcheck's `code` field and `info` level, `at` and `ab` as sample text, git's working `tree`,
-# a `wip asdf` commit, lsblk's `lvm` type, a variable `n`, the colour `red` and the text `open chute`. (Some of these are installed on
+# a `wip asdf` commit, lsblk's `lvm` type, a variable `n`, the colour `red`, the text `open chute` and a `last deploy:` log line. (Some of these are installed on
 # CI's runners but not here, so they must be named or the check would differ between machines.)
-NOT_COMMANDS = {'w', 'init', 'select', 'enable', 'free', 'watch', 'opt', 'hostname', 'script', 'sum', 'let', 'kind', 'code', 'at', 'ab', 'tree', 'asdf', 'info', 'lvm', 'n', 'red', 'open'}
+NOT_COMMANDS = {'w', 'init', 'select', 'enable', 'free', 'watch', 'opt', 'hostname', 'script', 'sum', 'let', 'kind', 'code', 'at', 'ab', 'tree', 'asdf', 'info', 'lvm', 'n', 'red', 'open', 'last'}
 
 PROMPT = re.compile(r'^\s*[~\w/.@:-]*\s*\$\s+')
 
