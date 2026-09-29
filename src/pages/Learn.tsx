@@ -107,6 +107,14 @@ function LearnHome({ missing }: { missing?: string }) {
         <h1 className="rm-hero__title">Choose where you want to end up. Each roadmap lines up the courses that get you there, one step at a time.</h1>
       </header>
 
+      {!Object.keys(state.read).length ? (
+        <a className="lm-brief" href="#/briefing">
+          <strong>Where does this code go?</strong> See how it flies a rocket, and how to start the curriculum: the
+          mission briefing, about five minutes.
+          <IconArrowRight size={14} />
+        </a>
+      ) : null}
+
       {missing ? <p className="lm-missing">There is no lesson called “{missing}”. Pick a course below.</p> : null}
 
       <div className="rm-goals" role="tablist" aria-label="Roadmap">

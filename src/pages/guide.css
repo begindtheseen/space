@@ -665,3 +665,21 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.guide-brief {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 var(--gap);
+  padding: 12px 15px;
+  border: 1px solid var(--line-blue-strong);
+  border-radius: var(--r-md);
+  background: rgba(86, 150, 248, 0.08);
+  color: var(--ink);
+  font-size: 13.5px;
+  text-decoration: none;
+}
+
+.guide-brief:hover {
+  border-color: var(--accent);
+}

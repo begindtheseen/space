@@ -968,3 +968,28 @@ a.rmv-step__name:hover {
   color: var(--ink);
   border-color: var(--ink-3);
 }
+
+/* Until she starts the curriculum: the way from Learn to code into it. */
+.lm-brief {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin: 0 0 18px;
+  padding: 12px 15px;
+  border: 1px solid var(--line-blue-strong);
+  border-radius: var(--r-md);
+  background: rgba(86, 150, 248, 0.08);
+  color: var(--ink-2);
+  font-size: 13.5px;
+  line-height: 1.5;
+  text-decoration: none;
+}
+
+.lm-brief strong {
+  color: var(--ink);
+}
+
+.lm-brief:hover {
+  border-color: var(--accent);
+}
