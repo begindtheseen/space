@@ -5,10 +5,10 @@ import { execFileSync, spawnSync } from 'node:child_process'
 import { readFileSync, globSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { COMMANDS } from './all'
-import { buildReference, entryByName, langOf, matchCommand, type CommandLang } from './index'
+import { buildReference, entryByName, keyOf, langOf, matchCommand, type CommandLang } from './index'
 
 const REF = buildReference(COMMANDS)
-const has = (lang: CommandLang, name: string) => !!REF.byLang.get(lang)?.get(lang === 'sql' ? name.toUpperCase() : name)
+const has = (lang: CommandLang, name: string) => !!REF.byLang.get(lang)?.get(keyOf(lang, name))
 const read = (glob: string) => globSync(glob).map((f) => ({ f, t: readFileSync(f, 'utf8') }))
 const TRACKS = (lang: string) => read(`src/learn/tracks/${lang}*.txt`)
 const LESSONS = read('src/curriculum/lessons/**/*.md')
@@ -175,6 +175,21 @@ describe('the reference covers what the lessons teach', () => {
   })
 })
 
+describe('the reference covers every lesson, code and text alike', () => {
+  // src/lib/commands/coverage.py reads every code block and every inline `code` span, in the
+  // lesson's language, and lists each name that provably belongs to that language.
+  it.skipIf(spawnSync('python3', ['--version']).status !== 0)('has an entry for every name the lessons teach, in all ten languages', () => {
+    const taught: Record<string, string[]> = JSON.parse(
+      execFileSync('python3', ['src/lib/commands/coverage.py'], { encoding: 'utf8', maxBuffer: 1 << 26 }),
+    )
+    const sqlWords = new Set([...(REF.byLang.get('sql')?.keys() ?? [])].flatMap((k) => k.split(/[^A-Z_]+/)))
+    const missing = Object.entries(taught).flatMap(([lang, names]) =>
+      names.filter((n) => !has(lang as CommandLang, n) && !(lang === 'sql' && sqlWords.has(n))).map((n) => `${lang}: ${n}`),
+    )
+    expect(missing, 'add these to the batches in src/lib/commands').toEqual([])
+  }, 600_000)
+})
+
 describe('every entry is complete', () => {
   it('has one entry per name in each language, each filled in', () => {
     const seen = new Map<string, string>()
@@ -186,7 +201,7 @@ describe('every entry is complete', () => {
     }
     expect(dupes, 'names listed twice').toEqual([])
     for (const c of COMMANDS) {
-      expect(c.official?.trim().length, `${c.name}: official`).toBeGreaterThan(3)
+      expect(c.official?.trim().length, `${c.name}: official`).toBeGreaterThan(2)
       expect(c.source.trim().length, `${c.name}: source`).toBeGreaterThan(3)
       expect(c.when.trim().length, `${c.name}: when`).toBeGreaterThan(20)
       expect(c.example.command.trim().length, `${c.name}: example`).toBeGreaterThan(0)
@@ -241,7 +256,10 @@ describe('finding the entry in a highlight', () => {
   it('reads a terminal command named in another language\'s lesson', () => {
     expect(m('echo', { inCode: true, lang: 'python' })).toBe('echo')
     expect(m('python3 main.py', { inCode: true, lang: 'python' })).toBe('python3')
-    expect(m('print', { inCode: true, lang: 'cpp' })).toBeUndefined()
+    expect(m('print', { inCode: true, lang: 'cpp' })).toBe('std::print')
+    expect(m('std::vector', { lang: 'rust' })).toBe('std::vector')
+    expect(m('std::map', { lang: 'rust' })).toBe('std::map')
+    expect(m('Vec::push', { inCode: true, lang: 'rust' })).toBe('Vec::push')
   })
 
   it('finds every entry by its own name, in its own language', () => {

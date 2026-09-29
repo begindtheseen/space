@@ -23,20 +23,27 @@ export interface Reference {
 
 export const langOf = (c: CommandRef): CommandLang => c.lang ?? 'shell'
 
+/** Every language the reference knows, in the order they are tried when the lesson gives no hint. */
+export const LANGS: CommandLang[] = ['shell', 'python', 'cpp', 'sql', 'rust', 'matlab', 'cmake', 'dockerfile', 'yaml', 'toml']
+
+/** How a name is looked up: SQL and Dockerfile instructions in capitals, CMake in lower case, the rest as written. */
+export const keyOf = (lang: CommandLang, n: string): string =>
+  lang === 'sql' || lang === 'dockerfile' ? n.toUpperCase() : lang === 'cmake' ? n.toLowerCase() : n
+
 export function buildReference(all: CommandRef[]): Reference {
   const byLang = new Map<CommandLang, Map<string, CommandRef>>()
   for (const c of all) {
     const lang = langOf(c)
     let m = byLang.get(lang)
     if (!m) byLang.set(lang, (m = new Map()))
-    const key = (n: string) => (lang === 'sql' ? n.toUpperCase() : n)
+    const key = (n: string) => keyOf(lang, n)
     // A name wins over another entry's alias, whichever batch comes first.
     if (!m.has(key(c.name)) || m.get(key(c.name))!.name !== c.name) m.set(key(c.name), c)
   }
   for (const c of all) {
     const m = byLang.get(langOf(c))!
     for (const a of c.aliases ?? []) {
-      const k = langOf(c) === 'sql' ? a.toUpperCase() : a
+      const k = keyOf(langOf(c), a)
       if (!m.has(k)) m.set(k, c)
     }
   }
@@ -55,9 +62,9 @@ export function loadReference(): Promise<Reference> {
 }
 
 export function entryByName(ref: Reference, name: string, lang?: CommandLang): CommandRef | undefined {
-  const order: CommandLang[] = lang ? [lang, 'shell', 'python', 'cpp', 'sql'] : ['shell', 'python', 'cpp', 'sql']
+  const order: CommandLang[] = lang ? [lang, ...LANGS.filter((l) => l !== lang)] : LANGS
   for (const l of order) {
-    const hit = ref.byLang.get(l)?.get(l === 'sql' ? name.toUpperCase() : name)
+    const hit = ref.byLang.get(l)?.get(keyOf(l, name))
     if (hit) return hit
   }
   return undefined
@@ -70,6 +77,24 @@ export function refLang(tag: string | undefined | null): CommandLang | undefined
   if (/^(python|py|python3|pycon)$/.test(t)) return 'python'
   if (/^(cpp|c\+\+|cc|cxx|c|hpp|h)$/.test(t)) return 'cpp'
   if (/^(sql|sqlite|postgres|postgresql|psql)$/.test(t)) return 'sql'
+  if (/^(rust|rs)$/.test(t)) return 'rust'
+  if (/^(matlab|m|octave|simulink)$/.test(t)) return 'matlab'
+  if (/^cmake$/.test(t)) return 'cmake'
+  if (/^(dockerfile|docker|containerfile)$/.test(t)) return 'dockerfile'
+  if (/^(yaml|yml)$/.test(t)) return 'yaml'
+  if (/^toml$/.test(t)) return 'toml'
+  return undefined
+}
+
+/** The language a coding module is about, from its id (cod_py_…, cod_rs_…, t0_m12_cpp), when the lesson gives no other hint. */
+export function moduleLang(moduleId: string | undefined): CommandLang | undefined {
+  const id = moduleId ?? ''
+  if (/^cod_py/.test(id)) return 'python'
+  if (/^cod_cpp|_cpp$/.test(id)) return 'cpp'
+  if (/^cod_sql/.test(id)) return 'sql'
+  if (/^cod_(lnx|git|ops)/.test(id)) return 'shell'
+  if (/^cod_rs/.test(id)) return 'rust'
+  if (/^cod_(mat|slk)/.test(id)) return 'matlab'
   return undefined
 }
 
@@ -226,6 +251,56 @@ function matchSql(ref: Reference, text: string, inCode: boolean, sure: boolean):
 }
 
 /**
+ * Rust, MATLAB, CMake, Dockerfile, YAML and TOML: a name at the start of the
+ * highlight, with the decoration each language puts around it taken off —
+ * `Vec::<f64>::new()` → `Vec::new`, `vec![0; 3]` → `vec!`, `x.unwrap()` →
+ * `unwrap`, `add_executable(sim main.cpp)` → `add_executable`, `RUN pip …` →
+ * `RUN`, `runs-on: ubuntu-latest` → `runs-on`, `[dependencies]`, `edition = "2021"` → `edition`.
+ */
+function matchOther(ref: Reference, lang: CommandLang, text: string, inCode: boolean, sure: boolean): CommandMatch | null {
+  const m = ref.byLang.get(lang)
+  if (!m) return null
+  const get = (n: string) => m.get(keyOf(lang, n))
+  const tries: string[] = []
+  let t = text.trim()
+  if (lang === 'toml') {
+    const table = /^\[+\s*([\w.-]+)\s*\]+/.exec(t)
+    // As written first: `[[package]]` in a lock file is not Cargo's `[package]`.
+    if (table) tries.push(t.startsWith('[[') ? `[[${table[1]}]]` : `[${table[1]}]`, `[${table[1]}]`, `[[${table[1]}]]`)
+    const key = /^([\w.-]+)\s*=/.exec(t)
+    if (key) tries.push(key[1]!, key[1]!.split('.').pop()!)
+  }
+  if (lang === 'yaml') {
+    const uses = /uses:\s*([\w./-]+?)(?:@|\s|$)/.exec(t)
+    if (uses) tries.push(uses[1]!)
+    t = t.replace(/^-\s*/, '')
+    const key = /^([\w.-]+)\s*:/.exec(t)
+    if (key) tries.push(key[1]!)
+    if (/^[\w./-]+@/.test(t)) tries.push(t.split('@')[0]!)
+  }
+  // A key written out whole: `runs-on`, `steps.name`, `actions/checkout`, `tool.ruff.line-length`.
+  if (lang === 'yaml' || lang === 'toml') tries.push(t.replace(/^-\s*/, '').replace(/\s*[:=].*$/, '').replace(/@.*$/, ''))
+  if (lang === 'rust') t = t.replace(/::<[^>]*>/g, '').replace(/<[^<>]*>/g, '').replace(/^&(?:mut\s+)?/, '')
+  const head = /^(?:[.])?([A-Za-z_][\w]*(?:::[A-Za-z_]\w*)*!?|#!?\[\w+)/.exec(t)?.[1]
+  if (head) {
+    tries.push(head)
+    const parts = head.split('::')
+    // `std::mem::swap` → `mem::swap`, but never down to a bare `map`: that is another thing entirely.
+    for (let i = 1; i < parts.length - 1; i++) tries.push(parts.slice(i).join('::'))
+  }
+  // A method call: `readings.iter().map(…)` → the first method named in it.
+  const meth = /\.([a-z_]\w*)\s*(?:::<[^>]*>)?\(/.exec(t)?.[1]
+  if (meth) tries.push(meth)
+  for (const name of tries) {
+    const hit = get(name)
+    if (!hit) continue
+    if (!inCode && !sure && ENGLISH.has(name.toLowerCase())) return null
+    return { ref: hit, flags: litParts(hit, t.split(/[\s(),;:=]+/)) }
+  }
+  return null
+}
+
+/**
  * The entry a highlight names, if it names one. The language of the code
  * (or of the lesson) is tried first, then the others, so `for` in a Python
  * lesson is Python's `for` and in a Terminal lesson the shell's.
@@ -235,11 +310,13 @@ export function matchCommand(ref: Reference, selection: string, ctx: MatchContex
   if (!text || text.length > 200) return null
   const inCode = !!ctx.inCode
   const sure = !!ctx.lang
-  const order: CommandLang[] = ctx.lang ? [ctx.lang] : ['shell', 'python', 'cpp', 'sql']
+  const order: CommandLang[] = ctx.lang ? [ctx.lang] : [...LANGS]
   // Outside its own language, a name only counts when it could not be anything else.
   // A lesson in one language mentions terminal commands (`echo`, `python3`, `g++`) but not another
   // language's names, so that is the one fallback: `print` in a C++ lesson is its own function.
   if (ctx.lang && ctx.lang !== 'shell') order.push('shell')
+  // The Rust lessons are taught against C++ ("`std::vector` is Rust's `Vec`"), so C++ comes before the terminal there.
+  if (ctx.lang === 'rust') order.splice(1, 0, 'cpp')
   // Code that is not the lesson's own language is still code: `echo` in a Python lesson that
   // compares print to it is the terminal's echo, once Python has no entry of that name.
   for (const [i, lang] of order.entries()) {
@@ -251,7 +328,9 @@ export function matchCommand(ref: Reference, selection: string, ctx: MatchContex
           ? matchPython(ref, text, inCode, own)
           : lang === 'cpp'
             ? matchCpp(ref, text, inCode, own)
-            : matchSql(ref, text, inCode, own)
+            : lang === 'sql'
+              ? matchSql(ref, text, inCode, own)
+              : matchOther(ref, lang, text, inCode, own)
     if (hit) return hit
   }
   return null
@@ -262,6 +341,12 @@ export function kindLabel(c: CommandRef): string {
   const lang = langOf(c)
   if (lang === 'shell') return 'Command'
   if (lang === 'sql') return c.kind === 'function' ? 'SQL function' : 'SQL keyword'
+  if (lang === 'rust') return c.kind === 'module' && !/^(std|core|alloc)\b/.test(c.name) ? 'Rust crate' : `Rust ${c.kind === 'library' ? 'item' : c.kind}`
+  if (lang === 'matlab') return c.kind === 'keyword' ? 'MATLAB keyword' : /Simulink/.test(c.source) ? 'Simulink function' : 'MATLAB function'
+  if (lang === 'cmake') return c.kind === 'constant' ? 'CMake variable' : 'CMake command'
+  if (lang === 'dockerfile') return 'Dockerfile instruction'
+  if (lang === 'yaml') return c.kind === 'library' ? 'GitHub Action' : /Compose/i.test(c.source) ? 'Docker Compose key' : /Kubernetes/i.test(c.source) ? 'Kubernetes field' : /GitLab/i.test(c.source) ? 'GitLab CI keyword' : /pre-commit/i.test(c.source) ? 'pre-commit key' : 'GitHub Actions key'
+  if (lang === 'toml') return c.kind === 'clause' ? 'TOML table' : /Cargo/i.test(c.source) ? 'Cargo.toml key' : /pyproject|packaging/i.test(c.source) ? 'pyproject.toml key' : 'TOML key'
   const lib =
     lang === 'python'
       ? /^(numpy)\./.test(c.name) || c.name === 'numpy'
