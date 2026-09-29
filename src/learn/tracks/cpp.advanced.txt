@@ -5011,6 +5011,8 @@ public:
     virtual std::string name() const = 0;
 };
 
+constexpr double kPi = 3.141592653589793;
+
 class Circle : public Shape {
 public:
     explicit Circle(double r) : r_(r) {}
@@ -5018,7 +5020,6 @@ public:
     double perimeter() const override { return 2 * kPi * r_; }
     std::string name() const override { return "circle"; }
 private:
-    static constexpr double kPi = 3.141592653589793;
     double r_;
 };
 
@@ -6700,7 +6701,7 @@ private:
 };
 
 std::function<int(int)> compose(std::function<int(int)> f, std::function<int(int)> g) {
-    return [f = std::move(f), g = std::move(g)](int x) { return f(g(x)); };
+    return [f, g](int x) { return f(g(x)); };
 }
 --- hint
 Store each subscription as a small struct `{ id, event, handler }` in a private `std::vector` — the vector keeps subscription order for free. A private `int next_id_ = 1;` member gives out the ids.
