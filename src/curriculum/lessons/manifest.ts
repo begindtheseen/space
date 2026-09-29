@@ -11395,7 +11395,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-monte-carlo-campaign-and-vv-report",
       "title": "The Monte Carlo campaign and the V&V report",
-      "minutes": 28,
+      "minutes": 26,
       "covers": [
         "Ten thousand dispersed cases in CI, with per-case seeding and bit-exact replay",
         "The written V&V report: requirements, evidence, margin plots, failure analysis and known limitations"
@@ -11415,8 +11415,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l02-star-stories-and-hard-questions",
-      "title": "Behavioural rounds: STAR stories, and the two questions that sting",
-      "minutes": 20,
+      "title": "Behavioral rounds: STAR stories, and the two questions that sting",
+      "minutes": 21,
       "covers": [
         "Behavioural and STAR stories emphasising ownership, speed, and recovery from failure",
         "Answering \"what would you do differently\" and \"what was the hardest bug\" without either arrogance or apology"
