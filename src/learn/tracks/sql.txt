@@ -182,6 +182,181 @@ Write `SELECT`, then `*`, then `FROM`, then `users`, then `;` — all on one lin
 --- check result | Returns all four users, every column
 [[1, "ada@example.com", "pro", "2025-01-04"], [2, "lin@example.com", "free", "2025-02-11"], [3, "sam@example.com", "free", "2025-03-20"], [4, "kai@example.com", "pro", "2025-03-28"]]
 
++++ practice | Every satellite
+--- task
+This database has one table, `satellites`. Each row is one satellite, with the columns `id`, `name`, `orbit`, `launched` and `mass_kg`.
+
+Write a query that returns every row and every column of the `satellites` table.
+--- starter
+-- Show every satellite.
+
+--- solution
+SELECT * FROM satellites;
+--- hint
+You want every column, so you need the star. The table's name is `satellites`.
+--- hint
+The query has four parts: `SELECT`, the star, `FROM`, and the table name, then a semicolon.
+--- schema
+CREATE TABLE satellites (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  orbit TEXT NOT NULL,
+  launched TEXT NOT NULL,
+  mass_kg INTEGER NOT NULL
+);
+INSERT INTO satellites (id, name, orbit, launched, mass_kg) VALUES
+  (1, 'Kestrel', 'LEO', '2021-06-14', 220),
+  (2, 'Heron',   'GEO', '2019-11-02', 3400),
+  (3, 'Wren',    'LEO', '2023-02-27', 95),
+  (4, 'Osprey',  'MEO', '2020-08-09', 1500),
+  (5, 'Finch',   'LEO', '2024-05-30', 60);
+--- check result | All five satellites, every column
+[[1, "Kestrel", "LEO", "2021-06-14", 220], [2, "Heron", "GEO", "2019-11-02", 3400], [3, "Wren", "LEO", "2023-02-27", 95], [4, "Osprey", "MEO", "2020-08-09", 1500], [5, "Finch", "LEO", "2024-05-30", 60]]
+--- check source | Uses the star for every column
+\*
+--- check source | Reads from the satellites table
+[Ff][Rr][Oo][Mm]\s+satellites\b
+
++++ practice | Keywords in small letters
+--- task
+This database has a table called `crew`, with the columns `id`, `name`, `role` and `hours`.
+
+Return every row and every column of `crew`. This time, write the whole query in small letters, keywords included: no capital letters anywhere.
+--- starter
+-- every crew member, written in small letters.
+
+--- solution
+select * from crew;
+--- hint
+The database does not care whether keywords are in capitals. Capitals are only a habit.
+--- hint
+It is the usual "every row, every column" query, with `select` and `from` written in small letters.
+--- schema
+CREATE TABLE crew (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  role TEXT NOT NULL,
+  hours INTEGER NOT NULL
+);
+INSERT INTO crew (id, name, role, hours) VALUES
+  (1, 'Imani', 'pilot', 900),
+  (2, 'Tomas', 'engineer', 750),
+  (3, 'Yuki', 'medic', 500);
+--- check result | All three crew members
+[[1, "Imani", "pilot", 900], [2, "Tomas", "engineer", 750], [3, "Yuki", "medic", 500]]
+--- check source | Uses select and from in small letters
+select\s+\*\s+from\s+crew
+--- check source absent | No capital letters
+[A-Z]
+
++++ practice | Two statements in a row
+--- task
+This database has two tables, `missions` and `crew`.
+
+Write **two** statements on a **single line**. The first returns every row and column of `missions`. The second returns every row and column of `crew`. End each statement with a semicolon, so the database can tell where the first one stops.
+
+The checker looks at the answer to the last statement, so the crew must come second.
+--- starter
+-- First every mission, then every crew member.
+
+--- solution
+SELECT * FROM missions; SELECT * FROM crew;
+--- hint
+Each statement is one complete query, ending with its own semicolon.
+--- hint
+Write the query for `missions`, its semicolon, a space, then the query for `crew` and its semicolon, all on one line.
+--- schema
+CREATE TABLE missions (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  target TEXT NOT NULL
+);
+INSERT INTO missions (id, name, target) VALUES
+  (1, 'Lantern', 'Moon'),
+  (2, 'Driftwood', 'Mars');
+CREATE TABLE crew (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  role TEXT NOT NULL,
+  hours INTEGER NOT NULL
+);
+INSERT INTO crew (id, name, role, hours) VALUES
+  (1, 'Imani', 'pilot', 900),
+  (2, 'Tomas', 'engineer', 750),
+  (3, 'Yuki', 'medic', 500);
+--- check result | The last answer is every crew member
+[[1, "Imani", "pilot", 900], [2, "Tomas", "engineer", 750], [3, "Yuki", "medic", 500]]
+--- check source | Asks for the missions first, on the same line
+[Ff][Rr][Oo][Mm][ \t]+missions[ \t]*;[ \t]*[Ss][Ee][Ll][Ee][Cc][Tt][ \t]+\*[ \t]+[Ff][Rr][Oo][Mm][ \t]+crew
+--- check source | Ends each statement with a semicolon
+crew\s*;
+
++++ practice | No such table
+--- task
+This database has a table called `launches`, with the columns `id`, `rocket`, `pad` and `launched`.
+
+The query in the editor should return every row and every column of `launches`. Instead it stops with the error `no such table: launch`. Fix it.
+--- starter
+SELECT * FROM launch;
+--- solution
+SELECT * FROM launches;
+--- hint
+Read the error message: it names the table the database could not find.
+--- hint
+Compare the name in the query with the table's real name, letter by letter.
+--- schema
+CREATE TABLE launches (
+  id INTEGER PRIMARY KEY,
+  rocket TEXT NOT NULL,
+  pad TEXT NOT NULL,
+  launched TEXT NOT NULL
+);
+INSERT INTO launches (id, rocket, pad, launched) VALUES
+  (1, 'Lark I', 'Pad 2', '2024-03-02'),
+  (2, 'Lark II', 'Pad 1', '2024-09-17'),
+  (3, 'Lark II', 'Pad 2', '2025-01-08'),
+  (4, 'Magpie', 'Pad 3', '2025-06-21');
+--- check result | All four launches, every column
+[[1, "Lark I", "Pad 2", "2024-03-02"], [2, "Lark II", "Pad 1", "2024-09-17"], [3, "Lark II", "Pad 2", "2025-01-08"], [4, "Magpie", "Pad 3", "2025-06-21"]]
+--- check source | Reads from launches, with the s
+[Ff][Rr][Oo][Mm]\s+launches\b
+--- check source | Still uses the star
+\*
+
++++ practice | The whole mission log
+--- task
+A spacecraft team keeps a log in a table called `mission_log`. Its columns are `id`, `logged` (the time of the entry), `author` and `note`. Some entries were saved without a note; in those rows the `note` column is empty, and the database shows it as `NULL`.
+
+Return every row and every column of `mission_log`. Do not leave out the entries without a note: the checker expects all five rows, empty notes included.
+--- starter
+-- Show the whole log.
+
+--- solution
+SELECT * FROM mission_log;
+--- hint
+Nothing in the task asks you to leave rows out, so this is the plainest query there is.
+--- hint
+Use the star for every column, and the table name exactly as written, underscore included.
+--- schema
+CREATE TABLE mission_log (
+  id INTEGER PRIMARY KEY,
+  logged TEXT NOT NULL,
+  author TEXT NOT NULL,
+  note TEXT
+);
+INSERT INTO mission_log (id, logged, author, note) VALUES
+  (1, '2025-05-01 06:00', 'Imani', 'Pre-flight checks complete'),
+  (2, '2025-05-01 06:42', 'Tomas', NULL),
+  (3, '2025-05-01 07:15', 'Imani', 'Engine start'),
+  (4, '2025-05-01 07:16', 'Yuki', NULL),
+  (5, '2025-05-01 09:30', 'Tomas', 'Orbit reached');
+--- check result | All five entries, the empty notes included
+[[1, "2025-05-01 06:00", "Imani", "Pre-flight checks complete"], [2, "2025-05-01 06:42", "Tomas", null], [3, "2025-05-01 07:15", "Imani", "Engine start"], [4, "2025-05-01 07:16", "Yuki", null], [5, "2025-05-01 09:30", "Tomas", "Orbit reached"]]
+--- check source | Uses the star for every column
+\*
+--- check source | Spells mission_log with its underscore
+[Ff][Rr][Oo][Mm]\s+mission_log\b
+
 === sql-02 | Choosing columns
 --- teach
 Last lesson you used `SELECT *` to get every column of a table. Often you only want two or three of them. This lesson shows you how to pick them, and how to make a new column out of the ones you have.
@@ -298,6 +473,193 @@ The part between `SELECT` and `FROM` is `id, model, input_tokens + output_tokens
 [[1, "sonnet", 1540], [2, "sonnet", 6310], [3, "haiku", 920], [4, "sonnet", 17100], [5, "haiku", 380], [6, "haiku", 2600]]
 --- check source | Names the column total_tokens
 [Aa][Ss]\s+total_tokens
+
++++ practice | Names and masses
+--- task
+The `satellites` table has the columns `id`, `name`, `orbit`, `launched` and `mass_kg`.
+
+Return two columns for every satellite: its `name` first, then its `mass_kg`. Leave the other columns out.
+--- starter
+SELECT * FROM satellites;
+--- solution
+SELECT name, mass_kg FROM satellites;
+--- hint
+Replace the star with the names of the columns you want, in the order you want them.
+--- hint
+Put a comma between the two column names, and no comma after the last one.
+--- schema
+CREATE TABLE satellites (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  orbit TEXT NOT NULL,
+  launched TEXT NOT NULL,
+  mass_kg INTEGER NOT NULL
+);
+INSERT INTO satellites (id, name, orbit, launched, mass_kg) VALUES
+  (1, 'Kestrel', 'LEO', '2021-06-14', 220),
+  (2, 'Heron',   'GEO', '2019-11-02', 3400),
+  (3, 'Wren',    'LEO', '2023-02-27', 95),
+  (4, 'Osprey',  'MEO', '2020-08-09', 1500),
+  (5, 'Finch',   'LEO', '2024-05-30', 60);
+--- check result | Name then mass, for all five satellites
+[["Kestrel", 220], ["Heron", 3400], ["Wren", 95], ["Osprey", 1500], ["Finch", 60]]
+--- check source absent | Does not ask for every column
+[Ss][Ee][Ll][Ee][Cc][Tt]\s+\*
+--- check source | Names the name column
+[Ss][Ee][Ll][Ee][Cc][Tt]\s+name\s*,
+
++++ practice | Cost in cents
+--- task
+Using the `requests` table, return each request's `id` and its cost in **cents**, in a column named `cost_cents`. A dollar is 100 cents, so the cost in cents is `cost_usd` times 100. Request 1, which cost 0.0087 dollars, cost 0.87 cents.
+--- starter
+SELECT id, cost_usd FROM requests;
+--- solution
+SELECT id, cost_usd * 100 AS cost_cents FROM requests;
+--- hint
+A column can be a small sum worked out for each row. Between two numbers, the star means "times".
+--- hint
+Multiply `cost_usd` by 100, then give that column its name with `AS`.
+--- check result | Every request's cost in cents
+[[1, 0.87], [2, 2.98], [3, 0.12], [4, 7.65], [5, 0.06], [6, 0.34]]
+--- check source | Names the column cost_cents
+[Aa][Ss]\s+cost_cents\b
+--- check source absent | Works the cents out instead of typing them
+0\.87|7\.65
+
++++ practice | How full is each tank
+--- task
+A spacecraft has four fuel tanks, listed in a table called `tanks` with the columns `id`, `name`, `capacity_l` (how many litres the tank holds) and `filled_l` (how many litres are in it now).
+
+Return three columns for every tank:
+
+1. its `name`,
+2. how many more litres would fit, as `room_l` (capacity minus filled),
+3. how full it is as a whole-number percentage, as `percent_full`: filled times 100, divided by capacity. A tank with 450 of 600 litres is `75` percent full. Keep it a whole number: the part after the point is thrown away.
+--- starter
+SELECT name FROM tanks;
+--- solution
+SELECT name,
+       capacity_l - filled_l AS room_l,
+       filled_l * 100 / capacity_l AS percent_full
+FROM tanks;
+--- hint
+You need two computed columns, each with its own `AS` name. One subtracts, the other multiplies and then divides.
+--- hint
+Multiply `filled_l` by 100 first, then divide by `capacity_l`. Both are whole numbers, so SQLite gives a whole-number answer.
+--- hint
+The percentage column is `filled_l * 100 / capacity_l AS percent_full`.
+--- schema
+CREATE TABLE tanks (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  capacity_l INTEGER NOT NULL,
+  filled_l INTEGER NOT NULL
+);
+INSERT INTO tanks (id, name, capacity_l, filled_l) VALUES
+  (1, 'oxidizer A', 600, 450),
+  (2, 'oxidizer B', 600, 600),
+  (3, 'fuel A', 900, 300),
+  (4, 'fuel B', 900, 5);
+--- check result | Room left and whole-number percentages, a full tank at 100
+[["oxidizer A", 150, 75], ["oxidizer B", 0, 100], ["fuel A", 600, 33], ["fuel B", 895, 0]]
+--- check source | Names the column room_l
+[Aa][Ss]\s+room_l\b
+--- check source | Names the column percent_full
+[Aa][Ss]\s+percent_full\b
+
++++ practice | Kilograms to tonnes
+--- task
+The `satellites` table has the columns `id`, `name`, `orbit`, `launched` and `mass_kg`. A tonne is 1000 kilograms.
+
+Return each satellite's `name` and its mass in tonnes, as a column named `tonnes`. Keep the decimals: Wren weighs 95 kg, which is `0.095` tonnes, not `0`.
+--- starter
+SELECT name FROM satellites;
+--- solution
+SELECT name, mass_kg / 1000.0 AS tonnes FROM satellites;
+--- hint
+Divide the mass by 1000. Then look at the small satellites: when both numbers in a division are whole numbers, SQLite throws away the part after the point.
+--- hint
+Write one of the two numbers with a decimal point, and the answer keeps its decimals.
+--- schema
+CREATE TABLE satellites (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  orbit TEXT NOT NULL,
+  launched TEXT NOT NULL,
+  mass_kg INTEGER NOT NULL
+);
+INSERT INTO satellites (id, name, orbit, launched, mass_kg) VALUES
+  (1, 'Kestrel', 'LEO', '2021-06-14', 220),
+  (2, 'Heron',   'GEO', '2019-11-02', 3400),
+  (3, 'Wren',    'LEO', '2023-02-27', 95),
+  (4, 'Osprey',  'MEO', '2020-08-09', 1500),
+  (5, 'Finch',   'LEO', '2024-05-30', 60);
+--- check result | Masses in tonnes, decimals kept for the light ones
+[["Kestrel", 0.22], ["Heron", 3.4], ["Wren", 0.095], ["Osprey", 1.5], ["Finch", 0.06]]
+--- check source | Names the column tonnes
+[Aa][Ss]\s+tonnes\b
+--- check source absent | Does not type the answers in
+0\.095|3\.4\b
+
++++ practice | The missing comma
+--- task
+The query in the editor should return three columns for every request: its `id`, its `model` and its `cost_usd`. Instead it returns only two columns, and the one headed `model` is full of numbers. Fix it.
+--- starter
+SELECT id model, cost_usd FROM requests;
+--- solution
+SELECT id, model, cost_usd FROM requests;
+--- hint
+Count the columns in the answer, then count the commas in the query.
+--- hint
+Without a comma, SQL reads the second word as an alias for the first column.
+--- check result | id, model and cost for all six requests
+[[1, "sonnet", 0.0087], [2, "sonnet", 0.0298], [3, "haiku", 0.0012], [4, "sonnet", 0.0765], [5, "haiku", 0.0006], [6, "haiku", 0.0034]]
+--- check source | A comma between id and model
+[Ss][Ee][Ll][Ee][Cc][Tt]\s+id\s*,\s*model\s*,\s*cost_usd
+--- check source absent | No alias hiding the model column
+\bid\s+model\b
+
++++ practice | Engine test readings
+--- task
+An engine test stand saves one row every second in a table called `readings`. Its columns are `t_s` (seconds since the test began), `chamber_kpa` (pressure inside the engine, in kilopascals), `ambient_kpa` (air pressure outside) and `temp_c` (temperature in degrees Celsius, a whole number).
+
+Return three columns for every reading:
+
+1. `t_s`,
+2. how much higher the chamber pressure is than the air outside, as `delta_kpa`,
+3. the temperature in degrees Fahrenheit, as `temp_f`. The formula is Celsius times 9, divided by 5, plus 32. Keep the decimals: 21 °C is `69.8` °F.
+--- starter
+SELECT t_s, chamber_kpa, ambient_kpa, temp_c FROM readings;
+--- solution
+SELECT t_s,
+       chamber_kpa - ambient_kpa AS delta_kpa,
+       temp_c * 9.0 / 5 + 32 AS temp_f
+FROM readings;
+--- hint
+Both new columns are computed from other columns in the same row. Give each one its name with `AS`.
+--- hint
+`temp_c` holds whole numbers, and so do 9 and 5. Something in the Fahrenheit sum needs a decimal point, or 21 °C comes out as 69 instead of 69.8.
+--- hint
+The Fahrenheit column is `temp_c * 9.0 / 5 + 32 AS temp_f`.
+--- schema
+CREATE TABLE readings (
+  t_s INTEGER PRIMARY KEY,
+  chamber_kpa INTEGER NOT NULL,
+  ambient_kpa INTEGER NOT NULL,
+  temp_c INTEGER NOT NULL
+);
+INSERT INTO readings (t_s, chamber_kpa, ambient_kpa, temp_c) VALUES
+  (0, 101, 101, 21),
+  (1, 2400, 101, 180),
+  (2, 6900, 101, 612),
+  (3, 7050, 101, 655),
+  (4, 150, 101, -3);
+--- check result | Pressure difference and Fahrenheit, decimals and below zero included
+[[0, 0, 69.8], [1, 2299, 356.0], [2, 6799, 1133.6], [3, 6949, 1211.0], [4, 49, 26.6]]
+--- check source | Names the column delta_kpa
+[Aa][Ss]\s+delta_kpa\b
+--- check source | Names the column temp_f
+[Aa][Ss]\s+temp_f\b
 
 === sql-03 | Filtering with WHERE
 --- teach
@@ -434,6 +796,189 @@ The clause is `WHERE model = 'sonnet' AND input_tokens > 2000`.
 --- check result | The two big sonnet requests
 [[2, 1, 5400], [4, 2, 15000]]
 
++++ practice | Satellites in low orbit
+--- task
+The `satellites` table has the columns `id`, `name`, `orbit`, `launched` and `mass_kg`. The `orbit` column holds `'LEO'` for a low orbit, `'MEO'` for a middle one and `'GEO'` for a high one.
+
+Return the `name` and `mass_kg` of every satellite whose `orbit` is `'LEO'`.
+--- starter
+SELECT name, mass_kg FROM satellites;
+--- solution
+SELECT name, mass_kg FROM satellites WHERE orbit = 'LEO';
+--- hint
+Keep only some rows with a `WHERE` clause after `FROM satellites`.
+--- hint
+The orbit is text, so `LEO` goes in single quotes, in capitals, exactly as it is stored.
+--- schema
+CREATE TABLE satellites (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  orbit TEXT NOT NULL,
+  launched TEXT NOT NULL,
+  mass_kg INTEGER NOT NULL
+);
+INSERT INTO satellites (id, name, orbit, launched, mass_kg) VALUES
+  (1, 'Kestrel', 'LEO', '2021-06-14', 220),
+  (2, 'Heron',   'GEO', '2019-11-02', 3400),
+  (3, 'Wren',    'LEO', '2023-02-27', 95),
+  (4, 'Osprey',  'MEO', '2020-08-09', 1500),
+  (5, 'Finch',   'LEO', '2024-05-30', 60);
+--- check result | Kestrel, Wren and Finch
+[["Kestrel", 220], ["Wren", 95], ["Finch", 60]]
+--- check source | Filters with WHERE
+\b[Ww][Hh][Ee][Rr][Ee]\b
+--- check source absent | Does not pick the satellites by id
+\bid\s*(=|<|>|<>)
+
++++ practice | Everyone but user 1
+--- task
+Using the `requests` table, return the `id`, `user_id` and `model` of every request that was **not** sent by the user whose id is `1`. Use the "is not equal to" symbol.
+--- starter
+SELECT id, user_id, model FROM requests;
+--- solution
+SELECT id, user_id, model FROM requests WHERE user_id <> 1;
+--- hint
+"Not sent by user 1" means the `user_id` column is not equal to 1.
+--- hint
+SQL writes "is not equal to" as a less-than sign followed by a greater-than sign.
+--- check result | Requests 4, 5 and 6
+[[4, 2, "sonnet"], [5, 2, "haiku"], [6, 4, "haiku"]]
+--- check source | Uses the not-equal symbol
+<>
+--- check source absent | Does not pick the requests by their own id
+\bid\s*[=<>]
+
++++ practice | Big requests with their totals
+--- task
+Using the `requests` table, return each request's `id` and its total tokens (input plus output) as `total_tokens`, but only for requests whose total is **2600 or more**.
+
+Watch the edge: a request with exactly 2600 tokens in total must be in the answer.
+--- starter
+SELECT id FROM requests;
+--- solution
+SELECT id, input_tokens + output_tokens AS total_tokens
+FROM requests
+WHERE input_tokens + output_tokens >= 2600;
+--- hint
+The same sum appears twice: once in the `SELECT` to show it, and once in the `WHERE` to test it.
+--- hint
+"2600 or more" includes 2600 itself. Pick the comparison symbol that means "greater than or equal to".
+--- hint
+The test is `WHERE input_tokens + output_tokens >= 2600`.
+--- check result | Requests 2, 4 and 6, with 6 at exactly 2600
+[[2, 6310], [4, 17100], [6, 2600]]
+--- check source | Names the column total_tokens
+[Aa][Ss]\s+total_tokens\b
+--- check source absent | Does not pick the requests by id
+\bid\s*(=|<|>|<>)
+
++++ practice | Heavy enough, light enough
+--- task
+The `satellites` table here has the columns `id`, `name` and `mass_kg`.
+
+A launch can carry any satellite that weighs **at least 95 kg and at most 1500 kg**. Return the `name` of every satellite in that range. Both limits count: a satellite of exactly 95 kg or exactly 1500 kg can go.
+--- starter
+SELECT name FROM satellites;
+--- solution
+SELECT name
+FROM satellites
+WHERE mass_kg >= 95 AND mass_kg <= 1500;
+--- hint
+You need two conditions that must both be true, joined with `AND`.
+--- hint
+"At least" and "at most" include the number itself. Look for the two symbols that end in an equals sign.
+--- schema
+CREATE TABLE satellites (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  mass_kg INTEGER NOT NULL
+);
+INSERT INTO satellites (id, name, mass_kg) VALUES
+  (1, 'Kestrel', 220),
+  (2, 'Heron', 3400),
+  (3, 'Wren', 95),
+  (4, 'Osprey', 1500),
+  (5, 'Finch', 60),
+  (6, 'Plover', 94),
+  (7, 'Tern', 1501);
+--- check result | Kestrel, Wren and Osprey: both limits included, 94 and 1501 left out
+[["Kestrel"], ["Wren"], ["Osprey"]]
+--- check source | Joins two conditions with AND
+\b[Aa][Nn][Dd]\b
+--- check source absent | Does not pick the satellites by name
+name\s*(=|<>)\s*'
+
++++ practice | One pilot missing
+--- task
+The `crew` table has the columns `id`, `name`, `role` and `hours` (hours flown).
+
+The query in the editor should return the name of every pilot with **at least** 500 hours. It returns only one name, but there are two such pilots. Fix it.
+--- starter
+SELECT name FROM crew WHERE role = 'pilot' AND hours > 500;
+--- solution
+SELECT name FROM crew WHERE role = 'pilot' AND hours >= 500;
+--- hint
+Look for a pilot whose hours are exactly 500. Is that "more than 500"?
+--- hint
+"At least 500" means greater than or equal to 500.
+--- schema
+CREATE TABLE crew (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  role TEXT NOT NULL,
+  hours INTEGER NOT NULL
+);
+INSERT INTO crew (id, name, role, hours) VALUES
+  (1, 'Imani', 'pilot', 900),
+  (2, 'Tomas', 'engineer', 750),
+  (3, 'Yuki', 'pilot', 500),
+  (4, 'Ravi', 'pilot', 480),
+  (5, 'Noor', 'medic', 1200);
+--- check result | Imani and Yuki, Yuki at exactly 500
+[["Imani"], ["Yuki"]]
+--- check source | Still checks the role
+role\s*=\s*'pilot'
+--- check source absent | Does not pick the pilots by name
+name\s*(=|<>)\s*'
+
++++ practice | Over the limit
+--- task
+A fuel tank reports its pressure once a minute into a table called `pressure_log`, with the columns `id`, `tank`, `minute`, `kpa` (the pressure) and `limit_kpa` (the highest safe pressure for that tank at that moment).
+
+Return the `minute`, the `kpa`, and how far over the limit the pressure was as `over_by` (kpa minus limit_kpa), for every reading from tank `'A'` whose pressure was **above** its limit. A reading exactly at the limit is safe, so leave it out.
+--- starter
+SELECT minute, kpa FROM pressure_log;
+--- solution
+SELECT minute, kpa, kpa - limit_kpa AS over_by
+FROM pressure_log
+WHERE tank = 'A' AND kpa > limit_kpa;
+--- hint
+A condition can compare two columns of the same row, not only a column with a number.
+--- hint
+You need two conditions: the tank is `'A'`, and `kpa` is greater than `limit_kpa`. The `over_by` column is a subtraction.
+--- schema
+CREATE TABLE pressure_log (
+  id INTEGER PRIMARY KEY,
+  tank TEXT NOT NULL,
+  minute INTEGER NOT NULL,
+  kpa INTEGER NOT NULL,
+  limit_kpa INTEGER NOT NULL
+);
+INSERT INTO pressure_log (id, tank, minute, kpa, limit_kpa) VALUES
+  (1, 'A', 1, 310, 350),
+  (2, 'B', 1, 420, 400),
+  (3, 'A', 2, 362, 350),
+  (4, 'A', 3, 350, 350),
+  (5, 'B', 2, 390, 400),
+  (6, 'A', 4, 377, 360),
+  (7, 'A', 5, 340, 360);
+--- check result | Minutes 2 and 4 only: tank B and the reading at the limit left out
+[[2, 362, 12], [4, 377, 17]]
+--- check source | Compares the pressure with the limit column
+kpa\s*>\s*limit_kpa|limit_kpa\s*<\s*kpa
+--- check source | Names the column over_by
+[Aa][Ss]\s+over_by\b
+
 === sql-03b | More ways to match: OR, NOT, IN and LIKE
 --- teach
 Last lesson you filtered rows with `WHERE`, and joined two conditions with `AND`. This lesson adds four more tools: "either one", "not this", "any of a list", and "looks like this pattern".
@@ -552,6 +1097,197 @@ Add `WHERE email LIKE 'k%' OR email LIKE 'l%'` before the semicolon.
 [[2, "lin@example.com"], [4, "kai@example.com"]]
 --- check source | Uses LIKE
 [Ll][Ii][Kk][Ee]
+
++++ practice | Middle and high orbits
+--- task
+The `satellites` table has the columns `id`, `name`, `orbit`, `launched` and `mass_kg`. The `orbit` column holds `'LEO'`, `'MEO'` or `'GEO'`.
+
+Return the `name` and `orbit` of every satellite whose orbit is `'MEO'` or `'GEO'`. Use `IN` with a list.
+--- starter
+SELECT name, orbit FROM satellites;
+--- solution
+SELECT name, orbit FROM satellites WHERE orbit IN ('MEO', 'GEO');
+--- hint
+`IN` checks whether a value is one of a list. The list goes in round brackets, with commas between the items.
+--- hint
+The items are text, so each one needs its own single quotes.
+--- schema
+CREATE TABLE satellites (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  orbit TEXT NOT NULL,
+  launched TEXT NOT NULL,
+  mass_kg INTEGER NOT NULL
+);
+INSERT INTO satellites (id, name, orbit, launched, mass_kg) VALUES
+  (1, 'Kestrel', 'LEO', '2021-06-14', 220),
+  (2, 'Heron',   'GEO', '2019-11-02', 3400),
+  (3, 'Wren',    'LEO', '2023-02-27', 95),
+  (4, 'Osprey',  'MEO', '2020-08-09', 1500),
+  (5, 'Finch',   'LEO', '2024-05-30', 60);
+--- check result | Heron and Osprey
+[["Heron", "GEO"], ["Osprey", "MEO"]]
+--- check source | Uses IN
+\b[Ii][Nn]\s*\(
+--- check source absent | Does not pick the satellites by name
+name\s*(=|<>|[Ii][Nn])
+
++++ practice | Outside the team
+--- task
+The `crew` table has the columns `id`, `name` and `email`. People on the team have an email that ends in `@orbit.dev`; guests have some other address.
+
+Return the `name` and `email` of every guest: everyone whose email does **not** end in `@orbit.dev`. Use `NOT LIKE`.
+--- starter
+SELECT name, email FROM crew;
+--- solution
+SELECT name, email FROM crew WHERE email NOT LIKE '%@orbit.dev';
+--- hint
+"Ends in" is a pattern with the gap at the front: anything, then the ending.
+--- hint
+Put `NOT` in front of `LIKE` to keep the rows that do not match. The `%` sign goes before `@orbit.dev`.
+--- schema
+CREATE TABLE crew (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL
+);
+INSERT INTO crew (id, name, email) VALUES
+  (1, 'Imani', 'imani@orbit.dev'),
+  (2, 'Tomas', 'tomas@orbit.dev'),
+  (3, 'Priya', 'priya@spaceport.org'),
+  (4, 'Yuki', 'yuki@orbit.dev'),
+  (5, 'Leo', 'leo.orbit.dev@mail.com');
+--- check result | Priya and Leo, whose address only contains orbit.dev
+[["Priya", "priya@spaceport.org"], ["Leo", "leo.orbit.dev@mail.com"]]
+--- check source | Uses NOT LIKE
+[Nn][Oo][Tt]\s+[Ll][Ii][Kk][Ee]
+--- check source absent | Does not pick the guests by name
+name\s*(=|<>|[Ii][Nn]|[Ll][Ii][Kk][Ee])
+
++++ practice | Two kinds of request
+--- task
+Using the `requests` table, return the `id` and `model` of every request that is **either**:
+
+- a `'haiku'` request with more than 1000 input tokens, **or**
+- a `'sonnet'` request that cost less than 0.01 dollars.
+--- starter
+SELECT id, model FROM requests;
+--- solution
+SELECT id, model
+FROM requests
+WHERE (model = 'haiku' AND input_tokens > 1000)
+   OR (model = 'sonnet' AND cost_usd < 0.01);
+--- hint
+Each kind is two conditions joined with `AND`. The two kinds are then joined with `OR`.
+--- hint
+Put each `AND` pair in round brackets so the reader can see which conditions belong together.
+--- hint
+The shape is `WHERE (model = 'haiku' AND ...) OR (model = 'sonnet' AND ...)`.
+--- check result | Requests 1 and 6
+[[1, "sonnet"], [6, "haiku"]]
+--- check source | Uses OR
+\b[Oo][Rr]\b
+--- check source absent | Does not pick the requests by their own id
+\bid\s*(=|[Ii][Nn]\b)
+
++++ practice | Exactly one character
+--- task
+Test satellites get call signs like `KS-1` or `KS-7`: the letters `KS`, a dash, then **exactly one** more character. The `callsigns` table has the columns `id` and `sign`.
+
+Return the `sign` of every row that fits that shape exactly. Some rows are close but wrong: `KS-12` has two characters after the dash, `KS-` has none, and `XKS-4` has an extra letter in front. Those must be left out. Lowercase `ks-9` fits, because `LIKE` does not care about capitals.
+--- starter
+SELECT sign FROM callsigns;
+--- solution
+SELECT sign FROM callsigns WHERE sign LIKE 'KS-_';
+--- hint
+In a pattern, `%` means "any run of characters, even none". You need a sign that means "exactly one character".
+--- hint
+The underscore, `_`, stands for exactly one character.
+--- schema
+CREATE TABLE callsigns (
+  id INTEGER PRIMARY KEY,
+  sign TEXT NOT NULL
+);
+INSERT INTO callsigns (id, sign) VALUES
+  (1, 'KS-1'),
+  (2, 'KS-12'),
+  (3, 'KS-'),
+  (4, 'XKS-4'),
+  (5, 'KS-7'),
+  (6, 'ks-9'),
+  (7, 'KS-A');
+--- check result | KS-1, KS-7, ks-9 and KS-A; KS-12, KS- and XKS-4 left out
+[["KS-1"], ["KS-7"], ["ks-9"], ["KS-A"]]
+--- check source | Uses LIKE
+[Ll][Ii][Kk][Ee]
+--- check source absent | Does not list the signs by hand
+[Ii][Nn]\s*\(|sign\s*=
+
++++ practice | Brackets in the right place
+--- task
+The query in the editor should return the `id` of every **haiku** request sent by user 1 or user 2. That is requests 3 and 5. Instead it also returns requests 1, 2 and 4, which are sonnet requests. Fix it.
+--- starter
+SELECT id FROM requests WHERE user_id = 1 OR user_id = 2 AND model = 'haiku';
+--- solution
+SELECT id FROM requests WHERE (user_id = 1 OR user_id = 2) AND model = 'haiku';
+--- hint
+`AND` is worked out before `OR`. Say out loud how SQL reads the condition as it stands.
+--- hint
+Put round brackets around the part that should be worked out first: the two users.
+--- check result | Requests 3 and 5
+[[3], [5]]
+--- check source | Still checks the model
+model\s*=\s*'haiku'
+--- check source absent | Does not pick the requests by their own id
+\bid\s*(=|[Ii][Nn]\b)
+
++++ practice | Valves to reorder
+--- task
+A spacecraft's spare parts are listed in a table called `parts`, with the columns `id`, `name`, `bin`, `qty` and `status`.
+
+Return the `id` and `name` of every part that needs reordering. A part needs reordering when **all three** of these are true:
+
+1. it is kept in bin `'A1'`, `'A2'` or `'B7'`,
+2. its name contains the word `valve` anywhere, in any capitals (`Valve`, `VALVE` and `valve` all count),
+3. its `qty` is below 10, **or** its `status` is `'damaged'`.
+--- starter
+SELECT id, name FROM parts;
+--- solution
+SELECT id, name
+FROM parts
+WHERE bin IN ('A1', 'A2', 'B7')
+  AND name LIKE '%valve%'
+  AND (qty < 10 OR status = 'damaged');
+--- hint
+Write each of the three rules as its own condition, and join them with `AND`. The third rule has an `OR` inside it.
+--- hint
+"Contains" is a pattern with `%` on both sides. `LIKE` ignores capitals for plain letters, so one pattern covers them all.
+--- hint
+The `OR` needs round brackets around it, or `AND` will be worked out first and grab the wrong conditions.
+--- schema
+CREATE TABLE parts (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  bin TEXT NOT NULL,
+  qty INTEGER NOT NULL,
+  status TEXT NOT NULL
+);
+INSERT INTO parts (id, name, bin, qty, status) VALUES
+  (1, 'Fuel valve',        'A1', 4,  'ok'),
+  (2, 'Oxidizer VALVE',    'A2', 25, 'damaged'),
+  (3, 'Relief valve',      'B7', 30, 'ok'),
+  (4, 'Pressure sensor',   'A1', 2,  'ok'),
+  (5, 'Check valve',       'C3', 1,  'damaged'),
+  (6, 'Valve seal kit',    'B7', 9,  'ok'),
+  (7, 'Purge valve',       'A2', 10, 'ok');
+--- check result | Parts 1, 2 and 6
+[[1, "Fuel valve"], [2, "Oxidizer VALVE"], [6, "Valve seal kit"]]
+--- check source | Uses IN for the bins
+\b[Ii][Nn]\s*\(
+--- check source | Uses LIKE for the name
+[Ll][Ii][Kk][Ee]
+--- check source absent | Does not pick the parts by id
+\bid\s*(=|[Ii][Nn]\b)
 
 === sql-04 | Sorting and limiting
 --- teach
@@ -692,6 +1428,195 @@ After `FROM requests`, and before the semicolon, add `ORDER BY cost_usd DESC LIM
 ordered
 [[4, 0.0765], [2, 0.0298], [1, 0.0087]]
 
++++ practice | Newest satellites first
+--- task
+The `satellites` table has the columns `id`, `name`, `orbit`, `launched` and `mass_kg`. `launched` is a date written year-month-day.
+
+Return the `name` and `launched` date of every satellite, the most recently launched first.
+--- starter
+SELECT name, launched FROM satellites;
+--- solution
+SELECT name, launched FROM satellites ORDER BY launched DESC;
+--- hint
+Sort with `ORDER BY` and the date column.
+--- hint
+The normal order is oldest first. Add the word that flips it.
+--- schema
+CREATE TABLE satellites (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  orbit TEXT NOT NULL,
+  launched TEXT NOT NULL,
+  mass_kg INTEGER NOT NULL
+);
+INSERT INTO satellites (id, name, orbit, launched, mass_kg) VALUES
+  (1, 'Kestrel', 'LEO', '2021-06-14', 220),
+  (2, 'Heron',   'GEO', '2019-11-02', 3400),
+  (3, 'Wren',    'LEO', '2023-02-27', 95),
+  (4, 'Osprey',  'MEO', '2020-08-09', 1500),
+  (5, 'Finch',   'LEO', '2024-05-30', 60);
+--- check result | Finch first, Heron last
+ordered
+[["Finch", "2024-05-30"], ["Wren", "2023-02-27"], ["Kestrel", "2021-06-14"], ["Osprey", "2020-08-09"], ["Heron", "2019-11-02"]]
+--- check source | Sorts with ORDER BY
+[Oo][Rr][Dd][Ee][Rr]\s+[Bb][Yy]
+--- check source | Sorts newest first
+[Dd][Ee][Ss][Cc]
+
++++ practice | The two cheapest requests
+--- task
+Using the `requests` table, return the `id` and `cost_usd` of the **two cheapest** requests, the cheapest first.
+--- starter
+SELECT id, cost_usd FROM requests;
+--- solution
+SELECT id, cost_usd FROM requests ORDER BY cost_usd LIMIT 2;
+--- hint
+Cheapest first is the normal, smallest-first order.
+--- hint
+Sort by `cost_usd`, then keep only the first two rows with `LIMIT`.
+--- check result | Request 5, then request 3
+ordered
+[[5, 0.0006], [3, 0.0012]]
+--- check source | Keeps only two rows with LIMIT
+[Ll][Ii][Mm][Ii][Tt]\s+2\b
+--- check source absent | Does not pick the requests by id
+\bid\s*(=|[Ii][Nn]\b)
+
++++ practice | Most tokens in total
+--- task
+Using the `requests` table, look only at requests that cost **less than 0.05** dollars. Of those, return the `id` and the total tokens (input plus output) as `total_tokens` of the **three** with the most tokens in total, the biggest first.
+--- starter
+SELECT id FROM requests;
+--- solution
+SELECT id, input_tokens + output_tokens AS total_tokens
+FROM requests
+WHERE cost_usd < 0.05
+ORDER BY total_tokens DESC
+LIMIT 3;
+--- hint
+This uses every clause so far, in order: `SELECT`, `FROM`, `WHERE`, `ORDER BY`, `LIMIT`.
+--- hint
+You can sort by the alias you gave the sum in the `SELECT`.
+--- hint
+The filter is `WHERE cost_usd < 0.05`; it runs before the sorting, so the expensive request never reaches the top three.
+--- check result | Requests 2, 6 and 1, biggest first; request 4 costs too much
+ordered
+[[2, 6310], [6, 2600], [1, 1540]]
+--- check source | Sorts biggest first
+[Dd][Ee][Ss][Cc]
+--- check source | Keeps three rows
+[Ll][Ii][Mm][Ii][Tt]\s+3\b
+
++++ practice | Ties on the leaderboard
+--- task
+The `crew` table has the columns `id`, `name` and `hours` (hours flown). Several people have the same number of hours.
+
+Return the `name` and `hours` of the **top three** crew members by hours, most hours first. When two people have the same hours, the one whose name comes first from A to Z goes first. The checker compares the order exactly, so the ties must come out the same way every time.
+--- starter
+SELECT name, hours FROM crew;
+--- solution
+SELECT name, hours
+FROM crew
+ORDER BY hours DESC, name
+LIMIT 3;
+--- hint
+Sort by two columns. The second one only decides the order among rows that are tied on the first.
+--- hint
+`DESC` belongs only to the column right before it. Hours go biggest first, names go A to Z.
+--- schema
+CREATE TABLE crew (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  hours INTEGER NOT NULL
+);
+INSERT INTO crew (id, name, hours) VALUES
+  (1, 'Yuki', 750),
+  (2, 'Imani', 900),
+  (3, 'Tomas', 750),
+  (4, 'Noor', 750),
+  (5, 'Ravi', 500);
+--- check result | Imani, then Noor and Tomas from the three-way tie at 750
+ordered
+[["Imani", 900], ["Noor", 750], ["Tomas", 750]]
+--- check source | Sorts by hours, biggest first
+hours\s+[Dd][Ee][Ss][Cc]
+--- check source | Breaks ties by name
+,\s*name\b
+
++++ practice | Descending the wrong column
+--- task
+The `launches` table has the columns `id`, `rocket` and `launched` (a date, year-month-day).
+
+The query in the editor should list the launches newest first, and when two launches share a date, by `rocket` from A to Z. Instead the oldest launch comes first, and the rockets on a shared date come out Z to A. Fix it.
+--- starter
+SELECT rocket, launched FROM launches ORDER BY launched, rocket DESC;
+--- solution
+SELECT rocket, launched FROM launches ORDER BY launched DESC, rocket;
+--- hint
+`DESC` only flips the column written right before it.
+--- hint
+Move `DESC` so it follows `launched`, and let `rocket` use the normal A-to-Z order.
+--- schema
+CREATE TABLE launches (
+  id INTEGER PRIMARY KEY,
+  rocket TEXT NOT NULL,
+  launched TEXT NOT NULL
+);
+INSERT INTO launches (id, rocket, launched) VALUES
+  (1, 'Lark II', '2025-01-08'),
+  (2, 'Magpie', '2025-06-21'),
+  (3, 'Avocet', '2025-06-21'),
+  (4, 'Lark I', '2024-03-02'),
+  (5, 'Heron-B', '2025-06-21');
+--- check result | Newest first, ties from A to Z
+ordered
+[["Avocet", "2025-06-21"], ["Heron-B", "2025-06-21"], ["Magpie", "2025-06-21"], ["Lark II", "2025-01-08"], ["Lark I", "2024-03-02"]]
+--- check source | Sorts the date newest first
+launched\s+[Dd][Ee][Ss][Cc]
+--- check source absent | Rockets are not sorted Z to A
+rocket\s+[Dd][Ee][Ss][Cc]
+
++++ practice | Page two of the leaderboard
+--- task
+A training game stores scores in a table called `scores`, with the columns `id`, `player` and `points`. The leaderboard shows three players per page, sorted by `points` from most to fewest, and by `player` from A to Z when points are tied.
+
+Return the `player` and `points` for **page two**: the fourth, fifth and sixth rows of the leaderboard.
+--- starter
+SELECT player, points FROM scores;
+--- solution
+SELECT player, points
+FROM scores
+ORDER BY points DESC, player
+LIMIT 3 OFFSET 3;
+--- hint
+First sort the whole leaderboard the way the task says. Then you need to skip the first page before keeping three rows.
+--- hint
+`LIMIT` has a partner, `OFFSET`, that skips rows first.
+--- hint
+Skip three rows and keep three: `LIMIT 3 OFFSET 3`.
+--- schema
+CREATE TABLE scores (
+  id INTEGER PRIMARY KEY,
+  player TEXT NOT NULL,
+  points INTEGER NOT NULL
+);
+INSERT INTO scores (id, player, points) VALUES
+  (1, 'vega', 880),
+  (2, 'orion', 1200),
+  (3, 'lyra', 640),
+  (4, 'atlas', 880),
+  (5, 'nova', 990),
+  (6, 'rigel', 640),
+  (7, 'draco', 1500),
+  (8, 'mira', 300);
+--- check result | atlas, vega and lyra, in that order
+ordered
+[["atlas", 880], ["vega", 880], ["lyra", 640]]
+--- check source | Skips the first page with OFFSET
+[Oo][Ff][Ff][Ss][Ee][Tt]\s+3\b
+--- check source | Breaks ties by player
+,\s*player\b
+
 === sql-05 | Aggregates
 --- teach
 Last lesson you sorted rows with `ORDER BY` and kept the top few with `LIMIT`. Every answer so far has been a list of rows. This lesson lets you ask for **one number about many rows**: how many there are, what they add up to, which is biggest.
@@ -818,6 +1743,201 @@ Counting is `COUNT(*)`. Adding up a column is `SUM(...)`. The largest value is `
 The shape is `SELECT COUNT(*), SUM(input_tokens), MAX(...) FROM requests;` with the cost column in the last brackets.
 --- check result | 6 requests, 24900 input tokens, 0.0765 at most
 [[6, 24900, 0.0765]]
+
++++ practice | Counting satellites
+--- task
+The `satellites` table has the columns `id`, `name`, `orbit`, `launched` and `mass_kg`.
+
+In one query, return two columns about all the satellites: how many there are, and the mass of the heaviest one.
+--- starter
+SELECT * FROM satellites;
+--- solution
+SELECT COUNT(*), MAX(mass_kg) FROM satellites;
+--- hint
+Both answers are one value made from many rows: that is what aggregate functions do.
+--- hint
+Counting rows is `COUNT(*)`. The largest value in a column comes from `MAX`.
+--- schema
+CREATE TABLE satellites (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  orbit TEXT NOT NULL,
+  launched TEXT NOT NULL,
+  mass_kg INTEGER NOT NULL
+);
+INSERT INTO satellites (id, name, orbit, launched, mass_kg) VALUES
+  (1, 'Kestrel', 'LEO', '2021-06-14', 220),
+  (2, 'Heron',   'GEO', '2019-11-02', 3400),
+  (3, 'Wren',    'LEO', '2023-02-27', 95),
+  (4, 'Osprey',  'MEO', '2020-08-09', 1500),
+  (5, 'Finch',   'LEO', '2024-05-30', 60);
+--- check result | 5 satellites, the heaviest 3400 kg
+[[5, 3400]]
+--- check source | Uses COUNT
+[Cc][Oo][Uu][Nn][Tt]\s*\(
+--- check source | Uses MAX
+[Mm][Aa][Xx]\s*\(
+
++++ practice | Only the low orbits
+--- task
+The `satellites` table has the columns `id`, `name`, `orbit`, `launched` and `mass_kg`.
+
+Return three columns about the satellites in orbit `'LEO'` only: how many there are, their average mass, and the date the first of them was launched (the earliest `launched` value).
+--- starter
+SELECT COUNT(*) FROM satellites;
+--- solution
+SELECT COUNT(*), AVG(mass_kg), MIN(launched)
+FROM satellites
+WHERE orbit = 'LEO';
+--- hint
+The `WHERE` runs first and throws away the other orbits. The aggregates only see what is left.
+--- hint
+`AVG` gives the average. `MIN` works on dates written year-month-day too: the smallest is the earliest.
+--- schema
+CREATE TABLE satellites (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  orbit TEXT NOT NULL,
+  launched TEXT NOT NULL,
+  mass_kg INTEGER NOT NULL
+);
+INSERT INTO satellites (id, name, orbit, launched, mass_kg) VALUES
+  (1, 'Kestrel', 'LEO', '2021-06-14', 220),
+  (2, 'Heron',   'GEO', '2019-11-02', 3400),
+  (3, 'Wren',    'LEO', '2023-02-27', 95),
+  (4, 'Osprey',  'MEO', '2020-08-09', 1500),
+  (5, 'Finch',   'LEO', '2024-05-30', 60);
+--- check result | 3 satellites, 125 kg on average, the first launched 2021-06-14
+[[3, 125.0, "2021-06-14"]]
+--- check source | Filters to LEO before counting
+[Ww][Hh][Ee][Rr][Ee]\s+orbit\s*=\s*'LEO'
+--- check source | Uses AVG
+[Aa][Vv][Gg]\s*\(
+
++++ practice | Sonnet totals
+--- task
+Using the `requests` table, return two columns about the requests answered by `'sonnet'`:
+
+1. their total tokens, input and output together, as `total_tokens`,
+2. their average cost, rounded to 4 decimal places, as `avg_cost`.
+--- starter
+SELECT * FROM requests WHERE model = 'sonnet';
+--- solution
+SELECT SUM(input_tokens + output_tokens) AS total_tokens,
+       ROUND(AVG(cost_usd), 4) AS avg_cost
+FROM requests
+WHERE model = 'sonnet';
+--- hint
+An aggregate can work on a sum worked out for each row: put the sum inside its brackets.
+--- hint
+Wrap the average in `ROUND(..., 4)` to round it to four decimal places.
+--- check result | 24950 tokens, 0.0383 on average
+[[24950, 0.0383]]
+--- check source | Rounds with ROUND
+[Rr][Oo][Uu][Nn][Dd]\s*\(
+--- check source | Names the column avg_cost
+[Aa][Ss]\s+avg_cost\b
+
++++ practice | Below freezing
+--- task
+A table called `hull_temps` holds temperature readings from the outside of a spacecraft, with the columns `id`, `sensor` and `temp_c` (whole degrees Celsius). Some readings are below zero, and one is exactly zero.
+
+Return four columns about the readings from sensor `'H1'` only: how many there are, the coldest, the warmest, and the average rounded to **1** decimal place. The average is not a whole number, so do not lose its decimals.
+--- starter
+SELECT temp_c FROM hull_temps WHERE sensor = 'H1';
+--- solution
+SELECT COUNT(*), MIN(temp_c), MAX(temp_c), ROUND(AVG(temp_c), 1)
+FROM hull_temps
+WHERE sensor = 'H1';
+--- hint
+The coldest reading is the smallest number, even when it is below zero.
+--- hint
+`AVG` keeps the decimals. Adding the readings up and dividing by the count yourself would divide whole numbers, and throw them away.
+--- hint
+Round with `ROUND(AVG(temp_c), 1)`.
+--- schema
+CREATE TABLE hull_temps (
+  id INTEGER PRIMARY KEY,
+  sensor TEXT NOT NULL,
+  temp_c INTEGER NOT NULL
+);
+INSERT INTO hull_temps (id, sensor, temp_c) VALUES
+  (1, 'H1', -12),
+  (2, 'H1', -3),
+  (3, 'H2', 40),
+  (4, 'H1', 0),
+  (5, 'H1', 4),
+  (6, 'H2', -60),
+  (7, 'H1', 7);
+--- check result | 5 readings, from -12 to 7, averaging -0.8
+[[5, -12, 7, -0.8]]
+--- check source | Uses AVG for the average
+[Aa][Vv][Gg]\s*\(
+--- check source | Keeps only sensor H1
+sensor\s*=\s*'H1'
+
++++ practice | The percentage that came out whole
+--- task
+The query in the editor should work out how many output tokens there were for every 100 input tokens, across all requests: the total of `output_tokens`, times 100, divided by the total of `input_tokens`, rounded to 2 decimal places. The right answer is `15.86`. Instead it gives `15.0`. Fix it.
+--- starter
+SELECT ROUND(SUM(output_tokens) * 100 / SUM(input_tokens), 2) FROM requests;
+--- solution
+SELECT ROUND(SUM(output_tokens) * 100.0 / SUM(input_tokens), 2) FROM requests;
+--- hint
+Both totals are whole numbers, and so is 100. What does SQLite do when it divides one whole number by another?
+--- hint
+Write one of the numbers with a decimal point, and the division keeps its decimals.
+--- check result | 15.86
+[[15.86]]
+--- check source | Still divides the two totals
+[Ss][Uu][Mm]\s*\(\s*output_tokens\s*\)[\s\S]*/\s*[Ss][Uu][Mm]\s*\(\s*input_tokens\s*\)
+--- check source absent | Does not type the answer in
+15\.86
+
++++ practice | A burn report
+--- task
+A spacecraft's engine firings, called burns, are logged in a table called `burns`, with the columns `id`, `engine` (`'main'` or `'thruster'`), `burn_s` (how many seconds it fired) and `fuel_kg` (fuel used).
+
+Return one row with four columns about the **main** engine burns only:
+
+1. how many there were, as `burns`,
+2. the total fuel used, as `fuel_kg`,
+3. the total firing time in **minutes**, rounded to 1 decimal place, as `minutes`,
+4. the fuel used per second of firing over all of them (total fuel divided by total seconds), rounded to 2 decimal places, as `kg_per_s`.
+--- starter
+SELECT * FROM burns;
+--- solution
+SELECT COUNT(*) AS burns,
+       SUM(fuel_kg) AS fuel_kg,
+       ROUND(SUM(burn_s) / 60.0, 1) AS minutes,
+       ROUND(SUM(fuel_kg) * 1.0 / SUM(burn_s), 2) AS kg_per_s
+FROM burns
+WHERE engine = 'main';
+--- hint
+Every column is an aggregate over the main-engine rows, so start with `WHERE engine = 'main'`.
+--- hint
+A minute is 60 seconds. Both totals are whole numbers, so make sure each division keeps its decimals.
+--- hint
+Minutes is `ROUND(SUM(burn_s) / 60.0, 1)`. Fuel per second divides `SUM(fuel_kg)` by `SUM(burn_s)`, with one of them turned into a decimal first, for example by multiplying by `1.0`.
+--- schema
+CREATE TABLE burns (
+  id INTEGER PRIMARY KEY,
+  engine TEXT NOT NULL,
+  burn_s INTEGER NOT NULL,
+  fuel_kg INTEGER NOT NULL
+);
+INSERT INTO burns (id, engine, burn_s, fuel_kg) VALUES
+  (1, 'main', 142, 3050),
+  (2, 'thruster', 8, 12),
+  (3, 'main', 37, 790),
+  (4, 'thruster', 5, 7),
+  (5, 'main', 71, 1375);
+--- check result | 3 burns, 5215 kg, 4.2 minutes, 20.86 kg per second
+[[3, 5215, 4.2, 20.86]]
+--- check source | Keeps only the main engine
+engine\s*=\s*'main'
+--- check source | Names the column kg_per_s
+[Aa][Ss]\s+kg_per_s\b
 
 === sql-06 | Grouping
 --- teach
@@ -969,6 +2089,195 @@ The shape is `SELECT user_id, COUNT(*), SUM(input_tokens) FROM requests GROUP BY
 --- check source | Filters groups with HAVING
 \b[Hh][Aa][Vv][Ii][Nn][Gg]\b
 
++++ practice | Satellites per orbit
+--- task
+The `satellites` table has the columns `id`, `name`, `orbit`, `launched` and `mass_kg`.
+
+Return one row per orbit, with three columns: the `orbit`, how many satellites are in it as `satellites`, and their total mass as `total_kg`.
+--- starter
+SELECT orbit FROM satellites;
+--- solution
+SELECT orbit, COUNT(*) AS satellites, SUM(mass_kg) AS total_kg
+FROM satellites
+GROUP BY orbit;
+--- hint
+"One row per orbit" means splitting the rows into groups by the `orbit` column.
+--- hint
+Add `GROUP BY orbit` after `FROM`, and put `COUNT(*)` and `SUM(mass_kg)` next to `orbit` in the `SELECT`.
+--- schema
+CREATE TABLE satellites (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  orbit TEXT NOT NULL,
+  launched TEXT NOT NULL,
+  mass_kg INTEGER NOT NULL
+);
+INSERT INTO satellites (id, name, orbit, launched, mass_kg) VALUES
+  (1, 'Kestrel', 'LEO', '2021-06-14', 220),
+  (2, 'Heron',   'GEO', '2019-11-02', 3400),
+  (3, 'Wren',    'LEO', '2023-02-27', 95),
+  (4, 'Osprey',  'MEO', '2020-08-09', 1500),
+  (5, 'Finch',   'LEO', '2024-05-30', 60);
+--- check result | GEO 1 of 3400 kg, LEO 3 of 375 kg, MEO 1 of 1500 kg
+[["GEO", 1, 3400], ["LEO", 3, 375], ["MEO", 1, 1500]]
+--- check source | Groups with GROUP BY
+[Gg][Rr][Oo][Uu][Pp]\s+[Bb][Yy]\s+orbit
+--- check source absent | Does not pick the orbits one by one
+orbit\s*=
+
++++ practice | Each user's cheapest and dearest
+--- task
+Using the `requests` table, return one row per `user_id`, with three columns: the `user_id`, the cost of that user's **cheapest** request as `cheapest`, and the cost of their **most expensive** request as `dearest`.
+--- starter
+SELECT user_id, cost_usd FROM requests;
+--- solution
+SELECT user_id, MIN(cost_usd) AS cheapest, MAX(cost_usd) AS dearest
+FROM requests
+GROUP BY user_id;
+--- hint
+Group by `user_id`, then use one aggregate for the smallest value and another for the largest.
+--- hint
+`MIN(cost_usd)` and `MAX(cost_usd)` both run once per group.
+--- check result | Users 1, 2 and 4; user 4's one request is both
+[[1, 0.0012, 0.0298], [2, 0.0006, 0.0765], [4, 0.0034, 0.0034]]
+--- check source | Groups by user_id
+[Gg][Rr][Oo][Uu][Pp]\s+[Bb][Yy]\s+user_id
+--- check source | Uses MIN and MAX
+[Mm][Ii][Nn]\s*\([\s\S]*[Mm][Aa][Xx]\s*\(|[Mm][Aa][Xx]\s*\([\s\S]*[Mm][Ii][Nn]\s*\(
+
++++ practice | Output per model, biggest first
+--- task
+Using the `requests` table, look only at requests with **more than 500** input tokens. Return one row per `model`, with three columns: the `model`, how many such requests it answered as `calls`, and their total `output_tokens` as `output_total`. Sort the rows so the model with the biggest `output_total` comes first.
+--- starter
+SELECT model FROM requests;
+--- solution
+SELECT model, COUNT(*) AS calls, SUM(output_tokens) AS output_total
+FROM requests
+WHERE input_tokens > 500
+GROUP BY model
+ORDER BY output_total DESC;
+--- hint
+The clauses go in this order: `SELECT`, `FROM`, `WHERE`, `GROUP BY`, `ORDER BY`.
+--- hint
+The `WHERE` drops the small requests before they are grouped. The sort can use the alias of the total.
+--- check result | sonnet first with 3 calls, then haiku with 2
+ordered
+[["sonnet", 3, 3350], ["haiku", 2, 520]]
+--- check source | Filters rows with WHERE before grouping
+[Ww][Hh][Ee][Rr][Ee][\s\S]*[Gg][Rr][Oo][Uu][Pp]\s+[Bb][Yy]
+--- check source | Sorts biggest first
+[Dd][Ee][Ss][Cc]
+
++++ practice | Sensors with enough readings
+--- task
+A table called `readings` has the columns `id`, `sensor` and `value`. Some values are below zero.
+
+Return one row per sensor, with three columns: the `sensor`, how many readings it has as `n`, and its average value rounded to 1 decimal place as `avg_value`. Only include sensors with **at least 3** readings. A sensor with exactly 3 readings counts; a sensor with only 1 or 2 does not.
+--- starter
+SELECT sensor, value FROM readings;
+--- solution
+SELECT sensor, COUNT(*) AS n, ROUND(AVG(value), 1) AS avg_value
+FROM readings
+GROUP BY sensor
+HAVING COUNT(*) >= 3;
+--- hint
+The rule "at least 3 readings" is a test on a whole group, so it goes in `HAVING`, not `WHERE`.
+--- hint
+"At least 3" includes 3 itself, so use greater than or equal to.
+--- schema
+CREATE TABLE readings (
+  id INTEGER PRIMARY KEY,
+  sensor TEXT NOT NULL,
+  value REAL NOT NULL
+);
+INSERT INTO readings (id, sensor, value) VALUES
+  (1, 'temp', -4.5),
+  (2, 'temp', -1.0),
+  (3, 'temp', 2.7),
+  (4, 'volt', 28.1),
+  (5, 'volt', 27.9),
+  (6, 'spin', 3.0),
+  (7, 'temp', 0.0),
+  (8, 'flow', 10.0),
+  (9, 'flow', 12.0),
+  (10, 'flow', 11.0);
+--- check result | temp (4 readings) and flow (exactly 3); volt and spin left out
+[["flow", 3, 11.0], ["temp", 4, -0.7]]
+--- check source | Filters groups with HAVING
+[Hh][Aa][Vv][Ii][Nn][Gg]
+--- check source absent | Does not pick the sensors by name
+sensor\s*(=|<>|[Ii][Nn]\b)
+
++++ practice | One row per user and model
+--- task
+The query in the editor should count the requests for each **user and model** pair: one row for user 1 with sonnet, one for user 1 with haiku, and so on. It returns only one row per user, with the model taken from one row of each group, and the wrong counts. Fix it.
+--- starter
+SELECT user_id, model, COUNT(*) AS calls
+FROM requests
+GROUP BY user_id;
+--- solution
+SELECT user_id, model, COUNT(*) AS calls
+FROM requests
+GROUP BY user_id, model;
+--- hint
+Every column in the `SELECT` must be in the `GROUP BY` or inside an aggregate. Which one is neither?
+--- hint
+You can group by more than one column: put a comma between them. Then each group is one user with one model.
+--- check result | Five pairs, user 1 with sonnet twice
+[[1, "haiku", 1], [1, "sonnet", 2], [2, "haiku", 1], [2, "sonnet", 1], [4, "haiku", 1]]
+--- check source | Groups by both columns
+[Gg][Rr][Oo][Uu][Pp]\s+[Bb][Yy]\s+(user_id\s*,\s*model|model\s*,\s*user_id)
+--- check source | Still counts the rows
+[Cc][Oo][Uu][Nn][Tt]\s*\(\s*\*\s*\)
+
++++ practice | Ground station contact time
+--- task
+A satellite talks to the ground only when it passes over a ground station. Each pass is a row in a table called `passes`, with the columns `id`, `station`, `started` (a time) and `minutes` (how long the contact lasted).
+
+Return one row per station, with four columns: the `station`, how many passes it had as `passes`, the total contact time as `total_min`, and its longest single pass as `longest`. Only include stations with **more than 30** minutes of contact in total. Put the station with the most contact first; if two stations have the same total, put them A to Z by name.
+--- starter
+SELECT station, minutes FROM passes;
+--- solution
+SELECT station,
+       COUNT(*) AS passes,
+       SUM(minutes) AS total_min,
+       MAX(minutes) AS longest
+FROM passes
+GROUP BY station
+HAVING SUM(minutes) > 30
+ORDER BY total_min DESC, station;
+--- hint
+Group by station. Three aggregates give the count, the total and the longest.
+--- hint
+"More than 30 minutes in total" tests a group's total, so it goes in `HAVING`.
+--- hint
+Sort by the total, biggest first, then by station name to settle ties.
+--- schema
+CREATE TABLE passes (
+  id INTEGER PRIMARY KEY,
+  station TEXT NOT NULL,
+  started TEXT NOT NULL,
+  minutes INTEGER NOT NULL
+);
+INSERT INTO passes (id, station, started, minutes) VALUES
+  (1, 'Svalbard', '2025-05-01 01:10', 12),
+  (2, 'Awarua', '2025-05-01 02:05', 9),
+  (3, 'Svalbard', '2025-05-01 02:48', 11),
+  (4, 'Kourou', '2025-05-01 03:30', 14),
+  (5, 'Svalbard', '2025-05-01 04:25', 13),
+  (6, 'Awarua', '2025-05-01 05:40', 10),
+  (7, 'Kourou', '2025-05-01 06:15', 17),
+  (8, 'Awarua', '2025-05-01 08:02', 11),
+  (9, 'Hawaii', '2025-05-01 09:20', 30),
+  (10, 'Awarua', '2025-05-01 10:44', 6);
+--- check result | Awarua and Svalbard tied at 36, then Kourou at 31; Hawaii at exactly 30 left out
+ordered
+[["Awarua", 4, 36, 11], ["Svalbard", 3, 36, 13], ["Kourou", 2, 31, 17]]
+--- check source | Filters groups with HAVING
+[Hh][Aa][Vv][Ii][Nn][Gg]
+--- check source | Sorts by the total, biggest first
+[Dd][Ee][Ss][Cc]
+
 === sql-07 | Joining tables
 --- teach
 Last lesson you counted requests per `user_id`. But a `user_id` of 2 does not tell you who that is. The email [[lives in a different table|why-two-tables]], `users`. This lesson lets you pull both tables into one answer.
@@ -1089,6 +2398,210 @@ Keep the `WHERE` from the starter, but put it after the join and use the alias: 
 --- check source | Uses a JOIN
 \b[Jj][Oo][Ii][Nn]\b
 
++++ practice | Rockets and their launch sites
+--- task
+Two tables describe a spaceport. `pads` has the columns `id`, `code` and `site`: one row per launch pad. `launches` has the columns `id`, `pad_id`, `rocket` and `launched`; `pad_id` is the `id` of the pad the rocket flew from.
+
+Return one row per launch, with three columns: the `rocket` and its `launched` date (from `launches`), and the `site` of its pad (from `pads`). Put the earliest launch first.
+--- starter
+SELECT rocket, pad_id FROM launches;
+--- solution
+SELECT l.rocket, l.launched, p.site
+FROM launches l
+JOIN pads p ON p.id = l.pad_id
+ORDER BY l.launched;
+--- hint
+The site is in a different table, so you need a `JOIN`, with `ON` giving the matching rule.
+--- hint
+A launch's `pad_id` matches a pad's `id`. Give the tables short aliases, like `l` and `p`, and use them with the dot. The sort goes after the join.
+--- schema
+CREATE TABLE pads (
+  id INTEGER PRIMARY KEY,
+  code TEXT NOT NULL,
+  site TEXT NOT NULL
+);
+INSERT INTO pads (id, code, site) VALUES
+  (1, 'LC-1', 'Coastal'),
+  (2, 'LC-2', 'Coastal'),
+  (3, 'MP-7', 'Mountain');
+CREATE TABLE launches (
+  id INTEGER PRIMARY KEY,
+  pad_id INTEGER NOT NULL REFERENCES pads(id),
+  rocket TEXT NOT NULL,
+  launched TEXT NOT NULL
+);
+INSERT INTO launches (id, pad_id, rocket, launched) VALUES
+  (1, 2, 'Lark I', '2024-03-02'),
+  (2, 1, 'Lark II', '2024-09-17'),
+  (3, 2, 'Lark II', '2025-01-08'),
+  (4, 3, 'Magpie', '2025-06-21');
+--- check result | Four launches, each with its site, earliest first
+ordered
+[["Lark I", "2024-03-02", "Coastal"], ["Lark II", "2024-09-17", "Coastal"], ["Lark II", "2025-01-08", "Coastal"], ["Magpie", "2025-06-21", "Mountain"]]
+--- check source | Uses a JOIN
+\b[Jj][Oo][Ii][Nn]\b
+--- check source | Matches pad_id with the pad's id
+\.id\s*=\s*\w+\.pad_id|\.pad_id\s*=\s*\w+\.id\b
+
++++ practice | Big requests from paying users
+--- task
+Using `users` and `requests`, return one row for every request that has **more than 1000** input tokens **and** was sent by a user on the `'pro'` plan. Give three columns: the user's `email`, the request's `model`, and its total tokens (input plus output) as `total_tokens`.
+--- starter
+SELECT user_id, cost_usd FROM requests;
+--- solution
+SELECT u.email, r.model, r.input_tokens + r.output_tokens AS total_tokens
+FROM users u
+JOIN requests r ON r.user_id = u.id
+WHERE u.plan = 'pro' AND r.input_tokens > 1000;
+--- hint
+The plan and the email live in `users`; the tokens live in `requests`. Join them on the user id.
+--- hint
+After the join, one `WHERE` can test columns from both tables: join the two conditions with `AND`.
+--- check result | Ada's two sonnet requests and Kai's haiku request
+[["ada@example.com", "sonnet", 1540], ["ada@example.com", "sonnet", 6310], ["kai@example.com", "haiku", 2600]]
+--- check source | Uses a JOIN
+\b[Jj][Oo][Ii][Nn]\b
+--- check source absent | Does not pick the user by id or email
+user_id\s*=\s*\d|email\s*=\s*'
+
++++ practice | Requests per plan
+--- task
+Using `users` and `requests`, return one row per **plan**, with three columns: the `plan`, how many requests users on that plan made as `calls`, and the total `output_tokens` of those requests as `output_total`.
+--- starter
+SELECT plan FROM users;
+--- solution
+SELECT u.plan, COUNT(*) AS calls, SUM(r.output_tokens) AS output_total
+FROM requests r
+JOIN users u ON u.id = r.user_id
+GROUP BY u.plan;
+--- hint
+First join each request to its user, so every request row carries a plan. Then group by that plan.
+--- hint
+`GROUP BY u.plan`, with `COUNT(*)` and `SUM(r.output_tokens)` in the `SELECT`.
+--- check result | pro 4 requests and 1770 tokens, free 2 and 2180
+[["free", 2, 2180], ["pro", 4, 1770]]
+--- check source | Uses a JOIN
+\b[Jj][Oo][Ii][Nn]\b
+--- check source | Groups by plan
+[Gg][Rr][Oo][Uu][Pp]\s+[Bb][Yy]\s+(\w+\.)?plan\b
+
++++ practice | Two columns called name
+--- task
+Two tables describe who runs which satellite. `operators` has the columns `id` and `name`. `satellites` has the columns `id`, `name` and `operator_id`, the `id` of the operator that runs it. Both tables have a column called `name`.
+
+Return one row per satellite that has an operator, with two columns: the satellite's name as `satellite` and the operator's name as `operator`. One satellite's `operator_id` points at an operator that is no longer in the table; leave that one out.
+--- starter
+SELECT name, name FROM satellites JOIN operators ON operator_id = id;
+--- solution
+SELECT s.name AS satellite, o.name AS operator
+FROM satellites s
+JOIN operators o ON o.id = s.operator_id;
+--- hint
+Plain `name` and plain `id` are ambiguous here: both tables have them. Put the table's alias and a dot in front of every column.
+--- hint
+Give each `name` column its own `AS` so the two columns in the answer have different headings.
+--- hint
+A plain `JOIN` keeps only rows that match on both sides, so the satellite with the missing operator drops out on its own.
+--- schema
+CREATE TABLE operators (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL
+);
+INSERT INTO operators (id, name) VALUES
+  (1, 'Polar Relay'),
+  (2, 'Blue Arc'),
+  (3, 'Nimbus Labs');
+CREATE TABLE satellites (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  operator_id INTEGER NOT NULL
+);
+INSERT INTO satellites (id, name, operator_id) VALUES
+  (1, 'Kestrel', 1),
+  (2, 'Heron', 2),
+  (3, 'Wren', 1),
+  (4, 'Osprey', 9),
+  (5, 'Finch', 3);
+--- check result | Four satellites with their operators; Osprey, whose operator is gone, left out
+[["Kestrel", "Polar Relay"], ["Heron", "Blue Arc"], ["Wren", "Polar Relay"], ["Finch", "Nimbus Labs"]]
+--- check source | Uses a JOIN
+\b[Jj][Oo][Ii][Nn]\b
+--- check source | Names the satellite column
+[Aa][Ss]\s+satellite\b
+
++++ practice | The wrong emails
+--- task
+The query in the editor should list every request's `id` and `cost_usd` next to the `email` of the user who sent it: six rows, one per request. Instead it returns only four rows, and most of the emails are wrong. Fix it.
+--- starter
+SELECT r.id, r.cost_usd, u.email
+FROM requests r
+JOIN users u ON u.id = r.id;
+--- solution
+SELECT r.id, r.cost_usd, u.email
+FROM requests r
+JOIN users u ON u.id = r.user_id;
+--- hint
+Look at the `ON` line. Which column of `requests` says who sent the request?
+--- hint
+A user's `id` should be matched with a request's `user_id`, not with the request's own `id`.
+--- check result | Six requests, each with its sender's email
+[[1, 0.0087, "ada@example.com"], [2, 0.0298, "ada@example.com"], [3, 0.0012, "ada@example.com"], [4, 0.0765, "lin@example.com"], [5, 0.0006, "lin@example.com"], [6, 0.0034, "kai@example.com"]]
+--- check source | Joins on the request's user_id
+user_id
+--- check source absent | Does not match a user's id with a request's own id
+u\.id\s*=\s*r\.id\b|r\.id\s*=\s*u\.id\b
+
++++ practice | Sensors out of range
+--- task
+A spacecraft's sensors are listed in a table called `sensors`, with the columns `id`, `name`, `unit` and `max_ok` (the highest safe value). Their readings are in a table called `readings`, with the columns `id`, `sensor_id`, `t` (seconds since launch) and `value`.
+
+Return every reading whose `value` is **above** its own sensor's `max_ok`, with four columns: the sensor's `name`, the reading's `t`, the `value`, and how far over the limit it was as `over_by`. Put the reading that is furthest over first. A reading exactly at the limit is safe: leave it out.
+--- starter
+SELECT sensor_id, t, value FROM readings;
+--- solution
+SELECT s.name, r.t, r.value, r.value - s.max_ok AS over_by
+FROM readings r
+JOIN sensors s ON s.id = r.sensor_id
+WHERE r.value > s.max_ok
+ORDER BY over_by DESC;
+--- hint
+Each reading has to be compared with a number that lives in the other table. Join first, then the `WHERE` can use columns from both.
+--- hint
+The test is the reading's value greater than the sensor's `max_ok`. Sort by the difference, biggest first.
+--- schema
+CREATE TABLE sensors (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  unit TEXT NOT NULL,
+  max_ok INTEGER NOT NULL
+);
+INSERT INTO sensors (id, name, unit, max_ok) VALUES
+  (1, 'tank_pressure', 'kPa', 350),
+  (2, 'nozzle_temp', 'C', 900),
+  (3, 'bus_voltage', 'V', 32);
+CREATE TABLE readings (
+  id INTEGER PRIMARY KEY,
+  sensor_id INTEGER NOT NULL REFERENCES sensors(id),
+  t INTEGER NOT NULL,
+  value INTEGER NOT NULL
+);
+INSERT INTO readings (id, sensor_id, t, value) VALUES
+  (1, 1, 10, 340),
+  (2, 2, 10, 880),
+  (3, 3, 10, 31),
+  (4, 1, 20, 362),
+  (5, 2, 20, 900),
+  (6, 3, 20, 35),
+  (7, 1, 30, 351),
+  (8, 2, 30, 941);
+--- check result | nozzle_temp 41 over, tank_pressure 12, bus_voltage 3, tank_pressure 1
+ordered
+[["nozzle_temp", 30, 941, 41], ["tank_pressure", 20, 362, 12], ["bus_voltage", 20, 35, 3], ["tank_pressure", 30, 351, 1]]
+--- check source | Uses a JOIN
+\b[Jj][Oo][Ii][Nn]\b
+--- check source | Compares with the sensor's own limit
+max_ok
+
 === sql-08 | LEFT JOIN and NULL
 --- teach
 Last lesson you joined `requests` to `users`, and noticed that sam, who has never made a request, disappeared. An inner join keeps only rows with a match on both sides. This lesson shows how to keep sam, and what the database puts in the empty spaces.
@@ -1187,6 +2700,277 @@ Now sam is there, but with 1. `COUNT(*)` counts sam's single `NULL`-filled row a
 Replace `COUNT(*)` with `COUNT(r.id)`. `r.id` is `NULL` in sam's row, so it is not counted.
 --- check result | All four users, sam with 0
 [["ada@example.com", 3], ["lin@example.com", 2], ["sam@example.com", 0], ["kai@example.com", 1]]
+
++++ practice | Pads that never launched
+--- task
+`pads` has the columns `id`, `code` and `site`. `launches` has the columns `id`, `pad_id`, `rocket` and `launched`; `pad_id` is the `id` of the pad the rocket flew from. One pad has never been used.
+
+Return the `code` and `site` of **every** pad next to the `rocket` of each launch from it. A pad with several launches appears once per launch. The unused pad must still appear, with `NULL` for the rocket. Sort by `code` from A to Z, and by `rocket` from A to Z within a pad.
+--- starter
+SELECT p.code, p.site, l.rocket
+FROM pads p
+JOIN launches l ON l.pad_id = p.id
+ORDER BY p.code, l.rocket;
+--- solution
+SELECT p.code, p.site, l.rocket
+FROM pads p
+LEFT JOIN launches l ON l.pad_id = p.id
+ORDER BY p.code, l.rocket;
+--- hint
+A plain `JOIN` keeps only pads that have a launch. You need the kind of join that keeps every row of the left table.
+--- hint
+Keep `pads` after `FROM`, since those are the rows you want to keep, and change the join to a `LEFT JOIN`.
+--- schema
+CREATE TABLE pads (
+  id INTEGER PRIMARY KEY,
+  code TEXT NOT NULL,
+  site TEXT NOT NULL
+);
+INSERT INTO pads (id, code, site) VALUES
+  (1, 'LC-1', 'Coastal'),
+  (2, 'LC-2', 'Coastal'),
+  (3, 'MP-7', 'Mountain'),
+  (4, 'MP-8', 'Mountain');
+CREATE TABLE launches (
+  id INTEGER PRIMARY KEY,
+  pad_id INTEGER NOT NULL REFERENCES pads(id),
+  rocket TEXT NOT NULL,
+  launched TEXT NOT NULL
+);
+INSERT INTO launches (id, pad_id, rocket, launched) VALUES
+  (1, 2, 'Lark I', '2024-03-02'),
+  (2, 1, 'Lark II', '2024-09-17'),
+  (3, 2, 'Lark II', '2025-01-08'),
+  (4, 3, 'Magpie', '2025-06-21');
+--- check result | Five rows in order, MP-8 last with NULL
+ordered
+[["LC-1", "Coastal", "Lark II"], ["LC-2", "Coastal", "Lark I"], ["LC-2", "Coastal", "Lark II"], ["MP-7", "Mountain", "Magpie"], ["MP-8", "Mountain", null]]
+--- check source | Uses a LEFT JOIN
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+--- check source | Starts from pads
+[Ff][Rr][Oo][Mm]\s+pads\b
+
++++ practice | Requests whose user is gone
+--- task
+In this copy of the database, one user was removed by mistake, but a request of theirs is still in `requests`. Its `user_id` points at nobody.
+
+Return **every** request, with three columns: the request's `id`, its `model`, and the `email` of the user who sent it. The request whose user is gone must still appear, with `NULL` for the email.
+--- starter
+SELECT r.id, r.model, u.email
+FROM requests r
+JOIN users u ON u.id = r.user_id;
+--- solution
+SELECT r.id, r.model, u.email
+FROM requests r
+LEFT JOIN users u ON u.id = r.user_id;
+--- hint
+This time the rows you must keep are the requests. Which table goes after `FROM`?
+--- hint
+With `requests` on the left, a `LEFT JOIN` to `users` keeps every request, even one with no matching user.
+--- schema
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  plan TEXT NOT NULL,
+  created TEXT NOT NULL
+);
+INSERT INTO users (id, email, plan, created) VALUES
+  (1, 'ada@example.com', 'pro',  '2025-01-04'),
+  (2, 'lin@example.com', 'free', '2025-02-11'),
+  (4, 'kai@example.com', 'pro',  '2025-03-28');
+CREATE TABLE requests (
+  id INTEGER PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  model TEXT NOT NULL,
+  input_tokens INTEGER NOT NULL,
+  output_tokens INTEGER NOT NULL,
+  cost_usd REAL NOT NULL
+);
+INSERT INTO requests (id, user_id, model, input_tokens, output_tokens, cost_usd) VALUES
+  (1, 1, 'sonnet',  1200,  340, 0.0087),
+  (2, 1, 'sonnet',  5400,  910, 0.0298),
+  (3, 3, 'haiku',    800,  120, 0.0012),
+  (4, 2, 'sonnet', 15000, 2100, 0.0765),
+  (5, 2, 'haiku',    300,   80, 0.0006),
+  (6, 4, 'haiku',   2200,  400, 0.0034);
+--- check result | All six requests, request 3 with NULL
+[[1, "sonnet", "ada@example.com"], [2, "sonnet", "ada@example.com"], [3, "haiku", null], [4, "sonnet", "lin@example.com"], [5, "haiku", "lin@example.com"], [6, "haiku", "kai@example.com"]]
+--- check source | Uses a LEFT JOIN
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+--- check source | Starts from requests
+[Ff][Rr][Oo][Mm]\s+requests\b
+
++++ practice | Satellites per operator
+--- task
+`operators` has the columns `id` and `name`. `satellites` has the columns `id`, `name` and `operator_id`. One operator runs no satellites yet.
+
+Return **every** operator, with two columns: the operator's `name` and how many satellites it runs as `satellites`, which must be `0` for the operator with none. Put the operator with the most satellites first; when two have the same number, put them A to Z by name.
+--- starter
+SELECT o.name, COUNT(*) AS satellites
+FROM operators o
+JOIN satellites s ON s.operator_id = o.id
+GROUP BY o.id, o.name;
+--- solution
+SELECT o.name, COUNT(s.id) AS satellites
+FROM operators o
+LEFT JOIN satellites s ON s.operator_id = o.id
+GROUP BY o.id, o.name
+ORDER BY satellites DESC, o.name;
+--- hint
+Three changes: keep every operator, count only real matches, and sort.
+--- hint
+After a `LEFT JOIN`, `COUNT(*)` counts the `NULL`-filled row as 1. Count a column from `satellites` instead.
+--- hint
+Sort with `ORDER BY satellites DESC, o.name`.
+--- schema
+CREATE TABLE operators (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL
+);
+INSERT INTO operators (id, name) VALUES
+  (1, 'Polar Relay'),
+  (2, 'Blue Arc'),
+  (3, 'Nimbus Labs'),
+  (4, 'Aurora Nine');
+CREATE TABLE satellites (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  operator_id INTEGER NOT NULL
+);
+INSERT INTO satellites (id, name, operator_id) VALUES
+  (1, 'Kestrel', 1),
+  (2, 'Heron', 2),
+  (3, 'Wren', 1),
+  (4, 'Osprey', 2),
+  (5, 'Finch', 3);
+--- check result | Blue Arc and Polar Relay with 2, Nimbus Labs 1, Aurora Nine 0
+ordered
+[["Blue Arc", 2], ["Polar Relay", 2], ["Nimbus Labs", 1], ["Aurora Nine", 0]]
+--- check source | Uses a LEFT JOIN
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+--- check source absent | Does not count whole rows
+[Cc][Oo][Uu][Nn][Tt]\s*\(\s*\*\s*\)
+
++++ practice | Spacewalks, none and one
+--- task
+`crew` has the columns `id` and `name`. `spacewalks` has the columns `id`, `crew_id` and `minutes`: one row per spacewalk, with who did it and how long it lasted. Some crew members have done several spacewalks, one has done exactly one, and two have done none.
+
+Return **every** crew member, with three columns: their `name`, how many spacewalks they have done as `walks`, and their longest spacewalk in minutes as `longest`. Someone with no spacewalks must show `0` walks and `NULL` for the longest.
+--- starter
+SELECT name FROM crew;
+--- solution
+SELECT c.name, COUNT(w.id) AS walks, MAX(w.minutes) AS longest
+FROM crew c
+LEFT JOIN spacewalks w ON w.crew_id = c.id
+GROUP BY c.id, c.name;
+--- hint
+Start from `crew` and keep everyone with a `LEFT JOIN`, then group per crew member.
+--- hint
+`COUNT` of a column from `spacewalks` gives 0 for someone with none. `MAX` skips `NULL`, so with nothing to compare it gives `NULL` by itself.
+--- schema
+CREATE TABLE crew (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL
+);
+INSERT INTO crew (id, name) VALUES
+  (1, 'Imani'),
+  (2, 'Tomas'),
+  (3, 'Yuki'),
+  (4, 'Ravi'),
+  (5, 'Noor');
+CREATE TABLE spacewalks (
+  id INTEGER PRIMARY KEY,
+  crew_id INTEGER NOT NULL REFERENCES crew(id),
+  minutes INTEGER NOT NULL
+);
+INSERT INTO spacewalks (id, crew_id, minutes) VALUES
+  (1, 1, 395),
+  (2, 3, 410),
+  (3, 1, 402),
+  (4, 3, 365),
+  (5, 4, 220),
+  (6, 3, 388);
+--- check result | Tomas and Noor with 0 and NULL, Ravi with exactly one
+[["Imani", 2, 402], ["Tomas", 0, null], ["Yuki", 3, 410], ["Ravi", 1, 220], ["Noor", 0, null]]
+--- check source | Uses a LEFT JOIN
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+--- check source absent | Does not count whole rows
+[Cc][Oo][Uu][Nn][Tt]\s*\(\s*\*\s*\)
+
++++ practice | Where did sam go
+--- task
+The query in the editor should return **every** user's `email` with how many requests they have made, `0` for sam. It uses a `LEFT JOIN` and counts `r.id`, yet sam is still missing. Fix it.
+--- starter
+SELECT u.email, COUNT(r.id) AS requests
+FROM requests r
+LEFT JOIN users u ON u.id = r.user_id
+GROUP BY u.id, u.email;
+--- solution
+SELECT u.email, COUNT(r.id) AS requests
+FROM users u
+LEFT JOIN requests r ON r.user_id = u.id
+GROUP BY u.id, u.email;
+--- hint
+A `LEFT JOIN` keeps every row of the table written first, after `FROM`. Which table is that here?
+--- hint
+The rows to keep are the users, so `users` has to come after `FROM`, and `requests` after `LEFT JOIN`.
+--- check result | All four users, sam with 0
+[["ada@example.com", 3], ["kai@example.com", 1], ["lin@example.com", 2], ["sam@example.com", 0]]
+--- check source | Starts from users
+[Ff][Rr][Oo][Mm]\s+users\b
+--- check source | Uses a LEFT JOIN
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+
++++ practice | Station roll call
+--- task
+`stations` has the columns `id` and `name`: one row per ground station. `passes` has the columns `id`, `station_id`, `started` (a time written year-month-day hours:minutes) and `minutes`: one row per satellite pass over a station. Two stations have had no passes yet.
+
+Return **every** station, with three columns: its `name`, how many passes it has had as `passes`, and the start time of its first pass as `first_pass` (`NULL` if it has had none). Sort by the number of passes, most first, then by name from A to Z.
+--- starter
+SELECT name FROM stations;
+--- solution
+SELECT s.name, COUNT(p.id) AS passes, MIN(p.started) AS first_pass
+FROM stations s
+LEFT JOIN passes p ON p.station_id = s.id
+GROUP BY s.id, s.name
+ORDER BY passes DESC, s.name;
+--- hint
+Start from `stations` and `LEFT JOIN` the passes, so the stations with none stay in. Group per station.
+--- hint
+Count a column from `passes`, not whole rows. The first pass is the smallest `started`, and it is `NULL` on its own when there are none.
+--- hint
+The sort is `ORDER BY passes DESC, s.name`.
+--- schema
+CREATE TABLE stations (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL
+);
+INSERT INTO stations (id, name) VALUES
+  (1, 'Svalbard'),
+  (2, 'Awarua'),
+  (3, 'Kourou'),
+  (4, 'Hawaii'),
+  (5, 'Troll');
+CREATE TABLE passes (
+  id INTEGER PRIMARY KEY,
+  station_id INTEGER NOT NULL REFERENCES stations(id),
+  started TEXT NOT NULL,
+  minutes INTEGER NOT NULL
+);
+INSERT INTO passes (id, station_id, started, minutes) VALUES
+  (1, 1, '2025-05-01 01:10', 12),
+  (2, 2, '2025-05-01 02:05', 9),
+  (3, 1, '2025-05-01 02:48', 11),
+  (4, 3, '2025-05-01 03:30', 14),
+  (5, 1, '2025-05-01 00:25', 13),
+  (6, 2, '2025-05-01 05:40', 10);
+--- check result | Svalbard 3, Awarua 2, Kourou 1, then Hawaii and Troll with 0 and NULL
+ordered
+[["Svalbard", 3, "2025-05-01 00:25"], ["Awarua", 2, "2025-05-01 02:05"], ["Kourou", 1, "2025-05-01 03:30"], ["Hawaii", 0, null], ["Troll", 0, null]]
+--- check source | Uses a LEFT JOIN
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+--- check source absent | Does not count whole rows
+[Cc][Oo][Uu][Nn][Tt]\s*\(\s*\*\s*\)
 
 === sql-08b | Testing for NULL
 --- teach
@@ -1300,6 +3084,257 @@ Change the last line to `WHERE r.id IS NULL;` and leave the rest as it is.
 [["sam@example.com"]]
 --- check source | Tests for a missing value with IS NULL
 \b[Ii][Ss]\s+[Nn][Uu][Ll][Ll]\b
+
++++ practice | Still in service
+--- task
+The `satellites` table has the columns `id`, `name`, `launched` and `retired`. `retired` holds the date a satellite was switched off, or `NULL` if it is still working.
+
+Return the `name` and `launched` date of every satellite that is **still working**.
+--- starter
+SELECT name, launched FROM satellites;
+--- solution
+SELECT name, launched FROM satellites WHERE retired IS NULL;
+--- hint
+"Still working" means the `retired` column has no value. Careful: `= NULL` never matches anything, because a comparison with `NULL` is "unknown".
+--- hint
+The test for a missing value is two words: `IS NULL`.
+--- schema
+CREATE TABLE satellites (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  launched TEXT NOT NULL,
+  retired TEXT
+);
+INSERT INTO satellites (id, name, launched, retired) VALUES
+  (1, 'Kestrel', '2021-06-14', NULL),
+  (2, 'Heron',   '2019-11-02', '2024-12-01'),
+  (3, 'Wren',    '2023-02-27', NULL),
+  (4, 'Osprey',  '2020-08-09', '2025-03-15'),
+  (5, 'Finch',   '2024-05-30', NULL);
+--- check result | Kestrel, Wren and Finch
+[["Kestrel", "2021-06-14"], ["Wren", "2023-02-27"], ["Finch", "2024-05-30"]]
+--- check source | Tests with IS NULL
+\b[Ii][Ss]\s+[Nn][Uu][Ll][Ll]\b
+--- check source absent | Does not pick the satellites by name
+name\s*(=|<>|[Ii][Nn]\b)
+
++++ practice | Call signs
+--- task
+The `crew` table has the columns `id`, `name`, `nickname` and `callsign`. A crew member may have a `callsign`, a `nickname`, both, or neither; the missing ones are `NULL`.
+
+Return two columns for every crew member: their `id`, and the name to show on the radio as `radio_name`. Use the `callsign` if there is one; if not, the `nickname`; if neither, their `name`.
+--- starter
+SELECT id, callsign AS radio_name FROM crew;
+--- solution
+SELECT id, COALESCE(callsign, nickname, name) AS radio_name FROM crew;
+--- hint
+You want the first of three values that is not missing, looked at in a fixed order.
+--- hint
+`COALESCE` can take more than two values: it gives back the first one that is not `NULL`.
+--- schema
+CREATE TABLE crew (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  nickname TEXT,
+  callsign TEXT
+);
+INSERT INTO crew (id, name, nickname, callsign) VALUES
+  (1, 'Imani', 'Ima', 'Falcon'),
+  (2, 'Tomas', 'Tom', NULL),
+  (3, 'Yuki', NULL, 'Comet'),
+  (4, 'Ravi', NULL, NULL);
+--- check result | Falcon, Tom, Comet and Ravi
+[[1, "Falcon"], [2, "Tom"], [3, "Comet"], [4, "Ravi"]]
+--- check source | Uses COALESCE
+[Cc][Oo][Aa][Ll][Ee][Ss][Cc][Ee]\s*\(
+--- check source absent | Does not pick the crew by id
+\bid\s*(=|<>|[Ii][Nn]\b)
+
++++ practice | Mass per operator, zero included
+--- task
+`operators` has the columns `id` and `name`. `satellites` has the columns `id`, `name`, `operator_id` and `mass_kg`. One operator runs no satellites.
+
+Return **every** operator, with two columns: its `name` and the total mass of its satellites as `total_kg`, which must be `0` (not `NULL`) for the operator with none. Put the biggest total first.
+--- starter
+SELECT o.name, SUM(s.mass_kg) AS total_kg
+FROM operators o
+LEFT JOIN satellites s ON s.operator_id = o.id
+GROUP BY o.id, o.name;
+--- solution
+SELECT o.name, COALESCE(SUM(s.mass_kg), 0) AS total_kg
+FROM operators o
+LEFT JOIN satellites s ON s.operator_id = o.id
+GROUP BY o.id, o.name
+ORDER BY total_kg DESC;
+--- hint
+Run the starter: the operator with no satellites gets `NULL`, because there is nothing to add up.
+--- hint
+Wrap the sum in `COALESCE(..., 0)`, then sort by the total, biggest first.
+--- schema
+CREATE TABLE operators (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL
+);
+INSERT INTO operators (id, name) VALUES
+  (1, 'Polar Relay'),
+  (2, 'Blue Arc'),
+  (3, 'Aurora Nine');
+CREATE TABLE satellites (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  operator_id INTEGER NOT NULL,
+  mass_kg INTEGER NOT NULL
+);
+INSERT INTO satellites (id, name, operator_id, mass_kg) VALUES
+  (1, 'Kestrel', 1, 220),
+  (2, 'Heron', 2, 3400),
+  (3, 'Wren', 1, 95),
+  (4, 'Finch', 1, 60);
+--- check result | Blue Arc 3400, Polar Relay 375, Aurora Nine 0
+ordered
+[["Blue Arc", 3400], ["Polar Relay", 375], ["Aurora Nine", 0]]
+--- check source | Uses COALESCE
+[Cc][Oo][Aa][Ll][Ee][Ss][Cc][Ee]\s*\(
+--- check source | Sorts biggest first
+[Dd][Ee][Ss][Cc]
+
++++ practice | Not ok, or no status at all
+--- task
+A table called `checks` holds the results of a pre-flight checklist, with the columns `id`, `item` and `status`. `status` is `'ok'`, `'fail'`, `'warn'`, or `NULL` when nobody has checked that item yet.
+
+Return the `item` of every row that still needs attention: every row whose status is **not** `'ok'`. An item nobody has checked (status `NULL`) needs attention too, so it must be in the answer.
+--- starter
+SELECT item FROM checks;
+--- solution
+SELECT item
+FROM checks
+WHERE status <> 'ok' OR status IS NULL;
+--- hint
+Try `WHERE status <> 'ok'` first and count the rows. Where did the unchecked items go?
+--- hint
+`NULL <> 'ok'` is not true: it is "unknown", so `WHERE` drops the row. Add a second condition for the missing status, joined with `OR`.
+--- schema
+CREATE TABLE checks (
+  id INTEGER PRIMARY KEY,
+  item TEXT NOT NULL,
+  status TEXT
+);
+INSERT INTO checks (id, item, status) VALUES
+  (1, 'hatch seals', 'ok'),
+  (2, 'fuel valves', 'fail'),
+  (3, 'radio link', NULL),
+  (4, 'batteries', 'warn'),
+  (5, 'star tracker', 'ok'),
+  (6, 'parachute', NULL);
+--- check result | fuel valves, radio link, batteries and parachute
+[["fuel valves"], ["radio link"], ["batteries"], ["parachute"]]
+--- check source | Tests for a missing status with IS NULL
+\b[Ii][Ss]\s+[Nn][Uu][Ll][Ll]\b
+--- check source absent | Does not pick the items by name
+item\s*(=|<>|[Ii][Nn]\b)
+
++++ practice | The anti-join that found nothing
+--- task
+`pads` has the columns `id`, `code` and `site`. `launches` has the columns `id`, `pad_id`, `rocket` and `launched`.
+
+The query in the editor should return the `code` of every pad that has **never** had a launch. There are two such pads, but the query returns nothing. Fix it.
+--- starter
+SELECT p.code
+FROM pads p
+LEFT JOIN launches l ON l.pad_id = p.id
+WHERE p.id IS NULL;
+--- solution
+SELECT p.code
+FROM pads p
+LEFT JOIN launches l ON l.pad_id = p.id
+WHERE l.id IS NULL;
+--- hint
+Every pad has an id, so `p.id` is never `NULL`. Which table's columns are `NULL` in the rows with no match?
+--- hint
+Test a column from the right-hand table, one that is never `NULL` in a real match, such as its primary key.
+--- schema
+CREATE TABLE pads (
+  id INTEGER PRIMARY KEY,
+  code TEXT NOT NULL,
+  site TEXT NOT NULL
+);
+INSERT INTO pads (id, code, site) VALUES
+  (1, 'LC-1', 'Coastal'),
+  (2, 'LC-2', 'Coastal'),
+  (3, 'MP-7', 'Mountain'),
+  (4, 'MP-8', 'Mountain'),
+  (5, 'LC-3', 'Coastal');
+CREATE TABLE launches (
+  id INTEGER PRIMARY KEY,
+  pad_id INTEGER NOT NULL REFERENCES pads(id),
+  rocket TEXT NOT NULL,
+  launched TEXT NOT NULL
+);
+INSERT INTO launches (id, pad_id, rocket, launched) VALUES
+  (1, 2, 'Lark I', '2024-03-02'),
+  (2, 1, 'Lark II', '2024-09-17'),
+  (3, 2, 'Lark II', '2025-01-08'),
+  (4, 3, 'Magpie', '2025-06-21');
+--- check result | MP-8 and LC-3
+[["MP-8"], ["LC-3"]]
+--- check source | Still a LEFT JOIN
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+--- check source | Tests a column of launches
+\bl\.\w+\s+[Ii][Ss]\s+[Nn][Uu][Ll][Ll]
+
++++ practice | Quiet sensors
+--- task
+`sensors` has the columns `id` and `name`. `readings` has the columns `id`, `sensor_id`, `taken` (a time written year-month-day hours:minutes) and `value`. A healthy sensor reports often; a quiet one has reported once or never.
+
+Return every **quiet** sensor, that is every sensor with fewer than 2 readings, including those with none. Give three columns: its `name`, how many readings it has as `readings`, and the time of its latest reading as `last_seen`. When a sensor has never reported, `last_seen` must be the text `'never'` instead of `NULL`. Sort by name from A to Z.
+--- starter
+SELECT name FROM sensors;
+--- solution
+SELECT s.name,
+       COUNT(r.id) AS readings,
+       COALESCE(MAX(r.taken), 'never') AS last_seen
+FROM sensors s
+LEFT JOIN readings r ON r.sensor_id = s.id
+GROUP BY s.id, s.name
+HAVING COUNT(r.id) < 2
+ORDER BY s.name;
+--- hint
+Start from `sensors` and `LEFT JOIN` the readings, so the silent ones stay in. Group per sensor.
+--- hint
+"Fewer than 2 readings" tests a group, so it goes in `HAVING`, and it has to count a column from `readings` so a silent sensor counts as 0.
+--- hint
+The latest reading is `MAX(r.taken)`. Wrap it in `COALESCE(..., 'never')`.
+--- schema
+CREATE TABLE sensors (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL
+);
+INSERT INTO sensors (id, name) VALUES
+  (1, 'tank_pressure'),
+  (2, 'nozzle_temp'),
+  (3, 'bus_voltage'),
+  (4, 'star_tracker'),
+  (5, 'sun_sensor');
+CREATE TABLE readings (
+  id INTEGER PRIMARY KEY,
+  sensor_id INTEGER NOT NULL REFERENCES sensors(id),
+  taken TEXT NOT NULL,
+  value REAL NOT NULL
+);
+INSERT INTO readings (id, sensor_id, taken, value) VALUES
+  (1, 1, '2025-05-01 06:00', 340.0),
+  (2, 1, '2025-05-01 06:01', 342.5),
+  (3, 2, '2025-05-01 06:00', 880.0),
+  (4, 3, '2025-05-01 05:58', 31.2),
+  (5, 2, '2025-05-01 06:01', 884.0),
+  (6, 1, '2025-05-01 06:02', 339.0);
+--- check result | bus_voltage with one reading, star_tracker and sun_sensor never
+ordered
+[["bus_voltage", 1, "2025-05-01 05:58"], ["star_tracker", 0, "never"], ["sun_sensor", 0, "never"]]
+--- check source | Uses COALESCE
+[Cc][Oo][Aa][Ll][Ee][Ss][Cc][Ee]\s*\(
+--- check source | Filters groups with HAVING
+[Hh][Aa][Vv][Ii][Nn][Gg]
 
 === sql-09 | Inserting rows
 --- teach
@@ -1431,6 +3466,192 @@ SELECT user_id, model, input_tokens, output_tokens, cost_usd FROM requests WHERE
 --- check query | Nothing else changed
 SELECT COUNT(*) FROM users
 => [[5]]
+
++++ practice | Sam's first request
+--- task
+sam (user id `3`) has just made a first request. Add it to the `requests` table: id `7`, user_id `3`, model `sonnet`, `900` input tokens, `150` output tokens, cost `0.0051`.
+
+The `requests` columns are `id, user_id, model, input_tokens, output_tokens, cost_usd`.
+--- starter
+-- Add sam's request.
+
+--- solution
+INSERT INTO requests (id, user_id, model, input_tokens, output_tokens, cost_usd)
+VALUES (7, 3, 'sonnet', 900, 150, 0.0051);
+--- hint
+One `INSERT INTO requests (...) VALUES (...);` statement does it. The values go in the same order as the columns.
+--- hint
+Only the model is text, so only `'sonnet'` gets quotes.
+--- check query | The request is there, with every value in its column
+SELECT user_id, model, input_tokens, output_tokens, cost_usd FROM requests WHERE id = 7
+=> [[3, "sonnet", 900, 150, 0.0051]]
+--- check query | sam now has one request
+SELECT COUNT(*) FROM requests WHERE user_id = 3
+=> [[1]]
+--- check query | Exactly one row was added
+SELECT COUNT(*) FROM requests
+=> [[7]]
+
++++ practice | Two requests in one statement
+--- task
+kai (user id `4`) sent two requests. Add both to `requests` with **one** `INSERT` statement:
+
+- id `7`: model `sonnet`, `3100` input tokens, `620` output tokens, cost `0.0186`.
+- id `8`: model `haiku`, `450` input tokens, `95` output tokens, cost `0.0009`.
+--- starter
+-- Add kai's two requests in a single statement.
+
+--- solution
+INSERT INTO requests (id, user_id, model, input_tokens, output_tokens, cost_usd)
+VALUES (7, 4, 'sonnet', 3100, 620, 0.0186),
+       (8, 4, 'haiku', 450, 95, 0.0009);
+--- hint
+After `VALUES`, one bracket holds one row. Put a comma between the brackets to add several rows.
+--- hint
+Both rows have `user_id` 4. Write the column list once, then two brackets of values.
+--- check query | Request 7 is kai's sonnet request
+SELECT user_id, model, input_tokens, output_tokens, cost_usd FROM requests WHERE id = 7
+=> [[4, "sonnet", 3100, 620, 0.0186]]
+--- check query | Request 8 is kai's haiku request
+SELECT user_id, model, input_tokens, output_tokens, cost_usd FROM requests WHERE id = 8
+=> [[4, "haiku", 450, 95, 0.0009]]
+--- check query | kai now has three requests
+SELECT COUNT(*) FROM requests WHERE user_id = 4
+=> [[3]]
+--- check source absent | Uses one INSERT, not two
+[Ii][Nn][Ss][Ee][Rr][Tt][\s\S]*[Ii][Nn][Ss][Ee][Rr][Tt]
+
++++ practice | Add, then look
+--- task
+Do two things, in this order:
+
+1. Add a user: id `5`, email `mo@example.com`, plan `free`, created `2025-04-02`.
+2. Then return the `email` of every user on the `free` plan, sorted from A to Z.
+
+The checker reads the answer of your last statement, so the `SELECT` must come after the `INSERT`.
+--- starter
+-- Add mo, then list the free users.
+
+--- solution
+INSERT INTO users (id, email, plan, created)
+VALUES (5, 'mo@example.com', 'free', '2025-04-02');
+
+SELECT email FROM users WHERE plan = 'free' ORDER BY email;
+--- hint
+Two statements, each ending in its own semicolon. The `INSERT` changes the table; the `SELECT` after it sees the change.
+--- hint
+The query is a `WHERE` on the plan and an `ORDER BY` on the email.
+--- check result | lin, mo and sam, in order
+ordered
+[["lin@example.com"], ["mo@example.com"], ["sam@example.com"]]
+--- check query | mo is stored with every value in its column
+SELECT email, plan, created FROM users WHERE id = 5
+=> [["mo@example.com", "free", "2025-04-02"]]
+--- check query | There are now five users
+SELECT COUNT(*) FROM users
+=> [[5]]
+
++++ practice | An apostrophe and a missing id
+--- task
+Add a user whose email is `o'neil@example.com`, on the `pro` plan, created `2025-04-09`. Do **not** give an id: leave `id` out of the column list, so the table picks the next free number by itself.
+
+The email has a single quote inside it. Inside SQL text, a single quote is written as two single quotes.
+--- starter
+-- Add o'neil, without an id.
+
+--- solution
+INSERT INTO users (email, plan, created)
+VALUES ('o''neil@example.com', 'pro', '2025-04-09');
+--- hint
+Name only the three columns you are filling: `email`, `plan` and `created`.
+--- hint
+A plain `'o'neil...'` ends the text after the `o`. Write the quote inside the text twice: `'o''neil@example.com'`.
+--- check query | The email is stored with its apostrophe
+SELECT plan, created FROM users WHERE email = 'o''neil@example.com'
+=> [["pro", "2025-04-09"]]
+--- check query | The table gave it the next id, 5
+SELECT id FROM users WHERE email = 'o''neil@example.com'
+=> [[5]]
+--- check query | Exactly one user was added
+SELECT COUNT(*) FROM users
+=> [[5]]
+
++++ practice | Tokens the wrong way round
+--- task
+The statement in the editor should add request `7` for sam (user `3`): model `haiku`, **450 input** tokens and **60 output** tokens, cost `0.0007`. It runs without an error, but afterwards the row says 60 input tokens and 450 output tokens. Fix it.
+--- starter
+INSERT INTO requests (id, user_id, model, input_tokens, output_tokens, cost_usd)
+VALUES (7, 3, 'haiku', 60, 450, 0.0007);
+--- solution
+INSERT INTO requests (id, user_id, model, input_tokens, output_tokens, cost_usd)
+VALUES (7, 3, 'haiku', 450, 60, 0.0007);
+--- hint
+Read the column list and the values side by side, one pair at a time.
+--- hint
+The fourth value goes into the fourth column, `input_tokens`. Swap the two numbers so each lands in the right column.
+--- check query | Request 7 has 450 input tokens
+SELECT input_tokens FROM requests WHERE id = 7
+=> [[450]]
+--- check query | Request 7 has 60 output tokens
+SELECT output_tokens FROM requests WHERE id = 7
+=> [[60]]
+--- check query | The rest of the row is right
+SELECT user_id, model, cost_usd FROM requests WHERE id = 7
+=> [[3, "haiku", 0.0007]]
+
++++ practice | Writing the mission log
+--- task
+A mission team keeps a log in a table called `mission_log`, with the columns `id`, `mission`, `logged` (a time), `author` and `entry`. It already holds three entries, with ids 1 to 3.
+
+Do two things, in this order:
+
+1. With **one** `INSERT`, add these three entries to mission `A7`. Leave `id` out, so the table numbers them by itself.
+   - logged `2025-05-02 08:10`, author `Yuki`, entry `Docking port aligned`
+   - logged `2025-05-02 08:25`, author `Tomas`, entry `Crew's hatch open`
+   - logged `2025-05-02 09:00`, author `Imani`, entry `All systems nominal`
+2. Then return the `id`, `author` and `entry` of every entry for mission `A7`, the newest first (latest `logged` first).
+--- starter
+-- Add the three entries, then read back mission A7, newest first.
+
+--- solution
+INSERT INTO mission_log (mission, logged, author, entry)
+VALUES ('A7', '2025-05-02 08:10', 'Yuki', 'Docking port aligned'),
+       ('A7', '2025-05-02 08:25', 'Tomas', 'Crew''s hatch open'),
+       ('A7', '2025-05-02 09:00', 'Imani', 'All systems nominal');
+
+SELECT id, author, entry
+FROM mission_log
+WHERE mission = 'A7'
+ORDER BY logged DESC;
+--- hint
+Name four columns in the `INSERT`, leaving `id` out, then give three brackets of four values each, separated by commas.
+--- hint
+One entry has an apostrophe in it: write it as two single quotes inside the text.
+--- hint
+The query is a `WHERE` on the mission, sorted with `ORDER BY logged DESC`.
+--- schema
+CREATE TABLE mission_log (
+  id INTEGER PRIMARY KEY,
+  mission TEXT NOT NULL,
+  logged TEXT NOT NULL,
+  author TEXT NOT NULL,
+  entry TEXT NOT NULL
+);
+INSERT INTO mission_log (id, mission, logged, author, entry) VALUES
+  (1, 'A7', '2025-05-01 22:40', 'Imani', 'Orbit reached'),
+  (2, 'B2', '2025-05-02 07:55', 'Ravi', 'Launch window confirmed'),
+  (3, 'A7', '2025-05-02 06:30', 'Tomas', 'Approach burn complete');
+--- check result | Mission A7's five entries, newest first
+ordered
+[[6, "Imani", "All systems nominal"], [5, "Tomas", "Crew's hatch open"], [4, "Yuki", "Docking port aligned"], [3, "Tomas", "Approach burn complete"], [1, "Imani", "Orbit reached"]]
+--- check query | The new entries got ids 4, 5 and 6
+SELECT id, author FROM mission_log WHERE id > 3 ORDER BY id
+=> [[4, "Yuki"], [5, "Tomas"], [6, "Imani"]]
+--- check query | The apostrophe is stored
+SELECT COUNT(*) FROM mission_log WHERE entry = 'Crew''s hatch open'
+=> [[1]]
+--- check source absent | Uses one INSERT, not three
+[Ii][Nn][Ss][Ee][Rr][Tt][\s\S]*[Ii][Nn][Ss][Ee][Rr][Tt]
 
 === sql-10 | Updating and deleting
 --- teach
@@ -1579,6 +3800,220 @@ SELECT COUNT(*) FROM requests WHERE input_tokens < 500
 --- check query | The others are still there
 SELECT COUNT(*) FROM requests
 => [[5]]
+
++++ practice | Heron changes orbit
+--- task
+The `satellites` table has the columns `id`, `name`, `orbit`, `launched` and `mass_kg`. The satellite named `Heron` has been moved from orbit `'GEO'` to orbit `'MEO'`.
+
+Change Heron's `orbit` to `'MEO'`. Pick its row by its `name`, not its id. No other row may change.
+--- starter
+-- Move Heron to MEO.
+
+--- solution
+UPDATE satellites SET orbit = 'MEO' WHERE name = 'Heron';
+--- hint
+Changing a value in a row that already exists is an `UPDATE` with `SET` and a `WHERE`.
+--- hint
+The `WHERE` picks Heron by matching the `name` column, in single quotes.
+--- schema
+CREATE TABLE satellites (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  orbit TEXT NOT NULL,
+  launched TEXT NOT NULL,
+  mass_kg INTEGER NOT NULL
+);
+INSERT INTO satellites (id, name, orbit, launched, mass_kg) VALUES
+  (1, 'Kestrel', 'LEO', '2021-06-14', 220),
+  (2, 'Heron',   'GEO', '2019-11-02', 3400),
+  (3, 'Wren',    'LEO', '2023-02-27', 95),
+  (4, 'Osprey',  'MEO', '2020-08-09', 1500),
+  (5, 'Finch',   'LEO', '2024-05-30', 60);
+--- check query | Heron is in MEO
+SELECT orbit FROM satellites WHERE name = 'Heron'
+=> [["MEO"]]
+--- check query | No satellite is left in GEO
+SELECT COUNT(*) FROM satellites WHERE orbit = 'GEO'
+=> [[0]]
+--- check query | The low-orbit satellites were not touched
+SELECT COUNT(*) FROM satellites WHERE orbit = 'LEO'
+=> [[3]]
+--- check source | Picks the row by name
+name\s*=\s*'Heron'
+
++++ practice | Clearing out the old launches
+--- task
+The `launches` table has the columns `id`, `rocket` and `launched` (a date written year-month-day).
+
+Delete every launch from **before** `2025-01-01`. Launches on or after that day stay.
+--- starter
+-- Delete the launches from before 2025.
+
+--- solution
+DELETE FROM launches WHERE launched < '2025-01-01';
+--- hint
+Removing whole rows is a `DELETE FROM` with a `WHERE`. Check the `WHERE` with a `SELECT` first.
+--- hint
+Dates written year-month-day compare correctly as text, so `<` with a date in quotes means "before".
+--- schema
+CREATE TABLE launches (
+  id INTEGER PRIMARY KEY,
+  rocket TEXT NOT NULL,
+  launched TEXT NOT NULL
+);
+INSERT INTO launches (id, rocket, launched) VALUES
+  (1, 'Lark I', '2024-03-02'),
+  (2, 'Lark II', '2024-09-17'),
+  (3, 'Lark II', '2025-01-08'),
+  (4, 'Magpie', '2025-06-21'),
+  (5, 'Avocet', '2024-12-31'),
+  (6, 'Heron-B', '2025-01-01');
+--- check query | Only the launches from 2025 on are left, New Year's Day included
+SELECT id FROM launches ORDER BY id
+=> [[3], [4], [6]]
+--- check query | Nothing from 2024 is left
+SELECT COUNT(*) FROM launches WHERE launched < '2025-01-01'
+=> [[0]]
+--- check query | Three launches remain
+SELECT COUNT(*) FROM launches
+=> [[3]]
+
++++ practice | A price cut for two users
+--- task
+Users 1 and 4 get a discount on the requests they have already made. In **one** `UPDATE`, for every request whose `user_id` is `1` or `4`:
+
+- halve its `cost_usd` (divide it by 2), and
+- add `100` to its `output_tokens`.
+
+Pick the users with `IN`. Requests from other users stay as they are.
+--- starter
+-- Halve the cost and add 100 output tokens for users 1 and 4.
+
+--- solution
+UPDATE requests
+SET cost_usd = cost_usd / 2, output_tokens = output_tokens + 100
+WHERE user_id IN (1, 4);
+--- hint
+`SET` can change several columns at once: separate them with commas. The new value can be worked out from the old one.
+--- hint
+`cost_usd = cost_usd / 2` reads each row's old cost and writes back half of it.
+--- hint
+The `WHERE` is `WHERE user_id IN (1, 4)`.
+--- check query | Request 1 is halved and has 100 more output tokens
+SELECT cost_usd, output_tokens FROM requests WHERE id = 1
+=> [[0.00435, 440]]
+--- check query | Kai's request 6 changed too
+SELECT cost_usd, output_tokens FROM requests WHERE id = 6
+=> [[0.0017, 500]]
+--- check query | Lin's requests did not change
+SELECT cost_usd, output_tokens FROM requests WHERE user_id = 2 ORDER BY id
+=> [[0.0765, 2100], [0.0006, 80]]
+--- check source | Picks the users with IN
+[Ii][Nn]\s*\(\s*(1\s*,\s*4|4\s*,\s*1)\s*\)
+
++++ practice | Bad readings out, zero stays
+--- task
+A table called `readings` has the columns `id`, `sensor` and `value`. Some values are missing (`NULL`) because the sensor did not report, and some are negative, which this sensor cannot really measure.
+
+Delete every reading whose `value` is **missing or negative**. A value of exactly `0` is a real reading: keep it.
+--- starter
+-- Delete the missing and the negative readings.
+
+--- solution
+DELETE FROM readings WHERE value IS NULL OR value < 0;
+--- hint
+There are two kinds of bad row, so the `WHERE` needs two conditions joined with `OR`.
+--- hint
+`value < 0` is not true for a `NULL` value, so it does not catch the missing ones. Test for them with `IS NULL`. Using `<` rather than `<=` keeps the zero.
+--- schema
+CREATE TABLE readings (
+  id INTEGER PRIMARY KEY,
+  sensor TEXT NOT NULL,
+  value REAL
+);
+INSERT INTO readings (id, sensor, value) VALUES
+  (1, 'flow', 12.5),
+  (2, 'flow', NULL),
+  (3, 'flow', -3.0),
+  (4, 'flow', 0.0),
+  (5, 'flow', 9.75),
+  (6, 'flow', NULL),
+  (7, 'flow', -0.5);
+--- check query | Readings 1, 4 and 5 remain
+SELECT id FROM readings ORDER BY id
+=> [[1], [4], [5]]
+--- check query | No missing value is left
+SELECT COUNT(*) FROM readings WHERE value IS NULL
+=> [[0]]
+--- check query | The zero reading is kept
+SELECT COUNT(*) FROM readings WHERE value = 0
+=> [[1]]
+
++++ practice | Deleting too much
+--- task
+The statement in the editor should delete the **haiku** requests sent by user 1 or user 2: requests 3 and 5. It also deletes request 4, which is a sonnet request. Fix it, so that only requests 3 and 5 are deleted.
+--- starter
+DELETE FROM requests WHERE model = 'haiku' AND user_id = 1 OR user_id = 2;
+--- solution
+DELETE FROM requests WHERE model = 'haiku' AND (user_id = 1 OR user_id = 2);
+--- hint
+`AND` is worked out before `OR`. Read the condition the way SQL reads it: which rows does `OR user_id = 2` catch on its own?
+--- hint
+Put round brackets around the two users, so "user 1 or user 2" is worked out first.
+--- check query | Requests 3 and 5 are gone, request 4 is still there
+SELECT id FROM requests ORDER BY id
+=> [[1], [2], [4], [6]]
+--- check query | Kai's haiku request is still there
+SELECT COUNT(*) FROM requests WHERE id = 6
+=> [[1]]
+--- check query | Four requests remain
+SELECT COUNT(*) FROM requests
+=> [[4]]
+
++++ practice | Restocking the parts store
+--- task
+A spacecraft's spare parts are listed in a table called `parts`, with the columns `id`, `name`, `bin`, `qty` and `status`. A supply ship has arrived. Do these three things, **in this order**:
+
+1. Every part in bin `'B2'` gets 20 more: add `20` to its `qty`.
+2. Delete every part whose `qty` is `0` **and** whose `status` is `'discontinued'`. (A part that is out of stock but still made stays.)
+3. Every part that is left with a `qty` below `5` gets its `status` set to `'reorder'`.
+--- starter
+-- Three statements: restock B2, remove the dead parts, flag the low ones.
+
+--- solution
+UPDATE parts SET qty = qty + 20 WHERE bin = 'B2';
+DELETE FROM parts WHERE qty = 0 AND status = 'discontinued';
+UPDATE parts SET status = 'reorder' WHERE qty < 5;
+--- hint
+Each step is one statement with its own `WHERE` and its own semicolon. The order matters: step 1 changes some quantities before steps 2 and 3 look at them.
+--- hint
+Step 1 uses `qty = qty + 20`. Step 2 needs two conditions joined with `AND`.
+--- hint
+Step 3 is `UPDATE parts SET status = 'reorder' WHERE qty < 5;`.
+--- schema
+CREATE TABLE parts (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  bin TEXT NOT NULL,
+  qty INTEGER NOT NULL,
+  status TEXT NOT NULL
+);
+INSERT INTO parts (id, name, bin, qty, status) VALUES
+  (1, 'Fuel valve', 'A1', 4, 'ok'),
+  (2, 'Air filter', 'B2', 0, 'discontinued'),
+  (3, 'Relief valve', 'B7', 0, 'discontinued'),
+  (4, 'Pressure sensor', 'B2', 3, 'ok'),
+  (5, 'Seal kit', 'C3', 0, 'ok'),
+  (6, 'Heater coil', 'A1', 12, 'ok');
+--- check query | Only the discontinued part left at 0 is gone
+SELECT id FROM parts ORDER BY id
+=> [[1], [2], [4], [5], [6]]
+--- check query | Bin B2 was restocked
+SELECT id, qty FROM parts WHERE bin = 'B2' ORDER BY id
+=> [[2, 20], [4, 23]]
+--- check query | The low parts are flagged for reorder, the others are not
+SELECT id, status FROM parts ORDER BY id
+=> [[1, "reorder"], [2, "discontinued"], [4, "ok"], [5, "reorder"], [6, "ok"]]
 
 === sql-11 | Creating tables
 --- teach
@@ -1738,6 +4173,248 @@ SELECT "notnull" FROM pragma_table_info('api_keys') WHERE name = 'label'
 SELECT "table", "from", "to" FROM pragma_foreign_key_list('api_keys')
 => [["users", "user_id", "id"]]
 
++++ practice | A table of missions
+--- task
+Create a table called `missions` with three columns:
+
+- `id`: an integer, the primary key.
+- `name`: text, required (`NOT NULL`), and no two missions may share a name (`UNIQUE`).
+- `target`: text, required (`NOT NULL`).
+
+Then add two missions in one `INSERT`: id `1`, name `Lantern`, target `Moon`; and id `2`, name `Driftwood`, target `Mars`.
+--- starter
+-- CREATE TABLE missions (...);
+
+--- solution
+CREATE TABLE missions (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  target TEXT NOT NULL
+);
+
+INSERT INTO missions (id, name, target)
+VALUES (1, 'Lantern', 'Moon'),
+       (2, 'Driftwood', 'Mars');
+--- hint
+One column per line inside the brackets: its name, its type, then its rules. A comma after every column but the last.
+--- hint
+A column can carry two rules one after the other: `name TEXT NOT NULL UNIQUE`.
+--- check query | Both missions are there
+SELECT id, name, target FROM missions ORDER BY id
+=> [[1, "Lantern", "Moon"], [2, "Driftwood", "Mars"]]
+--- check query | name and target are required
+SELECT name FROM pragma_table_info('missions') WHERE "notnull" = 1 ORDER BY name
+=> [["name"], ["target"]]
+--- check query | No two missions can share a name
+SELECT COUNT(*) FROM pragma_index_list('missions') WHERE "unique" = 1 AND origin = 'u'
+=> [[1]]
+--- check query | id is the primary key
+SELECT name FROM pragma_table_info('missions') WHERE pk = 1
+=> [["id"]]
+
++++ practice | A unit by default
+--- task
+Create a table called `gauges` with four columns:
+
+- `id`: an integer, the primary key.
+- `sensor`: text, required.
+- `value`: a number with a decimal point (`REAL`), required.
+- `unit`: text, required, with a default of `'kPa'`.
+
+Then add one reading, leaving `id` and `unit` out of the insert: sensor `tank_a`, value `342.5`. Both should be filled in by the table.
+--- starter
+-- CREATE TABLE gauges (...);
+
+--- solution
+CREATE TABLE gauges (
+  id INTEGER PRIMARY KEY,
+  sensor TEXT NOT NULL,
+  value REAL NOT NULL,
+  unit TEXT NOT NULL DEFAULT 'kPa'
+);
+
+INSERT INTO gauges (sensor, value) VALUES ('tank_a', 342.5);
+--- hint
+`DEFAULT` gives the value used when an insert leaves the column out. A text default goes in single quotes.
+--- hint
+The insert names only `sensor` and `value`. The id is picked for you because it is an `INTEGER PRIMARY KEY`.
+--- check query | The reading got id 1 and the unit kPa
+SELECT id, sensor, value, unit FROM gauges
+=> [[1, "tank_a", 342.5, "kPa"]]
+--- check query | value is a REAL column
+SELECT type FROM pragma_table_info('gauges') WHERE name = 'value'
+=> [["REAL"]]
+--- check query | unit is required and defaults to kPa
+SELECT "notnull", dflt_value FROM pragma_table_info('gauges') WHERE name = 'unit'
+=> [[1, "'kPa'"]]
+
++++ practice | Teams, then join them
+--- task
+Do three things, in this order:
+
+1. Create a table called `teams` with the columns `id` (integer, primary key), `user_id` (integer, required, referencing `users(id)`) and `name` (text, required).
+2. Add three rows in one `INSERT`: id `1` for user `1` named `Rockets`; id `2` for user `2` named `Comets`; id `3` for user `1` named `Probes`.
+3. Return one row per team, with two columns: the user's `email` (from `users`) and the team's `name`.
+--- starter
+-- Create teams, add three rows, then join them to users.
+
+--- solution
+CREATE TABLE teams (
+  id INTEGER PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  name TEXT NOT NULL
+);
+
+INSERT INTO teams (id, user_id, name)
+VALUES (1, 1, 'Rockets'), (2, 2, 'Comets'), (3, 1, 'Probes');
+
+SELECT u.email, t.name
+FROM teams t
+JOIN users u ON u.id = t.user_id;
+--- hint
+The table looks like the `invoices` example: an id, a foreign key to `users`, and one more column.
+--- hint
+The join links the team's `user_id` to the user's `id`, the same way `requests` joins to `users`.
+--- check result | Rockets and Probes for ada, Comets for lin
+[["ada@example.com", "Rockets"], ["lin@example.com", "Comets"], ["ada@example.com", "Probes"]]
+--- check query | user_id references users
+SELECT "table", "from", "to" FROM pragma_foreign_key_list('teams')
+=> [["users", "user_id", "id"]]
+--- check query | Three teams were added
+SELECT COUNT(*) FROM teams
+=> [[3]]
+
++++ practice | Money in whole cents
+--- task
+Create a table called `payments` with four columns:
+
+- `id`: an integer, the primary key.
+- `user_id`: an integer, required, referencing `users(id)`.
+- `amount_cents`: an integer, required. The amount in **whole cents**.
+- `refunded`: an integer, required, with a default of `0`.
+
+Then add three payments, leaving `refunded` out so it takes its default. Store every amount as a whole number of cents, not dollars:
+
+- id `1`, user `1`, **19.99** dollars,
+- id `2`, user `2`, **0.05** dollars,
+- id `3`, user `1`, **250.00** dollars.
+--- starter
+-- CREATE TABLE payments (...);
+
+--- solution
+CREATE TABLE payments (
+  id INTEGER PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  amount_cents INTEGER NOT NULL,
+  refunded INTEGER NOT NULL DEFAULT 0
+);
+
+INSERT INTO payments (id, user_id, amount_cents)
+VALUES (1, 1, 1999), (2, 2, 5), (3, 1, 25000);
+--- hint
+A dollar is 100 cents. Turn each amount into cents before you write it: no decimal points in the values.
+--- hint
+0.05 dollars is 5 cents, not 50. 250.00 dollars is 25000 cents.
+--- check query | The amounts are stored in cents
+SELECT id, amount_cents FROM payments ORDER BY id
+=> [[1, 1999], [2, 5], [3, 25000]]
+--- check query | Every amount is a whole number
+SELECT COUNT(*) FROM payments WHERE typeof(amount_cents) <> 'integer'
+=> [[0]]
+--- check query | refunded defaulted to 0 on every row
+SELECT SUM(refunded), COUNT(*) FROM payments
+=> [[0, 3]]
+--- check query | user_id references users
+SELECT "table", "from", "to" FROM pragma_foreign_key_list('payments')
+=> [["users", "user_id", "id"]]
+
++++ practice | A syntax error near the bracket
+--- task
+The statements in the editor should create a table called `notes`, with an `id` (integer primary key), a `body` (text, required) and a `pinned` flag (integer, required, default `0`), then add one note. Instead they stop with the error `near ")": syntax error`. Fix the table so both statements run.
+--- starter
+CREATE TABLE notes (
+  id INTEGER PRIMARY KEY,
+  body TEXT NOT NULL,
+  pinned INTEGER NOT NULL DEFAULT 0,
+);
+
+INSERT INTO notes (id, body) VALUES (1, 'Check the seals');
+--- solution
+CREATE TABLE notes (
+  id INTEGER PRIMARY KEY,
+  body TEXT NOT NULL,
+  pinned INTEGER NOT NULL DEFAULT 0
+);
+
+INSERT INTO notes (id, body) VALUES (1, 'Check the seals');
+--- hint
+The error points at the closing bracket. What does SQLite expect to come after a comma?
+--- hint
+Every column but the last ends with a comma. Look at the end of the last column's line.
+--- check query | The note is there, not pinned
+SELECT id, body, pinned FROM notes
+=> [[1, "Check the seals", 0]]
+--- check query | pinned is required and defaults to 0
+SELECT "notnull", dflt_value FROM pragma_table_info('notes') WHERE name = 'pinned'
+=> [[1, "0"]]
+--- check query | The table has three columns
+SELECT COUNT(*) FROM pragma_table_info('notes')
+=> [[3]]
+
++++ practice | Crew and their assignments
+--- task
+Build a small crew roster from scratch. Do these four things, in this order:
+
+1. Switch on foreign-key checks for this connection.
+2. Create a table `crew` with `id` (integer, primary key) and `name` (text, required, unique).
+3. Create a table `assignments` with `id` (integer, primary key), `crew_id` (integer, required, referencing `crew(id)`), `task` (text, required) and `done` (integer, required, default `0`).
+4. Add crew members id `1` `Imani`, id `2` `Tomas` and id `3` `Yuki`. Then add three assignments, leaving `id` and `done` out: `Imani` gets `hull check` and `radio test`; `Tomas` gets `fuel audit`. Yuki gets none. Add the crew before the assignments that point at them: with foreign-key checks on, the other order is refused.
+
+Finally, return **every** crew member's `name` with how many assignments they have as `tasks`, `0` for Yuki.
+--- starter
+-- Switch the checks on, create both tables, fill them, then count.
+
+--- solution
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE crew (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE assignments (
+  id INTEGER PRIMARY KEY,
+  crew_id INTEGER NOT NULL REFERENCES crew(id),
+  task TEXT NOT NULL,
+  done INTEGER NOT NULL DEFAULT 0
+);
+
+INSERT INTO crew (id, name) VALUES (1, 'Imani'), (2, 'Tomas'), (3, 'Yuki');
+INSERT INTO assignments (crew_id, task)
+VALUES (1, 'hull check'), (1, 'radio test'), (2, 'fuel audit');
+
+SELECT c.name, COUNT(a.id) AS tasks
+FROM crew c
+LEFT JOIN assignments a ON a.crew_id = c.id
+GROUP BY c.id, c.name;
+--- hint
+Foreign-key checks are switched on with a `PRAGMA` line, before anything else.
+--- hint
+Create `crew` before `assignments`, and fill it first too: with the checks on, an assignment pointing at a crew member who does not exist yet is refused.
+--- hint
+The last query starts from `crew`, uses a `LEFT JOIN`, and counts `a.id` so Yuki gets 0.
+--- check result | Imani 2, Tomas 1, Yuki 0
+[["Imani", 2], ["Tomas", 1], ["Yuki", 0]]
+--- check query | Foreign-key checks are on
+PRAGMA foreign_keys
+=> [[1]]
+--- check query | crew_id references crew
+SELECT "table", "from", "to" FROM pragma_foreign_key_list('assignments')
+=> [["crew", "crew_id", "id"]]
+--- check query | The assignments are stored, none done yet
+SELECT crew_id, task, done FROM assignments ORDER BY id
+=> [[1, "hull check", 0], [1, "radio test", 0], [2, "fuel audit", 0]]
+
 === sql-12 | Subqueries: a query inside a query
 --- teach
 Last lesson you built a table of your own. Now back to asking questions, with a new power: one query can use the answer of another.
@@ -1865,6 +4542,192 @@ The shape is `WHERE input_tokens > (SELECT AVG(input_tokens) FROM requests)`, wi
 \(\s*[Ss][Ee][Ll][Ee][Cc][Tt]\b
 --- check source absent | Does not type the average in
 4150
+
++++ practice | Heavier than average
+--- task
+The `satellites` table has the columns `id`, `name`, `orbit`, `launched` and `mass_kg`.
+
+Return the `name` and `mass_kg` of every satellite that is **heavier than the average** satellite. Work the average out with a subquery; do not type it in.
+--- starter
+SELECT name, mass_kg FROM satellites;
+--- solution
+SELECT name, mass_kg
+FROM satellites
+WHERE mass_kg > (SELECT AVG(mass_kg) FROM satellites);
+--- hint
+First run the average on its own: `AVG` of the mass column. That whole query becomes the subquery.
+--- hint
+Put the subquery in round brackets where the number would go in the `WHERE`.
+--- schema
+CREATE TABLE satellites (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  orbit TEXT NOT NULL,
+  launched TEXT NOT NULL,
+  mass_kg INTEGER NOT NULL
+);
+INSERT INTO satellites (id, name, orbit, launched, mass_kg) VALUES
+  (1, 'Kestrel', 'LEO', '2021-06-14', 220),
+  (2, 'Heron',   'GEO', '2019-11-02', 3400),
+  (3, 'Wren',    'LEO', '2023-02-27', 95),
+  (4, 'Osprey',  'MEO', '2020-08-09', 1500),
+  (5, 'Finch',   'LEO', '2024-05-30', 60);
+--- check result | Heron and Osprey
+[["Heron", 3400], ["Osprey", 1500]]
+--- check source | Uses a subquery in brackets
+\(\s*[Ss][Ee][Ll][Ee][Cc][Tt]\b
+--- check source absent | Does not type the average in
+1055
+
++++ practice | Users who spent more than a cent
+--- task
+Using the `requests` table, return one number: **how many users** have spent more than `0.01` dollars in total, over all their requests.
+
+Do it in two steps inside one query: a subquery after `FROM` that adds up `cost_usd` per `user_id` in a column named `total`, and an outer query that counts the rows of that result whose `total` is above `0.01`.
+--- starter
+SELECT user_id, SUM(cost_usd) AS total FROM requests GROUP BY user_id;
+--- solution
+SELECT COUNT(*)
+FROM (SELECT user_id, SUM(cost_usd) AS total FROM requests GROUP BY user_id)
+WHERE total > 0.01;
+--- hint
+The starter is the inner step: one row per user with their total. Put it in round brackets after `FROM`.
+--- hint
+The outer query reads the bracketed result like a table: it can filter on `total` with `WHERE`, then count what is left.
+--- check result | 2 users: ada and lin
+[[2]]
+--- check source | Reads from a subquery after FROM
+[Ff][Rr][Oo][Mm]\s*\(\s*[Ss][Ee][Ll][Ee][Cc][Tt]\b
+--- check source absent | Does not type the answer in
+[Ss][Ee][Ll][Ee][Cc][Tt]\s+2\b
+
++++ practice | Who sent the expensive ones
+--- task
+Using `users` and `requests`, return the `email` of the user and the `id` of the request, for every request that cost **more than the average** request. Work the average out with a subquery.
+--- starter
+SELECT r.id, u.email
+FROM requests r
+JOIN users u ON u.id = r.user_id;
+--- solution
+SELECT u.email, r.id
+FROM requests r
+JOIN users u ON u.id = r.user_id
+WHERE r.cost_usd > (SELECT AVG(cost_usd) FROM requests);
+--- hint
+The starter already joins each request to its user. Add a `WHERE` after the join.
+--- hint
+Compare `r.cost_usd` with the average cost of all requests, worked out in a bracketed `SELECT`.
+--- check result | ada's request 2 and lin's request 4
+[["ada@example.com", 2], ["lin@example.com", 4]]
+--- check source | Uses a subquery in brackets
+\(\s*[Ss][Ee][Ll][Ee][Cc][Tt]\b
+--- check source absent | Does not type the average in
+0\.02\b|0\.020
+
++++ practice | Every reading at the peak
+--- task
+A table called `readings` has the columns `id`, `t` and `value`. Some readings are missing their value (`NULL`), and the highest value appears **more than once**.
+
+Return the `id` and `t` of **every** reading whose value equals the highest value. If several readings tie for the highest, all of them must be in the answer, which is why sorting and keeping one row is not enough.
+--- starter
+SELECT id, t FROM readings;
+--- solution
+SELECT id, t
+FROM readings
+WHERE value = (SELECT MAX(value) FROM readings);
+--- hint
+First find the highest value on its own with `MAX`. It skips the `NULL`s.
+--- hint
+Then keep every reading whose value equals that number: a subquery in the `WHERE`.
+--- schema
+CREATE TABLE readings (
+  id INTEGER PRIMARY KEY,
+  t INTEGER NOT NULL,
+  value REAL
+);
+INSERT INTO readings (id, t, value) VALUES
+  (1, 0, 12.5),
+  (2, 10, 18.25),
+  (3, 20, NULL),
+  (4, 30, 17.0),
+  (5, 40, 18.25),
+  (6, 50, NULL),
+  (7, 60, 18.25);
+--- check result | Readings 2, 5 and 7, all at 18.25
+[[2, 10], [5, 40], [7, 60]]
+--- check source | Uses MAX in a subquery
+\(\s*[Ss][Ee][Ll][Ee][Cc][Tt]\s+[Mm][Aa][Xx]\s*\(
+--- check source absent | Does not type the peak in
+18\.25
+
++++ practice | Average of the wrong rows
+--- task
+The query in the editor should return the `id` and `cost_usd` of every **haiku** request that cost more than the average **haiku** request. The answer is request 6. Instead it returns nothing. Fix it.
+--- starter
+SELECT id, cost_usd
+FROM requests
+WHERE model = 'haiku'
+  AND cost_usd > (SELECT AVG(cost_usd) FROM requests);
+--- solution
+SELECT id, cost_usd
+FROM requests
+WHERE model = 'haiku'
+  AND cost_usd > (SELECT AVG(cost_usd) FROM requests WHERE model = 'haiku');
+--- hint
+Run the subquery on its own. Which requests does its average cover?
+--- hint
+The subquery is a complete query of its own: it needs its own `WHERE` to average only the haiku requests.
+--- check result | Only request 6
+[[6, 0.0034]]
+--- check source | The subquery averages only haiku requests
+[Ff][Rr][Oo][Mm]\s+requests\s+[Ww][Hh][Ee][Rr][Ee]\s+model\s*=\s*'haiku'\s*\)
+--- check source absent | Does not type the average in
+0\.0017
+
++++ practice | The busiest ground station
+--- task
+Each satellite pass over a ground station is a row in a table called `passes`, with the columns `id`, `station` and `minutes`.
+
+Return the `station` and its total contact time as `total_min` for the station with the **most** contact time in total. Two stations tie for the most; return both.
+
+Work it out without typing any number in: the top total comes from a subquery that takes the `MAX` of the per-station totals.
+--- starter
+SELECT station, SUM(minutes) AS total_min FROM passes GROUP BY station;
+--- solution
+SELECT station, SUM(minutes) AS total_min
+FROM passes
+GROUP BY station
+HAVING SUM(minutes) = (
+  SELECT MAX(total)
+  FROM (SELECT SUM(minutes) AS total FROM passes GROUP BY station)
+);
+--- hint
+The starter gives every station's total. You want only the groups whose total equals the biggest total, and a test on a group goes in `HAVING`.
+--- hint
+The biggest total is itself a query on the per-station totals: a subquery after `FROM` inside another subquery.
+--- hint
+The test is `HAVING SUM(minutes) = (SELECT MAX(total) FROM (SELECT SUM(minutes) AS total FROM passes GROUP BY station))`.
+--- schema
+CREATE TABLE passes (
+  id INTEGER PRIMARY KEY,
+  station TEXT NOT NULL,
+  minutes INTEGER NOT NULL
+);
+INSERT INTO passes (id, station, minutes) VALUES
+  (1, 'Svalbard', 12),
+  (2, 'Awarua', 9),
+  (3, 'Svalbard', 11),
+  (4, 'Kourou', 14),
+  (5, 'Svalbard', 13),
+  (6, 'Awarua', 16),
+  (7, 'Kourou', 17),
+  (8, 'Awarua', 11);
+--- check result | Svalbard and Awarua, both at 36
+[["Awarua", 36], ["Svalbard", 36]]
+--- check source | Uses MAX over a subquery
+[Mm][Aa][Xx]\s*\(
+--- check source absent | Does not type the top total in
+\b36\b
 
 === sql-12b | WITH: naming the steps
 --- teach
@@ -1999,3 +4862,784 @@ Replace `0.01` with the subquery `(SELECT AVG(total) FROM spend)`. The join to `
 [["lin@example.com", 0.0771]]
 --- check source | Uses WITH
 \b[Ww][Ii][Tt][Hh]\s+\w+\s+[Aa][Ss]\s*\(
+
++++ practice | Heavy orbits
+--- task
+The `satellites` table has the columns `id`, `name`, `orbit`, `launched` and `mass_kg`.
+
+Use a `WITH` step called `per_orbit` that works out each orbit's total mass, with the columns `orbit` and `total_kg`. Then, from `per_orbit`, return the `orbit` and `total_kg` of every orbit whose total is **more than 1000** kg.
+--- starter
+SELECT orbit, SUM(mass_kg) FROM satellites GROUP BY orbit;
+--- solution
+WITH per_orbit AS (
+  SELECT orbit, SUM(mass_kg) AS total_kg
+  FROM satellites
+  GROUP BY orbit
+)
+SELECT orbit, total_kg
+FROM per_orbit
+WHERE total_kg > 1000;
+--- hint
+The starter is most of the named step. Give the sum the name `total_kg` and wrap the query in `WITH per_orbit AS ( … )`.
+--- hint
+The main query comes after the closing bracket and reads from `per_orbit` like a table, with a `WHERE` on `total_kg`.
+--- schema
+CREATE TABLE satellites (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  orbit TEXT NOT NULL,
+  launched TEXT NOT NULL,
+  mass_kg INTEGER NOT NULL
+);
+INSERT INTO satellites (id, name, orbit, launched, mass_kg) VALUES
+  (1, 'Kestrel', 'LEO', '2021-06-14', 220),
+  (2, 'Heron',   'GEO', '2019-11-02', 3400),
+  (3, 'Wren',    'LEO', '2023-02-27', 95),
+  (4, 'Osprey',  'MEO', '2020-08-09', 1500),
+  (5, 'Finch',   'LEO', '2024-05-30', 60);
+--- check result | GEO 3400 and MEO 1500; LEO has only 375
+[["GEO", 3400], ["MEO", 1500]]
+--- check source | Uses a WITH step called per_orbit
+\b[Ww][Ii][Tt][Hh]\s+per_orbit\s+[Aa][Ss]\s*\(
+--- check source | Reads from per_orbit
+[Ff][Rr][Oo][Mm]\s+per_orbit\b
+
++++ practice | Filter first, then group
+--- task
+Using the `requests` table, use a `WITH` step called `big` that keeps only the requests with **more than 1000** input tokens (all their columns). Then, from `big`, return one row per `model`, with the `model`, how many big requests it answered as `calls`, and their total cost rounded to 4 decimal places as `spend`.
+--- starter
+SELECT * FROM requests WHERE input_tokens > 1000;
+--- solution
+WITH big AS (
+  SELECT * FROM requests WHERE input_tokens > 1000
+)
+SELECT model, COUNT(*) AS calls, ROUND(SUM(cost_usd), 4) AS spend
+FROM big
+GROUP BY model;
+--- hint
+A named step does not have to group anything. Here it only filters: the starter is the whole step.
+--- hint
+The main query groups the rows of `big` by `model`, exactly as if `big` were a table.
+--- check result | haiku 1 call, sonnet 3 calls
+[["haiku", 1, 0.0034], ["sonnet", 3, 0.115]]
+--- check source | Uses a WITH step called big
+\b[Ww][Ii][Tt][Hh]\s+big\s+[Aa][Ss]\s*\(
+--- check source | Groups the rows of big
+[Ff][Rr][Oo][Mm]\s+big\b[\s\S]*[Gg][Rr][Oo][Uu][Pp]\s+[Bb][Yy]
+
++++ practice | A usage table for every user
+--- task
+Return **every** user, with three columns: their `email`, how many requests they made as `calls`, and their total spend rounded to 4 decimal places as `spend`. sam, who made none, must show `0` and `0`. Put the biggest spender first.
+
+Use a `WITH` step called `usage` with one row per `user_id` and the columns `user_id`, `calls` and `spend`. Then start the main query from `users` and `LEFT JOIN` it to `usage`.
+--- starter
+SELECT user_id, COUNT(*) AS calls, SUM(cost_usd) AS spend
+FROM requests
+GROUP BY user_id;
+--- solution
+WITH usage AS (
+  SELECT user_id, COUNT(*) AS calls, SUM(cost_usd) AS spend
+  FROM requests
+  GROUP BY user_id
+)
+SELECT u.email,
+       COALESCE(g.calls, 0) AS calls,
+       ROUND(COALESCE(g.spend, 0), 4) AS spend
+FROM users u
+LEFT JOIN usage g ON g.user_id = u.id
+ORDER BY spend DESC;
+--- hint
+The starter is the `usage` step. The main query keeps every user with a `LEFT JOIN`, so sam gets `NULL`s.
+--- hint
+Turn sam's `NULL`s into `0` with `COALESCE`, on both columns.
+--- hint
+Sort with `ORDER BY spend DESC`.
+--- check result | lin, ada, kai, then sam with 0 and 0
+ordered
+[["lin@example.com", 2, 0.0771], ["ada@example.com", 3, 0.0397], ["kai@example.com", 1, 0.0034], ["sam@example.com", 0, 0.0]]
+--- check source | Uses a WITH step called usage
+\b[Ww][Ii][Tt][Hh]\s+usage\s+[Aa][Ss]\s*\(
+--- check source | Keeps every user with a LEFT JOIN
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+
++++ practice | Below average, zero included
+--- task
+Return the `email` of every user whose total spend is **below the average spend per user**. This time the average is over **all** users: someone with no requests counts, with a spend of `0`.
+
+Use a `WITH` step called `spend` that has one row for every user, sam included, with the columns `user_id` and `total` (`0` for a user with no requests). Then compare each total with the average of `total`.
+--- starter
+WITH spend AS (
+  SELECT user_id, SUM(cost_usd) AS total
+  FROM requests
+  GROUP BY user_id
+)
+SELECT user_id, total FROM spend;
+--- solution
+WITH spend AS (
+  SELECT u.id AS user_id, COALESCE(SUM(r.cost_usd), 0) AS total
+  FROM users u
+  LEFT JOIN requests r ON r.user_id = u.id
+  GROUP BY u.id
+)
+SELECT u.email
+FROM spend s
+JOIN users u ON u.id = s.user_id
+WHERE s.total < (SELECT AVG(total) FROM spend);
+--- hint
+The starter's step has no row for sam, so its average leaves sam out. Build the step from `users` instead, with a `LEFT JOIN` to `requests`.
+--- hint
+Inside the step, `COALESCE(SUM(r.cost_usd), 0)` gives sam a total of 0. The average of `total` then divides by four users.
+--- hint
+The main query joins `spend` to `users` for the email and keeps `WHERE s.total < (SELECT AVG(total) FROM spend)`.
+--- check result | kai and sam; ada is above the average once sam counts
+[["sam@example.com"], ["kai@example.com"]]
+--- check source | Builds the step from users with a LEFT JOIN
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+--- check source absent | Does not type the average in
+0\.03
+
++++ practice | No such column
+--- task
+The query in the editor should return the `user_id` of every user who spent more than `0.01` dollars in total. It stops with the error `no such column: total`. Fix the `WITH` step so the main query works as written.
+--- starter
+WITH spend AS (
+  SELECT user_id, SUM(cost_usd)
+  FROM requests
+  GROUP BY user_id
+)
+SELECT user_id FROM spend WHERE total > 0.01;
+--- solution
+WITH spend AS (
+  SELECT user_id, SUM(cost_usd) AS total
+  FROM requests
+  GROUP BY user_id
+)
+SELECT user_id FROM spend WHERE total > 0.01;
+--- hint
+The main query asks `spend` for a column called `total`. What are the columns of `spend` called right now?
+--- hint
+A column made by an aggregate is named after the expression, `SUM(cost_usd)`, unless you give it a name with `AS`.
+--- check result | Users 1 and 2
+[[1], [2]]
+--- check source | Names the sum total inside the step
+[Ss][Uu][Mm]\s*\(\s*cost_usd\s*\)\s+[Aa][Ss]\s+total\b
+--- check source | The main query still filters on total
+[Ww][Hh][Ee][Rr][Ee]\s+total\s*>\s*0\.01
+
++++ practice | Counting spikes
+--- task
+`sensors` has the columns `id` and `name`. `readings` has the columns `id`, `sensor_id`, `t` and `value`. A **spike** is a reading whose value is more than 10 above the average of its own sensor's readings.
+
+Return **every** sensor's `name` with how many spikes it had as `spikes`, `0` if none. Put the sensor with the most spikes first, then A to Z by name.
+
+Build it in named steps in one `WITH`:
+
+1. `avg_per_sensor`: one row per sensor that has readings, with `sensor_id` and `avg_value`.
+2. `spiky`: the readings whose `value` is more than `avg_value + 10`, found by joining `readings` to `avg_per_sensor`.
+3. The main query: every sensor, with a count of its rows in `spiky`.
+--- starter
+SELECT sensor_id, AVG(value) FROM readings GROUP BY sensor_id;
+--- solution
+WITH avg_per_sensor AS (
+  SELECT sensor_id, AVG(value) AS avg_value
+  FROM readings
+  GROUP BY sensor_id
+),
+spiky AS (
+  SELECT r.id, r.sensor_id
+  FROM readings r
+  JOIN avg_per_sensor a ON a.sensor_id = r.sensor_id
+  WHERE r.value > a.avg_value + 10
+)
+SELECT s.name, COUNT(k.id) AS spikes
+FROM sensors s
+LEFT JOIN spiky k ON k.sensor_id = s.id
+GROUP BY s.id, s.name
+ORDER BY spikes DESC, s.name;
+--- hint
+Separate the named steps with a comma; each later step can read the ones before it.
+--- hint
+In `spiky`, join each reading to its sensor's average so the `WHERE` can compare the two.
+--- hint
+The main query starts from `sensors`, uses a `LEFT JOIN` to `spiky`, and counts a column of `spiky` so a quiet sensor gets 0.
+--- schema
+CREATE TABLE sensors (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL
+);
+INSERT INTO sensors (id, name) VALUES
+  (1, 'tank_pressure'),
+  (2, 'nozzle_temp'),
+  (3, 'bus_voltage'),
+  (4, 'sun_sensor');
+CREATE TABLE readings (
+  id INTEGER PRIMARY KEY,
+  sensor_id INTEGER NOT NULL REFERENCES sensors(id),
+  t INTEGER NOT NULL,
+  value REAL NOT NULL
+);
+INSERT INTO readings (id, sensor_id, t, value) VALUES
+  (1, 1, 0, 340),
+  (2, 1, 10, 342),
+  (3, 1, 20, 380),
+  (4, 1, 30, 338),
+  (5, 2, 0, 880),
+  (6, 2, 10, 930),
+  (7, 2, 20, 875),
+  (8, 2, 30, 935),
+  (9, 3, 0, 31),
+  (10, 3, 10, 32),
+  (11, 3, 20, 30);
+--- check result | nozzle_temp 2, tank_pressure 1, then bus_voltage and sun_sensor with 0
+ordered
+[["nozzle_temp", 2], ["tank_pressure", 1], ["bus_voltage", 0], ["sun_sensor", 0]]
+--- check source | Names the first step avg_per_sensor
+\b[Ww][Ii][Tt][Hh]\s+avg_per_sensor\s+[Aa][Ss]\s*\(
+--- check source | Has a second step called spiky
+,\s*spiky\s+[Aa][Ss]\s*\(
+
+=== sql-gate | SQL fundamentals: mastery gate
+--- teach
+The gate covers the whole course: choosing rows and columns, sorting, aggregates and grouping, joins and `LEFT JOIN`, `NULL`, changing data, creating tables, subqueries and `WITH`. Every problem runs on the same small shop database, a supplier of spacecraft parts: `customers`, `products` and `orders`, described in each task. Then come questions that check you understand why the answers are right. To get ready, redo the practice problems of the lessons that felt hard, from memory, without the hints.
+--- gate
+pass 7
+questions 9
+minutes 112
+--- schema
+CREATE TABLE customers (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  country TEXT NOT NULL,
+  joined TEXT NOT NULL
+);
+INSERT INTO customers (id, name, country, joined) VALUES
+  (1, 'Aldrin Labs', 'US', '2024-01-15'),
+  (2, 'Baikonur Supply', 'KZ', '2024-03-02'),
+  (3, 'Cosmo Kids', 'GB', '2024-06-20'),
+  (4, 'Deep Field Inc', 'US', '2024-09-09'),
+  (5, 'Europa Robotics', 'DE', '2025-01-05'),
+  (6, 'Fringe Optics', 'FR', '2025-02-14');
+CREATE TABLE products (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  category TEXT NOT NULL,
+  price_cents INTEGER NOT NULL,
+  discontinued INTEGER NOT NULL DEFAULT 0
+);
+INSERT INTO products (id, name, category, price_cents, discontinued) VALUES
+  (1, 'Star tracker', 'sensor', 125000, 0),
+  (2, 'Reaction wheel', 'actuator', 89000, 0),
+  (3, 'Sun sensor', 'sensor', 15000, 0),
+  (4, 'Magnetorquer', 'actuator', 22000, 1),
+  (5, 'Radio module', 'comms', 46000, 0),
+  (6, 'Patch antenna', 'comms', 8000, 0),
+  (7, 'Gyro unit', 'sensor', 64000, 1),
+  (8, 'Horizon sensor', 'sensor', 125000, 0),
+  (9, 'Thruster valve', 'propulsion', 31000, 0);
+CREATE TABLE orders (
+  id INTEGER PRIMARY KEY,
+  customer_id INTEGER NOT NULL REFERENCES customers(id),
+  product_id INTEGER NOT NULL REFERENCES products(id),
+  qty INTEGER NOT NULL,
+  total_cents INTEGER NOT NULL,
+  ordered TEXT NOT NULL,
+  status TEXT NOT NULL,
+  discount_pct INTEGER
+);
+INSERT INTO orders (id, customer_id, product_id, qty, total_cents, ordered, status, discount_pct) VALUES
+  (1, 1, 1, 2, 250000, '2024-02-10', 'shipped', NULL),
+  (2, 1, 3, 4, 54000, '2024-05-03', 'shipped', 10),
+  (3, 2, 2, 1, 89000, '2024-04-18', 'shipped', NULL),
+  (4, 2, 5, 2, 92000, '2024-11-30', 'cancelled', NULL),
+  (5, 3, 6, 5, 36000, '2024-07-01', 'shipped', 10),
+  (6, 4, 1, 1, 118750, '2025-01-20', 'shipped', 5),
+  (7, 4, 5, 1, 46000, '2025-02-02', 'pending', NULL),
+  (8, 1, 2, 2, 160200, '2025-02-15', 'shipped', 10),
+  (9, 5, 6, 10, 72000, '2025-03-01', 'shipped', 10),
+  (10, 3, 4, 1, 22000, '2024-08-12', 'cancelled', NULL),
+  (11, 4, 5, 2, 87400, '2025-03-10', 'pending', 5),
+  (12, 2, 7, 1, 64000, '2024-06-05', 'shipped', NULL),
+  (13, 5, 6, 13, 104000, '2025-03-12', 'shipped', NULL);
+
++++ problem | Page three of the catalogue
+--- task
+`products` has the columns `id`, `name`, `category`, `price_cents` (the price in whole cents) and `discontinued` (`1` if the product is no longer sold, `0` if it is).
+
+The online catalogue shows only products that are still sold, in the categories `'sensor'`, `'comms'` and `'propulsion'`. It lists them **cheapest first**; products with the same price are listed A to Z by name. Each page shows **2** products.
+
+Return page **3** of the catalogue, with two columns: the `name`, and the price in dollars as `price_usd` (a dollar is 100 cents; keep the decimals).
+--- starter
+-- Page 3 of the catalogue.
+
+--- solution
+SELECT name, price_cents / 100.0 AS price_usd
+FROM products
+WHERE discontinued = 0
+  AND category IN ('sensor', 'comms', 'propulsion')
+ORDER BY price_cents, name
+LIMIT 2 OFFSET 4;
+--- check result | Horizon sensor then Star tracker, both 1250.0
+ordered
+[["Horizon sensor", 1250.0], ["Star tracker", 1250.0]]
+--- check source | Skips the first two pages
+[Oo][Ff][Ff][Ss][Ee][Tt]\s+4\b|[Ll][Ii][Mm][Ii][Tt]\s+4\s*,\s*2\b
+--- check source absent | Does not pick the products by name or id
+name\s*(=|[Ii][Nn]\b|[Ll][Ii][Kk][Ee])|\bid\s*(=|[Ii][Nn]\b)
+
++++ problem | Category price report
+--- task
+`products` has the columns `id`, `name`, `category`, `price_cents` and `discontinued` (`1` if no longer sold).
+
+Considering only products that are **still sold**, return one row per `category` with four columns: the `category`, how many products it has as `products`, their average price in dollars rounded to 2 decimal places as `avg_usd`, and its cheapest price in dollars as `min_usd`. Only include categories with **at least 2** products still sold. Put the category with the highest average first.
+--- starter
+-- One row per category.
+
+--- solution
+SELECT category,
+       COUNT(*) AS products,
+       ROUND(AVG(price_cents) / 100.0, 2) AS avg_usd,
+       MIN(price_cents) / 100.0 AS min_usd
+FROM products
+WHERE discontinued = 0
+GROUP BY category
+HAVING COUNT(*) >= 2
+ORDER BY avg_usd DESC;
+--- check result | sensor (3 products, 883.33 on average) then comms (2, 270.0); actuator has only 1 still sold
+ordered
+[["sensor", 3, 883.33, 150.0], ["comms", 2, 270.0, 80.0]]
+--- check source | Groups by category
+[Gg][Rr][Oo][Uu][Pp]\s+[Bb][Yy]\s+category\b
+--- check source | Filters groups with HAVING
+[Hh][Aa][Vv][Ii][Nn][Gg]
+
++++ problem | Revenue by country
+--- task
+`customers` has the columns `id`, `name`, `country` and `joined`. `orders` has the columns `id`, `customer_id`, `product_id`, `qty`, `total_cents` (what the customer paid, in cents), `ordered` (a date), `status` (`'shipped'`, `'pending'` or `'cancelled'`) and `discount_pct`.
+
+Only **shipped** orders bring in money. Return one row per customer `country` with three columns: the `country`, how many shipped orders came from it as `orders`, and the money they brought in, in dollars, as `revenue_usd`. Only include countries that brought in **more than 1000** dollars. Put the country with the most revenue first.
+--- starter
+-- Revenue per country, from shipped orders.
+
+--- solution
+SELECT c.country,
+       COUNT(*) AS orders,
+       SUM(o.total_cents) / 100.0 AS revenue_usd
+FROM orders o
+JOIN customers c ON c.id = o.customer_id
+WHERE o.status = 'shipped'
+GROUP BY c.country
+HAVING SUM(o.total_cents) > 100000
+ORDER BY revenue_usd DESC;
+--- check result | US 5829.5, DE 1760.0, KZ 1530.0; GB brought in only 360
+ordered
+[["US", 4, 5829.5], ["DE", 2, 1760.0], ["KZ", 2, 1530.0]]
+--- check source | Uses a JOIN
+\b[Jj][Oo][Ii][Nn]\b
+--- check source | Keeps only shipped orders
+'shipped'
+
++++ problem | Every customer's spend
+--- task
+`customers` has the columns `id`, `name`, `country` and `joined`. `orders` has the columns `id`, `customer_id`, `product_id`, `qty`, `total_cents`, `ordered`, `status` and `discount_pct`.
+
+Return **every** customer, with three columns: the customer's `name`, how many orders they have that are **not cancelled** as `orders`, and the total of those orders in dollars as `spent_usd`. A customer with no such orders must still appear, with `0` and `0`. Sort by `spent_usd`, biggest first, then by name from A to Z.
+--- starter
+-- Every customer, cancelled orders left out of the counts.
+
+--- solution
+WITH live AS (
+  SELECT customer_id, id, total_cents
+  FROM orders
+  WHERE status <> 'cancelled'
+)
+SELECT c.name,
+       COUNT(l.id) AS orders,
+       COALESCE(SUM(l.total_cents), 0) / 100.0 AS spent_usd
+FROM customers c
+LEFT JOIN live l ON l.customer_id = c.id
+GROUP BY c.id, c.name
+ORDER BY spent_usd DESC, c.name;
+--- check result | Aldrin Labs first, Fringe Optics last with 0 orders and 0
+ordered
+[["Aldrin Labs", 3, 4642.0], ["Deep Field Inc", 3, 2521.5], ["Europa Robotics", 2, 1760.0], ["Baikonur Supply", 2, 1530.0], ["Cosmo Kids", 1, 360.0], ["Fringe Optics", 0, 0.0]]
+--- check source | Keeps every customer with a LEFT JOIN
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+--- check source absent | Does not count whole rows after the join
+[Cc][Oo][Uu][Nn][Tt]\s*\(\s*\*\s*\)
+
++++ problem | Shipped without the big discount
+--- task
+`orders` has the columns `id`, `customer_id`, `product_id`, `qty`, `total_cents`, `ordered`, `status` and `discount_pct`. `discount_pct` is the discount the customer got, in percent, or `NULL` if they got none. `customers` has the columns `id`, `name`, `country` and `joined`.
+
+Return every **shipped** order that did **not** get the 10 percent discount, with three columns: the order's `id`, the customer's `name`, and the discount as `discount`, showing `0` when there was none. An order with no discount at all did not get the 10 percent discount either, so it belongs in the answer. Sort by order id.
+--- starter
+-- Shipped orders without the 10% discount.
+
+--- solution
+SELECT o.id, c.name, COALESCE(o.discount_pct, 0) AS discount
+FROM orders o
+JOIN customers c ON c.id = o.customer_id
+WHERE o.status = 'shipped'
+  AND (o.discount_pct <> 10 OR o.discount_pct IS NULL)
+ORDER BY o.id;
+--- check result | Orders 1, 3, 6, 12 and 13; only order 6 had a discount, of 5
+ordered
+[[1, "Aldrin Labs", 0], [3, "Baikonur Supply", 0], [6, "Deep Field Inc", 5], [12, "Baikonur Supply", 0], [13, "Europa Robotics", 0]]
+--- check source | Tests for a missing discount
+[Ii][Ss]\s+[Nn][Uu][Ll][Ll]|[Cc][Oo][Aa][Ll][Ee][Ss][Cc][Ee]
+--- check source absent | Does not pick the orders by id
+\bo\.id\s*(=|[Ii][Nn]\b)
+
++++ problem | Bigger than a typical shipped order
+--- task
+`orders` has the columns `id`, `customer_id`, `product_id`, `qty`, `total_cents`, `ordered`, `status` and `discount_pct`. `customers` has the columns `id`, `name`, `country` and `joined`.
+
+Return every **shipped** order whose `total_cents` is above the **average total of shipped orders**, with three columns: the order's `id`, the customer's `name`, and the total in dollars as `total_usd`. Put the biggest first. Work the average out in the query; do not type it in. Pending and cancelled orders count neither in the answer nor in the average.
+--- starter
+-- Shipped orders above the shipped average.
+
+--- solution
+SELECT o.id, c.name, o.total_cents / 100.0 AS total_usd
+FROM orders o
+JOIN customers c ON c.id = o.customer_id
+WHERE o.status = 'shipped'
+  AND o.total_cents > (SELECT AVG(total_cents) FROM orders WHERE status = 'shipped')
+ORDER BY o.total_cents DESC;
+--- check result | Orders 1, 8 and 6; order 13 is below the shipped average
+ordered
+[[1, "Aldrin Labs", 2500.0], [8, "Aldrin Labs", 1602.0], [6, "Deep Field Inc", 1187.5]]
+--- check source | Uses a subquery
+\(\s*[Ss][Ee][Ll][Ee][Cc][Tt]\b
+--- check source absent | Does not type the average in
+105\d\d\d|1053\.
+
++++ problem | The priciest in each category
+--- task
+`products` has the columns `id`, `name`, `category`, `price_cents` and `discontinued` (`1` if no longer sold).
+
+For each category, return the **most expensive product still sold**, with three columns: the `category`, the product's `name`, and its price in dollars as `price_usd`. If two products in a category tie for the highest price, return both. Sort by category, then by name, both A to Z.
+--- starter
+-- The most expensive product still sold in each category, ties included.
+
+--- solution
+WITH top AS (
+  SELECT category, MAX(price_cents) AS top_cents
+  FROM products
+  WHERE discontinued = 0
+  GROUP BY category
+)
+SELECT p.category, p.name, p.price_cents / 100.0 AS price_usd
+FROM products p
+JOIN top t ON t.category = p.category
+WHERE p.discontinued = 0 AND p.price_cents = t.top_cents
+ORDER BY p.category, p.name;
+--- check result | Five rows, with both sensors at 1250.0
+ordered
+[["actuator", "Reaction wheel", 890.0], ["comms", "Radio module", 460.0], ["propulsion", "Thruster valve", 310.0], ["sensor", "Horizon sensor", 1250.0], ["sensor", "Star tracker", 1250.0]]
+--- check source | Uses MAX
+[Mm][Aa][Xx]\s*\(
+--- check source absent | Does not pick the products by name
+name\s*(=|[Ii][Nn]\b|[Ll][Ii][Kk][Ee])
+
++++ problem | Month-end changes
+--- task
+`products` has the columns `id`, `name`, `category`, `price_cents` and `discontinued`. `orders` has the columns `id`, `customer_id`, `product_id`, `qty`, `total_cents`, `ordered` (a date written year-month-day), `status` and `discount_pct`.
+
+Make these four changes, **in this order**:
+
+1. Raise the price of every `'comms'` product by 10 percent: its new `price_cents` is the old one times 11, divided by 10.
+2. Every `'pending'` order placed **before** `2025-03-01` becomes `'cancelled'`.
+3. Delete every `'cancelled'` order placed in **2024** (before `2025-01-01`).
+4. Add a new product: id `10`, name `Laser link`, category `comms`, price `150000` cents. Leave `discontinued` out, so it takes its default. The new product must keep that price: it came after the price rise.
+--- starter
+-- Four statements, in order.
+
+--- solution
+UPDATE products SET price_cents = price_cents * 11 / 10 WHERE category = 'comms';
+UPDATE orders SET status = 'cancelled' WHERE status = 'pending' AND ordered < '2025-03-01';
+DELETE FROM orders WHERE status = 'cancelled' AND ordered < '2025-01-01';
+INSERT INTO products (id, name, category, price_cents) VALUES (10, 'Laser link', 'comms', 150000);
+--- check query | The comms prices went up by 10 percent, the new one did not
+SELECT id, price_cents FROM products WHERE category = 'comms' ORDER BY id
+=> [[5, 50600], [6, 8800], [10, 150000]]
+--- check query | Other prices did not change
+SELECT SUM(price_cents) FROM products WHERE category <> 'comms'
+=> [[471000]]
+--- check query | Order 7 was cancelled, order 11 is still pending
+SELECT id, status FROM orders WHERE id IN (7, 11) ORDER BY id
+=> [[7, "cancelled"], [11, "pending"]]
+--- check query | The 2024 cancelled orders are gone, nothing else
+SELECT id FROM orders ORDER BY id
+=> [[1], [2], [3], [5], [6], [7], [8], [9], [11], [12], [13]]
+--- check query | The new product is still sold
+SELECT name, discontinued FROM products WHERE id = 10
+=> [["Laser link", 0]]
+
++++ problem | A table of reviews
+--- task
+Customers can now review products. Do these things, in this order:
+
+1. Switch on foreign-key checks for this connection.
+2. Create a table `reviews` with the columns `id` (integer, primary key), `product_id` (integer, required, referencing `products(id)`), `customer_id` (integer, required, referencing `customers(id)`), `stars` (integer, required) and `verified` (integer, required, default `0`).
+3. Add four reviews. Leave `verified` out of every row except the third:
+   - id `1`: product `1`, customer `1`, `5` stars;
+   - id `2`: product `1`, customer `4`, `4` stars;
+   - id `3`: product `3`, customer `1`, `3` stars, verified `1`;
+   - id `4`: product `2`, customer `2`, `4` stars.
+4. Return every product still sold in the `'sensor'` category, with three columns: its `name`, how many reviews it has as `reviews`, and its average stars rounded to 1 decimal place as `avg_stars` (`NULL` when it has no reviews). Sort by name from A to Z.
+--- starter
+-- Switch the checks on, create reviews, fill it, then report on the sensors.
+
+--- solution
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE reviews (
+  id INTEGER PRIMARY KEY,
+  product_id INTEGER NOT NULL REFERENCES products(id),
+  customer_id INTEGER NOT NULL REFERENCES customers(id),
+  stars INTEGER NOT NULL,
+  verified INTEGER NOT NULL DEFAULT 0
+);
+
+INSERT INTO reviews (id, product_id, customer_id, stars)
+VALUES (1, 1, 1, 5), (2, 1, 4, 4);
+INSERT INTO reviews (id, product_id, customer_id, stars, verified)
+VALUES (3, 3, 1, 3, 1);
+INSERT INTO reviews (id, product_id, customer_id, stars)
+VALUES (4, 2, 2, 4);
+
+SELECT p.name, COUNT(r.id) AS reviews, ROUND(AVG(r.stars), 1) AS avg_stars
+FROM products p
+LEFT JOIN reviews r ON r.product_id = p.id
+WHERE p.category = 'sensor' AND p.discontinued = 0
+GROUP BY p.id, p.name
+ORDER BY p.name;
+--- check result | Horizon sensor with none, Star tracker 2 at 4.5, Sun sensor 1 at 3.0
+ordered
+[["Horizon sensor", 0, null], ["Star tracker", 2, 4.5], ["Sun sensor", 1, 3.0]]
+--- check query | Foreign-key checks are on
+PRAGMA foreign_keys
+=> [[1]]
+--- check query | reviews points at products and customers
+SELECT "table", "from", "to" FROM pragma_foreign_key_list('reviews') ORDER BY "from"
+=> [["customers", "customer_id", "id"], ["products", "product_id", "id"]]
+--- check query | Only the third review is verified
+SELECT id, verified FROM reviews ORDER BY id
+=> [[1, 0], [2, 0], [3, 1], [4, 0]]
+
++++ problem | Gone quiet
+--- task
+`products` has the columns `id`, `name`, `category`, `price_cents` and `discontinued` (`1` if no longer sold). `orders` has the columns `id`, `customer_id`, `product_id`, `qty`, `total_cents`, `ordered` (a date written year-month-day), `status` and `discount_pct`.
+
+The sales team wants the products still sold that **nobody has ordered since** `2025-01-01`: every product still sold whose most recent order, of any status, is from before that day, **or** that has never been ordered at all. Return two columns: the product's `name`, and the date of its most recent order as `last_order` (`NULL` if it has never been ordered). Sort by name from A to Z.
+--- starter
+-- Products still sold that nobody has ordered since 2025-01-01.
+
+--- solution
+SELECT p.name, MAX(o.ordered) AS last_order
+FROM products p
+LEFT JOIN orders o ON o.product_id = p.id
+WHERE p.discontinued = 0
+GROUP BY p.id, p.name
+HAVING MAX(o.ordered) < '2025-01-01' OR MAX(o.ordered) IS NULL
+ORDER BY p.name;
+--- check result | Horizon sensor never, Sun sensor last on 2024-05-03, Thruster valve never
+ordered
+[["Horizon sensor", null], ["Sun sensor", "2024-05-03"], ["Thruster valve", null]]
+--- check source | Keeps products with no orders, with a LEFT JOIN
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+--- check source absent | Does not pick the products by name or id
+name\s*(=|[Ii][Nn]\b|[Ll][Ii][Kk][Ee])|\bp\.id\s*(=|[Ii][Nn]\b)
+
++++ question | Dividing whole numbers
+--- ask
+What does this query return?
+
+```sql
+SELECT 7 / 2;
+```
+--- answer
+3
+--- why
+Both numbers are whole numbers, so SQLite does whole-number division and throws away the part after the point. To get `3.5`, write one of them with a decimal point: `7 / 2.0`.
+
++++ question | The average skips the blank
+--- ask
+A table `t` has one column, `x`, and three rows. Their `x` values are `1`, `NULL` and `3`. What does this query return?
+
+```sql
+SELECT AVG(x) FROM t;
+```
+--- answer
+2
+2.0
+--- why
+`AVG`, like `SUM`, `MIN`, `MAX` and `COUNT(x)`, skips `NULL` values. It adds 1 and 3 and divides by the two values it counted, not by the three rows, so the answer is 2.0.
+
++++ question | The second most expensive
+--- ask
+Using the course's `requests` table, where the costs are 0.0087, 0.0298, 0.0012, 0.0765, 0.0006 and 0.0034 for requests 1 to 6, what `id` does this query return?
+
+```sql
+SELECT id FROM requests ORDER BY cost_usd DESC LIMIT 1 OFFSET 1;
+```
+--- answer
+2
+--- why
+Sorted most expensive first, the costs go 0.0765 (request 4), 0.0298 (request 2), 0.0087 (request 1) and so on. `OFFSET 1` skips the first row and `LIMIT 1` keeps the next one: request 2.
+
++++ question | A condition that reads differently
+--- ask
+This query is meant to return the free **and** pro users who signed up after 1 March 2025. What is wrong with it?
+
+```sql
+SELECT email FROM users
+WHERE plan = 'free' OR plan = 'pro' AND created > '2025-03-01';
+```
+--- choice
+Dates cannot be compared with `>`, so the date test is ignored.
+--- choice correct
+`AND` is worked out before `OR`, so it reads as "free, or (pro and after 1 March)" and returns every free user, whatever the date.
+--- choice
+`OR` is worked out first, so the query is correct as written.
+--- choice
+Text in single quotes cannot be compared with `=` and `>` in the same condition.
+--- why
+SQL does `AND` before `OR`, the way times comes before plus. Brackets fix it: `WHERE (plan = 'free' OR plan = 'pro') AND created > '2025-03-01'`. Dates written year-month-day compare correctly as text.
+
++++ question | Why HAVING and not WHERE
+--- ask
+Why does `SELECT user_id FROM requests WHERE COUNT(*) > 1 GROUP BY user_id;` fail, while the same test written as `HAVING COUNT(*) > 1` after the `GROUP BY` works?
+--- choice
+`WHERE` only works with text, and `COUNT(*)` gives a number.
+--- choice
+`WHERE` must always come after `GROUP BY`; with the clauses in the right order it would work.
+--- choice correct
+`WHERE` checks one row at a time before the groups are made, so no count exists yet. `HAVING` runs after grouping, on each group.
+--- choice
+`COUNT(*)` needs a column name inside the brackets when it is used in a filter.
+--- why
+The database runs `FROM`, then `WHERE` on single rows, then `GROUP BY`, then `HAVING` on whole groups, then `SELECT`. An aggregate like `COUNT(*)` only exists once there are groups, so it can be tested in `HAVING` but not in `WHERE`.
+
++++ question | Counting after a LEFT JOIN
+--- ask
+This query should show every user with how many requests they have made. sam has made none. Which line makes sam show `1` instead of `0`?
+
+```sql
+SELECT u.email, COUNT(*) AS requests      -- line 1
+FROM users u                              -- line 2
+LEFT JOIN requests r ON r.user_id = u.id  -- line 3
+GROUP BY u.id, u.email;                   -- line 4
+```
+--- choice correct
+Line 1: `COUNT(*)` counts sam's row, which the `LEFT JOIN` keeps with `NULL`s. `COUNT(r.id)` would give 0.
+--- choice
+Line 2: the query should start from `requests`.
+--- choice
+Line 3: a `LEFT JOIN` invents a fake request for sam; a plain `JOIN` would give sam 0.
+--- choice
+Line 4: grouping by two columns counts sam twice.
+--- why
+The `LEFT JOIN` is right: it keeps sam. But the row it keeps is still a row, and `COUNT(*)` counts rows. `COUNT(r.id)` counts only rows where `r.id` is not `NULL`, so sam gets 0. A plain `JOIN` would drop sam altogether.
+
++++ question | Equal to NULL
+--- ask
+What happens when this query runs?
+
+```sql
+SELECT u.email
+FROM users u
+LEFT JOIN requests r ON r.user_id = u.id
+WHERE r.id = NULL;
+```
+--- choice
+It stops with an error, because `NULL` cannot be written after `=`.
+--- choice
+It returns sam, the one user with no requests.
+--- choice correct
+It runs and returns no rows at all, because comparing anything with `NULL` gives "unknown", never true.
+--- choice
+It returns every user, because `NULL` matches anything.
+--- why
+`r.id = NULL` is unknown for every row, even the rows where `r.id` is `NULL`, and `WHERE` keeps only rows whose test is true. The test for a missing value is `IS NULL`: `WHERE r.id IS NULL` returns sam.
+
++++ question | Adding up nothing
+--- ask
+Why do reports write `COALESCE(SUM(r.cost_usd), 0)` after a `LEFT JOIN`, instead of just `SUM(r.cost_usd)`?
+--- choice
+`SUM` cannot add up decimal numbers without `COALESCE`.
+--- choice correct
+For a user with no rows to add, `SUM` gives `NULL`, not 0, and `COALESCE` swaps that `NULL` for 0.
+--- choice
+`COALESCE` rounds the total to a whole number of cents.
+--- choice
+Without it, the `LEFT JOIN` drops the users who have no requests.
+--- why
+`COUNT` of nothing is 0, but `SUM`, `AVG`, `MIN` and `MAX` of nothing are `NULL`: there is nothing to add. `COALESCE(x, 0)` gives back `x` unless it is `NULL`, and then 0. The `LEFT JOIN` has already kept those users; `COALESCE` only fixes what their total shows.
+
++++ question | A join with no ON
+--- ask
+A table of `n` requests is joined to a table of `m` users, but the `ON` part was left out, so every request is paired with every user. How does the number of rows in the answer grow?
+--- choice
+O(n + m): one row for each request and one for each user.
+--- choice correct
+O(n × m): every request appears once next to every user.
+--- choice
+O(n): still one row per request, as with a correct join.
+--- choice
+O(max(n, m)): the bigger table sets the number of rows.
+--- why
+Without `ON`, the database makes every possible pair: a cross join. With 6 requests and 4 users that is 24 rows; with a million requests and a thousand users it is a billion. Guessing the row count before trusting a join catches this mistake.
+
++++ question | Forgetting the WHERE
+--- ask
+Someone meant to delete one request and ran this, pressing run before typing the rest:
+
+```sql
+DELETE FROM requests;
+```
+
+What happens?
+--- choice
+Nothing: a `DELETE` without a `WHERE` is refused with an error.
+--- choice
+The database asks "are you sure?" before deleting anything.
+--- choice
+Only the last request added is deleted.
+--- choice correct
+Every row in `requests` is deleted, at once, with no way to undo it.
+--- why
+The `WHERE` is optional. Without it, `DELETE` and `UPDATE` act on every row, and the database does exactly what you wrote. The habit that protects you: write the `SELECT` with the `WHERE` first, check the rows, then swap `SELECT *` for `DELETE`.
+
++++ question | A key for user 99
+--- ask
+A table was created with `user_id INTEGER NOT NULL REFERENCES users(id)`, and there is no user 99. In SQLite, with the connection just opened and no `PRAGMA` run, what happens when you insert a row with `user_id` 99?
+--- choice
+It is refused with `FOREIGN KEY constraint failed`.
+--- choice correct
+It is accepted without a word: SQLite records the foreign key but only enforces it after `PRAGMA foreign_keys = ON;`.
+--- choice
+It is accepted, and SQLite adds an empty user 99 to `users` to match it.
+--- choice
+It is refused with `NOT NULL constraint failed`.
+--- why
+SQLite keeps foreign-key checks off by default, for the sake of older programs, and the setting lasts one connection. Run `PRAGMA foreign_keys = ON;` first, and the same insert is refused. Most other databases always enforce foreign keys.
+
++++ question | One value expected, three found
+--- ask
+Three requests were answered by haiku, sent by users 1, 2 and 4. What does SQLite do with this query?
+
+```sql
+SELECT email FROM users
+WHERE id = (SELECT user_id FROM requests WHERE model = 'haiku');
+```
+--- choice
+It stops with an error, because the subquery returns more than one row.
+--- choice
+It returns the emails of users 1, 2 and 4.
+--- choice correct
+It quietly uses the first row the subquery finds and returns a single email.
+--- choice
+It returns no rows, because `id` cannot equal three values at once.
+--- why
+A subquery used as a value must give back one value. SQLite does not complain when it gives more: it takes the first row and throws the rest away, so the answer looks fine and is wrong. Run the inner query on its own first. "Any of these values" needs `IN`, which comes in the next course.
