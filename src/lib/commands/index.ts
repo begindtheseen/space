@@ -121,7 +121,7 @@ function litParts(ref: CommandRef, words: string[]): [string, string][] {
   })
 }
 
-function matchShell(ref: Reference, text: string, inCode: boolean): CommandMatch | null {
+function matchShell(ref: Reference, text: string, inCode: boolean, sure: boolean): CommandMatch | null {
   const m = ref.byLang.get('shell')
   if (!m) return null
   const t = text.replace(/^\s*[~\w/.-]*\s*[$#]\s+/, '').replace(/^\s*sudo\s+/, '')
@@ -130,7 +130,9 @@ function matchShell(ref: Reference, text: string, inCode: boolean): CommandMatch
     const hit = m.get(words.slice(0, n).join(' '))
     if (!hit) continue
     const rest = words.slice(n)
-    if (!inCode && (ENGLISH.has(words[0]!) || !rest.every((w) => /^-|[./_=*"'~\d]/.test(w)))) return null
+    // In a sentence, a command reads as one only on its own or followed by what looks typed; an
+    // English-looking name (`echo`, `sort`) needs the lesson to be about the terminal as well.
+    if (!inCode && ((!sure && ENGLISH.has(words[0]!)) || !rest.every((w) => /^-|[./_=*"'~\d]/.test(w)))) return null
     return { ref: hit, flags: litParts(hit, rest) }
   }
   return null
@@ -235,17 +237,21 @@ export function matchCommand(ref: Reference, selection: string, ctx: MatchContex
   const sure = !!ctx.lang
   const order: CommandLang[] = ctx.lang ? [ctx.lang] : ['shell', 'python', 'cpp', 'sql']
   // Outside its own language, a name only counts when it could not be anything else.
-  if (ctx.lang) for (const l of ['shell', 'python', 'cpp', 'sql'] as CommandLang[]) if (l !== ctx.lang) order.push(l)
+  // A lesson in one language mentions terminal commands (`echo`, `python3`, `g++`) but not another
+  // language's names, so that is the one fallback: `print` in a C++ lesson is its own function.
+  if (ctx.lang && ctx.lang !== 'shell') order.push('shell')
+  // Code that is not the lesson's own language is still code: `echo` in a Python lesson that
+  // compares print to it is the terminal's echo, once Python has no entry of that name.
   for (const [i, lang] of order.entries()) {
     const own = i === 0 && sure
     const hit =
       lang === 'shell'
-        ? matchShell(ref, text, inCode && (own || !sure))
+        ? matchShell(ref, text, inCode, own)
         : lang === 'python'
-          ? matchPython(ref, text, inCode && (own || !sure), own)
+          ? matchPython(ref, text, inCode, own)
           : lang === 'cpp'
-            ? matchCpp(ref, text, inCode && (own || !sure), own)
-            : matchSql(ref, text, inCode && (own || !sure), own)
+            ? matchCpp(ref, text, inCode, own)
+            : matchSql(ref, text, inCode, own)
     if (hit) return hit
   }
   return null

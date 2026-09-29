@@ -8,6 +8,14 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.1.13
+
+- Explain now opens a card for commands that look like ordinary words, such as `echo`, `cat`,
+  `sort` and `touch`, wherever the Terminal course uses them, in a sentence as well as in code.
+  They were being skipped as if they were plain English.
+- A terminal command written as code in another language's lesson (`echo` in the Python lesson that
+  compares it to `print`, `python3 main.py`) now opens the command's card.
+
 ## 1.1.12
 
 - Explain now knows every keyword, built-in and library name the Python, C++ and SQL lessons use,
