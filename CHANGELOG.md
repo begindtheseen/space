@@ -10,7 +10,7 @@ it.
 
 ## 1.1.14
 
-- Explain now covers every name the coding lessons teach, in sentences as well as in code: 2959
+- Explain now covers every name the coding lessons teach, in sentences as well as in code: 2,959
   entries, up from 1,764. A test reads every lesson and fails if any name is missing.
 - New languages: Rust (keywords, macros, standard library paths, the methods the lessons call, and the
   crates they use), MATLAB and Simulink functions, CMake commands and variables, Dockerfile instructions,
