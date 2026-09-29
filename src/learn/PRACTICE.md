@@ -215,6 +215,9 @@ The first command runs every problem's solution and starter against its checks:
 - C++ runs on clang with the in-browser compiler's flags: `-std=c++20 -fno-exceptions`, so no
   `throw` or `try`. Avoid function names that the system headers already declare (`truncate`,
   `index`, `link`, `remove`, `time`, `log`, `abs`), or the checks will not compile.
+- In the app, C++ is built for wasm32, where `long`, `size_t` and pointers are 4 bytes, while the
+  verifier builds for 64 bits. Use `long long` or `std::int64_t` for anything above about 2 billion,
+  and never let an expected output depend on the size of `long`, `size_t` or a pointer.
 - SQL runs on SQLite.
 - Terminal and Git problems run on the practice shell.
 
