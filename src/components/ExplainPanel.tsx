@@ -8,13 +8,14 @@
    Everything comes from the app itself (src/lib/explain.ts): no network, no
    waiting, no cost.
    ========================================================================== */
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { IconBook, IconSpark, IconX } from '@/components/icons'
+import { IconBook, IconSpark, IconTerminal, IconX } from '@/components/icons'
 import { Chip } from '@/components/ui'
 import { searchLessons } from '@/curriculum/lessons'
 import { moduleById } from '@/curriculum'
 import { useLearner } from '@/hooks/useLearner'
+import { commandByName, matchCommand, type CommandMatch } from '@/lib/commands'
 import { claimCtx, holdCtxOpen, onCtxClaimed } from '@/lib/ctxBus'
 import {
   matchCards,
@@ -70,6 +71,63 @@ function NoteSource({ r }: { r: RankedNote }) {
   )
 }
 
+/**
+ * The command card: what the command's own manual says it does, when to
+ * reach for it, the flags the lessons use (the ones in her highlight lit up),
+ * and an example. "See also" swaps the card to a related command.
+ */
+function CommandCard({ match, onSee }: { match: CommandMatch; onSee: (name: string) => void }) {
+  const { ref, flags } = match
+  const lit = new Set(flags.map(([f]) => f))
+  const also = (ref.seeAlso ?? []).filter((n) => commandByName(n))
+  return (
+    <section className="explain__cmd" aria-label={`The ${ref.name} command`}>
+      <div className="explain__label">
+        <IconTerminal size={12} /> Command
+      </div>
+      <h3 className="explain__cmd-name">
+        <code>{ref.name}</code>
+      </h3>
+      <blockquote className="explain__official">
+        <p>{ref.official}</p>
+        <footer>Official description · {ref.source}</footer>
+      </blockquote>
+      <div className="explain__cmd-part">When you use it</div>
+      <Markdown className="ctx-panel__body">{ref.when}</Markdown>
+      {ref.flags?.length ? (
+        <>
+          <div className="explain__cmd-part">Flags you will see</div>
+          <dl className="explain__flags">
+            {ref.flags.map(([f, meaning]) => (
+              <div key={f} data-lit={lit.has(f) || undefined}>
+                <dt>
+                  <code>{f}</code>
+                </dt>
+                <dd>{meaning}</dd>
+              </div>
+            ))}
+          </dl>
+        </>
+      ) : null}
+      <div className="explain__cmd-part">Example</div>
+      <pre className="explain__example">
+        <code>$ {ref.example.command}</code>
+      </pre>
+      <Markdown className="ctx-panel__body">{ref.example.says}</Markdown>
+      {also.length ? (
+        <div className="explain__also">
+          See also{' '}
+          {also.map((n) => (
+            <button key={n} type="button" onClick={() => onSee(n)}>
+              <code>{n}</code>
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </section>
+  )
+}
+
 export function ExplainPanel({
   seed,
   here,
@@ -84,6 +142,13 @@ export function ExplainPanel({
 }) {
   const { state } = useLearner()
   const [found, setFound] = useState<Found | null>(null)
+  // A "see also" press shows another command's card in place of this one.
+  const [seeing, setSeeing] = useState<string | null>(null)
+  useEffect(() => setSeeing(null), [seed])
+  const command = useMemo<CommandMatch | null>(() => {
+    const other = seeing ? commandByName(seeing) : undefined
+    return other ? { ref: other, flags: [] } : matchCommand(seed.selection, seed.inCode)
+  }, [seed, seeing])
   const [failed, setFailed] = useState(false)
   const ref = useRef<HTMLElement | null>(null)
   // Read once per highlight: marking a lesson read while the panel is open should not reshuffle it.
@@ -135,7 +200,7 @@ export function ExplainPanel({
   }, [seed, here, extra])
 
   const [best, ...more] = found?.notes ?? []
-  const empty = found && !best && !found.cards.length && !found.passages.length
+  const empty = found && !command && !best && !found.cards.length && !found.passages.length
   const taughtIn = empty ? searchLessons(seed.selection, (id) => moduleById(id)?.title, 3) : []
 
   return createPortal(
@@ -153,6 +218,16 @@ export function ExplainPanel({
           <IconX size={15} />
         </button>
       </div>
+
+      {command ? (
+        <CommandCard
+          match={command}
+          onSee={(name) => {
+            setSeeing(name)
+            ref.current?.scrollTo({ top: 0 })
+          }}
+        />
+      ) : null}
 
       {failed ? <p className="explain__empty">The explanations could not be loaded. Close this and try again.</p> : null}
       {!found && !failed ? <p className="explain__status">Looking through what you have learned…</p> : null}

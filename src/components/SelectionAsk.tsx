@@ -46,7 +46,8 @@ function seedFrom(selection: Selection, container: HTMLElement): ExplainSeed | n
   const el = anchor instanceof Element ? anchor : anchor.parentElement
   const block = el?.closest(BLOCKS)
   const paragraph = block && container.contains(block) ? readableText(block) : text
-  return { selection: text.slice(0, MAX_CHARS), paragraph: paragraph.slice(0, 2000) }
+  const inCode = !!el?.closest('code, pre, .term, .terminal')
+  return { selection: text.slice(0, MAX_CHARS), paragraph: paragraph.slice(0, 2000), inCode }
 }
 
 export function SelectionAsk({ container, onAsk }: { container: RefObject<HTMLElement | null>; onAsk: (seed: ExplainSeed) => void }) {

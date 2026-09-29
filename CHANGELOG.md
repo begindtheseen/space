@@ -8,6 +8,13 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.1.11
+
+- Explain knows every command ORBIT teaches, from `pwd` and `cp` to `git bisect`, `awk`, `docker
+  run` and `cmake`. Highlight one and press Explain: it shows what the command's own manual says it
+  does, word for word, when you would use it, the flags the lessons use (the ones you highlighted
+  are lit up), and an example. "See also" jumps to related commands.
+
 ## 1.1.10
 
 - Read aloud now says "versus" for "vs", and "for example" and "that is" for

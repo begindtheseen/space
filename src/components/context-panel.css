@@ -336,3 +336,117 @@
     opacity: 0;
   }
 }
+
+/* ── Explain: the command card ── */
+.explain__cmd {
+  padding: 12px 14px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--panel-2);
+  margin-bottom: 14px;
+}
+
+.explain__cmd .explain__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.explain__cmd-name {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.explain__cmd-name code {
+  font-family: var(--font-mono);
+  color: var(--ink);
+}
+
+.explain__official {
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--accent);
+  background: var(--panel);
+  border-radius: 0 var(--r-sm, 6px) var(--r-sm, 6px) 0;
+}
+
+.explain__official p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.explain__official footer {
+  margin-top: 4px;
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+
+.explain__cmd-part {
+  margin: 12px 0 4px;
+  font: 700 11px/1.2 var(--font-sans);
+  color: var(--ink-2);
+}
+
+.explain__flags {
+  margin: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.explain__flags > div {
+  display: grid;
+  grid-template-columns: minmax(56px, auto) 1fr;
+  gap: 10px;
+  align-items: baseline;
+  padding: 3px 6px;
+  border-radius: 5px;
+  font-size: 13px;
+}
+
+.explain__flags > div[data-lit] {
+  background: rgba(86, 150, 248, 0.14);
+}
+
+.explain__flags dt code {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.explain__flags dd {
+  margin: 0;
+  color: var(--ink-2);
+}
+
+.explain__example {
+  margin: 0 0 6px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--panel);
+  overflow-x: auto;
+  font: 12.5px/1.5 var(--font-mono);
+  color: var(--ink);
+}
+
+.explain__also {
+  margin-top: 10px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
+.explain__also button {
+  margin-left: 6px;
+  padding: 1px 7px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: none;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+}
+
+.explain__also button code {
+  font-family: var(--font-mono);
+}
