@@ -5523,6 +5523,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Algebraic loops: what creates them, the Algebraic Constraint block, breaking them with a unit delay and its phase cost"
       ],
       "file": "cod_slk_02_solvers/08-algebraic-loops.md"
+    },
+    {
+      "id": "l09-solver-profiler-and-the-golden-rule",
+      "title": "The Solver Profiler and the golden rule for flight models",
+      "minutes": 19,
+      "covers": [
+        "The Solver Profiler",
+        "The golden rule for deployable models: fixed-step, cleanly multirate, no algebraic loops"
+      ],
+      "file": "cod_slk_02_solvers/09-solver-profiler-and-the-golden-rule.md"
     }
   ],
   "cod_slk_03_architecture": [
@@ -5534,6 +5544,113 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Virtual versus atomic subsystems: execution ordering and code-generation consequences"
       ],
       "file": "cod_slk_03_architecture/01-virtual-and-atomic-subsystems.md"
+    },
+    {
+      "id": "l02-conditional-subsystems",
+      "title": "Conditional subsystems: enabled, triggered, function-call, If, Switch Case and For Each",
+      "minutes": 26,
+      "covers": [
+        "Enabled, triggered and function-call subsystems; If and Switch Case action subsystems; For Each"
+      ],
+      "file": "cod_slk_03_architecture/02-conditional-subsystems.md"
+    },
+    {
+      "id": "l03-masks-libraries-and-projects",
+      "title": "Masks, libraries and projects",
+      "minutes": 24,
+      "covers": [
+        "Masking: parameters, icons, callbacks, self-documenting blocks",
+        "Libraries and linked blocks; Simulink Projects under source control"
+      ],
+      "file": "cod_slk_03_architecture/03-masks-libraries-and-projects.md"
+    },
+    {
+      "id": "l04-bus-objects",
+      "title": "Bus objects, bus blocks and C structs",
+      "minutes": 22,
+      "covers": [
+        "Simulink.Bus objects as interface contracts; Bus Creator, Selector, Assignment; nested buses",
+        "Virtual versus non-virtual buses, and why non-virtual buses become C structs"
+      ],
+      "file": "cod_slk_03_architecture/04-bus-objects.md"
+    },
+    {
+      "id": "l05-model-reference",
+      "title": "Model reference: one vehicle, many files",
+      "minutes": 22,
+      "covers": [
+        "Model reference: separate compilation, incremental build, interface checking, accelerator modes",
+        "convertToModelReference and the objects it generates"
+      ],
+      "file": "cod_slk_03_architecture/05-model-reference.md"
+    },
+    {
+      "id": "l06-variants",
+      "title": "Variants: one model, flight and test builds",
+      "minutes": 21,
+      "covers": [
+        "Variant subsystems, variant models and variant source/sink for flight versus test builds"
+      ],
+      "file": "cod_slk_03_architecture/06-variants.md"
+    },
+    {
+      "id": "l07-data-dictionaries-and-data-objects",
+      "title": "Data dictionaries and data objects",
+      "minutes": 22,
+      "covers": [
+        "Data dictionaries (.sldd) versus the base workspace; per-subsystem dictionaries",
+        "Simulink.Parameter, Simulink.Signal and storage classes"
+      ],
+      "file": "cod_slk_03_architecture/07-data-dictionaries-and-data-objects.md"
+    },
+    {
+      "id": "l08-stateflow-states-and-transitions",
+      "title": "Stateflow: states and transitions",
+      "minutes": 23,
+      "covers": [
+        "Stateflow: states, hierarchy, transitions, junctions, default transitions"
+      ],
+      "file": "cod_slk_03_architecture/08-stateflow-states-and-transitions.md"
+    },
+    {
+      "id": "l09-actions-and-decomposition",
+      "title": "State actions, transition actions and parallel states",
+      "minutes": 24,
+      "covers": [
+        "entry, during and exit actions; condition actions versus transition actions",
+        "Parallel (AND) versus exclusive (OR) decomposition"
+      ],
+      "file": "cod_slk_03_architecture/09-actions-and-decomposition.md"
+    }
+  ],
+  "cod_slk_04_codegen": [
+    {
+      "id": "l01-mil-sil-pil-hil",
+      "title": "MIL, SIL, PIL and HIL: four questions on the way to flight",
+      "minutes": 23,
+      "covers": [
+        "The MIL to SIL to PIL to HIL progression and what each step proves"
+      ],
+      "file": "cod_slk_04_codegen/01-mil-sil-pil-hil.md"
+    },
+    {
+      "id": "l02-simulink-test",
+      "title": "Simulink Test: harnesses, test sequences and tests that run themselves",
+      "minutes": 19,
+      "covers": [
+        "Simulink Test: harnesses, test sequences, assessments, baseline and equivalence tests, headless CI runs"
+      ],
+      "file": "cod_slk_04_codegen/02-simulink-test.md"
+    },
+    {
+      "id": "l03-coverage",
+      "title": "Coverage: what your tests never touched",
+      "minutes": 23,
+      "covers": [
+        "Simulink Coverage: decision, condition, MC/DC, lookup-table, signal-range and relational-boundary coverage",
+        "Interpreting missing coverage as a missing test or as dead logic"
+      ],
+      "file": "cod_slk_04_codegen/03-coverage.md"
     }
   ],
   "cod_sql_01_select": [
@@ -12009,32 +12126,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_slk_02_solvers": {
-    "covered": 11,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "The Solver Profiler",
-      "The golden rule for deployable models: fixed-step, cleanly multirate, no algebraic loops"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_slk_03_architecture": {
-    "covered": 1,
+    "covered": 14,
     "total": 18,
     "complete": false,
     "missing": [
-      "Enabled, triggered and function-call subsystems; If and Switch Case action subsystems; For Each",
-      "Masking: parameters, icons, callbacks, self-documenting blocks",
-      "Simulink.Bus objects as interface contracts; Bus Creator, Selector, Assignment; nested buses",
-      "Virtual versus non-virtual buses, and why non-virtual buses become C structs",
-      "Model reference: separate compilation, incremental build, interface checking, accelerator modes",
-      "convertToModelReference and the objects it generates",
-      "Variant subsystems, variant models and variant source/sink for flight versus test builds",
-      "Data dictionaries (.sldd) versus the base workspace; per-subsystem dictionaries",
-      "Simulink.Parameter, Simulink.Signal and storage classes",
-      "Libraries and linked blocks; Simulink Projects under source control",
-      "Stateflow: states, hierarchy, transitions, junctions, default transitions",
-      "entry, during and exit actions; condition actions versus transition actions",
-      "Parallel (AND) versus exclusive (OR) decomposition",
       "Temporal logic: after, before, every, at, duration",
       "Events versus conditions, and why flight teams often ban events",
       "Transition evaluation order and guaranteeing mutual exclusivity",
@@ -12042,14 +12143,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_slk_04_codegen": {
-    "covered": 0,
+    "covered": 4,
     "total": 21,
     "complete": false,
     "missing": [
-      "The MIL to SIL to PIL to HIL progression and what each step proves",
-      "Simulink Test: harnesses, test sequences, assessments, baseline and equivalence tests, headless CI runs",
-      "Simulink Coverage: decision, condition, MC/DC, lookup-table, signal-range and relational-boundary coverage",
-      "Interpreting missing coverage as a missing test or as dead logic",
       "Requirements Toolbox: authoring, linking to blocks and tests, traceability matrices, change tracking",
       "Model Advisor with MAB and JMAAB guidelines and the high-integrity check packs",
       "Polyspace Bug Finder and Code Prover: proving absence of run-time errors without test cases",
