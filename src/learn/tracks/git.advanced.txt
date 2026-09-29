@@ -86,7 +86,7 @@ A commit's id is worked out from everything in it: the files, the message, the a
     <text x="310" y="146">4072ce9</text>
   </g>
   <text x="104" y="34" font-size="12" fill="#b4232c" text-anchor="end">main</text>
-  <text x="310" y="100" font-size="12" fill="#b4232c" text-anchor="middle">experiment</text>
+  <text x="310" y="100" font-size="12" fill="#b4232c" text-anchor="middle">sound-test</text>
   <text x="206" y="68" font-size="11" fill="#1d6fd1">same change, new id</text>
   <text x="180" y="172" font-size="11" fill="#1f2a44" text-anchor="middle">Orange: the fix and its copy, with different ids.</text>
 </svg>
@@ -133,6 +133,265 @@ file stats.py contains if xs else 0
 --- check shell | Nothing else came across from experiment
 missing fancy.py
 ran git cherry-pick
+
++++ practice | Copy the typo fix
+--- task
+The `docs` branch holds three commits: `Fix the typo in the title`, then `Rewrite the intro`, then `Rewrite the FAQ`. The rewrites are not ready, but `main` needs the typo fix today.
+
+You are on `main`. List the branch with `git log --oneline docs`, then copy **only** `Fix the typo in the title` onto `main` with `git cherry-pick`. Name the commit by counting back from the tip of `docs`.
+--- starter
+git init
+echo "Orbt Guide" > title.txt
+git add .
+git commit -m "Add the guide"
+git switch -c docs
+echo "Orbit Guide" > title.txt
+git commit -am "Fix the typo in the title"
+echo "A new intro" > intro.txt
+git add .
+git commit -m "Rewrite the intro"
+echo "A new FAQ" > faq.txt
+git add .
+git commit -m "Rewrite the FAQ"
+git switch main
+--- solution
+git log --oneline docs
+git cherry-pick docs~2
+--- hint
+In `git log --oneline docs` the newest commit comes first. Count how many steps back from the top the typo fix is.
+--- hint
+The fix is the oldest of the three, two commits before the tip, so `docs~2` names it.
+--- check shell | main has the typo fix, as one new commit
+git . branch main
+git . commits == 2
+git . at HEAD message == Fix the typo in the title
+file title.txt == Orbit Guide
+--- check shell | The rewrites stayed on docs
+missing intro.txt
+missing faq.txt
+git . log excludes Rewrite
+--- check shell | docs is unchanged
+git . commits-on docs == 4
+git . at docs message == Rewrite the FAQ
+
++++ practice | Back-port a fix to the release
+--- task
+Version 1.0 was shipped from the branch `release-1.0`. Since then, `main` got a new feature, `Add the night mode`, and then a fix, `Stop the crash on start-up`. The fix is the newest commit on `main`.
+
+You are on `main`. Copy **only** the fix onto `release-1.0`. The release must not get the night mode, and `main` must not change.
+--- starter
+git init
+echo "start()" > app.py
+git add .
+git commit -m "Ship version 1.0"
+git branch release-1.0
+echo "night = True" > night.py
+git add .
+git commit -m "Add the night mode"
+echo "start(safe=True)" > app.py
+git commit -am "Stop the crash on start-up"
+--- solution
+git switch release-1.0
+git cherry-pick main
+git log --oneline
+--- hint
+A cherry-pick lands on the branch you are standing on. Which branch should receive the fix?
+--- hint
+Switch to `release-1.0` first. A branch name on its own names that branch's newest commit, so `main` names the fix.
+--- check shell | release-1.0 has the fix
+git . branch release-1.0
+git . at release-1.0 message == Stop the crash on start-up
+git . at release-1.0 file app.py == start(safe=True)
+--- check shell | The release did not get the night mode
+git . at release-1.0 missing night.py
+git . commits-on release-1.0 == 2
+--- check shell | main did not change
+git . commits-on main == 3
+git . at main message == Stop the crash on start-up
+
++++ practice | Two fixes and a patch release
+--- task
+The branch `hotfixes` has three commits, oldest first: `Fix the login button`, `Try a new theme` and `Fix the logout link`. `main` needs both fixes, but not the theme.
+
+You are on `main`. Copy the two fixes, **oldest first**, with one `git cherry-pick` each. Then tag the result `v1.0.1` with a lightweight tag.
+--- starter
+git init
+echo "login" > login.html
+echo "logout" > logout.html
+git add .
+git commit -m "Release 1.0"
+git switch -c hotfixes
+echo "login fixed" > login.html
+git commit -am "Fix the login button"
+echo "dark" > theme.css
+git add .
+git commit -m "Try a new theme"
+echo "logout fixed" > logout.html
+git commit -am "Fix the logout link"
+git switch main
+--- solution
+git log --oneline hotfixes
+git cherry-pick hotfixes~2
+git cherry-pick hotfixes
+git tag v1.0.1
+--- hint
+`git log --oneline hotfixes` shows all three. The first fix is two commits before the tip; the second fix is the tip itself.
+--- hint
+Run one cherry-pick for `hotfixes~2`, then another for `hotfixes`. A tag with no commit named goes on the commit you are on.
+--- check shell | Both fixes are on main, oldest first
+git . commits == 3
+git . at HEAD~1 message == Fix the login button
+git . at HEAD message == Fix the logout link
+file login.html == login fixed
+file logout.html == logout fixed
+--- check shell | The theme stayed behind
+missing theme.css
+git . log excludes theme
+--- check shell | v1.0.1 marks the newest commit on main
+git . tag v1.0.1
+git . same v1.0.1 main
+
++++ practice | Count from the right tip
+--- task
+You are on the `sensors` branch, and `main` has moved on with two commits of its own. `sensors` has four commits; the second newest is `Calibrate the thermometer`, and `main` needs it.
+
+Copy **only** that commit onto `main`. Name it by counting back from the tip of `sensors`, not by an id. `main` must keep its own two new commits, and `sensors` must not change.
+--- starter
+git init
+echo "temp = raw" > thermo.cfg
+git add .
+git commit -m "Add the sensors"
+git switch -c sensors
+echo "pressure" > baro.cfg
+git add .
+git commit -m "Add the barometer"
+echo "wind" > wind.cfg
+git add .
+git commit -m "Add the wind gauge"
+echo "temp = calibrated" > thermo.cfg
+git commit -am "Calibrate the thermometer"
+echo "humid" > humid.cfg
+git add .
+git commit -m "Add the humidity sensor"
+git switch main
+echo "# Sensors" > README.md
+git add .
+git commit -m "Write the README"
+echo "MIT" > LICENSE
+git add .
+git commit -m "Add a licence"
+git switch sensors
+--- solution
+git log --oneline sensors
+git switch main
+git cherry-pick sensors~1
+--- hint
+You are standing on `sensors`, but the copy must land on `main`. Switch first.
+--- hint
+`sensors~1` counts from the tip of `sensors` wherever you stand. `HEAD~1` would count from wherever HEAD is, which after the switch is `main`.
+--- check shell | main has the calibration on top of its own work
+git . branch main
+git . commits == 4
+git . at HEAD message == Calibrate the thermometer
+file thermo.cfg == temp = calibrated
+git . log contains Add a licence
+--- check shell | Only that one commit came across
+missing baro.cfg
+missing wind.cfg
+missing humid.cfg
+--- check shell | sensors is unchanged
+git . commits-on sensors == 5
+git . at sensors message == Add the humidity sensor
+
++++ practice | Debugging: the wrong commit came across
+--- task
+A teammate wanted the commit `Fix the fuel gauge` from the `gauges` branch on `main`, and typed `git cherry-pick gauges~1`. But the fix is **two** commits before the tip of `gauges`, so `main` got `Add gauge colours` instead, and `colours.css` with it. Nobody else has this commit yet.
+
+You are on `main`. Throw the wrong copy away with `git reset --hard`, then copy the right commit.
+--- starter
+git init
+echo "fuel: ?" > gauge.txt
+git add .
+git commit -m "Add the gauge"
+git switch -c gauges
+echo "fuel: 80%" > gauge.txt
+git commit -am "Fix the fuel gauge"
+echo "red" > colours.css
+git add .
+git commit -m "Add gauge colours"
+echo "big" > size.css
+git add .
+git commit -m "Make the gauge bigger"
+git switch main
+git cherry-pick gauges~1
+--- solution
+git log --oneline
+git reset --hard HEAD~1
+git log --oneline gauges
+git cherry-pick gauges~2
+--- hint
+`git log --oneline` shows the wrong copy on top of `main`. `git reset --hard HEAD~1` removes it, and its file too.
+--- hint
+Then read `git log --oneline gauges` and count again: the newest commit is `gauges`, one back is `gauges~1`, two back is `gauges~2`.
+--- check shell | main has the fuel gauge fix
+git . branch main
+git . commits == 2
+git . at HEAD message == Fix the fuel gauge
+file gauge.txt == fuel: 80%
+--- check shell | The colours are gone
+missing colours.css
+git . log excludes colours
+--- check shell | Nothing else came across
+missing size.css
+
++++ practice | Patch two old releases
+--- task
+Customers still run versions 1 and 2, from the branches `release-1` and `release-2`. On `main`, the commit `Clamp the throttle at 100` fixes a dangerous bug. It is one commit before the tip of `main`; the tip, `Add the autopilot`, is new and untested.
+
+1. Copy the throttle fix onto `release-1`, and tag that commit `v1.0.1`.
+2. Copy it onto `release-2`, and tag that commit `v2.0.1`.
+
+Neither release may get the autopilot, and `main` must not change. Use lightweight tags.
+--- starter
+git init
+echo "throttle = input" > throttle.cfg
+git add .
+git commit -m "Version 1"
+git branch release-1
+echo "cruise" > cruise.cfg
+git add .
+git commit -m "Version 2"
+git branch release-2
+echo "throttle = min(input, 100)" > throttle.cfg
+git commit -am "Clamp the throttle at 100"
+echo "auto" > autopilot.cfg
+git add .
+git commit -m "Add the autopilot"
+--- solution
+git log --oneline main
+git switch release-1
+git cherry-pick main~1
+git tag v1.0.1
+git switch release-2
+git cherry-pick main~1
+git tag v2.0.1
+--- hint
+Do one release at a time: switch to it, cherry-pick, tag. `main~1` names the fix from any branch.
+--- hint
+A tag with no commit named marks the commit you are on, so tag right after each cherry-pick, before you switch.
+--- check shell | release-1 has the fix, tagged v1.0.1
+git . at release-1 message == Clamp the throttle at 100
+git . same v1.0.1 release-1
+git . at v1.0.1 file throttle.cfg == throttle = min(input, 100)
+git . at v1.0.1 missing cruise.cfg
+--- check shell | release-2 has the fix, tagged v2.0.1
+git . at release-2 message == Clamp the throttle at 100
+git . same v2.0.1 release-2
+git . at v2.0.1 file cruise.cfg
+--- check shell | No autopilot on either release, and main is unchanged
+git . at release-1 missing autopilot.cfg
+git . at release-2 missing autopilot.cfg
+git . commits-on main == 4
 
 === git3-02 | Rebase: replaying a branch on top of main
 --- teach
@@ -289,6 +548,277 @@ git . at HEAD~2 message == Speed up start-up
 git . same main feature
 ran git rebase main
 
++++ practice | Bring the docs branch up to date
+--- task
+You started the branch `docs` from `Start`. Since then, `main` got a new commit, `Add the licence`. You are on `docs`.
+
+Replay `docs` on top of `main` with `git rebase`. Do **not** merge anything: `main` stays where it is. Afterwards `docs` holds `main`'s commits with your two commits on top, in one straight line.
+--- starter
+git init
+echo "app" > app.txt
+git add .
+git commit -m "Start"
+git switch -c docs
+echo "How to install" > install.md
+git add .
+git commit -m "Write the install guide"
+echo "How to use" > usage.md
+git add .
+git commit -m "Write the usage guide"
+git switch main
+echo "MIT" > LICENSE
+git add .
+git commit -m "Add the licence"
+git switch docs
+--- solution
+git log --oneline --graph --all
+git rebase main
+git log --oneline --graph
+--- hint
+Stand on the branch that should move (you already are) and name the branch to build on.
+--- hint
+`git rebase main`. Then `git log --oneline --graph` shows one line with no fork.
+--- check shell | docs now sits on top of main
+git . branch docs
+git . ancestor main docs
+git . commits-on docs == 4
+git . at docs~2 message == Add the licence
+--- check shell | Your commits kept their messages and files
+git . at docs message == Write the usage guide
+git . at docs~1 message == Write the install guide
+file LICENSE
+--- check shell | main did not move, and nothing was merged
+git . commits-on main == 2
+git . merges == 0
+
++++ practice | Start from main, finish on main
+--- task
+`main` has a new commit, `Fix the menu`, that the `profile` branch does not have. `profile` has two commits of its own. You are on `main`.
+
+Make the history one straight line: rebase `profile` onto `main`, then fast-forward `main` to include it. There must be **no** merge commit, and `main` and `profile` must end on the same commit.
+--- starter
+git init
+echo "home" > index.html
+git add .
+git commit -m "Start"
+git switch -c profile
+echo "profile" > profile.html
+git add .
+git commit -m "Add the profile page"
+echo "avatar" > avatar.png
+git add .
+git commit -m "Add avatars"
+git switch main
+echo "menu fixed" > menu.html
+git add .
+git commit -m "Fix the menu"
+--- solution
+git switch profile
+git rebase main
+git switch main
+git merge profile
+git log --oneline --graph
+--- hint
+From `main`, `git rebase main` does nothing: the rebase moves the branch you stand on. Which branch should move?
+--- hint
+Switch to `profile` and rebase it onto `main`. Then switch back to `main` and merge `profile`: git answers `Fast-forward`.
+--- check shell | One straight line with no merge commit
+git . branch main
+git . merges == 0
+git . commits == 4
+git . at HEAD~2 message == Fix the menu
+--- check shell | main and profile point at the same commit
+git . same main profile
+--- check shell | Everything arrived
+file profile.html
+file avatar.png
+file menu.html
+
++++ practice | Rebase, merge, tidy up
+--- task
+The `search` branch is finished, but `main` moved on while you worked on it. You are on `search`.
+
+1. Rebase `search` onto `main`.
+2. Switch to `main` and merge `search`, so that git fast-forwards.
+3. Delete the `search` branch with `git branch -d`, since all its work is now on `main`.
+--- starter
+git init
+echo "v1" > app.txt
+git add .
+git commit -m "Start"
+git switch -c search
+echo "box" > search.html
+git add .
+git commit -m "Add the search box"
+echo "results" > results.html
+git add .
+git commit -m "Show the results"
+git switch main
+echo "fast" > cache.txt
+git add .
+git commit -m "Add a cache"
+echo "faster" > cache.txt
+git commit -am "Tune the cache"
+git switch search
+--- solution
+git rebase main
+git switch main
+git merge search
+git branch -d search
+git log --oneline --graph
+--- hint
+Rebase first, from `search`. Then `git switch main` and `git merge search`.
+--- hint
+Once `main` has every commit of `search`, `git branch -d search` deletes the label. The commits stay on `main`.
+--- check shell | main is one straight line with all five commits
+git . branch main
+git . commits == 5
+git . merges == 0
+git . at HEAD message == Show the results
+git . at HEAD~2 message == Tune the cache
+--- check shell | The search branch is gone
+git . no-branch search
+--- check shell | The work is all there
+file search.html
+file results.html
+file cache.txt == faster
+
++++ practice | Rebase with unsaved work in the folder
+--- task
+You are on `wifi`, halfway through a change to `notes.txt` that is not ready to commit. `main` has moved on, and you want to rebase `wifi` onto it now.
+
+Git refuses to rebase while you have changes that are not committed. Put your change aside with `git stash`, rebase `wifi` onto `main`, then bring your change back with `git stash pop`. Afterwards `notes.txt` must hold your unfinished change again, still uncommitted.
+--- starter
+git init
+echo "v1" > app.txt
+echo "notes" > notes.txt
+git add .
+git commit -m "Start"
+git switch -c wifi
+echo "ssid" > wifi.cfg
+git add .
+git commit -m "Add the wifi settings"
+git switch main
+echo "bt" > bluetooth.cfg
+git add .
+git commit -m "Add bluetooth"
+git switch wifi
+echo "notes: try channel 6" > notes.txt
+--- solution
+git rebase main
+git stash
+git rebase main
+git stash pop
+git status
+--- hint
+Try `git rebase main` and read the error: it names both ways out.
+--- hint
+`git stash` saves the change and cleans the folder. Rebase, then `git stash pop` puts the change back.
+--- check shell | wifi sits on top of main
+git . branch wifi
+git . ancestor main wifi
+git . commits-on wifi == 3
+git . merges == 0
+--- check shell | Your unfinished change is back, and still not committed
+file notes.txt == notes: try channel 6
+git . modified notes.txt
+git . at wifi file notes.txt == notes
+--- check shell | The stash is empty again
+git . stashes == 0
+
++++ practice | Debugging: a merge commit nobody wanted
+--- task
+The team keeps `main` as one straight line. A teammate finished `charts` and, standing on `main`, typed `git merge charts`. Because `main` had moved on, git made a merge commit. Nobody else has it yet.
+
+You are on `main`. Throw the merge commit away with `git reset --hard HEAD~1`. Then do it the team's way: rebase `charts` onto `main` and fast-forward `main`.
+--- starter
+git init
+echo "data" > data.csv
+git add .
+git commit -m "Start"
+git switch -c charts
+echo "bar" > bar.js
+git add .
+git commit -m "Add bar charts"
+git switch main
+echo "fix" > loader.js
+git add .
+git commit -m "Fix the loader"
+git merge charts
+--- solution
+git log --oneline --graph
+git reset --hard HEAD~1
+git switch charts
+git rebase main
+git switch main
+git merge charts
+--- hint
+`git log --oneline --graph` shows the merge commit on top. `git reset --hard HEAD~1` moves `main` back to `Fix the loader`; the `charts` branch keeps its commit.
+--- hint
+Then switch to `charts`, `git rebase main`, switch back to `main` and `git merge charts`. This time git answers `Fast-forward`.
+--- check shell | No merge commit, one straight line
+git . branch main
+git . merges == 0
+git . commits == 3
+--- check shell | Your charts sit on top of the loader fix
+git . at HEAD message == Add bar charts
+git . at HEAD~1 message == Fix the loader
+git . same main charts
+--- check shell | Both changes are in the folder
+file bar.js
+file loader.js
+
++++ practice | Two branches, one straight line
+--- task
+Two branches were started from `Start` before `main` moved on: `left-panel` and `right-panel`, one commit each. You are on `main`.
+
+Bring **both** onto `main` so that the history is one straight line with **no** merge commits, `left-panel`'s commit first. At the end, `main` and `right-panel` point at the same commit, and `left-panel`'s commit is in `main`'s history.
+
+Careful: after you fast-forward `main` to the first branch, `main` has moved again, so the second branch needs to be rebased onto the **new** `main`.
+--- starter
+git init
+echo "layout" > layout.css
+git add .
+git commit -m "Start"
+git switch -c left-panel
+echo "left" > left.html
+git add .
+git commit -m "Add the left panel"
+git switch main
+git switch -c right-panel
+echo "right" > right.html
+git add .
+git commit -m "Add the right panel"
+git switch main
+echo "grid" > layout.css
+git commit -am "Use a grid layout"
+--- solution
+git switch left-panel
+git rebase main
+git switch main
+git merge left-panel
+git switch right-panel
+git rebase main
+git switch main
+git merge right-panel
+git log --oneline --graph --all
+--- hint
+Do one branch completely before you start the other: rebase it, then fast-forward `main`.
+--- hint
+If you rebase both branches onto the old `main` first, the second merge cannot fast-forward and makes a merge commit. Rebase `right-panel` only after `main` has taken in `left-panel`.
+--- check shell | One straight line, no merge commits
+git . branch main
+git . merges == 0
+git . commits == 4
+--- check shell | In the right order
+git . at main message == Add the right panel
+git . at main~1 message == Add the left panel
+git . at main~2 message == Use a grid layout
+--- check shell | main and right-panel end on the same commit, with left-panel inside
+git . same main right-panel
+git . same main~1 left-panel
+git . ancestor left-panel main
+
 === git3-03 | Squashing: many small commits into one
 --- teach
 Last lesson you rebased `feature` so it sat neatly on top of `main`. This lesson tidies the inside of a branch before you share it: turning a pile of small commits into one clean one.
@@ -423,6 +953,263 @@ git . at feature file search.css
 git . at feature file search.html == <input type=search placeholder=Search>
 --- check shell | main is untouched
 git . commits-on main == 1
+
++++ practice | Squash the README drafts
+--- task
+On `readme` you saved your work twice while writing: `draft` and `draft again`. Before sharing the branch, turn them into **one** commit with the message `Write the README`, using `git reset --soft` and a new commit. `main` must not change.
+--- starter
+git init
+echo "print('hi')" > app.py
+git add .
+git commit -m "Start"
+git switch -c readme
+echo "# App" > README.md
+git add .
+git commit -m "draft"
+echo "# App: says hi" > README.md
+git commit -am "draft again"
+--- solution
+git log --oneline main..readme
+git reset --soft HEAD~2
+git status
+git commit -m "Write the README"
+--- hint
+`git log --oneline main..readme` lists the commits that are only on `readme`. That count goes after `HEAD~`.
+--- hint
+`git reset --soft HEAD~2` keeps both commits' changes staged. Then commit once.
+--- check shell | readme has one commit on top of main
+git . branch readme
+git . commits-on readme == 2
+git . at readme message == Write the README
+git . log-of readme excludes draft
+--- check shell | The commit holds the final text
+git . at readme file README.md == # App: says hi
+--- check shell | main is untouched
+git . commits-on main == 1
+
++++ practice | Keep the first commit, squash the rest
+--- task
+On `parser` you made three commits. The first, `Add the parser`, is a clean, finished idea. The next two, `tests wip` and `more tests`, are save points for a second idea.
+
+Squash **only the last two** into one commit with the message `Test the parser`. `Add the parser` must stay as it is, below it.
+--- starter
+git init
+echo "main" > main.py
+git add .
+git commit -m "Start"
+git switch -c parser
+echo "def parse(s): return s.split()" > parser.py
+git add .
+git commit -m "Add the parser"
+echo "assert parse('a b')" > test_parser.py
+git add .
+git commit -m "tests wip"
+echo "assert parse('a b') == ['a', 'b']" > test_parser.py
+git commit -am "more tests"
+--- solution
+git log --oneline main..parser
+git reset --soft HEAD~2
+git commit -m "Test the parser"
+git log --oneline
+--- hint
+You want to undo only the commits you are squashing. How many is that?
+--- hint
+`git reset --soft HEAD~2` goes back to `Add the parser` and keeps the test changes staged.
+--- check shell | Two commits on parser: the parser, then the tests
+git . commits-on parser == 3
+git . at parser message == Test the parser
+git . at parser~1 message == Add the parser
+--- check shell | The parser commit is unchanged, and the tests are in the new one
+git . at parser~1 file parser.py
+git . at parser~1 missing test_parser.py
+git . at parser file test_parser.py == assert parse('a b') == ['a', 'b']
+--- check shell | The save points are gone
+git . log-of parser excludes wip
+git . log-of parser excludes more tests
+
++++ practice | Squash, then rebase
+--- task
+On `alerts` you have three save points: `wip`, `wip 2` and `wip 3`. Meanwhile `main` got a new commit, `Add logging`. You are on `alerts`.
+
+1. Squash your three commits into one, with the message `Add the alerts`.
+2. Rebase `alerts` onto `main`.
+
+At the end `alerts` is `main` plus exactly one commit on top.
+--- starter
+git init
+echo "app" > app.txt
+git add .
+git commit -m "Start"
+git switch -c alerts
+echo "beep" > alerts.txt
+git add .
+git commit -m "wip"
+echo "beep beep" > alerts.txt
+git commit -am "wip 2"
+echo "on" > alerts.cfg
+git add .
+git commit -m "wip 3"
+git switch main
+echo "log" > log.txt
+git add .
+git commit -m "Add logging"
+git switch alerts
+--- solution
+git log --oneline main..alerts
+git reset --soft HEAD~3
+git commit -m "Add the alerts"
+git rebase main
+git log --oneline --graph --all
+--- hint
+Squash first: `git log --oneline main..alerts` tells you how far to go back with `git reset --soft`.
+--- hint
+After the new commit, `git rebase main` replays that one commit on top of `main`.
+--- check shell | alerts is main plus one commit
+git . branch alerts
+git . ancestor main alerts
+git . commits-on alerts == 3
+git . at alerts message == Add the alerts
+git . at alerts~1 message == Add logging
+--- check shell | The one commit holds all the work
+git . at alerts file alerts.txt == beep beep
+git . at alerts file alerts.cfg
+git . log-of alerts excludes wip
+--- check shell | main did not change
+git . commits-on main == 2
+
++++ practice | Five save points, and a file to leave out
+--- task
+On `map` you made **five** small commits. Squash them into one commit with the message `Add the star map`.
+
+In the folder there is also `scratch.txt`, your own notes. It has never been committed and it must stay that way: it must **not** end up in the new commit.
+--- starter
+git init
+echo "home" > index.html
+git add .
+git commit -m "Start"
+git switch -c map
+echo "stars" > map.js
+git add .
+git commit -m "wip"
+echo "stars: 10" > map.js
+git commit -am "wip"
+echo "dark" > map.css
+git add .
+git commit -m "style"
+echo "stars: 12" > map.js
+git commit -am "fix"
+echo "names" > labels.js
+git add .
+git commit -m "labels"
+echo "remember to ask Kim" > scratch.txt
+--- solution
+git log --oneline main..map
+git reset --soft HEAD~5
+git status
+git commit -m "Add the star map"
+--- hint
+Count the lines of `git log --oneline main..map` carefully: `main`'s own commit is not in that list, and it must not be squashed.
+--- hint
+After `git reset --soft`, everything the five commits changed is already staged. `git status` shows `scratch.txt` under untracked files: commit without adding anything else.
+--- check shell | One commit on top of main
+git . commits-on map == 2
+git . at map message == Add the star map
+git . at map~1 message == Start
+--- check shell | It holds the final work
+git . at map file map.js == stars: 12
+git . at map file map.css
+git . at map file labels.js
+--- check shell | scratch.txt stayed out
+git . at map missing scratch.txt
+git . untracked scratch.txt
+
++++ practice | Debugging: a squash that went too far
+--- task
+On `menu` you had two commits. A teammate squashed them with `git reset --soft HEAD~3` and committed the result as `Add the menu`. But `HEAD~3` went one commit too far: `main`'s newest commit, `Add the footer`, got squashed into the branch as well. Now `menu` no longer has `main`'s commit in its history.
+
+Fix it: go back to `main`'s commit with `git reset --soft main`, keeping everything staged, and commit again with the message `Add the menu`. Afterwards `menu` is `main` plus one commit, which changes only the menu.
+--- starter
+git init
+echo "header" > header.html
+git add .
+git commit -m "Start"
+echo "footer" > footer.html
+git add .
+git commit -m "Add the footer"
+git switch -c menu
+echo "menu" > menu.html
+git add .
+git commit -m "wip"
+echo "menu: home, about" > menu.html
+git commit -am "wip 2"
+git reset --soft HEAD~3
+git commit -m "Add the menu"
+--- solution
+git log --oneline --graph --all
+git reset --soft main
+git status
+git commit -m "Add the menu"
+--- hint
+`git log --oneline --graph --all` shows the fork: `menu` grows from `Start`, not from `Add the footer`.
+--- hint
+`git reset --soft main` moves `menu` onto `main`'s newest commit and keeps the files staged. `git status` should list only `menu.html`, because `main` already has the footer.
+--- check shell | menu is main plus one commit
+git . branch menu
+git . ancestor main menu
+git . commits-on menu == 3
+git . at menu message == Add the menu
+--- check shell | The commit changes only the menu
+git . at menu file menu.html == menu: home, about
+git . at menu file footer.html
+--- check shell | main is untouched
+git . commits-on main == 2
+git . at main message == Add the footer
+
++++ practice | Two ideas, two commits
+--- task
+On `cockpit` you made four save points, and they mix two ideas. The commits that touch `gauge.js` build a fuel gauge. The commits that touch `alarm.js` build a low-fuel alarm. They are interleaved, so no single `HEAD~` squashes just one idea.
+
+Turn the four commits into **two**: first `Add the fuel gauge`, holding only `gauge.js`, then `Add the low-fuel alarm`, holding `alarm.js`.
+
+One way: `git reset --soft` back past all four, unstage `alarm.js` with `git restore --staged`, commit the gauge, then stage the alarm and commit it.
+--- starter
+git init
+echo "cockpit" > cockpit.txt
+git add .
+git commit -m "Start"
+git switch -c cockpit
+echo "fuel: bar" > gauge.js
+git add .
+git commit -m "wip gauge"
+echo "beep" > alarm.js
+git add .
+git commit -m "wip alarm"
+echo "fuel: bar, percent" > gauge.js
+git commit -am "wip gauge 2"
+echo "beep below 10%" > alarm.js
+git commit -am "wip alarm 2"
+--- solution
+git log --oneline main..cockpit
+git reset --soft HEAD~4
+git restore --staged alarm.js
+git commit -m "Add the fuel gauge"
+git add alarm.js
+git commit -m "Add the low-fuel alarm"
+git log --oneline
+--- hint
+After `git reset --soft HEAD~4`, both files are staged. `git restore --staged alarm.js` takes the alarm back out of the staging area, without touching the file.
+--- hint
+Commit the gauge first. Then `git add alarm.js` and make the second commit.
+--- check shell | Two commits on top of main, gauge first
+git . commits-on cockpit == 3
+git . at cockpit~1 message == Add the fuel gauge
+git . at cockpit message == Add the low-fuel alarm
+--- check shell | The gauge commit holds only the gauge
+git . at cockpit~1 file gauge.js == fuel: bar, percent
+git . at cockpit~1 missing alarm.js
+--- check shell | The alarm commit adds the final alarm
+git . at cockpit file alarm.js == beep below 10%
+git . log-of cockpit excludes wip
 
 === git3-04 | Debugging: a conflict in the middle of a rebase
 --- teach
@@ -587,6 +1374,272 @@ git . commits == 4
 file greeting.txt == Hello, space!
 git . at feature~1 file greeting.txt == Hello, space!
 file launch.txt
+
++++ practice | Resolve the menu conflict
+--- task
+You are on `lunch`. Rebase it onto `main`. It stops with a conflict in `menu.txt`: `main` changed the soup (`soup: tomato`), and your commit added bread to the same line (`soup: lentil, bread`).
+
+The agreed text keeps both changes. Resolve `menu.txt` to exactly `soup: tomato, bread`, stage it, and finish the rebase.
+--- starter
+git init
+echo "soup: lentil" > menu.txt
+git add .
+git commit -m "Add the menu"
+git switch -c lunch
+echo "soup: lentil, bread" > menu.txt
+git commit -am "Serve bread with the soup"
+git switch main
+echo "soup: tomato" > menu.txt
+git commit -am "Change the soup"
+git switch lunch
+--- solution
+git rebase main
+cat menu.txt
+echo "soup: tomato, bread" > menu.txt
+git add menu.txt
+git rebase --continue
+--- hint
+When the rebase stops, `cat menu.txt` shows both sides. The `>>>>>>>` line names your commit.
+--- hint
+Write the agreed line over the whole file, then `git add menu.txt` and `git rebase --continue`.
+--- check shell | The rebase is finished, on lunch
+git . idle
+git . branch lunch
+git . ancestor main lunch
+--- check shell | The file says what was agreed
+file menu.txt == soup: tomato, bread
+git . at lunch file menu.txt == soup: tomato, bread
+--- check shell | Your commit kept its message
+git . at lunch message == Serve bread with the soup
+git . commits == 3
+
++++ practice | Back out of a rebase
+--- task
+You are on `colours`. Start a rebase onto `main`. It stops with a conflict in `theme.cfg`, and you realise you need to ask a teammate which colour is right before going on.
+
+Give up for now with `git rebase --abort`. Afterwards everything must be exactly as before the rebase: you are on `colours`, no rebase is in progress, and `theme.cfg` says `accent = green` again.
+--- starter
+git init
+echo "accent = blue" > theme.cfg
+git add .
+git commit -m "Add the theme"
+git switch -c colours
+echo "accent = green" > theme.cfg
+git commit -am "Make the accent green"
+git switch main
+echo "accent = orange" > theme.cfg
+git commit -am "Make the accent orange"
+git switch colours
+--- solution
+git rebase main
+cat theme.cfg
+git rebase --abort
+git status
+--- hint
+Start with `git rebase main`, and read the three ways out that git lists.
+--- hint
+`git rebase --abort` puts the branch, the files and HEAD back as they were before you started.
+--- check shell | You met the conflict, then backed out
+printed CONFLICT (content): Merge conflict in theme.cfg
+ran git rebase --abort
+--- check shell | Nothing is in progress, and you are on colours
+git . idle
+git . branch colours
+git . conflicts == 0
+--- check shell | colours is exactly as before
+file theme.cfg == accent = green
+git . not-ancestor main colours
+git . commits-on colours == 2
+
++++ practice | Resolve, then ship
+--- task
+You are on `speed`. Rebase it onto `main`. It stops with a conflict in `engine.cfg`: both sides changed the thrust line. The team agreed on `thrust = 120`, your value.
+
+Resolve the file to exactly `thrust = 120`, finish the rebase, then switch to `main` and merge `speed` so git fast-forwards. Finally tag the new `main` as `v2.0` with an annotated tag whose message is `Faster engine`.
+--- starter
+git init
+echo "thrust = 100" > engine.cfg
+git add .
+git commit -m "Add the engine"
+git switch -c speed
+echo "thrust = 120" > engine.cfg
+git commit -am "Raise the thrust"
+git switch main
+echo "thrust = 110" > engine.cfg
+git commit -am "Tune the thrust"
+git switch speed
+--- solution
+git rebase main
+echo "thrust = 120" > engine.cfg
+git add engine.cfg
+git rebase --continue
+git switch main
+git merge speed
+git tag -a v2.0 -m "Faster engine"
+--- hint
+Resolve and continue first: `git status` must say `On branch speed` before you switch.
+--- hint
+After `git switch main` and `git merge speed`, `git tag -a v2.0 -m "Faster engine"` tags the commit you are on.
+--- check shell | main is one straight line with your commit on top
+git . branch main
+git . merges == 0
+git . same main speed
+git . at main~1 message == Tune the thrust
+--- check shell | The agreed value is committed
+git . at main file engine.cfg == thrust = 120
+git . idle
+--- check shell | v2.0 marks the new main
+git . tag v2.0
+git . same v2.0 main
+
++++ practice | A rebase that stops twice
+--- task
+You are on `labels`. It has two commits, and **each** one changes a line that `main` also changed, so the rebase onto `main` stops twice.
+
+- At the first stop, `title.txt` should read exactly `Mission Log (draft)`.
+- At the second stop, `footer.txt` should read exactly `Page 1 of 2, 2026`.
+
+Rebase `labels` onto `main` and resolve both stops. The rebase is only finished when `git status` says `On branch labels` again.
+--- starter
+git init
+echo "Log" > title.txt
+echo "Page 1" > footer.txt
+git add .
+git commit -m "Start"
+git switch -c labels
+echo "Log (draft)" > title.txt
+git commit -am "Mark the title as a draft"
+echo "Page 1 of 2" > footer.txt
+git commit -am "Count the pages"
+git switch main
+echo "Mission Log" > title.txt
+git commit -am "Name the log"
+echo "Page 1, 2026" > footer.txt
+git commit -am "Add the year"
+git switch labels
+--- solution
+git rebase main
+cat title.txt
+echo "Mission Log (draft)" > title.txt
+git add title.txt
+git rebase --continue
+cat footer.txt
+echo "Page 1 of 2, 2026" > footer.txt
+git add footer.txt
+git rebase --continue
+git status
+--- hint
+After the first `git rebase --continue`, read what git prints. If it says `CONFLICT` again, the rebase has stopped at your second commit.
+--- hint
+Resolve the second stop exactly like the first: write the file, `git add` it, `git rebase --continue`.
+--- check shell | The rebase is finished
+git . idle
+git . branch labels
+git . conflicts == 0
+--- check shell | Both files say what was agreed
+file title.txt == Mission Log (draft)
+file footer.txt == Page 1 of 2, 2026
+--- check shell | Both of your commits were replayed on top of main
+git . ancestor main labels
+git . at labels message == Count the pages
+git . at labels~1 message == Mark the title as a draft
+git . at labels~1 file title.txt == Mission Log (draft)
+
++++ practice | Debugging: a rebase left half-way
+--- task
+A teammate rebased `rover` onto `main`. It stopped with a conflict in `wheels.cfg`. She wrote the right text into the file, ran `git add wheels.cfg`, and then finished with `git commit` instead of the rebase's own command.
+
+`git status` still says a rebase is in progress, and her last commit, `Add the camera`, has not been replayed yet. Finish the rebase properly.
+--- starter
+git init
+echo "wheels = 4" > wheels.cfg
+git add .
+git commit -m "Start"
+git switch -c rover
+echo "wheels = 6" > wheels.cfg
+git commit -am "Use six wheels"
+echo "cam" > camera.cfg
+git add .
+git commit -m "Add the camera"
+git switch main
+echo "wheels = 4 (small)" > wheels.cfg
+git commit -am "Use small wheels"
+git switch rover
+git rebase main
+echo "wheels = 6 (small)" > wheels.cfg
+git add wheels.cfg
+git commit -m "Use six wheels"
+--- solution
+git status
+cat wheels.cfg
+git rebase --continue
+git log --oneline
+--- hint
+`git status` names what is in progress and the command that finishes it.
+--- hint
+`git rebase --continue` replays the rest of her commits and moves `rover` to the new ones.
+--- check shell | The rebase is finished, on rover
+git . idle
+git . branch rover
+--- check shell | Every commit made it across
+file camera.cfg
+git . at rover message == Add the camera
+git . at rover~1 file wheels.cfg == wheels = 6 (small)
+--- check shell | rover sits on top of main
+git . ancestor main rover
+git . commits == 4
+
++++ practice | Resolve one, skip one
+--- task
+You are on `units`, with three commits: `Label the speed`, `Fix the unit label` and `Add the altitude`. Rebase it onto `main`. It stops twice:
+
+1. At `Label the speed`: `speed.txt` should keep both changes and read exactly `speed: 7.8 km/s (orbit)`.
+2. At `Fix the unit label`: a teammate already fixed the same label on `main`, worded the way the team wants. Your commit adds nothing, so **skip** it with `git rebase --skip`, and keep `main`'s `units.txt`.
+
+`Add the altitude` then replays on its own. At the end, `units` must not contain the commit `Fix the unit label`.
+--- starter
+git init
+echo "speed: 7.8" > speed.txt
+echo "unit: kms" > units.txt
+git add .
+git commit -m "Start"
+git switch -c units
+echo "speed: 7.8 (orbit)" > speed.txt
+git commit -am "Label the speed"
+echo "unit: km per s" > units.txt
+git commit -am "Fix the unit label"
+echo "alt: 400 km" > altitude.txt
+git add .
+git commit -m "Add the altitude"
+git switch main
+echo "speed: 7.8 km/s" > speed.txt
+echo "unit: km/s" > units.txt
+git commit -am "Correct the units"
+git switch units
+--- solution
+git rebase main
+echo "speed: 7.8 km/s (orbit)" > speed.txt
+git add speed.txt
+git rebase --continue
+cat units.txt
+git rebase --skip
+git log --oneline
+--- hint
+Resolve the first stop as usual. When the rebase stops a second time, `cat units.txt`: `main`'s side, under `HEAD`, already says what the team wants.
+--- hint
+`git rebase --skip` drops the commit that conflicted and goes on with the rest. Do not edit the file first.
+--- check shell | The rebase is finished
+git . idle
+git . branch units
+git . ancestor main units
+--- check shell | The speed kept both changes, and the units are main's
+file speed.txt == speed: 7.8 km/s (orbit)
+file units.txt == unit: km/s
+file altitude.txt == alt: 400 km
+--- check shell | The duplicate fix was skipped
+git . log-of units excludes Fix the unit label
+git . at units message == Add the altitude
+git . commits-on units == 4
 
 === git3-05 | Hunting a bug: git bisect
 --- teach
@@ -785,6 +1838,278 @@ git . idle
 git . branch main
 file rocket.cfg == safety = off
 
++++ practice | Who turned it up to 11?
+--- task
+`speaker.cfg` says `volume = 11`. The first commit, nine commits back (`HEAD~9`), had `volume = 5`, and that was right.
+
+Find the commit that changed it with `git bisect`. At each step, run `cat speaker.cfg`: `volume = 5` is good, `volume = 11` is bad. Tag the first bad commit `too-loud`, then end the hunt with `git bisect reset`.
+--- starter
+git init
+echo "volume = 5" > speaker.cfg
+echo "track 0" > playlist.txt
+git add .
+git commit -m "Set up the speaker"
+for i in 1 2 3 4 5; do echo "track $i" > playlist.txt; git commit -am "Add track $i"; done
+echo "volume = 11" > speaker.cfg
+git commit -am "Turn it up for the demo"
+for i in 6 7 8; do echo "track $i" > playlist.txt; git commit -am "Add track $i"; done
+--- solution
+git bisect start
+git bisect bad
+git bisect good HEAD~9
+cat speaker.cfg
+git bisect good
+cat speaker.cfg
+git bisect bad
+cat speaker.cfg
+git bisect good
+git tag too-loud refs/bisect/bad
+git bisect reset
+--- hint
+Give git both ends first: start the hunt, say the commit you are on is bad, and say `HEAD~9` is good.
+--- hint
+Then repeat: `cat speaker.cfg`, and answer `git bisect good` or `git bisect bad`, until git prints `is the first bad commit`.
+--- hint
+`git tag too-loud refs/bisect/bad` tags the culprit. Tag it before `git bisect reset`.
+--- check shell | The culprit is tagged
+git . at too-loud message == Turn it up for the demo
+--- check shell | You tested and answered by hand
+ran git bisect start
+used git bisect good
+used git bisect bad
+--- check shell | The hunt is over and you are back on main
+git . idle
+git . branch main
+file speaker.cfg == volume = 11
+
++++ practice | Start the hunt from a release tag
+--- task
+In release `v1.0`, `lights.cfg` said `mode = auto`, and the lights worked. Now it says `mode = off`. The tag `v1.0` marks that release.
+
+Hunt down the commit that changed it with `git bisect`, using **the tag** as the good end and the commit you are on as the bad end. At each step, look at `lights.cfg`. Tag the first bad commit `lights-bug`, and finish the hunt.
+--- starter
+git init
+echo "mode = auto" > lights.cfg
+echo "room 0" > rooms.txt
+git add .
+git commit -m "Set up the lights"
+for i in 1 2 3; do echo "room $i" >> rooms.txt; git commit -am "Wire room $i"; done
+git tag v1.0
+for i in 4 5 6 7; do echo "room $i" >> rooms.txt; git commit -am "Wire room $i"; done
+echo "mode = off" > lights.cfg
+git commit -am "Save power at night"
+for i in 8 9 10 11 12 13; do echo "room $i" >> rooms.txt; git commit -am "Wire room $i"; done
+--- solution
+git bisect start
+git bisect bad
+git bisect good v1.0
+cat lights.cfg
+git bisect bad
+cat lights.cfg
+git bisect good
+cat lights.cfg
+git bisect good
+cat lights.cfg
+git bisect good
+git tag lights-bug refs/bisect/bad
+git bisect reset
+--- hint
+`git bisect good` takes any name for a commit, and a tag is one.
+--- hint
+`mode = auto` means good, `mode = off` means bad. Answer only after you have looked.
+--- check shell | The culprit is tagged
+git . at lights-bug message == Save power at night
+--- check shell | The tag was your good end
+used git bisect good v1.0
+used git bisect bad
+--- check shell | The hunt is over
+git . idle
+git . branch main
+git . tag v1.0
+
++++ practice | Find it, then undo it
+--- task
+Someone switched the airlock off: `door.cfg` says `lock = off`, but in the first commit (`HEAD~12`) it said `lock = on`. Nobody knows which commit did it, and everyone already has it.
+
+1. Find the commit with `git bisect`, looking at `door.cfg` at each step, and tag it `culprit`.
+2. End the hunt.
+3. Undo that one commit with `git revert culprit`. The other commits stay.
+--- starter
+git init
+echo "lock = on" > door.cfg
+echo "0" > visits.txt
+git add .
+git commit -m "Install the airlock door"
+for i in 1 2 3 4 5 6 7; do echo "$i" > visits.txt; git commit -am "Log visit $i"; done
+echo "lock = off" > door.cfg
+git commit -am "Speed up the crew drills"
+for i in 8 9 10 11; do echo "$i" > visits.txt; git commit -am "Log visit $i"; done
+--- solution
+git bisect start
+git bisect bad
+git bisect good HEAD~12
+cat door.cfg
+git bisect good
+cat door.cfg
+git bisect bad
+cat door.cfg
+git bisect good
+cat door.cfg
+git bisect bad
+git tag culprit refs/bisect/bad
+git bisect reset
+git revert culprit
+--- hint
+Hunt first, as usual, and tag the culprit before you reset.
+--- hint
+Back on `main`, `git revert culprit` makes a new commit that undoes exactly that change. The tag works as its name.
+--- check shell | The culprit is tagged
+git . at culprit message == Speed up the crew drills
+--- check shell | A new commit undoes it
+git . branch main
+git . idle
+git . at HEAD message contains Revert "Speed up the crew drills"
+file door.cfg == lock = on
+--- check shell | Every other commit is kept
+git . commits == 14
+file visits.txt == 11
+
++++ practice | A limit of 10, not 100
+--- task
+`battery.cfg` should say `limit = 10`. It now says `limit = 100`. The first commit (`HEAD~7`) was right.
+
+Find the commit that changed it with `git bisect`, and tag it `charge-bug`. Read the file carefully at every step: `limit = 100` starts with the same characters as `limit = 10`, but it is **bad**. End the hunt when you are done.
+--- starter
+git init
+echo "limit = 10" > battery.cfg
+echo "day 0" > diary.txt
+git add .
+git commit -m "Set the charge limit"
+echo "limit = 100" > battery.cfg
+git commit -am "Tidy the battery settings"
+for i in 1 2 3 4 5 6; do echo "day $i" > diary.txt; git commit -am "Write day $i"; done
+--- solution
+git bisect start
+git bisect bad
+git bisect good HEAD~7
+cat battery.cfg
+git bisect bad
+cat battery.cfg
+git bisect bad
+git tag charge-bug refs/bisect/bad
+git bisect reset
+--- hint
+The culprit can be anywhere after the good commit, even the one right after it. Trust what the file says at each step, not where you expect the bug to be.
+--- hint
+Only the exact line `limit = 10` is good. Anything else, including `limit = 100`, is bad.
+--- check shell | The culprit is tagged
+git . at charge-bug message == Tidy the battery settings
+git . at charge-bug~1 message == Set the charge limit
+--- check shell | You bisected by hand
+used git bisect bad
+ran git bisect start
+--- check shell | The hunt is over
+git . idle
+git . branch main
+
++++ practice | Debugging: one wrong answer
+--- task
+A teammate started a hunt for the commit that switched `brakes = on` to `brakes = off` in `rover.cfg`. She marked the current commit bad and `HEAD~10` good. Then, at git's first pick, she typed `git bisect good` from memory, without looking. That commit was bad, so the hunt is now searching the wrong half.
+
+Look at her answers with `git bisect log`. Then end this hunt, start a new one with the same two ends, and answer every step after running `cat rover.cfg`. Tag the real culprit `brakes-bug`, and finish.
+--- starter
+git init
+echo "brakes = on" > rover.cfg
+echo "0 km" > odometer.txt
+git add .
+git commit -m "Set up the rover"
+for i in 1 2; do echo "$i km" > odometer.txt; git commit -am "Drive to km $i"; done
+echo "brakes = off" > rover.cfg
+git commit -am "Loosen the wheels"
+for i in 3 4 5 6 7 8 9; do echo "$i km" > odometer.txt; git commit -am "Drive to km $i"; done
+git bisect start
+git bisect bad
+git bisect good HEAD~10
+git bisect good
+--- solution
+git bisect log
+git bisect reset
+git bisect start
+git bisect bad
+git bisect good HEAD~10
+cat rover.cfg
+git bisect bad
+cat rover.cfg
+git bisect good
+cat rover.cfg
+git bisect bad
+git tag brakes-bug refs/bisect/bad
+git bisect reset
+--- hint
+`git bisect log` lists every answer so far. A hunt with a wrong answer in it cannot be trusted: `git bisect reset`, then start again.
+--- hint
+After the reset you are back on `main`, so `git bisect bad` and `git bisect good HEAD~10` name the same two ends as before.
+--- check shell | The real culprit is tagged
+git . at brakes-bug message == Loosen the wheels
+--- check shell | You read the log and started again
+ran git bisect log
+ran git bisect reset
+ran git bisect start
+--- check shell | The hunt is over
+git . idle
+git . branch main
+file rover.cfg == brakes = off
+
++++ practice | The missing checklist step
+--- task
+The landing checklist, `checklist.txt`, has grown to more than twenty lines, and the line `check parachute` has gone missing from it. The first commit (`HEAD~20`) had it.
+
+1. Hunt down the commit that removed it with `git bisect`. The file is long, so at each step test it with `grep "check parachute" checklist.txt`: a line printed means good, nothing printed means bad.
+2. Tag the culprit `lost-step`.
+3. Before you end the hunt, save its log into a file `hunt.txt` with `git bisect log > hunt.txt`, so you can show the team how you found it.
+4. End the hunt.
+--- starter
+git init
+echo "check fuel" > checklist.txt
+echo "check parachute" >> checklist.txt
+echo "check radio" >> checklist.txt
+git add .
+git commit -m "Write the landing checklist"
+for i in 1 2 3 4 5 6 7 8 9 10 11 12; do echo "check sensor $i" >> checklist.txt; git commit -am "Add sensor $i to the checklist"; done
+grep -v parachute checklist.txt > short.txt
+mv short.txt checklist.txt
+git commit -am "Shorten the checklist"
+for i in 13 14 15 16 17 18 19; do echo "check sensor $i" >> checklist.txt; git commit -am "Add sensor $i to the checklist"; done
+--- solution
+git bisect start
+git bisect bad
+git bisect good HEAD~20
+grep "check parachute" checklist.txt
+git bisect good
+grep "check parachute" checklist.txt
+git bisect bad
+grep "check parachute" checklist.txt
+git bisect good
+grep "check parachute" checklist.txt
+git bisect bad
+git tag lost-step refs/bisect/bad
+git bisect log > hunt.txt
+git bisect reset
+--- hint
+Twenty commits take only four or five answers. The same `grep` line is your test at every step.
+--- hint
+`refs/bisect/bad` and the bisect log both disappear at `git bisect reset`, so tag and save first.
+--- check shell | The culprit is tagged
+git . at lost-step message == Shorten the checklist
+--- check shell | The hunt is saved in hunt.txt
+file hunt.txt contains git bisect good
+file hunt.txt contains first bad commit
+git . untracked hunt.txt
+--- check shell | You tested with grep, and the hunt is over
+ran grep "check parachute" checklist.txt
+git . idle
+git . branch main
+
 === git3-06 | Automating the hunt: git bisect run
 --- teach
 Last lesson you hunted a bug by hand: look at the file, answer `good` or `bad`, repeat. Three steps is fine. But every step is a chance to slip, and a big history means more steps. When a command can do the test for you, git can run the whole hunt on its own.
@@ -947,6 +2272,283 @@ git . untracked check.sh
 git . idle
 git . branch main
 
++++ practice | A gauge for the robot arm
+--- task
+This repository has 30 commits. `arm.cfg` should say `grip = soft`, as it did in the first commit (`HEAD~29`), but today it doesn't. Let git do the hunt:
+
+1. Write `grip.sh`, a one-line script that exits `0` only when `arm.cfg` contains `grip = soft`. Don't commit it.
+2. Start the hunt with the current commit as bad and `HEAD~29` as good, in one line.
+3. Run `git bisect run bash grip.sh`.
+4. Tag the first bad commit `culprit`, then end the hunt.
+--- starter
+git init
+echo "grip = soft" > arm.cfg
+echo "0" > moves.txt
+git add .
+git commit -m "Set up the arm"
+for i in $(seq 1 17); do echo "$i" > moves.txt; git commit -am "Record move $i"; done
+echo "grip = hard" > arm.cfg
+git commit -am "Grip harder on heavy parts"
+for i in $(seq 18 28); do echo "$i" > moves.txt; git commit -am "Record move $i"; done
+--- solution
+echo 'grep -q "grip = soft" arm.cfg' > grip.sh
+bash grip.sh; echo $?
+git bisect start HEAD HEAD~29
+git bisect run bash grip.sh
+git tag culprit refs/bisect/bad
+git bisect reset
+--- hint
+`grep -q` prints nothing and answers with its exit status: `0` when it finds the text. Save that one command in `grip.sh` with `echo` and single quotes.
+--- hint
+`git bisect start HEAD HEAD~29` gives both ends, bad first. Then `git bisect run bash grip.sh`.
+--- hint
+When git prints `is the first bad commit`, tag `refs/bisect/bad`, then `git bisect reset`.
+--- check shell | The culprit is found and tagged
+git . at culprit message == Grip harder on heavy parts
+--- check shell | git did the testing, with your untracked script
+used git bisect run
+file grip.sh contains grep -q
+git . untracked grip.sh
+--- check shell | The hunt is over and you are back on main
+git . idle
+git . branch main
+
++++ practice | The file that vanished
+--- task
+In release `v2.0` the project had a user manual, `manual.txt`. Some commit since then deleted it. The tag `v2.0` marks the release.
+
+1. Write `check.sh`, a one-line script that exits `0` only when a file called `manual.txt` exists. (A test with `[ … ]` answers through its exit status too.) Don't commit it.
+2. Start the hunt in one line, with the current commit as bad and **the tag** as good.
+3. Let `git bisect run` find the commit, tag it `deleted-manual`, and end the hunt.
+--- starter
+git init
+echo "How to fly" > manual.txt
+echo "0" > build.txt
+git add .
+git commit -m "Write the manual"
+for i in $(seq 1 4); do echo "$i" > build.txt; git commit -am "Build $i"; done
+git tag v2.0
+for i in $(seq 5 13); do echo "$i" > build.txt; git commit -am "Build $i"; done
+git rm manual.txt
+git commit -m "Clean up old files"
+for i in $(seq 14 20); do echo "$i" > build.txt; git commit -am "Build $i"; done
+--- solution
+echo '[ -f manual.txt ]' > check.sh
+bash check.sh; echo $?
+git bisect start HEAD v2.0
+git bisect run bash check.sh
+git tag deleted-manual refs/bisect/bad
+git bisect reset
+--- hint
+`[ -f manual.txt ]` exits `0` when the file is there and `1` when it is not. That is exactly what `git bisect run` wants to hear.
+--- hint
+Try the script on today's commit first: `bash check.sh; echo $?` should print `1`.
+--- hint
+`git bisect start HEAD v2.0`, then `git bisect run bash check.sh`.
+--- check shell | The culprit is found and tagged
+git . at deleted-manual message == Clean up old files
+--- check shell | git did the testing from the release tag
+used git bisect start HEAD v2.0
+used git bisect run
+git . untracked check.sh
+--- check shell | The hunt is over, and the manual is still gone on main
+git . idle
+git . branch main
+missing manual.txt
+
++++ practice | Find it, then fix it on a branch
+--- task
+`pump.cfg` should say `rate = 5`, as in the first commit (`HEAD~24`). Today it says `rate = 50`.
+
+1. Find the commit that changed it with a one-line script called `rate.sh` and `git bisect run`. Tag it `culprit`, and end the hunt.
+2. Then, from `main`, create a new branch `fix-rate`, and on it undo the culprit with `git revert culprit`. `main` itself must not change.
+--- starter
+git init
+echo "rate = 5" > pump.cfg
+echo "0" > hours.txt
+git add .
+git commit -m "Set up the pump"
+for i in $(seq 1 6); do echo "$i" > hours.txt; git commit -am "Log hour $i"; done
+echo "rate = 50" > pump.cfg
+git commit -am "Fill the tank faster"
+for i in $(seq 7 23); do echo "$i" > hours.txt; git commit -am "Log hour $i"; done
+--- solution
+echo 'grep -q "rate = 5$" pump.cfg' > rate.sh
+bash rate.sh; echo $?
+git bisect start HEAD HEAD~24
+git bisect run bash rate.sh
+git tag culprit refs/bisect/bad
+git bisect reset
+git switch -c fix-rate
+git revert culprit
+--- hint
+Careful: `rate = 50` contains `rate = 5`. The test must tell them apart. In a grep pattern, `$` means "the end of the line".
+--- hint
+`bash rate.sh; echo $?` must print `1` on today's commit. If it prints `0`, the script cannot tell good from bad.
+--- hint
+After `git bisect reset`, `git switch -c fix-rate`, then `git revert culprit`.
+--- check shell | The culprit is found and tagged
+git . at culprit message == Fill the tank faster
+--- check shell | fix-rate undoes it
+git . branch fix-rate
+git . at fix-rate message contains Revert "Fill the tank faster"
+file pump.cfg == rate = 5
+--- check shell | main is unchanged, and the hunt is over
+git . commits-on main == 25
+git . at main file pump.cfg == rate = 50
+git . idle
+
++++ practice | Commits that cannot be tested
+--- task
+`nav.cfg` should say `units = metric`, as in the first commit (`HEAD~25`). Today it doesn't.
+
+But there is a catch: for a few commits in the middle, `nav.cfg` did not exist at all, because someone took it out for a rewrite and put it back later. On those commits the question "does it say metric?" has no answer. A plain `grep -q` would fail there, and `git bisect run` would count that failure as **bad** and blame the wrong commit.
+
+Write `check.sh` as a one-line `if`: when `nav.cfg` exists, it runs the `grep -q` test; when it does not, it exits `125`, so git skips that commit. Then hunt with `git bisect run bash check.sh`, tag the first bad commit `culprit`, and end the hunt.
+--- starter
+git init
+echo "units = metric" > nav.cfg
+echo "0" > flights.txt
+git add .
+git commit -m "Set up navigation"
+for i in 1 2 3 4 5; do echo "$i" > flights.txt; git commit -am "Log flight $i"; done
+git rm nav.cfg
+git commit -m "Take out the nav config for a rewrite"
+for i in 6 7; do echo "$i" > flights.txt; git commit -am "Log flight $i"; done
+echo "units = metric" > nav.cfg
+git add .
+git commit -m "Put the rewritten nav config back"
+echo "8" > flights.txt
+git commit -am "Log flight 8"
+echo "units = imperial" > nav.cfg
+git commit -am "Switch the display units"
+for i in $(seq 9 22); do echo "$i" > flights.txt; git commit -am "Log flight $i"; done
+--- solution
+echo 'if [ -f nav.cfg ]; then grep -q "units = metric" nav.cfg; else exit 125; fi' > check.sh
+bash check.sh; echo $?
+git bisect start HEAD HEAD~25
+git bisect run bash check.sh
+git tag culprit refs/bisect/bad
+git bisect reset
+--- hint
+The shape is `if [ -f nav.cfg ]; then …; else exit 125; fi`. The exit status of an `if` is the exit status of the branch that ran.
+--- hint
+Save it with `echo` and single quotes, so the double quotes inside stay as they are.
+--- hint
+Then `git bisect start HEAD HEAD~25` and `git bisect run bash check.sh`.
+--- check shell | The real culprit is tagged
+git . at culprit message == Switch the display units
+--- check shell | Your script skips what it cannot test
+file check.sh contains 125
+git . untracked check.sh
+used git bisect run
+--- check shell | The hunt is over
+git . idle
+git . branch main
+
++++ practice | Debugging: a script that always says yes
+--- task
+A teammate ran an automatic hunt for the commit that changed `mode = safe` in `arm.cfg`, using this `check.sh`:
+
+```
+grep -q "mode = safe" arm.cfg; echo checked
+```
+
+Bisect named the newest commit, which only touched a log file. The script's exit status is the status of its **last** command, and `echo` always succeeds, so every commit looked good.
+
+End her hunt. Rewrite `check.sh` so that its exit status is grep's, try it on today's commit, and hunt again from `HEAD` (bad) to `HEAD~15` (good). Tag the real culprit `culprit`, and finish.
+--- starter
+git init
+echo "mode = safe" > arm.cfg
+echo "0" > log.txt
+git add .
+git commit -m "Set up the arm"
+for i in $(seq 1 9); do echo "$i" > log.txt; git commit -am "Log run $i"; done
+echo "mode = fast" > arm.cfg
+git commit -am "Try the fast mode"
+for i in $(seq 10 14); do echo "$i" > log.txt; git commit -am "Log run $i"; done
+echo 'grep -q "mode = safe" arm.cfg; echo checked' > check.sh
+git bisect start HEAD HEAD~15
+git bisect run bash check.sh
+--- solution
+git bisect reset
+bash check.sh; echo $?
+echo 'grep -q "mode = safe" arm.cfg' > check.sh
+bash check.sh; echo $?
+git bisect start HEAD HEAD~15
+git bisect run bash check.sh
+git tag culprit refs/bisect/bad
+git bisect reset
+--- hint
+`bash check.sh; echo $?` on today's commit, which is bad, prints `0`. A gauge that says yes to everything tells you nothing.
+--- hint
+Drop the `echo`: the script should be the one `grep -q` line. Then it must print `1` on today's commit.
+--- hint
+`git bisect reset` first, then start a fresh hunt and run it again.
+--- check shell | The real culprit is tagged
+git . at culprit message == Try the fast mode
+--- check shell | The script now answers honestly
+file check.sh excludes echo
+used git bisect run
+git . untracked check.sh
+--- check shell | The hunt is over
+git . idle
+git . branch main
+
++++ practice | Two regressions, two hunts
+--- task
+`engine.cfg` has two lines, and both went wrong at some point in the last 40 commits. In the first commit (`HEAD~39`) it read:
+
+```
+fuel = full
+alarm = on
+```
+
+Today it says `fuel = half` and `alarm = off`. Two different commits did it. Find both, letting git do the testing:
+
+1. Write `fuel.sh`, which exits `0` only when `engine.cfg` contains `fuel = full`, and `alarm.sh`, which exits `0` only when it contains `alarm = on`. Commit neither.
+2. Hunt for the fuel change and tag it `fuel-bug`. End that hunt.
+3. Hunt for the alarm change and tag it `alarm-bug`. End that hunt too.
+--- starter
+git init
+printf "fuel = full\nalarm = on\n" > engine.cfg
+echo "0" > burns.txt
+git add .
+git commit -m "Set up the engine"
+for i in $(seq 1 11); do echo "$i" > burns.txt; git commit -am "Log burn $i"; done
+printf "fuel = half\nalarm = on\n" > engine.cfg
+git commit -am "Save weight on fuel"
+for i in $(seq 12 30); do echo "$i" > burns.txt; git commit -am "Log burn $i"; done
+printf "fuel = half\nalarm = off\n" > engine.cfg
+git commit -am "Silence the noisy alarm"
+for i in $(seq 31 37); do echo "$i" > burns.txt; git commit -am "Log burn $i"; done
+--- solution
+echo 'grep -q "fuel = full" engine.cfg' > fuel.sh
+echo 'grep -q "alarm = on" engine.cfg' > alarm.sh
+git bisect start HEAD HEAD~39
+git bisect run bash fuel.sh
+git tag fuel-bug refs/bisect/bad
+git bisect reset
+git bisect start HEAD HEAD~39
+git bisect run bash alarm.sh
+git tag alarm-bug refs/bisect/bad
+git bisect reset
+--- hint
+One hunt answers one question, so you need two scripts and two hunts, one after the other.
+--- hint
+Tag and `git bisect reset` after the first hunt, before you start the second. The second hunt uses the same two ends.
+--- check shell | The fuel culprit is tagged
+git . at fuel-bug message == Save weight on fuel
+--- check shell | The alarm culprit is tagged
+git . at alarm-bug message == Silence the noisy alarm
+--- check shell | Two automatic hunts, with untracked scripts, and both are over
+ran git bisect run bash fuel.sh
+ran git bisect run bash alarm.sh
+git . untracked fuel.sh
+git . untracked alarm.sh
+git . idle
+git . branch main
+
 === git3-07 | Who changed this line? git blame
 --- teach
 Last lesson, `git bisect run` found the commit that broke something. Sometimes the question is different. You already know which line looks wrong, and you want to know why it is there and who can tell you about it. This lesson answers that.
@@ -1106,6 +2708,242 @@ ran git show
 git . at timeout-change message == Fail fast on slow clients
 git . at timeout-change author == Lin
 
++++ practice | Who changed the pilot?
+--- task
+`crew.txt` lists the crew. The `pilot` line says `pilot = Kim`, and you want to know when and why that changed.
+
+Use `git blame crew.txt` to find the commit that last changed the `pilot` line, read it with `git show`, and tag it `pilot-change`. Careful: the newest commit touched `crew.txt` too, but it changed a different line.
+--- starter
+git init
+git config user.name "Ada"
+printf "commander = Ada\npilot = Raj\nengineer = Tom\n" > crew.txt
+git add .
+git commit -m "List the crew"
+git config user.name "Lin"
+printf "commander = Ada\npilot = Kim\nengineer = Tom\n" > crew.txt
+git commit -am "Raj moves to ground control"
+git config user.name "Sam"
+printf "commander = Ada\npilot = Kim\nengineer = Zoe\n" > crew.txt
+git commit -am "Add Zoe as engineer"
+git config --unset user.name
+--- solution
+git blame crew.txt
+git show HEAD~1
+git tag pilot-change HEAD~1
+--- hint
+In the blame output, find the line `pilot = Kim` and read the commit id at its start.
+--- hint
+`git show` with that id shows the change and its message. Tag that same commit, not the newest one.
+--- check shell | You used blame, then read the commit
+ran git blame crew.txt
+ran git show
+printed Raj moves to ground control
+--- check shell | The right commit is tagged
+git . at pilot-change message == Raj moves to ground control
+git . at pilot-change author == Lin
+--- check shell | The file is unchanged
+file crew.txt contains pilot = Kim
+git . commits == 3
+
++++ practice | Blame another branch without switching
+--- task
+You are on `main`. On the `release` branch, `server.conf` says `port = 7000`, and the release team asks who set it.
+
+Without switching branches, blame the file **as it is on `release`**, by putting the branch name before `--`. Tag the commit that last changed the `port` line `release-port`. Stay on `main`.
+--- starter
+git init
+git config user.name "Ada"
+printf "port = 8080\nlog = info\n" > server.conf
+git add .
+git commit -m "Add the server config"
+git switch -c release
+git config user.name "Kim"
+printf "port = 7000\nlog = info\n" > server.conf
+git commit -am "Use the release port"
+git config user.name "Raj"
+printf "port = 7000\nlog = warn\n" > server.conf
+git commit -am "Quieter logs for release"
+git switch main
+git config --unset user.name
+--- solution
+git blame release -- server.conf
+git tag release-port release~1
+git log --oneline release
+--- hint
+`git blame` takes a commit name before the `--` and a file after it. A branch name is a commit name: the newest commit on that branch.
+--- hint
+The blame line for `port = 7000` names the commit. It is one before the tip of `release`, so `release~1` names it too.
+--- check shell | You blamed the release version of the file
+ran git blame release -- server.conf
+printed Kim
+--- check shell | The right commit is tagged
+git . at release-port message == Use the release port
+git . at release-port author == Kim
+--- check shell | You stayed on main
+git . branch main
+file server.conf ~= port = 8080\nlog = info
+
++++ practice | Find the change, then undo it
+--- task
+`limits.cfg` says `max_temp = 90`, but the heat shield is only rated to `70`. Nobody remembers why it changed, and everyone already has the commit.
+
+Find the commit that last changed the `max_temp` line with `git blame`, and read it with `git show`. Then undo that one commit with `git revert`. The newest commit, which changed a different line, must stay.
+--- starter
+git init
+git config user.name "Ada"
+printf "max_temp = 70\nshield = ceramic\nmax_speed = 8\n" > limits.cfg
+git add .
+git commit -m "Set the limits"
+git config user.name "Tom"
+printf "max_temp = 90\nshield = ceramic\nmax_speed = 8\n" > limits.cfg
+git commit -am "Allow hotter test runs"
+git config user.name "Lin"
+printf "max_temp = 90\nshield = ceramic\nmax_speed = 9\n" > limits.cfg
+git commit -am "Raise the top speed"
+git config --unset user.name
+--- solution
+git blame limits.cfg
+git show HEAD~1
+git revert HEAD~1
+cat limits.cfg
+--- hint
+`git blame limits.cfg`: the id at the start of the `max_temp` line is the commit you want.
+--- hint
+`git revert` with that id (or with `HEAD~1`, since it is one before the newest) makes a new commit that undoes only that change.
+--- check shell | A new commit undoes the hotter runs
+git . at HEAD message contains Revert "Allow hotter test runs"
+git . commits == 4
+--- check shell | max_temp is back to 70, and the speed change stayed
+file limits.cfg ~= max_temp = 70\nshield = ceramic\nmax_speed = 9
+--- check shell | You found it with blame
+ran git blame limits.cfg
+ran git show
+
++++ practice | Past the tidy-up
+--- task
+Yesterday Ada ran a tool that re-spaced every line of `sensors.cfg` in one commit, `Tidy the spacing`. Now `git blame sensors.cfg` shows her tidy-up on every line, which hides who really set each value.
+
+Find the commit that set the `rate` value **before** the tidy-up, by blaming the file as it was one commit ago. Tag that commit `rate-origin`.
+--- starter
+git init
+git config user.name "Sam"
+printf "rate=10\nunits=C\n" > sensors.cfg
+git add .
+git commit -m "Add the sensor config"
+git config user.name "Lin"
+printf "rate=20\nunits=C\n" > sensors.cfg
+git commit -am "Sample twice as often"
+git config user.name "Kim"
+printf "rate=20\nunits=K\n" > sensors.cfg
+git commit -am "Report in kelvin"
+git config user.name "Ada"
+printf "rate = 20\nunits = K\n" > sensors.cfg
+git commit -am "Tidy the spacing"
+git config --unset user.name
+--- solution
+git blame sensors.cfg
+git blame HEAD~1 -- sensors.cfg
+git tag rate-origin HEAD~2
+--- hint
+Put a commit name before `--` to blame the file as it was then. The tidy-up is the newest commit, so one commit before it is `HEAD~1`.
+--- hint
+In that older blame, the `rate=20` line names Lin's commit. Count where it sits in `git log --oneline`, or use its id.
+--- check shell | You looked past the tidy-up
+ran git blame HEAD~1 -- sensors.cfg
+printed Lin
+--- check shell | The commit that really set the rate is tagged
+git . at rate-origin message == Sample twice as often
+git . at rate-origin author == Lin
+--- check shell | Not the tidy-up, and not the kelvin change
+git . not-ancestor HEAD~1 rate-origin
+git . commits == 4
+
++++ practice | Debugging: the wrong commit was reverted
+--- task
+`server.conf` says `timeout = 2`, far too low. A teammate looked at `git log --oneline -- server.conf`, guessed that the newest commit did it, and ran `git revert HEAD`. But the newest commit, `Move to port 9090`, changed the `port` line, so now the port is wrong and the timeout is still `2`. Nobody else has the revert yet.
+
+Throw the wrong revert away with `git reset --hard HEAD~1`. Then use `git blame` to find the commit that really changed the `timeout` line, and revert **that** one.
+--- starter
+git init
+git config user.name "Ada"
+printf "port = 8080\nworkers = 4\ntimeout = 30\n" > server.conf
+git add .
+git commit -m "Add the server config"
+git config user.name "Lin"
+printf "port = 8080\nworkers = 4\ntimeout = 2\n" > server.conf
+git commit -am "Drop slow clients fast"
+git config user.name "Sam"
+printf "port = 9090\nworkers = 4\ntimeout = 2\n" > server.conf
+git commit -am "Move to port 9090"
+git config --unset user.name
+git revert HEAD
+--- solution
+git log --oneline
+git reset --hard HEAD~1
+git blame server.conf
+git revert HEAD~1
+--- hint
+`git log --oneline` shows the wrong revert on top. After `git reset --hard HEAD~1`, `Move to port 9090` is the newest commit again.
+--- hint
+Now `git blame server.conf`: the `timeout` line names Lin's commit, one before the newest.
+--- check shell | The timeout is fixed and the new port kept
+file server.conf ~= port = 9090\nworkers = 4\ntimeout = 30
+--- check shell | The right commit was reverted
+git . at HEAD message contains Revert "Drop slow clients fast"
+git . log excludes Revert "Move to port 9090"
+git . commits == 4
+--- check shell | You found it with blame
+ran git blame server.conf
+ran git reset --hard HEAD~1
+
++++ practice | Who owns these settings?
+--- task
+`flight.cfg` has three settings. Before a review, the team wants to know who last changed two of them.
+
+1. Use `git blame flight.cfg` to find who last changed the `max_speed` line and who last changed the `min_fuel` line.
+2. Write their names into `owners.txt`, exactly in this form, one line each:
+```
+max_speed: <name>
+min_fuel: <name>
+```
+3. Tag the commit that last changed `max_speed` as `speed-owner`, and the one that last changed `min_fuel` as `fuel-owner`.
+
+Careful: one line was changed twice, and blame shows only the **last** change.
+--- starter
+git init
+git config user.name "Ada"
+printf "max_speed = 7\nmin_fuel = 10\ncrew = 3\n" > flight.cfg
+git add .
+git commit -m "Write the flight config"
+git config user.name "Lin"
+printf "max_speed = 8\nmin_fuel = 10\ncrew = 3\n" > flight.cfg
+git commit -am "Allow a faster climb"
+git config user.name "Raj"
+printf "max_speed = 8\nmin_fuel = 10\ncrew = 4\n" > flight.cfg
+git commit -am "Add a fourth seat"
+git config user.name "Kim"
+printf "max_speed = 7.5\nmin_fuel = 10\ncrew = 4\n" > flight.cfg
+git commit -am "Back off the climb a little"
+git config --unset user.name
+--- solution
+git blame flight.cfg
+printf "max_speed: Kim\nmin_fuel: Ada\n" > owners.txt
+git tag speed-owner HEAD
+git tag fuel-owner HEAD~3
+--- hint
+Read the blame line of each setting: the name in brackets is who last changed it. `min_fuel` has not changed since the first commit.
+--- hint
+`printf` with `\n` writes two lines at once. The first commit is `HEAD~3`; the newest is `HEAD`.
+--- check shell | owners.txt names the right people
+file owners.txt ~= max_speed: Kim\nmin_fuel: Ada
+--- check shell | The two commits are tagged
+git . at speed-owner message == Back off the climb a little
+git . at fuel-owner message == Write the flight config
+--- check shell | You used blame, and changed nothing in the history
+ran git blame flight.cfg
+git . commits == 4
+git . untracked owners.txt
+
 === git3-08 | Working with a remote: clone and push
 --- teach
 Last lesson you traced a line back to the teammate who changed it. Until now, though, every repository has lived in one folder on one computer. This lesson shares your work with a team.
@@ -1257,6 +3095,246 @@ git ~/server/rocket.git log contains Add the launch checklist
 git ~/server/rocket.git at main file checklist.txt == fuel: check
 --- check shell | Nothing is left to push
 git ~/rocket same main origin/main
+
++++ practice | Clone the probe and log day one
+--- task
+The team's repository lives at `~/server/probe.git`. From your home folder, clone it into a folder called `probe` and go into it.
+
+Make a file `log.txt` containing `day 1: launched`, add it, and commit it with the message `Start the flight log`. Then push it to `origin`.
+--- starter
+cd ~
+git init --bare server/probe.git
+git clone server/probe.git seed
+cd seed
+echo "# Probe" > README.md
+git add .
+git commit -m "Start the probe"
+git push
+cd ~
+rm -r seed
+cd ~/project
+--- solution
+cd ~
+git clone server/probe.git probe
+cd probe
+echo "day 1: launched" > log.txt
+git add log.txt
+git commit -m "Start the flight log"
+git push
+--- hint
+`git clone` takes where to copy from, then the name of the new folder. Clone from your home folder, so the path is `server/probe.git`.
+--- hint
+Make the file, `git add` it and commit it inside `probe`. Then `git push`.
+--- check shell | You have a clone that tracks origin
+git ~/probe remote origin
+git ~/probe tracks main origin/main
+cwd ~/probe
+--- check shell | Your commit reached the server
+git ~/server/probe.git log contains Start the flight log
+git ~/server/probe.git at main file log.txt == day 1: launched
+--- check shell | Nothing is left to push
+git ~/probe same main origin/main
+git ~/probe commits == 2
+
++++ practice | Ahead by one
+--- task
+Clone `~/server/lander.git` into a folder called `my-lander` in your home folder. Check where it came from with `git remote -v`.
+
+In your clone, add the line `legs: 4` to the end of `README.md` with `>>`, and commit the change with `git commit -am "List the legs"`. Run `git status` and read how far ahead of `origin/main` you are. Then push.
+--- starter
+cd ~
+git init --bare server/lander.git
+git clone server/lander.git seed
+cd seed
+echo "# Lander" > README.md
+git add .
+git commit -m "Start the lander"
+git push
+cd ~
+rm -r seed
+cd ~/project
+--- solution
+cd ~
+git clone server/lander.git my-lander
+cd my-lander
+git remote -v
+echo "legs: 4" >> README.md
+git commit -am "List the legs"
+git status
+git push
+--- hint
+The second word after `git clone` names the new folder, so it can be anything you like, `my-lander` here.
+--- hint
+`echo "legs: 4" >> README.md` adds a line at the end. After the commit, `git status` says `ahead of 'origin/main' by 1 commit`.
+--- check shell | You checked the remote and saw you were ahead
+ran git remote -v
+printed Your branch is ahead of 'origin/main' by 1 commit
+--- check shell | The server has your change
+git ~/server/lander.git at main message == List the legs
+git ~/server/lander.git at main file README.md contains legs: 4
+--- check shell | Your clone is in step with the server
+git ~/my-lander same main origin/main
+git ~/my-lander tracks main origin/main
+
++++ practice | Fix the message before you push
+--- task
+You are in `~/rover`, a clone of `~/server/rover.git`. You just committed the parts list, but typed the message as `Add teh parts list`, and you have not pushed yet.
+
+Fix the message to `Add the parts list` with `git commit --amend`, then push. The server must never see the typo.
+--- starter
+cd ~
+git init --bare server/rover.git
+git clone server/rover.git seed
+cd seed
+echo "# Rover" > README.md
+git add .
+git commit -m "Start the rover"
+git push
+cd ~
+rm -r seed
+git clone server/rover.git rover
+cd rover
+echo "wheels: 6" > parts.txt
+git add .
+git commit -m "Add teh parts list"
+--- solution
+git status
+git commit --amend -m "Add the parts list"
+git push
+--- hint
+Amending is safe here because the commit has never left your clone: `git status` says you are ahead by 1.
+--- hint
+`git commit --amend -m "Add the parts list"` replaces the last commit's message. Then `git push`.
+--- check shell | The server has the right message
+git ~/server/rover.git at main message == Add the parts list
+git ~/server/rover.git log excludes teh
+--- check shell | Still one new commit, with the parts list
+git ~/server/rover.git commits == 2
+git ~/server/rover.git at main file parts.txt == wheels: 6
+--- check shell | Nothing is left to push
+git ~/rover same main origin/main
+
++++ practice | The very first push
+--- task
+The team has just made a brand-new, **empty** repository at `~/server/beacon.git`. Nobody has pushed anything yet.
+
+From your home folder, clone it into `beacon`. Git warns that the repository is empty, and until your first push `git status` says the upstream is gone. Both are expected. In the clone, make `signal.txt` containing `ping`, commit it with the message `First signal`, and push. Afterwards the server has a `main` branch with your commit, and your `main` tracks `origin/main`.
+--- starter
+cd ~
+git init --bare server/beacon.git
+cd ~/project
+--- solution
+cd ~
+git clone server/beacon.git beacon
+cd beacon
+echo "ping" > signal.txt
+git add signal.txt
+git commit -m "First signal"
+git push
+git status
+--- hint
+Cloning an empty repository works: you get an empty folder that already knows its `origin`.
+--- hint
+Commit as usual. The first `git push` creates `main` on the server.
+--- check shell | The server now has main, with your commit
+git ~/server/beacon.git has-branch main
+git ~/server/beacon.git at main message == First signal
+git ~/server/beacon.git at main file signal.txt == ping
+--- check shell | Your clone tracks it
+git ~/beacon tracks main origin/main
+git ~/beacon same main origin/main
+--- check shell | One commit, and a clean folder
+git ~/beacon commits == 1
+git ~/beacon clean
+
++++ practice | Debugging: the push that sent nothing
+--- task
+You are in `~/station`, a clone of `~/server/station.git`. You made `schedule.txt`, ran `git add schedule.txt`, then `git push`. Git answered `Everything up-to-date`, but your teammates cannot see the schedule.
+
+Find out why with `git status`, then get `schedule.txt` onto the server in a commit with the message `Add the schedule`.
+--- starter
+cd ~
+git init --bare server/station.git
+git clone server/station.git seed
+cd seed
+echo "# Station" > README.md
+git add .
+git commit -m "Start the station"
+git push
+cd ~
+rm -r seed
+git clone server/station.git station
+cd station
+echo "06:00 wake up" > schedule.txt
+git add schedule.txt
+git push
+--- solution
+git status
+git diff --staged
+git commit -m "Add the schedule"
+git status
+git push
+--- hint
+`git push` sends commits, not staged files. What does `git status` say about `schedule.txt`?
+--- hint
+It is staged but not committed. Commit it, and `git status` then says you are ahead by 1. Now push.
+--- check shell | The schedule reached the server
+git ~/server/station.git at main message == Add the schedule
+git ~/server/station.git at main file schedule.txt == 06:00 wake up
+--- check shell | Nothing is staged or left to push
+git ~/station clean
+git ~/station same main origin/main
+--- check shell | You checked first
+ran git status
+
++++ practice | Push, then prove it
+--- task
+You are in `~/telescope`, a clone of `~/server/telescope.git`.
+
+1. Make a folder `docs` with two files: `docs/setup.md` containing `Point it at the sky`, and `docs/care.md` containing `Keep the lens capped`. Commit each file on its own, with the messages `Write the setup guide` and `Write the care guide`, in that order.
+2. Push both commits with one `git push`.
+3. Prove the server really has them: from your home folder, clone `~/server/telescope.git` again into a folder called `proof`, and `cat` both files there.
+--- starter
+cd ~
+git init --bare server/telescope.git
+git clone server/telescope.git seed
+cd seed
+echo "# Telescope" > README.md
+git add .
+git commit -m "Start the telescope"
+git push
+cd ~
+rm -r seed
+git clone server/telescope.git telescope
+cd telescope
+--- solution
+mkdir docs
+echo "Point it at the sky" > docs/setup.md
+git add docs/setup.md
+git commit -m "Write the setup guide"
+echo "Keep the lens capped" > docs/care.md
+git add docs/care.md
+git commit -m "Write the care guide"
+git status
+git push
+cd ~
+git clone server/telescope.git proof
+cat proof/docs/setup.md
+cat proof/docs/care.md
+--- hint
+Two commits, one push: `git status` after the second commit says you are ahead by 2, and one `git push` sends both.
+--- hint
+A fresh clone only has what is on the server. `cd ~`, then `git clone server/telescope.git proof`.
+--- check shell | The server has both commits, in order
+git ~/server/telescope.git at main message == Write the care guide
+git ~/server/telescope.git at main~1 message == Write the setup guide
+git ~/server/telescope.git commits == 3
+--- check shell | The fresh clone has both files
+file ~/proof/docs/setup.md == Point it at the sky
+file ~/proof/docs/care.md == Keep the lens capped
+printed Keep the lens capped
+--- check shell | Your first clone is in step with the server
+git ~/telescope same main origin/main
 
 === git3-08b | Getting your team's work: fetch and pull
 --- teach
@@ -1417,6 +3495,290 @@ git ~/rocket log contains Add the weather report
 file ~/rocket/weather.txt == wind: calm
 git ~/rocket same main origin/main
 git ~/rocket merges == 0
+
++++ practice | Kim pushed a star chart
+--- task
+You are in `~/observatory`, your clone of `~/server/observatory.git`. Since you cloned it, Kim has pushed a new commit.
+
+Run `git fetch`, then `git status` to see that you are behind `origin/main`. Then bring Kim's commit into your `main` with `git pull`. Afterwards `stars.txt` is in your folder.
+--- starter
+cd ~
+git init --bare server/observatory.git
+git clone server/observatory.git kim
+cd kim
+git config user.name "Kim"
+echo "# Observatory" > README.md
+git add .
+git commit -m "Start the observatory"
+git push
+cd ~
+git clone server/observatory.git observatory
+cd ~/kim
+echo "Sirius, Vega" > stars.txt
+git add .
+git commit -m "Add the star chart"
+git push
+cd ~/observatory
+--- solution
+git status
+git fetch
+git status
+git pull
+cat stars.txt
+--- hint
+Before a fetch, `git status` still says `up to date`: it only compares with your last look at the server.
+--- hint
+After `git fetch`, `git status` says `behind 'origin/main' by 1 commit`. Then `git pull`.
+--- check shell | You fetched and saw you were behind
+ran git fetch
+printed Your branch is behind 'origin/main' by 1 commit
+--- check shell | Kim's commit is in your main
+git ~/observatory at main message == Add the star chart
+file ~/observatory/stars.txt == Sirius, Vega
+--- check shell | A fast-forward, with no merge commit
+git ~/observatory same main origin/main
+git ~/observatory merges == 0
+
++++ practice | Look, but don't take it yet
+--- task
+You are in `~/probe`, your clone of `~/server/probe.git`. Sam says he pushed a change to `orbit.cfg`, and you want to see it **before** it touches your files.
+
+Fetch it. Then show what it would change with `git diff main origin/main`. Do **not** pull or merge: your `main` and your files must stay as they are.
+--- starter
+cd ~
+git init --bare server/probe.git
+git clone server/probe.git sam
+cd sam
+git config user.name "Sam"
+echo "altitude = 400" > orbit.cfg
+git add .
+git commit -m "Set the orbit"
+git push
+cd ~
+git clone server/probe.git probe
+cd ~/sam
+echo "altitude = 420" > orbit.cfg
+git commit -am "Raise the orbit"
+git push
+cd ~/probe
+--- solution
+git fetch
+git log --oneline main..origin/main
+git diff main origin/main
+--- hint
+`git fetch` moves only `origin/main`. Your branch and your files do not change.
+--- hint
+`git diff main origin/main` shows the lines that differ between your `main` and your copy of the server's.
+--- check shell | You fetched Sam's commit
+git ~/probe at origin/main message == Raise the orbit
+--- check shell | You looked at the change
+ran git diff main origin/main
+printed +altitude = 420
+--- check shell | Your main and your files did not change
+git ~/probe at main message == Set the orbit
+file ~/probe/orbit.cfg == altitude = 400
+
++++ practice | Pull, then add your own
+--- task
+You are in `~/rover`, your clone of `~/server/rover.git`. Lin has pushed a commit you do not have yet.
+
+1. Bring Lin's work into your `main`.
+2. Then make `route.txt` containing `crater rim`, commit it with the message `Plan the route`, and push.
+
+Afterwards the server's history is one straight line: Lin's commit, then yours on top.
+--- starter
+cd ~
+git init --bare server/rover.git
+git clone server/rover.git lin
+cd lin
+git config user.name "Lin"
+echo "# Rover" > README.md
+git add .
+git commit -m "Start the rover"
+git push
+cd ~
+git clone server/rover.git rover
+cd ~/lin
+echo "charge: 80%" > battery.txt
+git add .
+git commit -m "Log the battery"
+git push
+cd ~/rover
+--- solution
+git pull
+echo "crater rim" > route.txt
+git add route.txt
+git commit -m "Plan the route"
+git push
+--- hint
+Pull first, while you have no commits of your own: then it is a simple fast-forward.
+--- hint
+Then commit as usual and `git push`. The server's `main` only moves forward.
+--- check shell | The server has both commits, in a straight line
+git ~/server/rover.git at main message == Plan the route
+git ~/server/rover.git at main~1 message == Log the battery
+git ~/server/rover.git merges == 0
+--- check shell | Your folder has Lin's file and yours
+file ~/rover/battery.txt
+file ~/rover/route.txt == crater rim
+--- check shell | Your clone is in step with the server
+git ~/rover same main origin/main
+
++++ practice | Three commits behind, one file gone
+--- task
+You are in `~/base`, your clone of `~/server/base.git`. `git status` says `up to date`, but that only means up to date with your last fetch. Since then, two teammates pushed three commits. One of them **deleted** `draft.txt`.
+
+Fetch, list the new commits with `git log --oneline main..origin/main`, and pull them in. Afterwards your folder must match the server: `plan.txt` and `crew.txt` are there, and `draft.txt` is gone.
+--- starter
+cd ~
+git init --bare server/base.git
+git clone server/base.git ada
+cd ada
+git config user.name "Ada"
+echo "rough ideas" > draft.txt
+git add .
+git commit -m "Start the base"
+git push
+cd ~
+git clone server/base.git base
+cd ~/ada
+echo "dome, lab, garden" > plan.txt
+git add .
+git commit -m "Write the plan"
+git rm draft.txt
+git commit -m "Remove the old draft"
+git push
+cd ~
+git clone server/base.git raj
+cd raj
+git config user.name "Raj"
+echo "Ada, Raj" > crew.txt
+git add .
+git commit -m "List the crew"
+git push
+cd ~/base
+--- solution
+git status
+git fetch
+git log --oneline main..origin/main
+git pull
+ls
+--- hint
+`git fetch` first; only then does `git status` know you are behind, by 3 commits.
+--- hint
+`git pull` brings in all three at once, deletion included.
+--- check shell | You listed what was new
+ran git fetch
+ran git log --oneline main..origin/main
+printed List the crew
+--- check shell | Your folder matches the server
+file ~/base/plan.txt == dome, lab, garden
+file ~/base/crew.txt == Ada, Raj
+missing ~/base/draft.txt
+--- check shell | All three commits, as a fast-forward
+git ~/base same main origin/main
+git ~/base commits == 4
+git ~/base merges == 0
+
++++ practice | Debugging: fetched, but nothing changed
+--- task
+You are in `~/lab`, a clone of `~/server/lab.git`. Kim pushed `samples.txt`. A teammate at your desk ran `git fetch`, then `ls`, and complained that `samples.txt` still is not there.
+
+Nothing is broken: fetch only updates `origin/main`, never your branch or your files. Check with `git status`, then finish the job so that your `main` and your folder have Kim's commit.
+--- starter
+cd ~
+git init --bare server/lab.git
+git clone server/lab.git kim
+cd kim
+git config user.name "Kim"
+echo "# Lab" > README.md
+git add .
+git commit -m "Start the lab"
+git push
+cd ~
+git clone server/lab.git lab
+cd ~/kim
+echo "rock, dust, ice" > samples.txt
+git add .
+git commit -m "List the samples"
+git push
+cd ~/lab
+git fetch
+--- solution
+git status
+git merge origin/main
+cat samples.txt
+--- hint
+`git status` says you are behind `origin/main` and can be fast-forwarded.
+--- hint
+The commits are already fetched, so `git merge origin/main` finishes the job. `git pull` would work too: it fetches again, then merges.
+--- check shell | Kim's commit is in your main
+git ~/lab at main message == List the samples
+file ~/lab/samples.txt == rock, dust, ice
+--- check shell | A fast-forward, in step with origin/main
+git ~/lab same main origin/main
+git ~/lab merges == 0
+--- check shell | You checked the status first
+ran git status
+
++++ practice | The morning routine
+--- task
+You are in `~/mission`, your clone of `~/server/mission.git`. Overnight, teammates pushed some commits. Start your day the careful way:
+
+1. Fetch.
+2. Save **how many** new commits there are into `new-commits.txt`, as a single number, with one pipeline: `git log --oneline main..origin/main` piped into `wc -l`.
+3. Pull the new commits in.
+4. Make `today.txt` containing `test the antenna`, commit **only that file** with the message `Plan today`, and push.
+
+`new-commits.txt` is a note for you: it must not be committed.
+--- starter
+cd ~
+git init --bare server/mission.git
+git clone server/mission.git team
+cd team
+echo "# Mission" > README.md
+git add .
+git commit -m "Start the mission"
+git push
+cd ~
+git clone server/mission.git mission
+cd ~/team
+echo "go" > launch.txt
+git add .
+git commit -m "Set the launch"
+echo "clear" > weather.txt
+git add .
+git commit -m "Check the weather"
+echo "ok" > fuel.txt
+git add .
+git commit -m "Check the fuel"
+git push
+cd ~/mission
+--- solution
+git fetch
+git log --oneline main..origin/main | wc -l > new-commits.txt
+cat new-commits.txt
+git pull
+echo "test the antenna" > today.txt
+git add today.txt
+git commit -m "Plan today"
+git push
+--- hint
+Fetch first, or `main..origin/main` is empty and the count is `0`.
+--- hint
+`git log --oneline main..origin/main | wc -l > new-commits.txt` counts one line per commit. Then `git pull`.
+--- hint
+Add `today.txt` by name, not with `git add .`, so the note stays out of the commit.
+--- check shell | new-commits.txt holds the right count
+file ~/mission/new-commits.txt ~= 3
+git ~/mission untracked new-commits.txt
+--- check shell | The server has your plan on top of the night's work
+git ~/server/mission.git at main message == Plan today
+git ~/server/mission.git at main~1 message == Check the fuel
+git ~/server/mission.git at main missing new-commits.txt
+--- check shell | A straight line, in step with the server
+git ~/server/mission.git merges == 0
+git ~/mission same main origin/main
 
 === git3-09 | Debugging: a rejected push
 --- teach
@@ -1616,6 +3978,300 @@ git ~/server/rocket.git merges == 0
 git ~/rocket same main origin/main
 git ~/rocket idle
 
++++ practice | Kim got there first
+--- task
+In `~/habitat` you committed `Add the air filter`. While you worked, Kim pushed `Add the water pump` to `~/server/habitat.git`.
+
+Run `git push` and read why it is rejected. Then bring Kim's commit in with `git pull --rebase`, so the history stays one straight line, and push again.
+--- starter
+cd ~
+git init --bare server/habitat.git
+git clone server/habitat.git kim
+cd kim
+git config user.name "Kim"
+echo "# Habitat" > README.md
+git add .
+git commit -m "Start the habitat"
+git push
+cd ~
+git clone server/habitat.git habitat
+cd ~/kim
+echo "pump: on" > water.txt
+git add .
+git commit -m "Add the water pump"
+git push
+cd ~/habitat
+echo "filter: clean" > air.txt
+git add .
+git commit -m "Add the air filter"
+--- solution
+git push
+git pull --rebase
+git log --oneline --graph
+git push
+--- hint
+`[rejected]` and `fetch first` mean the server has a commit you do not have.
+--- hint
+`git pull --rebase` replays your one commit on top of Kim's. Then `git push` only moves the server forward.
+--- check shell | You met the rejection
+printed [rejected]
+--- check shell | Both commits are on the server, yours on top
+git ~/server/habitat.git at main message == Add the air filter
+git ~/server/habitat.git at main~1 message == Add the water pump
+git ~/server/habitat.git merges == 0
+--- check shell | Your clone matches the server
+git ~/habitat same main origin/main
+git ~/habitat idle
+
++++ practice | Keep the fork, with a merge
+--- task
+In `~/dock` you committed `Paint the hatch`. Meanwhile Raj pushed `Oil the hinges`. Your team prefers merges to rebases, so the history records exactly who did what, when.
+
+Push, and read the rejection. Then bring Raj's work in with `git pull --no-rebase`, which makes a merge commit, and push again.
+--- starter
+cd ~
+git init --bare server/dock.git
+git clone server/dock.git raj
+cd raj
+git config user.name "Raj"
+echo "# Dock" > README.md
+git add .
+git commit -m "Start the dock"
+git push
+cd ~
+git clone server/dock.git dock
+cd ~/raj
+echo "oiled" > hinges.txt
+git add .
+git commit -m "Oil the hinges"
+git push
+cd ~/dock
+echo "red" > hatch.txt
+git add .
+git commit -m "Paint the hatch"
+--- solution
+git push
+git pull --no-rebase
+git log --oneline --graph
+cat hinges.txt
+git push
+--- hint
+`--no-rebase` tells `git pull` to merge instead of replaying your commit.
+--- hint
+After the pull, `git log --oneline --graph` shows the fork joined by a merge commit. Then push.
+--- check shell | You met the rejection
+printed [rejected]
+--- check shell | The server has a merge commit joining both lines
+git ~/server/dock.git merges == 1
+git ~/server/dock.git at main parents == 2
+git ~/server/dock.git log contains Oil the hinges
+git ~/server/dock.git log contains Paint the hatch
+--- check shell | Your clone matches the server
+git ~/dock same main origin/main
+file ~/dock/hinges.txt
+
++++ practice | Choose once, then pull
+--- task
+Your team always rebases when pulling. In `~/relay` you committed `Boost the signal`, and Ada has pushed `Add a backup antenna`.
+
+1. Try a plain `git pull`, and read why git refuses to choose for you.
+2. Set this repository's default once with `git config pull.rebase true`.
+3. Run plain `git pull` again, then push.
+
+The server's history must be one straight line.
+--- starter
+cd ~
+git init --bare server/relay.git
+git clone server/relay.git ada
+cd ada
+git config user.name "Ada"
+echo "# Relay" > README.md
+git add .
+git commit -m "Start the relay"
+git push
+cd ~
+git clone server/relay.git relay
+cd ~/ada
+echo "backup" > antenna.txt
+git add .
+git commit -m "Add a backup antenna"
+git push
+cd ~/relay
+echo "power: high" > signal.txt
+git add .
+git commit -m "Boost the signal"
+--- solution
+git pull
+git config pull.rebase true
+git config pull.rebase
+git pull
+git push
+--- hint
+Plain `git pull` on diverged branches stops with `Need to specify how to reconcile divergent branches`.
+--- hint
+After `git config pull.rebase true`, every plain `git pull` in this repository rebases. `git config pull.rebase` with no value prints the setting.
+--- check shell | You met the refusal, then set the default
+printed Need to specify how to reconcile divergent branches
+ran git config pull.rebase true
+--- check shell | The server has one straight line
+git ~/server/relay.git merges == 0
+git ~/server/relay.git at main message == Boost the signal
+git ~/server/relay.git at main~1 message == Add a backup antenna
+--- check shell | Your clone matches the server
+git ~/relay same main origin/main
+git ~/relay idle
+
++++ practice | The same line, changed twice
+--- task
+In `~/reactor` you committed `Lower the core temperature`, which changed `core.cfg` to `temp = 280`. Meanwhile Sam pushed `Add units to the config`, which changed the same line to `temp = 300 K`.
+
+Pull with `--rebase`. It stops with a conflict in `core.cfg`. The team agreed on `temp = 280 K`: your value, with Sam's units. Resolve the file to exactly that, finish the rebase, and push.
+--- starter
+cd ~
+git init --bare server/reactor.git
+git clone server/reactor.git sam
+cd sam
+git config user.name "Sam"
+echo "temp = 300" > core.cfg
+git add .
+git commit -m "Set the core temperature"
+git push
+cd ~
+git clone server/reactor.git reactor
+cd ~/sam
+echo "temp = 300 K" > core.cfg
+git commit -am "Add units to the config"
+git push
+cd ~/reactor
+echo "temp = 280" > core.cfg
+git commit -am "Lower the core temperature"
+--- solution
+git pull --rebase
+cat core.cfg
+echo "temp = 280 K" > core.cfg
+git add core.cfg
+git rebase --continue
+git push
+--- hint
+A pull with `--rebase` that stops is an ordinary rebase stop: resolve the file, `git add` it, `git rebase --continue`.
+--- hint
+Only push once `git status` says `On branch main` again.
+--- check shell | The rebase finished before you pushed
+git ~/reactor idle
+git ~/reactor branch main
+git ~/reactor same main origin/main
+--- check shell | The server has the agreed value, in a straight line
+git ~/server/reactor.git at main file core.cfg == temp = 280 K
+git ~/server/reactor.git at main message == Lower the core temperature
+git ~/server/reactor.git merges == 0
+--- check shell | Sam's commit is kept
+git ~/server/reactor.git at main~1 message == Add units to the config
+
++++ practice | Debugging: a force push wiped a commit
+--- task
+Yesterday someone in `~/rocket` got a rejected push and "fixed" it with `git push --force`. The push went through, and Sam's commit `Add the weather report` vanished from the server's `main`.
+
+Sam's clone, `~/sam`, still has it. Go there, bring the server's new commit in with `git pull --rebase`, and push, so the server has **both** commits in one straight line. No force this time.
+--- starter
+cd ~
+git init --bare server/rocket.git
+git clone server/rocket.git sam
+cd sam
+git config user.name "Sam"
+echo "# Rocket" > README.md
+git add .
+git commit -m "Start the rocket"
+git push
+cd ~
+git clone server/rocket.git rocket
+cd ~/sam
+echo "wind: calm" > weather.txt
+git add .
+git commit -m "Add the weather report"
+git push
+cd ~/rocket
+echo "fuel: check" > checklist.txt
+git add .
+git commit -m "Add the launch checklist"
+git push --force
+--- solution
+cd ~/sam
+git status
+git pull --rebase
+git log --oneline --graph
+git push
+--- hint
+In `~/sam`, `git pull --rebase` fetches the checklist commit and replays Sam's weather commit on top of it.
+--- hint
+Then a plain `git push` from `~/sam` only moves the server forward, and nothing is lost.
+--- check shell | Both commits are on the server again
+git ~/server/rocket.git log contains Add the weather report
+git ~/server/rocket.git log contains Add the launch checklist
+git ~/server/rocket.git merges == 0
+--- check shell | Sam's clone matches the server
+git ~/sam same main origin/main
+git ~/sam idle
+--- check shell | No force this time
+ran git pull --rebase
+file ~/sam/checklist.txt == fuel: check
+
++++ practice | Two against two
+--- task
+In `~/lander` you made two commits: `Tune the thrusters`, which changed `thrust.cfg` to `thrust = 95`, and then `Add the landing lights`. Meanwhile Kim pushed two commits: `Add the radar` and `Retune the thrusters`, which changed the same line to `thrust = 90`.
+
+Bring Kim's work in with `git pull --rebase`. Your first commit conflicts: resolve `thrust.cfg` to exactly `thrust = 92`, the value the team agreed on. Your second commit then replays on its own. Push when the rebase is done.
+
+The server must end with all five commits in one straight line, yours last.
+--- starter
+cd ~
+git init --bare server/lander.git
+git clone server/lander.git kim
+cd kim
+git config user.name "Kim"
+echo "thrust = 100" > thrust.cfg
+git add .
+git commit -m "Set the thrust"
+git push
+cd ~
+git clone server/lander.git lander
+cd ~/kim
+echo "radar: on" > radar.cfg
+git add .
+git commit -m "Add the radar"
+echo "thrust = 90" > thrust.cfg
+git commit -am "Retune the thrusters"
+git push
+cd ~/lander
+echo "thrust = 95" > thrust.cfg
+git commit -am "Tune the thrusters"
+echo "lights: on" > lights.cfg
+git add .
+git commit -m "Add the landing lights"
+--- solution
+git push
+git pull --rebase
+echo "thrust = 92" > thrust.cfg
+git add thrust.cfg
+git rebase --continue
+git log --oneline --graph
+git push
+--- hint
+`git status` before the pull says your branch and `origin/main` have diverged, with 2 and 2 different commits each.
+--- hint
+Resolve the one stop, `git add`, `git rebase --continue`. The landing lights replay with no trouble.
+--- check shell | Five commits in one straight line on the server
+git ~/server/lander.git commits == 5
+git ~/server/lander.git merges == 0
+git ~/server/lander.git at main message == Add the landing lights
+git ~/server/lander.git at main~2 message == Retune the thrusters
+--- check shell | The agreed thrust, and everyone's files
+git ~/server/lander.git at main file thrust.cfg == thrust = 92
+git ~/server/lander.git at main file radar.cfg
+git ~/server/lander.git at main file lights.cfg
+--- check shell | Your clone is done and in step
+git ~/lander idle
+git ~/lander same main origin/main
+
 === git3-10 | A team workflow: branch, share, merge, release
 --- teach
 Last lesson a teammate's push got in before yours, and you pulled their work in before pushing again. That was two people sharing one `main`. This lesson puts every piece of the Git courses together into the way most teams really work, from the first line of a new feature to a tagged release on the server.
@@ -1802,6 +4458,283 @@ git ~/rocket same v1.1 main
 --- check shell | The server has the new main and the tag
 git ~/server/rocket.git tag v1.1
 git ~/server/rocket.git same main v1.1
+
++++ practice | Share a new branch
+--- task
+You are in `~/capsule`, a clone of `~/server/capsule.git`, on `main`.
+
+Create the branch `feature/heat-shield`. Add a file `shield.txt` containing `tiles: 400`, and commit it with the message `Add the heat shield`. Then push the branch to `origin` with an upstream, so that teammates can review it.
+--- starter
+cd ~
+git init --bare server/capsule.git
+git clone server/capsule.git seed
+cd seed
+echo "# Capsule" > README.md
+git add .
+git commit -m "Start the capsule"
+git push
+cd ~
+rm -r seed
+git clone server/capsule.git capsule
+cd ~/capsule
+--- solution
+git switch -c feature/heat-shield
+echo "tiles: 400" > shield.txt
+git add shield.txt
+git commit -m "Add the heat shield"
+git push -u origin feature/heat-shield
+git status
+--- hint
+`git switch -c` makes the branch and moves you onto it. The slash is just part of the name.
+--- hint
+A plain `git push` fails on a new branch. Name the remote and the branch, and add `-u`.
+--- check shell | The server has the branch, with your commit
+git ~/server/capsule.git has-branch feature/heat-shield
+git ~/server/capsule.git log-of feature/heat-shield contains Add the heat shield
+--- check shell | Your branch tracks it
+git ~/capsule tracks feature/heat-shield origin/feature/heat-shield
+git ~/capsule same feature/heat-shield origin/feature/heat-shield
+--- check shell | main was not touched
+git ~/server/capsule.git commits-on main == 1
+git ~/capsule commits-on main == 1
+
++++ practice | A review comment, one more push
+--- task
+You are in `~/capsule`, on the branch `feature/parachute`, which you already pushed with `-u`. A reviewer asks for one change: `chute.txt` should say `size: 12 m`, not `size: 10 m`.
+
+Make the change, commit it with the message `Use a bigger chute`, and push it with a **plain** `git push`. The branch already has an upstream, so git knows where to send it.
+--- starter
+cd ~
+git init --bare server/capsule.git
+git clone server/capsule.git seed
+cd seed
+echo "# Capsule" > README.md
+git add .
+git commit -m "Start the capsule"
+git push
+cd ~
+rm -r seed
+git clone server/capsule.git capsule
+cd ~/capsule
+git switch -c feature/parachute
+echo "size: 10 m" > chute.txt
+git add .
+git commit -m "Add the parachute"
+git push -u origin feature/parachute
+--- solution
+echo "size: 12 m" > chute.txt
+git commit -am "Use a bigger chute"
+git status
+git push
+--- hint
+`git status` names the upstream: `Your branch is ahead of 'origin/feature/parachute' by 1 commit`.
+--- hint
+With an upstream set, a plain `git push` on this branch sends it to `origin/feature/parachute`.
+--- check shell | The server's branch has the review fix
+git ~/server/capsule.git at feature/parachute message == Use a bigger chute
+git ~/server/capsule.git at feature/parachute file chute.txt == size: 12 m
+--- check shell | Your branch is in step with its upstream
+git ~/capsule same feature/parachute origin/feature/parachute
+git ~/capsule branch feature/parachute
+--- check shell | A plain push did it
+ran git push
+git ~/server/capsule.git commits-on main == 1
+
++++ practice | Update, rebase, merge, share
+--- task
+You are in `~/station`, on your local branch `feature/logs`, which you have **not** pushed. While you worked, Kim pushed `Add the airlock` to the server's `main`.
+
+1. Switch to `main` and bring it up to date with `git pull`.
+2. Switch back to `feature/logs` and rebase it onto the new `main`. (It is safe: nobody else has these commits.)
+3. Switch to `main`, merge `feature/logs` with `--no-ff`, and push `main`.
+--- starter
+cd ~
+git init --bare server/station.git
+git clone server/station.git kim
+cd kim
+git config user.name "Kim"
+echo "# Station" > README.md
+git add .
+git commit -m "Start the station"
+git push
+cd ~
+git clone server/station.git station
+cd ~/kim
+echo "airlock" > airlock.txt
+git add .
+git commit -m "Add the airlock"
+git push
+cd ~/station
+git switch -c feature/logs
+echo "day 1" > log.txt
+git add .
+git commit -m "Start the station log"
+--- solution
+git switch main
+git pull
+git switch feature/logs
+git rebase main
+git switch main
+git merge --no-ff feature/logs
+git log --oneline --graph
+git push
+--- hint
+Pull on `main`, not on your feature branch: your feature branch has no upstream yet.
+--- hint
+After the rebase, `feature/logs` sits on top of Kim's commit. `git merge --no-ff feature/logs` on `main` then makes a merge commit even though a fast-forward was possible.
+--- check shell | The server's main has a merge commit on top of Kim's work
+git ~/server/station.git merges == 1
+git ~/server/station.git at main parents == 2
+git ~/server/station.git at main~1 message == Add the airlock
+--- check shell | Your feature was rebased before the merge
+git ~/station ancestor main~1 feature/logs
+git ~/station at feature/logs~1 message == Add the airlock
+--- check shell | Your main is in step with the server
+git ~/station same main origin/main
+git ~/station branch main
+
++++ practice | Tag the merge, not the feature
+--- task
+You are in `~/probe`, on `feature/camera`, with one finished commit. `main` has not moved since you branched.
+
+1. Switch to `main` and merge `feature/camera` with `--no-ff`. A plain merge would only fast-forward here, and the team wants a merge commit.
+2. Tag **the merge commit** `v1.4`, as an annotated tag with the message `Camera release`. Make sure you are on `main` when you tag.
+3. Push `main`, then push the tag.
+--- starter
+cd ~
+git init --bare server/probe.git
+git clone server/probe.git seed
+cd seed
+echo "# Probe" > README.md
+git add .
+git commit -m "Start the probe"
+git push
+cd ~
+rm -r seed
+git clone server/probe.git probe
+cd ~/probe
+git switch -c feature/camera
+echo "lens: wide" > camera.txt
+git add .
+git commit -m "Add the camera"
+--- solution
+git switch main
+git merge --no-ff feature/camera
+git tag -a v1.4 -m "Camera release"
+git show v1.4
+git push
+git push origin v1.4
+--- hint
+A tag goes on the commit you are standing on. After the merge, that is the merge commit on `main`.
+--- hint
+`git push` sends `main`. Tags stay behind until you push them by name: `git push origin v1.4`.
+--- check shell | main has a merge commit, and v1.4 marks it
+git ~/probe at main parents == 2
+git ~/probe same v1.4 main
+git ~/probe at v1.4 parents == 2
+--- check shell | The server has the merge and the tag
+git ~/server/probe.git tag v1.4
+git ~/server/probe.git same v1.4 main
+git ~/server/probe.git merges == 1
+--- check shell | The tag is annotated with its message
+printed Camera release
+
++++ practice | Debugging: the release nobody can see
+--- task
+You are in `~/rover`. A teammate tagged release `v3.0` with `git tag -a v3.0 -m "Autumn release"` and ran `git push`. Git said `main -> main`, and she thought the release was shared. But the team's build machine cannot find `v3.0` on the server.
+
+Find out whether the server has the tag, then fix it so it does, on the right commit.
+--- starter
+cd ~
+git init --bare server/rover.git
+git clone server/rover.git seed
+cd seed
+echo "# Rover" > README.md
+git add .
+git commit -m "Start the rover"
+git push
+cd ~
+rm -r seed
+git clone server/rover.git rover
+cd ~/rover
+echo "tracks: new" > tracks.txt
+git add .
+git commit -m "Fit the new tracks"
+git tag -a v3.0 -m "Autumn release"
+git push
+--- solution
+git log --oneline
+git push origin v3.0
+--- hint
+`git log --oneline` shows `tag: v3.0` in your clone. A plain `git push` sends branches, not tags.
+--- hint
+Push the tag by name: `git push origin v3.0`. The output says `[new tag]` when it really goes up.
+--- check shell | The server has v3.0
+git ~/server/rover.git tag v3.0
+--- check shell | On the right commit
+git ~/server/rover.git same v3.0 main
+git ~/server/rover.git at v3.0 message == Fit the new tracks
+--- check shell | You pushed the tag
+printed [new tag]
+git ~/rover same main origin/main
+
++++ practice | Two features, one release
+--- task
+You are in `~/lab`, on `main`, a clone of `~/server/lab.git`. Two features are ready on local branches, one commit each: `feature/scale` and `feature/oven`. Take both to a release:
+
+1. Push each feature branch to `origin` with an upstream.
+2. On `main`, merge `feature/scale`, then `feature/oven`, each with `--no-ff`.
+3. Tag the result `v2.0`, annotated, with the message `Scale and oven`.
+4. Push `main`, then all your tags with `git push --tags`.
+--- starter
+cd ~
+git init --bare server/lab.git
+git clone server/lab.git seed
+cd seed
+echo "# Lab" > README.md
+git add .
+git commit -m "Start the lab"
+git push
+cd ~
+rm -r seed
+git clone server/lab.git lab
+cd ~/lab
+git switch -c feature/scale
+echo "grams" > scale.txt
+git add .
+git commit -m "Add the scale"
+git switch main
+git switch -c feature/oven
+echo "300 C" > oven.txt
+git add .
+git commit -m "Add the oven"
+git switch main
+--- solution
+git push -u origin feature/scale
+git push -u origin feature/oven
+git merge --no-ff feature/scale
+git merge --no-ff feature/oven
+git log --oneline --graph
+git tag -a v2.0 -m "Scale and oven"
+git push
+git push --tags
+--- hint
+You can push a branch without switching to it: `git push -u origin feature/scale` names it.
+--- hint
+The second `--no-ff` merge happens on top of the first merge commit, so `main` ends with two merge commits.
+--- check shell | The server has both feature branches
+git ~/server/lab.git has-branch feature/scale
+git ~/server/lab.git has-branch feature/oven
+git ~/lab tracks feature/oven origin/feature/oven
+--- check shell | The server's main has both merges
+git ~/server/lab.git merges == 2
+git ~/server/lab.git at main parents == 2
+git ~/server/lab.git at main file scale.txt
+git ~/server/lab.git at main file oven.txt
+--- check shell | v2.0 marks the release, on the server too
+git ~/server/lab.git tag v2.0
+git ~/server/lab.git same v2.0 main
+git ~/lab same main origin/main
 
 === git3-11 | Debugging: commits made on a detached HEAD
 --- teach
@@ -2003,6 +4936,247 @@ git . merges == 1
 file wings.txt == wings: 2, swept
 file design.txt == fins: 4
 
++++ practice | Rescue the window sketches
+--- task
+You checked out an old commit to try an idea, made two commits there, `Try a round window` and `Tint the window`, and then switched back to `main`. The two commits seem to be gone.
+
+Find them with `git reflog`, and give them a branch called `rescue` with `git branch`. Do not merge anything: stay on `main`, and leave `main` as it is.
+--- starter
+git init
+echo "hull: grey" > hull.txt
+git add .
+git commit -m "Draw the hull"
+echo "hull: white" > hull.txt
+git commit -am "Paint the hull white"
+git checkout HEAD~1
+echo "window: round" > window.txt
+git add .
+git commit -m "Try a round window"
+echo "window: round, tinted" > window.txt
+git commit -am "Tint the window"
+git switch main
+--- solution
+git reflog
+git branch rescue HEAD@{1}
+git log --oneline rescue
+--- hint
+The top entry of `git reflog` is you switching back to `main`. The entry just below it is the last commit you made while detached.
+--- hint
+`git branch rescue` followed by that entry's name (`HEAD@{1}`) or its id makes the branch there, without switching to it.
+--- check shell | The lost commits are on rescue
+git . has-branch rescue
+git . at rescue message == Tint the window
+git . at rescue~1 message == Try a round window
+--- check shell | You stayed on main, and main is unchanged
+git . branch main
+git . commits-on main == 2
+missing window.txt
+--- check shell | You searched the reflog
+ran git reflog
+
++++ practice | Catch it before you leave
+--- task
+You checked out an old commit with `git checkout HEAD~1` to look around, then changed `engine.txt` and committed it as `Try a smaller engine`. You have **not** switched away yet, and `git status` says `HEAD detached`.
+
+Before you lose it, put the commit on a new branch called `small-engine` with `git switch -c`, so that HEAD is attached to a branch again.
+--- starter
+git init
+echo "engine: large" > engine.txt
+git add .
+git commit -m "Pick the engine"
+echo "engine: large, tuned" > engine.txt
+git commit -am "Tune the engine"
+git checkout HEAD~1
+echo "engine: small" > engine.txt
+git commit -am "Try a smaller engine"
+--- solution
+git status
+git switch -c small-engine
+git status
+--- hint
+`git switch -c` makes a new branch right where HEAD is, and attaches HEAD to it. Your new commit is right there.
+--- hint
+Afterwards `git status` should start with `On branch small-engine`.
+--- check shell | HEAD is on the new branch
+git . branch small-engine
+--- check shell | The branch holds the new commit, on top of the old one
+git . at small-engine message == Try a smaller engine
+git . at small-engine~1 message == Pick the engine
+git . commits-on small-engine == 2
+--- check shell | main is unchanged
+git . at main message == Tune the engine
+git . commits-on main == 2
+
++++ practice | Rescue one commit, copy another
+--- task
+While detached on an old commit, you made two commits: `Sketch the antenna`, which adds `antenna.txt`, and `Fix the typo in the README`. Then you switched back to `main`, and they seemed to vanish.
+
+1. Find them in the reflog and put them on a branch called `sketches`.
+2. `main` needs only the typo fix, not the antenna. Copy just that commit onto `main` with `git cherry-pick`.
+--- starter
+git init
+echo "Satelite notes" > README.md
+git add .
+git commit -m "Start the notes"
+echo "dish: 2 m" > dish.txt
+git add .
+git commit -m "Size the dish"
+git checkout HEAD~1
+echo "antenna: long" > antenna.txt
+git add .
+git commit -m "Sketch the antenna"
+echo "Satellite notes" > README.md
+git commit -am "Fix the typo in the README"
+git switch main
+--- solution
+git reflog
+git branch sketches HEAD@{1}
+git log --oneline sketches
+git cherry-pick sketches
+--- hint
+`HEAD@{1}`, just below the switch back to `main`, is the typo fix: the newest of the two. A branch there holds both.
+--- hint
+The typo fix is the tip of `sketches`, so `git cherry-pick sketches` copies it onto `main`, where you are.
+--- check shell | Both commits are on sketches
+git . log-of sketches contains Sketch the antenna
+git . at sketches message == Fix the typo in the README
+--- check shell | main got the typo fix only
+git . branch main
+git . at main message == Fix the typo in the README
+file README.md == Satellite notes
+missing antenna.txt
+--- check shell | main kept its own work
+git . commits-on main == 3
+file dish.txt
+
++++ practice | Not the top of the reflog
+--- task
+Last week you made two commits on a detached HEAD, `Add a round window` and then `Tint the window`, and switched back to `main`. Since then you also committed `Move the hatch` on `main`, and switched to the branch `paint` and back again.
+
+So the commits you want are no longer just below the top of `git reflog`. Read the reflog carefully, and put a branch called `windows` at **`Tint the window`**, so that it holds both lost commits. Stay on `main`.
+--- starter
+git init
+echo "seats: 2" > capsule.txt
+git add .
+git commit -m "Draw the capsule"
+git branch paint
+echo "seats: 3" > capsule.txt
+git commit -am "Add a third seat"
+git checkout HEAD~1
+echo "window: round" > window.txt
+git add .
+git commit -m "Add a round window"
+echo "window: round, tinted" > window.txt
+git commit -am "Tint the window"
+git switch main
+echo "hatch: side" > hatch.txt
+git add .
+git commit -m "Move the hatch"
+git switch paint
+git switch main
+--- solution
+git reflog
+git branch windows HEAD@{4}
+git log --oneline windows
+--- hint
+Read the reflog from the top down, and find the line that says `commit: Tint the window`. Its name is at the start of the line: `HEAD@{…}`.
+--- hint
+`HEAD@{1}` here is the switch to `paint`, not your window work. Use the entry for `Tint the window`, or its id.
+--- check shell | windows holds both lost commits
+git . at windows message == Tint the window
+git . at windows~1 message == Add a round window
+--- check shell | Not a commit from main
+git . log-of windows excludes Move the hatch
+git . log-of windows excludes Add a third seat
+--- check shell | You stayed on main
+git . branch main
+git . commits-on main == 3
+
++++ practice | Debugging: a branch in the wrong place
+--- task
+A teammate made two commits on a detached HEAD, `Add a mast` and `Make the mast taller`, switched back to `main`, and then committed `Lay the deck`. Only after that did she try to rescue the mast work, with `git branch mast HEAD@{1}`.
+
+But by then `HEAD@{1}` was the switch back to `main`, so `mast` points at a commit on `main` and holds none of the mast work. Delete the wrong branch with `git branch -d mast` (git allows it, because everything on it is already on `main`), then make `mast` again at the right reflog entry.
+--- starter
+git init
+echo "hull: steel" > hull.txt
+git add .
+git commit -m "Build the hull"
+echo "hull: steel, painted" > hull.txt
+git commit -am "Paint the hull"
+git checkout HEAD~1
+echo "mast: 1" > mast.txt
+git add .
+git commit -m "Add a mast"
+echo "mast: 1, tall" > mast.txt
+git commit -am "Make the mast taller"
+git switch main
+echo "deck: wood" > deck.txt
+git add .
+git commit -m "Lay the deck"
+git branch mast HEAD@{1}
+--- solution
+git log --oneline mast
+git reflog
+git branch -d mast
+git branch mast HEAD@{2}
+git log --oneline mast
+--- hint
+`git log --oneline mast` shows the problem: `Paint the hull`, not the mast. In `git reflog`, find the entry `commit: Make the mast taller`.
+--- hint
+`git branch -d mast` removes the label, not any commit. Then `git branch mast` with the right entry.
+--- check shell | mast holds the mast work
+git . at mast message == Make the mast taller
+git . at mast~1 message == Add a mast
+--- check shell | Nothing from main's later work
+git . log-of mast excludes Paint the hull
+git . log-of mast excludes Lay the deck
+--- check shell | You are still on main
+git . branch main
+git . commits-on main == 3
+
++++ practice | A hotfix for an old release
+--- task
+Release `v1.0` is tagged. To patch it, you checked out the tag with `git checkout v1.0`, fixed `brakes.cfg` and committed `Fix the brake delay`, all on a detached HEAD. Then you switched back to `main`.
+
+1. Put the fix on a branch called `hotfix-1.0`, and tag it `v1.0.1`.
+2. `main` needs the fix too: copy it onto `main` with `git cherry-pick`.
+--- starter
+git init
+echo "delay = 2" > brakes.cfg
+git add .
+git commit -m "Set up the brakes"
+git tag v1.0
+echo "abs = on" > abs.cfg
+git add .
+git commit -m "Add anti-lock braking"
+git checkout v1.0
+echo "delay = 0.5" > brakes.cfg
+git commit -am "Fix the brake delay"
+git switch main
+--- solution
+git reflog
+git branch hotfix-1.0 HEAD@{1}
+git tag v1.0.1 hotfix-1.0
+git cherry-pick hotfix-1.0
+git log --oneline --graph --all
+--- hint
+The reflog entry just below the switch back to `main` is the fix. Make the branch there.
+--- hint
+`git tag v1.0.1 hotfix-1.0` tags the tip of the new branch without switching to it. Then, on `main`, `git cherry-pick hotfix-1.0`.
+--- check shell | hotfix-1.0 holds the fix on top of v1.0, tagged v1.0.1
+git . at hotfix-1.0 message == Fix the brake delay
+git . same hotfix-1.0~1 v1.0
+git . same v1.0.1 hotfix-1.0
+--- check shell | The patch release does not contain main's new work
+git . at v1.0.1 missing abs.cfg
+git . at v1.0.1 file brakes.cfg == delay = 0.5
+--- check shell | main has the fix as well
+git . branch main
+git . at main message == Fix the brake delay
+file brakes.cfg == delay = 0.5
+file abs.cfg
+
 === git3-12 | Debugging: a conflict while cherry-picking
 --- teach
 Last lesson you rescued commits made on a detached HEAD. This is the last lesson of the whole Git track, and it closes a loop from the very first lesson of this course. There, `git cherry-pick` copied one commit to another branch, and you were told it can stop with a conflict. Here is that conflict, and how to finish the job.
@@ -2112,21 +5286,21 @@ Once a version is shipped, people keep using it, sometimes for years. A team can
 :::
 
 ::: context picked-labels Why the other side has no branch name
-In a merge conflict, the other side is labeled with the branch you are merging. A cherry-pick does not bring a branch, only one commit, so git labels that side with the commit's id and message. It is also worth knowing why this conflicted. Git compares three versions of the line: the one before the fix, the fix, and yours. If you run `git config merge.conflictStyle diff3` once, conflict markers also show that "before" version, between `|||||||` and `=======`. Here it would say `check fuel >= 10`, which makes the clash obvious.
+In a merge conflict, the other side is labeled with the branch you are merging. A cherry-pick does not bring a branch, only one commit, so git labels that side with the commit's id and message. It is also worth knowing why this conflicted. Git compares three versions of the line: the one before the fix, the fix, and yours. If you run `git config merge.conflictStyle diff3` once, conflict markers also show that "before" version, between `|||||||` and `=======`. Here it would say `open chute at 500`, which makes the clash obvious.
 
 ```svg
 <svg viewBox="0 0 360 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
   <rect x="10" y="20" width="160" height="40" rx="5" fill="#ffffff" stroke="#6c7a93" stroke-width="2"/>
   <text x="90" y="36" font-size="11" text-anchor="middle" fill="#6c7a93">the fix expects</text>
-  <text x="90" y="52" font-size="12" text-anchor="middle" fill="#1f2a44">check fuel &gt;= 10</text>
+  <text x="90" y="52" font-size="12" text-anchor="middle" fill="#1f2a44">open chute at 500</text>
   <rect x="190" y="20" width="160" height="40" rx="5" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
   <text x="270" y="36" font-size="11" text-anchor="middle" fill="#1f2a44">and turns it into</text>
-  <text x="270" y="52" font-size="12" text-anchor="middle" fill="#1f2a44">check fuel &gt;= 25</text>
+  <text x="270" y="52" font-size="12" text-anchor="middle" fill="#1f2a44">open chute at 800</text>
   <line x1="170" y1="40" x2="186" y2="40" stroke="#1f2a44" stroke-width="2"/>
   <polygon points="184,35 190,40 184,45" fill="#1f2a44"/>
   <rect x="10" y="90" width="160" height="40" rx="5" fill="#ffffff" stroke="#b4232c" stroke-width="2"/>
   <text x="90" y="106" font-size="11" text-anchor="middle" fill="#b4232c">release-1 has</text>
-  <text x="90" y="122" font-size="12" text-anchor="middle" fill="#1f2a44">check fuel</text>
+  <text x="90" y="122" font-size="12" text-anchor="middle" fill="#1f2a44">open chute</text>
   <text x="270" y="106" font-size="11" text-anchor="middle" fill="#b4232c">not what the fix expects,</text>
   <text x="270" y="122" font-size="11" text-anchor="middle" fill="#b4232c">so git stops and asks you</text>
 </svg>
@@ -2142,7 +5316,7 @@ A cherry-pick, a merge, a rebase and a revert can all stop halfway and wait for 
 :::
 
 ::: context backport-review Reviewing a back-port
-A back-port is a real change to shipped software, so teams review it with care. The question is not only "is the fix right?" but "is it right on this older code?" A fix on `main` may lean on code the release never had, like the 10% check here. Taking `main`'s whole file would have slipped that change into the release without anyone deciding to ship it. So after resolving, compare the result with the original release: `git diff HEAD~1` should show only the lines the fix meant to change.
+A back-port is a real change to shipped software, so teams review it with care. The question is not only "is the fix right?" but "is it right on this older code?" A fix on `main` may lean on code the release never had, like the 500 m step here. Taking `main`'s whole file would have slipped that change into the release without anyone deciding to ship it. So after resolving, compare the result with the original release: `git diff HEAD~1` should show only the lines the fix meant to change.
 :::
 --- task
 Release branch `release-1` needs the safety fix `Require 25% fuel` from `main`; it is the newest commit there.
@@ -2186,3 +5360,932 @@ file launch.sh ~= check fuel >= 25\nlaunch
 git . at HEAD file launch.sh excludes =======
 --- check shell | main is untouched
 git . commits-on main == 3
+
++++ practice | Back-port the speed cap
+--- task
+The branch `release-2` needs the safety fix `Cap the speed at 60` from `main`; it is the newest commit there. You are on `release-2`.
+
+Cherry-pick it. It stops with a conflict in `speed.cfg`, because `main` changed that line once before the fix and `release-2` never got that change. Resolve the file so it reads exactly `max = 60`, mark it resolved, and finish the cherry-pick.
+--- starter
+git init
+echo "max = 80" > speed.cfg
+git add .
+git commit -m "Set the top speed"
+git branch release-2
+echo "max = 80 km/h" > speed.cfg
+git commit -am "Show the unit"
+echo "max = 60 km/h" > speed.cfg
+git commit -am "Cap the speed at 60"
+git switch release-2
+--- solution
+git log --oneline main
+git cherry-pick main
+cat speed.cfg
+echo "max = 60" > speed.cfg
+git add speed.cfg
+git cherry-pick --continue
+--- hint
+`git cherry-pick main` picks the newest commit on `main`. When it stops, `cat speed.cfg` shows your side under `HEAD` and the fix under `=======`.
+--- hint
+The release has no unit, so the fix adapted to it is `max = 60`. Write it over the whole file, `git add` it, then `git cherry-pick --continue`.
+--- check shell | The cherry-pick is finished, on release-2
+git . idle
+git . branch release-2
+git . at HEAD message == Cap the speed at 60
+--- check shell | The release has the fix, adapted
+file speed.cfg == max = 60
+git . at HEAD file speed.cfg == max = 60
+--- check shell | main is untouched
+git . commits-on main == 3
+git . commits-on release-2 == 2
+
++++ practice | Stop the back-port
+--- task
+You are on `release-1` and start cherry-picking `Rewrite the heater control`, the newest commit on `main`. It stops with a conflict in `heater.cfg`. Reading the markers, you see the fix depends on code the release never had, and you decide it should not be back-ported at all.
+
+Call it off with `git cherry-pick --abort`. Afterwards nothing is in progress, `release-1` has no new commit, and `heater.cfg` reads `power = 2` again.
+--- starter
+git init
+echo "power = 2" > heater.cfg
+git add .
+git commit -m "Add the heater"
+git branch release-1
+echo "power = auto(2)" > heater.cfg
+git commit -am "Let the heater pick its power"
+echo "power = auto(3)" > heater.cfg
+git commit -am "Rewrite the heater control"
+git switch release-1
+--- solution
+git cherry-pick main
+cat heater.cfg
+git cherry-pick --abort
+git status
+--- hint
+Start the cherry-pick, and read git's hints when it stops: they name the way out.
+--- hint
+`git cherry-pick --abort` puts `release-1` back exactly as it was before you started.
+--- check shell | You met the conflict, then called it off
+printed CONFLICT (content): Merge conflict in heater.cfg
+ran git cherry-pick --abort
+--- check shell | Nothing is in progress, and the release is as it was
+git . idle
+git . branch release-1
+git . commits-on release-1 == 1
+--- check shell | The file is back
+file heater.cfg == power = 2
+git . conflicts == 0
+
++++ practice | A release branch from a tag
+--- task
+Version 2.0 was tagged `v2.0`, but nobody made a release branch for it. Now it needs the fix `Seal the fuel valve`, the newest commit on `main`.
+
+1. Make a branch `release-2.0` at the tag `v2.0` with `git branch`, and switch to it.
+2. Cherry-pick the fix. It stops with a conflict in `valve.cfg`: resolve it so the file reads exactly `seal = tight`, and finish the cherry-pick.
+3. Tag the result `v2.0.1`.
+--- starter
+git init
+echo "seal = loose" > valve.cfg
+git add .
+git commit -m "Add the fuel valve"
+git tag v2.0
+echo "seal = loose (checked)" > valve.cfg
+git commit -am "Check the valve on start-up"
+echo "seal = tight (checked)" > valve.cfg
+git commit -am "Seal the fuel valve"
+--- solution
+git branch release-2.0 v2.0
+git switch release-2.0
+git cherry-pick main
+echo "seal = tight" > valve.cfg
+git add valve.cfg
+git cherry-pick --continue
+git tag v2.0.1
+--- hint
+`git branch` takes a name, then the commit to start it at. A tag is a name for a commit.
+--- hint
+Switch to the new branch before you cherry-pick. After `git cherry-pick --continue`, tag the commit you are on.
+--- check shell | release-2.0 starts at v2.0 and has the fix
+git . branch release-2.0
+git . same release-2.0~1 v2.0
+git . at release-2.0 message == Seal the fuel valve
+--- check shell | The fix is adapted to the release
+git . at release-2.0 file valve.cfg == seal = tight
+git . idle
+--- check shell | v2.0.1 marks the patched release
+git . same v2.0.1 release-2.0
+git . commits-on main == 3
+
++++ practice | Take the fix, leave the feature
+--- task
+You are on `release-1`. `main` has two newer commits: `Add a reserve tank`, a new feature, and then `Raise the oxygen flow`, a safety fix. Only the fix may go into the release.
+
+Cherry-pick the fix. It stops with a conflict in `oxygen.cfg`, and `main`'s side also shows the reserve tank line. Resolve the file so it holds the fix and **nothing else** from `main`:
+```
+flow = high
+alarm = on
+```
+Then finish the cherry-pick.
+--- starter
+git init
+printf "flow = low\nalarm = on\n" > oxygen.cfg
+git add .
+git commit -m "Set up the oxygen"
+git branch release-1
+printf "flow = low\nreserve = 1\nalarm = on\n" > oxygen.cfg
+git commit -am "Add a reserve tank"
+printf "flow = high\nreserve = 1\nalarm = on\n" > oxygen.cfg
+git commit -am "Raise the oxygen flow"
+git switch release-1
+--- solution
+git cherry-pick main
+cat oxygen.cfg
+printf "flow = high\nalarm = on\n" > oxygen.cfg
+git add oxygen.cfg
+git cherry-pick --continue
+git diff HEAD~1
+--- hint
+Taking `main`'s whole side would slip the untested reserve tank into the release. Write only the lines the release should have.
+--- hint
+`printf "flow = high\nalarm = on\n" > oxygen.cfg` writes both lines and replaces the markers. Then `git add` and `git cherry-pick --continue`.
+--- check shell | The cherry-pick is finished, on release-1
+git . idle
+git . branch release-1
+git . at HEAD message == Raise the oxygen flow
+--- check shell | The release has the fix and nothing else from main
+file oxygen.cfg ~= flow = high\nalarm = on
+git . at HEAD file oxygen.cfg excludes reserve
+git . at HEAD file oxygen.cfg excludes =======
+--- check shell | main is untouched
+git . commits-on main == 3
+
++++ practice | Debugging: a back-port that took too much
+--- task
+A teammate back-ported `Raise the oxygen flow` onto `release-1`. At the conflict she took `main`'s whole version of `oxygen.cfg` and finished the cherry-pick, so the release now also has the line `reserve = 1`, from an untested feature. Nobody has the release commit yet.
+
+Fix that same commit: write `oxygen.cfg` as the release should have it, exactly
+```
+flow = high
+alarm = on
+```
+stage it, and put it into the last commit with `git commit --amend --no-edit`. The release must still have exactly two commits.
+--- starter
+git init
+printf "flow = low\nalarm = on\n" > oxygen.cfg
+git add .
+git commit -m "Set up the oxygen"
+git branch release-1
+printf "flow = low\nreserve = 1\nalarm = on\n" > oxygen.cfg
+git commit -am "Add a reserve tank"
+printf "flow = high\nreserve = 1\nalarm = on\n" > oxygen.cfg
+git commit -am "Raise the oxygen flow"
+git switch release-1
+git cherry-pick main
+printf "flow = high\nreserve = 1\nalarm = on\n" > oxygen.cfg
+git add oxygen.cfg
+git cherry-pick --continue
+--- solution
+git diff HEAD~1
+printf "flow = high\nalarm = on\n" > oxygen.cfg
+git add oxygen.cfg
+git commit --amend --no-edit
+git diff HEAD~1
+--- hint
+`git diff HEAD~1` shows everything the back-port changed on the release. The `reserve` line should not be there.
+--- hint
+Write the file, `git add` it, then `git commit --amend --no-edit` replaces the last commit and keeps its message.
+--- check shell | The release commit holds only the fix
+git . at release-1 file oxygen.cfg excludes reserve
+git . at release-1 file oxygen.cfg contains flow = high
+file oxygen.cfg ~= flow = high\nalarm = on
+--- check shell | Still one back-port commit, with its message
+git . commits-on release-1 == 2
+git . at release-1 message == Raise the oxygen flow
+--- check shell | Nothing is left in progress or staged
+git . idle
+git . clean
+git . commits-on main == 3
+
++++ practice | Back-port a fix and its test
+--- task
+Release `release-1` needs two commits from `main`: `Fix the range limit` and, right after it, `Test the range limit`. They are `main~1` and `main`. Take them **in that order**:
+
+1. The first stops with a conflict in `limit.cfg`, because `main` added units to that line before the fix and the release never got them. Resolve it so the file reads exactly `max = 8`.
+2. The second applies on its own.
+3. Tag the result `v1.0.2`.
+
+`Add logging` and `Show the unit`, also on `main`, must not reach the release.
+--- starter
+git init
+echo "max = 5" > limit.cfg
+git add .
+git commit -m "Set the range limit"
+git branch release-1
+echo "level = info" > log.cfg
+git add .
+git commit -m "Add logging"
+echo "max = 5 km" > limit.cfg
+git commit -am "Show the unit"
+echo "max = 8 km" > limit.cfg
+git commit -am "Fix the range limit"
+echo "expect max 8" > test.txt
+git add .
+git commit -m "Test the range limit"
+git switch release-1
+--- solution
+git log --oneline main
+git cherry-pick main~1
+echo "max = 8" > limit.cfg
+git add limit.cfg
+git cherry-pick --continue
+git cherry-pick main
+git tag v1.0.2
+git log --oneline
+--- hint
+One cherry-pick at a time, oldest first. Finish the first with `git cherry-pick --continue` before you start the second.
+--- hint
+After both, `git log --oneline` should show the fix, then the test, on top of `Set the range limit`. Tag the commit you are on.
+--- check shell | Both commits are on the release, in order
+git . branch release-1
+git . at release-1 message == Test the range limit
+git . at release-1~1 message == Fix the range limit
+git . commits-on release-1 == 3
+--- check shell | The fix is adapted, and nothing else came across
+git . at release-1 file limit.cfg == max = 8
+git . at release-1 file test.txt == expect max 8
+git . at release-1 missing log.cfg
+--- check shell | Tagged, and finished
+git . same v1.0.2 release-1
+git . idle
+
+=== git3-gate | Git, advanced: mastery gate
+--- teach
+This gate covers the whole course: copying commits with `cherry-pick`, rebasing and squashing a branch, steering a rebase or a cherry-pick through a conflict, hunting a bug with `git bisect` by hand and with a script, tracing a line with `git blame`, and sharing work through a remote, from clone and push to rejected pushes, feature branches, tags and rescued detached commits. Most problems mix several of these. There are 10 problems and 12 questions in 112 minutes. You pass with 7 problems and 10 questions right, and there are no hints. To get ready, redo the practice problems of the lessons that felt hard without opening their hints, and read `git status` before every command you are unsure of.
+--- gate
+pass 7
+questions 10
+minutes 112
+
++++ problem | Squash, then share the branch
+--- task
+You are in `~/app`, a clone of `~/server/app.git`, on the local branch `feature/export`. `main` has two commits. On top of them, `feature/export` has three save points: `wip`, `wip 2` and `more wip`. The branch has never been pushed.
+
+Squash the three save points into **one** commit with the message `Add the export button`, then push the branch to `origin` with an upstream. `main`'s two commits must stay as they are, on your clone and on the server.
+--- starter
+cd ~
+git init --bare server/app.git
+git clone server/app.git seed
+cd seed
+echo "# App" > README.md
+git add .
+git commit -m "Start the app"
+echo "menu: file" > menu.txt
+git add .
+git commit -m "Add the menu"
+git push
+cd ~
+rm -r seed
+git clone server/app.git app
+cd ~/app
+git switch -c feature/export
+echo "export" > export.js
+git add .
+git commit -m "wip"
+echo "export csv" > export.js
+git commit -am "wip 2"
+echo "menu: file, export" > menu.txt
+git commit -am "more wip"
+--- solution
+git log --oneline main..feature/export
+git reset --soft HEAD~3
+git commit -m "Add the export button"
+git push -u origin feature/export
+--- check shell | The server has the branch as main plus one commit
+git ~/server/app.git has-branch feature/export
+git ~/server/app.git commits-on feature/export == 3
+git ~/server/app.git at feature/export message == Add the export button
+git ~/server/app.git log-of feature/export excludes wip
+--- check shell | The one commit holds all the work
+git ~/server/app.git at feature/export file export.js == export csv
+git ~/server/app.git at feature/export file menu.txt == menu: file, export
+git ~/server/app.git at feature/export~1 message == Add the menu
+--- check shell | Your branch tracks the server's, and main is untouched
+git ~/app tracks feature/export origin/feature/export
+git ~/server/app.git commits-on main == 2
+
++++ problem | Find it, fix it, share it
+--- task
+You are in `~/probe`, a clone of `~/server/probe.git` with 25 commits. `nav.cfg` should say `units = metric`, as in the first commit (`HEAD~24`), but now it doesn't.
+
+1. Find the commit that changed it with an untracked one-line script `check.sh` and `git bisect run`. Tag it `culprit` and end the hunt.
+2. Undo that commit with `git revert`, because everyone already has it.
+3. Share the fix on the server. A teammate has pushed since you cloned, so bring their work in first, keeping the server's history a straight line with no merge commits.
+
+`check.sh` must not reach the server.
+--- starter
+cd ~
+git init --bare server/probe.git
+git clone server/probe.git seed
+cd seed
+echo "units = metric" > nav.cfg
+echo "0" > flights.txt
+git add .
+git commit -m "Set up navigation"
+for i in $(seq 1 15); do echo "$i" > flights.txt; git commit -am "Log flight $i"; done
+echo "units = imperial" > nav.cfg
+git commit -am "Refactor the display"
+for i in $(seq 16 23); do echo "$i" > flights.txt; git commit -am "Log flight $i"; done
+git push
+cd ~
+rm -r seed
+git clone server/probe.git probe
+git clone server/probe.git kim
+cd kim
+git config user.name "Kim"
+echo "Kim, Raj" > crew.txt
+git add .
+git commit -m "List the crew"
+git push
+cd ~/probe
+--- solution
+echo 'grep -q "units = metric" nav.cfg' > check.sh
+git bisect start HEAD HEAD~24
+git bisect run bash check.sh
+git tag culprit refs/bisect/bad
+git bisect reset
+git revert culprit
+git push
+git pull --rebase
+git push
+--- check shell | The culprit was found and tagged
+git ~/probe at culprit message == Refactor the display
+git ~/probe idle
+git ~/probe untracked check.sh
+--- check shell | The server has the revert on top of everyone's work
+git ~/server/probe.git at main message contains Revert "Refactor the display"
+git ~/server/probe.git at main file nav.cfg == units = metric
+git ~/server/probe.git log contains List the crew
+--- check shell | A straight line, without the script
+git ~/server/probe.git merges == 0
+git ~/server/probe.git at main missing check.sh
+git ~/probe same main origin/main
+
++++ problem | Blame, then back-port
+--- task
+On `main`, `limits.cfg` says `max_g = 4`. The release branch `release-1` still has the old, unsafe `max_g = 6`. You are on `main`.
+
+Use `git blame` to find the commit on `main` that last changed the `max_g` line. Copy **only that commit** onto `release-1`, then tag the result `v1.0.1`. The release must not get `main`'s other changes, such as the higher `max_temp`, and `main` must not change.
+--- starter
+git init
+git config user.name "Ada"
+printf "max_g = 6\nmode = test\nmax_temp = 70\n" > limits.cfg
+git add .
+git commit -m "Set the limits"
+git branch release-1
+git config user.name "Lin"
+printf "max_g = 4\nmode = test\nmax_temp = 70\n" > limits.cfg
+git commit -am "Protect the crew from high g"
+git config user.name "Sam"
+printf "max_g = 4\nmode = test\nmax_temp = 80\n" > limits.cfg
+git commit -am "Allow hotter engines"
+git config user.name "Kim"
+echo "See limits.cfg" > docs.txt
+git add .
+git commit -m "Write the docs"
+git config --unset user.name
+--- solution
+git blame limits.cfg
+git log --oneline
+git switch release-1
+git cherry-pick main~2
+git tag v1.0.1
+--- check shell | release-1 has the g limit fix, and only that
+git . at release-1 message == Protect the crew from high g
+git . commits-on release-1 == 2
+git . at release-1 missing docs.txt
+git . at release-1 file limits.cfg contains max_g = 4
+git . at release-1 file limits.cfg contains max_temp = 70
+--- check shell | v1.0.1 marks the patched release
+git . same v1.0.1 release-1
+git . at v1.0.1 author == Lin
+--- check shell | You used blame, and main is unchanged
+ran git blame limits.cfg
+git . commits-on main == 4
+git . at main file limits.cfg contains max_temp = 80
+
++++ problem | Rebase through a conflict, then ship
+--- task
+You are in `~/station`, on the local branch `feature/power`, which you have not pushed. It has two commits: `Use solar power`, which changed `power.cfg`, and `Add the battery`. Meanwhile Raj pushed `Add a backup generator` to the server's `main`, which changed the same line of `power.cfg`.
+
+1. Bring your `main` up to date with the server.
+2. Rebase `feature/power` onto it. At the conflict, `power.cfg` must read exactly `source = solar + generator`.
+3. Fast-forward `main` to the rebased branch and push `main`.
+
+The server must end with one straight line and no merge commit.
+--- starter
+cd ~
+git init --bare server/station.git
+git clone server/station.git raj
+cd raj
+git config user.name "Raj"
+echo "source = grid" > power.cfg
+git add .
+git commit -m "Set the power source"
+git push
+cd ~
+git clone server/station.git station
+cd ~/raj
+echo "source = grid + generator" > power.cfg
+git commit -am "Add a backup generator"
+git push
+cd ~/station
+git switch -c feature/power
+echo "source = solar" > power.cfg
+git commit -am "Use solar power"
+echo "cells: 8" > battery.cfg
+git add .
+git commit -m "Add the battery"
+--- solution
+git switch main
+git pull
+git switch feature/power
+git rebase main
+echo "source = solar + generator" > power.cfg
+git add power.cfg
+git rebase --continue
+git switch main
+git merge feature/power
+git push
+--- check shell | The server has one straight line, your commits on top
+git ~/server/station.git merges == 0
+git ~/server/station.git commits == 4
+git ~/server/station.git at main message == Add the battery
+git ~/server/station.git at main~2 message == Add a backup generator
+--- check shell | The conflict was resolved as agreed
+git ~/server/station.git at main file power.cfg == source = solar + generator
+git ~/server/station.git at main file battery.cfg
+--- check shell | Your clone is finished and in step
+git ~/station idle
+git ~/station same main origin/main
+git ~/station same main feature/power
+
++++ problem | Rescue detached work and share it
+--- task
+You are in `~/rover`, a clone of `~/server/rover.git`. Yesterday you checked out an old commit, made two commits there, `Mount the radar` and `Point the radar forward`, and then switched back to `main`. They belong to no branch.
+
+Put them on a new branch called `feature/radar`, and push that branch to `origin` with an upstream so the team can review it. Do not merge it into `main`.
+--- starter
+cd ~
+git init --bare server/rover.git
+git clone server/rover.git seed
+cd seed
+echo "wheels: 6" > rover.cfg
+git add .
+git commit -m "Build the rover"
+echo "wheels: 6, big" > rover.cfg
+git commit -am "Fit bigger wheels"
+git push
+cd ~
+rm -r seed
+git clone server/rover.git rover
+cd rover
+git checkout HEAD~1
+echo "radar: on" > radar.cfg
+git add .
+git commit -m "Mount the radar"
+echo "radar: on, forward" > radar.cfg
+git commit -am "Point the radar forward"
+git switch main
+--- solution
+git reflog
+git branch feature/radar HEAD@{1}
+git push -u origin feature/radar
+git log --oneline --graph --all
+--- check shell | The server has the radar branch with both commits
+git ~/server/rover.git has-branch feature/radar
+git ~/server/rover.git at feature/radar message == Point the radar forward
+git ~/server/rover.git at feature/radar~1 message == Mount the radar
+--- check shell | Your branch tracks it
+git ~/rover tracks feature/radar origin/feature/radar
+git ~/rover branch main
+--- check shell | main is unchanged, here and on the server
+git ~/server/rover.git commits-on main == 2
+git ~/server/rover.git at main missing radar.cfg
+git ~/rover same main origin/main
+
++++ problem | Patch the release, on the server
+--- task
+You are in `~/lander`, on `main`. The branch `release-1` exists in your clone and tracks `origin/release-1`. The newest commit on `main`, `Slow the final descent`, is a safety fix the release needs.
+
+1. Copy it onto `release-1`. It stops with a conflict in `descent.cfg`: resolve it so the file reads exactly `speed = 2`, and finish.
+2. Tag the result `v1.0.1`, as an annotated tag with the message `Descent fix`.
+3. Push `release-1` and the tag to the server.
+
+`main` must not change.
+--- starter
+cd ~
+git init --bare server/lander.git
+git clone server/lander.git lander
+cd lander
+echo "speed = 5" > descent.cfg
+git add .
+git commit -m "Set the descent speed"
+git push
+git switch -c release-1
+git push -u origin release-1
+git switch main
+echo "speed = 5 m/s" > descent.cfg
+git commit -am "Show the unit"
+echo "speed = 2 m/s" > descent.cfg
+git commit -am "Slow the final descent"
+git push
+--- solution
+git switch release-1
+git cherry-pick main
+echo "speed = 2" > descent.cfg
+git add descent.cfg
+git cherry-pick --continue
+git tag -a v1.0.1 -m "Descent fix"
+git push
+git push origin v1.0.1
+--- check shell | The server's release has the fix, adapted
+git ~/server/lander.git at release-1 message == Slow the final descent
+git ~/server/lander.git at release-1 file descent.cfg == speed = 2
+git ~/server/lander.git commits-on release-1 == 2
+--- check shell | The tag is on the server, on the release
+git ~/server/lander.git tag v1.0.1
+git ~/server/lander.git same v1.0.1 release-1
+--- check shell | Finished, and main is untouched
+git ~/lander idle
+git ~/lander same release-1 origin/release-1
+git ~/server/lander.git commits-on main == 3
+
++++ problem | Who broke the cooling?
+--- task
+`reactor.cfg` says `cooling = off`. In release `v1.0`, tagged, it said `cooling = on`.
+
+1. Find the commit that changed it with `git bisect`, **by hand**: at each step, look at `reactor.cfg` and answer yourself. Use the tag `v1.0` as the good end.
+2. Tag the first bad commit `night-bug`, and end the hunt.
+3. Write the name of that commit's author, and nothing else, into a file `who.txt`.
+--- starter
+git init
+git config user.name "Ada"
+echo "cooling = on" > reactor.cfg
+echo "0" > readings.txt
+git add .
+git commit -m "Start the reactor log"
+git tag v1.0
+for i in 1 2 3 4 5 6 7 8 9 10; do echo "$i" > readings.txt; git commit -am "Record reading $i"; done
+git config user.name "Tom"
+echo "cooling = off" > reactor.cfg
+git commit -am "Quieter night mode"
+git config user.name "Ada"
+for i in 11 12 13 14 15; do echo "$i" > readings.txt; git commit -am "Record reading $i"; done
+git config --unset user.name
+--- solution
+git bisect start
+git bisect bad
+git bisect good v1.0
+cat reactor.cfg
+git bisect good
+cat reactor.cfg
+git bisect bad
+cat reactor.cfg
+git bisect good
+cat reactor.cfg
+git bisect bad
+git tag night-bug refs/bisect/bad
+git bisect reset
+git show night-bug
+echo "Tom" > who.txt
+--- check shell | The culprit is tagged
+git . at night-bug message == Quieter night mode
+--- check shell | who.txt names its author
+file who.txt == Tom
+--- check shell | You bisected by hand, and the hunt is over
+used git bisect good
+used git bisect bad
+not-printed running
+git . idle
+git . branch main
+
++++ problem | Catch up, then branch
+--- task
+You are in `~/base`, a clone of `~/server/base.git`. Since you cloned it, teammates have pushed two commits to `main`, and your clone does not know yet.
+
+Start a new feature the right way: bring your `main` up to date first, then create the branch `feature/garden` from it. On the branch, make `garden.txt` containing `tomatoes, beans`, commit it with the message `Plan the garden`, and push the branch with an upstream. The branch must contain both of your teammates' commits.
+--- starter
+cd ~
+git init --bare server/base.git
+git clone server/base.git ada
+cd ada
+git config user.name "Ada"
+echo "dome" > plan.txt
+git add .
+git commit -m "Start the base"
+git push
+cd ~
+git clone server/base.git base
+cd ~/ada
+echo "air: ok" > air.txt
+git add .
+git commit -m "Check the air"
+echo "water: ok" > water.txt
+git add .
+git commit -m "Check the water"
+git push
+cd ~/base
+--- solution
+git fetch
+git status
+git pull
+git switch -c feature/garden
+echo "tomatoes, beans" > garden.txt
+git add garden.txt
+git commit -m "Plan the garden"
+git push -u origin feature/garden
+--- check shell | The server has the branch, built on the newest main
+git ~/server/base.git has-branch feature/garden
+git ~/server/base.git at feature/garden message == Plan the garden
+git ~/server/base.git log-of feature/garden contains Check the air
+git ~/server/base.git log-of feature/garden contains Check the water
+--- check shell | Your main caught up with no merge commit
+git ~/base at main message == Check the water
+git ~/base merges == 0
+--- check shell | The branch tracks the server, and main there is untouched
+git ~/base tracks feature/garden origin/feature/garden
+git ~/server/base.git commits-on main == 3
+
++++ problem | Squash before the first push
+--- task
+You are in `~/satellite`, a clone of `~/server/satellite.git`. On `main` you made three save points that are not pushed yet: `wip`, `wip 2` and `wip 3`. Meanwhile Lin pushed `Add the solar panels`.
+
+1. Squash your three save points into **one** commit with the message `Add the telemetry`. Count only the commits the server has not seen.
+2. Share it: bring Lin's commit in without a merge commit, and push.
+
+The server must end with Lin's commit and then yours, and no `wip` anywhere.
+--- starter
+cd ~
+git init --bare server/satellite.git
+git clone server/satellite.git lin
+cd lin
+git config user.name "Lin"
+echo "# Satellite" > README.md
+git add .
+git commit -m "Start the satellite"
+git push
+cd ~
+git clone server/satellite.git satellite
+cd ~/lin
+echo "panels: 2" > solar.txt
+git add .
+git commit -m "Add the solar panels"
+git push
+cd ~/satellite
+echo "temp" > telemetry.txt
+git add .
+git commit -m "wip"
+echo "temp, speed" > telemetry.txt
+git commit -am "wip 2"
+echo "temp, speed, height" > telemetry.txt
+git commit -am "wip 3"
+--- solution
+git status
+git log --oneline origin/main..main
+git reset --soft HEAD~3
+git commit -m "Add the telemetry"
+git pull --rebase
+git push
+--- check shell | The server has Lin's commit, then yours
+git ~/server/satellite.git commits == 3
+git ~/server/satellite.git at main message == Add the telemetry
+git ~/server/satellite.git at main~1 message == Add the solar panels
+--- check shell | One clean commit, no save points, no merge
+git ~/server/satellite.git log excludes wip
+git ~/server/satellite.git merges == 0
+git ~/server/satellite.git at main file telemetry.txt == temp, speed, height
+--- check shell | Your clone is in step
+git ~/satellite same main origin/main
+git ~/satellite idle
+
++++ problem | One commit from a teammate's branch
+--- task
+You are in `~/clock`, a clone of `~/server/clock.git`, on `main`. Since you cloned, Raj pushed a branch `experiment` to the server with three commits: `Try a new face`, `Fix the clock drift` and `Try a louder alarm`. Only the drift fix is ready.
+
+Fetch, and look at the branch with `git log --oneline origin/experiment`. Copy **only** `Fix the clock drift` onto your `main`, naming it by counting back from `origin/experiment`, and push `main`.
+--- starter
+cd ~
+git init --bare server/clock.git
+git clone server/clock.git raj
+cd raj
+git config user.name "Raj"
+echo "drift = 2s" > clock.cfg
+git add .
+git commit -m "Set up the clock"
+git push
+cd ~
+git clone server/clock.git clock
+cd ~/raj
+git switch -c experiment
+echo "face: round" > face.cfg
+git add .
+git commit -m "Try a new face"
+echo "drift = 0s" > clock.cfg
+git commit -am "Fix the clock drift"
+echo "alarm: loud" > alarm.cfg
+git add .
+git commit -m "Try a louder alarm"
+git push -u origin experiment
+cd ~/clock
+--- solution
+git fetch
+git log --oneline origin/experiment
+git cherry-pick origin/experiment~1
+git push
+--- check shell | The server's main has the drift fix
+git ~/server/clock.git at main message == Fix the clock drift
+git ~/server/clock.git at main file clock.cfg == drift = 0s
+git ~/server/clock.git commits-on main == 2
+--- check shell | Nothing else from the experiment
+git ~/server/clock.git at main missing face.cfg
+git ~/server/clock.git at main missing alarm.cfg
+--- check shell | The experiment branch is untouched, and you are in step
+git ~/server/clock.git commits-on experiment == 4
+git ~/clock same main origin/main
+git ~/clock branch main
+
++++ question | Counting back from a branch
+--- ask
+You are on `main` and run:
+
+```
+~/project $ git log --oneline feature
+9f2c1ab (feature) Add the sound effects
+51d7e03 Fix the volume slider
+c08a44e Start the sound test
+3e9b210 (HEAD -> main) Add scores
+```
+
+Which commit does `git cherry-pick feature~2` copy onto `main`? Type its message.
+--- answer
+Start the sound test
+c08a44e
+--- why
+`feature~2` counts back from the tip of `feature`, wherever you stand: `feature` is `Add the sound effects`, `feature~1` is `Fix the volume slider`, and `feature~2` is `Start the sound test`.
+
++++ question | The golden rule of rebasing
+--- ask
+Why should you never rebase commits that teammates already have?
+--- choice
+A rebase deletes those commits from the server as soon as it finishes.
+--- choice correct
+A rebase makes new commits with new ids. Teammates still have the old ones, so the same changes meet again as different commits, with duplicates and conflicts.
+--- choice
+A rebase needs the network, and the server refuses rebases of shared branches.
+--- choice
+A rebase throws away the changes in any commit that is already pushed.
+--- why
+Rebasing replays each commit on a new parent, and a commit's id depends on its parent, so every replayed commit is new. Your own unshared commits cost nobody anything to replace. Shared ones leave teammates holding the old ids.
+
++++ question | One too many
+--- ask
+`feature` has **three** commits on top of `main`. You run `git reset --soft HEAD~4`, then `git commit -m "Add search"`. What happens?
+--- choice
+Git refuses, because `HEAD~4` is not on the branch.
+--- choice
+You get one commit with your three commits' work, exactly as intended.
+--- choice correct
+`main`'s newest commit is squashed into yours too, so `feature` no longer has that commit of `main` in its history.
+--- choice
+The fourth commit is deleted from `main` as well.
+--- why
+`HEAD~4` goes one commit past your branch, onto `main`'s history. The reset keeps that commit's change staged along with yours, and the new commit grows from the commit before it. `main` itself does not move. Count with `git log --oneline main..feature` first.
+
++++ question | Whose side is HEAD?
+--- ask
+A `git rebase main` on `feature` stops with this in a file:
+
+```
+<<<<<<< HEAD
+speed = 110
+=======
+speed = 120
+>>>>>>> 4d1e2f7 (Raise the speed)
+```
+
+What is the part between `<<<<<<< HEAD` and `=======`?
+--- choice
+Your commit, the one being replayed.
+--- choice correct
+`main`, plus the commits replayed so far: the base you are building on.
+--- choice
+The version from before either side changed it.
+--- why
+A rebase stands on the tip of `main` and lays your commits down on it one by one, so `HEAD` is the new base. Your own commit is the incoming side, named on the `>>>>>>>` line. It is the opposite of a merge on your branch.
+
++++ question | How many steps?
+--- ask
+About how many good or bad answers does `git bisect` need to find the first bad commit among 1,000 commits?
+--- choice
+About 500: half of them.
+--- choice
+About 100.
+--- choice correct
+About 10.
+--- choice
+All 1,000, one at a time.
+--- why
+Each answer throws away about half of the commits still in doubt. Halving 1,000 ten times gets down to one, because 2 to the power 10 is 1,024. Doubling the history adds only one more step.
+
++++ question | Exit status 125
+--- ask
+During `git bisect run bash check.sh`, the script exits with status `125` on one commit. What does git do with that commit?
+--- choice
+Marks it bad, like any status from 1 to 127.
+--- choice correct
+Skips it, as a commit that cannot be tested, and tries one near it instead.
+--- choice
+Stops the whole run, because the test itself went wrong.
+--- choice
+Marks it good.
+--- why
+`0` means good and other values up to 127 mean bad, except `125`, which means "cannot test this one", as when a file the test needs is missing. Only a status above 127 stops the run.
+
++++ question | Why the script stays untracked
+--- ask
+Why must `check.sh` stay untracked during `git bisect run`?
+--- choice
+Git refuses to run a script that is tracked.
+--- choice correct
+Bisect checks out old commits, which rewrites every tracked file to match them. The old commits do not have the script, so a tracked one vanishes half-way; an untracked one is left alone.
+--- choice
+A tracked script would be run on the server instead of on your computer.
+--- choice
+Untracked files run faster.
+--- why
+A checkout replaces tracked files with each commit's version and deletes those the commit does not have. Untracked files are in no commit, so git leaves them where they are for the whole hunt.
+
++++ question | Blame after a tidy-up
+--- ask
+The newest commit re-spaced every line of `server.conf`, and now `git blame server.conf` shows that one commit on every line. How do you see who set each value before it?
+--- choice
+`git log -- server.conf`, then read the newest commit.
+--- choice correct
+`git blame HEAD~1 -- server.conf`: blame the file as it was one commit before the tidy-up.
+--- choice
+`git show HEAD`, which lists the original authors.
+--- choice
+There is no way: blame only ever shows the last change.
+--- why
+Blame shows the last commit to change each line. Putting a commit name before `--` blames the file as it was at that commit, so every owner from before the tidy-up shows again.
+
++++ question | What fetch moves
+--- ask
+Your teammate pushed a commit to `main`. In your clone you run `git fetch`. What has changed afterwards?
+--- choice
+Your `main` and your files now have the commit.
+--- choice correct
+Only `origin/main` moved to the new commit; your `main` and your files are exactly as before.
+--- choice
+Nothing, until you run `git status`.
+--- choice
+Your `main` moved, but your files only change after `git pull`.
+--- why
+`git fetch` downloads new commits and updates the remote-tracking branch, your photo of the server. It never touches your branch or your files. `git pull` is a fetch followed by a merge.
+
++++ question | Why the push was rejected
+--- ask
+`git push` answers `! [rejected]  main -> main (fetch first)`. What is the real reason?
+--- choice
+You do not have permission to push, so you need `--force`.
+--- choice correct
+The server's `main` has a commit your `main` does not have. Moving the server to your commit would drop it, so git only allows a push that moves the branch forward.
+--- choice
+Your commit has a conflict inside it.
+--- choice
+The server is busy, so you should try the same push again.
+--- why
+A normal push only fast-forwards the server's branch. Bring the teammate's work in first with `git pull --rebase` or `git pull --no-rebase`, then push again. `--force` would make the push work by deleting their commit.
+
++++ question | Sending a tag
+--- ask
+You tagged a release with `git tag -a v2.0 -m "Spring release"` and ran `git push`. The server has your commits, but not the tag. Type the command that sends just this tag to `origin`.
+--- answer
+git push origin v2.0
+git push origin tag v2.0
+git push origin refs/tags/v2.0
+--- why
+A plain `git push` sends branches, not tags. `git push origin v2.0` sends the tag by name, and the output says `[new tag]`. `git push --tags` would send every tag you have.
+
++++ question | Commits left behind
+--- ask
+On a detached HEAD you made two commits, then ran `git switch main`. What has happened to those two commits?
+--- choice
+Git deleted them the moment you switched.
+--- choice
+Git moved them onto `main`.
+--- choice correct
+They are still stored, but no branch points at them. `git reflog` lists them, and `git branch <name> <id>` gives them a name again.
+--- choice
+They were pushed to the server.
+--- why
+A commit made on a detached HEAD belongs to no branch. After you switch away, nothing points at it, but it stays in `.git` and in the reflog. Git only cleans up unreachable commits after weeks, so rescue them soon.
