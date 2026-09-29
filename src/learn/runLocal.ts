@@ -1,6 +1,7 @@
 /* Runs Learn problems on this machine, for the tests: Python on CPython, C++ on clang with the
-   in-browser compiler's flags, SQL on SQLite through Python's sqlite3 module (result sets the way sql.js
-   returns them), Terminal and Git on the practice shell. Test-only: it spawns processes.
+   in-browser compiler's flags, SQL on the app's own sql.js (the version in lib/runtimes.ts, so query
+   plans and error text are the browser's), Terminal and Git on the practice shell. Test-only: it
+   spawns processes.
 
    With LEARN_CPP_WASM set to an installed @yowasp/clang, C++ is built by the app's own compiler for
    wasm32 and run under WASI instead, exactly as in the browser (slow: for a final sweep). */
@@ -8,6 +9,7 @@ import { type ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { cpus, tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
+import { createRequire } from 'node:module'
 import { createInterface } from 'node:readline'
 import { fileURLToPath } from 'node:url'
 import { buildProgram, gradeRun, lessonShell, typeLines } from './grade'
@@ -78,39 +80,24 @@ function exec(cmd: string, args: string[], stdin: string, ms: number, cwd?: stri
   })
 }
 
-const SQL_RUNNER = String.raw`
-import json, sqlite3, sys
-schema, program = json.load(sys.stdin)
-db = sqlite3.connect(':memory:', isolation_level=None)
-tables, error = [], None
-def run(script):
-    buf = ''
-    for ch in script:
-        buf += ch
-        if ch == ';' and sqlite3.complete_statement(buf):
-            one(buf); buf = ''
-    if buf.strip() and sqlite3.complete_statement(buf + ';'):
-        one(buf)
-def one(stmt):
-    lines = [l for l in stmt.split('\n') if not l.strip().startswith('--')]
-    if not ''.join(lines).strip().rstrip(';').strip():
-        return
-    cur = db.execute(stmt)
-    if cur.description:
-        rows = cur.fetchall()
-        if rows:  # sql.js leaves out a statement that returned no rows
-            tables.append({'columns': [d[0] for d in cur.description], 'rows': [list(r) for r in rows]})
-try:
-    if schema:
-        db.executescript(schema)
-    run(program)
-except Exception as e:
-    tables, error = [], str(e)
-print(json.dumps({'tables': tables, 'error': error}))
-`
-
-const SQL_FILE = join(dir, 'sql.py')
-writeFileSync(SQL_FILE, SQL_RUNNER)
+// ---- SQL on the browser's own sql.js ----------------------------------------------------------
+type SqlJs = { Database: new () => { run(sql: string): void; exec(sql: string): { columns: string[]; values: unknown[][] }[]; close(): void } }
+let sqlJs: Promise<SqlJs> | null = null
+/** The same steps as runSql in lib/runtimes.ts: a fresh database, the schema, then the program. */
+async function runSql(schema: string, program: string): Promise<LearnRun> {
+  sqlJs ??= (createRequire(import.meta.url)('sql.js') as () => Promise<SqlJs>)()
+  const SQL = await sqlJs
+  const db = new SQL.Database()
+  try {
+    if (schema) db.run(schema)
+    const out = db.exec(program)
+    return { stdout: '', stderr: '', error: null, tables: out.map((t) => ({ columns: t.columns, rows: t.values as NonNullable<LearnRun['tables']>[number]['rows'] })), ms: 0 }
+  } catch (e) {
+    return { stdout: '', stderr: '', error: e instanceof Error ? e.message : String(e), tables: [], ms: 0 }
+  } finally {
+    db.close()
+  }
+}
 
 // Pyodide runs a program with top-level await (an asyncio lesson awaits at the top); CPython needs asking.
 const PY_FILE = join(dir, 'py.py')
@@ -150,11 +137,7 @@ export async function run(lesson: LearnLesson, code: string): Promise<LearnRun> 
     const r = await exec(bin, [], lesson.stdin ?? '', 20_000, folder)
     return { stdout: r.stdout, stderr: r.stderr, error: r.code === 0 ? null : `exit ${r.code}`, ms: 0 }
   }
-  if (lesson.lang === 'sql') {
-    const r = await exec('python3', ['-I', SQL_FILE], JSON.stringify([lesson.schema ?? '', program]), 30_000)
-    const out = JSON.parse(r.stdout || '{"tables":[],"error":"runner failed"}') as { tables: LearnRun['tables']; error: string | null }
-    return { stdout: '', stderr: r.stderr, error: out.error, tables: out.tables, ms: 0 }
-  }
+  if (lesson.lang === 'sql') return runSql(lesson.schema ?? '', program)
   if (lesson.lang === 'bash' || lesson.lang === 'git') {
     // Nothing is typed until she types it: a terminal problem's "starter" is the empty prompt.
     const start = lessonShell(lesson)

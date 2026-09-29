@@ -8842,7 +8842,7 @@ SELECT id, opened FROM agent_week ORDER BY id
 => [[7, "2024-05-01 06:11:00"], [907, "2024-05-04 09:11:00"], [1807, "2024-05-07 12:11:00"], [3307, "2024-05-02 17:11:00"], [4207, "2024-05-05 20:11:00"], [5707, "2024-05-01 01:11:00"]]
 --- check query | The agent through the expression index, then a search on agent and time
 EXPLAIN QUERY PLAN SELECT * FROM agent_week
-=> [[5, 0, 0, "SEARCH a USING INDEX idx_agents_lower_email (<expr>=?)"], [10, 0, 0, "SEARCH t USING INDEX idx_tickets_agent_id_opened (agent_id=? AND opened>? AND opened<?)"]]
+=> [[5, 0, 0, "SEARCH a USING COVERING INDEX idx_agents_lower_email (<expr>=?)"], [10, 0, 0, "SEARCH t USING INDEX idx_tickets_agent_id_opened (agent_id=? AND opened>? AND opened<?)"]]
 --- check query | The email index is on lower(email)
 SELECT COUNT(*) FROM sqlite_master WHERE name = 'idx_agents_lower_email' AND sql LIKE '%lower(email)%'
 => [[1]]

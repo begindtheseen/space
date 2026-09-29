@@ -219,7 +219,7 @@ The first command runs every problem's solution and starter against its checks:
 - In the app, C++ is built for wasm32, where `long`, `size_t` and pointers are 4 bytes, while the
   verifier builds for 64 bits. Use `long long` or `std::int64_t` for anything above about 2 billion,
   and never let an expected output depend on the size of `long`, `size_t` or a pointer.
-- SQL runs on SQLite.
+- SQL runs on SQLite 3.49 through sql.js 1.14.2, in the browser and in the checker alike, so a check on `EXPLAIN QUERY PLAN` text sees exactly what the learner sees. Newer SQLite can report `COVERING INDEX` where older versions said `INDEX`: expect the sql.js wording.
 - Terminal and Git problems run on the practice shell.
 
 The course id is the file's `@course`, or the language for a basics course, or
